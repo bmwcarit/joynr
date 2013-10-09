@@ -1,0 +1,12 @@
+target
+.classpath
+.project
+.settings
+gen
+bin
+src/main/generated*
+capabilitiesdump
+joynr.properties
+joyn_capabilitiesdirectory.properties
+joyn_channelurldirectory.properties
+joyn_participantIds.properties

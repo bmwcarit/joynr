@@ -1,0 +1,62 @@
+<!--
+  #%L
+  joynr::java::backend-services::channels user interface
+  %%
+  Copyright (C) 2011 - 2012 BMW Car IT GmbH
+  %%
+  __________________
+  
+  NOTICE:  Dissemination of this information or reproduction of this material 
+  is strictly  forbidden unless prior written permission is obtained from 
+  BMW Car IT GmbH.
+  #L%
+  -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- The HTML 4.01 Transitional DOCTYPE declaration-->
+<!-- above set at the top of the file will set     -->
+<!-- the browser's rendering engine into           -->
+<!-- "Quirks Mode". Replacing this declaration     -->
+<!-- with a "Standards Mode" doctype is supported, -->
+<!-- but may lead to some differences in layout.   -->
+
+<html>
+    <head>
+
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <!-- X-UA-Compatible is required to activate JSON support in IE8  -->
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+
+
+
+        <title>Channels</title>
+
+        <script type="text/javascript" src="script/jquery-1.7.1.js"></script>
+		<script type="text/javascript" charset="utf8" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+
+		
+        <script type="text/javascript" src="script/channels.js"></script>
+        <style type="text/css">
+            @import "css/jquery-smooth.css";
+            @import "datatable/css/demo_page.css";
+            @import "datatable/css/demo_table_jui.css";
+        </style>
+
+		<!-- DataTables CSS -->
+		<link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.8.2/css/jquery.dataTables.css">
+		<!-- DataTables -->
+		<script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.8.2/jquery.dataTables.min.js"></script>
+
+        <!-- Project Style Sheet -->
+        <link rel="stylesheet" href="css/global.css" type="text/css" media="screen, projection">
+
+    </head>
+
+    <body onLoad="init()">
+
+        <div id="caps"></div>
+
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="channels">
+        </table>
+
+    </body>
+</html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  joynr::java::backend-services::capabilities directory user interface
+  %%
+  Copyright (C) 2011 - 2012 BMW Car IT GmbH
+  %%
+  __________________
+  
+  NOTICE:  Dissemination of this information or reproduction of this material 
+  is strictly  forbidden unless prior written permission is obtained from 
+  BMW Car IT GmbH.
+  #L%
+  -->
+
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+  <!-- Default page to serve -->
+    <welcome-file-list>
+        <welcome-file>/channels.html</welcome-file>
+    </welcome-file-list>
+	
+    <session-config>
+        <session-timeout>600</session-timeout>
+    </session-config>
+</web-app>

@@ -1,0 +1,60 @@
+# default let git check for text/binary files and make eol conversion for text files only
+* text=auto
+
+# script files
+*.bat		text
+*.cmd		text
+*.sh		text
+
+*.cache text
+
+# cpp files
+*.cc		text
+*.cmake		text
+*.cpp		text
+*.h		text
+*.hh		text
+*.yy		text
+*.patch		text
+*.in		text
+*.settings	text
+
+# model files
+*.fdepl		text
+*.fidl		text
+*.xtend		text
+
+# doxygen
+*.dox		text
+
+# web
+*.css		text
+*.html		text
+*.ftl		text
+*.js		text
+
+# images
+*.ico		binary
+*.png		binary
+*.jpg		binary
+*.psd		binary
+
+*.gz		binary
+
+inactive
+# java
+*.java		text
+*.properties	text
+*.MF		text
+
+# tooling
+*.launch	text
+*.pro		text
+
+
+# text files
+README		text
+*.txt		text
+*.xml		text
+*.template	text
+*.md		text

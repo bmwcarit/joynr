@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  joynr::tools::generator::Maven joynr Generator Plugin
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  __________________
+  
+  NOTICE:  Dissemination of this information or reproduction of this material 
+  is strictly  forbidden unless prior written permission is obtained from 
+  BMW Car IT GmbH.
+  #L%
+  -->
+
+<lifecycleMappingMetadata>
+	<pluginExecutions>
+		<pluginExecution>
+			<pluginExecutionFilter>
+				<goals>
+					<goal>generate</goal>
+				</goals>
+			</pluginExecutionFilter>
+			<action>
+				<execute>
+					<runOnIncremental>false</runOnIncremental>
+					<runOnConfiguration>true</runOnConfiguration>
+				</execute>
+			</action>
+		</pluginExecution>
+	</pluginExecutions>
+</lifecycleMappingMetadata>

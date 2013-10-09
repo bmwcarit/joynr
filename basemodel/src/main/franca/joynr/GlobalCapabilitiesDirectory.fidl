@@ -1,0 +1,120 @@
+package infrastructure
+/*
+ * !!!
+ *
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import types.ExtendedTypes.* from "../common/Types.fidl"
+
+/**
+ * The <code>GlobalCapabilitiesDirectory</code> is a JOYn internal interface. When a provider
+ * that is globally available is registered with JOYn, the framework creates an entry for that
+ * provider in the global capabilities directory. These <code>{@link CapabilityInformation}</code>
+ * entries contain access information as well as supported QoS. The information is later used in the
+ * arbitration process to pick a provider for a proxy.  
+ */
+interface GlobalCapabilitiesDirectory{
+
+	version {major 0 minor 1}
+
+	/**
+	 * Registers a list of capability information with the directory.
+	 * @param capabilities the list of capabilities to register
+	 */
+	method registerCapabilities {
+		in { 
+			CapabilityInformation[] capabilities
+		}
+	}
+
+	/**
+	 * Registers capability information with the directory.
+	 * @param capability the capability to register
+	 */
+	method registerCapability {
+		in {
+			CapabilityInformation capability
+		} 
+	}
+	
+	/**
+	 * Looks up a list of capabilities for a given domain, interface name and provider QoS.
+	 * @param domain the name of the domain
+	 * @param interfaceName the interface name of the capability
+	 * @param qos the required minimal provider QoS
+	 * @return a list of matching capabilities
+	 */
+	method lookupCapabilities {
+		in {
+			String domain
+			String interfaceName
+			ProviderQosRequirements qos
+		}
+		
+		out {
+			CapabilityInformation[] result
+		}
+	}
+	/**
+	 * Looks up a list of capabilities for a given channel ID. Note that a channel ID is unique
+	 * ID for a Cluster Controller. Therefore, this method is used to retrieve capabilities of 
+	 * a specific Cluster Controller.
+	 * @param channelId the channel ID identifying the Cluster Controller
+	 * @return a list of matching capabilities
+	 */
+	method  getCapabilitiesForChannelId {
+		in {
+			String channelId
+		}
+		
+		out {
+			CapabilityInformation[] result
+		}
+	}
+	/**
+	 * Looks up a list of capabilities for a given participant ID.
+	 * @param participantId the participant ID identifying the provider
+	 * @return a list of matching capabilities
+	 */
+	method getCapabilitiesForParticipantId {
+		in {
+			String participantId
+		}
+		
+		out{
+			CapabilityInformation[]  result
+		}
+	}
+	/**
+	 * Unregisters a list of capabilities from the directory.
+	 * @param capabilities the list of capability information to remove
+	 */
+	method unregisterCapabilities {
+		in {
+			CapabilityInformation[] capabilities
+		}
+	}
+
+	/**
+	 * Unregisters a capability from the directory.
+	 * @param capability the capability information to remove 
+	 */
+	method unregisterCapability {
+		in {
+			CapabilityInformation capability
+		}
+	}	
+}

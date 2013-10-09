@@ -1,0 +1,31 @@
+/*
+ * #%L
+ * joynr::java::backend-services::capabilities directory user interface
+ * %%
+ * Copyright (C) 2011 - 2012 BMW Car IT GmbH
+ * %%
+ * __________________
+ * 
+ * NOTICE:  Dissemination of this information or reproduction of this material 
+ * is strictly  forbidden unless prior written permission is obtained from 
+ * BMW Car IT GmbH.
+ * #L%
+ */
+/* 
+    Document   : global
+    Created on : 12.01.2012, 11:28:49
+    Author     : david.katz
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+BODY
+   {
+   font-family:arial;
+   }
+
+

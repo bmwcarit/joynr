@@ -1,0 +1,1 @@
+Files in this folder are optained from: https://github.com/flavio/qjson/tree/0.7.1

@@ -1,0 +1,164 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.joynr.java.messaging</groupId>
+	<artifactId>messagingservlet</artifactId>
+	<packaging>war</packaging>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<url>http://maven.apache.org</url>
+
+	<parent>
+		<groupId>io.joynr.java</groupId>
+		<artifactId>messaging</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<properties>
+		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
+		<netbeans.compile.on.save>all</netbeans.compile.on.save>
+	</properties>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>servletcommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>infrastructurecommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messagingcommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-guice</artifactId>
+		</dependency>
+
+		<!-- <dependency> <groupId>com.sun.jersey</groupId> <artifactId>jersey-json</artifactId> 
+			<scope>compile</scope> <exclusions> <exclusion> <artifactId>stax-api</artifactId> 
+			<groupId>javax.xml.stream</groupId> </exclusion> <exclusion> <groupId>javax.activation</groupId> 
+			<artifactId>activation</artifactId> </exclusion> </exclusions> </dependency> -->
+
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<scope>test</scope>
+			<!--<version>1.6.2</version>-->
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.ejb</artifactId>
+			<version>3.1.1</version>
+		</dependency-->
+            
+	</dependencies>
+
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<!-- <resources> <resource> <directory>src/main/resources</directory> </resource> 
+			</resources> -->
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
+					<warName>${project.build.finalName}</warName>
+					<warSourceDirectory>src/main/resources</warSourceDirectory>
+					<attachClasses>true</attachClasses>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+
+
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Central Maven2 Repository</name>
+			<url>http://repo1.maven.org/maven2</url>
+			<layout>default</layout>
+		</repository>
+
+		<repository>
+			<!-- used for jaudiotagger -->
+			<id>SUN</id>
+			<name>SUN download.java.net</name>
+			<url>http://download.java.net/maven/2</url>
+			<layout>default</layout>
+		</repository>
+
+
+		<repository>
+			<id>sonatype</id>
+			<name>sonatype Repository (legacy)</name>
+			<url>http://oss.sonatype.org/service/local/repositories/snapshots/content</url>
+			<layout>default</layout>
+		</repository>
+
+	</repositories>
+
+
+
+</project>

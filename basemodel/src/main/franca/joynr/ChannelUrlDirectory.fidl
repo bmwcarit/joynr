@@ -1,0 +1,73 @@
+package infrastructure
+/*
+ * !!!
+ *
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import types.ExtendedTypes.* from "../common/Types.fidl"
+
+/**
+ * The <code>ChannelUrlDirectory</code> interface defines the interface of the JOYn internal
+ * channel URL directory. The channel URL directory is a JOYn infrastructure 
+ * backend component that resolves channel IDs to channel URLs. A JOYn Cluster
+ * Controller is addressed using a unique channel ID. However, the channel ID
+ * can be mapped on multiple channel URLs depending on network topology and 
+ * reachability.
+ */
+interface ChannelUrlDirectory{
+
+	version {major 0 minor 1}
+
+	/**
+	 * Registers <code>{@link ChannelUrlInformation}</code> for a channel ID. The channel URL information
+	 * is used to send messages to a Cluster Controller identified by the unique channel ID. 
+	 * @param channelId the channel ID to register channel URL information with
+	 * @param channelUrlInformation the channel URL information used to send messages to a Cluster Controller
+	 */
+	method registerChannelUrls {
+		in { 
+			String channelId
+			ChannelUrlInformation channelUrlInformation
+		}
+	}
+	
+	/**
+	 * Deletes all <code>{@link ChannelUrlInformation}</code> that is registered with the channel URL directory
+	 * for the given channel ID.
+	 * @param channelId the channel ID to remove from the directory
+	 */
+	method unregisterChannelUrls {
+		in {
+			String channelId
+		}
+	}
+	
+	/**
+	 * Gets <code>{@link ChannelUrlInformation}</code> from the channel URL directory for a given
+	 * channel ID.
+	 * @param channelId the channel ID to lookup
+	 * @return channel URL information to reach the given channel ID
+	 */
+	method getUrlsForChannel {
+		in {
+			String channelId
+		}
+		
+		out {
+			ChannelUrlInformation result
+		}
+	}
+}

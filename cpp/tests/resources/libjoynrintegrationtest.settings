@@ -1,0 +1,3 @@
+[dbus]
+cluster-controller-messaging-address=local:org.genivi.commonapi.joynr:cc.messaging
+cluster-controller-capabilities-address=local:org.genivi.commonapi.joynr:cc.capabilities

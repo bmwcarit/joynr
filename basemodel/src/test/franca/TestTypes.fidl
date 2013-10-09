@@ -1,0 +1,21 @@
+package types
+/*
+*
+*	This document describes on an abstract level, the datatypes used 
+*	for the exchange with the SCMA API
+* 
+*/
+
+typeCollection TestTypes {
+	enumeration Vowel {
+		a
+		e
+		i
+		o
+		u
+	}
+	
+	struct Word {
+		Vowel[] vowels 
+	}
+}

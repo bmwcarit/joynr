@@ -1,0 +1,125 @@
+package io.joynr.capabilities;
+
+/*
+ * #%L
+ * joynr::java::core::libjoynr
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import io.joynr.dispatcher.RequestCaller;
+import io.joynr.dispatcher.RequestReplyDispatcher;
+import io.joynr.dispatcher.RequestReplySender;
+import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.RequestCallerFactory;
+import io.joynr.pubsub.publication.PublicationManager;
+import joynr.types.ProviderQos;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class CapabilitiesRegistrarTests {
+
+    CapabilitiesRegistrar registrar;
+    @Mock
+    private LocalCapabilitiesDirectory localCapabilitiesDirectory;
+    @Mock
+    private RequestCallerFactory requestCallerFactory;
+    @Mock
+    private RequestReplyDispatcher dispatcher;
+    @Mock
+    private JoynrProvider provider;
+
+    @Mock
+    private RequestCaller requestCaller;
+    @Mock
+    private RequestReplySender requestReplySender;
+    @Mock
+    private PublicationManager publicationManager;
+
+    @Mock
+    private ParticipantIdStorage participantIdStorage;
+
+    private String domain = "domain";
+    private String participantId = "participantId";
+    private ProviderQos providerQos = new ProviderQos();
+
+    private static String interfaceName = "interfaceName";
+
+    private interface ProvidedInterface extends JoynrInterface {
+        @SuppressWarnings("unused")
+        // this Field is read with a getField method, so it is indeed needed.
+        public static String INTERFACE_NAME = interfaceName;
+    }
+
+    interface TestInterface extends JoynrInterface {
+        public static String INTERFACE_NAME = interfaceName;
+    }
+
+    @Before
+    public void setUp() {
+
+        registrar = new CapabilitiesRegistrarImpl(localCapabilitiesDirectory,
+                                                  requestCallerFactory,
+                                                  dispatcher,
+                                                  requestReplySender,
+                                                  publicationManager,
+                                                  participantIdStorage);
+    }
+
+    @Test
+    public void registerWithCapRegistrar() {
+
+        Mockito.when(provider.getProviderQos()).thenReturn(providerQos);
+        Mockito.when(participantIdStorage.getProviderParticipantId(Mockito.eq(ProvidedInterface.class),
+                                                                   Mockito.anyString())).thenReturn(participantId);
+        Mockito.when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
+
+        registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
+        Mockito.verify(localCapabilitiesDirectory)
+               .addCapability(Mockito.eq(new CapabilityEntry(domain,
+                                                             TestInterface.class,
+                                                             providerQos,
+                                                             participantId,
+                                                             CapabilityScope.LOCALGLOBAL)));
+        Mockito.verify(requestCallerFactory).create(provider, ProvidedInterface.class);
+
+        Mockito.verify(dispatcher).addRequestCaller(participantId, requestCaller);
+    }
+
+    @Test
+    public void unregisterCapability() {
+        Mockito.when(provider.getProviderQos()).thenReturn(providerQos);
+        Mockito.when(participantIdStorage.getProviderParticipantId(Mockito.eq(ProvidedInterface.class),
+                                                                   Mockito.anyString())).thenReturn(participantId);
+        registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
+
+        Mockito.verify(localCapabilitiesDirectory)
+               .removeCapability(Mockito.eq(new CapabilityEntry(domain,
+                                                                TestInterface.class,
+                                                                providerQos,
+                                                                participantId,
+                                                                CapabilityScope.LOCALGLOBAL)));
+        Mockito.verify(dispatcher).removeRequestCaller(Mockito.eq(participantId));
+    }
+
+}

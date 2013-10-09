@@ -1,0 +1,169 @@
+package io.joynr.messaging;
+
+/*
+ * #%L
+ * joynr::java::messaging::messagingservlet
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import io.joynr.communications.exceptions.JoynrHttpException;
+
+import java.net.URI;
+import java.util.Collection;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+
+import joynr.JoynrMessage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+@Path("/channels")
+/**
+ * ChanelService is used by the messaging service of a cluster controller
+ * to register for messages from other cluster controllers
+ *
+ * The following characters are allowed in the id
+ * - upper and lower case characters
+ * - numbers
+ * - underscore (_) hyphen (-) and dot (.)
+ */
+public class MessagingService {
+
+    private static final Logger log = LoggerFactory.getLogger(MessagingService.class);
+
+    @Context
+    UriInfo ui;
+
+    private final IMessageReceivers messageReceivers;
+
+    @Inject
+    public MessagingService(final IMessageReceivers messageReceivers) {
+        this.messageReceivers = messageReceivers;
+    }
+
+    /**
+     * A simple HTML list view of channels. A JSP is used for rendering.
+     * 
+     * @return a HTML list of available channels, and their resources (long poll connections) if connected.
+     */
+    @GET
+    @Produces("application/json")
+    public GenericEntity<Collection<MessageReceiver>> listChannels() {
+        try {
+            return new GenericEntity<Collection<MessageReceiver>>(messageReceivers.getAllMessageReceivers()) {
+            };
+        } catch (Throwable e) {
+            log.error("GET channels listChannels: error: {}", e.getMessage(), e);
+            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    /**
+     * Send a message to the servlet.
+     * 
+     * @param channelId
+     *            channel id of the receiver.
+     * @param message
+     *            the content being sent.
+     * @return a location for querying the message status
+     */
+    @POST
+    @Path("/{channelId: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Response postMessage(@PathParam("channelId") String channelId, JoynrMessage message) {
+        try {
+            log.debug("POST message to channel: " + channelId + " message: " + message);
+
+            if (channelId == null) {
+                log.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message);
+                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
+            }
+
+            // send the message to the receiver.
+            if (message.getExpiryDate() == 0) {
+                log.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message);
+                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
+            }
+
+            // pass off the message to the registered listener
+            MessageReceiver messageReceiver = messageReceivers.getReceiverForChannelId(channelId);
+
+            // messageReceiver is guaranteed to be nonnull for getReceiverForChannelId, so the check is not needed
+            // anymore.
+            // Update: this is not true, messageReceiver can be null!
+            if (messageReceiver == null) {
+                log.error("POST message to channel: {} message: {} no receiver for the given channel",
+                          channelId,
+                          message);
+                return Response.noContent().build();
+            }
+
+            log.trace("passing off message to messageReceiver: " + channelId);
+            messageReceiver.receive(message);
+
+            // the location that can be queried to get the message
+            // status
+            // TODO REST URL for message status?
+            URI location = ui.getBaseUriBuilder().path("messages/" + message.getId()).build();
+            // return the message status location to the sender.
+            return Response.created(location).build();
+
+        } catch (WebApplicationException e) {
+            throw e;
+        } catch (Throwable e) {
+            log.error("POST message to channel: {} error: {}", channelId, e.getMessage());
+            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Register the default channelId with the channelUrlDirectory
+     * 
+     */
+    @POST
+    @Path("/register")
+    public Response registerChannel(@Named("joynr.messaging.channelId") String channelId) {
+        log.debug("POST register channel: " + channelId);
+
+        if (channelId == null) {
+            log.error("REGISTER channel failed because channelId was not set");
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
+        }
+
+        // TODO really register
+        return Response.ok().build();
+
+    }
+}

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  io.joynr.tools:build-resources
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  __________________
+  
+  NOTICE:  Dissemination of this information or reproduction of this material 
+  is strictly  forbidden unless prior written permission is obtained from 
+  BMW Car IT GmbH.
+  #L%
+  -->
+
+<FindBugsFilter>
+	<Match>
+		<Class name="~.*\.R\$.*"/>
+		<Bug code="Nm"/>
+	</Match>
+	<!-- Removes all Null-Pointer warnings from demo applications code: -->
+	<Match>
+  	        <Package name="~.*\.demoApplications.*" />
+	    	<Bug code="NP"/>
+    </Match>
+	
+	<Match>
+  	        <Package name="~.*\.generated.*" />
+	    	<Bug code="UrF"/>
+    </Match>
+
+	<Match>
+  	        <Package name="~.*\.generated.*" />
+	    	<Bug code="UwF"/>
+    </Match>
+	
+ 	<Match>
+		<Class name="~.*\.*Tests" />
+	  	<Bug code="NP" /> 
+	</Match>
+		
+ 	<Match>
+		<Class name="~.*\.*Test" />
+	  	<Bug code="NP" />
+	</Match>
+ 	
+</FindBugsFilter>

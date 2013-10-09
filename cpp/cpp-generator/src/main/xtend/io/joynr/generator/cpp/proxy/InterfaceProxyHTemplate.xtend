@@ -1,0 +1,107 @@
+package io.joynr.generator.cpp.proxy
+/*
+ * !!!
+ *
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import com.google.inject.Inject
+import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+
+class InterfaceProxyHTemplate  {
+	@Inject	extension JoynrCppGeneratorExtensions
+	@Inject extension TemplateBase
+
+	def generate(FInterface serviceInterface) {
+		val interfaceName =  serviceInterface.name.toFirstUpper
+		val className = interfaceName + "Proxy"
+		val asyncClassName = interfaceName + "AsyncProxy"
+		val syncClassName = interfaceName + "SyncProxy"
+		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"Proxy_h").toUpperCase
+		'''
+		«warning()»
+		
+		#ifndef «headerGuard»
+		#define «headerGuard»
+		
+		#include "joynr/PrivateCopyAssign.h"
+		«getDllExportIncludeStatement()»
+		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
+		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
+		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+
+		#ifdef _MSC_VER
+			// Visual C++ gives a warning which is caused by diamond inheritance, but this is 
+			// not relevant when using pure virtual methods:
+			// http://msdn.microsoft.com/en-us/library/6b3sy7ae(v=vs.80).aspx
+			#pragma warning( disable : 4250 )
+		#endif
+		
+		«getNamespaceStarter(serviceInterface)» 
+		class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
+		public:    
+		    «className»(joynr::ICapabilities* capabilitiesStub,
+		    		 QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, 
+		    		 joynr::ConnectorFactory* connectorFactory,
+		             joynr::IClientCache* cache,
+		             const QString& domain,
+		             const joynr::ProxyQos& proxyQos,
+		             const joynr::MessagingQos& qosSettings,
+		             bool cached);
+
+			«FOR attribute: getAttributes(serviceInterface)»
+				«var attributeName = attribute.name.toFirstUpper»
+				«val returnType = getMappedDatatypeOrList(attribute)»         
+				void unsubscribeFrom«attributeName»(QString &subscriptionId) {
+					«className»Base::unsubscribeFrom«attributeName»(subscriptionId);
+				}
+
+				QString subscribeTo«attributeName»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+					return «className»Base::subscribeTo«attributeName»(subscriptionListener, subscriptionQos);
+				}
+			«ENDFOR»
+		
+			virtual ~«className»();
+		
+			// attributes
+			«FOR attribute: getAttributes(serviceInterface)»
+				«var attributeName = attribute.name.toFirstUpper»         
+				using «asyncClassName»::get«attributeName»;
+				using «asyncClassName»::set«attributeName»;
+				using «syncClassName»::get«attributeName»;
+				using «syncClassName»::set«attributeName»;
+
+			«ENDFOR»
+		
+		    // operations
+			«FOR methodName: getUniqueMethodNames(serviceInterface)»
+				using «asyncClassName»::«methodName»;
+				using «syncClassName»::«methodName»;
+
+			«ENDFOR»
+		private:
+		    DISALLOW_COPY_AND_ASSIGN(«className»);
+		};
+		
+		«getNamespaceEnder(serviceInterface)»
+
+		#endif // «headerGuard»
+		'''	
+	}	
+	
+			
+}

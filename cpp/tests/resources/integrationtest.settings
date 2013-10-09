@@ -1,0 +1,16 @@
+[messaging]
+bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy
+channel-url-directory-url=http://${JOYNR_SERVER}/bounceproxy/channels
+create-channel-retry-interval=500
+send-msg-retry-interval=500
+local-proxy-host=
+local-proxy-port=
+index=0
+longpoll-retry-interval=5000
+delete-channel-retry-interval=5000
+
+[capabilitiesClient]
+fakeDomain=integrationDomain
+fakeInterfaceName=integrationInterfaceName
+fakeChannelId=End2EndRPCTestRemote
+fakeParticipantId=participantId_End2EndRPCTestRemote

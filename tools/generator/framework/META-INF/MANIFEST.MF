@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JOYn generator framework
+Bundle-SymbolicName: io.joynr.generator.framework;singleton:=true
+Bundle-Version: 2.0.0.qualifier
+Bundle-ClassPath: .
+Bundle-Vendor: BMW Car IT GmbH
+Export-Package: io.joynr.generator,
+ io.joynr.generator.loading,
+ io.joynr.generator.util
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
+ org.eclipse.jdt.core;bundle-version="3.7.2",
+ org.eclipse.xtext;bundle-version="2.4.1";visibility:=reexport,
+ org.apache.log4j;bundle-version="1.2.15",
+ org.eclipse.xtext.xbase.lib;bundle-version="2.4.1";visibility:=reexport,
+ org.eclipse.xtend.core;bundle-version="2.4.1",
+ org.franca.core.dsl;bundle-version="0.8.7";visibility:=reexport,
+ org.eclipse.core.resources;bundle-version="3.8.1";visibility:=reexport

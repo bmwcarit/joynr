@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<!--
+  #%L
+  io.joynr.tools:build-resources
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  __________________
+  
+  NOTICE:  Dissemination of this information or reproduction of this material 
+  is strictly  forbidden unless prior written permission is obtained from 
+  BMW Car IT GmbH.
+  #L%
+  -->
+
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+
+
+<module name="Checker">
+
+    <property name="severity"  value="info"/>
+    <module name="SuppressionFilter">
+    	<property name="file" value="${checkstyle.suppressions.file}" />
+	</module>
+    
+    
+    <module name="FileLength"/>
+
+    <module name="TreeWalker">
+    	<module name="LineLength">
+    	    <property name="max" value="300"/> <!-- 300 is absurd, but we should reduce this to 150 later -->
+    	</module>
+    	<module name="MethodLength"/> 
+        <module name="LocalFinalVariableName"/>
+        <module name="PackageName"/>
+        <!-- <module name="ConstantName"/>  Deactivated, lots of constants are named in a wrong way at the moment.--> 
+        <module name="TypeName"/>
+        <module name="ParameterNumber"/>
+
+        <module name="StaticVariableName"/>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName">  <property name="format" value="^[a-z][A-Za-z0-9]*(_absolute)?(_ms)?$"/> </module>
+        <!-- <module name="MemberName">  <property name="format" value="^[a-z][A-Za-z0-9]*(_ms)?$"/> </module> // Deactivated, because some guice-injected constants are member-fields, but are written like constants -->
+        <!--  <module name="MethodName">  <property name="format" value="^[a-z][A-Za-z0-9]*(_ms)?$"/> </module> //deactivated, because getHTTP_CONSTANTS is uses for guice-injected methods, signaling that we are actually retrieving a constant)-->
+        <module name="PackageName"/>
+        <module name="ParameterName">  <property name="format" value="^[a-z][A-Za-z0-9_]*$"/> </module>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
+        
+        
+        <module name="AvoidStarImport"/>
+        <module name="IllegalImport"/> 
+        <module name="RedundantImport"/>
+        <module name="UnusedImports"/>
+      
+        
+        <module name="EmptyForIteratorPad"/>
+        <module name="MethodParamPad"/>
+        <!-- <module name="NoWhitespaceAfter"/> For inline-{} we actually want whitespaces there-->
+        <module name="NoWhitespaceBefore"/>
+        <module name="OperatorWrap"/>
+        <module name="ParenPad"/>
+        <module name="TypecastParenPad"/>
+        <!-- <module name="TabCharacter"/> //could not initialize thise module -->
+        <module name="WhitespaceAfter"/>
+		<module name="WhitespaceAround"/>
+        <module name="FileContentsHolder"/>
+    </module>
+ 
+    <module name="SuppressionCommentFilter"/>
+</module>  
+
+
+
+<!-- This is the default configuration: Use it to move checkers from the default configuration to our actual configuration -->
+<!--  Default Configuration: -->
+<!-- <module name="Checker">
++
++    Checks whether files end with a new line.                       
++    See http://checkstyle.sf.net/config_misc.html#NewlineAtEndOfFile
++    <module name="NewlineAtEndOfFile"/>
++
++    Checks that property files contain the same keys.        
++    See http://checkstyle.sf.net/config_misc.html#Translation
++    <module name="Translation"/>
++
++
++    Checks for Size Violations.                   
++    See http://checkstyle.sf.net/config_sizes.html
++
++
++    <module name="TreeWalker">
++
++
++        Checks for Javadoc comments.                    
++        See http://checkstyle.sf.net/config_javadoc.html
++        <module name="JavadocMethod"/>
++        <module name="JavadocType"/>
++        <module name="JavadocVariable"/>
++        <module name="JavadocStyle"/>
++
++
++        Checks for Headers                               
++        See http://checkstyle.sf.net/config_header.html  
++        <module name="Header">                           
++            The follow property value demonstrates the ability    
++            to have access to ANT properties. In this case it uses
++            the ${basedir} property to allow Checkstyle to be run 
++            from any directory within a project. See property     
++            expansion,                                            
++            http://checkstyle.sf.net/config.html#properties       
++            <property                                             
++                name="headerFile"                                 
++                value="${basedir}/java.header"/>                  
++        </module>
++
++        Following interprets the header file as regular expressions.
++        <module name="RegexpHeader"/>                               
++
++
++        Checks for imports                             
++        See http://checkstyle.sf.net/config_import.html
++        <module name="AvoidStarImport"/>
++        <module name="IllegalImport"/> defaults to sun.* packages
++        <module name="RedundantImport"/>
++        <module name="UnusedImports"/>
++
++
++        Checks for whitespace                              
++        See http://checkstyle.sf.net/config_whitespace.html
++        <module name="EmptyForIteratorPad"/>
++        <module name="MethodParamPad"/>
++        <module name="NoWhitespaceAfter"/>
++        <module name="NoWhitespaceBefore"/>
++        <module name="OperatorWrap"/>
++        <module name="ParenPad"/>
++        <module name="TypecastParenPad"/>
++        <module name="TabCharacter"/>
++        <module name="WhitespaceAfter"/>
++        <module name="WhitespaceAround"/>
++
++
++        Modifier Checks                                   
++        See http://checkstyle.sf.net/config_modifiers.html
++        <module name="ModifierOrder"/>
++        <module name="RedundantModifier"/>
++
++
++        Checks for blocks. You know, those {}'s        
++        See http://checkstyle.sf.net/config_blocks.html
++        <module name="AvoidNestedBlocks"/>
++        <module name="EmptyBlock"/>
++        <module name="LeftCurly"/>
++        <module name="NeedBraces"/>
++        <module name="RightCurly"/>
++
++
++        Checks for common coding problems              
++        See http://checkstyle.sf.net/config_coding.html
++        <module name="AvoidInlineConditionals"/>
++        <module name="DoubleCheckedLocking"/>    MY FAVOURITE
++        <module name="EmptyStatement"/>
++        <module name="EqualsHashCode"/>
++        <module name="HiddenField"/>
++        <module name="IllegalInstantiation"/>
++        <module name="InnerAssignment"/>
++        <module name="MagicNumber"/>
++        <module name="MissingSwitchDefault"/>
++        <module name="RedundantThrows"/>
++        <module name="SimplifyBooleanExpression"/>
++        <module name="SimplifyBooleanReturn"/>
++
++        Checks for class design                        
++        See http://checkstyle.sf.net/config_design.html
++        <module name="DesignForExtension"/>
++        <module name="FinalClass"/>
++        <module name="HideUtilityClassConstructor"/>
++        <module name="InterfaceIsType"/>
++        <module name="VisibilityModifier"/>
++
++
++        Miscellaneous other checks.                  
++        See http://checkstyle.sf.net/config_misc.html
++        <module name="ArrayTypeStyle"/>
++        <module name="FinalParameters"/>
++        <module name="TodoComment"/>
++        <module name="UpperEll"/>
++
++    </module>
++
++</module>
+ -->

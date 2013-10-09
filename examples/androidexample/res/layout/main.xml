@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+
+    <Button
+        android:id="@+id/CreateAndRequestButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/create_joyn_proxy_and_request_gps_location"
+        android:onClick="onCreateAndRequestButtonClicked" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/joyn_example" />
+
+	<EditText
+	    android:id="@+id/progressoutput"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:ems="10"
+	    android:inputType="textMultiLine" 
+	    android:clickable="false" 
+        android:cursorVisible="false" 
+        android:focusable="false" 
+        android:focusableInTouchMode="false">
+	</EditText>
+
+</LinearLayout>
