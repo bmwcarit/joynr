@@ -503,7 +503,7 @@ abstract class JoynrGeneratorExtensions {
 			        	}
 		        	} 
 		        	else {
-		        		throw new IllegalStateException ("Typename for output parameter " + returnParameter.name + "of method " + fInterface.name + "." + method.name + " could not be resolved")
+		        		throw new IllegalStateException ("Typename for output parameter " + returnParameter.name + " of method " + fInterface.name + "." + method.name + " could not be resolved")
 		        	}
 	            }
             }
@@ -518,7 +518,7 @@ abstract class JoynrGeneratorExtensions {
 			        	}
 		        	} 
 		        	else {
-		        		throw new IllegalStateException ("Typename for output parameter " + inputParameter.name + "of method " + fInterface.name + "." + method.name + " could not be resolved")
+		        		throw new IllegalStateException ("Typename for input parameter " + inputParameter.name + " of method " + fInterface.name + "." + method.name + " could not be resolved")
 		        	}
                 }
             }
