@@ -8,6 +8,18 @@
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
+	<description>joynr.io communications framework</description>
+	<developers>
+		<developer>
+			<organization>BMW Car IT GmbH</organization>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/bmwcarit/joynr.git</connection>
+		<developerConnection>scm:git:ssh:git@github.com:bmwcarit/joynr.git</developerConnection>
+		<url>https://github.com/bmwcarit/joynr</url>
+	</scm>
 
 	<licenses>
 		<license>

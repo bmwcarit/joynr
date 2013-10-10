@@ -1,3 +1,7 @@
+running in jetty:
+java -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=4000,server=y,suspend=n -jar start.jar OPTIONS=Server,jmx etc/jetty-jmx.xml
+java -jar start.jar OPTIONS=Server,jmx etc/jetty-jmx.xml
+
 ** Create a new channel **
 curl -i -X POST -H "Content-type:application/json" -H "X-Atmosphere-tracking-id:123" http://localhost:8080/bounceproxy/channels/?ccid=hello2
 curl -i -X POST -H "Content-type:application/json" -H "X-Atmosphere-tracking-id:456" http://localhost:8080/bounceproxy/channels/?ccid=hello456
