@@ -61,7 +61,7 @@
 		<!-- this dependency is only required for the development phase, so that the model is accessible via classpath-->
 		<dependency>
 			<groupId>io.joynr</groupId>
-			<artifactId>model</artifactId>
+			<artifactId>basemodel</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
