@@ -39,7 +39,7 @@ import org.franca.core.franca.FType
 import static com.google.common.base.Preconditions.*
 import static org.eclipse.xtext.util.Files.*
 
-class JoynJavaGenerator implements IJoynrGenerator {
+class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
 	InterfaceGenerator interfacesGenerator
 	@Inject
