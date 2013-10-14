@@ -455,7 +455,7 @@
 										<artifactId>maven-install-plugin</artifactId>
 										<versionRange>[2.5,)</versionRange>
 										<goals>
-											<goal>install</goal>
+											<goal>install-file</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
