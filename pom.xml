@@ -81,20 +81,20 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<JOYN_SERVER>localhost:8080</JOYN_SERVER>
-				<JOYN_TEST_SERVER>localhost:8080</JOYN_TEST_SERVER>
+				<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
+				<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
 			</properties>
 		</profile>
 		<profile>
 			<id>ContinuousBuildConfiguration</id>
 			<activation>
 				<property>
-					<name>JOYN_CI</name>
+					<name>JOYNR_CI</name>
 				</property>
 			</activation>
 			<properties>
-				<JOYN_SERVER>localhost:8080</JOYN_SERVER>
-				<JOYN_TEST_SERVER>localhost:8080</JOYN_TEST_SERVER>
+				<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
+				<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
 			</properties>
 		</profile>
 		<profile>

@@ -9,13 +9,13 @@
         android:id="@+id/CreateAndRequestButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/create_joyn_proxy_and_request_gps_location"
+        android:text="@string/create_joynr_proxy_and_request_gps_location"
         android:onClick="onCreateAndRequestButtonClicked" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/joyn_example" />
+        android:text="@string/joynr_example" />
 
 	<EditText
 	    android:id="@+id/progressoutput"

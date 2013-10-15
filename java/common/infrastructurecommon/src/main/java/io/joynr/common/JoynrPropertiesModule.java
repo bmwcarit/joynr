@@ -62,7 +62,7 @@ public class JoynrPropertiesModule extends PropertyLoadingModule {
     }
 
     @Provides
-    @Named(MessagingPropertyKeys.JOYN_PROPERTIES)
+    @Named(MessagingPropertyKeys.JOYNR_PROPERTIES)
     Properties provideProperties() {
         return properties;
     }

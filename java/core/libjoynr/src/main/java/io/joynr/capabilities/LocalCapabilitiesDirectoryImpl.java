@@ -99,7 +99,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId,
-                                          @Named(MessagingPropertyKeys.JOYN_PROPERTIES) Properties joynrProperties,
+                                          @Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
                                           CapabilitiesStore localCapabilitiesStore) {
 
         this.localCapabilitiesStore = localCapabilitiesStore;

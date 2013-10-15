@@ -7,5 +7,5 @@ bin
 src/main/generated*
 capabilitiesdump
 joynr.properties
-joyn_participantIds.properties
+joynr_participantIds.properties
 

@@ -7,7 +7,7 @@ bin
 src/main/generated*
 joynr.properties
 /logs
-joyn_participantIds.properties
+joynr_participantIds.properties
 testmessaging.properties
 capabilitiesdump
 /target

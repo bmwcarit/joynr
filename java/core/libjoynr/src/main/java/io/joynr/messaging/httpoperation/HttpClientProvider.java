@@ -50,7 +50,7 @@ public class HttpClientProvider implements Provider<CloseableHttpClient> {
 
     @Inject
     public HttpClientProvider(MessagingSettings settings,
-                              @Named(MessagingPropertyKeys.JOYN_PROPERTIES) Properties properties,
+                              @Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties properties,
                               HttpConstants httpConstants) {
         this.settings = settings;
         this.properties = properties;

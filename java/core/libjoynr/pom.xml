@@ -13,10 +13,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
-	<properties>
-		<JOYNR_SERVER>${env.JOYNR_SERVER}</JOYNR_SERVER>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>

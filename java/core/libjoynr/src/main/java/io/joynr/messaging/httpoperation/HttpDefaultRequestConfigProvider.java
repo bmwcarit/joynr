@@ -41,7 +41,7 @@ public class HttpDefaultRequestConfigProvider implements Provider<RequestConfig>
 
     @Inject
     public HttpDefaultRequestConfigProvider(MessagingSettings settings,
-                                            @Named(MessagingPropertyKeys.JOYN_PROPERTIES) Properties properties,
+                                            @Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties properties,
                                             HttpConstants httpConstants) {
 
         RequestConfig.Builder configBuilder = RequestConfig.custom()

@@ -30,7 +30,7 @@ public final class MessagingPropertyKeys {
     public static final String DEFAULT_PERSISTENCE_FILE = "joynr.properties";
     public static final String DEFAULT_MESSAGING_PROPERTIES_FILE = "defaultMessaging.properties";
 
-    public static final String JOYN_PROPERTIES = "joynr.properties";
+    public static final String JOYNR_PROPERTIES = "joynr.properties";
 
     private MessagingPropertyKeys() {
         throw new AssertionError();

@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class LicenseCheck {
-    private static final String JOYN_SRC_DIR = "/home/joynr/ws/joynr/dev/cpp/";
-    public static final String JOYN_BUILD_DIR = "/home/joynr/ws/joynr/dev/build/";
+    private static final String JOYNR_SRC_DIR = "/home/joynr/ws/joynr/dev/cpp/";
+    public static final String JOYNR_BUILD_DIR = "/home/joynr/ws/joynr/dev/build/";
     public static final String JOYNR_INCLUDE_DIR = "bin/include/";
     public static final String DEPEND_FILES_FILENAME = "/home/joynr/ws/joynr/dev/build/list-of-depend-files.txt";
     public static final String HEADER_FILES_FILENAME = "/home/joynr/ws/joynr/dev/build/header-files.txt";
@@ -72,10 +72,10 @@ public class LicenseCheck {
 
                 // make paths absolut
                 if (headerFileName.startsWith(JOYNR_INCLUDE_DIR)) {
-                    headerFileName = JOYN_BUILD_DIR + headerFileName;
+                    headerFileName = JOYNR_BUILD_DIR + headerFileName;
                 }
                 if (headerFileName.charAt(0) != '/') {
-                    headerFileName = JOYN_SRC_DIR + headerFileName;
+                    headerFileName = JOYNR_SRC_DIR + headerFileName;
                 }
 
                 File file = new File(headerFileName);
@@ -87,8 +87,8 @@ public class LicenseCheck {
 
                 headerFileName = file.getCanonicalPath(); //new URI(headerFileName).normalize().getPath();
 
-                if ((headerFileName.startsWith(JOYN_SRC_DIR) && !headerFileName.contains("libs/"))
-                        || (headerFileName.startsWith(JOYN_BUILD_DIR) && !headerFileName.contains("libs/"))) {
+                if ((headerFileName.startsWith(JOYNR_SRC_DIR) && !headerFileName.contains("libs/"))
+                        || (headerFileName.startsWith(JOYNR_BUILD_DIR) && !headerFileName.contains("libs/"))) {
                     // our own stuff
                     continue;
                 }

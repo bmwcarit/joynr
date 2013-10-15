@@ -52,7 +52,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     private String capabiliitesDirectoryParticipantId;
 
     @Inject
-    public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYN_PROPERTIES) Properties joynrProperties,
+    public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE) String persistenceFileName,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabiliitesDirectoryParticipantId) {
