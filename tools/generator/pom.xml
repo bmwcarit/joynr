@@ -21,21 +21,6 @@
 	</modules>
 	
 	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-checkstyle-plugin</artifactId>
-					<dependencies>
-						<dependency>
-							<groupId>io.joynr.tools</groupId>
-							<artifactId>build-resources</artifactId>
-							<version>${project.version}</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
