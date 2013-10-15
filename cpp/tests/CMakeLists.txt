@@ -285,6 +285,6 @@ add_executable(
 )
 qt5_use_modules(g_SystemIntegrationTests Core)
 add_dependencies(g_SystemIntegrationTests googletest)
-add_dependencies(g_SystemIntegrationTests g_TestGenLib)
+add_dependencies(g_SystemIntegrationTests googlemock)
 
 target_link_libraries(g_SystemIntegrationTests ${test_TARGET_LIBRARIES})
