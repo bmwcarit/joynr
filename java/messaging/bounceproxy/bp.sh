@@ -5,7 +5,7 @@ NumChannels=1
 
 usage ()
 {
- echo "Simple JOYn-Bounceproxy Test Tool (2012-02-14 matthias.goebl@bmw.de)"
+ echo "Simple JOYn-Bounceproxy Test Tool"
  echo "Base URL: $BaseURL"
  echo "usage: $0 [OPTS] [ARGS]"
  sed -n 's/^   \(.\))#\(.*\)$/ -\1 \2/p' < $0
