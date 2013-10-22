@@ -161,23 +161,22 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
     QSharedPointer<vehicle::GpsProvider> gpsProvider(new vehicle::DefaultGpsProvider(providerQos));
     QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(2550);
+    QThreadSleep::msleep(1000);
 
     runtime1->registerCapability<vehicle::GpsProvider>(domainName,gpsProvider, QString());
     runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
 
-    QThreadSleep::msleep(2550);
+    QThreadSleep::msleep(1000);
 
     // Consumer: (runtime2)
     {
         ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime2->getProxyBuilder<vehicle::GpsProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(40000);
+        discoveryQos.setDiscoveryTimeout(1000);
 
         qlonglong qosRoundTripTTL = 40000;
         qlonglong qosCacheDataFreshnessMs = 400000;
-        discoveryQos.setDiscoveryTimeout(40000);
 
         // Send a message and expect to get a result
 
@@ -202,11 +201,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
         ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(40000);
+        discoveryQos.setDiscoveryTimeout(1000);
 
         qlonglong qosRoundTripTTL = 40000;
         qlonglong qosCacheDataFreshnessMs = 400000;
-        discoveryQos.setDiscoveryTimeout(40000);
 
         // Send a message and expect to get a result
         QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
@@ -365,11 +363,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
         ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime2->getProxyBuilder<vehicle::GpsProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(40000);
+        discoveryQos.setDiscoveryTimeout(1000);
 
         qlonglong qosRoundTripTTL = 10;
         qlonglong qosCacheDataFreshnessMs = 400000;
-        discoveryQos.setDiscoveryTimeout(40000);
         QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                    ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
@@ -391,12 +388,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
         ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
-        discoveryQos.setDiscoveryTimeout(40000);
+        discoveryQos.setDiscoveryTimeout(1000);
 
         qlonglong qosOneWayTTL = 40000;
         qlonglong qosRoundTripTTL = 40000;
         qlonglong qosCacheDataFreshnessMs = 400000;
-        discoveryQos.setDiscoveryTimeout(40000);
 
         // Send a message and expect to get a result
         QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
@@ -454,11 +450,10 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpCommunicationManagerAndReceiveReply)
             = runtime2->getProxyBuilder<vehicle::GpsProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
@@ -516,11 +511,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
             = runtime2->getProxyBuilder<vehicle::GpsProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
@@ -593,11 +587,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
             = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<tests::TestProxy> testProxy(proxyBuilder
@@ -636,7 +629,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
             = runtime2->getProxyBuilder<vehicle::GpsProxy>(nonexistentDomain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     const int arbitrationTimeout = 5000;
 
@@ -704,11 +697,10 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpCommunicationManager) {
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime2->getProxyBuilder<vehicle::GpsProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
@@ -751,11 +743,10 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaCommunicationManager) {
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime2->getProxyBuilder<vehicle::GpsProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
@@ -918,11 +909,10 @@ vehicle::GpsProxy* createGpsProxy(JoynrClusterControllerRuntime *runtime, QStrin
            = runtime->getProxyBuilder<vehicle::GpsProxy>(domainName);
    DiscoveryQos discoveryQos;
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-   discoveryQos.setDiscoveryTimeout(40000);
+   discoveryQos.setDiscoveryTimeout(1000);
 
    qlonglong qosRoundTripTTL = 40000;
    qlonglong qosCacheDataFreshnessMs = 400000;
-   discoveryQos.setDiscoveryTimeout(40000);
 
    // Send a message and expect to get a result
    vehicle::GpsProxy* gpsProxy(gpsProxyBuilder
@@ -997,20 +987,19 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     providerQos.setPriority(2);
     QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(2550);
+    QThreadSleep::msleep(100);
 
     runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
 
-    QThreadSleep::msleep(2550);
+    QThreadSleep::msleep(100);
 
     ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 20000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
@@ -1050,11 +1039,10 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 20000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder

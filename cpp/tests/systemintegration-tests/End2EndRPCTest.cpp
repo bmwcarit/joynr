@@ -103,11 +103,10 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
             ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
@@ -136,11 +135,10 @@ TEST_F(End2EndRPCTest, call_void_operation)
     ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::TestProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
     tests::TestProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
             ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
@@ -170,11 +168,10 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
             runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
             ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))

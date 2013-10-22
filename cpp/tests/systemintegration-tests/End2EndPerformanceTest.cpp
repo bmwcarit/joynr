@@ -121,11 +121,10 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 50000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    discoveryQos.setDiscoveryTimeout(40000);
 
     // Send a message and expect to get a result
     QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
