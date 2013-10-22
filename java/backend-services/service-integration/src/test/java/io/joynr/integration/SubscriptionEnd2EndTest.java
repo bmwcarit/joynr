@@ -29,11 +29,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.bounceproxy.LocalGrizzlyBounceProxy;
-import io.joynr.discovery.DiscoveryDirectoriesLauncher;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -57,6 +56,7 @@ import joynr.PeriodicSubscriptionQos;
 import joynr.tests.TestProxy;
 import joynr.types.GpsLocation;
 
+import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,29 +96,15 @@ public class SubscriptionEnd2EndTest {
 
     private String methodName;
 
-    private static int port;
-
-    private static LocalGrizzlyBounceProxy server = new LocalGrizzlyBounceProxy();
-
-    private static DiscoveryDirectoriesLauncher directories;
+    private static Server server;
 
     @BeforeClass
-    public static void startServer() throws IOException {
-        server = new LocalGrizzlyBounceProxy();
-        port = server.start();
-        String serverUrl = "http://localhost:" + port;
-        String bounceProxyUrl = serverUrl + "/bounceproxy/";
-        String directoriesUrl = bounceProxyUrl + "channels/discoverydirectory_channelid/";
-        System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
-        System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
-        System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
-
-        directories = DiscoveryDirectoriesLauncher.start();
+    public static void startServer() throws Exception {
+        server = ServersUtil.startServers();
     }
 
     @AfterClass
-    public static void stopServer() {
-        directories.shutdown();
+    public static void stopServer() throws Exception {
         server.stop();
     }
 

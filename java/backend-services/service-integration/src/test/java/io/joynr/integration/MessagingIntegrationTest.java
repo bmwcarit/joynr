@@ -20,17 +20,16 @@ package io.joynr.integration;
  * #L%
  */
 
-import io.joynr.bounceproxy.LocalGrizzlyBounceProxy;
 import io.joynr.capabilities.DummyCapabilitiesDirectory;
 import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
-import io.joynr.discovery.DiscoveryDirectoriesLauncher;
 import io.joynr.dispatcher.JoynrMessageFactory;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.integration.util.ServersUtil;
 import io.joynr.integration.util.TestMessageListener;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
@@ -52,6 +51,7 @@ import java.util.UUID;
 import joynr.JoynrMessage;
 import joynr.types.ChannelUrlInformation;
 
+import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,9 +73,7 @@ public class MessagingIntegrationTest {
 
     private static final int DEFAULT_TIMEOUT = 3000;
 
-    private static LocalGrizzlyBounceProxy server = new LocalGrizzlyBounceProxy();
-    private static DiscoveryDirectoriesLauncher directories;
-    private static int port;
+    private static Server server;
 
     private MessageSender joynrMessageSender1;
     private MessageSender joynrMessageSender2;
@@ -104,22 +102,12 @@ public class MessagingIntegrationTest {
     private long relativeTtl_ms = 10000L;
 
     @BeforeClass
-    public static void startServer() throws IOException {
-        server = new LocalGrizzlyBounceProxy();
-        port = server.start();
-        String serverUrl = "http://localhost:" + port;
-        String bounceProxyUrl = serverUrl + "/bounceproxy/";
-        String directoriesUrl = bounceProxyUrl + "channels/discoverydirectory_channelid/";
-        System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
-        System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
-        System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
-
-        directories = DiscoveryDirectoriesLauncher.start();
+    public static void startServer() throws Exception {
+        server = ServersUtil.startServers();
     }
 
     @AfterClass
-    public static void stopServer() {
-        directories.shutdown();
+    public static void stopServer() throws Exception {
         server.stop();
     }
 

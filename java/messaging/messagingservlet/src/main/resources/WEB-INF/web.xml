@@ -23,33 +23,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
-
-	<servlet>
-		<servlet-name>JOYn Applications Servlet</servlet-name>
-		<servlet-class>io.joynr.runtime.JoynApplicationsServlet</servlet-class>
-		<!-- set the channelId via context params if you need a set (not generated) channelId -->
-		<!-- 		
-		<init-param>
-			<param-name>channelId</param-name>
-			<param-value>discoverydirectory_channelid</param-value>
-		</init-param>
-		-->
-		<init-param>
-			<param-name>localDomain</param-name>
-			<param-value>defaultServletDomain</param-value>
-		</init-param>
-		<init-param>
-			<param-name>servletModule</param-name>
-			<param-value>io.joynr.servlet.ServletModule</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>JOYn Applications Servlet</servlet-name>
-		<url-pattern>/</url-pattern>
-	</servlet-mapping>
+	
+	<context-param>
+		<description>properties file specifying which servlet module and applications to load</description>
+		<param-name>properties</param-name>
+		<param-value>servlet.properties</param-value>
+	</context-param>
 
 	<filter>
 		<filter-name>guiceFilter</filter-name>
@@ -61,7 +40,7 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
- 	<listener>
+	<listener>
 		<listener-class>io.joynr.runtime.MessagingServletConfig</listener-class>
 	</listener>
 

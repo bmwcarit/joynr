@@ -1,7 +1,7 @@
 [messaging]
 bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy
 %23channel-url-directory-url=http://${JOYNR_SERVER}/channelurldirectory/channels
-channel-url-directory-url=http://${JOYNR_SERVER}/bounceproxy/channels
+channel-url-directory-url=http://${JOYNR_SERVER}/discovery/channels
 create-channel-retry-interval=500
 send-msg-retry-interval=500
 local-proxy-host=

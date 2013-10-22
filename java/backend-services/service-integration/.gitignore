@@ -10,3 +10,4 @@ joynr.properties
 joynr_capabilitiesdirectory.properties
 joynr_channelurldirectory.properties
 joynr_participantIds.properties
+/logs

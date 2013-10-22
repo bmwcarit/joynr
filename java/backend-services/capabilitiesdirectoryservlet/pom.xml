@@ -15,13 +15,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<properties>
-		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
-		<netbeans.compile.on.save>all</netbeans.compile.on.save>
-		<atmosphere-version>1.0.0.beta1</atmosphere-version>
-		<grizzly-version>1.9.50</grizzly-version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>

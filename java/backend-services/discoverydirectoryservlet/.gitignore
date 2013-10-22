@@ -1,0 +1,10 @@
+target
+.classpath
+.project
+.settings
+gen
+bin
+joynr.properties
+messaging.log
+src/main/generated*
+/logs

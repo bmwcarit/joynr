@@ -29,8 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.bounceproxy.LocalGrizzlyBounceProxy;
-import io.joynr.discovery.DiscoveryDirectoriesLauncher;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -39,6 +37,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Future;
@@ -47,7 +46,6 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +61,7 @@ import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 import joynr.types.Trip;
 
+import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -104,30 +103,16 @@ public class ProviderProxyEnd2EndTest {
     @Mock
     Callback<Integer> callbackInteger;
 
-    private static int port;
-
-    private static LocalGrizzlyBounceProxy server = new LocalGrizzlyBounceProxy();
-
-    private static DiscoveryDirectoriesLauncher directories;
+    private static Server jettyServer;
 
     @BeforeClass
-    public static void startServer() throws IOException {
-        server = new LocalGrizzlyBounceProxy();
-        port = server.start();
-        String serverUrl = "http://localhost:" + port;
-        String bounceProxyUrl = serverUrl + "/bounceproxy/";
-        String directoriesUrl = bounceProxyUrl + "channels/discoverydirectory_channelid/";
-        System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
-        System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
-        System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
-
-        directories = DiscoveryDirectoriesLauncher.start();
+    public static void startServer() throws Exception {
+        jettyServer = ServersUtil.startServers();
     }
 
     @AfterClass
-    public static void stopServer() {
-        directories.shutdown();
-        server.stop();
+    public static void stopServer() throws Exception {
+        jettyServer.stop();
     }
 
     @Before
@@ -171,8 +156,8 @@ public class ProviderProxyEnd2EndTest {
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
-        messagingQos = new MessagingQos(50000);
-        discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
+        messagingQos = new MessagingQos(5000);
+        discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by
         // making sure the channel is created before first messages sent.
@@ -274,6 +259,7 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Test
+    @Ignore
     public void registerProviderCreateProxyAndCallMethod() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
         int result;

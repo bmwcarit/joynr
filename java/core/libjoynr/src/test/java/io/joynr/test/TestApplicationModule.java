@@ -1,4 +1,4 @@
-package io.joynr.runtime;
+package io.joynr.test;
 
 /*
  * #%L
@@ -21,6 +21,7 @@ package io.joynr.runtime;
  */
 
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.JoynrApplicationModule;
 
 import java.util.Properties;
 

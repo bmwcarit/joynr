@@ -17,14 +17,7 @@
 	</parent>
 
 	<properties>
-		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
-		<netbeans.compile.on.save>all</netbeans.compile.on.save>
 		<atmosphere-version>2.0.1</atmosphere-version>
-		<!-- atmosphere-version>1.0.16</atmosphere-version -->
-		<jetty.version>8.1.11.v20130520</jetty.version>
-
-		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyy-MM-dd-HH-mm-ss</maven.build.timestamp.format>
 	</properties>
 
 	<dependencies>
@@ -155,7 +148,6 @@
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.slf4j</groupId>
@@ -164,7 +156,6 @@
 					</dependency>
 				</dependencies>
 				<configuration>
-					<scanIntervalSeconds>1</scanIntervalSeconds>
 					<webApp>
 						<contextPath>/bounceproxy</contextPath>
 						<descriptor>src/main/resources/WEB-INF/web.xml</descriptor>

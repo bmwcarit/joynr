@@ -1,8 +1,10 @@
-package io.joynr.backendservices.servlets;
+package io.joynr.servlet;
+
+import io.joynr.discovery.DiscoveryDirectoriesModule;
 
 /*
  * #%L
- * joynr::java::backend-services::service-servlet-integration
+ * joynr::java::backend-services::channelurldirectoryservlet
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,32 +22,11 @@ package io.joynr.backendservices.servlets;
  * #L%
  */
 
-import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.JoynrRuntime;
-
-import java.util.Properties;
-
-public class TestApp extends AbstractJoynrApplication {
+public class ServletModule extends DiscoveryDirectoriesModule {
 
     @Override
-    public void run() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void shutdown() {
-        // TODO Auto-generated method stub
-
-    }
-
-    public static Properties getApplicationProperties() {
-        Properties properties = new Properties();
-        return properties;
-    }
-
-    public JoynrRuntime getRuntime() {
-        return runtime;
+    protected void configure() {
+        super.configure();
     }
 
 }

@@ -1,8 +1,15 @@
-package io.joynr.runtime;
+/**
+ * 
+ */
+/**
+ * @author bmeiler
+ *
+ */
+package io.joynr.servlet;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
+ * joynr::java::backend-services::channelurldirectoryservlet
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -19,26 +26,3 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.messaging.MessagingPropertyKeys;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-class TestJoynrApplication extends AbstractJoynrApplication {
-    public static final String PROPERTY_TEST_CONFIG_ENTRY = "joynrapp.test.config.entry";
-
-    @Inject
-    @Named(PROPERTY_TEST_CONFIG_ENTRY)
-    public String testConfigEntry;
-
-    @Inject
-    @Named(MessagingPropertyKeys.BOUNCE_PROXY_URL)
-    public String bounceProxyUrl;
-
-    @Override
-    public void run() {
-
-    }
-
-}

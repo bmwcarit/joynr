@@ -23,24 +23,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
-    <welcome-file-list>
-        <welcome-file>/view</welcome-file>
-    </welcome-file-list>
-
-    <servlet>
-        <servlet-name>JOYn capabilitiesDirectory</servlet-name>
-        <servlet-class>io.joynr.capabilities.directory.CapabilitiesDirectoryServlet</servlet-class>
-
-
-        <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>JOYn capabilitiesDirectory</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>
+ 
+ <context-param>
+    <description>guice module to bootstrap the servlet</description> 
+    <param-name>servletModule</param-name> 
+    <param-value>io.joynr.servlet.ServletModule</param-value>
+</context-param>
 
     <session-config>
         <session-timeout>600</session-timeout>

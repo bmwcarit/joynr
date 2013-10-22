@@ -45,13 +45,15 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 
 /**
- * Scans all subpackages under "de.bmw" for instances of AbstractJoynApplication, which are then injected and run.
+ * Scans all subpackages under "de.bmw" for instances of
+ * AbstractJoynApplication, which are then injected and run.
  * 
  * @author david.katz
  * 
  */
 public class BootstrapUtil {
 
+    private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     private static final Logger logger = LoggerFactory.getLogger(BootstrapUtil.class);
     private static ExecutorService executionQueue;
     private static List<JoynrApplication> apps = new ArrayList<JoynrApplication>();
@@ -68,64 +70,74 @@ public class BootstrapUtil {
 
         executionQueue = Executors.newCachedThreadPool(threadFactory);
 
-        // find all plugin application classes implementing the JoynApplication interface
-        String appPackagesSetting = System.getProperty("io.joynr.apps.packages");
+        // find all plugin application classes implementing the JoynApplication
+        // interface
+        String appPackagesSetting = properties.getProperty(IO_JOYNR_APPS_PACKAGES);
 
         String[] appPackages = null;
         if (appPackagesSetting != null) {
             appPackages = appPackagesSetting.split(";");
         }
-        Reflections reflections = new Reflections("io.joynr", appPackages);
+        Reflections reflections = new Reflections("io.joynr.runtime", appPackages);
         Set<Class<? extends JoynrApplication>> joynrApplicationsClasses = reflections.getSubTypesOf(JoynrApplication.class);
+        try {
 
-        Set<Class<? extends AbstractJoynrInjectorFactory>> joynrInjectorFactoryClasses = reflections.getSubTypesOf(AbstractJoynrInjectorFactory.class);
-        assert (joynrInjectorFactoryClasses.size() == 1);
+            Set<Class<? extends AbstractJoynrInjectorFactory>> joynrInjectorFactoryClasses = reflections.getSubTypesOf(AbstractJoynrInjectorFactory.class);
+            assert (joynrInjectorFactoryClasses.size() == 1);
 
-        AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()
-                                                                                                       .next());
+            AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()
+                                                                                                           .next());
 
-        injectorFactory.updateInjectorModule(properties, modules);
+            injectorFactory.updateInjectorModule(properties, modules);
 
-        joynrInjector = injectorFactory.getInjector();
+            joynrInjector = injectorFactory.getInjector();
 
-        for (Class<? extends JoynrApplication> appClass : joynrApplicationsClasses) {
-            if (Modifier.isAbstract(appClass.getModifiers())) {
-                continue;
+            for (Class<? extends JoynrApplication> appClass : joynrApplicationsClasses) {
+                if (Modifier.isAbstract(appClass.getModifiers())) {
+                    continue;
+                }
+
+                AcceptsMessageReceiver acceptsMessageReceiverAnnotation = appClass.getAnnotation(AcceptsMessageReceiver.class);
+                // TODO why not reuse the previously requested value for
+                // AcceptsMessageReceiver?
+                MessageReceiverType messageReceiverType = acceptsMessageReceiverAnnotation == null ? MessageReceiverType.ANY
+                        : appClass.getAnnotation(AcceptsMessageReceiver.class).value();
+                if (messageReceiverType.equals(MessageReceiverType.SERVLET)) {
+                    continue;
+                }
+
+                logger.info("Running app: " + appClass.getName());
+                final JoynrApplication app = injectorFactory.createApplication(new JoynrApplicationModule(appClass));
+                apps.add(app);
+                executionQueue.submit(app);
             }
 
-            AcceptsMessageReceiver acceptsMessageReceiverAnnotation = appClass.getAnnotation(AcceptsMessageReceiver.class);
-            // TODO why not reuse the previously requested value for AcceptsMessageReceiver?
-            MessageReceiverType messageReceiverType = acceptsMessageReceiverAnnotation == null ? MessageReceiverType.ANY
-                    : appClass.getAnnotation(AcceptsMessageReceiver.class).value();
-            if (messageReceiverType.equals(MessageReceiverType.SERVLET)) {
-                continue;
-            }
-
-            logger.info("Running app: " + appClass.getName());
-            final JoynrApplication app = injectorFactory.createApplication(new JoynrApplicationModule(appClass));
-            apps.add(app);
-            executionQueue.submit(app);
+            return joynrInjector;
+        } catch (RuntimeException e) {
+            logger.error("ERROR", e);
+            throw e;
         }
 
-        return joynrInjector;
     }
 
     /**
-     * If clear, then deregister etc. 
+     * If clear, then deregister etc.
+     * 
      * @param clear
      */
-    //TODO support clear properly
+    // TODO support clear properly
     public static void shutdown(boolean clear) {
         if (executionQueue != null) {
             executionQueue.shutdownNow();
         }
         if (joynrInjector != null) {
-            // switch to lp receiver and call servlet shutdown to be able to receive responses
+            // switch to lp receiver and call servlet shutdown to be able to
+            // receive responses
             ServletMessageReceiver servletReceiver = joynrInjector.getInstance(ServletMessageReceiver.class);
-            servletReceiver.switchToLongPolling();
-            for (JoynrApplication app : apps) {
-                app.shutdown();
-            }
+            // servletReceiver.switchToLongPolling();
+            // for (JoynrApplication app : apps) {
+            // app.shutdown();
+            // }
             servletReceiver.shutdown(clear);
         }
         try {

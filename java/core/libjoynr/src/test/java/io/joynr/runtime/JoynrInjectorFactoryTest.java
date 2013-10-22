@@ -26,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.guice.IApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.test.TestApplicationModule;
+import io.joynr.test.TestJoynrApplication;
 
 import java.util.Properties;
 

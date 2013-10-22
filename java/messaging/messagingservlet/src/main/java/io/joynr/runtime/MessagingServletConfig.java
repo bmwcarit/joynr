@@ -67,7 +67,10 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
 public class MessagingServletConfig extends GuiceServletContextListener {
 
-    public static final String SERVLET_MODULE_CLASSNAME = "servletModule";
+    public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
+    private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
+    private String servletModuleName;
+
     private static final Logger logger = LoggerFactory.getLogger(MessagingServletConfig.class);
     private String channelId;
 
@@ -75,16 +78,11 @@ public class MessagingServletConfig extends GuiceServletContextListener {
     private Injector injector;
     private IMessageReceivers messageReceivers = new MessageReceivers();
     private String localDomain;
-    private String servletModuleName;
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
         ServletContext servletContext = servletContextEvent.getServletContext();
-        channelId = servletContext.getInitParameter("channelId");
-        localDomain = servletContext.getInitParameter("localDomain");
-
-        servletModuleName = servletContext.getInitParameter(SERVLET_MODULE_CLASSNAME);
 
         // properties from appProperties will extend and override the default
         // properties
@@ -107,6 +105,9 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         } else {
             logger.warn("to load properties, set the initParameter 'properties' ");
         }
+
+        servletModuleName = properties.getProperty(INIT_PARAM_SERVLET_MODULE_CLASSNAME);
+        servletModuleName = servletModuleName == null ? DEFAULT_SERVLET_MODULE_NAME : servletModuleName;
 
         // The jerseyServletModule injects the servicing classes using guice,
         // instead of letting jersey do it natively

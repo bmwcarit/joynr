@@ -15,27 +15,14 @@
 
 	<modules>
 		<module>discovery</module>
+		<module>discoverydirectoryservlet</module>
 		<module>capabilitiesdirectory</module>
 		<module>capabilitiesdirectoryservlet</module>
 		<module>capabilitiesdirectoryui</module>
 		<module>channelurldirectory</module>
 		<module>channelurldirectoryservlet</module>
-    <module>service-servlet-integration</module>
-    <module>service-integration</module>
+		<module>service-integration</module>
   </modules>
-  
-  	<dependencies>
-		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>annotations</artifactId>
-			<!-- <scope>provided</scope> -->
-		</dependency>		
-	</dependencies>
 	
 
 	

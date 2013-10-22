@@ -121,7 +121,7 @@ public class MessagingServletTest {
         servletContextHandler.setInitParameter("channelId", providerChannelId);
         servletContextHandler.setInitParameter("properties", PROPERTIES);
 
-        servletContextHandler.setInitParameter(MessagingServletConfig.SERVLET_MODULE_CLASSNAME,
+        servletContextHandler.setInitParameter(MessagingServletConfig.INIT_PARAM_SERVLET_MODULE_CLASSNAME,
                                                "io.joynr.runtime.EmptyModule");
 
         servletContextHandler.addEventListener(new MessagingServletConfig());

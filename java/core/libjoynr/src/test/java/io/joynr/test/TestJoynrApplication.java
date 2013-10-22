@@ -1,8 +1,8 @@
-package io.joynr.servlet;
+package io.joynr.test;
 
 /*
  * #%L
- * joynr::java::backend-services::service-servlet-integration
+ * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,20 +20,26 @@ package io.joynr.servlet;
  * #L%
  */
 
-import io.joynr.capabilities.directory.CapabilitiesDirectoryModule;
-import io.joynr.channel.ChannelUrlDirectoryModule;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.AbstractJoynrApplication;
 
-import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
-public class ServletModule extends AbstractModule {
+public class TestJoynrApplication extends AbstractJoynrApplication {
+    public static final String PROPERTY_TEST_CONFIG_ENTRY = "joynrapp.test.config.entry";
 
-    CapabilitiesDirectoryModule capDirmodule = new CapabilitiesDirectoryModule();
-    ChannelUrlDirectoryModule channelUrlDirModule = new ChannelUrlDirectoryModule();
+    @Inject
+    @Named(PROPERTY_TEST_CONFIG_ENTRY)
+    public String testConfigEntry;
+
+    @Inject
+    @Named(MessagingPropertyKeys.BOUNCE_PROXY_URL)
+    public String bounceProxyUrl;
 
     @Override
-    protected void configure() {
-        capDirmodule.configure(this.binder());
-        channelUrlDirModule.configure(this.binder());
+    public void run() {
+
     }
 
 }

@@ -29,9 +29,9 @@
 			<version>${project.version}</version>
 			<classifier>${webClassifier}</classifier>
 		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey.contribs</groupId>
-			<artifactId>jersey-multipart</artifactId>
+				<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.spec</groupId>
