@@ -3,6 +3,9 @@ cluster-controller/include/joynr/JoynrClusterControllerExport.h
 common/include/joynr/JoynrCommonExport.h
 common/include/joynr/JoynrConfig.h
 common/include/joynr/RuntimeConfig.h
+libjoynr/include/joynr/JoynrExport.h
+libjoynr/include/joynr/infrastructure/
+libjoynr/include/joynr/types/
 libjoynr/communication-model/
 libjoynr/in-process/generated/
 libjoynr/joynr-messaging/generated/
