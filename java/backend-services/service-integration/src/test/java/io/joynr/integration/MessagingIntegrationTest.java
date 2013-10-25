@@ -103,7 +103,7 @@ public class MessagingIntegrationTest {
 
     @BeforeClass
     public static void startServer() throws Exception {
-        server = ServersUtil.startServers();
+        server = ServersUtil.startBounceproxy();
     }
 
     @AfterClass

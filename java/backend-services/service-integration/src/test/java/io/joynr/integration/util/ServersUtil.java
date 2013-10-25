@@ -3,6 +3,8 @@ package io.joynr.integration.util;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.servlet.ServletUtil;
 
+import java.io.IOException;
+
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -18,25 +20,22 @@ public class ServersUtil {
     private static final Logger logger = LoggerFactory.getLogger(ServersUtil.class);
 
     public static Server startServers() throws Exception {
-
-        int port = ServletUtil.findFreePort();
-        logger.info("PORT: http://localhost:{}", port);
-        Server jettyServer = new Server(port);
-
-        WebAppContext discoveryWebapp = new WebAppContext();
-        discoveryWebapp.setContextPath(DISCOVERY_CONTEXT);
-        discoveryWebapp.setWar("target/discoverydirectoryservlet.war");
-        jettyServer.setHandler(discoveryWebapp);
-
-        WebAppContext bounceproxyWebapp = new WebAppContext();
-        bounceproxyWebapp.setContextPath(BOUNCEPROXY_CONTEXT);
-        bounceproxyWebapp.setWar("target/bounceproxy.war");
-
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ bounceproxyWebapp, discoveryWebapp });
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+        return startServer(contexts);
+    }
 
+    public static Server startBounceproxy() throws Exception {
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp() });
+        return startServer(contexts);
+    }
+
+    private static Server startServer(ContextHandlerCollection contexts) throws IOException, Exception {
+        final int port = ServletUtil.findFreePort();
+        logger.info("PORT: http://localhost:{}", port);
+        final Server jettyServer = new Server(port);
         jettyServer.setHandler(contexts);
-
         jettyServer.start();
 
         String serverUrl = "http://localhost:" + port;
@@ -45,8 +44,21 @@ public class ServersUtil {
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
         System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
         System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
-
         return jettyServer;
+    }
+
+    private static WebAppContext createBounceproxyWebApp() {
+        WebAppContext bounceproxyWebapp = new WebAppContext();
+        bounceproxyWebapp.setContextPath(BOUNCEPROXY_CONTEXT);
+        bounceproxyWebapp.setWar("target/bounceproxy.war");
+        return bounceproxyWebapp;
+    }
+
+    private static WebAppContext discoveryWebApp() {
+        WebAppContext discoveryWebapp = new WebAppContext();
+        discoveryWebapp.setContextPath(DISCOVERY_CONTEXT);
+        discoveryWebapp.setWar("target/discoverydirectoryservlet.war");
+        return discoveryWebapp;
     }
 
 }
