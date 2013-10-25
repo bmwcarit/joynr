@@ -39,6 +39,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.Nullable;
 
@@ -403,6 +404,7 @@ public class ChannelMonitor {
         // String id = getPrintableId(channelUrl);
         synchronized (this) {
             this.longPollingCallable = new LongPollingCallable(httpclient,
+                                                               defaultRequestConfig,
                                                                longPollingDisabled,
                                                                messageReceiver,
                                                                objectMapper,
