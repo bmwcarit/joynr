@@ -17,6 +17,17 @@ specific language governing permissions and limitations
 under the License.
 
 --------------------------------------------------------------------------------
+- franca idl
+--------------------------------------------------------------------------------
+
+The “Franca IDL software” included in tools/generator/dependency-libs/libs is
+licensed under the “Eclipse Public License, v.1.0”. A copy of that license in
+the English original version with a copyright notice, a disclaimer of warranty,
+and an exclusion of liability is included in
+tools/generator/dependency-libs/libs/epl-v10.html.
+Source code is included in folder tools/generator/dependency-libs/libs.
+
+--------------------------------------------------------------------------------
 - common-api
 --------------------------------------------------------------------------------
 
@@ -50,10 +61,8 @@ GNU Lesser General Public License v2.1 (LGPL-2.1)
   according to the mentioned license. LGPL v 2.1 supersedes other licenses.
   The complete source code is located in cpp/libs/qjson-0.7.1.
 
-???
   NOTE: Some source files of the QJson library are licensed under GPL v2.0 with
   Bison Exception and relicensed by the QJson library under LGPL v2.1.
-???
 
 --------------------------------------------------------------------------------
 - code-coverage
