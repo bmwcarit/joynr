@@ -84,42 +84,8 @@
 		</dependency>
 	</dependencies>
 
-	<!-- <profiles> <profile> <id>maven</id> <activation> <property> <name>!m2e.version</name> 
-		</property> </activation> <dependencies> <dependency> <groupId>com.google.android</groupId> 
-		<artifactId>android</artifactId> <version>${platform.version}</version> <scope>provided</scope> 
-		<exclusions> <exclusion> <artifactId>commons-codec</artifactId> <groupId>commons-codec</groupId> 
-		</exclusion> </exclusions> </dependency> <dependency> <groupId>io.joynr.java.android</groupId> 
-		<artifactId>joyn-android-service</artifactId> <version>${joyn.version}</version> 
-		<scope>compile</scope> </dependency> </dependencies> </profile> <profile> 
-		<id>eclipse</id> <activation> <activeByDefault>true</activeByDefault> <property> 
-		<name>m2e.version</name> </property> </activation> <dependencies> <dependency> 
-		<groupId>com.google.android</groupId> <artifactId>android</artifactId> <version>${platform.version}</version> 
-		<scope>provided</scope> <exclusions> <exclusion> <artifactId>commons-codec</artifactId> 
-		<groupId>commons-codec</groupId> </exclusion> </exclusions> </dependency> 
-		</dependencies> </profile> </profiles> -->
-
 	<build>
-
-
 		<plugins>
-
-			<!-- Auto-clean because maven build was failing unless the auto generated 
-				folders were deleted first -->
-			<!-- Auto clean should delete only those files which have to be deleted 
-				to make the android build work -->
-			<!--plugin> <artifactId>maven-clean-plugin</artifactId> <version>2.5</version> 
-				<executions> <execution> <id>auto-clean</id> <phase>validate</phase> <goals> 
-				<goal>clean</goal> </goals> <configuration> <filesets> <fileset> <directory>gen</directory> 
-				</fileset> </filesets> </configuration> </execution> </executions> </plugin -->
-
-			<!-- plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-dependency-plugin</artifactId> 
-				<version>2.5.1</version> <executions> <execution> <id>copy-dependencies</id> 
-				<phase>generate-sources</phase> <goals> <goal>copy-dependencies</goal> </goals> 
-				<configuration> <excludeScope>provided</excludeScope> <outputDirectory>libs</outputDirectory> 
-				<overWriteReleases>false</overWriteReleases> <overWriteSnapshots>false</overWriteSnapshots> 
-				<overWriteIfNewer>true</overWriteIfNewer> </configuration> </execution> </executions> 
-				</plugin -->
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
@@ -140,11 +106,9 @@
 					</filesets>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 				<artifactId>android-maven-plugin</artifactId>
-
 				<configuration>
 					<genDirectory>gen</genDirectory>
 					<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
@@ -204,6 +168,33 @@
 								<source>src/main/generated</source>
 							</sources>
 						</configuration>
+					</execution>
+					<!--
+					copying NOTICE file must be disabled here to avoid duplicate file error
+					during android apk packaging
+					NOTE: this means the NOTICE file from io.joynr.java.android:joynr-android-runtime
+					      is copied to the apk file instead of the NOTICE file generated for this project
+					-->
+					<execution>
+						<id>copy-notice-file</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!--
+					unpacking LICENSE file must be disabled here to avoid duplicate file error
+					during android apk packaging 
+					NOTE: this means the LICENSE file from io.joynr.java.android:joynr-android-runtime
+					      is copied to the apk file. However, this is the same as it is copied originally
+					      from io.joynr.tools:build-resources.
+					-->
+					<execution>
+						<id>unpack-license-info</id>
+						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>

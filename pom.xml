@@ -54,7 +54,6 @@
 	</modules>
 
 	<profiles>
-
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>
@@ -230,11 +229,10 @@
 		<!-- TODO check if this should be moved to configuration project -->
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 
-		<!-- Those versions should not be used outside of the superpoom. All dependencies
+		<!-- Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
 			here, and should not have a version tag in the the pom-files where they 
-			are
-			referenced. -->
+			are referenced. -->
 		<jersey-version>1.17</jersey-version>
 		<jackson-version>2.2.1</jackson-version>
 		<guice-version>3.0</guice-version>
@@ -450,7 +448,6 @@
 				<scope>test</scope>
 				<type>pom</type>
 			</dependency>
-
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
@@ -463,7 +460,6 @@
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
 				<version>2.2.1</version>
 			</dependency>
-
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-core</artifactId>
@@ -536,8 +532,6 @@
 	</dependencies>
 
 	<build>
-
-
 		<!-- specify plugin versions and configuration here to apply to all submodules
 			that use the specified plugin -->
 		<pluginManagement>
@@ -556,6 +550,32 @@
 										<versionRange>[0.3.1,)</versionRange>
 										<goals>
 											<goal>format</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[2.8,)</versionRange>
+										<goals>
+											<goal>unpack</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.7,)</versionRange>
+										<goals>
+											<goal>run</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -594,6 +614,11 @@
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.16</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -735,7 +760,6 @@
 						</dependency>
 					</dependencies>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
@@ -749,13 +773,11 @@
 						</dependency>
 					</dependencies>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.2.1</version>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
@@ -766,13 +788,11 @@
 						<downloadJavadocs>true</downloadJavadocs>
 					</configuration>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>2.3</version>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
@@ -827,7 +847,16 @@
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
-
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -835,6 +864,113 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<!-- 
+					Workaraound: sets properties to skip execution of copying NOTICE file
+					and unpacking of LICENCE inforamation on Maven projects with packaging pom. 
+					-->
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<exportAntProperties>true</exportAntProperties>
+							<target>
+								<condition property="skip.copy-notice-file" value="true"
+									else="false">
+									<equals arg1="${project.packaging}" arg2="pom" />
+								</condition>
+								<condition property="skip.unpack-license-info" value="true"
+									else="false">
+									<equals arg1="${project.packaging}" arg2="pom" />
+								</condition>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-file</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-file}</skip>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<targetPath>${project.build.directory}/classes</targetPath>
+									<includes>
+										<include>NOTICE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${basedir}</directory>
+									<targetPath>${project.build.directory}/test-classes</targetPath>
+									<includes>
+										<include>NOTICE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${basedir}</directory>
+									<targetPath>${project.build.directory}/apidocs</targetPath>
+									<includes>
+										<include>NOTICE*</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-license-info</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.unpack-license-info}</skip>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.tools</groupId>
+									<artifactId>build-resources</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/classes</outputDirectory>
+									<includes>LICENSE</includes>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.tools</groupId>
+									<artifactId>build-resources</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+									<includes>LICENSE</includes>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.tools</groupId>
+									<artifactId>build-resources</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/apidocs</outputDirectory>
+									<includes>LICENSE</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
