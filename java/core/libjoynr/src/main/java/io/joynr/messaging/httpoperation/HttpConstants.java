@@ -6,7 +6,6 @@ import com.google.inject.name.Named;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

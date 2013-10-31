@@ -4,7 +4,6 @@ package io.joynr.exceptions;
 
 /*
  * #%L
- * joynr::java::messaging::messagingcommon
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

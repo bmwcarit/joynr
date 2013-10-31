@@ -2,7 +2,6 @@ package io.joynr.servlet;
 
 /*
  * #%L
- * joynr::java::messaging::servletcommon
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

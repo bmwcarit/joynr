@@ -2,7 +2,6 @@ package io.joynr.dispatcher;
 
 /*
  * #%L
- * joynr::java::public-examples::Fake Providers
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

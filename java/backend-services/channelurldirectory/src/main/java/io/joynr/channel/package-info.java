@@ -4,7 +4,6 @@ package io.joynr.channel;
 
 /*
  * #%L
- * joynr::java::backend-services::channelurldirectory
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

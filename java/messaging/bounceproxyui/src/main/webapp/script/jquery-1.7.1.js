@@ -1,16 +1,3 @@
-/*
- * #%L
- * joynr::java::backend-services::capabilities directory user interface
- * %%
- * Copyright (C) 2011 - 2012 BMW Car IT GmbH
- * %%
- * __________________
- * 
- * NOTICE:  Dissemination of this information or reproduction of this material 
- * is strictly  forbidden unless prior written permission is obtained from 
- * BMW Car IT GmbH.
- * #L%
- */
 /*!
  * jQuery JavaScript Library v1.7.1
  * http://jquery.com/
