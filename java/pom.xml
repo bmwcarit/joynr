@@ -52,22 +52,6 @@
 	</dependencies>
 
 	<build>
-
-		<pluginManagement>
-			<plugins>
-				<!-- NOTE the license to be added to the source header files must be 
-					specifically (redundantly) defined below -->
-				<!-- This is a shortcoming of the license-maven-plugin -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>license-maven-plugin</artifactId>
-					<configuration>
-						<licenseName>apache_v2</licenseName>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-
 		<plugins>
 			<!-- plugin> <groupId>org.jasig.maven</groupId> <artifactId>maven-notice-plugin</artifactId> 
 				</plugin -->

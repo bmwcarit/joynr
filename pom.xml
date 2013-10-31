@@ -132,6 +132,62 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>caritcopyright</id>
+			<activation>
+				<property>
+					<name>profile</name>
+					<value>carit</value>
+				</property>
+			</activation>
+			<properties>
+				<licenseConfigurationVersion>1.0</licenseConfigurationVersion>
+			</properties>
+			<build>
+				<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.5</version>
+					<configuration>
+						<licenseName>apache_v2</licenseName>
+						<inceptionYear>2011</inceptionYear>
+						<organizationName>BMW Car IT GmbH</organizationName>
+						<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
+						<includes>
+							<include>**/*pom.xml</include>
+						</includes>
+						<extraExtensions>
+							<fidl>java</fidl>
+						</extraExtensions>
+					</configuration>
+					<executions>
+						<execution>
+							<id>add-third-party</id>
+							<phase>validate</phase>
+							<goals>
+								<goal>add-third-party</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>download-licenses</id>
+							<phase>validate</phase>
+							<goals>
+								<goal>download-licenses</goal>
+							</goals>
+						</execution>
+					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>de.bmw.joynr</groupId>
+							<artifactId>license-configuration</artifactId>
+							<version>{licenseConfigurationVersion}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 	<properties>
