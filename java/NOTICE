@@ -1,6 +1,5 @@
-This project includes software developed by 
-BMW Car IT GmbH  
-http://www.bmw-carit.de/
+This project includes software developed by
+BMW Car IT GmbH (http://www.bmw-carit.de)
 and BMW Forschung & Technik GmbH
 
 Licensed under the Apache License, Version 2.0 (the
@@ -16,8 +15,8 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
 
-This project includes:
-  AntLR under BSD License
+This project has dependencies to:
+  AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Analysis under BSD
@@ -30,7 +29,7 @@ This project includes:
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
-  codegen under Eclipse Public License 1.0
+  codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
@@ -67,33 +66,34 @@ This project includes:
   HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
-  io.joynr.java.android:joynr-android-runtime under Apache-2
-  io.joynr.java.backend-services:capabilitiesdirectory under Apache-2
-  io.joynr.java.backend-services:capabilitiesdirectoryservlet under Apache-2
-  io.joynr.java.backend-services:capabilitiesdirectoryui under Apache-2
-  io.joynr.java.backend-services:channelurldirectory under Apache-2
-  io.joynr.java.backend-services:channelurldirectoryservlet under Apache-2
-  io.joynr.java.backend-services:discovery under Apache-2
-  io.joynr.java.backend-services:service-integration under Apache-2
-  io.joynr.java.backend-services:service-servlet-integration under Apache-2
-  io.joynr.java.common:guice-integration under Apache-2
-  io.joynr.java.common:infrastructurecommon under Apache-2
-  io.joynr.java.core:joynrtypes under Apache-2
-  io.joynr.java.core:libjoynr under Apache-2
-  io.joynr.java.messaging:bounceproxy under Apache-2
-  io.joynr.java.messaging:bounceproxy-standalone under Apache-2
-  io.joynr.java.messaging:messagingcommon under Apache-2
-  io.joynr.java.messaging:messagingservlet under Apache-2
-  io.joynr.java.messaging:servletcommon under Apache-2
-  io.joynr.java:android under Apache-2
-  io.joynr.java:backend-services under Apache-2
-  io.joynr.java:common under Apache-2
-  io.joynr.java:core under Apache-2
+  io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:capabilitiesdirectoryservlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:capabilitiesdirectoryui under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:channelurldirectory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:channelurldirectoryservlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discoverydirectoryservlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:service-integration under The Apache Software License, Version 2.0
+  io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
+  io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:bounceproxy-standalone under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messagingservlet under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
+  io.joynr.java:android under The Apache Software License, Version 2.0
+  io.joynr.java:backend-services under The Apache Software License, Version 2.0
+  io.joynr.java:common under The Apache Software License, Version 2.0
+  io.joynr.java:core under The Apache Software License, Version 2.0
   io.joynr.java:java-generator under The Apache Software License, Version 2.0
-  io.joynr.java:javaapi under Apache-2
-  io.joynr.java:messaging under Apache-2
+  io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr.java:messaging under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
-  io.joynr:java under Apache-2
+  io.joynr:java under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
@@ -136,6 +136,9 @@ This project includes:
   Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty Orbit :: Servlet API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
@@ -158,9 +161,10 @@ This project includes:
   org.eclipse.equinox.registry under Eclipse Public License - v 1.0
   org.eclipse.osgi under Eclipse Public License - v 1.0
   org.eclipse.osgi.services under Eclipse Public License - v 1.0
-  org.eclipse.xtend.standalone under Eclipse Public License 1.0
-  org.franca.core under Eclipse Public License v1.0
-  org.franca.core.dsl under Eclipse Public License v1.0
+  org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
+  org.franca.core under Eclipse Public License - v 1.0
+  org.franca.core.dsl under Eclipse Public License - v 1.0
+  org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   OSGi R4 Foundation EE under The Apache Software License, Version 2.0
   Reflections under WTFPL
   REST Assured under Apache 2.0
@@ -173,3 +177,4 @@ This project includes:
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+

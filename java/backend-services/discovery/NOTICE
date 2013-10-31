@@ -1,6 +1,5 @@
-This project includes software developed by 
-BMW Car IT GmbH  
-http://www.bmw-carit.de/
+This project includes software developed by
+BMW Car IT GmbH (http://www.bmw-carit.de)
 and BMW Forschung & Technik GmbH
 
 Licensed under the Apache License, Version 2.0 (the
@@ -16,7 +15,7 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
 
-This project includes:
+This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Core under Apache License, Version 2.0
@@ -52,18 +51,18 @@ This project includes:
   HttpCore under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
-  io.joynr.java.backend-services:capabilitiesdirectory under Apache-2
-  io.joynr.java.backend-services:channelurldirectory under Apache-2
-  io.joynr.java.backend-services:discovery under Apache-2
-  io.joynr.java.common:guice-integration under Apache-2
-  io.joynr.java.common:infrastructurecommon under Apache-2
-  io.joynr.java.core:joynrtypes under Apache-2
-  io.joynr.java.core:libjoynr under Apache-2
-  io.joynr.java.messaging:bounceproxy under Apache-2
-  io.joynr.java.messaging:bounceproxy-standalone under Apache-2
-  io.joynr.java.messaging:messagingcommon under Apache-2
-  io.joynr.java.messaging:servletcommon under Apache-2
-  io.joynr.java:javaapi under Apache-2
+  io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:channelurldirectory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
+  io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
+  io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:bounceproxy-standalone under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
+  io.joynr.java:javaapi under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
@@ -104,3 +103,4 @@ This project includes:
   StAX API under The Apache Software License, Version 2.0
   Transaction 1.1 API under lgpl
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+
