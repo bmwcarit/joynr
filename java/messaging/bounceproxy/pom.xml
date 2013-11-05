@@ -33,7 +33,8 @@
 	</parent>
 
 	<properties>
-		<atmosphere-version>2.0.1</atmosphere-version>
+		<atmosphere-jersey-version>2.0.1</atmosphere-jersey-version>
+		<atmosphere-runtime-version>2.0.1</atmosphere-runtime-version>
 	</properties>
 
 	<dependencies>
@@ -69,12 +70,12 @@
 		<dependency>
 			<groupId>org.atmosphere</groupId>
 			<artifactId>atmosphere-runtime</artifactId>
-			<version>${atmosphere-version}</version>
+			<version>${atmosphere-runtime-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.atmosphere</groupId>
 			<artifactId>atmosphere-jersey</artifactId>
-			<version>${atmosphere-version}</version>
+			<version>${atmosphere-jersey-version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.atmosphere</groupId>
