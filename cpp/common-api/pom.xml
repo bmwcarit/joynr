@@ -39,6 +39,18 @@
 			<artifactId>libs</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- This dependency is needed by the maven-notice-plugin, because
+			 it doesn't consider plugin dependencies. -->
+		<dependency>
+			<groupId>org.genivi.commonapi</groupId>
+			<artifactId>core</artifactId>
+		</dependency>
+		<!-- This dependency is needed by the maven-notice-plugin, because
+			 it doesn't consider plugin dependencies. -->
+		<dependency>
+			<groupId>org.genivi.commonapi</groupId>
+			<artifactId>dbus</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
