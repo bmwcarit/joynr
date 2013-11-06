@@ -145,9 +145,9 @@ public class ChannelMonitor {
                         }
                         // Start LONG POLL lifecycle. The future will only
                         // return when the long poll loop has ended
-                        logger.debug("starting longpool withing callable");
+                        logger.debug("starting long poll within callable");
                         longPollLoop(messageReceiver, maxRetries);
-                        logger.debug("ending longpool withing callable");
+                        logger.debug("ending long poll within callable");
                     }
 
                     // These exceptions are outside the while loop because
