@@ -40,6 +40,7 @@ import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.OneWay;
 import joynr.Reply;
 import joynr.Request;
+import joynr.SubscriptionStop;
 import joynr.tests.TestEnum;
 import joynr.types.CapabilityInformation;
 import joynr.types.GpsFixEnum;
@@ -305,6 +306,20 @@ public class SerializationTest {
         assertTrue(serializedContent.startsWith("{\"_typeName\""));
         GpsLocation gps2 = objectMapper.readValue(serializedContent, GpsLocation.class);
         Assert.assertEquals(gps1, gps2);
+    }
+    
+    @Test
+    public void serializeSubStop() throws JsonGenerationException, JsonMappingException,
+    IOException {
+    	        
+        SubscriptionStop stop = new SubscriptionStop("testID");
+        
+        String writeValueAsString = objectMapper.writeValueAsString(stop);
+        System.out.println(writeValueAsString);
+        SubscriptionStop receivedMessage = objectMapper.readValue(writeValueAsString, SubscriptionStop.class);
+
+        Assert.assertEquals(stop, receivedMessage);
+    	
     }
 
 }

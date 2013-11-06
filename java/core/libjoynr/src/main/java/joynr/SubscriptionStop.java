@@ -22,6 +22,9 @@ package joynr;
 public class SubscriptionStop implements JoynrMessageType {
 
     private String subscriptionId;
+    
+    public SubscriptionStop() {
+    }
 
     public SubscriptionStop(String subscriptionId) {
         this.subscriptionId = subscriptionId;
