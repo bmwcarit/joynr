@@ -67,6 +67,7 @@ This project has dependencies to:
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:bounceproxyui under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilitiesdirectoryservlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilitiesdirectoryui under The Apache Software License, Version 2.0

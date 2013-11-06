@@ -1,5 +1,6 @@
 This project includes software developed by
-BMW Car IT GmbH (http://www.bmw-carit.de)
+BMW Car IT GmbH
+http://www.bmw-carit.de/
 and BMW Forschung & Technik GmbH
 
 Licensed under the Apache License, Version 2.0 (the
@@ -15,11 +16,15 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
 
-This project has dependencies to:
-  Hamcrest Core under New BSD License
-  io.joynr.cpp:common-api-model under The Apache Software License, Version 2.0
-  io.joynr.cpp:libs under The Apache Software License, Version 2.0
-  JUnit under Common Public License Version 1.0
-  org.genivi.commonapi:core under Mozilla Public License Version 2.0
-  org.genivi.commonapi:dbus under Mozilla Public License Version 2.0
+--------------------------------------------------------------------------------
+- jQuery
+--------------------------------------------------------------------------------
 
+The "jquery" included in some products is licensed under the “MIT/X11 license”.
+
+Files:
+ - src/main/webapp/script/jquery-1.7.1.js
+ - src/main/webapp/css/jquery-smooth.css
+
+A copy of that licese in the English original version is included in the
+MIT-LICENSE document.

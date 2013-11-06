@@ -71,3 +71,19 @@ GNU Lesser General Public License v2.1 (LGPL-2.1)
 Files in cpp/CMake/code-coverage are licensed under Boost Software License
 (BSL-1.0). A copy of that licese in the English original version is included
 in the cpp/CMake/code-coverage/LICENSE_1_0.txt document.
+
+--------------------------------------------------------------------------------
+- jQuery
+--------------------------------------------------------------------------------
+
+The "jquery" included in some products is licensed under the “MIT/X11 license”.
+
+Files:
+ - /java/backend-services/capabilitiesdirectoryui/src/main/resources/script/jquery-1.7.1.js
+ - /java/backend-services/capabilitiesdirectoryui/src/main/resources/css/jquery-smooth.css
+ - /java/messaging/bounceproxyui/src/main/webapp/script/jquery-1.7.1.js
+ - /java/messaging/bounceproxyui/src/main/webapp/css/jquery-smooth.css
+
+A copy of that licese in the English original version is included in the
+/java/backend-services/capabilitiesdirectoryui/MIT-LICENSE document and
+java/messaging/bounceproxyui/MIT-LICENSE document.

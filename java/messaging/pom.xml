@@ -31,6 +31,7 @@
 	</parent>
 	<modules>
 		<module>bounceproxy</module>
+		<module>bounceproxyui</module>
 		<module>bounceproxy-standalone</module>
 		<module>messagingcommon</module>
 		<module>messagingservlet</module>

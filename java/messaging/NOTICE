@@ -59,6 +59,7 @@ This project has dependencies to:
   HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
+  io.joynr.java.backend-services:bounceproxyui under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
   io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
