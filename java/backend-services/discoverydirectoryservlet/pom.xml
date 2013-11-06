@@ -37,13 +37,6 @@
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messagingservlet</artifactId>
 			<version>${project.version}</version>
-			<classifier>classes</classifier>
-			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messagingservlet</artifactId>
-			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 		<dependency>
