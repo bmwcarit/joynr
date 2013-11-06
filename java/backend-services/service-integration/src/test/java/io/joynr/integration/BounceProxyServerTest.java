@@ -1,4 +1,4 @@
-package io.joynr.bounceproxy;
+package io.joynr.integration;
 
 /*
  * #%L
@@ -24,6 +24,8 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 import io.joynr.common.ExpiryDate;
+import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
@@ -43,8 +45,11 @@ import java.util.concurrent.TimeUnit;
 
 import joynr.JoynrMessage;
 
+import org.eclipse.jetty.server.Server;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -86,22 +91,32 @@ public class BounceProxyServerTest {
 
     private static final String channelId = "testSendAndReceiveMessagesOnServer_" + System.currentTimeMillis();
     private static final String payload = "payload";
+    private static Server server;
 
     Random generator = new Random();
 
     ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4);
     private ObjectMapper objectMapper;
     private String receiverId = "bounceproxytest-" + UUID.randomUUID().toString();
+    
+    @BeforeClass
+    public static void startServer() throws Exception {
+        server = ServersUtil.startBounceproxy();
+    }
+
+    @AfterClass
+    public static void stopServer() throws Exception {
+        server.stop();
+    }
+    
 
     @Before
     public void setUp() throws Exception {
-        String server = System.getProperty("server");
-        String port = System.getProperty("port");
-        String path = System.getProperty("path");
+        
+        String serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
 
-        RestAssured.baseURI = server != null ? server : DEFAULT_SERVER;
-        RestAssured.port = port != null ? Integer.valueOf(port) : DEFAULT_PORT;
-        RestAssured.basePath = path != null ? path : DEFAULT_PATH;
+
+        RestAssured.baseURI = serverUrl != null ? serverUrl : DEFAULT_SERVER;
 
         System.out.println("server: " + RestAssured.baseURI + " (default was: " + DEFAULT_SERVER + ")");
         System.out.println("port: " + RestAssured.port + " (default was: " + DEFAULT_PORT + ")");
@@ -114,11 +129,8 @@ public class BounceProxyServerTest {
         deleteChannel(channelId, 30000, 200);
     }
 
-    @Test
-    @Ignore
-    // This is a test to see if the atmos bug still exists. Needs to be change to use locally deplyed bp (though
-    // actually the bug
-    // was never seen locally because of timing
+    @Test(timeout=20000)
+    // This is a test to see if the atmos bug still exists. If the bug exists, the server will hang 20 secs
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
         createChannel(channelId);
         // createChannel(channelIdProvider);
