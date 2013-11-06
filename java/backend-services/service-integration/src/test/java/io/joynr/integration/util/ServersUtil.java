@@ -24,9 +24,12 @@ import io.joynr.servlet.ServletUtil;
 
 import java.io.IOException;
 
+import org.eclipse.jetty.server.AbstractConnector;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +56,13 @@ public class ServersUtil {
     private static Server startServer(ContextHandlerCollection contexts) throws IOException, Exception {
         final int port = ServletUtil.findFreePort();
         logger.info("PORT: http://localhost:{}", port);
-        final Server jettyServer = new Server(port);
+        final Server jettyServer = new Server();
+        AbstractConnector connector= new SelectChannelConnector();
+        connector.setPort(port);
+        connector.setAcceptors(1);
+        jettyServer.setConnectors(new Connector[]{connector});
+        
+
         jettyServer.setHandler(contexts);
         jettyServer.start();
 
