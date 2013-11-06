@@ -150,11 +150,10 @@
 			</build>
 		</profile>
 		<profile>
-			<id>caritcopyright</id>
+			<id>carit-copyright</id>
 			<activation>
 				<property>
-					<name>profile</name>
-					<value>carit</value>
+					<name>profile.carit-copyright</name>
 				</property>
 			</activation>
 			<properties>
@@ -198,11 +197,30 @@
 						<dependency>
 							<groupId>de.bmw.joynr</groupId>
 							<artifactId>license-configuration</artifactId>
-							<version>{licenseConfigurationVersion}</version>
+							<version>${licenseConfigurationVersion}</version>
 						</dependency>
 					</dependencies>
 				</plugin>
-				</plugins>
+				<plugin>
+					<groupId>org.jasig.maven</groupId>
+					<artifactId>maven-notice-plugin</artifactId>
+					<version>1.0.6</version>
+					<configuration>
+						<noticeTemplate>/notice/NOTICE-JOYNR.template</noticeTemplate>
+						<licenseMapping>
+							<param>/notice/license-mappings.xml</param>
+							<param>/notice/license-mappings-local.xml</param>
+						</licenseMapping>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>de.bmw.joynr</groupId>
+							<artifactId>license-configuration</artifactId>
+							<version>${licenseConfigurationVersion}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+			</plugins>
 			</build>
 		</profile>
 	</profiles>
