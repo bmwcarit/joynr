@@ -23,9 +23,11 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -44,7 +46,12 @@ import joynr.JoynrMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.name.Named;
 
 @Path("/channels")
@@ -60,6 +67,9 @@ import com.google.inject.name.Named;
 public class MessagingService {
 
     private static final Logger log = LoggerFactory.getLogger(MessagingService.class);
+
+    private static final Injector injector = Guice.createInjector(new MessagingModule());
+    private static final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
 
     @Context
     UriInfo ui;
@@ -87,6 +97,20 @@ public class MessagingService {
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    /**
+     * Send a message to the servlet
+     */
+    @POST
+    @Consumes({ MediaType.TEXT_PLAIN })
+    @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/messageWithoutContentType")
+    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid, String messageString)
+                                                                                                       throws IOException,
+                                                                                                       JsonParseException,
+                                                                                                       JsonMappingException {
+        JoynrMessage message = objectMapper.readValue(messageString, JoynrMessage.class);
+        return postMessage(ccid, message);
     }
 
     /**
