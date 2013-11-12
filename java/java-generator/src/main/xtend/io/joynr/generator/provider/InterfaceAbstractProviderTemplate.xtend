@@ -27,9 +27,8 @@ class InterfaceAbstractProviderTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "AbstractProvider"
-		val syncClassName = interfaceName + "Sync"
 		val providerInterfaceName = interfaceName + "Provider"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		
@@ -62,7 +61,7 @@ class InterfaceAbstractProviderTemplate {
 			//attributes
 		«ENDIF»
 		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.name.toFirstLower»
+			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
 				protected «attributeType» «attributeName»;	
 		«ENDFOR»
@@ -71,7 +70,7 @@ class InterfaceAbstractProviderTemplate {
 		 	//setter & abstract getter
 		«ENDIF»
 		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.name.toFirstLower»
+			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
 	
 

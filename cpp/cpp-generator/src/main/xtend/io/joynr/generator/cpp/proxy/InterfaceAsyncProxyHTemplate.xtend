@@ -30,7 +30,7 @@ class InterfaceAsyncProxyHTemplate {
 	@Inject extension InterfaceUtil
 	
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "AsyncProxy"
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"AsyncProxy_h").toUpperCase

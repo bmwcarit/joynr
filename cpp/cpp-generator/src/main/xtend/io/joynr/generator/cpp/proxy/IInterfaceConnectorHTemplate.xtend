@@ -29,7 +29,7 @@ class IInterfaceConnectorHTemplate {
 	
 	@Inject extension InterfaceSubscriptionUtil
 	def generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"Connector_h").toUpperCase
 		'''
 		«warning()»

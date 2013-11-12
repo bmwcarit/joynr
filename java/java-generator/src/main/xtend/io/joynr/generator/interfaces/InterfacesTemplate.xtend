@@ -29,7 +29,7 @@ class InterfacesTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		'''

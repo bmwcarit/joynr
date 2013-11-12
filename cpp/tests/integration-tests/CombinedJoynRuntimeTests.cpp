@@ -122,7 +122,7 @@ TEST_F(CombinedRunTimeTest, register_and_use_local_Provider)
 {
     QString domain = "testDomain0";
     QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 444);
+    types::GpsLocation gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 444);
     EXPECT_CALL(*mockProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
            .WillOnce(DoAll(SetArgReferee<0>(RequestStatusCode::OK), SetArgReferee<1>(gpsLocation1)));
 
@@ -218,7 +218,7 @@ TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
     QFile::remove("SubscriptionRequests.persist");
     QString domain = "testDomain";
     QSharedPointer<MockGpsProvider> mockProvider (new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
+    types::GpsLocation gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
     EXPECT_CALL(*mockProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
            .Times(::testing::Between(1, 2))
            .WillRepeatedly(SetArgReferee<1>(gpsLocation1));
@@ -257,7 +257,7 @@ TEST_F(CombinedRunTimeTest, unsubscribe_from_local_Provider) {
     QFile::remove("SubscriptionRequests.persist");
     QString domain = "testDomain2";
     QSharedPointer<MockGpsProvider> mockProvider (new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
+    types::GpsLocation gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
     EXPECT_CALL(*mockProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
             .Times(AtLeast(2))
             .WillRepeatedly(SetArgReferee<1>(gpsLocation1));

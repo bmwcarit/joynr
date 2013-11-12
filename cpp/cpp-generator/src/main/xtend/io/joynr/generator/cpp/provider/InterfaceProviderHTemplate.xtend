@@ -30,7 +30,7 @@ class InterfaceProviderHTemplate {
 	private extension JoynrCppGeneratorExtensions
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"Provider_h").toUpperCase
 	'''
 	«warning()»
@@ -68,14 +68,15 @@ class InterfaceProviderHTemplate {
 	    // request status, result, (params......)*
 	
 		«FOR attribute: getAttributes(serviceInterface)»
-			virtual void get«attribute.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)»& result);
-			virtual void set«attribute.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attribute.name»);
+			«var attributeName = attribute.name»
+			virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)»& result);
+			virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 			/**
-			* @brief «attribute.name»Changed must be called by a concrete provider to signal attribute
+			* @brief «attributeName»Changed must be called by a concrete provider to signal attribute
 			* modifications. It is used to implement onchange subscriptions.
-			* @param «attribute.name» the new attribute value
+			* @param «attributeName» the new attribute value
 			*/
-			void «attribute.name»Changed(const «getMappedDatatypeOrList(attribute)»& «attribute.name»);
+			void «attributeName»Changed(const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
 			«val outputParameterType = getMappedOutputParameter(method)»
@@ -93,7 +94,7 @@ class InterfaceProviderHTemplate {
 		
 	protected:
 		«FOR attribute: getAttributes(serviceInterface)»
-		    «getMappedDatatypeOrList(attribute)» «attribute.name»;
+		    «getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
 		«ENDFOR»
 	
 	private:

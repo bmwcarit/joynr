@@ -31,7 +31,7 @@ class DefaultProviderHTemplate {
 	private extension JoynrCppGeneratorExtensions
 		
 	def generate(FInterface serviceInterface){
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_Default"+interfaceName+"Provider_h").toUpperCase
 		'''
 		«warning()»
@@ -60,11 +60,11 @@ class DefaultProviderHTemplate {
 		
 			«FOR attribute: getAttributes(serviceInterface)»
 				// Only use this for pulling providers, not for pushing providers
-				//		void get«attribute.name.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatype(attribute)»& result);
+				//		void get«attribute.joynrName.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatype(attribute)»& result);
 			«ENDFOR»
 			
 			«FOR method: getMethods(serviceInterface)»
-				«val methodName = method.name»
+				«val methodName = method.joynrName»
 				«val outputParameterType = getMappedOutputParameter(method).head»
 				«IF outputParameterType=="void"»
 					virtual void  «methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» );

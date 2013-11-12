@@ -28,8 +28,8 @@ class InterfaceSubscriptionUtil {
 	'''
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
-			virtual QString subscribeTo«attribute.name.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
-			virtual void unsubscribeFrom«attribute.name.toFirstUpper»(QString& subscriptionId)«IF pure» = 0«ENDIF»;
+			virtual QString subscribeTo«attribute.joynrName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
+			virtual void unsubscribeFrom«attribute.joynrName.toFirstUpper»(QString& subscriptionId)«IF pure» = 0«ENDIF»;
 	    «ENDFOR»
 	'''
 }

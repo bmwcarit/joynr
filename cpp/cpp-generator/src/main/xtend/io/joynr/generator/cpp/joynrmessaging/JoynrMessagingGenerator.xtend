@@ -44,7 +44,7 @@ class JoynrMessagingGenerator {
 		for(serviceInterface: model.interfaces){
 			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
-			val serviceName = serviceInterface.name.toFirstUpper
+			val serviceName = serviceInterface.joynrName
 
 			headerFileSystem.generateFile(
 				headerPath + serviceName + "JoynrMessagingConnector.h",

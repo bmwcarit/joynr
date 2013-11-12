@@ -56,7 +56,7 @@ using namespace joynr;
  void initPretty(void) {
  EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));
  EXPECT_TRUE(false) << ::testing::PrintToString(JoynrMessage());
- EXPECT_TRUE(false) << ::testing::PrintToString(types::GpsLocation(types::GpsFixEnum::Mode2D, 11,22,33,0, 0, 0, 0, 0, 44));
-// EXPECT_TRUE(false) << ::testing::PrintToString(Trip("tripName", GpsLocation(GpsFixEnum::Mode2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::GpsLocation>()));
+ EXPECT_TRUE(false) << ::testing::PrintToString(types::GpsLocation(types::GpsFixEnum::MODE2D, 11,22,33,0, 0, 0, 0, 0, 44));
+// EXPECT_TRUE(false) << ::testing::PrintToString(Trip("tripName", GpsLocation(GpsFixEnum::MODE2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::GpsLocation>()));
 }
 

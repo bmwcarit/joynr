@@ -30,7 +30,7 @@ class InterfaceAsyncTemplate {
 
 	
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val asyncClassName = interfaceName + "Async"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		
@@ -64,16 +64,16 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 
 	public static class VoidToken extends TypeReference<Void> {}	
 	«FOR attribute: getAttributes(serviceInterface)»
-		«var attributeName = attribute.name.toFirstUpper»
+		«var attributeName = attribute.joynrName»
 		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
-		«var getAttribute = "get" + attributeName» 
+		«var getAttribute = "get" + attributeName.toFirstUpper» 
 		«IF isReadable(attribute)»			
 			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);	
 		«ENDIF»	
 	«ENDFOR»	
 	
 	«FOR method: getMethods(serviceInterface)»
-		«var methodName = method.name»
+		«var methodName = method.joynrName»
 		«var outPutParameterType = getMappedOutputParameter(method).iterator.next»
 		«var outPutObjectType = getObjectDataTypeForPlainType(outPutParameterType)»
 		«var params = getTypedParameterListJavaRpc(method)»

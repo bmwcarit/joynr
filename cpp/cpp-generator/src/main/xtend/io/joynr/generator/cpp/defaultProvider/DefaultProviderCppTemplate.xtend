@@ -31,10 +31,10 @@ class DefaultProviderCppTemplate {
 	private extension JoynrCppGeneratorExtensions
 		
 	def generate(FInterface serviceInterface){
-		val Interfacename = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/Default«Interfacename»Provider.h"
+		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/Default«interfaceName»Provider.h"
 		#include "joynr/RequestStatus.h"
 		#include "joynr/joynrlogging.h"
 		
@@ -42,24 +42,24 @@ class DefaultProviderCppTemplate {
 		
 		using namespace joynr::joynr_logging;
 		
-		Logger* Default«Interfacename»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«Interfacename»Provider");
+		Logger* Default«interfaceName»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«interfaceName»Provider");
 		
-		Default«Interfacename»Provider::Default«Interfacename»Provider(const joynr::types::ProviderQos& providerQos) :
-			«Interfacename»Provider(providerQos)
+		Default«interfaceName»Provider::Default«interfaceName»Provider(const joynr::types::ProviderQos& providerQos) :
+			«interfaceName»Provider(providerQos)
 		{
 		}
 		
-		Default«Interfacename»Provider::~Default«Interfacename»Provider()
+		Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		{
 		}
 		
 		«FOR attribute: getAttributes(serviceInterface)»
-			«val Attributename = attribute.name.toFirstUpper»
+			«val attributename = attribute.joynrName»
 			«var attributeType = getMappedDatatypeOrList(attribute)»
 			// Only use this for pulling providers, not for pushing providers
-			//void Default«Interfacename»Provider::get«Attributename»(RequestStatus& status, «getMappedDatatypeOrList(attribute)»& result) {
+			//void Default«interfaceName»Provider::get«attributename.toFirstUpper»(RequestStatus& status, «getMappedDatatypeOrList(attribute)»& result) {
 			// LOG_WARN(logger, "**********************************************");
-			// LOG_WARN(logger, "* Default«Interfacename»Provider::«Attributename» called");
+			// LOG_WARN(logger, "* Default«interfaceName»Provider::get«attributename.toFirstUpper» called");
 			// LOG_WARN(logger, "**********************************************");
 			«IF attributeType=="QString"»
 				//		result = "Hello World";
@@ -77,12 +77,12 @@ class DefaultProviderCppTemplate {
 			
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
-			«val methodName = method.name»
+			«val methodName = method.joynrName»
 			«val outputParameterType = getMappedOutputParameter(method)»
 			«IF outputParameterType.head =="void"»
-				void  Default«Interfacename»Provider::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» ) {
+				void  Default«interfaceName»Provider::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» ) {
 			«ELSE»
-				void  Default«Interfacename»Provider::«methodName»(joynr::RequestStatus& status, «outputParameterType.head»& result«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
+				void  Default«interfaceName»Provider::«methodName»(joynr::RequestStatus& status, «outputParameterType.head»& result«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
 				«IF outputParameterType.head=="QString"»
 					result = "Hello World";
 				«ELSEIF outputParameterType.head=="bool"»
@@ -96,10 +96,10 @@ class DefaultProviderCppTemplate {
 				«ENDIF»
 			«ENDIF»
 				«FOR inputParameter: getInputParameters(method)»
-					Q_UNUSED(«inputParameter.name»);
+					Q_UNUSED(«inputParameter.joynrName»);
 				«ENDFOR»
 				LOG_WARN(logger, "**********************************************");
-				LOG_WARN(logger, "* Default«Interfacename»Provider::«methodName.toFirstUpper» called");
+				LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
 				LOG_WARN(logger, "**********************************************");	
 				status.setCode(joynr::RequestStatusCode::OK);
 			}

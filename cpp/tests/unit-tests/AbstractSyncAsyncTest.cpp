@@ -76,7 +76,7 @@ public:
             QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
 
-        types::GpsLocation location(types::GpsFixEnum::Mode3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
+        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         (callback.dynamicCast<ReplyCaller<types::GpsLocation> >())->returnValue(location);
     }
 
@@ -119,7 +119,7 @@ public:
         endPointAddress = QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress("endPointAddress"));
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
-        gpsLocationResult = types::GpsLocation(types::GpsFixEnum::Mode3D, 12.0, 14.0, 16.0, 0,0,0,0,0,0);
+        gpsLocationResult = types::GpsLocation(types::GpsFixEnum::MODE3D, 12.0, 14.0, 16.0, 0,0,0,0,0,0);
         mockJoynrMessageSender = new MockJoynrMessageSender();
         // asyncGpsFixture must be created after derived objects have run Setup()
     }
@@ -174,7 +174,7 @@ public:
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
 
-        types::GpsLocation location(types::GpsFixEnum::Mode3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
+        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         RequestStatus status;
         gpsFixture->setLocation(status, location);
         delete gpsFixture;
@@ -189,7 +189,7 @@ public:
         RequestStatus status;
         types::GpsLocation gpsLocation;
         gpsFixture->getLocation(status, gpsLocation);
-        types::GpsLocation location(types::GpsFixEnum::Mode3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
+        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         EXPECT_EQ(gpsLocation, location);
         EXPECT_TRUE(status.successful());
         delete gpsFixture;
@@ -203,7 +203,7 @@ public:
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
 
-        types::GpsLocation location(types::GpsFixEnum::Mode3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
+        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         QVariant qvariant;
         qvariant.setValue(location);
 
@@ -217,7 +217,7 @@ public:
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
 
-        types::GpsLocation location(types::GpsFixEnum::Mode3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
+        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         QVariant qvariant;
         qvariant.setValue(location);
         ON_CALL(mockClientCache, lookUp(_,_)).WillByDefault(Return(qvariant));

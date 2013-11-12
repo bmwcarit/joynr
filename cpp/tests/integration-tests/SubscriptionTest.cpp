@@ -61,7 +61,7 @@ public:
         mockRequestCaller(new MockGpsRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
         mockSubscriptionListener(new MockSubscriptionListener<types::GpsLocation>()),
-        gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444),
+        gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),

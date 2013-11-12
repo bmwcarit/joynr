@@ -73,9 +73,9 @@ public class AndroidLocationProvider extends GpsAbstractProvider {
                     joynrLocation.setLatitude(androidLocation.getLatitude());
                     joynrLocation.setLongitude(androidLocation.getLongitude());
                     joynrLocation.setAltitude(androidLocation.getAltitude());
-                    joynrLocation.setGpsFix(GpsFixEnum.Mode3D);
+                    joynrLocation.setGpsFix(GpsFixEnum.MODE3D);
                 } else {
-                    joynrLocation.setGpsFix(GpsFixEnum.ModeNoFix);
+                    joynrLocation.setGpsFix(GpsFixEnum.MODENOFIX);
                 }
                 // applies the location to the location provider and notifies onChange subscriptions
                 locationChanged(joynrLocation);

@@ -41,7 +41,7 @@ class ProviderGenerator {
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
 
-		var serviceName =  fInterface.name.toFirstUpper
+		var serviceName =  fInterface.joynrName
 					
 		
 		fsa.generateFile(

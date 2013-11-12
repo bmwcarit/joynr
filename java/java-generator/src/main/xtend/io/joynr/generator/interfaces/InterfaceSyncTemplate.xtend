@@ -27,7 +27,7 @@ class InterfaceSyncTemplate {
   @Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 			
@@ -55,23 +55,23 @@ import io.joynr.exceptions.JoynrArbitrationException;
 public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
 
 «FOR attribute: getAttributes(serviceInterface)»
-	«var attributeName = attribute.name.toFirstUpper»
+	«var attributeName = attribute.joynrName»
 	«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
-	«var getAttribute = "get" + attributeName»
-	«var setAttribute = "set" + attributeName»
+	«var getAttribute = "get" + attributeName.toFirstUpper»
+	«var setAttribute = "set" + attributeName.toFirstUpper»
 
 		«IF isReadable(attribute)»
 		@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class)
 		public «attributeType» «getAttribute»() throws JoynrArbitrationException;
 		«ENDIF»		
 		«IF isWritable(attribute)»			
-			void «setAttribute»(@JoynrRpcParam(value="«attributeName.toFirstLower»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attribute.name») throws JoynrArbitrationException;		
+			void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;		
 		«ENDIF»			
 «ENDFOR»
 
 
 «FOR method: getMethods(serviceInterface)»
-	«var methodName = method.name»
+	«var methodName = method.joynrName»
 	«var params = getTypedParameterListJavaRpc(method)»
 		/*
 		* «methodName»

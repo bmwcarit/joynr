@@ -31,7 +31,7 @@ class InterfaceRequestInterpreterHTemplate {
 	private extension JoynrCppGeneratorExtensions
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"RequestInterpreter_h").toUpperCase
 		'''
 		«warning()»

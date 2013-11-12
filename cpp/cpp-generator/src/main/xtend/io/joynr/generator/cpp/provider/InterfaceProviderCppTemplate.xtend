@@ -33,7 +33,7 @@ class InterfaceProviderCppTemplate {
 	def generate(FInterface serviceInterface)
 	'''
 		«warning()»
-		«val interfaceName = serviceInterface.name.toFirstUpper»
+		«val interfaceName = serviceInterface.joynrName»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 		#include "joynr/InterfaceRegistrar.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
@@ -42,9 +42,9 @@ class InterfaceProviderCppTemplate {
 
 		«getNamespaceStarter(serviceInterface)»
 		«interfaceName»Provider::«interfaceName»Provider(const joynr::types::ProviderQos &providerQos) :
-			I«serviceInterface.name.toFirstUpper»Base(),
+			I«interfaceName»Base(),
 			«FOR attribute: getAttributes(serviceInterface)»
-				«attribute.name»(),
+				«attribute.joynrName»(),
 			«ENDFOR»
 		    subscriptionManager(NULL),
 		    domain(),
@@ -55,44 +55,45 @@ class InterfaceProviderCppTemplate {
 			joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
 		}
 		
-		«serviceInterface.name.toFirstUpper»Provider::~«serviceInterface.name.toFirstUpper»Provider()
+		«interfaceName»Provider::~«interfaceName»Provider()
 		{
 			// Unregister the request interpreter
 			joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
 		}
 		
-		void «serviceInterface.name.toFirstUpper»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {
+		void «interfaceName»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {
 		    this->subscriptionManager = subscriptionManager;
 		}
 		
-		void «serviceInterface.name.toFirstUpper»Provider::setDomainAndInterface(const QString &domain, const QString &interfaceName) {
+		void «interfaceName»Provider::setDomainAndInterface(const QString &domain, const QString &interfaceName) {
 		    this->domain = domain;
 		    this->interfaceName = interfaceName;
 		}
 		
-		joynr::types::ProviderQos «serviceInterface.name.toFirstUpper»Provider::getProviderQos() const {
+		joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
 		    return providerQos;
 		}
 		
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeType = getMappedDatatypeOrList(attribute)»
-			void «serviceInterface.name.toFirstUpper»Provider::get«attribute.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «attributeType»& result) {
-			    result = «attribute.name»;
+			«var attributeName = attribute.joynrName»
+			void «interfaceName»Provider::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «attributeType»& result) {
+			    result = «attributeName»;
 			    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 			}
 			
-			void «serviceInterface.name.toFirstUpper»Provider::set«attribute.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «attributeType»& «attribute.name») {
-			    «attribute.name»Changed(«attribute.name»); 
+			void «interfaceName»Provider::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «attributeType»& «attributeName») {
+			    «attributeName»Changed(«attributeName»); 
 			    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 			}
 
-			void «serviceInterface.name.toFirstUpper»Provider::«attribute.name»Changed(const «attributeType»& «attribute.name») {
-			    if(this->«attribute.name» == «attribute.name») {
+			void «interfaceName»Provider::«attributeName»Changed(const «attributeType»& «attributeName») {
+			    if(this->«attributeName» == «attributeName») {
 			        // the value didn't change, no need for notification
 			        return;
 			    }
-			    this->«attribute.name» = «attribute.name»;
-			    onAttributeValueChanged("«attribute.name»", QVariant::fromValue(«attribute.name»));
+			    this->«attributeName» = «attributeName»;
+			    onAttributeValueChanged("«attributeName»", QVariant::fromValue(«attributeName»));
 			}
 		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»

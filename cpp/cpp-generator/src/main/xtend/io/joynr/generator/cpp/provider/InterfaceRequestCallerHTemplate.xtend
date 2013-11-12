@@ -31,7 +31,7 @@ class InterfaceRequestCallerHTemplate {
 	private extension JoynrCppGeneratorExtensions
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"RequestCaller_h").toUpperCase
 		'''
 		«warning()»
@@ -56,16 +56,18 @@ class InterfaceRequestCallerHTemplate {
 		    virtual ~«interfaceName»RequestCaller(){}
 		    
 		    «FOR attribute: getAttributes(serviceInterface)»
-		    	virtual void get«attribute.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attribute.name»);
-		    	virtual void set«attribute.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attribute.name»);
+		    «var attributeName = attribute.joynrName»
+		    	virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»);
+		    	virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 		    	
 			«ENDFOR»
 			«FOR method: getMethods(serviceInterface)»
 				«val outputParameterType = getMappedOutputParameter(method).head»
+				«var methodName = method.joynrName»
 				«IF outputParameterType=="void"»
-					virtual void  «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» );
+					virtual void  «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» );
 				«ELSE»				
-					virtual void  «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+					virtual void  «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 				«ENDIF»
 			«ENDFOR»
 

@@ -34,8 +34,8 @@ class TypeHTemplate {
 	def generate(FType type)
 	'''
 		«val complexType = type as FCompoundType»
-		«val typeName = type.name.toFirstUpper»
-		«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+type.name+"_H").toUpperCase»
+		«val typeName = type.joynrName»
+		«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
 		«warning()»
 		#ifndef «headerGuard»
 		#define «headerGuard»
@@ -54,21 +54,20 @@ class TypeHTemplate {
 
 		«getNamespaceStarter(type)»
 		
-		class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(complexType)»«getExtendedType(complexType).name»«ELSE»QObject«ENDIF»{
+		class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(complexType)»«getExtendedType(complexType).joynrName»«ELSE»QObject«ENDIF»{
 			Q_OBJECT
 
 			
 			«FOR member: getMembers(complexType)»
-				«val membername = member.name»
-				«val Membername = member.name.toFirstUpper»
+				«val membername = member.joynrName»
 				«IF isArray(member)»
-					Q_PROPERTY(QList<QVariant> «membername» READ get«Membername»Internal WRITE set«Membername»Internal)
+					Q_PROPERTY(QList<QVariant> «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
 				«ELSE»
 					«IF isEnum(member.type)»
-						Q_PROPERTY(QString «membername» READ get«Membername»Internal WRITE set«Membername»Internal)
+						Q_PROPERTY(QString «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
 					«ELSE»
 «««						https://bugreports.qt-project.org/browse/QTBUG-2151 for why this replace is necessary
-						Q_PROPERTY(«getMappedDatatypeOrList(member).replace("::","__")» «membername» READ get«Membername» WRITE set«Membername»)
+						Q_PROPERTY(«getMappedDatatypeOrList(member).replace("::","__")» «membername» READ get«membername.toFirstUpper» WRITE set«membername.toFirstUpper»)
 					«ENDIF»
 				«ENDIF»
 			«ENDFOR»
@@ -79,7 +78,7 @@ class TypeHTemplate {
 			«typeName»();
 			«typeName»(
 				«FOR member: getMembersRecursive(complexType) SEPARATOR","»
-					«getMappedDatatypeOrList(member)» «member.name»
+					«getMappedDatatypeOrList(member)» «member.joynrName»
 				«ENDFOR»
 			);
 			«typeName»(const «typeName»& «typeName.toFirstLower»Obj);
@@ -93,35 +92,34 @@ class TypeHTemplate {
 
 			//getters
 			«FOR member: getMembers(complexType)»
-				«val memberName = member.name.toFirstUpper»
+				«val joynrName = member.joynrName»
 				«IF isArray(member)»
-				 	QList<QVariant> get«memberName»Internal() const;
+				 	QList<QVariant> get«joynrName.toFirstUpper»Internal() const;
 				«ELSE»
 					«IF isEnum(member.type)»
-						QString get«memberName»Internal() const;
+						QString get«joynrName.toFirstUpper»Internal() const;
 					 «ENDIF»
 				«ENDIF»
-				«getMappedDatatypeOrList(member)» get«memberName»() const;
+				«getMappedDatatypeOrList(member)» get«joynrName.toFirstUpper»() const;
 			«ENDFOR»
 
 			//setters
 			«FOR member: getMembers(complexType)»
-				«val Membername = member.name.toFirstUpper»
-				«val membername = member.name»
+				«val joynrName = member.joynrName»
 				«IF isArray(member)»
-					void set«Membername»Internal(const QList<QVariant>& «membername») ;
+					void set«joynrName.toFirstUpper»Internal(const QList<QVariant>& «joynrName») ;
 			 	«ELSE»
 					«IF isEnum(member.type)»
-						void set«Membername»Internal(const QString& «membername») ;
+						void set«joynrName.toFirstUpper»Internal(const QString& «joynrName») ;
 					 «ENDIF»
 				«ENDIF»
-				void set«Membername»(const «getMappedDatatypeOrList(member)»& «membername»);
+				void set«joynrName.toFirstUpper»(const «getMappedDatatypeOrList(member)»& «joynrName»);
 			«ENDFOR»
 			
 		private:
 			//members
 			«FOR member: getMembers(complexType)»
-				 «getMappedDatatypeOrList(member)» m_«member.name»;
+				 «getMappedDatatypeOrList(member)» m_«member.joynrName»;
 			«ENDFOR»
 			void registerMetatypes();
 			

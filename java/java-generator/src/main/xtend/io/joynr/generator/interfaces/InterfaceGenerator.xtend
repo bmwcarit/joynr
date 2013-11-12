@@ -45,7 +45,7 @@ class InterfaceGenerator {
 
 		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
 
-		var serviceName =  serviceInterface.name.toFirstUpper
+		var serviceName =  serviceInterface.joynrName
 					
 		fsa.generateFile(
 			path + serviceName + ".java",

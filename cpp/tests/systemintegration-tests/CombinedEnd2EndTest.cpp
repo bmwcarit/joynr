@@ -228,9 +228,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
       */
 
         QList<types::GpsLocation> inputLocationList;
-        inputLocationList.append(types::GpsLocation(types::GpsFixEnum::Mode2D, 1,2,3,0,0,0,0,0,4));
-        inputLocationList.append(types::GpsLocation(types::GpsFixEnum::Mode2D, 1,2,3,0,0,0,0,0,5));
-        inputLocationList.append(types::GpsLocation(types::GpsFixEnum::Mode2D, 1,2,3,0,0,0,0,0,6));
+        inputLocationList.append(types::GpsLocation(types::GpsFixEnum::MODE2D, 1,2,3,0,0,0,0,0,4));
+        inputLocationList.append(types::GpsLocation(types::GpsFixEnum::MODE2D, 1,2,3,0,0,0,0,0,5));
+        inputLocationList.append(types::GpsLocation(types::GpsFixEnum::MODE2D, 1,2,3,0,0,0,0,0,6));
         types::Trip inputTrip;
         inputTrip.setLocations(inputLocationList);
         QSharedPointer<Future<types::Trip> > tripFuture (new Future<types::Trip>());
@@ -283,9 +283,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
      */
         // is currently deactivated, because it throws an assertion.
         QList<types::GpsLocation> inputGpsLocationList;
-        inputGpsLocationList.append(types::GpsLocation(types::GpsFixEnum::Mode2D, 1,2,3,0,0,0,0,0,4));
-        inputGpsLocationList.append(types::GpsLocation(types::GpsFixEnum::Mode2D, 1,2,3,0,0,0,0,0,5));
-        inputGpsLocationList.append(types::GpsLocation(types::GpsFixEnum::Mode2D, 1,2,3,0,0,0,0,0,6));
+        inputGpsLocationList.append(types::GpsLocation(types::GpsFixEnum::MODE2D, 1,2,3,0,0,0,0,0,4));
+        inputGpsLocationList.append(types::GpsLocation(types::GpsFixEnum::MODE2D, 1,2,3,0,0,0,0,0,5));
+        inputGpsLocationList.append(types::GpsLocation(types::GpsFixEnum::MODE2D, 1,2,3,0,0,0,0,0,6));
         QSharedPointer<Future<QList<types::GpsLocation> > > listLocationFuture (new Future<QList<types::GpsLocation> > ());
         testProxy->optimizeLocationList(listLocationFuture, inputGpsLocationList);
         listLocationFuture->waitForFinished();
@@ -535,18 +535,18 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     // Change the location once
     RequestStatus requestStatus;
     gpsProxy->setLocation(requestStatus,
-                          types::GpsLocation(types::GpsFixEnum::Mode2D, 9.0, 51.0, 508.0, 0,0,0,0,0,1));
+                          types::GpsLocation(types::GpsFixEnum::MODE2D, 9.0, 51.0, 508.0, 0,0,0,0,0,1));
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 20000));
 
     // Change the location 3 times
     gpsProxy->setLocation(requestStatus,
-                          types::GpsLocation(types::GpsFixEnum::Mode2D, 9.0, 51.0, 508.0, 0,0,0,0,0,2));
+                          types::GpsLocation(types::GpsFixEnum::MODE2D, 9.0, 51.0, 508.0, 0,0,0,0,0,2));
     gpsProxy->setLocation(requestStatus,
-                          types::GpsLocation(types::GpsFixEnum::Mode2D, 9.0, 51.0, 508.0, 0,0,0,0,0,3));
+                          types::GpsLocation(types::GpsFixEnum::MODE2D, 9.0, 51.0, 508.0, 0,0,0,0,0,3));
     gpsProxy->setLocation(requestStatus,
-                          types::GpsLocation(types::GpsFixEnum::Mode2D, 9.0, 51.0, 508.0, 0,0,0,0,0,4));
+                          types::GpsLocation(types::GpsFixEnum::MODE2D, 9.0, 51.0, 508.0, 0,0,0,0,0,4));
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(semaphore.tryAcquire(3, 20000));

@@ -49,14 +49,14 @@ TEST_F(JsonSerializerPolymorphismTest, deserializeGpsLocationFromLocation) {
     qRegisterMetaType<joynr__types__Location>("joynr__types__Location");
 
     joynr::types::GpsLocation expectedGpsLocation;
-    expectedGpsLocation.setGpsFix(types::GpsFixEnum::Mode3D);
+    expectedGpsLocation.setGpsFix(types::GpsFixEnum::MODE3D);
     expectedGpsLocation.setLongitude(1.1);
     expectedGpsLocation.setLatitude(2.2);
     expectedGpsLocation.setAltitude(3.3);
     expectedGpsLocation.setTime(17);
 
 //    joynr::types::Location location;
-//    location.setGpsFix(types::GpsFixEnum::Mode3D);
+//    location.setGpsFix(types::GpsFixEnum::MODE3D);
 //    location.setLongitude(1.1);
 //    location.setLatitude(2.2);
 //    location.setAltitude(3.3);
@@ -76,7 +76,7 @@ TEST_F(JsonSerializerPolymorphismTest, deserializeGpsLocationFromLocation) {
                 "\"city\" : \"location.city\", "
                 "\"country\" : \"location.country\", "
                 "\"description\" : \"location.description\", "
-                "\"gpsFix\" : \"Mode3D\", "
+                "\"gpsFix\" : \"MODE3D\", "
                 "\"latitude\" : 2.2, "
                 "\"longitude\" : 1.1, "
                 "\"postalCode\" : \"location.postalCode\", "
@@ -100,14 +100,14 @@ TEST_F(JsonSerializerPolymorphismTest, serializeGpsLocationListWithLocationInsid
     qRegisterMetaType<joynr__types__Location>("joynr__types__Location");
 
     joynr::types::GpsLocation gpsLocation;
-    gpsLocation.setGpsFix(types::GpsFixEnum::Mode3D);
+    gpsLocation.setGpsFix(types::GpsFixEnum::MODE3D);
     gpsLocation.setLongitude(1.1);
     gpsLocation.setLatitude(1.2);
     gpsLocation.setAltitude(1.3);
     gpsLocation.setTime(14);
 
     joynr::types::Location location;
-    location.setGpsFix(types::GpsFixEnum::Mode3D);
+    location.setGpsFix(types::GpsFixEnum::MODE3D);
     location.setLongitude(2.1);
     location.setLatitude(2.2);
     location.setAltitude(2.3);

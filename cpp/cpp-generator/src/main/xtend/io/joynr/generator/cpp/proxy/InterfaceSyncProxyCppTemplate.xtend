@@ -27,7 +27,7 @@ class InterfaceSyncProxyCppTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface fInterface) {
-		val interfaceName =  fInterface.name.toFirstUpper
+		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val syncClassName = interfaceName + "SyncProxy"
 		'''
@@ -56,10 +56,10 @@ class InterfaceSyncProxyCppTemplate {
 		}
 
 		«FOR attribute: getAttributes(fInterface)»
-			«var attributeName = attribute.name.toFirstUpper»
+			«var attributeName = attribute.joynrName»
 			«var attributeType = getMappedDatatypeOrList(attribute)» 
-			«var getAttribute = "get" + attributeName» 
-			«var setAttribute = "set" + attributeName» 
+			«var getAttribute = "get" + attributeName.toFirstUpper» 
+			«var setAttribute = "set" + attributeName.toFirstUpper» 
 			void «syncClassName»::«getAttribute»(joynr::RequestStatus& status, «attributeType»& result)
 			{
 			    if (connector==NULL){

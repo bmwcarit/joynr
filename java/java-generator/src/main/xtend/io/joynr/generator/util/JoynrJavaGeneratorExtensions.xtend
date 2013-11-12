@@ -115,7 +115,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		for(FArgument argument : getOutputParameters(method)){
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
 			returnStringBuilder.append("& ");
-			returnStringBuilder.append(argument.name);
+			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(", ");
 		}
         val returnString = returnStringBuilder.toString();
@@ -130,7 +130,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
 		val returnStringBuilder = new StringBuilder();
 		for(FArgument argument : getOutputParameters(method)){
-			returnStringBuilder.append(argument.name);
+			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(", ");
 		}
         val returnString = returnStringBuilder.toString();
@@ -147,7 +147,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
         for (param : getInputParameters(method)) {
         	returnStringBuilder.append(getMappedDatatypeOrList(param));
         	returnStringBuilder.append(" ");
-        	returnStringBuilder.append(param.name);
+        	returnStringBuilder.append(param.joynrName);
         	returnStringBuilder.append(", ");
         }
         val returnString = returnStringBuilder.toString();
@@ -159,7 +159,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
         }
     }
 	override getMappedDatatype(FType datatype) {
-		return datatype.name.toFirstUpper
+		return datatype.typeName
 	}
 		
 	override getMappedDatatypeOrList(FType datatype, boolean array) {
@@ -204,17 +204,17 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 //			}
 		} else if (isComplex(element.type)) {
 			if ((isArray(element))){
-				return "new ArrayList<" + element.type.complexType.name.toFirstUpper + ">()";
+				return "new ArrayList<" + element.type.complexType.joynrName + ">()";
 			}
 			else{
-				return "new " + element.type.complexType.name.toFirstUpper + "()";
+				return "new " + element.type.complexType.joynrName + "()";
 			} 
 		} else if (isEnum(element.type)){
 			if ((isArray(element))){
-				return "new ArrayList<" + element.type.enumType.name.toFirstUpper + ">()";
+				return "new ArrayList<" + element.type.enumType.joynrName + ">()";
 			}
 			else{
-				return  element.type.enumType.name.toFirstUpper + "." + element.type.enumType.enumerators.get(0).name;
+				return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
 			} 
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
  			return "NaN";
@@ -264,7 +264,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 	
 	def String getIncludeOf(FType dataType) {
-		return getPackagePathWithJoynrPrefix(dataType, ".") + "." + dataType.name.toFirstUpper;
+		return getPackagePathWithJoynrPrefix(dataType, ".") + "." + dataType.joynrName;
 	}
 	
 	override String getOneLineWarning() {
@@ -279,18 +279,18 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			// is it a list type?
 			if(! getMappedDatatypeOrList(param).contains("List")){
 				sb.append("@JoynrRpcParam")
-				sb.append("(\"" + param.name + "\")")
+				sb.append("(\"" + param.joynrName + "\")")
 				sb.append(" "+ getMappedDatatypeOrList(param))
-				sb.append(" "+ param.name)
+				sb.append(" "+ param.joynrName)
 				sb.append(", ")
 			}else { //TODO clean this up, move to javaGeneratorUtil.xtend!
 				sb.append("@JoynrRpcParam") 
-				sb.append("(value=\"" + param.name 
+				sb.append("(value=\"" + param.joynrName 
 						+ "\", deserialisationType=List"
 						+ getMappedDatatypeOrList(param).substring(5, getMappedDatatypeOrList(param).length()-1) 
 						+ "Token.class)")
 				sb.append(" "+ getMappedDatatypeOrList(param))
-				sb.append(" "+ param.name)
+				sb.append(" "+ param.joynrName)
 				sb.append(", ")				
 			}
 		}
@@ -352,7 +352,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			case FBasicTypeId::DOUBLE: "Double"
 			case FBasicTypeId::STRING: "String"
 			case FBasicTypeId::BYTE_BUFFER: "Byte[]"
-			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.name)
+			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.joynrName)
         }
 		// francaExtensions.getPrimitiveTypeName(basicType)
 	}

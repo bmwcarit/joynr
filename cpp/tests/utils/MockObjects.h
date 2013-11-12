@@ -401,7 +401,7 @@ class MockGpsProvider : public joynr::vehicle::GpsProvider
     };
     /*void getLocation(RequestStatus& status, GpsLocation& result)
     {
-        result = GpsLocation(GpsFixEnum::Mode2D, 4,5,6,7);
+        result = GpsLocation(GpsFixEnum::MODE2D, 4,5,6,7);
     }
     */
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& result) );

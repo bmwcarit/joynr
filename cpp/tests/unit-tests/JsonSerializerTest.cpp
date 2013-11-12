@@ -236,7 +236,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_gpslocation) {
     qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
     qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
 
-    types::GpsLocation gps1(types::GpsFixEnum::Mode3D, 1.123456789, 2.2, 3.3,0.0,0.0,0.0,0,0,17);
+    types::GpsLocation gps1(types::GpsFixEnum::MODE3D, 1.123456789, 2.2, 3.3,0.0,0.0,0.0,0,0,17);
 
     QString expected("{\"_typeName\":\"joynr.types.GpsLocation\","
 						"\"accuracy\":0.0,"
@@ -244,7 +244,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_gpslocation) {
 						"\"bearing\":0.0,"
 						"\"deviceTime\":0,"
 						"\"elevation\":0.0,"
-                        "\"gpsFix\":\"Mode3D\","
+                        "\"gpsFix\":\"MODE3D\","
 						"\"gpsTime\":0,"
                         "\"latitude\":2.2,"
                         "\"longitude\":1.123456789,"
@@ -268,7 +268,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_location) {
     qRegisterMetaType<joynr__types__Location>("joynr__types__Location");
 
     types::Location location;
-    location.setGpsFix(types::GpsFixEnum::Mode3D);
+    location.setGpsFix(types::GpsFixEnum::MODE3D);
     location.setLongitude(1.1);
     location.setLatitude(2.2);
     location.setAccuracy(0.0);
@@ -297,7 +297,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_location) {
                 "\"description\":\"location.description\","
 				"\"deviceTime\":0,"
 				"\"elevation\":0.0,"
-                "\"gpsFix\":\"Mode3D\","
+                "\"gpsFix\":\"MODE3D\","
 				"\"gpsTime\":0,"
                 "\"latitude\":2.2,"
                 "\"longitude\":1.1,"
@@ -322,7 +322,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_location) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
-    types::GpsLocation gps1(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0, 17);
+    types::GpsLocation gps1(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0, 17);
 
     // Expected literal is:
     Reply reply;
@@ -339,7 +339,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
                 "\"bearing\":0.0,"
                 "\"deviceTime\":0,"
                 "\"elevation\":0.0,"
-                "\"gpsFix\":\"Mode3D\","
+                "\"gpsFix\":\"MODE3D\","
                 "\"gpsTime\":0,"
                 "\"latitude\":2.2,"
                 "\"longitude\":1.1,"
@@ -403,8 +403,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
 
     QList<QVariant> locList;
-    locList.append(QVariant::fromValue(types::GpsLocation(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0,17)));
-    locList.append(QVariant::fromValue(types::GpsLocation(types::GpsFixEnum::ModeNoFix, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0,18)));
+    locList.append(QVariant::fromValue(types::GpsLocation(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0,17)));
+    locList.append(QVariant::fromValue(types::GpsLocation(types::GpsFixEnum::MODENOFIX, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0,18)));
 
     QString expected(
                 "{\"_typeName\":\"joynr.Reply\","
@@ -417,7 +417,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
                 "\"bearing\":0.0,"
                 "\"deviceTime\":0,"
                 "\"elevation\":0.0,"
-                "\"gpsFix\":\"Mode3D\","
+                "\"gpsFix\":\"MODE3D\","
                 "\"gpsTime\":0,"
                 "\"latitude\":2.2,"
                 "\"longitude\":1.1,"
@@ -429,7 +429,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
                 "\"bearing\":0.0,"
                 "\"deviceTime\":0,"
                 "\"elevation\":0.0,"
-                "\"gpsFix\":\"ModeNoFix\","
+                "\"gpsFix\":\"MODENOFIX\","
                 "\"gpsTime\":0,"
                 "\"latitude\":5.5,"
                 "\"longitude\":4.4,"
@@ -469,9 +469,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
     qRegisterMetaType<joynr::types::Trip>("joynr::types::Trip");
 
     QList<types::GpsLocation> locations;
-    locations.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0,17));
-    locations.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0,317));
-    locations.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 7.7, 8.8, 9.9, 0.0,0.0,0.0,0,0,3317));
+    locations.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0,17));
+    locations.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0,317));
+    locations.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 7.7, 8.8, 9.9, 0.0,0.0,0.0,0,0,3317));
 
     QByteArray expected("{\"_typeName\":\"joynr.types.Trip\","
                         "\"locations\":[{\"_typeName\":\"joynr.types.GpsLocation\","
@@ -480,7 +480,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 						"\"bearing\":0.0,"
 						"\"deviceTime\":0,"
 						"\"elevation\":0.0,"
-						"\"gpsFix\":\"Mode3D\","
+						"\"gpsFix\":\"MODE3D\","
 						"\"gpsTime\":0,"
                         "\"latitude\":2.2,"
                         "\"longitude\":1.1,"
@@ -491,7 +491,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 						"\"bearing\":0.0,"
 						"\"deviceTime\":0,"
 						"\"elevation\":0.0,"
-						"\"gpsFix\":\"Mode3D\","
+						"\"gpsFix\":\"MODE3D\","
 						"\"gpsTime\":0,"
                         "\"latitude\":5.5,"
                         "\"longitude\":4.4,"
@@ -502,7 +502,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 						"\"bearing\":0.0,"
 						"\"deviceTime\":0,"
 						"\"elevation\":0.0,"
-						"\"gpsFix\":\"Mode3D\","
+						"\"gpsFix\":\"MODE3D\","
 						"\"gpsTime\":0,"
                         "\"latitude\":8.8,"
                         "\"longitude\":7.7,"
@@ -530,13 +530,13 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     qRegisterMetaType<joynr::types::Trip>("joynr::types::Trip");
 
     QList<types::GpsLocation> locations;
-    locations.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 17));
-    locations.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 4.4, 5.5, 6.6, 0.0, 0.0, 0.0, 0, 0, 317));
-    locations.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 7.7, 8.8, 9.9, 0.0, 0.0, 0.0, 0, 0, 3317));
+    locations.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 17));
+    locations.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 4.4, 5.5, 6.6, 0.0, 0.0, 0.0, 0, 0, 317));
+    locations.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 7.7, 8.8, 9.9, 0.0, 0.0, 0.0, 0, 0, 3317));
     //Location does not anymore inherit from GpsLocation, so this has been removed:
-    locations.push_back(types::Location(types::GpsFixEnum::Mode3D, 7.7, 8.8, 9.9, 0.0, 0.0, 0.0, 0, 0, 3317, "", "", "", "", "", "", ""));
+    locations.push_back(types::Location(types::GpsFixEnum::MODE3D, 7.7, 8.8, 9.9, 0.0, 0.0, 0.0, 0, 0, 3317, "", "", "", "", "", "", ""));
 
-    //test(types::Location(types::GpsFixEnum::Mode3D, 7.7, 8.8, 9.9, 0.0, 0.0, 0.0, 0, 0, 3317, "", "", "", "", "", "", ""));
+    //test(types::Location(types::GpsFixEnum::MODE3D, 7.7, 8.8, 9.9, 0.0, 0.0, 0.0, 0, 0, 3317, "", "", "", "", "", "", ""));
     types::Trip trip1(locations, QString("trip1_name"));
 
     Request request1;
@@ -581,9 +581,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     //creating Request
     QList<types::GpsLocation> inputLocationList;
-    inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0,17));
-    inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0,317));
-    inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 7.7, 8.8, 9.9, 0.0,0.0,0.0,0,0,3317));
+    inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0,17));
+    inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0,317));
+    inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 7.7, 8.8, 9.9, 0.0,0.0,0.0,0,0,3317));
 
     QString expected(
                 "{\"_typeName\":\"joynr.Request\","
@@ -595,7 +595,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 				"\"bearing\":0.0,"
 				"\"deviceTime\":0,"
 				"\"elevation\":0.0,"
-				"\"gpsFix\":\"Mode3D\","
+				"\"gpsFix\":\"MODE3D\","
 				"\"gpsTime\":0,"
                 "\"latitude\":2.2,"
                 "\"longitude\":1.1,"
@@ -606,7 +606,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 				"\"bearing\":0.0,"
 				"\"deviceTime\":0,"
 				"\"elevation\":0.0,"
-				"\"gpsFix\":\"Mode3D\","
+				"\"gpsFix\":\"MODE3D\","
 				"\"gpsTime\":0,"
                 "\"latitude\":5.5,"
                 "\"longitude\":4.4,"
@@ -617,7 +617,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 				"\"bearing\":0.0,"
 				"\"deviceTime\":0,"
 				"\"elevation\":0.0,"
-				"\"gpsFix\":\"Mode3D\","
+				"\"gpsFix\":\"MODE3D\","
 				"\"gpsTime\":0,"
                 "\"latitude\":8.8,"
                 "\"longitude\":7.7,"
@@ -650,7 +650,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     ASSERT_TRUE(returnQvl.at(0).canConvert<types::GpsLocation>()) << "Cannot convert the first entry of the return List to GpsLocation";
 
     QList<types::GpsLocation> resultLocationList = Util::convertVariantListToList<types::GpsLocation>(returnQvl);
-    EXPECT_EQ(resultLocationList.at(1), types::GpsLocation(types::GpsFixEnum::Mode3D, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0, 317));
+    EXPECT_EQ(resultLocationList.at(1), types::GpsLocation(types::GpsFixEnum::MODE3D, 4.4, 5.5, 6.6, 0.0,0.0,0.0,0,0, 317));
 
     delete request2;
 }
@@ -669,7 +669,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     // Create a JSON list
     int firstListSize = 10000;
     for (int i = 0; i < firstListSize; i++) {
-        inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0, 17));
+        inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0.0,0.0,0.0,0,0, 17));
     }
 
     // Create a request that uses this list
@@ -694,7 +694,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Double the size of the JSON list
     for (int i = 0; i < firstListSize; i++) {
-        inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::Mode3D, 1.1, 2.2, 3.3, 0,0,0,0,0,17));
+        inputLocationList.push_back(types::GpsLocation(types::GpsFixEnum::MODE3D, 1.1, 2.2, 3.3, 0,0,0,0,0,17));
     }
 
     // Create a request that uses this bigger list

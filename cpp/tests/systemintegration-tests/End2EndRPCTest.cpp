@@ -92,7 +92,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
     QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0 ,0 ,0 ,0 ,0 , 444);
+    types::GpsLocation gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0 ,0 ,0 ,0 ,0 , 444);
 
     runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
     QThreadSleep::msleep(550);
@@ -156,7 +156,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
+    types::GpsLocation gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
     runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
 
     QThreadSleep::msleep(550);

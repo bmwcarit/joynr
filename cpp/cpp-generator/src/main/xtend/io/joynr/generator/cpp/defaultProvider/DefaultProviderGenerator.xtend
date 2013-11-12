@@ -46,14 +46,14 @@ class DefaultProviderGenerator {
 		for(serviceInterface: fModel.interfaces){
 			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
-			val serviceName = serviceInterface.name.toFirstUpper;
+			val serviceName = serviceInterface.joynrName;
 			
 			headerFileSystem.generateFile(
 				headerpath + "Default" + serviceName + "Provider.h",
 				defaultProviderHTemplate.generate(serviceInterface).toString
 			);
 			sourceFileSystem.generateFile(
-				sourcepath + "Default" + serviceInterface.name.toFirstUpper + "Provider.cpp",
+				sourcepath + "Default" + serviceName + "Provider.cpp",
 				defaultProviderCppTemplate.generate(serviceInterface).toString
 			);
 		}

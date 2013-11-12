@@ -28,7 +28,7 @@ class EnumTemplate {
 	@Inject extension TemplateBase
 	
 	def generate(FEnumerationType enumType) {
-		val typeName = enumType.name.toFirstUpper
+		val typeName = enumType.joynrName
 		val packagePath = getPackagePathWithJoynrPrefix(enumType, ".")
 		'''
 		«warning()»
@@ -41,7 +41,7 @@ import java.util.Map.Entry;
 
 public enum «typeName» {
 	«FOR enumValue : getEnumElements(enumType) SEPARATOR ","»
-	«enumValue.name»
+	«enumValue.joynrName»
 	«ENDFOR»;
 	
 	public static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
@@ -49,7 +49,7 @@ public enum «typeName» {
 	static{
 		«var i = -1»
 		«FOR enumValue : getEnumElements(enumType)»
-		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.name»);
+		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
 		«ENDFOR»
 	}
 	

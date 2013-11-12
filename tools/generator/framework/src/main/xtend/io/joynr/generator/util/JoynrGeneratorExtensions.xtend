@@ -46,6 +46,7 @@ import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
+import org.franca.core.franca.FEnumerator
 
 abstract class JoynrGeneratorExtensions {
 	
@@ -114,8 +115,8 @@ abstract class JoynrGeneratorExtensions {
    		}
    		else if (fModelElement.eContainer == null){
    			val errorMsg = "Generator could not proceed with code generation, since " + 
-   							if (fModelElement.name != null) 
-   								"the container of model element " + fModelElement.name + " is not known" else "the resource " + 
+   							if (fModelElement.joynrName != null) 
+   								"the container of model element " + fModelElement.joynrName + " is not known" else "the resource " + 
    							(if (fModelElement instanceof BasicEObjectImpl)
    								 (fModelElement as BasicEObjectImpl).eProxyURI
    							else 
@@ -123,8 +124,8 @@ abstract class JoynrGeneratorExtensions {
 			throw new IllegalStateException(errorMsg);
    		}
    		else if (fModelElement.eContainer instanceof FModel)
-            return (fModelElement.eContainer as FModel).name
-        return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) + (if (useOwnName) '.' + fModelElement.name else '')
+            return (fModelElement.eContainer as FModel).joynrName
+        return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) + (if (useOwnName) '.' + fModelElement.joynrName else '')
    }
     
     def getPackageName(FModelElement fModelElement) {
@@ -167,14 +168,14 @@ abstract class JoynrGeneratorExtensions {
     	if (typedElement.type.derived != null){
     		var result = getMappedDatatypeOrList(typedElement.type.derived, typedElement.array == '[]')
     		if (result == null){
-    			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
+    			throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
     		}
     		return result;
     	}
     	else{
     		var result = getMappedDatatypeOrList(typedElement.type.predefined, typedElement.array == '[]')
     		if (result == null){
-    			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
+    			throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
     		}
     		return result;
     	}
@@ -197,7 +198,7 @@ abstract class JoynrGeneratorExtensions {
     def getUniqueMethodNames(FInterface fInterface) {
         val set = new HashSet<String>()
         for (method : getMethods(fInterface)) {
-            set.add(method.name);
+            set.add(method.joynrName);
         }
         return set;
     }
@@ -479,10 +480,10 @@ abstract class JoynrGeneratorExtensions {
 
 	def String typeName(Object type) {
 		if (type instanceof FType){
-			(type as FType).name
+			(type as FType).joynrName
 		}
 		else if (type instanceof FBasicTypeId){
-			(type as FBasicTypeId).name
+			(type as FBasicTypeId).joynrName
 		}
 		else{
 			return null;
@@ -503,7 +504,7 @@ abstract class JoynrGeneratorExtensions {
 			        	}
 		        	} 
 		        	else {
-		        		throw new IllegalStateException ("Typename for output parameter " + returnParameter.name + " of method " + fInterface.name + "." + method.name + " could not be resolved")
+		        		throw new IllegalStateException ("Typename for output parameter " + returnParameter.joynrName + " of method " + fInterface.joynrName + "." + method.joynrName + " could not be resolved")
 		        	}
 	            }
             }
@@ -518,7 +519,7 @@ abstract class JoynrGeneratorExtensions {
 			        	}
 		        	} 
 		        	else {
-		        		throw new IllegalStateException ("Typename for input parameter " + inputParameter.name + " of method " + fInterface.name + "." + method.name + " could not be resolved")
+		        		throw new IllegalStateException ("Typename for input parameter " + inputParameter.joynrName + " of method " + fInterface.joynrName + "." + method.joynrName + " could not be resolved")
 		        	}
                 }
             }
@@ -544,7 +545,7 @@ abstract class JoynrGeneratorExtensions {
     def getCommaSeperatedUntypedParameterList(FMethod method) {
         val returnStringBuilder = new StringBuilder();
         for (param : getInputParameters(method)) {
-        	returnStringBuilder.append(param.name)
+        	returnStringBuilder.append(param.joynrName)
         	returnStringBuilder.append(", ")
         }
         val returnString = returnStringBuilder.toString();
@@ -693,8 +694,8 @@ abstract class JoynrGeneratorExtensions {
     def getMethodNames(FInterface fInterface) {
 		var names = new HashSet<String>();
 		for (method : fInterface.getMethods()){
-			if (!names.contains(method.name)){
-				names.add(method.name)
+			if (!names.contains(method.joynrName)){
+				names.add(method.joynrName)
 			}
 		}
 		return names;
@@ -703,7 +704,7 @@ abstract class JoynrGeneratorExtensions {
 	def getMethods(FInterface fInterface, String methodName){
 		var result = new ArrayList<FMethod>();
 		for (method : fInterface.getMethods()){
-			if (method.name!=null && method.name.equals(methodName)){
+			if (method.joynrName!=null && method.joynrName.equals(methodName)){
 				result.add(method)
 			}
 		}
@@ -718,4 +719,51 @@ abstract class JoynrGeneratorExtensions {
 		"joynr"
 	}
 	
+	def joynrName(FTypedElement element){
+	    element.name
+	}
+
+	def joynrName(FBasicTypeId type){
+	    type.name
+	}
+
+	def joynrName(FModel model){
+	    model.name
+	}
+
+	def joynrName(FModelElement element){
+	    element.name
+	}
+
+	def joynrName(FEnumerator enumElement){
+	    enumElement.name.toUpperCase
+	}
+	
+	def joynrName(FType type){
+	    type.name.toFirstUpper
+	}
+	
+	def joynrName(FField member) {
+	    member.name.toFirstLower
+    }
+    
+    def joynrName(FInterface iFace){
+        iFace.name.toFirstUpper
+    }
+
+    def joynrName(FMethod method) {
+        method.name.toFirstLower
+    }
+    
+    def joynrName(FAttribute attribute) {
+        attribute.name.toFirstLower
+    }
+
+    def joynrName(FBroadcast event) {
+        event.name.toFirstLower
+    }
+    
+    def joynrName(FArgument argument){
+        argument.name.toFirstLower
+    }
 }

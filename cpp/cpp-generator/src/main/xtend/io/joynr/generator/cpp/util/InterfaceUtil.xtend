@@ -40,7 +40,7 @@ class InterfaceUtil {
 	'''
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
-			«val attributeName = attribute.name»
+			«val attributeName = attribute.joynrName»
 			 
 			/**
 			* @brief Synchronous getter for the «attributeName» attribute.
@@ -60,7 +60,7 @@ class InterfaceUtil {
 	'''
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
-			«val attributeName = attribute.name»
+			«val attributeName = attribute.joynrName»
 			 
 			/**
 			* @brief Asynchronous getter for the «attributeName» attribute.
@@ -99,7 +99,7 @@ class InterfaceUtil {
 	'''
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
-			«val attributeName = attribute.name»
+			«val attributeName = attribute.joynrName»
 			 
 			/**
 			* @brief Synchronous setter for the «attributeName» attribute.
@@ -118,7 +118,7 @@ class InterfaceUtil {
 	'''
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
-			«val attributeName = attribute.name»
+			«val attributeName = attribute.joynrName»
 			 
 			/**
 			* @brief Asynchronous setter for the «attributeName» attribute.
@@ -163,22 +163,22 @@ class InterfaceUtil {
 			«IF getMappedOutputParameter(method).head=="void"»
 				 
 				/**
-				* @brief Synchronous operation «method.name».
+				* @brief Synchronous operation «method.joynrName».
 				*
 				* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 				*/
-				virtual void «method.name»(
+				virtual void «method.joynrName»(
 						joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 				)«IF pure»=0«ENDIF»;
 			«ELSE»
 				 
 				/**
-				* @brief Synchronous operation «method.name».
+				* @brief Synchronous operation «method.joynrName».
 				*
 				* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 				* @param result The result that will be returned to the caller.
 				*/
-				virtual void «method.name»(
+				virtual void «method.joynrName»(
 						joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 				)«IF pure»=0«ENDIF»;
 			«ENDIF»
@@ -191,32 +191,32 @@ class InterfaceUtil {
 			«var returnType = getMappedOutputParameter(method).head» 
 			 
 			/**
-			* @brief Asynchronous operation «method.name».
+			* @brief Asynchronous operation «method.joynrName».
 			*
 			«printCallbackParamDefinition»
 			*/
-			virtual void «method.name»(
+			virtual void «method.joynrName»(
 					QSharedPointer<joynr::ICallback<«returnType»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			)«IF pure»=0«ENDIF»;
 			 
 			/**
-			* @brief Asynchronous operation «method.name».
+			* @brief Asynchronous operation «method.joynrName».
 			*
 			«printFutureParamDefinition»
 			«printCallbackParamDefinition»
 			*/
-			virtual void «method.name»(
+			virtual void «method.joynrName»(
 					QSharedPointer<joynr::Future<«returnType»> > future,
 					QSharedPointer<joynr::ICallback<«returnType»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			)«IF pure»=0«ENDIF»;
 			 
 			/** 
-			* @brief Asynchronous operation «method.name».
+			* @brief Asynchronous operation «method.joynrName».
 			«printFutureParamDefinition»
 			«printCallbackParamDefinition»
 			*/
 			
-			virtual void «method.name»(
+			virtual void «method.joynrName»(
 					QSharedPointer<joynr::Future<«returnType»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			)«IF pure»=0«ENDIF»;
 		«ENDFOR»	
