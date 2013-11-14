@@ -307,19 +307,18 @@ public class SerializationTest {
         GpsLocation gps2 = objectMapper.readValue(serializedContent, GpsLocation.class);
         Assert.assertEquals(gps1, gps2);
     }
-    
+
     @Test
-    public void serializeSubStop() throws JsonGenerationException, JsonMappingException,
-    IOException {
-    	        
+    public void serializeSubStop() throws JsonGenerationException, JsonMappingException, IOException {
+
         SubscriptionStop stop = new SubscriptionStop("testID");
-        
+
         String writeValueAsString = objectMapper.writeValueAsString(stop);
         System.out.println(writeValueAsString);
         SubscriptionStop receivedMessage = objectMapper.readValue(writeValueAsString, SubscriptionStop.class);
 
         Assert.assertEquals(stop, receivedMessage);
-    	
+
     }
 
 }

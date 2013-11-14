@@ -43,7 +43,6 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
@@ -130,8 +129,8 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy</id>
-						<phase>process-test-resources</phase>
+						<id>copy-integration-test-dependencies</id>
+						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>
@@ -163,9 +162,23 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>-XX:MaxPermSize=256m</argLine>
-				</configuration>
+				<executions>
+					<execution>
+						<!-- disable the default execution for unit tests -->
+						<id>default-test</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>exec-integration-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>-XX:MaxPermSize=256m</argLine>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

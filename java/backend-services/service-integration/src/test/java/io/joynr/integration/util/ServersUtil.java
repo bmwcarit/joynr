@@ -57,11 +57,10 @@ public class ServersUtil {
         final int port = ServletUtil.findFreePort();
         logger.info("PORT: http://localhost:{}", port);
         final Server jettyServer = new Server();
-        AbstractConnector connector= new SelectChannelConnector();
+        AbstractConnector connector = new SelectChannelConnector();
         connector.setPort(port);
         connector.setAcceptors(1);
-        jettyServer.setConnectors(new Connector[]{connector});
-        
+        jettyServer.setConnectors(new Connector[]{ connector });
 
         jettyServer.setHandler(contexts);
         jettyServer.start();

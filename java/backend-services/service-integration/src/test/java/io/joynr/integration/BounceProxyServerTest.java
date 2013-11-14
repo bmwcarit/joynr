@@ -98,7 +98,7 @@ public class BounceProxyServerTest {
     ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4);
     private ObjectMapper objectMapper;
     private String receiverId = "bounceproxytest-" + UUID.randomUUID().toString();
-    
+
     @BeforeClass
     public static void startServer() throws Exception {
         server = ServersUtil.startBounceproxy();
@@ -108,13 +108,11 @@ public class BounceProxyServerTest {
     public static void stopServer() throws Exception {
         server.stop();
     }
-    
 
     @Before
     public void setUp() throws Exception {
-        
-        String serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
 
+        String serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
 
         RestAssured.baseURI = serverUrl != null ? serverUrl : DEFAULT_SERVER;
 
@@ -129,7 +127,7 @@ public class BounceProxyServerTest {
         deleteChannel(channelId, 30000, 200);
     }
 
-    @Test(timeout=20000)
+    @Test(timeout = 20000)
     // This is a test to see if the atmos bug still exists. If the bug exists, the server will hang 20 secs
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
         createChannel(channelId);

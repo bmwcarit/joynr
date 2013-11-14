@@ -901,7 +901,7 @@
 				<executions>
 					<execution>
 						<id>copy-notice-file</id>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>add-resource</goal>
 						</goals>
@@ -940,7 +940,7 @@
 				<executions>
 					<execution>
 						<id>unpack-license-info</id>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>

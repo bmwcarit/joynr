@@ -122,8 +122,8 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy</id>
-						<phase>validate</phase>
+						<id>copy-integration-test-dependencies</id>
+						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>

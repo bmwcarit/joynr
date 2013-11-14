@@ -159,7 +159,7 @@ public class LongPollingCallable implements Callable<Void> {
                     String body = entity == null ? null : EntityUtils.toString(entity, "UTF-8");
                     statusCode = response.getStatusLine().getStatusCode();
                     statusText = response.getStatusLine().getReasonPhrase();
-                    logger.debug("Long poll returned: {} reason: url {}", statusCode, httpget.getURI().toASCIIString() );
+                    logger.debug("Long poll returned: {} reason: url {}", statusCode, httpget.getURI().toASCIIString());
                     return body;
                 }
             });

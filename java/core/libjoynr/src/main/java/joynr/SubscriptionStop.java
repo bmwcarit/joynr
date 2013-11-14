@@ -22,7 +22,7 @@ package joynr;
 public class SubscriptionStop implements JoynrMessageType {
 
     private String subscriptionId;
-    
+
     public SubscriptionStop() {
     }
 
