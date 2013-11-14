@@ -335,7 +335,7 @@ public class ChannelService {
         try {
             String msgId = message.getId();
             log.debug("******POST message {} to cluster controller: {}", msgId, ccid);
-            log.trace("******POST message (extended info) to cluster controller: {}\r\n {}", ccid, message);
+            log.trace("******POST message {} to cluster controller: {} extended info: \r\n {}", ccid, message);
 
             if (ccid == null) {
                 log.error("POST message {} to cluster controller: NULL. Dropped because: channel Id was not set. Request from: {}",
