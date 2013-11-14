@@ -69,7 +69,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>buildJar</id>
+						<id>build-templates-jar</id>
 						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
@@ -82,7 +82,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>buildTestJar</id>
+						<id>build-test-jar</id>
 						<goals>
 							<goal>test-jar</goal>
 						</goals>

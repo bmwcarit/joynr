@@ -32,7 +32,6 @@
 
 	<properties>
 		<license.useLicensesConfigFile>true</license.useLicensesConfigFile>
-		<guice-version>3.0</guice-version>
 	</properties>
 
 	<dependencies>
