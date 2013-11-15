@@ -105,7 +105,7 @@ public abstract class SubscriptionQos implements JoynrType {
      * If a notification message can not be delivered within its time to live, it will be deleted from the system. This
      * value is provided in milliseconds.
      * 
-     * @return<br>publicationTtl_ms time-to-live in milliseconds.
+     * @return publicationTtl_ms time-to-live in milliseconds.
      * 
      */
     public long getPublicationTtl() {
