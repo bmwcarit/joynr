@@ -102,6 +102,9 @@ public class SendRequestScheduler {
                                              final FailureAction failureAction,
                                              final MessageReceiver messageReceiver) throws JoynrSendBufferFullException {
         try {
+            logger.trace("scheduleRequest messageId: {} channelId {}",
+                         messageContainer.getMessageId(),
+                         messageContainer.getChannelId());
             // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
             if (!messageReceiver.isChannelCreated()) {
                 delay_ms = delay_ms > DELAY_RECEIVER_NOT_STARTED_MS ? delay_ms : DELAY_RECEIVER_NOT_STARTED_MS;
@@ -144,6 +147,9 @@ public class SendRequestScheduler {
                                      messageContainer.getMessageId());
                         return;
                     }
+                    logger.trace("schedule messageId: {} channelId: {}",
+                                 messageContainer.getMessageId(),
+                                 messageContainer.getChannelId());
                     appendToExecutionQueue(messageContainer, failureAction, messageReceiver);
                 }
             },
@@ -166,11 +172,13 @@ public class SendRequestScheduler {
             }
 
             // Each post is sent in its own thread
-            executionQueue.submit(new Runnable() {
-                public void run() {
-                    send(messageContainer, failureAction);
-                }
-            });
+            synchronized (executionQueue) {
+                executionQueue.submit(new Runnable() {
+                    public void run() {
+                        send(messageContainer, failureAction);
+                    }
+                });
+            }
         }
     }
 
