@@ -34,7 +34,7 @@
 	<modules>
 		<module>dependency-libs</module>
 		<module>framework</module>
-		<module>maven-joynr-generator-plugin</module>
+		<module>joynr-generator-maven-plugin</module>
 	</modules>
 	
 	<build>

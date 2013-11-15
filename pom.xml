@@ -629,7 +629,7 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>io.joynr.tools.generator</groupId>
-										<artifactId>maven-joynr-generator-plugin</artifactId>
+										<artifactId>joynr-generator-maven-plugin</artifactId>
 										<versionRange>[0.5.0,)</versionRange>
 										<goals>
 											<goal>generate</goal>
@@ -714,7 +714,7 @@
 				</plugin>
 				<plugin>
 					<groupId>io.joynr.tools.generator</groupId>
-					<artifactId>maven-joynr-generator-plugin</artifactId>
+					<artifactId>joynr-generator-maven-plugin</artifactId>
 					<version>${project.version}</version>
 				</plugin>
 				<plugin>
