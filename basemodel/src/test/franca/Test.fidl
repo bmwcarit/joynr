@@ -72,7 +72,7 @@ interface test{
 	attribute Int32 firstPrime readonly
 	
 	attribute Int32[] listOfInts readonly
-	attribute Location[] listOfLocations readonly
+	attribute GpsLocation[] listOfLocations readonly
 	attribute String[] listOfStrings
 	
 	//Those two are needed for the java tests:
@@ -251,10 +251,10 @@ interface test{
 	
 	method optimizeLocations {
 		in {
-			Location[] input
+			GpsLocation[] input
 		}
 		out {
-			Location[] result
+			GpsLocation[] result
 		}
 	}
 

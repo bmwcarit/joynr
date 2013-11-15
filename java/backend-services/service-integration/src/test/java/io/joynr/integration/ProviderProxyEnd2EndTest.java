@@ -279,9 +279,9 @@ public class ProviderProxyEnd2EndTest {
         TestProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         List<GpsLocation> locationList = new ArrayList<GpsLocation>();
-        locationList.add(new GpsLocation(GpsFixEnum.MODE3D, 50.1, 20.1, 500.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
-        locationList.add(new GpsLocation(GpsFixEnum.MODE3D, 50.1, 20.1, 500.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
-        locationList.add(new GpsLocation(GpsFixEnum.MODE3D, 50.1, 20.1, 500.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
+        locationList.add(new GpsLocation(50.1, 20.1, 500.0, GpsFixEnum.MODE3D, 0.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
+        locationList.add(new GpsLocation(50.1, 20.1, 500.0, GpsFixEnum.MODE3D, 0.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
+        locationList.add(new GpsLocation(50.1, 20.1, 500.0, GpsFixEnum.MODE3D, 0.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
         Trip testObject = new Trip(locationList, "Title");
         Trip result;
 

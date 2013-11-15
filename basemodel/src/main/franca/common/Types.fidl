@@ -33,27 +33,31 @@ typeCollection ExtendedTypes {
 		Mode3D
 	}
 
-	struct GpsLocation {
-		GpsFixEnum gpsFix
+	struct GpsPosition {
 		Double longitude 
 		Double latitude 
+	}
+	
+	struct GpsPositionExtended extends GpsPosition{
 		Double altitude
+		GpsFixEnum gpsFix
+		Double heading
+		Double quality //defaultValue 0.0
+	}
+	struct GpsLocation extends GpsPositionExtended{
 		Double elevation //defaultValue 0.0
 		Double bearing // defaultValue 0.0
-		Double accuracy //defaultValue 0.0
 		Int64 gpsTime // defaultValue 0
 		Int64 deviceTime // defaultValue 0
 		Int32 time /* might be temporary, as we use timestamps on gpslocatios for debuggin purpose */
 	}
 	
-	struct Location extends GpsLocation {
-		String description
-		String country
-		String city
+	struct PositionDetailedInfo {
 		String street
-		String streetNumber
-		String postalCode
-		String title
+		String houseNumber
+		String crossStreet
+		String city
+		String country
 	}
 	
 	struct Trip {

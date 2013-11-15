@@ -143,7 +143,7 @@ public class SerializationTest {
         // System.err.println(objectMapper.writeValueAsString(params));
 
         // GpsLocation GpsLocation = new GpsLocation(1.0, 2.0, new GpsLocation(4.0, 3.0, new String("hello")));
-        GpsLocation gpsLocation = new GpsLocation(GpsFixEnum.MODE2D, 1.0d, 2.0d, 0d, 0d, 0d, 0d, 0l, 0l, 0);
+        GpsLocation gpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
         List<GpsLocation> gpsLocations = new ArrayList<GpsLocation>();
         gpsLocations.add(gpsLocation);
         gpsLocations.add(gpsLocation);
@@ -202,7 +202,7 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeJsonReplyTest() throws Exception {
 
-        GpsLocation GpsLocation = new GpsLocation(GpsFixEnum.MODE2D, 1.0d, 2.0d, 0d, 0d, 0d, 0d, 0l, 0l, 0);
+        GpsLocation GpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
         List<GpsLocation> GpsLocations = new ArrayList<GpsLocation>();
         GpsLocations.add(GpsLocation);
         GpsLocations.add(GpsLocation);
@@ -222,7 +222,7 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeOneWayTest() throws Exception {
 
-        GpsLocation GpsLocation = new GpsLocation(GpsFixEnum.MODE2D, 1.0d, 2.0d, 0d, 0d, 0d, 0d, 0l, 0l, 0);
+        GpsLocation GpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
         OneWay oneway = new OneWay(GpsLocation);
 
         String valueAsString = objectMapper.writeValueAsString(oneway);

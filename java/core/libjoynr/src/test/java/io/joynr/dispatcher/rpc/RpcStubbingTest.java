@@ -76,9 +76,10 @@ import com.google.inject.Injector;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RpcStubbingTest {
-    private static final GpsLocation gpsValue = new GpsLocation(GpsFixEnum.MODE2D,
-                                                                1.0d,
+    private static final GpsLocation gpsValue = new GpsLocation(1.0d,
                                                                 2.0d,
+                                                                0d,
+                                                                GpsFixEnum.MODE2D,
                                                                 0d,
                                                                 0d,
                                                                 0d,
@@ -88,7 +89,7 @@ public class RpcStubbingTest {
                                                                 0);
 
     private static final List<GpsLocation> gpsList = Arrays.asList(new GpsLocation[]{ gpsValue,
-            new GpsLocation(GpsFixEnum.MODE2D, 3.0d, 4.0d, 0d, 0d, 0d, 0d, 0l, 0l, 0) });
+            new GpsLocation(3.0d, 4.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) });
 
     private static final long DEFAULT_TTL = 2000L;
 
