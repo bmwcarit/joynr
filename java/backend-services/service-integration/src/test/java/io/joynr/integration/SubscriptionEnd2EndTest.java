@@ -22,6 +22,7 @@ package io.joynr.integration;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,7 +45,6 @@ import io.joynr.runtime.PropertyLoader;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -56,7 +56,6 @@ import joynr.tests.TestProxy;
 import joynr.types.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,7 +64,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,281 +72,369 @@ import org.slf4j.LoggerFactory;
 public class SubscriptionEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionEnd2EndTest.class);
 
+    private static final long expected_latency_ms = 50;
+
     @Rule
     public TestName name = new TestName();
 
-    private PubSubTestProviderImpl provider;
-    private String domain;
-    private TestProxy proxy;
+    private static PubSubTestProviderImpl provider;
+    private static String domain;
+    private static TestProxy proxy;
 
-    @Mock
-    private SubscriptionListener<GpsLocation> gpsListener;
-    @Mock
-    private SubscriptionListener<Integer> integerListener;
+    // private SubscriptionQos subscriptionQos;
+    private static DummyJoynrApplication providingApplication;
+    private static DummyJoynrApplication consumingApplication;
 
-    @Mock
-    private SubscriptionListener<List<Integer>> integerListListener;
-
-    private SubscriptionQos subscriptionQos;
-    private DummyJoynrApplication dummyApplicationA;
-    private DummyJoynrApplication dummyApplicationB;
-
-    private String methodName;
+    private int period_ms = 200;
 
     private static Server server;
 
     @BeforeClass
-    public static void startServer() throws Exception {
+    public static void setupEndpoints() throws Exception {
         server = ServersUtil.startServers();
-    }
-
-    @AfterClass
-    public static void stopServer() throws Exception {
-        server.stop();
+        domain = "TestDomain" + System.currentTimeMillis();
+        setupProvidingApplication();
+        setupConsumingApplication();
     }
 
     @Before
     public void setUp() throws JoynrArbitrationException, InterruptedException, IOException {
-
-        methodName = name.getMethodName();
-        logger.info("setup beginning...");
-
-        domain = "TestDomain" + System.currentTimeMillis();
-
-        setupApplicationA();
-        setupApplicationB();
-
-        // Thread.sleep(4000);
-
-        ProxyBuilder<TestProxy> proxyBuilder;
-
-        MessagingQos messagingQos = new MessagingQos(40000);
-        DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
-
-        proxyBuilder = dummyApplicationB.getRuntime().getProxyBuilder(domain, joynr.tests.TestProxy.class);
-        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-
-        // Wait until all the registrations and lookups are finished, to make
-        // sure the timings are correct once the
-        // tests start.
-
-        // Also try to send a sync request to the test-proxy, to make sure
-        // everything works ok:
-        logger.trace("Waited for all Setups to finish, now make a sync call to the proxy");
-        proxy.getFirstPrime();
-        logger.trace("Sync call to proxy finished");
-
-        // TODO first publication will arrive too late if timeouts are reduced,
-        // investigate why the first publication
-        // needs about 1000 msec to be sent. TM: Most likely reason is, that
-        // registration and arbitration takes some
-        // time to finish.
-        long period_ms = 2000;
-        long endDate_ms = System.currentTimeMillis() + 8000;
-        long alertInterval_ms = 5000;
-        long publicationTtl_ms = 2500;
-        Date endDate = new Date(endDate_ms);
-        logger.trace("Creating SubscriptionQos with Enddate: " + endDate.toString());
-        subscriptionQos = new PeriodicSubscriptionQos(period_ms, endDate_ms, alertInterval_ms, publicationTtl_ms);
-        Thread.sleep(100);
+        Thread.sleep(200);
+        Object methodName = name.getMethodName();
+        logger.info("Starting {} ...", methodName);
     }
 
-    // Setup dummyApplicationA and register a provider
-    private void setupApplicationA() {
-        Properties factoryPropertiesA;
+    @AfterClass
+    public static void tearDownEndpoints() throws Exception {
+        providingApplication.shutdown();
+        providingApplication = null;
+        Thread.sleep(200);
+        consumingApplication.shutdown();
+        consumingApplication = null;
+        server.stop();
+    }
 
-        String channelIdA = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-A-SubscriptionEnd2EndTest";
+    private static void setupProvidingApplication() {
+        Properties factoryPropertiesProvider;
 
-        factoryPropertiesA = PropertyLoader.loadProperties("testMessaging.properties");
-        factoryPropertiesA.put(MessagingPropertyKeys.CHANNELID, channelIdA);
-        factoryPropertiesA.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesA.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
+        String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
+                + "-Provider-SubscriptionEnd2EndTest";
+
+        factoryPropertiesProvider = PropertyLoader.loadProperties("testMessaging.properties");
+        factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
+        factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
                 + UUID.randomUUID().toString());
-        dummyApplicationA = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesA).createApplication(DummyJoynrApplication.class);
+        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
 
         provider = new PubSubTestProviderImpl();
-        dummyApplicationA.getRuntime().registerCapability(domain,
-                                                          provider,
-                                                          joynr.tests.TestSync.class,
-                                                          "SubscriptionEnd2End");
+        providingApplication.getRuntime().registerCapability(domain,
+                                                             provider,
+                                                             joynr.tests.TestSync.class,
+                                                             "SubscriptionEnd2End");
     }
 
-    // Setup dummyApplicationB
-    private void setupApplicationB() {
-        String channelIdB = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-B-SubscriptionEnd2EndTest";
+    private static void setupConsumingApplication() throws JoynrArbitrationException, JoynrIllegalStateException,
+                                                   InterruptedException {
+        String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
+                + "-Consumer-SubscriptionEnd2EndTest";
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
-        factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdB);
+        factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
                 + UUID.randomUUID().toString());
-        dummyApplicationB = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesB).createApplication(DummyJoynrApplication.class);
-    }
 
-    @After
-    public void tearDown() throws InterruptedException {
-        // Get the messageReceiver from each injector and delete the channels
-        dummyApplicationA.shutdown();
-        dummyApplicationA = null;
-        Thread.sleep(200);
-        dummyApplicationB.shutdown();
-        dummyApplicationB = null;
+        consumingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesB).createApplication(DummyJoynrApplication.class);
+
+        MessagingQos messagingQos = new MessagingQos(5000);
+        DiscoveryQos discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
+
+        ProxyBuilder<TestProxy> proxyBuilder = consumingApplication.getRuntime()
+                                                                   .getProxyBuilder(domain, joynr.tests.TestProxy.class);
+        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        // Wait until all the registrations and lookups are finished, to make
+        // sure the timings are correct once the tests start by sending a sync
+        // request to the test-proxy
+        proxy.getFirstPrime();
+        logger.trace("Sync call to proxy finished");
+
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void registerSubscriptionAndReceiveUpdates() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
-        logger.trace("Starting registerSubscriptionAndReceiveUpdates");
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(12000);
+        int subscriptionDuration = (period_ms * 4);
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        Thread.sleep(subscriptionDuration);
         verify(integerListener, times(0)).publicationMissed();
         // TODO verify publications shipped correct data
         verify(integerListener, times(1)).receive(eq(42));
         verify(integerListener, times(1)).receive(eq(43));
         verify(integerListener, times(1)).receive(eq(44));
         verify(integerListener, times(1)).receive(eq(45));
-        verifyNoMoreInteractions(integerListener);
+
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForComplexDatatype() throws InterruptedException {
-        // TODO this test fails sometimes: timing issue
-        proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
+        SubscriptionListener<GpsLocation> gpsListener = mock(SubscriptionListener.class);
+        int subscriptionDuration = (period_ms * 4);
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
+        Thread.sleep(subscriptionDuration);
         // 100 2100 4100 6100
-        Thread.sleep(12000);
         verify(gpsListener, times(0)).publicationMissed();
         verify(gpsListener, atLeast(4)).receive(eq(provider.getComplexTestAttribute()));
+
+        proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForListAndReceiveUpdates() throws InterruptedException {
+        SubscriptionListener<List<Integer>> integerListListener = mock(SubscriptionListener.class);
+        provider.setTestAttribute(42);
 
-        logger.trace("Starting registerSubscriptionAndReceiveUpdates");
-        proxy.subscribeToListOfInts(integerListListener, subscriptionQos);
-        Thread.sleep(12000);
-        verify(integerListener, times(0)).publicationMissed();
-        // TODO verify publications shipped correct data
+        int subscriptionDuration = (period_ms * 3);
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
+
+        String subscriptionId = proxy.subscribeToListOfInts(integerListListener, subscriptionQos);
+        Thread.sleep(subscriptionDuration);
+        verify(integerListListener, times(0)).publicationMissed();
+
         verify(integerListListener, times(1)).receive(eq(Arrays.asList(42)));
         verify(integerListListener, times(1)).receive(eq(Arrays.asList(42, 43)));
         verify(integerListListener, times(1)).receive(eq(Arrays.asList(42, 43, 44)));
-        verifyNoMoreInteractions(integerListener);
+        verifyNoMoreInteractions(integerListListener);
+
+        proxy.unsubscribeFromListOfInts(subscriptionId);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void registerAndStopSubscription() throws InterruptedException {
-        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(4000);
-        verify(integerListener, times(0)).publicationMissed();
-        verify(integerListener, atLeast(1)).receive(anyInt());
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        int subscriptionDuration = (period_ms * 2);
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
 
-        proxy.unsubscribeFromTestAttribute(subscriptionId);
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        Thread.sleep(subscriptionDuration);
+        verify(integerListener, times(0)).publicationMissed();
+        verify(integerListener, atLeast(2)).receive(anyInt());
+
         reset(integerListener);
-        Thread.sleep(5000);
+        Thread.sleep(subscriptionDuration);
+        verifyNoMoreInteractions(integerListener);
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testOnChangeWithKeepAliveSubscriptionSendsOnChange() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+
+        // NOTE: 50 is the minimum minInterval supported
+        long minInterval_ms = 50;
+        long subscriptionDuration = 1000;
+        // publications don't live longer than subscription
+        long publicationTtl_ms = subscriptionDuration;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+
+        // do not want to see the interval
+        long maxInterval_ms = subscriptionDuration + 1;
+        SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
+                                                                                        maxInterval_ms,
+                                                                                        expiryDate_ms,
+                                                                                        publicationTtl_ms);
+
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
+        verify(integerListener, times(0)).publicationMissed();
+        Thread.sleep(expected_latency_ms);
+
+        // when subscribing, we automatically get 1 publication. Expect the starting-publication
+        verify(integerListener, times(1)).receive(anyInt());
+
+        // Wait minimum time between onChanged
+        Thread.sleep(minInterval_ms);
+        provider.setTestAttribute(5);
+        Thread.sleep(expected_latency_ms);
+        // expect the onChangeSubscription to have arrived
+        verify(integerListener, times(2)).receive(anyInt());
+
+        Thread.sleep(subscriptionDuration);
+        // expect no more publications to arrive
         verifyNoMoreInteractions(integerListener);
 
-    }
-
-    @Test
-    public void testMixedSubscriptionSendsOnSet() throws InterruptedException {
-
-        subscriptionQos = getMixedSubscriptionQos();
-
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(4000);
-        verify(integerListener, times(0)).publicationMissed();
-        // when subscribing, we automatically get 1 publication.
-        // verify(integerListener, times(1)).receive(anyInt());
-
-        provider.setTestAttribute(5);
-        Thread.sleep(4000);
-
-        verify(integerListener, times(2)).receive(anyInt());
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
 
     }
-
+    
+    @SuppressWarnings("unchecked")
     @Test
-    public void testMixedSubscriptionSendsOnSetAndOnInterval() throws InterruptedException {
+    public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
-        subscriptionQos = getMixedSubscriptionQos();
+        // NOTE: 50 is the minimum minInterval supported
+        long minInterval_ms = 50; 
+        // get an interval update after 200 ms
+        long maxInterval_ms = 200; 
+        int numberExpectedKeepAlives = 3;
+        // the subscription duration is a little longer so that it does not expire exactly as the last keep alive is to be sent
+        long subscriptionDuration = maxInterval_ms * numberExpectedKeepAlives + (maxInterval_ms/2);
+        long publicationTtl_ms = maxInterval_ms; // publications don't live
+                                                 // longer than next interval
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(2000);
+        SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
+                                                                                        maxInterval_ms,
+                                                                                        expiryDate_ms,
+                                                                                        0,
+                                                                                        publicationTtl_ms);
+
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
         verify(integerListener, times(0)).publicationMissed();
-        // when subscribing, we automatically get 1 publication.
-        // verify(integerListener, times(1)).receive(anyInt());
+        Thread.sleep(expected_latency_ms);
 
-        // expect the starting-publication
+        // when subscribing, we automatically get 1 publication. Expect the
+        // starting-publication
         verify(integerListener, times(1)).receive(anyInt());
-        provider.setTestAttribute(5);
-        Thread.sleep(2000);
-        // expect the onChangeSubscription
-        verify(integerListener, times(2)).receive(anyInt());
-        Thread.sleep(4000);
-        // expect the Regular Subscription
-        verify(integerListener, times(3)).receive(anyInt());
+        
+        for (int i=1; i<=numberExpectedKeepAlives; i++) {
+            
+            Thread.sleep(maxInterval_ms + expected_latency_ms);
+            // expect the next keep alive notification to have now arrived (plus the original one at subscription start)
+            verify(integerListener, times(i+1)).receive(anyInt());
+        }
+
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void testPureOnchangedSubscription() throws InterruptedException {
+    public void testOnChangeWithKeepAliveSubscription() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
-        logger.trace("TestPureOnChangedSubscription");
-        long minInterval_ms = 500;
-        long endDate_ms = System.currentTimeMillis() + 100000;
-        long publicationTtl_ms = 15500;
+        long minInterval_ms = 50; // NOTE: 50 is the minimum minInterval
+                                  // supported
+        long maxInterval_ms = 500; // get an interval update after 200 ms
+        long subscriptionDuration = maxInterval_ms * 3;
+        long alertInterval_ms = maxInterval_ms + 100;
+        long publicationTtl_ms = maxInterval_ms; // publications don't live
+                                                 // longer than next interval
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
-        subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, endDate_ms, publicationTtl_ms);
+        SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
+                                                                                        maxInterval_ms,
+                                                                                        expiryDate_ms,
+                                                                                        alertInterval_ms,
+                                                                                        publicationTtl_ms);
 
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(4000);
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
+        verify(integerListener, times(0)).publicationMissed();
+        Thread.sleep(expected_latency_ms);
+
+        // when subscribing, we automatically get 1 publication. Expect the
+        // starting-publication
+        verify(integerListener, times(1)).receive(anyInt());
+
+        // Wait minimum time between onChanged
+        Thread.sleep(minInterval_ms);
+        provider.setTestAttribute(5);
+        Thread.sleep(expected_latency_ms);
+        // expect the onChangeSubscription to have arrived
+        verify(integerListener, times(2)).receive(anyInt());
+
+        Thread.sleep(maxInterval_ms + 50);
+        // expect a keep alive notification to have now arrived
+        verify(integerListener, atLeast(3)).receive(anyInt());
+
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testOnChangeSubscription() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+
+        long minInterval_ms = 0;
+        long publicationTtl_ms = 1000;
+        long expiryDate_ms = System.currentTimeMillis() + 1000;
+
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
+
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        Thread.sleep(expected_latency_ms);
         verify(integerListener, times(0)).publicationMissed();
         // when subscribing, we automatically get 1 publication. This might not
         // be the case in java?
         verify(integerListener, times(1)).receive(anyInt());
-        provider.setTestAttribute(5);
-        Thread.sleep(1000);
 
-        verify(integerListener, atLeast(2)).receive(anyInt());
+        provider.setTestAttribute(5);
+        Thread.sleep(expected_latency_ms);
+
+        verify(integerListener, times(2)).receive(anyInt());
+
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void testExpiredSubscriptionOnChange() throws InterruptedException {
+    public void testExpiredOnChangeSubscription() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
-        logger.trace("testExpiredSubscriptionOnChange");
         // Only get onChange messages
-        long minInterval_ms = 10000;
-        long expiryDate_ms = System.currentTimeMillis() + 4000; // Expire
-        // quickly
-        long publicationTtl_ms = 10000; // Have a large TTL on subscription
-        // messages
+        long minInterval_ms = 0;
+        long duration = 500;
+        // Expire quickly
+        long expiryDate_ms = System.currentTimeMillis() + duration; 
+        // Have a large TTL on subscription messages
+        long publicationTtl_ms = 10000; 
 
-        subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(5000);
-        // We should now have an expired onChange subscription
-        provider.setTestAttribute(5);
-        Thread.sleep(1000);
-
-        // There should have only been one call - the automatic publication when
-        // a subscription is made
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        Thread.sleep(expected_latency_ms);
+        // There should have only been one call - the automatic publication when a subscription is made
         verify(integerListener, times(1)).receive(anyInt());
 
+        Thread.sleep(duration + expected_latency_ms);
+        // We should now have an expired onChange subscription
+        provider.setTestAttribute(5);
+        Thread.sleep(100);
+        verifyNoMoreInteractions(integerListener);
+
+        proxy.unsubscribeFromTestAttribute(subscriptionId);
+
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSubscribeToNonExistentDomain() throws InterruptedException {
+        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        TestProxy proxyToNonexistentDomain = null;
         try {
             ProxyBuilder<TestProxy> proxyBuilder;
-            String nonExistentDomain = UUID.randomUUID().toString() + "-end2end";
+            String nonExistentDomain = UUID.randomUUID().toString() + "-domaindoesnotexist-end2end";
             MessagingQos messagingQos = new MessagingQos(20000);
             DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
-            proxyBuilder = dummyApplicationB.getRuntime().getProxyBuilder(nonExistentDomain,
-                                                                          joynr.tests.TestProxy.class);
-            proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+            proxyBuilder = consumingApplication.getRuntime().getProxyBuilder(nonExistentDomain,
+                                                                             joynr.tests.TestProxy.class);
+            proxyToNonexistentDomain = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();
         } catch (JoynrIllegalStateException e) {
@@ -356,57 +442,12 @@ public class SubscriptionEnd2EndTest {
         }
 
         // This should not cause an exception
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms,
+                                                                      System.currentTimeMillis() + 30000,
+                                                                      0,
+                                                                      0);
+        String subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(4000);
+        proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId);
     }
-
-    // Test is currently failing because subscription persistence not
-    // implemented.
-    @Test
-    @Ignore
-    public void testSubscriptionToRestartedProvider() throws InterruptedException {
-        logger.trace("TestSubscriptionToRestartedProvider");
-        long minInterval_ms = 500;
-        long expiryDate_ms = System.currentTimeMillis() + 100000;
-        long publicationTtl_ms = 30000;
-
-        subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
-
-        // Subscribe to an attribute on-change
-        proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        verify(integerListener, times(0)).publicationMissed();
-        verify(integerListener, times(1)).receive(anyInt());
-        provider.setTestAttribute(5);
-        verify(integerListener, times(2)).receive(anyInt());
-
-        // Shutdown the provider
-        dummyApplicationA.getRuntime().shutdown(true);
-
-        // Start the provider again
-        setupApplicationA();
-
-        // Cause attribute onchange
-        for (int i = 0; i < 2; i++) {
-            provider.setTestAttribute(8);
-            Thread.sleep(1000);
-        }
-
-        // See if the subscription got the on-change events
-        verify(integerListener, times(4)).receive(anyInt());
-    }
-
-    private SubscriptionQos getMixedSubscriptionQos() {
-        long minInterval_ms = 500;
-        long maxInterval_ms = 5000;
-        long endDate_ms = System.currentTimeMillis() + 100000;
-        long alertInterval_ms = 10000;
-        long publicationTtl_ms = 5500;
-
-        return new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                        maxInterval_ms,
-                                                        endDate_ms,
-                                                        alertInterval_ms,
-                                                        publicationTtl_ms);
-    }
-
 }

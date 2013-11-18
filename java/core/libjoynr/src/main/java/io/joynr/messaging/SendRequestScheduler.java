@@ -257,7 +257,7 @@ public class SendRequestScheduler {
                 break;
             }
         } catch (Exception e) {
-            logger.trace("SEND error channelId: {}, messageId: {}", channelId, messageId);
+            logger.trace("SEND error channelId: {}, messageId: {} error: {}", new Object[]{channelId, messageId, e.getMessage()});
         } finally {
             if (response != null) {
                 try {

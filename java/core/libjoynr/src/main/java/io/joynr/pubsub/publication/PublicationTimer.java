@@ -187,7 +187,9 @@ public class PublicationTimer extends PubSubTimerBase {
             state.updateTimeOfLastPublication();
             logger.trace("sent subscriptionreply @ " + state.getTimeOfLastPublication());
         } else {
-            logger.trace("igored attribute change. Mininterval not yet reached.");
+            logger.trace("igored attribute change. Mininterval {} not yet reached since timeSinceLast: {}",
+                         minInterval,
+                         timeSinceLast);
         }
 
     }

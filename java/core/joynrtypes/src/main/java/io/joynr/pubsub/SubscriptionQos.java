@@ -69,8 +69,9 @@ public abstract class SubscriptionQos implements JoynrType {
      *            </ul>
      */
     public SubscriptionQos(long expiryDate, long publicationTtl) {
-        if (expiryDate <= System.currentTimeMillis()) {
-            logger.error("Subscription ExpiryDate is in the past");
+        long now = System.currentTimeMillis();
+        if (expiryDate <= now) {
+            logger.error("Subscription ExpiryDate {} is in the past. Now: {}", expiryDate, now);
         }
         this.expiryDate = expiryDate;
         publicationTtl = publicationTtl < MIN_PUBLICATION_TLL ? MIN_PUBLICATION_TLL : publicationTtl;
