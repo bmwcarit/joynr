@@ -675,6 +675,10 @@ abstract class JoynrGeneratorExtensions {
         return type == FBasicTypeId::DOUBLE;
     }
 
+    def boolean isFloat(FBasicTypeId type) {
+    	return type == FBasicTypeId::FLOAT;
+    }
+
     def boolean isBool(FBasicTypeId type) {
         return type == FBasicTypeId::BOOLEAN;
     }
