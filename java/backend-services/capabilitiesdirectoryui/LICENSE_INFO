@@ -23,8 +23,8 @@ under the License.
 The "jquery" included in some products is licensed under the “MIT/X11 license”.
 
 Files:
- - src/main/resources/script/jquery-1.7.1.js
- - src/main/resources/css/jquery-smooth.css
+ - jquery-1.7.1.js
+ - jquery-smooth.css
 
 A copy of that licese in the English original version is included in the
 MIT-LICENSE document.
