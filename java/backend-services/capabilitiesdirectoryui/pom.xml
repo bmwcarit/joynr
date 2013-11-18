@@ -49,6 +49,21 @@
                     <webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
                     <warName>${project.build.finalName}</warName>
                     <warSourceDirectory>src/main/resources</warSourceDirectory>
+					<webResources>
+						<resource>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>*LICENSE*</include>
+								<include>NOTICE*</include>
+							</includes>
+						</resource>
+						<resource>
+							<directory>${project.build.directory}</directory>
+							<includes>
+								<include>LICENSE</include>
+							</includes>
+						</resource>
+					</webResources>
                 </configuration>
             </plugin>
 			<plugin>

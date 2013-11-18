@@ -90,6 +90,21 @@
 							<type>war</type>
 						</overlay>
 					</overlays>
+					<webResources>
+						<resource>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>*LICENSE*</include>
+								<include>NOTICE*</include>
+							</includes>
+						</resource>
+						<resource>
+							<directory>${project.build.directory}</directory>
+							<includes>
+								<include>LICENSE</include>
+							</includes>
+						</resource>
+					</webResources>
 				</configuration>
 			</plugin>
 

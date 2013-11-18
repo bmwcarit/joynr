@@ -183,6 +183,21 @@
 					<warName>${project.build.finalName}</warName>
 					<warSourceDirectory>src/main/resources</warSourceDirectory>
 					<attachClasses>true</attachClasses>
+					<webResources>
+						<resource>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>*LICENSE*</include>
+								<include>NOTICE*</include>
+							</includes>
+						</resource>
+						<resource>
+							<directory>${project.build.directory}</directory>
+							<includes>
+								<include>LICENSE</include>
+							</includes>
+						</resource>
+					</webResources>
 				</configuration>
 			</plugin>
 
