@@ -107,7 +107,7 @@
 							<execution>
 								<id>attach-sources</id>
 								<goals>
-									<goal>jar</goal>
+									<goal>jar-no-fork</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -900,7 +900,168 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-license-info</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.unpack-license-info}</skip>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.tools</groupId>
+									<artifactId>build-resources</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<includes>LICENSE</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-and-license-files</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-notice-and-license-files-test</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>add-test-resource</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-license-to-apidoc</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/apidocs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-notice-license-to-classes</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-notice-license-to-test-classes</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -918,7 +1079,7 @@
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
 							<target>
-								<condition property="skip.copy-notice-file" value="true"
+								<condition property="skip.copy-notice-and-license-files" value="true"
 									else="false">
 									<equals arg1="${project.packaging}" arg2="pom" />
 								</condition>
@@ -927,84 +1088,6 @@
 									<equals arg1="${project.packaging}" arg2="pom" />
 								</condition>
 							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-notice-file</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.copy-notice-file}</skip>
-							<resources>
-								<resource>
-									<directory>${basedir}</directory>
-									<targetPath>${project.build.directory}/classes</targetPath>
-									<includes>
-										<include>NOTICE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${basedir}</directory>
-									<targetPath>${project.build.directory}/test-classes</targetPath>
-									<includes>
-										<include>NOTICE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${basedir}</directory>
-									<targetPath>${project.build.directory}/apidocs</targetPath>
-									<includes>
-										<include>NOTICE*</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-license-info</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.unpack-license-info}</skip>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.tools</groupId>
-									<artifactId>build-resources</artifactId>
-									<version>${project.version}</version>
-									<outputDirectory>${project.build.directory}/classes</outputDirectory>
-									<includes>LICENSE</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.tools</groupId>
-									<artifactId>build-resources</artifactId>
-									<version>${project.version}</version>
-									<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
-									<includes>LICENSE</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.tools</groupId>
-									<artifactId>build-resources</artifactId>
-									<version>${project.version}</version>
-									<outputDirectory>${project.build.directory}/apidocs</outputDirectory>
-									<includes>LICENSE</includes>
-								</artifactItem>
-							</artifactItems>
 						</configuration>
 					</execution>
 				</executions>

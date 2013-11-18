@@ -152,6 +152,26 @@
 				</dependencies>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<!--
+					copying NOTICE file must be disabled here to avoid duplicate file error
+					during android apk packaging
+					NOTE: this means the NOTICE file from io.joynr.java.android:joynr-android-runtime
+					      is copied to the apk file instead of the NOTICE file generated for this project
+					-->
+					<execution>
+						<id>copy-notice-license-to-classes</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>copy-notice-license-to-test-classes</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<executions>
@@ -167,16 +187,6 @@
 								<source>src/main/generated</source>
 							</sources>
 						</configuration>
-					</execution>
-					<!--
-					copying NOTICE file must be disabled here to avoid duplicate file error
-					during android apk packaging
-					NOTE: this means the NOTICE file from io.joynr.java.android:joynr-android-runtime
-					      is copied to the apk file instead of the NOTICE file generated for this project
-					-->
-					<execution>
-						<id>copy-notice-file</id>
-						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>
