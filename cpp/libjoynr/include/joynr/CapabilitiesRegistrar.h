@@ -50,7 +50,7 @@ public:
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId =
-                participantIdStorage->getProviderParticipantId(T::getInterfaceName(),
+                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
                                                                authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
@@ -79,7 +79,7 @@ public:
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId =
-                participantIdStorage->getProviderParticipantId(T::getInterfaceName(),
+                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
                                                                authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {

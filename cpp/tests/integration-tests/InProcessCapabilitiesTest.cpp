@@ -131,7 +131,8 @@ TEST_F(InProcessCapabilitiesTest, skeletonAddsToEPDirectory){
 
 TEST_F(InProcessCapabilitiesTest, registrarAddsRequestCallerAndRegistersAtCC){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
-                    IMockProviderInterface::getInterfaceName(),
+                    domain,
+					IMockProviderInterface::getInterfaceName(),
                     _
     ))
             .Times(1)

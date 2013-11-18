@@ -42,7 +42,8 @@ TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
 
-    QString participantId = store.getProviderParticipantId("interface.mytest",
+    QString participantId = store.getProviderParticipantId("domain.myDomain",
+                                                           "interface.mytest",
                                                            "myauthtoken",
                                                            "defaultParticipantId");
     ASSERT_EQ(QString("defaultParticipantId"), participantId);
@@ -53,7 +54,8 @@ TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
 TEST_F(ParticipantIdStorageTest, newProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    QString participantId = store.getProviderParticipantId("interface.mytest",
+    QString participantId = store.getProviderParticipantId("domain.myDomain",
+                                                           "interface.mytest",
                                                            "myauthtoken",
                                                            QString());
     // Check that the id is long enough to be a UUID
@@ -65,7 +67,8 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
 {
     ParticipantIdStorage *store = new ParticipantIdStorage(storageFile);
 
-    QString participantId = store->getProviderParticipantId("interface.mytest",
+    QString participantId = store->getProviderParticipantId("domain.myDomain",
+                                                            "interface.mytest",
                                                             "myauthtoken",
                                                             "persistMe");
     ASSERT_EQ(QString("persistMe"), participantId);
@@ -75,7 +78,8 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
     store = new ParticipantIdStorage(storageFile);
 
     // Check that the setting was persisted
-    participantId = store->getProviderParticipantId("interface.mytest",
+    participantId = store->getProviderParticipantId("domain.myDomain",
+                                                    "interface.mytest",
                                                     "myauthtoken",
                                                     QString());
 

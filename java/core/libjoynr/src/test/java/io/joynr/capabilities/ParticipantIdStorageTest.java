@@ -44,8 +44,11 @@ public class ParticipantIdStorageTest {
 
     @Test
     public void test() {
-        storage.getProviderParticipantId(TestAsyncInterface.class, "token1", TOKEN1_PARTICIPANT);
-        String participant2 = storage.getProviderParticipantId(TestAsyncInterface.class, "token2", TOKEN2_PARTICIPANT);
+        storage.getProviderParticipantId("domain", TestAsyncInterface.class, "token1", TOKEN1_PARTICIPANT);
+        String participant2 = storage.getProviderParticipantId("domain",
+                                                               TestAsyncInterface.class,
+                                                               "token2",
+                                                               TOKEN2_PARTICIPANT);
 
         assertEquals(TOKEN2_PARTICIPANT, participant2);
     }

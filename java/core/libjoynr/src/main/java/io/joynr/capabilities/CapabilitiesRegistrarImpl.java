@@ -66,7 +66,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                             JoynrProvider provider,
                                                                             final Class<T> providedInterface,
                                                                             String authenticationToken) {
-        String participantId = participantIdStorage.getProviderParticipantId(providedInterface, authenticationToken);
+        String participantId = participantIdStorage.getProviderParticipantId(domain,
+                                                                             providedInterface,
+                                                                             authenticationToken);
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
                                                               provider.getProviderQos(),
@@ -87,7 +89,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                 JoynrProvider provider,
                                                                 final Class<T> providedInterface,
                                                                 String authenticationToken) {
-        String participantId = participantIdStorage.getProviderParticipantId(providedInterface, authenticationToken);
+        String participantId = participantIdStorage.getProviderParticipantId(domain,
+                                                                             providedInterface,
+                                                                             authenticationToken);
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
                                                               provider.getProviderQos(),
