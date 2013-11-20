@@ -68,9 +68,7 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
             List<String> urls = new ArrayList<String>();
             urls.add(url);
             channelUrlInformation.setUrls(urls);
-            logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing. Defaulting to bounceproxy: {}",
-                        channelId,
-                        channelUrlInformation);
+            logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing.", channelId, channelUrlInformation);
         } else {
             logger.debug("GLOBAL getUrlsForChannel ChannelUrls for channelId {} found: {}",
                          channelId,

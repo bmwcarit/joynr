@@ -20,12 +20,14 @@ package io.joynr.messaging;
  */
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
  * Storage class for network configuration used to send messages.
  */
 
+@Singleton
 public class ConfigurableMessagingSettings implements MessagingSettings {
     //    public static final String PROPERTY_JOYNR_MESSAGING_CHANNELID = "joynr.messaging.channelId"; //NOT USUALLY SET BY THE APPLICATION!
     //    public static final String PROPERTY_JOYNR_MESSAGING_CAPABILITIESDIRECTORYURL = "joynr.messaging.capabilitiesDirectoryUrl";
