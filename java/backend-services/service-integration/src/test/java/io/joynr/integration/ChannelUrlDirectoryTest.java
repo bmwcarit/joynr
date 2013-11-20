@@ -1,4 +1,4 @@
-package io.joynr.channel;
+package io.joynr.integration;
 
 /*
  * #%L
@@ -19,11 +19,11 @@ package io.joynr.channel;
  * #L%
  */
 
+import static org.junit.Assert.*;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.bounceproxy.LocalGrizzlyBounceProxy;
-import io.joynr.discovery.DiscoveryDirectoriesLauncher;
 import io.joynr.guice.LowerCaseProperties;
+import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -33,7 +33,6 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -42,49 +41,46 @@ import java.util.UUID;
 import joynr.infrastructure.ChannelUrlDirectorySync;
 import joynr.types.ChannelUrlInformation;
 
+import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 
 public class ChannelUrlDirectoryTest {
+    private static final Logger logger = LoggerFactory.getLogger(ProviderProxyEnd2EndTest.class);
+
+    @Rule
+    public TestName name = new TestName();
+
     private Injector injectorConsumer;
 
-    private static int port;
-
-    private static LocalGrizzlyBounceProxy server = new LocalGrizzlyBounceProxy();
-
-    private static DiscoveryDirectoriesLauncher directories;
+    private static Server jettyServer;
 
     @BeforeClass
-    public static void startServer() throws IOException {
-        server = new LocalGrizzlyBounceProxy();
-        port = server.start();
-        String serverUrl = "http://localhost:" + port;
-        String bounceProxyUrl = serverUrl + "/bounceproxy/";
-        String directoriesUrl = bounceProxyUrl + "channels/discoverydirectory_channelid/";
-        System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
-        System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
-        System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
-
-        directories = DiscoveryDirectoriesLauncher.start();
+    public static void startServer() throws Exception {
+        jettyServer = ServersUtil.startServers();
     }
 
     @AfterClass
-    public static void stopServer() {
-        directories.shutdown();
-        server.stop();
+    public static void stopServer() throws Exception {
+        jettyServer.stop();
     }
 
     @Before
     public void setup() {
-
+        // prints the tests name in the log so we know what we are testing
+        String methodName = name.getMethodName();
+        logger.info(methodName + " setup beginning...");
         injectorConsumer = new JoynrInjectorFactory().getInjector();
-
     }
 
     @After
@@ -96,7 +92,38 @@ public class ChannelUrlDirectoryTest {
     }
 
     @Test
-    public void testChannelUrl() throws Exception {
+    public void testRegisterChannelUrl() throws Exception {
+        ChannelUrlDirectorySync proxy = createChannelUrlDirectoryProxy();
+
+        String testChannelId = name.getMethodName() + UUID.randomUUID().toString();
+        String[] urls = { "http://testurl.com/" + testChannelId + "/" };
+        ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
+        channelUrlInformation.setUrls(Arrays.asList(urls));
+
+        proxy.registerChannelUrls(testChannelId, channelUrlInformation);
+
+        ChannelUrlInformation urlsForChannelId = proxy.getUrlsForChannel(testChannelId);
+
+        List<String> urlsFromServer = urlsForChannelId.getUrls();
+        proxy.unregisterChannelUrls(testChannelId);
+
+        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+        proxy.unregisterChannelUrls(testChannelId);
+
+    }
+
+    @Test
+    public void testMissingChannelUrl() throws Exception {
+        ChannelUrlDirectorySync proxy = createChannelUrlDirectoryProxy();
+        String testChannelId = name.getMethodName() + UUID.randomUUID().toString();
+
+        ChannelUrlInformation urlInformation = proxy.getUrlsForChannel(testChannelId);
+        List<String> urlsFromChannelUrlDirectory = urlInformation.getUrls();
+
+        assertTrue(urlsFromChannelUrlDirectory.isEmpty());
+    }
+
+    private ChannelUrlDirectorySync createChannelUrlDirectoryProxy() throws InterruptedException {
         JoynrRuntime runtime = injectorConsumer.getInstance(JoynrRuntime.class);
 
         MessagingQos messagingQos = new MessagingQos();
@@ -112,24 +139,6 @@ public class ChannelUrlDirectoryTest {
         ChannelUrlDirectorySync proxy = proxyBuilder.setMessagingQos(messagingQos)
                                                     .setDiscoveryQos(discoveryQos)
                                                     .build();
-
-        String[] urls = { "http://hello.com" };
-        ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(Arrays.asList(urls));
-        String testChannelId = "testChannelId-ChannelUrlDirectoryTest.testChannelUrl";
-
-        proxy.registerChannelUrls(testChannelId, channelUrlInformation);
-        // proxy.registerChannelUrls(consumerChannelId, channelUrlInformation);
-
-        String channelId = "testChannelUrl" + UUID.randomUUID().toString();
-        proxy.registerChannelUrls(channelId, channelUrlInformation);
-        ChannelUrlInformation urlInformation = proxy.getUrlsForChannel(channelId);
-
-        List<String> urls2 = urlInformation.getUrls();
-        proxy.unregisterChannelUrls(testChannelId);
-
-        Assert.assertArrayEquals(urls, urls2.toArray(new String[urls2.size()]));
-        proxy.unregisterChannelUrls(channelId);
-
+        return proxy;
     }
 }

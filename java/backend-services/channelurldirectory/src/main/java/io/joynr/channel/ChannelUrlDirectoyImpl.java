@@ -63,10 +63,8 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
 
         ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
         if (channelUrlInformation == null) {
-            String url = settings.getBounceProxyUrl().getSendUrl(channelId);
             channelUrlInformation = new ChannelUrlInformation();
             List<String> urls = new ArrayList<String>();
-            urls.add(url);
             channelUrlInformation.setUrls(urls);
             logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing.", channelId, channelUrlInformation);
         } else {
