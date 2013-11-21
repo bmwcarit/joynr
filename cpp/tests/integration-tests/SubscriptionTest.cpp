@@ -34,7 +34,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/vehicle/GpsRequestInterpreter.h"
+#include "joynr/tests/TestRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
@@ -58,10 +58,10 @@ public:
     SubscriptionTest() :
         mockMessaging(new MockMessaging()),
         mockCallback(new MockCallback<types::GpsLocation>()),
-        mockRequestCaller(new MockGpsRequestCaller()),
+        mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
         mockSubscriptionListener(new MockSubscriptionListener<types::GpsLocation>()),
-        gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444),
+        gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
@@ -80,7 +80,7 @@ public:
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
-        InterfaceRegistrar::instance().registerRequestInterpreter<vehicle::GpsRequestInterpreter>("vehicle/Gps");
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
     }
 
     void TearDown(){
@@ -91,7 +91,7 @@ protected:
     QSharedPointer<MockMessaging> mockMessaging;
     QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
 
-    QSharedPointer<MockGpsRequestCaller> mockRequestCaller;
+    QSharedPointer<MockTestRequestCaller> mockRequestCaller;
     QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
     QSharedPointer<MockSubscriptionListener<types::GpsLocation> > mockSubscriptionListener;
 

@@ -19,7 +19,8 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "joynr/vehicle/GpsProxy.h"
+#include "PrettyPrint.h"
+#include "joynr/tests/TestProxy.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/IClientCache.h"
@@ -56,6 +57,11 @@ using namespace joynr;
 
 class CallBackActions {
 public:
+    CallBackActions(joynr::types::GpsLocation expectedGpsLocation, int expectedInt) :
+        expectedGpsLocation(expectedGpsLocation),
+        expectedInt(expectedInt)
+    {
+    }
     // for test: sync_setAttributeNotCached
     void executeCallBackVoidResult(
             Unused, // sender participant ID
@@ -75,9 +81,7 @@ public:
             Unused, // request object to send
             QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
-
-        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
-        (callback.dynamicCast<ReplyCaller<types::GpsLocation> >())->returnValue(location);
+       (callback.dynamicCast<ReplyCaller<types::GpsLocation> >())->returnValue(expectedGpsLocation);
     }
 
     // related to test: sync_OperationWithNoArguments
@@ -89,8 +93,11 @@ public:
             QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
 
-        callback.dynamicCast<ReplyCaller<int> >()->returnValue(9);
+        callback.dynamicCast<ReplyCaller<int> >()->returnValue(expectedInt);
     }
+private:
+    joynr::types::GpsLocation expectedGpsLocation;
+    int expectedInt;
 };
 
 
@@ -100,7 +107,9 @@ public:
 class AbstractSyncAsyncTest : public ::testing::Test {
 public:
     AbstractSyncAsyncTest():
-        callBackActions(),
+        expectedGpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 95302963),
+        expectedInt(60284917),
+        callBackActions(expectedGpsLocation, expectedInt),
         qosSettings(),
         mockDispatcher(),
         mockMessagingStub(),
@@ -110,8 +119,7 @@ public:
         providerParticipantId(),
         mockClientCache(),
         endPointAddress(),
-        gpsLocationResult(),
-        asyncGpsFixture(NULL)
+        asyncTestFixture(NULL)
     {}
     virtual ~AbstractSyncAsyncTest(){}
     void SetUp(){
@@ -119,14 +127,13 @@ public:
         endPointAddress = QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress("endPointAddress"));
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
-        gpsLocationResult = types::GpsLocation(types::GpsFixEnum::MODE3D, 12.0, 14.0, 16.0, 0,0,0,0,0,0);
         mockJoynrMessageSender = new MockJoynrMessageSender();
         // asyncGpsFixture must be created after derived objects have run Setup()
     }
 
     void TearDown(){
         delete mockJoynrMessageSender;
-        delete asyncGpsFixture;
+        delete asyncTestFixture;
     }
 
 
@@ -140,22 +147,22 @@ public:
             QSharedPointer<IReplyCaller>
     )>& setExpectationsForSendRequestCall(QString expectedType, QString methodName) = 0;
 
-    virtual vehicle::IGps* createFixture(bool cacheEnabled)=0;
+    virtual tests::ITest* createFixture(bool cacheEnabled)=0;
 
     void testAsync_getAttributeNotCached() {
-        asyncGpsFixture = createFixture(false);
+        asyncTestFixture = createFixture(false);
 
         MockGpsLocationCallback* callback = new MockGpsLocationCallback();
         QSharedPointer<ICallback<joynr::types::GpsLocation> > spCallback = QSharedPointer<ICallback<joynr::types::GpsLocation> > (callback);
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation");
-        asyncGpsFixture->getLocation(spCallback);
+        asyncTestFixture->getLocation(spCallback);
     }
 
 
 
     void testSync_setAttributeNotCached() {
-        vehicle::IGps* gpsFixture = createFixture(false);
+        tests::ITest* testFixture = createFixture(false);
 
         EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -174,84 +181,80 @@ public:
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
 
-        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         RequestStatus status;
-        gpsFixture->setLocation(status, location);
-        delete gpsFixture;
+        testFixture->setLocation(status, expectedGpsLocation);
+        delete testFixture;
     }
 
 
     void testSync_getAttributeNotCached() {
-        vehicle::IGps* gpsFixture = createFixture(false);
+        tests::ITest* testFixture = createFixture(false);
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         RequestStatus status;
         types::GpsLocation gpsLocation;
-        gpsFixture->getLocation(status, gpsLocation);
-        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
-        EXPECT_EQ(gpsLocation, location);
+        testFixture->getLocation(status, gpsLocation);
+        EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
-        delete gpsFixture;
+        delete testFixture;
     }
 
     void testAsync_getAttributeCached() {
-        asyncGpsFixture = createFixture(true);
+        asyncTestFixture = createFixture(true);
 
         MockGpsLocationCallback* callback = new MockGpsLocationCallback();
         QSharedPointer<ICallback<types::GpsLocation> > spCallback = QSharedPointer<ICallback<types::GpsLocation> > (callback);
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
 
-        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         QVariant qvariant;
-        qvariant.setValue(location);
+        qvariant.setValue(expectedGpsLocation);
 
         ON_CALL(mockClientCache, lookUp(_,_)).WillByDefault(Return(qvariant));
 
-        asyncGpsFixture->getLocation(spCallback);
+        asyncTestFixture->getLocation(spCallback);
     }
 
     void testSync_getAttributeCached() {
-        vehicle::IGps* gpsFixture = createFixture(true);
+        tests::ITest* testFixture = createFixture(true);
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
 
-        types::GpsLocation location(types::GpsFixEnum::MODE3D, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0, 0, 0);
         QVariant qvariant;
-        qvariant.setValue(location);
+        qvariant.setValue(expectedGpsLocation);
         ON_CALL(mockClientCache, lookUp(_,_)).WillByDefault(Return(qvariant));
 
         RequestStatus status;
         types::GpsLocation gpsLocation;
-        gpsFixture->getLocation(status, gpsLocation);
-        EXPECT_EQ(gpsLocation, location);
+        testFixture->getLocation(status, gpsLocation);
+        EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
-        delete gpsFixture;
+        delete testFixture;
     }
 
     void testAsync_OperationWithNoArguments() {
-        asyncGpsFixture = createFixture(false);
+        asyncTestFixture = createFixture(false);
 
         MockIntCallback* callback = new MockIntCallback();
         QSharedPointer<ICallback<int> > spCallback = QSharedPointer<ICallback<int> > (callback);
 
-        setExpectationsForSendRequestCall("int", "calculateAvailableSatellites");
+        setExpectationsForSendRequestCall("int", "methodWithNoInputParameters");
 
-        asyncGpsFixture->calculateAvailableSatellites(spCallback);
+        asyncTestFixture->methodWithNoInputParameters(spCallback);
     }
 
     void testSync_OperationWithNoArguments() {
-        vehicle::IGps* gpsFixture = createFixture(false);
-        setExpectationsForSendRequestCall("int", "calculateAvailableSatellites")
+        tests::ITest* testFixture = createFixture(false);
+        setExpectationsForSendRequestCall("int", "methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
         RequestStatus requestStatus;
         int result;
-        gpsFixture->calculateAvailableSatellites(requestStatus, result);
-        EXPECT_EQ(result, 9);
+        testFixture->methodWithNoInputParameters(requestStatus, result);
+        EXPECT_EQ(expectedInt, result);
         EXPECT_TRUE(requestStatus.successful());
-        delete gpsFixture;
+        delete testFixture;
     }
 
     void testSubscribeToAttribute() {
@@ -268,6 +271,8 @@ public:
     }
 
 protected:
+    joynr::types::GpsLocation expectedGpsLocation;
+    int expectedInt;
     CallBackActions callBackActions;
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
@@ -278,8 +283,7 @@ protected:
     QString providerParticipantId;
     MockClientCache mockClientCache;
     QSharedPointer<JoynrMessagingEndpointAddress> endPointAddress;
-    types::GpsLocation gpsLocationResult;
-    vehicle::IGps *asyncGpsFixture;
+    tests::ITest* asyncTestFixture;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);
 };

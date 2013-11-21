@@ -19,6 +19,26 @@
 package types
 
 typeCollection TestTypes {
+	enumeration TEnum {
+		TLiteralA
+		TLiteralB
+	}
+
+	struct TStruct {
+		Double tDouble
+		Int64 tInt64
+		String tString
+	}
+
+	struct TStructExtended extends TStruct {
+		TEnum tEnum
+		Int32 tInt32
+	}
+
+	struct TStructComposition {
+		TStructExtended[] tStructExtendeds
+	}
+
 	enumeration Vowel {
 		a
 		e
@@ -26,7 +46,7 @@ typeCollection TestTypes {
 		o
 		u
 	}
-	
+
 	struct Word {
 		Vowel[] vowels 
 	}

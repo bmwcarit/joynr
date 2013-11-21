@@ -199,7 +199,7 @@ class TypeCppTemplate {
 		QString «typeName»::toString() const {
 		    QString result;
 			«IF hasExtendsDeclaration(type as FCompoundType)»
-				result += «getMappedDatatype(type)»::toString();
+				result += «getMappedDatatype(getExtendedType(type as FCompoundType))»::toString();
 			«ENDIF»
 		    «FOR member: getMembers(type as FCompoundType)»
 		    	«val memberName = member.joynrName»

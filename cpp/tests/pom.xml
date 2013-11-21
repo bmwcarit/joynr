@@ -60,7 +60,7 @@
 				<artifactId>joynr-generator-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>generatecommontestclasses</id>
+						<id>generate-common-test-classes</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -72,7 +72,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>generatecpptestclasses</id>
+						<id>generate-cpp-test-classes</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>

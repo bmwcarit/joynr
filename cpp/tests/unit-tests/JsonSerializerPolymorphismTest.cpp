@@ -17,8 +17,9 @@
  * #L%
  */
 #include <gtest/gtest.h>
+#include "joynr/types/GpsPosition.h"
+#include "joynr/types/GpsPositionExtended.h"
 #include "joynr/types/GpsLocation.h"
-#include "joynr/types/Location.h"
 #include "joynr/types/GpsFixEnum.h"
 #include "joynr/types/Trip.h"
 #include "joynr/JsonSerializer.h"
@@ -43,88 +44,77 @@ protected:
 };
 
 TEST_F(JsonSerializerPolymorphismTest, deserializeGpsLocationFromLocation) {
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
-    qRegisterMetaType<joynr::types::Location>("joynr::types::Location");
-    qRegisterMetaType<joynr__types__Location>("joynr__types__Location");
+    qRegisterMetaType<joynr::types::GpsPosition>("joynr::types::GpsPosition");
+    qRegisterMetaType<joynr__types__GpsPosition>("joynr__types__GpsPosition");
+    qRegisterMetaType<joynr::types::GpsPositionExtended>("joynr::types::GpsPositionExtended");
+    qRegisterMetaType<joynr__types__GpsPositionExtended>("joynr__types__GpsPositionExtended");
 
-    joynr::types::GpsLocation expectedGpsLocation;
-    expectedGpsLocation.setGpsFix(types::GpsFixEnum::MODE3D);
-    expectedGpsLocation.setLongitude(1.1);
-    expectedGpsLocation.setLatitude(2.2);
-    expectedGpsLocation.setAltitude(3.3);
-    expectedGpsLocation.setTime(17);
+    joynr::types::GpsPositionExtended expectedGpsPositionExt;
+    expectedGpsPositionExt.setLongitude(1.1);
+    expectedGpsPositionExt.setLatitude(2.2);
+    expectedGpsPositionExt.setAltitude(3.3);
+    expectedGpsPositionExt.setGpsFix(types::GpsFixEnum::MODE3D);
+    expectedGpsPositionExt.setHeading(4.4);
+    expectedGpsPositionExt.setQuality(5.5);
 
-//    joynr::types::Location location;
-//    location.setGpsFix(types::GpsFixEnum::MODE3D);
-//    location.setLongitude(1.1);
-//    location.setLatitude(2.2);
-//    location.setAltitude(3.3);
-//    location.setTime(17);
-//    location.setDescription("location.description");
-//    location.setCountry("location.country");
-//    location.setCity("location.city");
-//    location.setStreet("location.street");
-//    location.setStreetNumber("location.streetNumber");
-//    location.setPostalCode("location.postalCode");
-//    location.setTitle("location.title");
-
-    QByteArray serializedLocation(
+    QByteArray serializedGpsPositionExt(
             "{ "
-                "\"_typeName\" : \"joynr.types.Location\", "
+                "\"_typeName\" : \"joynr.types.GpsPositionExtended\", "
                 "\"altitude\" : 3.3, "
-                "\"city\" : \"location.city\", "
-                "\"country\" : \"location.country\", "
-                "\"description\" : \"location.description\", "
                 "\"gpsFix\" : \"MODE3D\", "
+                "\"heading\" : 4.4, "
                 "\"latitude\" : 2.2, "
                 "\"longitude\" : 1.1, "
-                "\"postalCode\" : \"location.postalCode\", "
-                "\"street\" : \"location.street\", "
-                "\"streetNumber\" : \"location.streetNumber\", "
-                "\"time\" : 17, "
-                "\"title\" : \"location.title\" "
+                "\"quality\" : 5.5 "
             "}"
     );
-    joynr::types::GpsLocation* deserializedGpsLocation = JsonSerializer::deserialize<joynr::types::GpsLocation>(serializedLocation);
+    joynr::types::GpsPositionExtended* deserializedGpsPosition =
+            JsonSerializer::deserialize<joynr::types::GpsPositionExtended>(serializedGpsPositionExt);
 
-    EXPECT_EQ(expectedGpsLocation, *deserializedGpsLocation);
+    EXPECT_EQ(expectedGpsPositionExt, *deserializedGpsPosition);
 
-    delete deserializedGpsLocation;
+    delete deserializedGpsPosition;
 }
 
 TEST_F(JsonSerializerPolymorphismTest, serializeGpsLocationListWithLocationInside) {
+    qRegisterMetaType<joynr::types::GpsPosition>("joynr::types::GpsPosition");
+    qRegisterMetaType<joynr__types__GpsPosition>("joynr__types__GpsPosition");
+    qRegisterMetaType<joynr::types::GpsPositionExtended>("joynr::types::GpsPositionExtended");
+    qRegisterMetaType<joynr__types__GpsPositionExtended>("joynr__types__GpsPositionExtended");
     qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
     qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
-    qRegisterMetaType<joynr::types::Location>("joynr::types::Location");
-    qRegisterMetaType<joynr__types__Location>("joynr__types__Location");
+
+    joynr::types::GpsPosition gpsPosition;
+    gpsPosition.setLongitude(1.1);
+    gpsPosition.setLatitude(2.1);
+
+    joynr::types::GpsPositionExtended gpsPositionExt;
+    gpsPositionExt.setLongitude(1.2);
+    gpsPositionExt.setLatitude(2.2);
+    gpsPositionExt.setAltitude(3.2);
+    gpsPositionExt.setGpsFix(joynr::types::GpsFixEnum::MODE2D);
+    gpsPositionExt.setHeading(4.2);
+    gpsPositionExt.setQuality(5.2);
 
     joynr::types::GpsLocation gpsLocation;
+    gpsLocation.setLongitude(1.3);
+    gpsLocation.setLatitude(2.3);
+    gpsLocation.setAltitude(3.3);
     gpsLocation.setGpsFix(types::GpsFixEnum::MODE3D);
-    gpsLocation.setLongitude(1.1);
-    gpsLocation.setLatitude(1.2);
-    gpsLocation.setAltitude(1.3);
-    gpsLocation.setTime(14);
+    gpsLocation.setHeading(4.3);
+    gpsLocation.setQuality(5.3);
+    gpsLocation.setElevation(6.3);
+    gpsLocation.setBearing(7.3);
+    gpsLocation.setGpsTime(83);
+    gpsLocation.setDeviceTime(93);
+    gpsLocation.setTime(103);
 
-    joynr::types::Location location;
-    location.setGpsFix(types::GpsFixEnum::MODE3D);
-    location.setLongitude(2.1);
-    location.setLatitude(2.2);
-    location.setAltitude(2.3);
-    location.setTime(24);
-    location.setDescription("location.description");
-    location.setCountry("location.country");
-    location.setCity("location.city");
-    location.setStreet("location.street");
-    location.setStreetNumber("location.streetNumber");
-    location.setPostalCode("location.postalCode");
-    location.setTitle("location.title");
+    QList<joynr::types::GpsPosition> gpsPositions;
+    gpsPositions.push_back(gpsPosition);
+    gpsPositions.push_back(gpsPositionExt);
+    gpsPositions.push_back(gpsLocation);
 
-    QList<joynr::types::GpsLocation> gpsLocations;
-    gpsLocations.push_back(location);
-    gpsLocations.push_back(gpsLocation);
-
-    QVariantList variantList = Util::convertListToVariantList(gpsLocations);
+    QVariantList variantList = Util::convertListToVariantList(gpsPositions);
     QVariant variant(variantList);
     QString serializedGpsLocations = JsonSerializer::serialize(variant);
     LOG_DEBUG(logger, serializedGpsLocations);

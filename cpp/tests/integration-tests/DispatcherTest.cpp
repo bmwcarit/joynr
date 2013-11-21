@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "PrettyPrint.h"
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
@@ -35,8 +36,8 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/joynrlogging.h"
 
-#include "joynr/vehicle/IGps.h"
-#include "joynr/vehicle/GpsRequestInterpreter.h"
+#include "joynr/tests/ITest.h"
+#include "joynr/tests/TestRequestInterpreter.h"
 #include "joynr/types/GpsLocation.h"
 
 using namespace ::testing;
@@ -49,10 +50,10 @@ public:
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "DispatcherTest")),
         mockMessaging(new MockMessaging()),
         mockCallback(new MockCallback<types::GpsLocation>()),
-        mockRequestCaller(new MockGpsRequestCaller()),
+        mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
         mockSubscriptionListener(new MockSubscriptionListener<types::GpsLocation>()),
-        gpsLocation1(types::GpsFixEnum::MODE2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444),
+        gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("TEST-providerParticipantId"),
         proxyParticipantId("TEST-proxyParticipantId"),
@@ -61,7 +62,7 @@ public:
         messageSender(mockMessaging),
         dispatcher(&messageSender)
     {
-        InterfaceRegistrar::instance().registerRequestInterpreter<vehicle::GpsRequestInterpreter>(vehicle::IGpsBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
     }
 
 
@@ -76,7 +77,7 @@ protected:
     QSharedPointer<MockMessaging> mockMessaging;
     QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
 
-    QSharedPointer<MockGpsRequestCaller> mockRequestCaller;
+    QSharedPointer<MockTestRequestCaller> mockRequestCaller;
     QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
     QSharedPointer<MockSubscriptionListener<types::GpsLocation> > mockSubscriptionListener;
 

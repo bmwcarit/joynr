@@ -112,6 +112,12 @@ interface test{
 		}
 	} 
 	
+	method methodWithNoInputParameters {
+		out {
+			Int32 result
+		}
+	}
+
 	method methodWithEnumParameter{
 		in {
 			testTypes.TestEnum input

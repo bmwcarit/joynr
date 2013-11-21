@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 using namespace ::testing;
 #include "joynr/types/Trip.h"
-#include "joynr/types/Location.h"
+#include "joynr/types/GpsLocation.h"
 #include "joynr/types/Word.h"
 #include "joynr/types/Vowel.h"
 
@@ -39,10 +39,10 @@ using namespace joynr;
 //        vowels : Vowel[]
 //    }
 
-TEST(DatatypeTemplateTest, enterAndRetrieveListOfLocationsFromTrip) {
+TEST(DatatypeTemplateTest, enterAndRetrieveListOfGpsLocationsFromTrip) {
 
-    types::Location loc1 = types::Location(types::GpsFixEnum::MODENOFIX, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 1982, "jambit", "germany", "Munich", "Erika-Mann-Str", "63", "80636", "jambit");
-    types::Location loc2 = types::Location(types::GpsFixEnum::MODE2D, 4.4, 5.5, 6.6, 0.0, 0.0, 0.0, 0, 0, 1982, "Carit", "germany", "Munich", "Petuelring", "116", "80809", "carit");
+    types::GpsLocation loc1 = types::GpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::GpsLocation loc2 = types::GpsLocation(2.1, 2.2, 2.3, types::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
     QList<types::GpsLocation> inputList = QList<types::GpsLocation>();
     QList<types::GpsLocation> returnList;
     inputList.append(loc1);
@@ -54,10 +54,10 @@ TEST(DatatypeTemplateTest, enterAndRetrieveListOfLocationsFromTrip) {
 }
 
 
-TEST(DatatypeTemplateTest, enterListOfLocationsUsingSetter) {
+TEST(DatatypeTemplateTest, enterListOfGpsLocationsUsingSetter) {
 
-    types::Location loc1 = types::Location(types::GpsFixEnum::MODENOFIX, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 1982, "jambit", "germany", "Munich", "Erika-Mann-Str", "63", "80636", "jambit");
-    types::Location loc2 = types::Location(types::GpsFixEnum::MODE2D, 4.4, 5.5, 6.6, 0.0, 0.0, 0.0, 0, 0, 1982, "Carit", "germany", "Munich", "Petuelring", "116", "80809", "carit");
+    types::GpsLocation loc1 = types::GpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::GpsLocation loc2 = types::GpsLocation(2.1, 2.2, 2.3, types::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
     QList<types::GpsLocation> inputList = QList<types::GpsLocation>();
     QList<types::GpsLocation> returnList;
     inputList.append(loc1);

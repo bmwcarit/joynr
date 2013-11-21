@@ -17,7 +17,7 @@
  * #L%
  */
 #include "AbstractSyncAsyncTest.cpp"
-#include "joynr/vehicle/GpsJoynrMessagingConnector.h"
+#include "joynr/tests/TestJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
 
 using ::testing::A;
@@ -35,10 +35,10 @@ using namespace joynr;
 /**
  * @brief Fixutre.
  */
-class GpsJoynrMessagingConnectorTest : public AbstractSyncAsyncTest {
+class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest {
 public:
 
-    GpsJoynrMessagingConnectorTest() {}
+    TestJoynrMessagingConnectorTest() {}
     // sets the expectations on the call expected on the MessageSender from the connector
     testing::internal::TypedExpectation<void(
             const QString&, // sender participant ID
@@ -62,9 +62,9 @@ public:
         );
     }
 
-    vehicle::IGps* createFixture(bool cacheEnabled) {
+    tests::ITest* createFixture(bool cacheEnabled) {
 
-        vehicle::GpsJoynrMessagingConnector* connector = new vehicle::GpsJoynrMessagingConnector(
+        tests::TestJoynrMessagingConnector* connector = new tests::TestJoynrMessagingConnector(
                     mockJoynrMessageSender,
                     (SubscriptionManager*) NULL,
                     "myDomain",
@@ -75,47 +75,47 @@ public:
                     cacheEnabled,
                     0);
 
-        return dynamic_cast<vehicle::IGps*>(connector);
+        return dynamic_cast<tests::ITest*>(connector);
     }
 
 };
 
-typedef GpsJoynrMessagingConnectorTest GpsJoynrMessagingConnectorTestDeathTest;
+typedef TestJoynrMessagingConnectorTest TestJoynrMessagingConnectorTestDeathTest;
 
 
 /*
  * Tests
  */
 
-TEST_F(GpsJoynrMessagingConnectorTest, async_getAttributeNotCached) {
+TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeNotCached) {
     testAsync_getAttributeNotCached();
 }
 
-TEST_F(GpsJoynrMessagingConnectorTest, sync_setAttributeNotCached) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_setAttributeNotCached) {
     testSync_setAttributeNotCached();
 }
 
 
-TEST_F(GpsJoynrMessagingConnectorTest, sync_getAttributeNotCached) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeNotCached) {
     testSync_getAttributeNotCached();
 }
 
-TEST_F(GpsJoynrMessagingConnectorTest, async_getAttributeCached) {
+TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeCached) {
     testAsync_getAttributeCached();
 }
 
-TEST_F(GpsJoynrMessagingConnectorTest, sync_getAttributeCached) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeCached) {
     testSync_getAttributeCached();
 }
 
-TEST_F(GpsJoynrMessagingConnectorTest, async_OperationWithNoArguments) {
+TEST_F(TestJoynrMessagingConnectorTest, async_OperationWithNoArguments) {
     testAsync_OperationWithNoArguments();
 }
 
-TEST_F(GpsJoynrMessagingConnectorTest, sync_OperationWithNoArguments) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_OperationWithNoArguments) {
     testSync_OperationWithNoArguments();
 }
 
-TEST_F(GpsJoynrMessagingConnectorTest, subscribeToAttribute) {
+TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
     testSubscribeToAttribute();
 }
