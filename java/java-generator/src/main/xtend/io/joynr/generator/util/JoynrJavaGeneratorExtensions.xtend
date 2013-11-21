@@ -102,7 +102,8 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		bMap.put(FBasicTypeId::UINT32, "0");
 		bMap.put(FBasicTypeId::INT64, "0L");
 		bMap.put(FBasicTypeId::UINT64, "0l");
-		bMap.put(FBasicTypeId::FLOAT, "0f");
+		//see bug JOYN-1521: floats are interpreted as double
+		bMap.put(FBasicTypeId::FLOAT, "0d");
 		bMap.put(FBasicTypeId::DOUBLE, "0d");
 		bMap.put(FBasicTypeId::STRING, "\"\"");
 		bMap.put(FBasicTypeId::UNDEFINED,"");
