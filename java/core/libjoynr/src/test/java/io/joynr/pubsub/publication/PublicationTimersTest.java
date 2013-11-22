@@ -84,9 +84,11 @@ public class PublicationTimersTest {
         alertAfterInterval = period + missedPublicationAlertDelay;
 
         expiryDate = System.currentTimeMillis() // the publication should start now
-                + period * numberOfPublications // time needed to publish numberOfMissedPublications
-                // publications
-                + 100;
+                // time needed to publish numberOfMissedPublications publications
+                + period * numberOfPublications
+                // add enough time to the subscription to prevent minor timing gliches from failing the test, but not so
+                // much as to cause a further publication
+                + (period / 2);
         qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
 
         subscriptionId = "subscriptionId";
