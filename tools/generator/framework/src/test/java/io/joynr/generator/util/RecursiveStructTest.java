@@ -43,7 +43,7 @@ public class RecursiveStructTest {
         FTypeRef typeRef = FrancaFactory.eINSTANCE.createFTypeRef();
         typeRef.setDerived(structType);
         field.setType(typeRef);
-        structType.getElements().add(field );
+        structType.getElements().add(field);
         JoynrGeneratorExtensions extension = mock(JoynrGeneratorExtensions.class, new CallsRealMethods());
         FCompoundType result = extension.getComplexType(structType);
         assertEquals(structType, result);

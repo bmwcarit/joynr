@@ -49,7 +49,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_AUTHTOKEN = "joynr.security.authtoken";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
-    
+
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
 
     private final BounceProxyUrl bounceProxyUrl;
