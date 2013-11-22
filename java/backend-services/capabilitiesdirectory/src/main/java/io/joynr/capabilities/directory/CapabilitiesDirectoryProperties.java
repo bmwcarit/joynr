@@ -108,7 +108,7 @@ public class CapabilitiesDirectoryProperties {
     }
 
     public String getCapabilitiesClientRequestTimeout() {
-        return config.getProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT);
+        return config.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT);
     }
 
     public String getMessagingLongPollRetryIntervalMs() {

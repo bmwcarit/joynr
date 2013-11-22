@@ -19,7 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.guice.LowerCaseProperties;

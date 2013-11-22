@@ -19,7 +19,9 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
+
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -33,6 +35,7 @@ import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -59,7 +62,6 @@ import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -159,6 +161,12 @@ public class SubscriptionEnd2EndTest {
         proxy.getFirstPrime();
         logger.trace("Sync call to proxy finished");
 
+    }
+
+    @Test
+    public void testSystemPropertiesUnchanged() {
+        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) == null);
+        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) == null);
     }
 
     @Test
@@ -281,21 +289,21 @@ public class SubscriptionEnd2EndTest {
         proxy.unsubscribeFromTestAttribute(subscriptionId);
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
         // NOTE: 50 is the minimum minInterval supported
-        long minInterval_ms = 50; 
+        long minInterval_ms = 50;
         // get an interval update after 200 ms
-        long maxInterval_ms = 200; 
+        long maxInterval_ms = 200;
         int numberExpectedKeepAlives = 3;
         // the subscription duration is a little longer so that it does not expire exactly as the last keep alive is to be sent
-        long subscriptionDuration = maxInterval_ms * numberExpectedKeepAlives + (maxInterval_ms/2);
+        long subscriptionDuration = maxInterval_ms * numberExpectedKeepAlives + (maxInterval_ms / 2);
         long publicationTtl_ms = maxInterval_ms; // publications don't live
-                                                 // longer than next interval
+        // longer than next interval
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
         SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
@@ -311,12 +319,12 @@ public class SubscriptionEnd2EndTest {
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
         verify(integerListener, times(1)).receive(anyInt());
-        
-        for (int i=1; i<=numberExpectedKeepAlives; i++) {
-            
+
+        for (int i = 1; i <= numberExpectedKeepAlives; i++) {
+
             Thread.sleep(maxInterval_ms + expected_latency_ms);
             // expect the next keep alive notification to have now arrived (plus the original one at subscription start)
-            verify(integerListener, times(i+1)).receive(anyInt());
+            verify(integerListener, times(i + 1)).receive(anyInt());
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
@@ -328,12 +336,12 @@ public class SubscriptionEnd2EndTest {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
         long minInterval_ms = 50; // NOTE: 50 is the minimum minInterval
-                                  // supported
+        // supported
         long maxInterval_ms = 500; // get an interval update after 200 ms
         long subscriptionDuration = maxInterval_ms * 3;
         long alertInterval_ms = maxInterval_ms + 100;
         long publicationTtl_ms = maxInterval_ms; // publications don't live
-                                                 // longer than next interval
+        // longer than next interval
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
         SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
@@ -401,9 +409,9 @@ public class SubscriptionEnd2EndTest {
         long minInterval_ms = 0;
         long duration = 500;
         // Expire quickly
-        long expiryDate_ms = System.currentTimeMillis() + duration; 
+        long expiryDate_ms = System.currentTimeMillis() + duration;
         // Have a large TTL on subscription messages
-        long publicationTtl_ms = 10000; 
+        long publicationTtl_ms = 10000;
 
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 

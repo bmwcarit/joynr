@@ -111,11 +111,11 @@ public class DiscoveryClientModule extends AbstractModule {
                                                                          RequestReplySender messageSender,
                                                                          RequestReplyDispatcher dispatcher,
                                                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
-                                                                         @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT) long capabilitiesClientRequestTimeoutMs,
+                                                                         @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
                                                                          SubscriptionManager subscriptionManager) {
 
-        MessagingQos messagingQos = new MessagingQos(capabilitiesClientRequestTimeoutMs);
-        DiscoveryQos discoveryQos = new DiscoveryQos(1000,
+        MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
+        DiscoveryQos discoveryQos = new DiscoveryQos(discoveryRequestTimeoutMs,
                                                      ArbitrationStrategy.HighestPriority,
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);

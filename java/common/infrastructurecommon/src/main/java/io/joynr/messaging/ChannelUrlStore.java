@@ -49,6 +49,7 @@ public class ChannelUrlStore {
         ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
         if (channelUrlInformation == null) {
             channelUrlInformation = new ChannelUrlInformation();
+            registeredChannels.put(channelId, channelUrlInformation);
         } else {
             logger.debug("ChannelUrls for channelId {} found: {}", channelId, channelUrlInformation.toString());
         }
@@ -60,8 +61,8 @@ public class ChannelUrlStore {
         return new HashMap<String, ChannelUrlInformation>(registeredChannels);
     }
 
-    public void registerChannelUrl(String channelid, String channelUrl) {
-        ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelid);
+    public void registerChannelUrl(String channelId, String channelUrl) {
+        ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
 
         if (channelUrlInformation == null) {
             channelUrlInformation = new ChannelUrlInformation();
@@ -70,7 +71,7 @@ public class ChannelUrlStore {
         List<String> urls = channelUrlInformation.getUrls();
         urls.add(channelUrl);
         channelUrlInformation.setUrls(urls);
-        registeredChannels.put(channelid, channelUrlInformation);
+        registeredChannels.put(channelId, channelUrlInformation);
 
     }
 }

@@ -328,9 +328,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
             TypeReference<?> typeRef = attributeType.newInstance();
             Object receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
-            //
-            @SuppressWarnings("rawtypes")
-            SubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
+            @SuppressWarnings("unchecked")
+			SubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
             if (listener == null) {
                 logger.error("No subscription listener found for incoming publication!");
             } else {

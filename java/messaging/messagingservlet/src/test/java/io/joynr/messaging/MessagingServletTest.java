@@ -109,8 +109,7 @@ public class MessagingServletTest {
         logger.debug("setting hostPath to: http://" + hostName + ":" + port);
         serverDomain = "domain_" + UUID.randomUUID().toString();
         System.getProperties().setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, serverDomain);
-        System.getProperties().setProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT,
-                                           "" + 5000);
+        System.getProperties().setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "" + 5000);
 
         // Create the server.
         server = new Server(port);
@@ -169,7 +168,7 @@ public class MessagingServletTest {
         logger.info(host);
 
         Properties properties = new Properties();
-        properties.put(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT, "" + 5000);
+        properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "" + 5000);
         JoynrApplication consumer = new JoynrInjectorFactory(new JoynrBaseModule(properties)).createApplication(new JoynrApplicationModule(MessagingServletTestApplication.class));
 
         Thread.sleep(10000);

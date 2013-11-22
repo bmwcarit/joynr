@@ -133,7 +133,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
                                                                                    RequestReplySender messageSender,
                                                                                    RequestReplyDispatcher dispatcher,
                                                                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String capabilitiesDirectoryDomain,
-                                                                                   @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT) long capabilitiesClientRequestTimeoutMs,
+                                                                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
                                                                                    SubscriptionManager subscriptionManager) {
 
         DiscoveryClientModule discoveryClientModule = new DiscoveryClientModule();
@@ -141,7 +141,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
                                                                                                                  messageSender,
                                                                                                                  dispatcher,
                                                                                                                  capabilitiesDirectoryDomain,
-                                                                                                                 capabilitiesClientRequestTimeoutMs,
+                                                                                                                 discoveryRequestTimeoutMs,
                                                                                                                  subscriptionManager);
 
         return new GlobalCapabilitiesDirectoryClient() {

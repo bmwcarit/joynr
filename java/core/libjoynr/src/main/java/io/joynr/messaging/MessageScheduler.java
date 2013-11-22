@@ -21,6 +21,7 @@ package io.joynr.messaging;
 
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -31,12 +32,15 @@ import io.joynr.messaging.httpoperation.HttpConstants;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import joynr.types.ChannelUrlInformation;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -55,41 +59,46 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 /**
- * The SendRequestScheduler queues message post requests in a single threaded executor. The executor is blocked until
+ * The MessageScheduler queues message post requests in a single threaded executor. The executor is blocked until
  * the connection is established, from there on the request is async. If there are already too much connections open,
  * the executor is blocked until one of the connections is closed. Resend attempts are scheduled by a cached thread pool
  * executor.
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that now new messages are scheduled when scheduler is shuting down")
-public class SendRequestScheduler {
+public class MessageScheduler {
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final long TERMINATION_TIMEOUT = 5000;
     private static final long SCHEDULER_KEEP_ALIVE_TIME = 100;
     private final ScheduledThreadPoolExecutor scheduler;
     private final ExecutorService executionQueue;
-    private static final Logger logger = LoggerFactory.getLogger(SendRequestScheduler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageScheduler.class);
     private static final int SCHEDULER_THREADPOOL_SIZE = 10;
     private CloseableHttpClient httpclient;
     private HttpConstants httpConstants;
     private RequestConfig defaultRequestConfig;
     private ObjectMapper objectMapper;
+    private final LocalChannelUrlDirectoryClient channelUrlClient;
 
     @Inject
-    public SendRequestScheduler(CloseableHttpClient httpclient,
-                                RequestConfig defaultRequestConfig,
-                                HttpConstants httpConstants,
-                                ObjectMapper objectMapper) {
+    public MessageScheduler(CloseableHttpClient httpclient,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
+                            LocalChannelUrlDirectoryClient localChannelUrlClient,
+                            RequestConfig defaultRequestConfig,
+                            HttpConstants httpConstants,
+                            ObjectMapper objectMapper) {
         this.httpclient = httpclient;
+        channelUrlClient = localChannelUrlClient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.httpConstants = httpConstants;
         this.objectMapper = objectMapper;
 
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("SendRequestScheduler-executionQueue-%d")
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("MessageScheduler-executionQueue-%d")
                                                                      .build();
-        executionQueue = Executors.newSingleThreadExecutor(namedThreadFactory);
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("SendRequestScheduler-scheduler-%d")
+        executionQueue = Executors.newFixedThreadPool(maximumParallelSends, namedThreadFactory);
+        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("MessageScheduler-scheduler-%d")
                                                                               .build();
         scheduler = new ScheduledThreadPoolExecutor(SCHEDULER_THREADPOOL_SIZE, schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(SCHEDULER_KEEP_ALIVE_TIME, TimeUnit.SECONDS);
@@ -129,7 +138,7 @@ public class SendRequestScheduler {
                                        final MessageReceiver messageReceiver) {
         synchronized (scheduler) {
             if (scheduler.isShutdown()) {
-                JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("SendRequestScheduler is shutting down already. Unable to send message [messageId: "
+                JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
                         + messageContainer.getMessageId() + "].");
                 logger.error("scheduler already shutting down", joynrShutdownEx);
                 failureAction.execute(joynrShutdownEx);
@@ -164,7 +173,7 @@ public class SendRequestScheduler {
         logger.trace("SEND appendToExecutionQueue messageId: {}", messageContainer.getMessageId());
         synchronized (executionQueue) {
             if (executionQueue.isShutdown()) {
-                JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("SendRequestScheduler is shutting down already. Unable to send message [messageId: "
+                JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
                         + messageContainer.getMessageId() + "].");
                 logger.error("executionQueue already shutting down", joynrShutdownEx);
                 failureAction.execute(joynrShutdownEx);
@@ -202,7 +211,14 @@ public class SendRequestScheduler {
         try {
 
             String serializedMessage = messageContainer.getSerializedMessage();
-            final String sendUrl = messageContainer.getSendUrl();
+            final String sendUrl = getSendUrl(messageContainer.getChannelId());
+            if (sendUrl == null) {
+                logger.error("SEND executionQueue.run channelId: {}, messageId: {} No channelId found",
+                             messageId,
+                             messageContainer.getExpiryDate());
+                failureAction.execute(new JoynrMessageNotSentException("no channelId found"));
+                return;
+            }
 
             HttpPost httppost = new HttpPost(sendUrl);
             httppost.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON()
@@ -257,7 +273,8 @@ public class SendRequestScheduler {
                 break;
             }
         } catch (Exception e) {
-            logger.trace("SEND error channelId: {}, messageId: {} error: {}", new Object[]{channelId, messageId, e.getMessage()});
+            logger.trace("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
+                    e.getMessage() });
         } finally {
             if (response != null) {
                 try {
@@ -266,6 +283,19 @@ public class SendRequestScheduler {
                 }
             }
         }
+    }
+
+    private String getSendUrl(String channelId) {
+
+        ChannelUrlInformation channelUrlInfo = channelUrlClient.getUrlsForChannel(channelId);
+        String url = null;
+
+        List<String> urls = channelUrlInfo.getUrls();
+        if (!urls.isEmpty()) {
+            url = urls.get(0) + "message/"; // TODO handle trying multiple channelUrls
+        }
+
+        return url;
     }
 
     /**

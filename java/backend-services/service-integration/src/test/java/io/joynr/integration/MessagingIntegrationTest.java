@@ -30,6 +30,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.integration.util.TestMessageListener;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
@@ -103,6 +104,8 @@ public class MessagingIntegrationTest {
     @BeforeClass
     public static void startServer() throws Exception {
         server = ServersUtil.startBounceproxy();
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
     }
 
     @AfterClass
@@ -181,26 +184,6 @@ public class MessagingIntegrationTest {
         joynrMessageSender1.shutdown();
         joynrMessageSender2.shutdown();
 
-    }
-
-    @Test
-    public void sendToNonexistantChannel() throws Exception {
-
-        TestMessageListener listener1 = new TestMessageListener(0, 1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
-
-        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(30000L);
-        JoynrMessage messageA = joynrMessagingFactory.createOneWay(fromParticipantId,
-                                                                   toParticipantId,
-                                                                   payload1,
-                                                                   expiryDate);
-        try {
-            joynrMessageSender1.sendMessage(UUID.randomUUID().toString(), messageA);
-        } catch (JoynrMessageNotSentException e) {
-
-        }
-        listener1.assertAllErrorsReceived(DEFAULT_TIMEOUT);
     }
 
     @Test

@@ -36,6 +36,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
     public static final String PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN = "joynr.messaging.discoverydirectoriesdomain";
+    public static final String PROPERTY_DISCOVERY_REQUEST_TIMEOUT = "joynr.discovery.requesttimeout";
 
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.channelurldirectoryparticipantid";
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID = "joynr.messaging.channelurldirectorychannelid";
@@ -45,10 +46,11 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_SEND_MSG_RETRY_INTERVAL_MS = "joynr.messaging.sendmsgretryintervalms";
     public static final String PROPERTY_LONG_POLL_RETRY_INTERVAL_MS = "joynr.messaging.longpollretryintervalms";
     public static final String PROPERTY_MAX_RETRY_COUNT = "joynr.messaging.maxretriescount";
-    public static final String PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT = "joynr.capabilitiesclient.requesttimeout";
     public static final String PROPERTY_AUTHTOKEN = "joynr.security.authtoken";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
+    
+    public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
 
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
@@ -56,7 +58,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     private final long sendMsgRetryIntervalMs;
     private final long longPollRetryIntervalMs;
     private final int maxRetriesCount;
-    private long capabilitiesClientRequestTimeoutMs;
+    private long discoveryRequestTimeoutMs;
+    private int maximumParallelSends;
 
     @Inject
     public ConfigurableMessagingSettings(@Named(MessagingPropertyKeys.BOUNCE_PROXY_URL) String bounceProxyUrl,
@@ -65,15 +68,21 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
                                          @Named(PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS) long deleteChannelRetryIntervalMs,
                                          @Named(PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                          @Named(PROPERTY_LONG_POLL_RETRY_INTERVAL_MS) long longPollRetryIntervalMs,
-                                         @Named(PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT) long capabilitiesClientRequestTimeoutMs) {
+                                         @Named(PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
+                                         @Named(PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         this.maxRetriesCount = maxRetriesCount;
-        this.capabilitiesClientRequestTimeoutMs = capabilitiesClientRequestTimeoutMs;
+        this.discoveryRequestTimeoutMs = discoveryRequestTimeoutMs;
+        this.maximumParallelSends = maximumParallelSends;
         this.bounceProxyUrl = new BounceProxyUrl(bounceProxyUrl);
         this.createChannelRetryIntervalMs = createChannelRetryIntervalMs;
         this.deleteChannelRetryIntervalMs = deleteChannelRetryIntervalMs;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.longPollRetryIntervalMs = longPollRetryIntervalMs;
 
+    }
+
+    public int getMaximumParallelSends() {
+        return maximumParallelSends;
     }
 
     @Override
@@ -112,8 +121,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
         return maxRetriesCount;
     }
 
-    public long getCapabilitiesClientRequestTimeoutMs() {
-        return capabilitiesClientRequestTimeoutMs;
+    public long getDiscoveryRequestTimeoutMs() {
+        return discoveryRequestTimeoutMs;
     }
 
 }

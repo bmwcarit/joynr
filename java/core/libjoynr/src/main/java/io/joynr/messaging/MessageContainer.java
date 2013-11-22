@@ -21,8 +21,6 @@ package io.joynr.messaging;
 
 import io.joynr.messaging.httpoperation.HttpConstants;
 
-import java.io.IOException;
-
 import javax.annotation.Nullable;
 
 import joynr.JoynrMessage;
@@ -30,8 +28,7 @@ import joynr.JoynrMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -48,7 +45,6 @@ public class MessageContainer {
     private final String channelId;
     private final String serializedMessage;
     private long expiryDate;
-    private String sendUrl;
 
     private final String messageId;
 
@@ -61,17 +57,13 @@ public class MessageContainer {
     public MessageContainer(final String channelId,
                             final JoynrMessage message,
                             final long expiryDate,
-                            final String sendUrl,
                             HttpConstants httpConstants,
-                            ObjectMapper objectMapper) throws JsonGenerationException,
-                                                      JsonMappingException,
-                                                      IOException {
+                            ObjectMapper objectMapper) throws JsonProcessingException {
         this.channelId = channelId;
         this.message = message;
         this.httpConstants = httpConstants;
         this.serializedMessage = objectMapper.writeValueAsString(message); // jsonConverter.toJson(message);
         this.expiryDate = expiryDate;
-        this.sendUrl = sendUrl;
         this.messageId = message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID);
     }
 
@@ -95,14 +87,6 @@ public class MessageContainer {
     @Nullable
     public String getMessageId() {
         return messageId;
-    }
-
-    public String getSendUrl() {
-        return sendUrl;
-    }
-
-    public void setSendUrl(String sendUrl) {
-        this.sendUrl = sendUrl;
     }
 
     public HttpConstants getHttpConstants() {
