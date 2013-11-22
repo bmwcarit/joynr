@@ -332,7 +332,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 10;
+        qlonglong qosRoundTripTTL = 1;
         qlonglong qosCacheDataFreshnessMs = 400000;
         QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
@@ -742,7 +742,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaCommunicationManager) {
 }
 
 
-TEST_F(CombinedEnd2EndTest, channelUrlProxyFindsProvisionedUrl) {
+TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder
             = runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN());
@@ -756,41 +756,12 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyFindsProvisionedUrl) {
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
 
-
-
     RequestStatus status;
     types::ChannelUrlInformation result;
-    QString channelId = LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_CHANNELID();
+    QString channelId("test");
     channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
     EXPECT_TRUE(status.successful());
-    EXPECT_TRUE(result.getUrls().size() > 0);
-}
-
-
-TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsCapabilitiesDirUrlRemotely) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder
-            = runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN());
-
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    infrastructure::ChannelUrlDirectoryProxy* channelUrlDirectoryProxy
-            = channelUrlDirectoryProxyBuilder
-                ->setRuntimeQos(MessagingQos(20000))
-                ->setCached(true)
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
-
-    RequestStatus status;
-    types::ChannelUrlInformation result;
-    QString channelId = LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_CHANNELID();
-    channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
-    EXPECT_TRUE(status.successful()) << ( QString("Status was not successfull: ")
-                                          + status.getCode().toString()
-                                          + QString(" " )
-                                          + status.toString()
-                                          ).toStdString();
-    EXPECT_TRUE(result.getUrls().size() > 0);
+    EXPECT_EQ(result.getUrls().size(), 0);
 }
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
