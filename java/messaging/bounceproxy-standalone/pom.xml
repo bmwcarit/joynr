@@ -78,7 +78,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+			<!-- included to prevent classpath issue with rest-assured -->
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-all</artifactId>
+				<scope>test</scope>
+			</dependency>	
 		<dependency>
 			<groupId>com.sun.grizzly</groupId>
 			<artifactId>grizzly-http</artifactId>
