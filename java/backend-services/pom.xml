@@ -38,6 +38,5 @@
 		<module>capabilitiesdirectoryui</module>
 		<module>channelurldirectory</module>
 		<module>channelurldirectoryservlet</module>
-		<module>service-integration</module>
   </modules>
 </project>
