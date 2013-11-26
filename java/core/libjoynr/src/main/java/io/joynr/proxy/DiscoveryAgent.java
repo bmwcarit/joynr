@@ -26,9 +26,12 @@ import io.joynr.arbitration.ArbitrationStatus;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class DiscoveryAgent implements ArbitrationCallback {
 
-    public ArbitrationStatus arbitrationStatus;
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
+    private ArbitrationStatus arbitrationStatus;
     private Lock arbitrationStatusLock = new ReentrantLock();
     private ArbitrationResult arbitrationResult;
     private ProxyInvocationHandler proxyInvocationHandler;

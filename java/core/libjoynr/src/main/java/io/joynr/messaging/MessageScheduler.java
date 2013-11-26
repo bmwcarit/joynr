@@ -40,6 +40,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import joynr.types.ChannelUrlInformation;
 
 import org.apache.http.HttpEntity;
@@ -285,6 +287,7 @@ public class MessageScheduler {
         }
     }
 
+    @Nullable
     private String getSendUrl(String channelId) {
 
         ChannelUrlInformation channelUrlInfo = channelUrlClient.getUrlsForChannel(channelId);
