@@ -20,10 +20,9 @@ package io.joynr.channel;
  */
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+
 import io.joynr.messaging.MessagingSettings;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.CheckForNull;
@@ -64,8 +63,6 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
         ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
         if (channelUrlInformation == null) {
             channelUrlInformation = new ChannelUrlInformation();
-            List<String> urls = new ArrayList<String>();
-            channelUrlInformation.setUrls(urls);
             logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing.", channelId, channelUrlInformation);
         } else {
             logger.debug("GLOBAL getUrlsForChannel ChannelUrls for channelId {} found: {}",

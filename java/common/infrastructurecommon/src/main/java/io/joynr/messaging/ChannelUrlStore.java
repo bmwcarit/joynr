@@ -20,8 +20,8 @@ package io.joynr.messaging;
  */
 
 import java.util.HashMap;
+
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import joynr.types.ChannelUrlInformation;
 
@@ -35,26 +35,32 @@ import org.slf4j.LoggerFactory;
 
 public class ChannelUrlStore {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlStore.class);
-    private ConcurrentHashMap<String, ChannelUrlInformation> registeredChannels = new ConcurrentHashMap<String, ChannelUrlInformation>();
+    private HashMap<String, ChannelUrlInformation> registeredChannels = new HashMap<String, ChannelUrlInformation>();
 
     public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
-        registeredChannels.put(channelId, channelUrlInformation);
+        synchronized (registeredChannels) {
+            registeredChannels.put(channelId, channelUrlInformation);
+        }
     }
 
     public void removeChannelUrls(String channelId) {
-        registeredChannels.remove(channelId);
+        synchronized (registeredChannels) {
+            registeredChannels.remove(channelId);
+        }
     }
 
     public ChannelUrlInformation findChannelEntry(String channelId) {
-        ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
-        if (channelUrlInformation == null) {
-            channelUrlInformation = new ChannelUrlInformation();
-            registeredChannels.put(channelId, channelUrlInformation);
-        } else {
-            logger.debug("ChannelUrls for channelId {} found: {}", channelId, channelUrlInformation.toString());
-        }
+        synchronized (registeredChannels) {
+            ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
+            if (channelUrlInformation == null) {
+                channelUrlInformation = new ChannelUrlInformation();
+                registeredChannels.put(channelId, channelUrlInformation);
+            } else {
+                logger.debug("ChannelUrls for channelId {} found: {}", channelId, channelUrlInformation.toString());
+            }
 
-        return channelUrlInformation;
+            return channelUrlInformation;
+        }
     }
 
     public HashMap<String, ChannelUrlInformation> getAllChannelUrls() {
@@ -62,16 +68,21 @@ public class ChannelUrlStore {
     }
 
     public void registerChannelUrl(String channelId, String channelUrl) {
-        ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
+        ChannelUrlInformation channelUrlInformation = null;
 
-        if (channelUrlInformation == null) {
-            channelUrlInformation = new ChannelUrlInformation();
+        synchronized (registeredChannels) {
+            channelUrlInformation = registeredChannels.get(channelId);
+
+            if (channelUrlInformation == null) {
+                channelUrlInformation = new ChannelUrlInformation();
+                registeredChannels.put(channelId, channelUrlInformation);
+            }
         }
 
-        List<String> urls = channelUrlInformation.getUrls();
-        urls.add(channelUrl);
-        channelUrlInformation.setUrls(urls);
-        registeredChannels.put(channelId, channelUrlInformation);
-
+        synchronized (channelUrlInformation) {
+            List<String> urls = channelUrlInformation.getUrls();
+            urls.add(channelUrl);
+            channelUrlInformation.setUrls(urls);
+        }
     }
 }
