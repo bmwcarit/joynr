@@ -20,7 +20,8 @@
 #define ICHANNELDIRECTORYURLCACHE_H_
 
 #include "joynr/joynrlogging.h"
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
+#include "joynr/RequestStatus.h"
 
 #include <QSharedPointer>
 
@@ -43,7 +44,7 @@ public:
     * @param channelUrlDirectoryProxy
     */
     virtual void init(
-            QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory,
+            QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
             const MessagingSettings& settings) = 0;
 
     /**

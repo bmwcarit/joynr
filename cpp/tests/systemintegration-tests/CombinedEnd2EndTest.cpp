@@ -39,6 +39,7 @@
 #include "joynr/SettingsMerger.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/LocalChannelUrlDirectory.h"
 
 using namespace ::testing;
 using namespace joynr;

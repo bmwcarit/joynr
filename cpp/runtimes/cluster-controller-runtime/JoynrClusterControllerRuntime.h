@@ -51,7 +51,7 @@ class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
 class InProcessMessagingStub;
 class LocalCapabilitiesDirectory;
-class LocalChannelUrlDirectory;
+class ILocalChannelUrlDirectory;
 class ICommunicationManager;
 class CapabilitiesClient;
 class ICapabilitiesClient;
@@ -111,7 +111,7 @@ protected:
     ICapabilitiesClient* capabilitiesClient;
     Directory<QString, EndpointAddressBase >* messagingEndpointDirectory;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
-    QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory;
+    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     ICapabilities* capabilitiesSkeleton;
     //Reason why CapabilitiesAggregator (CA) has to be a QSP:
     //CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()

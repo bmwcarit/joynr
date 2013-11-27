@@ -16,18 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#ifndef LOCALCHANNELURLDIRECTORY_H_
-#define LOCALCHANNELURLDIRECTORY_H_
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
-#include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/joynrlogging.h"
-#include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
-#include "joynr/types/ChannelUrlInformation.h"
-#include "joynr/MessagingSettings.h"
-
+#ifndef ILOCALCHANNELURLDIRECTORY_H_
+#define ILOCALCHANNELURLDIRECTORY_H_
+#include <QString>
+#include <QSharedPointer>
 
 namespace joynr {
+template <class T>
+ class Future;
+namespace types {
+    class ChannelUrlInformation;
+}
 
 /**
  * @brief The LocalChannelUrlDirectory is used within the cluster controller (message routing)
@@ -35,20 +34,10 @@ namespace joynr {
  * ChannelUrlDirectory and stores the resulting ChannelInformation.
  *
  */
-class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory : public ILocalChannelUrlDirectory {
+class ILocalChannelUrlDirectory {
 
 public:
-
-    static const QString& CHANNEL_URL_DIRECTORY_DOMAIN();
-    static const QString& CHANNEL_URL_DIRECTORY_INTERFACENAME();
-    static const QString& CHANNEL_URL_DIRECTORY_PARTICIPANTID();
-
-    LocalChannelUrlDirectory(
-             MessagingSettings& messagingSettings,
-             QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
-
-    virtual ~LocalChannelUrlDirectory();
-
+    virtual ~ILocalChannelUrlDirectory() {}
     /**
      * @brief Register a set of Url's for a channelId.
      *
@@ -59,7 +48,7 @@ public:
     virtual void registerChannelUrls(
             QSharedPointer<Future<void> > future,
             const QString& channelId,
-            types::ChannelUrlInformation channelUrlInformation);
+            types::ChannelUrlInformation channelUrlInformation) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -68,8 +57,8 @@ public:
      * @param channelId
      */
     virtual void unregisterChannelUrls(
-            QSharedPointer<Future<void> > future ,
-            const QString& channelId);
+            QSharedPointer<Future<void> > future,
+            const QString& channelId) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -82,17 +71,9 @@ public:
     virtual void getUrlsForChannel(
             QSharedPointer<Future<types::ChannelUrlInformation> > future,
             const QString &channelId,
-            const qint64& timeout_ms);
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);
-    void init();
-    MessagingSettings& messagingSettings;
-    QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
-    QMap<QString, types::ChannelUrlInformation> localCache;
-    static joynr_logging::Logger* logger;
+            const qint64& timeout_ms) = 0;
 };
 
 
 } // namespace joynr
-#endif //LOCALCHANNELURLDIRECTORY_H_
+#endif //ILOCALCHANNELURLDIRECTORY_H_

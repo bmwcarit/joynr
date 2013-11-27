@@ -305,12 +305,27 @@ QVariant MessagingSettings::value(const QString& key) {
 // Checks messaging settings and sets defaults
 void MessagingSettings::checkSettings() const {
     assert(settings.contains(SETTING_BOUNCE_PROXY_URL()));
+    QString bounceProxyUrl = settings.value(SETTING_BOUNCE_PROXY_URL()).toString();
+    if (!bounceProxyUrl.endsWith("/")) {
+        bounceProxyUrl.append("/");
+        settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
+    }
 
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_URL()));
+    QString channelUrlDirectoryUrl = settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString();
+    if (!channelUrlDirectoryUrl.endsWith("/")) {
+        channelUrlDirectoryUrl.append("/");
+        settings.setValue(SETTING_CHANNEL_URL_DIRECTORY_URL(), channelUrlDirectoryUrl);
+    }
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
 
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
+    QString capabilitiesDirectoryUrl = settings.value(SETTING_CAPABILITIES_DIRECTORY_URL()).toString();
+    if (!capabilitiesDirectoryUrl.endsWith("/")) {
+        capabilitiesDirectoryUrl.append("/");
+        settings.setValue(SETTING_CAPABILITIES_DIRECTORY_URL(), capabilitiesDirectoryUrl);
+    }
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 

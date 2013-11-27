@@ -61,13 +61,6 @@ const QString& LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_INTERFACENAME(
     return value;
 }
 
-
-const QString& LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_CHANNELID(){
-    //has to match definition in java
-    static QString value("discoverydirectory_channelid");
-    return value;
-}
-
 const QString& LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_PARTICIPANTID(){
     //has to match definition in java
     static QString value("capabilitiesdirectory_participantid");

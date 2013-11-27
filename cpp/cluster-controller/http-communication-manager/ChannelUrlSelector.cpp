@@ -17,7 +17,6 @@
  * #L%
  */
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 
@@ -65,7 +64,7 @@ ChannelUrlSelector::~ChannelUrlSelector(){
 }
 
 void ChannelUrlSelector::init(
-        QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory,
+        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
         const MessagingSettings &settings) {
 
     this->channelUrlDirectory = channelUrlDirectory;

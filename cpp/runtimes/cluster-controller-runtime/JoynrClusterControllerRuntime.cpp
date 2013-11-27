@@ -47,6 +47,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/Directory.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/LocalChannelUrlDirectory.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -251,8 +252,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                 ->build()
            );
 
-    channelUrlDirectory = QSharedPointer<LocalChannelUrlDirectory>(
-        new LocalChannelUrlDirectory(channelUrlDirectoryProxy, messagingSettings->getChannelUrlDirectoryUrl())
+    channelUrlDirectory = QSharedPointer<ILocalChannelUrlDirectory>(
+        new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy)
         );
     ((HttpCommunicationManager*)communicationManager)->init(channelUrlDirectory);
 

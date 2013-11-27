@@ -110,7 +110,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
-    QSharedPointer<LocalChannelUrlDirectory>  mockDirectory(mockDir );
+    QSharedPointer<ILocalChannelUrlDirectory> mockDirectory(mockDir);
     QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
     MessagingSettings *settings = new MessagingSettings(*qsettings);
     urlCache->init(
@@ -161,7 +161,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                 punishmentFactor);
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
-    QSharedPointer<LocalChannelUrlDirectory>  mockDirectory(mockDir );
+    QSharedPointer<ILocalChannelUrlDirectory>  mockDirectory(mockDir);
     QSettings* qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
     MessagingSettings *settings = new MessagingSettings(*qsettings);
     urlCache->init(

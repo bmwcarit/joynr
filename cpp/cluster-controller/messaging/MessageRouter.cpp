@@ -63,14 +63,14 @@ void MessageRouter::init(ICommunicationManager &comMgr)
 void MessageRouter::addProvisionedCapabilitiesDirectoryAddress()
 {
     QSharedPointer<EndpointAddressBase> endpointAddress(
-                new JoynrMessagingEndpointAddress(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_CHANNELID()));
+                new JoynrMessagingEndpointAddress(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     partId2MessagingEndpointDirectory->add(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_PARTICIPANTID(),
                                            endpointAddress);
 }
 
 void MessageRouter::addProvisionedChannelUrlDirectoryAddress() {
     QSharedPointer<EndpointAddressBase> endpointAddress(
-                new JoynrMessagingEndpointAddress(LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_CHANNELID()));
+                new JoynrMessagingEndpointAddress(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
     partId2MessagingEndpointDirectory->add(LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_PARTICIPANTID(),
                                            endpointAddress);
 }

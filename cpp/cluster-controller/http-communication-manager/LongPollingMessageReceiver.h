@@ -30,7 +30,7 @@
 
 namespace joynr {
 
-class LocalChannelUrlDirectory;
+class ILocalChannelUrlDirectory;
 
 class IMessageReceiver;
 
@@ -57,7 +57,7 @@ public:
                                IMessageReceiver* messageReceiver,
                                const LongPollingMessageReceiverSettings& settings,
                                QSemaphore* channelCreatedSemaphore,
-                               QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory);
+                               QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
     void run();
     void interrupt();
     bool isInterrupted();
@@ -77,7 +77,7 @@ private:
     QMutex interruptedMutex;
     bool interrupted;
     IMessageReceiver* messageReceiver;
-    QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory;
+    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;
     QSemaphore* channelCreatedSemaphore;

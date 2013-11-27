@@ -24,7 +24,7 @@
 #include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
 
 #include <QString>
 #include <QByteArray>
@@ -60,7 +60,7 @@ public:
     * the channelIds.
     */
     void init(
-            QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory,
+            QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
             const MessagingSettings& settings);
 
 private:

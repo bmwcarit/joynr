@@ -77,13 +77,14 @@ class IMessageReceiver;
 #include "joynr/MessageRouter.h"
 #include "joynr/types/ProviderQosRequirements.h"
 
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/types/ChannelUrlInformation.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -331,7 +332,7 @@ class MockCommunicationManager : public joynr::HttpCommunicationManager
 {
 public:
     MockCommunicationManager():HttpCommunicationManager(joynr::MessagingSettings(*(new QSettings("BMW", "Joynr")))){};
-    MOCK_METHOD1(init, void(const joynr::LocalChannelUrlDirectory& channelUrlDirectory));
+    MOCK_METHOD1(init, void(const joynr::ILocalChannelUrlDirectory& channelUrlDirectory));
     MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
     MOCK_METHOD3(sendMessage,void(const QString&, const qint64&, const joynr::JoynrMessage&));
     MOCK_METHOD0(startReceiveQueue, void());
@@ -574,17 +575,15 @@ public:
 };
 
 
-class MockLocalChannelUrlDirectory : public joynr::LocalChannelUrlDirectory {
+class MockLocalChannelUrlDirectory : public joynr::ILocalChannelUrlDirectory {
 public:
-    MockLocalChannelUrlDirectory() : LocalChannelUrlDirectory(QSharedPointer<joynr::infrastructure::ChannelUrlDirectoryProxy>(NULL),"") {}
-
     MOCK_METHOD3(registerChannelUrls, void(
                      QSharedPointer<joynr::Future<void> > future,
                      const QString& channelId,
-                     const joynr::types::ChannelUrlInformation& channelUrlInformation));
+                     joynr::types::ChannelUrlInformation channelUrlInformation));
 
     MOCK_METHOD2(unregisterChannelUrls, void(
-            QSharedPointer<joynr::Future<void> > future ,
+            QSharedPointer<joynr::Future<void> > future,
             const QString& channelId));
 
     MOCK_METHOD3(getUrlsForChannel, void(

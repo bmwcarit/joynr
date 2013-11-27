@@ -23,8 +23,9 @@
 #include "joynr/DispatcherUtils.h"
 #include "cluster-controller/http-communication-manager/IMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
+#include "joynr/types/ChannelUrlInformation.h"
 
 #include <algorithm>
 
@@ -41,7 +42,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         IMessageReceiver* messageReceiver,
         const LongPollingMessageReceiverSettings &settings,
         QSemaphore *channelCreatedSemaphore,
-        QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory)
+        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory)
     : bounceProxyUrl(bounceProxyUrl),
       channelId(channelId),
       receiverId(receiverId),
