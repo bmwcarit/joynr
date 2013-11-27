@@ -18,7 +18,7 @@
  */
 #include "joynr/JoynrRuntime.h"
 #include "JoynrClusterControllerRuntime.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 
 namespace joynr {
 

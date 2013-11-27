@@ -31,6 +31,7 @@ class JOYNRCOMMON_EXPORT SettingsMerger {
 
 public:
     static QSettings* mergeSettings(QString fileName, QSettings* currentSettings = NULL);
+    static void mergeSettings(const QSettings& from, QSettings& into, bool override);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SettingsMerger);

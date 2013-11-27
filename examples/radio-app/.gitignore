@@ -6,3 +6,4 @@ gen
 bin
 .checkstyle
 src/main/generated*
+CMakeLists.txt.user

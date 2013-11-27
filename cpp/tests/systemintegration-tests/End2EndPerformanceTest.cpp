@@ -31,7 +31,7 @@
 #include "PrettyPrint.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 
 using namespace ::testing;
 

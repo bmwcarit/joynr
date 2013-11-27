@@ -19,7 +19,7 @@
 #include "joynr/JoynrRuntime.h"
 #include "LibJoynrRuntime.h"
 
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 
 namespace joynr {
 

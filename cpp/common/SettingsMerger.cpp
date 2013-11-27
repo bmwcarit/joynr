@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 #include "joynr/Util.h"
 #include <QSettings>
 #include <QString>
@@ -34,16 +34,20 @@ QSettings* SettingsMerger::mergeSettings(QString fileName, QSettings* currentSet
     // load new settings file
     QSettings newSettings(fileName, QSettings::IniFormat);
 
+    mergeSettings(newSettings, *currentSettings, false);
+    return currentSettings;
+}
+
+void SettingsMerger::mergeSettings(const QSettings& from, QSettings& into, bool override) {
     // iterate over new settings and add if not existing
-    QStringList newKeyList = newSettings.allKeys();
-    for(int index = 0; index < newKeyList.size(); index++) {
-        QString key = newKeyList.at(index);
+    QStringList fromKeyList = from.allKeys();
+    for(int index = 0; index < fromKeyList.size(); index++) {
+        QString key = fromKeyList.at(index);
         // check if key exists
-        if(!currentSettings->contains(key)) {
-            currentSettings->setValue(key, newSettings.value(key));
+        if(override || !into.contains(key)) {
+            into.setValue(key, from.value(key));
         }
     }
-    return currentSettings;
 }
 
 } // namespace joynr

@@ -24,7 +24,7 @@
 #include "joynr/ICommunicationManager.h"
 #include "joynr/HttpCommunicationManager.h"
 #include "joynr/MessagingSettings.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"

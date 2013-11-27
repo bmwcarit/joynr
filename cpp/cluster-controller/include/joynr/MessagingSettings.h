@@ -39,6 +39,11 @@ public:
 
     static const QString& SETTING_BOUNCE_PROXY_URL();
     static const QString& SETTING_CHANNEL_URL_DIRECTORY_URL();
+    static const QString& SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
+    static const QString& SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID();
+    static const QString& SETTING_CAPABILITIES_DIRECTORY_URL();
+    static const QString& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
+    static const QString& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const QString& SETTING_INDEX();
     static const QString& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const QString& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -54,6 +59,7 @@ public:
     static const QString& SETTING_BOUNCEPROXY_TIMEOUT_MS();
     static const QString& SETTING_SEND_MESSAGE_MAX_TTL();
 
+    static const QString& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const QString& DEFAULT_PERSISTENCE_FILENAME();
     static qint64 DEFAULT_LONGPOLL_TIMEOUT_MS();
     static qint64 DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
@@ -62,6 +68,15 @@ public:
 
     BounceProxyUrl getBounceProxyUrl() const;
     void setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl);
+
+    QString getChannelUrlDirectoryUrl() const;
+    QString getChannelUrlDirectoryChannelId() const;
+    QString getChannelUrlDirectoryParticipantId() const;
+
+    QString getCapabilitiesDirectoryUrl() const;
+    QString getCapabilitiesDirectoryChannelId() const;
+    QString getCapabilitiesDirectoryParticipantId() const;
+
     qint64 getIndex() const;
     void setIndex(qint64 index);
     int getCreateChannelRetryInterval() const;
@@ -73,7 +88,6 @@ public:
     int getLongPollRetryInterval() const;
     void setLongPollRetryInterval(const int& retryInterval);
     QString getLocalProxyHost() const;
-    QString getChannelUrlDirectoryUrl() const;
     void setLocalProxyHost(const QString& localProxyHost);
     QString getLocalProxyPort() const;
     void setLocalProxyPort(const int& localProxyPort);
@@ -88,6 +102,8 @@ public:
     qint64 getSendMsgMaxTtl() const;
     void setSendMsgMaxTtl(qint64 ttl_ms);
 
+    bool contains(const QString& key);
+    QVariant value(const QString& key);
 
 signals:
 

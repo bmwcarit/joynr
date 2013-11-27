@@ -17,9 +17,9 @@
  * #L%
  */
 #include "joynr/MessagingSettings.h"
+#include <assert.h>
 #include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
-
-#include <QtCore>
+#include "joynr/SettingsMerger.h"
 
 namespace joynr {
 
@@ -31,6 +31,8 @@ MessagingSettings::MessagingSettings(QSettings& settings, QObject* parent) :
         QObject(parent),
         settings(settings)
 {
+    QSettings defaultMessagingSettings(DEFAULT_MESSAGING_SETTINGS_FILENAME(), QSettings::IniFormat);
+    SettingsMerger::mergeSettings(defaultMessagingSettings, this->settings, false);
     checkSettings();
 }
 
@@ -50,6 +52,31 @@ const QString& MessagingSettings::SETTING_BOUNCE_PROXY_URL() {
 
 const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL() {
     static const QString value("messaging/channel-url-directory-url");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID() {
+    static const QString value("messaging/channel-url-directory-channelid");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID() {
+    static const QString value("messaging/channel-url-directory-participantid");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL() {
+    static const QString value("messaging/capabilities-directory-url");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID() {
+    static const QString value("messaging/capabilities-directory-channelid");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID() {
+    static const QString value("messaging/capabilities-directory-participantid");
     return value;
 }
 
@@ -98,6 +125,11 @@ const QString& MessagingSettings::SETTING_PERSISTENCE_FILENAME() {
     return value;
 }
 
+const QString& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME() {
+    static const QString value("resources/default-messaging.settings");
+    return value;
+}
+
 const QString& MessagingSettings::DEFAULT_PERSISTENCE_FILENAME() {
     static const QString value("joynr.settings");
     return value;
@@ -137,12 +169,32 @@ BounceProxyUrl MessagingSettings::getBounceProxyUrl() const {
     return BounceProxyUrl(settings.value(SETTING_BOUNCE_PROXY_URL()).toString());
 }
 
+void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl) {
+    settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl.getBounceProxyBaseUrl());
+}
+
 QString MessagingSettings::getChannelUrlDirectoryUrl() const {
     return settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString();
 }
 
-void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl) {
-    settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl.getBounceProxyBaseUrl());
+QString MessagingSettings::getChannelUrlDirectoryChannelId() const {
+    return settings.value(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()).toString();
+}
+
+QString MessagingSettings::getChannelUrlDirectoryParticipantId() const {
+    return settings.value(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()).toString();
+}
+
+QString MessagingSettings::getCapabilitiesDirectoryUrl() const {
+    return settings.value(SETTING_CAPABILITIES_DIRECTORY_URL()).toString();
+}
+
+QString MessagingSettings::getCapabilitiesDirectoryChannelId() const {
+    return settings.value(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()).toString();
+}
+
+QString MessagingSettings::getCapabilitiesDirectoryParticipantId() const {
+    return settings.value(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()).toString();
 }
 
 qint64 MessagingSettings::getIndex() const {
@@ -242,11 +294,26 @@ void MessagingSettings::setSendMsgMaxTtl(qint64 ttl_ms) {
     settings.setValue(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
 
+bool MessagingSettings::contains(const QString& key) {
+    return settings.contains(key);
+}
+
+QVariant MessagingSettings::value(const QString& key) {
+    return settings.value(key);
+}
+
 // Checks messaging settings and sets defaults
 void MessagingSettings::checkSettings() const {
-    if (!settings.contains(SETTING_BOUNCE_PROXY_URL())) {
-        settings.setValue(SETTING_BOUNCE_PROXY_URL(), QUrl("http://localhost:8080/bounceproxy"));
-    }
+    assert(settings.contains(SETTING_BOUNCE_PROXY_URL()));
+
+    assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_URL()));
+    assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
+    assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
+
+    assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
+    assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
+    assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+
     if (!settings.contains(SETTING_INDEX())) {
         settings.setValue(SETTING_INDEX(), 0);
     }
@@ -272,6 +339,11 @@ void MessagingSettings::checkSettings() const {
 void MessagingSettings::printSettings() const {
     LOG_DEBUG(logger, "SETTING: " + SETTING_BOUNCE_PROXY_URL() + " = " + settings.value(SETTING_BOUNCE_PROXY_URL()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_URL() + " = " + settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_CHANNELID() + " = " + settings.value(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID() + " = " + settings.value(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CAPABILITIES_DIRECTORY_URL() + " = " + settings.value(SETTING_CAPABILITIES_DIRECTORY_URL()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CAPABILITIES_DIRECTORY_CHANNELID() + " = " + settings.value(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID() + " = " + settings.value(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_INDEX() + " = " + settings.value(SETTING_INDEX()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CREATE_CHANNEL_RETRY_INTERVAL() + " = " + settings.value(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_DELETE_CHANNEL_RETRY_INTERVAL() + " = " + settings.value(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()).toString());

@@ -35,7 +35,7 @@
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 
 using namespace ::testing;
 using namespace joynr;

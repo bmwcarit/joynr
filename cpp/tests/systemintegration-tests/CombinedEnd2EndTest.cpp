@@ -36,7 +36,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
