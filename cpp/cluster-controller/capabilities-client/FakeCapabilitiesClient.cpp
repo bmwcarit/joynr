@@ -26,12 +26,6 @@
 
 namespace joynr {
 
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_DOMAIN = QString("com");
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_INTERFACENAME = QString("capabilitieslookup");
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_CHANNELID = QString("capabilitiesDirectory");
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_PARTICIPANTID = QString("capabilitiesDirectory");
-
-
 FakeCapabilitiesClient::FakeCapabilitiesClient(const QString& localChannelId,
                                                const QString &settingsFileName)
     : defaultRequestTTL(30000),

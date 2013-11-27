@@ -38,6 +38,7 @@ public:
     ~MessagingSettings();
 
     static const QString& SETTING_BOUNCE_PROXY_URL();
+    static const QString& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const QString& SETTING_CHANNEL_URL_DIRECTORY_URL();
     static const QString& SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
     static const QString& SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID();
@@ -68,6 +69,8 @@ public:
 
     BounceProxyUrl getBounceProxyUrl() const;
     void setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl);
+
+    QString getDiscoveryDirectoriesDomain() const;
 
     QString getChannelUrlDirectoryUrl() const;
     QString getChannelUrlDirectoryChannelId() const;

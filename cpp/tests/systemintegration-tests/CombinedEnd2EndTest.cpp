@@ -76,6 +76,7 @@ public:
     QString uuid;
     QString domainName;
     QSemaphore semaphore;
+
     CombinedEnd2EndTest() :
         qRegisterMetaTypeQos(),
         qRegisterMetaTypeCi(),
@@ -744,9 +745,10 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaCommunicationManager) {
 
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder
-            = runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN());
+    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
+            runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+                messagingSettings1.getDiscoveryDirectoriesDomain()
+            );
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -766,9 +768,10 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 }
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder
-            = runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN());
+    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
+            runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+                messagingSettings1.getDiscoveryDirectoriesDomain()
+            );
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -808,9 +811,10 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 
 // This test is disabled, because the feature is not yet implemented on the server.
 TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder
-            = runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN());
+    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
+            runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+                messagingSettings1.getDiscoveryDirectoriesDomain()
+            );
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

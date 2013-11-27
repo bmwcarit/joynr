@@ -96,7 +96,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     runtime->waitForChannelCreation();
     LOG_TRACE(logger, "Finished Waiting for Channel creation");
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
-    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder = runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_DOMAIN());
+    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
+            runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                messagingSettings.getDiscoveryDirectoriesDomain()
+            );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (

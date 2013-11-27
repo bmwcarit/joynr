@@ -592,24 +592,6 @@ public:
             const qint64& timeout_ms));
 };
 
-class MockMessageRouter : public joynr::MessageRouter {
-public:
-    MockMessageRouter() : MessageRouter(NULL) {}
-
-    MOCK_METHOD1(init, void(joynr::ICommunicationManager& comMgr));
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
-};
-
-class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
-public:
-    MockLocalCapabilitiesDirectory() : LocalCapabilitiesDirectory(NULL, NULL) {}
-
-    MOCK_METHOD5(registerGlobalCapability, void(const QString& domain, const QString& interfaceName, const joynr::types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::EndpointAddressBase> > endpointAddresses));
-    MOCK_METHOD5(getCapabilities, void(const QString& domain, const QString& interfaceName, QSharedPointer<joynr::ILocalCapabilitiesCallback> callBack, const qint64& reqCacheDataFreshness_ms, const joynr::types::ProviderQosRequirements& qos));
-    MOCK_METHOD3(getCapabilities, void(const QString& participantId, QSharedPointer<joynr::ILocalCapabilitiesCallback> callBack, const qint64& reqCacheDataFreshness_ms));
-    MOCK_METHOD1(removeCapability, void(const QString& participantId));
-};
-
 class MockVoidOperationCallback : public joynr::ICallback<void> {
 public:
     ~MockVoidOperationCallback() {}

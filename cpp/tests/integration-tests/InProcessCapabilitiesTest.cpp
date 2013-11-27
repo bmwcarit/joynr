@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
+#include <QFile>
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "PrettyPrint.h"
@@ -34,25 +35,28 @@ using namespace joynr;
 
 class InProcessCapabilitiesTest : public ::testing::Test {
 public:
-    InProcessCapabilitiesTest()
-        : messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-          mockCapabilitiesClient(new MockCapabilitiesClient()),
-          localCapabilitiesDirectory(new LocalCapabilitiesDirectory(mockCapabilitiesClient, messagingEndpointDirectory)),
-          capabilitiesSkeleton(new InProcessCapabilitiesSkeleton(messagingEndpointDirectory, localCapabilitiesDirectory, QString("ccChannelId"))),
-          capabilitiesStub(new InProcessCapabilitiesStub(capabilitiesSkeleton)),
-          mockDispatcher(new MockInProcessDispatcher()),
-          dispatcherList(),
-          capabilitiesAggregator(new CapabilitiesAggregator(capabilitiesStub, mockDispatcher)),
-          capabilitiesRegistrar(NULL),
-          domain("testDomain"),
-          interfaceName("test/interface"),
-          expectedParticipantId("testParticipant"),
-          providerQos(),
-          endpointAddressList(),
-          messagingStubAddress(new MockEndpointAddress()),
-          reqCacheDataFreshness_ms(1000),
-          mockProvider(new MockProvider()),
-          mockParticipantIdStorage(new MockParticipantIdStorage())
+    InProcessCapabilitiesTest() :
+        settingsFileName("InProcessCapabilitiesTest.settings"),
+        settings(settingsFileName, QSettings::IniFormat),
+        messagingSettings(settings),
+        messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
+        mockCapabilitiesClient(new MockCapabilitiesClient()),
+        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, mockCapabilitiesClient, messagingEndpointDirectory)),
+        capabilitiesSkeleton(new InProcessCapabilitiesSkeleton(messagingEndpointDirectory, localCapabilitiesDirectory, QString("ccChannelId"))),
+        capabilitiesStub(new InProcessCapabilitiesStub(capabilitiesSkeleton)),
+        mockDispatcher(new MockInProcessDispatcher()),
+        dispatcherList(),
+        capabilitiesAggregator(new CapabilitiesAggregator(capabilitiesStub, mockDispatcher)),
+        capabilitiesRegistrar(NULL),
+        domain("testDomain"),
+        interfaceName("test/interface"),
+        expectedParticipantId("testParticipant"),
+        providerQos(),
+        endpointAddressList(),
+        messagingStubAddress(new MockEndpointAddress()),
+        reqCacheDataFreshness_ms(1000),
+        mockProvider(new MockProvider()),
+        mockParticipantIdStorage(new MockParticipantIdStorage())
     {
         dispatcherList.append(mockDispatcher);
         capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
@@ -71,6 +75,7 @@ public:
         delete messagingEndpointDirectory;
         delete mockDispatcher;
         delete capabilitiesRegistrar;
+        QFile::remove(settingsFileName);
     }
 
     void SetUp(){
@@ -82,6 +87,9 @@ public:
     }
 
 protected:
+    QString settingsFileName;
+    QSettings settings;
+    MessagingSettings messagingSettings;
     MessagingEndpointDirectory* messagingEndpointDirectory;
     MockCapabilitiesClient* mockCapabilitiesClient;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;

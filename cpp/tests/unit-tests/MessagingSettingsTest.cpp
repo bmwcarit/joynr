@@ -47,6 +47,8 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
 
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
+
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));

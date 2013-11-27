@@ -1,6 +1,8 @@
 [messaging]
 bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy/
 
+discovery-directories-domain=com.bmw
+
 channel-url-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
 channel-url-directory-channelid=discoverydirectory_channelid
 channel-url-directory-participantid=channelurldirectory_participantid

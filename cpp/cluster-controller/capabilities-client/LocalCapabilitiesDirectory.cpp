@@ -17,6 +17,8 @@
  * #L%
  */
 #include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
+#include "joynr/infrastructure/IChannelUrlDirectory.h"
 #include "cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h"
 #include "joynr/ProxyQos.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -27,7 +29,6 @@
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/EndpointAddressBase.h"
 #include "joynr/types/ProviderQosRequirements.h"
-#include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/DiscoveryQos.h"
 
 #include <QMutexLocker>
@@ -48,35 +49,20 @@ const qint64& LocalCapabilitiesDirectory::DONT_USE_CACHE(){
     return value;
 }
 
-const QString& LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_DOMAIN(){
-    //does not match definition in java.
-    static QString value("com");
-    return value;
-}
-
-const QString& LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_INTERFACENAME(){
-    //has to match definition in java and in IDL
-    //does currently not match java, where it is called "capabilitiesdirectory" without infrastructure and global.
-    static QString value("infrastructure/globalcapabilitiesdirectory");
-    return value;
-}
-
-const QString& LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_PARTICIPANTID(){
-    //has to match definition in java
-    static QString value("capabilitiesdirectory_participantid");
-    return value;
-}
-
-
-LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(ICapabilitiesClient *capabilitiesClientPtr, IMessagingEndpointDirectory *endpointDirectory)
-    : capabilitiesClient(capabilitiesClientPtr),
-      cacheLock(new QMutex),
-      interfaceAddress2GlobalCapabilities(),
-      participantId2GlobalCapabilities(),
-      interfaceAddress2LocalCapabilities(),
-      participantId2LocalCapability(),
-      registeredGlobalCapabilities(),
-      endpointDirectory(endpointDirectory)
+LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
+        MessagingSettings& messagingSettings,
+        ICapabilitiesClient *capabilitiesClientPtr,
+        IMessagingEndpointDirectory *endpointDirectory
+) :
+        messagingSettings(messagingSettings),
+        capabilitiesClient(capabilitiesClientPtr),
+        cacheLock(new QMutex),
+        interfaceAddress2GlobalCapabilities(),
+        participantId2GlobalCapabilities(),
+        interfaceAddress2LocalCapabilities(),
+        participantId2LocalCapability(),
+        registeredGlobalCapabilities(),
+        endpointDirectory(endpointDirectory)
 {
 
     //setting up the provisioned values for GlobalCapabilitiesClient
@@ -85,10 +71,10 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(ICapabilitiesClient *capa
     endpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(new JoynrMessagingViaCCEndpointAddress()));
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
-    this->insertInCache(CAPABILITIES_DIRECTORY_DOMAIN(),
-                     CAPABILITIES_DIRECTORY_INTERFACENAME(),
+    this->insertInCache(messagingSettings.getDiscoveryDirectoriesDomain(),
+                     infrastructure::IGlobalCapabilitiesDirectory::getInterfaceName(),
                      providerQos,
-                     CAPABILITIES_DIRECTORY_PARTICIPANTID(),
+                     messagingSettings.getCapabilitiesDirectoryParticipantId(),
                      endpointAddress,
                      false,
                      true,
@@ -102,10 +88,10 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(ICapabilitiesClient *capa
                                             new JoynrMessagingViaCCEndpointAddress()));
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
-    this->insertInCache(LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN(),
-                     LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_INTERFACENAME(),
+    this->insertInCache(messagingSettings.getDiscoveryDirectoriesDomain(),
+                     infrastructure::IChannelUrlDirectory::getInterfaceName(),
                      channelUrlDirProviderQos,
-                     LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_PARTICIPANTID(),
+                     messagingSettings.getChannelUrlDirectoryParticipantId(),
                      channelUrlDirEndpointAddress,
                      false,
                      true,

@@ -38,11 +38,6 @@ namespace joynr {
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory : public ILocalChannelUrlDirectory {
 
 public:
-
-    static const QString& CHANNEL_URL_DIRECTORY_DOMAIN();
-    static const QString& CHANNEL_URL_DIRECTORY_INTERFACENAME();
-    static const QString& CHANNEL_URL_DIRECTORY_PARTICIPANTID();
-
     LocalChannelUrlDirectory(
              MessagingSettings& messagingSettings,
              QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);

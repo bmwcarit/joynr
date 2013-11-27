@@ -50,6 +50,11 @@ const QString& MessagingSettings::SETTING_BOUNCE_PROXY_URL() {
     return value;
 }
 
+const QString& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN() {
+    static const QString value("messaging/discovery-directories-domain");
+    return value;
+}
+
 const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL() {
     static const QString value("messaging/channel-url-directory-url");
     return value;
@@ -171,6 +176,10 @@ BounceProxyUrl MessagingSettings::getBounceProxyUrl() const {
 
 void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl) {
     settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl.getBounceProxyBaseUrl());
+}
+
+QString MessagingSettings::getDiscoveryDirectoriesDomain() const {
+    return settings.value(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()).toString();
 }
 
 QString MessagingSettings::getChannelUrlDirectoryUrl() const {
@@ -311,6 +320,8 @@ void MessagingSettings::checkSettings() const {
         settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
     }
 
+    assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
+
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_URL()));
     QString channelUrlDirectoryUrl = settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString();
     if (!channelUrlDirectoryUrl.endsWith("/")) {
@@ -353,6 +364,7 @@ void MessagingSettings::checkSettings() const {
 
 void MessagingSettings::printSettings() const {
     LOG_DEBUG(logger, "SETTING: " + SETTING_BOUNCE_PROXY_URL() + " = " + settings.value(SETTING_BOUNCE_PROXY_URL()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_DISCOVERY_DIRECTORIES_DOMAIN() + " = " + settings.value(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_URL() + " = " + settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_CHANNELID() + " = " + settings.value(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID() + " = " + settings.value(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()).toString());

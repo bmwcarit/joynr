@@ -21,21 +21,6 @@
 
 namespace joynr {
 
-
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN(){
-    static QString value("com.bmw");
-    return value;
-}
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_INTERFACENAME(){
-    static QString value("infrastructure/channelurldirectory");
-    return value;
-}
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_PARTICIPANTID(){
-    static QString value( "channelurldirectory_participantid");
-    return value;
-}
-
-
 joynr_logging::Logger* LocalChannelUrlDirectory::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "LocalChannelUrlDirectory");
 
 LocalChannelUrlDirectory::LocalChannelUrlDirectory(MessagingSettings& messagingSettings,
@@ -62,7 +47,7 @@ void LocalChannelUrlDirectory::init() {
     channelUrlDirectoryUrls << channelUrlDirectoryUrl;
     channelUrlDirectoryUrlInformation.setUrls(channelUrlDirectoryUrls);
     localCache.insert(
-                MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID(),
+                messagingSettings.getChannelUrlDirectoryChannelId(),
                 channelUrlDirectoryUrlInformation);
     LOG_TRACE(logger, QString("Provisioned Global Channel URL Directory URL (%1) into Local Channel URL Directory")
               .arg(channelUrlDirectoryUrl));
@@ -74,7 +59,7 @@ void LocalChannelUrlDirectory::init() {
     capabilitiesDirectoryUrls << capabilitiesDirectoryUrl;
     capabilitiesDirectoryUrlInformation.setUrls(capabilitiesDirectoryUrls);
     localCache.insert(
-                MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID(),
+                messagingSettings.getCapabilitiesDirectoryChannelId(),
                 capabilitiesDirectoryUrlInformation);
     LOG_TRACE(logger, QString("Provisioned Global Capabilities Directory URL (%1) into Local Channel URL Directory")
               .arg(capabilitiesDirectoryUrl));

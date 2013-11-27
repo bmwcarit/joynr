@@ -51,6 +51,7 @@
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/MessagingSettings.h"
 
 #include <QCache>
 #include <QVariantMap>
@@ -71,18 +72,15 @@ namespace types { class ProviderQosRequirements;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory {
 public:
-    LocalCapabilitiesDirectory(ICapabilitiesClient* capabilitiesClientPtr, IMessagingEndpointDirectory* endpointDirectory);
+    LocalCapabilitiesDirectory(
+            MessagingSettings& messagingSettings,
+            ICapabilitiesClient* capabilitiesClientPtr,
+            IMessagingEndpointDirectory* endpointDirectory);
 
     virtual ~LocalCapabilitiesDirectory();
 
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
-
-    static const QString& CAPABILITIES_DIRECTORY_DOMAIN();
-    static const QString& CAPABILITIES_DIRECTORY_INTERFACENAME();
-    static const QString& CAPABILITIES_DIRECTORY_PARTICIPANTID();
-
-
 
     void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses);
     void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId);
@@ -134,9 +132,8 @@ public:
 
 
 private:
-
-
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
+    MessagingSettings& messagingSettings;
 
     QList<types::CapabilityInformation> createCapabilitiesInformationList(const QString& domain, const QString& interfaceName, const QString& channelId, const types::ProviderQos& qos, const QString& participantId);
 /*

@@ -103,10 +103,6 @@ private:
     QList<types::CapabilityInformation> createFakedCapInfoListForChannelId(const QString& channelId);
     QList<types::CapabilityInformation> createFakedCapInfoListForParticipantId(const QString& participantId);
     QList<types::CapabilityInformation> createFakedCapInfoList();
-    static const QString CAPABILITIES_DIRECTORY_DOMAIN;
-    static const QString CAPABILITIES_DIRECTORY_INTERFACENAME;
-    static const QString CAPABILITIES_DIRECTORY_CHANNELID;
-    static const QString CAPABILITIES_DIRECTORY_PARTICIPANTID;
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
