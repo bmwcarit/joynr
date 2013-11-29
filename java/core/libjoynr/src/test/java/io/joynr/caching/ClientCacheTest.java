@@ -5,7 +5,6 @@ package io.joynr.caching;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

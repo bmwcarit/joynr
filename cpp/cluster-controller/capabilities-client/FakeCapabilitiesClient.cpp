@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -28,12 +25,6 @@
 #include <QUuid>
 
 namespace joynr {
-
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_DOMAIN = QString("com");
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_INTERFACENAME = QString("capabilitieslookup");
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_CHANNELID = QString("capabilitiesDirectory");
-const QString FakeCapabilitiesClient::CAPABILITIES_DIRECTORY_PARTICIPANTID = QString("capabilitiesDirectory");
-
 
 FakeCapabilitiesClient::FakeCapabilitiesClient(const QString& localChannelId,
                                                const QString &settingsFileName)

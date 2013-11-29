@@ -4,7 +4,6 @@ package io.joynr.capabilities.directory;
 
 /*
  * #%L
- * joynr::java::backend-services::capabilities directory
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

@@ -2,7 +2,6 @@ package io.joynr.messaging.httpoperation;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -21,6 +20,7 @@ package io.joynr.messaging.httpoperation;
  */
 
 import io.joynr.exceptions.JoynrChannelMissingException;
+
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
@@ -145,9 +145,9 @@ public class ChannelMonitor {
                         }
                         // Start LONG POLL lifecycle. The future will only
                         // return when the long poll loop has ended
-                        logger.debug("starting longpool withing callable");
+                        logger.debug("starting long poll within callable");
                         longPollLoop(messageReceiver, maxRetries);
-                        logger.debug("ending longpool withing callable");
+                        logger.debug("ending long poll within callable");
                     }
 
                     // These exceptions are outside the while loop because
@@ -403,6 +403,7 @@ public class ChannelMonitor {
         // String id = getPrintableId(channelUrl);
         synchronized (this) {
             this.longPollingCallable = new LongPollingCallable(httpclient,
+                                                               defaultRequestConfig,
                                                                longPollingDisabled,
                                                                messageReceiver,
                                                                objectMapper,

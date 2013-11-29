@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -23,6 +20,7 @@
 #include "joynr/vehicle/IGps.h"
 #include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
+#include "joynr/tests/TestRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/MessagingQos.h"
@@ -55,12 +53,12 @@ protected:
 
 
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
-    QSharedPointer<MockGpsRequestCaller> mockCaller(new MockGpsRequestCaller());
+    QSharedPointer<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
     EXPECT_CALL(*mockCaller,
                 getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
             .Times(1);
 
-    vehicle::GpsRequestInterpreter interpreter;
+    tests::TestRequestInterpreter interpreter;
     QString methodName = "getLocation";
     QVariantList paramValues;
     QVariantList paramDatatypes;

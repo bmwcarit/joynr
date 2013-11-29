@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -28,7 +25,7 @@
 #include "joynr/ICommunicationManager.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
 
 #include <QString>
 #include <QSettings>
@@ -94,7 +91,7 @@ public:
       */
     virtual void stopReceiveQueue();
 
-    virtual void init(QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory);
+    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpCommunicationManager);
@@ -116,7 +113,7 @@ private:
     MessageSender* messageSender;
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
-    QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory;
+    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;

@@ -37,7 +37,7 @@ class ProxyGenerator {
 	
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
 
-		var serviceName =  fInterface.name.toFirstUpper
+		var serviceName =  fInterface.joynrName
 
 		fsa.generateFile(
 			path + serviceName + "Proxy.java",

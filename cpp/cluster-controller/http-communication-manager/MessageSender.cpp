@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -83,7 +80,7 @@ MessageSender::MessageSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAtt
 
 
 void MessageSender::init(
-        QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory,
+        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
         const MessagingSettings& settings) {
     channelUrlCache->init(channelUrlDirectory, settings);
 }
@@ -107,7 +104,7 @@ void MessageSender::sendMessage(
     /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot occur
       */
     DelayedScheduler* scheduler;
-    if (channelId == LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_CHANNELID()) {
+    if (channelId == MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()) {
         scheduler = channelUrlContactorDelayedScheduler;
     } else {
         scheduler = delayedScheduler;

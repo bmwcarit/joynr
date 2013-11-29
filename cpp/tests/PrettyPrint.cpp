@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -30,8 +27,12 @@
 
 using namespace joynr;
 
- void PrintTo(const types::GpsLocation& value, ::std::ostream* os) {
-  *os << JsonSerializer::serialize(value).constData() << std::endl;
+namespace joynr {
+namespace types {
+    void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os) {
+      *os << joynr::JsonSerializer::serialize(value).constData();
+    }
+}
 }
 
  void PrintTo(const types::Trip& value, ::std::ostream* os) {
@@ -43,8 +44,14 @@ using namespace joynr;
   *os << JsonSerializer::serialize(value).constData() << std::endl;
 }
 
- void PrintTo(const QString& value, ::std::ostream* os) {
-     *os << value.toStdString() << std::endl;
+void PrintTo(const QString& value, ::std::ostream* os) {
+     *os << value.toStdString();
+}
+
+
+void PrintTo(const QByteArray& value, std::ostream* os)
+{
+    *os << value.data();
 }
 
  void PrintTo(const RequestStatusCode& value, ::std::ostream* os) {
@@ -56,10 +63,10 @@ using namespace joynr;
  }
 
 
- void initPretty(void) {
- EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));
- EXPECT_TRUE(false) << ::testing::PrintToString(JoynrMessage());
- EXPECT_TRUE(false) << ::testing::PrintToString(types::GpsLocation(types::GpsFixEnum::Mode2D, 11,22,33,0, 0, 0, 0, 0, 44));
-// EXPECT_TRUE(false) << ::testing::PrintToString(Trip("tripName", GpsLocation(GpsFixEnum::Mode2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::GpsLocation>()));
-}
+// void initPretty(void) {
+// EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));
+// EXPECT_TRUE(false) << ::testing::PrintToString(JoynrMessage());
+// EXPECT_TRUE(false) << ::testing::PrintToString(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444));
+//// EXPECT_TRUE(false) << ::testing::PrintToString(Trip("tripName", GpsLocation(GpsFixEnum::MODE2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::GpsLocation>()));
+// }
 

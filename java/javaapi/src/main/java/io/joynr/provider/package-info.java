@@ -4,7 +4,6 @@ package io.joynr.provider;
 
 /*
  * #%L
- * joynr::java::javaapi
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

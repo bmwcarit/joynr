@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -22,7 +19,7 @@
 #include "gtest/gtest.h"
 using namespace ::testing;
 #include "joynr/types/Trip.h"
-#include "joynr/types/Location.h"
+#include "joynr/types/GpsLocation.h"
 #include "joynr/types/Word.h"
 #include "joynr/types/Vowel.h"
 
@@ -42,10 +39,10 @@ using namespace joynr;
 //        vowels : Vowel[]
 //    }
 
-TEST(DatatypeTemplateTest, enterAndRetrieveListOfLocationsFromTrip) {
+TEST(DatatypeTemplateTest, enterAndRetrieveListOfGpsLocationsFromTrip) {
 
-    types::Location loc1 = types::Location(types::GpsFixEnum::ModeNoFix, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 1982, "jambit", "germany", "Munich", "Erika-Mann-Str", "63", "80636", "jambit");
-    types::Location loc2 = types::Location(types::GpsFixEnum::Mode2D, 4.4, 5.5, 6.6, 0.0, 0.0, 0.0, 0, 0, 1982, "Carit", "germany", "Munich", "Petuelring", "116", "80809", "carit");
+    types::GpsLocation loc1 = types::GpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::GpsLocation loc2 = types::GpsLocation(2.1, 2.2, 2.3, types::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
     QList<types::GpsLocation> inputList = QList<types::GpsLocation>();
     QList<types::GpsLocation> returnList;
     inputList.append(loc1);
@@ -57,10 +54,10 @@ TEST(DatatypeTemplateTest, enterAndRetrieveListOfLocationsFromTrip) {
 }
 
 
-TEST(DatatypeTemplateTest, enterListOfLocationsUsingSetter) {
+TEST(DatatypeTemplateTest, enterListOfGpsLocationsUsingSetter) {
 
-    types::Location loc1 = types::Location(types::GpsFixEnum::ModeNoFix, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 1982, "jambit", "germany", "Munich", "Erika-Mann-Str", "63", "80636", "jambit");
-    types::Location loc2 = types::Location(types::GpsFixEnum::Mode2D, 4.4, 5.5, 6.6, 0.0, 0.0, 0.0, 0, 0, 1982, "Carit", "germany", "Munich", "Petuelring", "116", "80809", "carit");
+    types::GpsLocation loc1 = types::GpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::GpsLocation loc2 = types::GpsLocation(2.1, 2.2, 2.3, types::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
     QList<types::GpsLocation> inputList = QList<types::GpsLocation>();
     QList<types::GpsLocation> returnList;
     inputList.append(loc1);
@@ -75,12 +72,12 @@ TEST(DatatypeTemplateTest, enterListOfLocationsUsingSetter) {
 TEST(DatatypeTemplateTest, enterAndRetrieveEnumList) {
 
     QList<types::Vowel::Enum> inputList = QList<types::Vowel::Enum>();
-    inputList.append(types::Vowel::a);
-    inputList.append(types::Vowel::e);
-    inputList.append(types::Vowel::e);
-    inputList.append(types::Vowel::u);
+    inputList.append(types::Vowel::A);
+    inputList.append(types::Vowel::E);
+    inputList.append(types::Vowel::E);
+    inputList.append(types::Vowel::U);
     types::Word myword = types::Word(inputList);
-    EXPECT_EQ( myword.getVowels().value(1), types::Vowel::e);
+    EXPECT_EQ( myword.getVowels().value(1), types::Vowel::E);
 }
 
 TEST(DatatypeTemplateTest, enterAndRetrieveEnumListviaInternalSetter) {
@@ -92,13 +89,13 @@ TEST(DatatypeTemplateTest, enterAndRetrieveEnumListviaInternalSetter) {
     inputIntList.append(QVariant::fromValue(4)); // u == 4
     types::Word myIntWord = types::Word();
     myIntWord.setVowelsInternal(inputIntList);
-    EXPECT_EQ( myIntWord.getVowels().value(1), types::Vowel::e); // e == 1
+    EXPECT_EQ( myIntWord.getVowels().value(1), types::Vowel::E); // e == 1
 
     QList<types::Vowel::Enum> inputList = QList<types::Vowel::Enum>();
-    inputList.append(types::Vowel::a);
-    inputList.append(types::Vowel::e);
-    inputList.append(types::Vowel::e);
-    inputList.append(types::Vowel::u);
+    inputList.append(types::Vowel::A);
+    inputList.append(types::Vowel::E);
+    inputList.append(types::Vowel::E);
+    inputList.append(types::Vowel::U);
     types::Word myVowelWord =types::Word(inputList);
 
     EXPECT_EQ( myVowelWord, myIntWord);

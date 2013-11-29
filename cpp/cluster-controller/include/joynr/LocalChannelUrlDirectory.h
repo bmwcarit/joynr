@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -22,11 +19,12 @@
 #ifndef LOCALCHANNELURLDIRECTORY_H_
 #define LOCALCHANNELURLDIRECTORY_H_
 #include "joynr/PrivateCopyAssign.h"
-
+#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 #include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/MessagingSettings.h"
 
 
 namespace joynr {
@@ -37,18 +35,12 @@ namespace joynr {
  * ChannelUrlDirectory and stores the resulting ChannelInformation.
  *
  */
-class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory {
+class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory : public ILocalChannelUrlDirectory {
 
 public:
-
-    static const QString& CHANNEL_URL_DIRECTORY_DOMAIN();
-    static const QString& CHANNEL_URL_DIRECTORY_INTERFACENAME();
-    static const QString& CHANNEL_URL_DIRECTORY_CHANNELID();
-    static const QString& CHANNEL_URL_DIRECTORY_PARTICIPANTID();
-
-     LocalChannelUrlDirectory(
-             QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy,
-             const QString& channelUrlDirectoryUrl);
+    LocalChannelUrlDirectory(
+             MessagingSettings& messagingSettings,
+             QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
 
     virtual ~LocalChannelUrlDirectory();
 
@@ -60,7 +52,7 @@ public:
      * @param status
      */
     virtual void registerChannelUrls(
-            QSharedPointer<Future<void> > future ,
+            QSharedPointer<Future<void> > future,
             const QString& channelId,
             types::ChannelUrlInformation channelUrlInformation);
 
@@ -90,8 +82,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);
     void init();
+    MessagingSettings& messagingSettings;
     QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
-    QString channelUrlDirectoryUrl;
     QMap<QString, types::ChannelUrlInformation> localCache;
     static joynr_logging::Logger* logger;
 };

@@ -27,7 +27,7 @@ class InterfaceAsyncProxyCppTemplate  {
 	@Inject extension TemplateBase
 	
 	def generate(FInterface fInterface) {
-		val interfaceName =  fInterface.name.toFirstUpper
+		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "AsyncProxy"
 		'''
@@ -52,12 +52,12 @@ class InterfaceAsyncProxyCppTemplate  {
 		}
 		
 		«FOR attribute: getAttributes(fInterface)»
-			«var attributeName = attribute.name.toFirstUpper»
+			«var attributeName = attribute.joynrName»
 			«var attributeType = getMappedDatatypeOrList(attribute)» 
-			«var getAttribute = "get" + attributeName» 
-			«var setAttribute = "set" + attributeName» 
+            «var getAttribute = "get" + attributeName.toFirstUpper» 
+            «var setAttribute = "set" + attributeName.toFirstUpper» 
 			/*
-			 * get«attributeName»
+			 * «getAttribute»
 			 */
 
 			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::Future< «attributeType» > > future, QSharedPointer< joynr::ICallback< «attributeType» > > callback)
@@ -127,7 +127,7 @@ class InterfaceAsyncProxyCppTemplate  {
 
 		«ENDFOR»
 		«FOR method: getMethods(fInterface)»
-			«var methodName = method.name»
+			«var methodName = method.joynrName»
 			«var outType = getMappedOutputParameter(method).head»
 			«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»

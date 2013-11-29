@@ -4,7 +4,6 @@ import io.joynr.common.ExpiryDate;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

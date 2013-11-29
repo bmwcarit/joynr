@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -28,6 +25,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/IMessaging.h"
+#include "joynr/MessagingSettings.h"
 
 #include <QSharedPointer>
 #include <QDateTime>
@@ -57,7 +55,8 @@ class ICommunicationManager;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT MessageRouter {
 public:
-    MessageRouter(Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
+    MessageRouter(MessagingSettings& messagingSettings,
+                  Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
                   int messageSendRetryInterval = 500,
                   int maxThreads = 6);
     virtual ~MessageRouter();
@@ -85,6 +84,7 @@ private:
     void addProvisionedChannelUrlDirectoryAddress();
 
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
+    MessagingSettings& messagingSettings;
     IMessagingStubFactory* messagingStubFactory;
     Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory;
     QThreadPool threadPool;

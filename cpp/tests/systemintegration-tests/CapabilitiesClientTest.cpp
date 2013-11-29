@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -38,7 +35,7 @@
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -99,7 +96,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     runtime->waitForChannelCreation();
     LOG_TRACE(logger, "Finished Waiting for Channel creation");
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
-    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder = runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_DOMAIN());
+    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
+            runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                messagingSettings.getDiscoveryDirectoriesDomain()
+            );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (

@@ -2,7 +2,6 @@ package io.joynr.subtypes;
 
 /*
  * #%L
- * joynr::java::core::joynrtypes
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

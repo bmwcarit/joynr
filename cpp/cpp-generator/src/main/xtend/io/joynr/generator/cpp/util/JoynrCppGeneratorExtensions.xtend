@@ -121,7 +121,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		for(FArgument argument : getOutputParameters(method)){
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
 			returnStringBuilder.append("& ");
-			returnStringBuilder.append(argument.name);
+			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(", ");
 		}
         val returnString = returnStringBuilder.toString();
@@ -136,7 +136,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
 		val returnStringBuilder = new StringBuilder();
 		for(FArgument argument : getOutputParameters(method)){
-			returnStringBuilder.append(argument.name);
+			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(", ");
 		}
         val returnString = returnStringBuilder.toString();
@@ -153,7 +153,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		for (param : getInputParameters(method)) {
 			returnStringBuilder.append(getMappedDatatypeOrList(param));
 			returnStringBuilder.append(" ");
-			returnStringBuilder.append(param.name);
+			returnStringBuilder.append(param.joynrName);
 			returnStringBuilder.append(", ");
 		}
 		val returnString = returnStringBuilder.toString();
@@ -184,10 +184,10 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	override getMappedDatatype(FType datatype) {
 		val packagepath = buildPackagePath(datatype, "::");
 		if (isEnum(datatype)){
-			return  packagepath + datatype.name + "::" + getNestedEnumName();
+			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
 		}
 		else{
-			return  packagepath + datatype.name.toFirstUpper //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
+			return  packagepath + datatype.joynrName  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
 		}
 	}
 
@@ -281,7 +281,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	// Get the class that encloses a known enum
 	def String getEnumContainer(FType enumeration) {
 		var packagepath = buildPackagePath(enumeration, "::");
-		return packagepath + enumeration.name.toFirstUpper;
+		return packagepath + enumeration.joynrName;
 	}
 
 	// Get the class that encloses a known enum
@@ -303,7 +303,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		switch datatype {
 		case isArray(element)     : "List"
 		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") + 
-									"." + datatype.name.toFirstUpper
+									"." + datatype.joynrName
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
 		case isLong(predefined)   : "Long"
@@ -311,7 +311,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") + 
-									"." + datatype.name.toFirstUpper
+									"." + datatype.joynrName
         default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.name)
 		}
 	}
@@ -336,7 +336,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	
 	def String getIncludeOf(FType dataType) {
 		val path = getPackagePathWithJoynrPrefix(dataType, "/")
-		return path + "/" + dataType.name.toFirstUpper + ".h";
+		return path + "/" + dataType.joynrName + ".h";
 	}
 
 	def getPackageSourceDirectory(FModelElement fModelElement) {

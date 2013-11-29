@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -53,7 +50,7 @@ public:
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId =
-                participantIdStorage->getProviderParticipantId(T::getInterfaceName(),
+                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
                                                                authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
@@ -82,7 +79,7 @@ public:
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId =
-                participantIdStorage->getProviderParticipantId(T::getInterfaceName(),
+                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
                                                                authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {

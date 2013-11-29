@@ -2,7 +2,6 @@ package io.joynr.servlet;
 
 /*
  * #%L
- * joynr::java::backend-services::capabilitiesdirectoryservlet
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

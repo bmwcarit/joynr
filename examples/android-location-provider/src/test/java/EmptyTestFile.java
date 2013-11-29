@@ -1,6 +1,5 @@
 /*
  * #%L
- * joynr::java::public-examples::android-location-provider
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

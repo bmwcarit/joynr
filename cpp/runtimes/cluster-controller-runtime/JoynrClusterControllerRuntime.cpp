@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -50,6 +47,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/Directory.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/LocalChannelUrlDirectory.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -135,7 +133,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     inProcessDispatcher = new InProcessDispatcher();
     /* CC */
-    messageRouter = new MessageRouter(messagingEndpointDirectory);
+    messageRouter = new MessageRouter(*messagingSettings, messagingEndpointDirectory);
 
     /* LibJoynr */
     assert(messageRouter);
@@ -175,7 +173,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     //try using the real capabilitiesClient again:
     //capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
 
-    localCapabilitiesDirectory = new LocalCapabilitiesDirectory(capabilitiesClient, messagingEndpointDirectory);
+    localCapabilitiesDirectory = new LocalCapabilitiesDirectory(*messagingSettings, capabilitiesClient, messagingEndpointDirectory);
     capabilitiesSkeleton = new InProcessCapabilitiesSkeleton(messagingEndpointDirectory, localCapabilitiesDirectory, channelId);
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -228,7 +226,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     if (usingRealCapabilitiesClient)
     {
-        ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder = getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_DOMAIN());
+        ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
+                getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                    messagingSettings->getDiscoveryDirectoriesDomain()
+                );
         DiscoveryQos discoveryQos(10000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
         QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
@@ -241,8 +242,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
         ((CapabilitiesClient*)capabilitiesClient)->init(cabilitiesProxy);
     }
 
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder
-            = getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN());
+    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
+            getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+                messagingSettings->getDiscoveryDirectoriesDomain()
+            );
 
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
@@ -254,8 +257,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                 ->build()
            );
 
-    channelUrlDirectory = QSharedPointer<LocalChannelUrlDirectory>(
-        new LocalChannelUrlDirectory(channelUrlDirectoryProxy, messagingSettings->getChannelUrlDirectoryUrl())
+    channelUrlDirectory = QSharedPointer<ILocalChannelUrlDirectory>(
+        new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy)
         );
     ((HttpCommunicationManager*)communicationManager)->init(channelUrlDirectory);
 

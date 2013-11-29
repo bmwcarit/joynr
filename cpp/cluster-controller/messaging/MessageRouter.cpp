@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -27,8 +24,6 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/EndpointAddressBase.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
-#include "joynr/LocalChannelUrlDirectory.h"
 
 #include <cassert>
 
@@ -43,9 +38,13 @@ MessageRouter::~MessageRouter() {
     delete messagingStubFactory;
 }
 
-MessageRouter::MessageRouter(Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
-                             int messageSendRetryInterval,
-                             int maxThreads):
+MessageRouter::MessageRouter(
+        MessagingSettings& messagingSettings,
+        Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
+        int messageSendRetryInterval,
+        int maxThreads
+) :
+    messagingSettings(messagingSettings),
     messagingStubFactory(NULL),
     partId2MessagingEndpointDirectory(partId2MessagingEndpointDirectory),
     threadPool(),
@@ -66,16 +65,22 @@ void MessageRouter::init(ICommunicationManager &comMgr)
 void MessageRouter::addProvisionedCapabilitiesDirectoryAddress()
 {
     QSharedPointer<EndpointAddressBase> endpointAddress(
-                new JoynrMessagingEndpointAddress(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_CHANNELID()));
-    partId2MessagingEndpointDirectory->add(LocalCapabilitiesDirectory::CAPABILITIES_DIRECTORY_PARTICIPANTID(),
-                                           endpointAddress);
+                new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+    );
+    partId2MessagingEndpointDirectory->add(
+                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                endpointAddress
+    );
 }
 
 void MessageRouter::addProvisionedChannelUrlDirectoryAddress() {
     QSharedPointer<EndpointAddressBase> endpointAddress(
-                new JoynrMessagingEndpointAddress(LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_CHANNELID()));
-    partId2MessagingEndpointDirectory->add(LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_PARTICIPANTID(),
-                                           endpointAddress);
+                new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+    );
+    partId2MessagingEndpointDirectory->add(
+                messagingSettings.getChannelUrlDirectoryParticipantId(),
+                endpointAddress
+    );
 }
 
 /**

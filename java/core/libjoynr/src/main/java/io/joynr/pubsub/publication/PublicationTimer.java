@@ -2,7 +2,6 @@ package io.joynr.pubsub.publication;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -188,7 +187,9 @@ public class PublicationTimer extends PubSubTimerBase {
             state.updateTimeOfLastPublication();
             logger.trace("sent subscriptionreply @ " + state.getTimeOfLastPublication());
         } else {
-            logger.trace("igored attribute change. Mininterval not yet reached.");
+            logger.trace("igored attribute change. Mininterval {} not yet reached since timeSinceLast: {}",
+                         minInterval,
+                         timeSinceLast);
         }
 
     }

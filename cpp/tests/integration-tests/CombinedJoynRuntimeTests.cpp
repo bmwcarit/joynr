@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -27,18 +24,14 @@
 #include "joynr/ICommunicationManager.h"
 #include "joynr/HttpCommunicationManager.h"
 #include "joynr/MessagingSettings.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 
-#include "joynr/vehicle/IGps.h"
-#include "joynr/vehicle/GpsProvider.h"
-
 #include "joynr/tests/ITest.h"
 #include "joynr/tests/TestProvider.h"
 #include "joynr/tests/TestProxy.h"
-#include "joynr/vehicle/GpsProxy.h"
 
 //using testing::Return;
 //using testing::ReturnRef;
@@ -124,16 +117,16 @@ TEST_F(CombinedRunTimeTest, startMessaging_does_Not_Throw)
 TEST_F(CombinedRunTimeTest, register_and_use_local_Provider)
 {
     QString domain = "testDomain0";
-    QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0.0, 0.0, 0.0, 0, 0, 444);
+    QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider());
+    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444);
     EXPECT_CALL(*mockProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
            .WillOnce(DoAll(SetArgReferee<0>(RequestStatusCode::OK), SetArgReferee<1>(gpsLocation1)));
 
    runtime->startMessaging();
-   QString participantId = runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
+   QString participantId = runtime->registerCapability<tests::TestProvider>(domain, mockProvider, QString());
 
-   ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder =
-           runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+   ProxyBuilder<tests::TestProxy>* testProxyBuilder =
+           runtime->getProxyBuilder<tests::TestProxy>(domain);
 
    DiscoveryQos discoveryQos(1000);
    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -141,20 +134,20 @@ TEST_F(CombinedRunTimeTest, register_and_use_local_Provider)
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
 
 
-   vehicle::GpsProxy* gpsProxy = gpsProxyBuilder
+   tests::TestProxy* testProxy = testProxyBuilder
                                        ->setRuntimeQos(MessagingQos(5000))
                                        ->setCached(false)
                                        ->setDiscoveryQos(discoveryQos)
                                        ->build();
 
    QSharedPointer<Future<types::GpsLocation> > future( new Future<types::GpsLocation>() );
-   gpsProxy->getLocation(future);
+   testProxy->getLocation(future);
    future->waitForFinished(500);
-   EXPECT_EQ(gpsProxy->getInterfaceName(), "vehicle/gps");
+   EXPECT_EQ(testProxy->getInterfaceName(), "tests/test");
    ASSERT_EQ(RequestStatusCode::OK.toString(), future->getStatus().getCode().toString());
    EXPECT_EQ(gpsLocation1, future->getValue());
-   delete gpsProxy;
-   delete gpsProxyBuilder;
+   delete testProxy;
+   delete testProxyBuilder;
 
 }
 
@@ -220,17 +213,17 @@ TEST_F(CombinedRunTimeTest, DISABLED_register_and_use_local_TestProvider)
 TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
     QFile::remove("SubscriptionRequests.persist");
     QString domain = "testDomain";
-    QSharedPointer<MockGpsProvider> mockProvider (new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
+    QSharedPointer<MockTestProvider> mockProvider (new MockTestProvider());
+    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444);
     EXPECT_CALL(*mockProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
            .Times(::testing::Between(1, 2))
            .WillRepeatedly(SetArgReferee<1>(gpsLocation1));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
+    QString participantId = runtime->registerCapability<tests::TestProvider>(domain, mockProvider, QString());
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder =
-            runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::TestProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -238,7 +231,7 @@ TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
 
 
-    vehicle::GpsProxy* gpsProxy = gpsProxyBuilder
+    tests::TestProxy* testProxy = testProxyBuilder
                                         ->setRuntimeQos(MessagingQos(5000))
                                         ->setCached(false)
                                         ->setDiscoveryQos(discoveryQos)
@@ -248,28 +241,28 @@ TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
                 new MockGpsSubscriptionListener());
 
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(480, 200, 200, 100));
-    QString subScriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    QString subScriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     QThreadSleep::msleep(250);
-    gpsProxy->unsubscribeFromLocation(subScriptionId);
-    delete gpsProxy;
-    delete gpsProxyBuilder;
+    testProxy->unsubscribeFromLocation(subScriptionId);
+    delete testProxy;
+    delete testProxyBuilder;
 }
 
 
 TEST_F(CombinedRunTimeTest, unsubscribe_from_local_Provider) {
     QFile::remove("SubscriptionRequests.persist");
     QString domain = "testDomain2";
-    QSharedPointer<MockGpsProvider> mockProvider (new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
+    QSharedPointer<MockTestProvider> mockProvider (new MockTestProvider());
+    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444);
     EXPECT_CALL(*mockProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
             .Times(AtLeast(2))
             .WillRepeatedly(SetArgReferee<1>(gpsLocation1));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
+    QString participantId = runtime->registerCapability<tests::TestProvider>(domain, mockProvider, QString());
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder =
-            runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::TestProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -277,7 +270,7 @@ TEST_F(CombinedRunTimeTest, unsubscribe_from_local_Provider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
 
 
-    vehicle::GpsProxy* gpsProxy = gpsProxyBuilder
+    tests::TestProxy* testProxy = testProxyBuilder
                                         ->setRuntimeQos(MessagingQos(5000))
                                         ->setCached(false)
                                         ->setDiscoveryQos(discoveryQos)
@@ -287,11 +280,11 @@ TEST_F(CombinedRunTimeTest, unsubscribe_from_local_Provider) {
                 new MockGpsSubscriptionListener());
 
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(800, 200, 200, 10000));
-    QString subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    QString subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     QThreadSleep::msleep(600);
-    gpsProxy->unsubscribeFromLocation(subscriptionId);
+    testProxy->unsubscribeFromLocation(subscriptionId);
     QThreadSleep::msleep(600);
-    delete gpsProxyBuilder;
-    delete gpsProxy;
+    delete testProxyBuilder;
+    delete testProxy;
 }
 

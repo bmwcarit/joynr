@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -22,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include <QFile>
 #include "utils/TestQString.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -42,14 +40,21 @@ using namespace joynr;
 class LocalCapabilitiesDirectoryTest : public ::testing::Test {
 public:
     LocalCapabilitiesDirectoryTest() :
+        settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
+        settings(settingsFileName, QSettings::IniFormat),
+        messagingSettings(settings),
         capabilitiesClient(new MockCapabilitiesClient()),
         endpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(capabilitiesClient, endpointDirectory)),
+        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, endpointDirectory)),
         dummyParticipantId1(),
         dummyParticipantId2(),
         localJoynrMessagingAddress1(),
         callback()
     {}
+
+    ~LocalCapabilitiesDirectoryTest() {
+        QFile::remove(settingsFileName);
+    }
 
     void SetUp(){
         registerCapabilitiesMetaTypes();
@@ -122,6 +127,9 @@ public:
     }
 
 protected:
+    QString settingsFileName;
+    QSettings settings;
+    MessagingSettings messagingSettings;
     MockCapabilitiesClient* capabilitiesClient;
     MessagingEndpointDirectory* endpointDirectory;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;

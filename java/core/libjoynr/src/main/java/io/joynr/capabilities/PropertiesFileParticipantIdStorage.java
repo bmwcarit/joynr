@@ -2,7 +2,6 @@ package io.joynr.capabilities;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -68,15 +67,16 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
      * (non-Javadoc)
      * 
      * @see io.joynr.capabilities.ParticipantIdStorage#
-     * getProviderParticipantId(java.lang.Class, java.lang.String,
+     * getProviderParticipantId(java.lang.String, java.lang.Class, java.lang.String,
      * java.lang.String)
      */
     @Override
-    public <T extends JoynrInterface> String getProviderParticipantId(Class<T> providedInterface,
+    public <T extends JoynrInterface> String getProviderParticipantId(String domain,
+                                                                      Class<T> providedInterface,
                                                                       String authenticationToken,
                                                                       String defaultValue) {
 
-        String token = getProviderParticipantIdKey(providedInterface, authenticationToken);
+        String token = getProviderParticipantIdKey(domain, providedInterface, authenticationToken);
 
         String participantId;
 
@@ -114,21 +114,30 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static <T extends JoynrInterface> String getProviderParticipantIdKey(Class<T> providedInterface,
+    private static <T extends JoynrInterface> String getProviderParticipantIdKey(String domain,
+                                                                                 Class<T> providedInterface,
                                                                                  String authenticationToken) {
-        String token = providedInterface.getName() + "|" + authenticationToken;
+        String interfaceName = providedInterface.getName();
+        try {
+            if (providedInterface.getField("INTERFACE_NAME") != null) {
+                interfaceName = providedInterface.getField("INTERFACE_NAME").get(null).toString();
+            }
+        } catch (Exception e) {
+        }
+        String token = "joynr.participant:" + domain + "|" + interfaceName + "|" + authenticationToken;
         return token;
     }
 
     @Override
-    public <T extends JoynrInterface> String getProviderParticipantId(Class<T> providedInterface,
+    public <T extends JoynrInterface> String getProviderParticipantId(String domain,
+                                                                      Class<T> providedInterface,
                                                                       String authenticationToken) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = getProviderParticipantIdKey(providedInterface, authenticationToken).toLowerCase();
+        String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface, authenticationToken).toLowerCase();
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }
-        return getProviderParticipantId(providedInterface, authenticationToken, defaultParticipantId);
+        return getProviderParticipantId(domain, providedInterface, authenticationToken, defaultParticipantId);
     }
 
 }

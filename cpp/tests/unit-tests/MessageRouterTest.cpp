@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -21,6 +18,7 @@
  */
 #include "joynr/PrivateCopyAssign.h"
 #include "gtest/gtest.h"
+#include <QFile>
 #include "gmock/gmock.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
@@ -31,18 +29,29 @@ using namespace joynr;
 class MessageRouterTest : public ::testing::Test {
 public:
     MessageRouterTest() :
+        settingsFileName("MessageRouterTest.settings"),
+        settings(settingsFileName, QSettings::IniFormat),
+        messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingEndpointDirectory)),
+        messageRouter(new MessageRouter(messagingSettings, messagingEndpointDirectory)),
         joynrMessage(),
         qos()
     {}
+
+    ~MessageRouterTest() {
+        QFile::remove(settingsFileName);
+    }
+
     void SetUp(){
         joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     }
     void TearDown(){
     }
 protected:
+    QString settingsFileName;
+    QSettings settings;
+    MessagingSettings messagingSettings;
     MockMessagingStubFactory* messagingStubFactory;
     MessagingEndpointDirectory* messagingEndpointDirectory;
     MessageRouter* messageRouter;

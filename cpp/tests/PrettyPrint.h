@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -22,6 +19,11 @@
 #ifndef PRETTYPRINT_H_
 #define PRETTYPRINT_H_
 
+#include <gtest/gtest.h>
+#include <QtCore/QString>
+#include <QtCore/QByteArray>
+#include <iostream>
+
 #include "joynr/JsonSerializer.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/JoynrMessage.h"
@@ -29,13 +31,21 @@
 #include "joynr/RequestStatusCode.h"
 #include "joynr/types/Trip.h"
 
-void initPretty(void);
+#define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
+#define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
 
-void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os);
+//void initPretty(void);
+
+namespace joynr {
+namespace types {
+    void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os);
+}
+}
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 void PrintTo(const QString& value, ::std::ostream* os);
-void PrintTo(const QObject& value, ::std::ostream* os);
-void PrintTo(const QVariant& value, ::std::ostream* os);
+void PrintTo(const QByteArray& value, ::std::ostream* os);
+//void PrintTo(const QObject& value, ::std::ostream* os);
+//void PrintTo(const QVariant& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
 void PrintTo(const joynr::types::Trip& value, ::std::ostream* os);

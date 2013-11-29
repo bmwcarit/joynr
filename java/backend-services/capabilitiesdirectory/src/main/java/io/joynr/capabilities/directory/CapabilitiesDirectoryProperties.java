@@ -2,7 +2,6 @@ package io.joynr.capabilities.directory;
 
 /*
  * #%L
- * joynr::java::backend-services::capabilities directory
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -109,7 +108,7 @@ public class CapabilitiesDirectoryProperties {
     }
 
     public String getCapabilitiesClientRequestTimeout() {
-        return config.getProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT);
+        return config.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT);
     }
 
     public String getMessagingLongPollRetryIntervalMs() {

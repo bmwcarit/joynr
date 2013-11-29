@@ -2,7 +2,6 @@ package io.joynr.dispatcher;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -329,8 +328,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
             TypeReference<?> typeRef = attributeType.newInstance();
             Object receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
-            //
-            @SuppressWarnings("rawtypes")
+            @SuppressWarnings("unchecked")
             SubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
             if (listener == null) {
                 logger.error("No subscription listener found for incoming publication!");

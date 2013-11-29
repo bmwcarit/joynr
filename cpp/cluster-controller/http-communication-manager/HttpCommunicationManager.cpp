@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -73,7 +70,7 @@ void HttpCommunicationManager::initMessageSender() {
                                       settings.getSendMsgRetryInterval());
 }
 
-void HttpCommunicationManager::init(QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory) {
+void HttpCommunicationManager::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) {
     if(messageSender != NULL) {
         this->channelUrlDirectory = channelUrlDirectory;
         messageSender->init(channelUrlDirectory,settings);

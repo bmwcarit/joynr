@@ -2,7 +2,6 @@ package io.joynr.joynrandroidruntime;
 
 /*
  * #%L
- * joynr::java::android::joynr-android-runtime
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

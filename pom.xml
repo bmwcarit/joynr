@@ -1,10 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<groupId>io.joynr</groupId>
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.5.0-SNAPSHOT</version>
+	<version>0.5.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -12,13 +28,14 @@
 	<developers>
 		<developer>
 			<organization>BMW Car IT GmbH</organization>
+			<organizationUrl>http://www.bmw-carit.com</organizationUrl>
 		</developer>
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/bmwcarit/joynr.git</connection>
-		<developerConnection>scm:git:ssh:git@github.com:bmwcarit/joynr.git</developerConnection>
-		<url>https://github.com/bmwcarit/joynr</url>
+		<connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+		<developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+		<url>git@github.com:bmwcarit/joynr</url>
 	</scm>
 
 	<licenses>
@@ -38,9 +55,8 @@
 	</modules>
 
 	<profiles>
-
 		<profile>
-			<id>release-sign-artifacts</id>
+			<id>deploy-artifacts-to-sonatype</id>
 			<activation>
 				<!-- maven-jgitflow-plugin will set the performRelease property during
 					release and thus automatically activate this profile during release.
@@ -57,6 +73,18 @@
 					<value>true</value>
 				</property>
 			</activation>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>sonatype-nexus-snapshots</id>
+					<name>Sonatype Nexus Snapshots</name>
+					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+				</snapshotRepository>
+				<repository>
+					<id>sonatype-nexus-staging</id>
+					<name>Nexus Release Repository</name>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
 			<build>
 				<plugins>
 					<plugin>
@@ -68,6 +96,30 @@
 								<phase>verify</phase>
 								<goals>
 									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -133,35 +185,103 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>carit-copyright</id>
+			<activation>
+				<property>
+					<name>profile.carit-copyright</name>
+				</property>
+			</activation>
+			<properties>
+				<licenseConfigurationVersion>1.0</licenseConfigurationVersion>
+			</properties>
+			<build>
+				<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.5</version>
+					<configuration>
+						<licenseName>apache_v2</licenseName>
+						<inceptionYear>2011</inceptionYear>
+						<organizationName>BMW Car IT GmbH</organizationName>
+						<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
+						<includes>
+							<include>**/*pom.xml</include>
+						</includes>
+						<extraExtensions>
+							<fidl>java</fidl>
+						</extraExtensions>
+					</configuration>
+					<executions>
+						<execution>
+							<id>add-third-party</id>
+							<phase>validate</phase>
+							<goals>
+								<goal>add-third-party</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>download-licenses</id>
+							<phase>validate</phase>
+							<goals>
+								<goal>download-licenses</goal>
+							</goals>
+						</execution>
+					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>de.bmw.joynr</groupId>
+							<artifactId>license-configuration</artifactId>
+							<version>${licenseConfigurationVersion}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.jasig.maven</groupId>
+					<artifactId>maven-notice-plugin</artifactId>
+					<version>1.0.6</version>
+					<configuration>
+						<noticeTemplate>/notice/NOTICE-JOYNR.template</noticeTemplate>
+						<licenseMapping>
+							<param>/notice/license-mappings.xml</param>
+							<param>/notice/license-mappings-local.xml</param>
+						</licenseMapping>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>de.bmw.joynr</groupId>
+							<artifactId>license-configuration</artifactId>
+							<version>${licenseConfigurationVersion}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+			</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
-		<!-- TODO check if this should be moved to configuration project -->
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Those versions should not be used outside of the superpoom. All dependencies
+		<!-- Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
 			here, and should not have a version tag in the the pom-files where they 
-			are
-			referenced. -->
-		<jersey-version>1.17</jersey-version>
-		<jackson-version>2.2.1</jackson-version>
-		<guice-version>3.0</guice-version>
+			are referenced. -->
+		<jersey.version>1.17</jersey.version>
+		<jackson.version>2.2.1</jackson.version>
+		<guice.version>3.0</guice.version>
 		<!--jetty.version>8.1.11.v20130520</jetty.version-->
 		<jetty.version>8.1.7.v20120910</jetty.version>
-
-		<tycho-version>0.15.0</tycho-version>
-		<mavenclean-version>2.5</mavenclean-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<tycho.version>0.15.0</tycho.version>
 	</properties>
 
 	<!-- specify dependency versions and properties here to share this information
 		with all children that use the specified dependency -->
 	<dependencyManagement>
 		<dependencies>
-			<!-- common::core::implementation-test and onboard::assembly-onboard-test
-				override scope test -> compile -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
@@ -204,7 +324,7 @@
 			<dependency>
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
-				<version>${guice-version}</version>
+				<version>${guice.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -219,19 +339,19 @@
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-json</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-bundle</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-server</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
@@ -262,54 +382,52 @@
 			<dependency>
 				<groupId>com.sun.jersey.contribs</groupId>
 				<artifactId>jersey-multipart</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-servlet</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-client</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey.contribs</groupId>
 				<artifactId>jersey-apache-client</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey.jersey-test-framework</groupId>
 				<artifactId>jersey-test-framework-grizzly</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey.jersey-test-framework</groupId>
 				<artifactId>jersey-test-framework-grizzly2</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey.contribs</groupId>
 				<artifactId>jersey-guice</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>${jackson-version}</version>
-				<!--version>2.0.5.2-JOYN</version -->
-				<!--version>2.3.0.1.JOYN-SNAPSHOT</version -->
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson-version}</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
@@ -345,13 +463,18 @@
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
-				<version>4.3-beta2</version>
+				<version>4.3</version>
 				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
-				<version>4.3-beta2</version>
+				<version>4.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpmime</artifactId>
+				<version>4.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
@@ -360,7 +483,6 @@
 				<scope>test</scope>
 				<type>pom</type>
 			</dependency>
-
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
@@ -373,17 +495,41 @@
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
 				<version>2.2.1</version>
 			</dependency>
-
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-core</artifactId>
-				<version>${jersey-version}</version>
+				<version>${jersey.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-core</artifactId>
+				<version>1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-library</artifactId>
+				<version>1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.jayway.restassured</groupId>
 				<artifactId>rest-assured</artifactId>
-				<version>1.7.2</version>
+				<version>1.8.1</version>
+				<exclusions>
+					<!-- Exclude Groovy because of classpath issue -->
+					<exclusion>
+						<groupId>org.codehaus.groovy</groupId>
+						<artifactId>groovy</artifactId>
+					</exclusion>
+				</exclusions>				
 			</dependency>
+			<!-- included to prevent classpath issue with rest-asured -->
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-all</artifactId>
+				<!-- Needs to be the same version that REST Assured depends on -->
+				<version>2.1.2</version>
+				<scope>test</scope>
+			</dependency>		
 			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
@@ -424,6 +570,16 @@
 				<artifactId>org.franca.deploymodel.dsl</artifactId>
 				<version>0.8.7</version>
 			</dependency>
+			<dependency>
+				<groupId>org.genivi.commonapi</groupId>
+				<artifactId>core</artifactId>
+				<version>2.0.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.genivi.commonapi</groupId>
+				<artifactId>dbus</artifactId>
+				<version>2.0.2</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -436,8 +592,6 @@
 	</dependencies>
 
 	<build>
-
-
 		<!-- specify plugin versions and configuration here to apply to all submodules
 			that use the specified plugin -->
 		<pluginManagement>
@@ -459,7 +613,34 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[2.8,)</versionRange>
+										<goals>
+											<goal>unpack</goal>
+											<goal>copy</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.7,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -478,7 +659,7 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>io.joynr.tools.generator</groupId>
-										<artifactId>maven-joynr-generator-plugin</artifactId>
+										<artifactId>joynr-generator-maven-plugin</artifactId>
 										<versionRange>[0.5.0,)</versionRange>
 										<goals>
 											<goal>generate</goal>
@@ -493,6 +674,17 @@
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.16</version>
+					<configuration>
+						<forkCount>1</forkCount>
+						<!-- one JVM per test suite -->
+						<reuseForks>false</reuseForks>
+						<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -524,12 +716,12 @@
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-maven-plugin</artifactId>
 					<extensions>true</extensions>
-					<version>${tycho-version}</version>
+					<version>${tycho.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-packaging-plugin</artifactId>
-					<version>${tycho-version}</version>
+					<version>${tycho.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -558,7 +750,7 @@
 				</plugin>
 				<plugin>
 					<groupId>io.joynr.tools.generator</groupId>
-					<artifactId>maven-joynr-generator-plugin</artifactId>
+					<artifactId>joynr-generator-maven-plugin</artifactId>
 					<version>${project.version}</version>
 				</plugin>
 				<plugin>
@@ -626,6 +818,8 @@
 						<compilerId>eclipse</compilerId>
 						<source>1.6</source>
 						<target>1.6</target>
+						<debug>true</debug>
+						<debuglevel>lines,vars,source</debuglevel>
 					</configuration>
 					<dependencies>
 						<dependency>
@@ -635,7 +829,6 @@
 						</dependency>
 					</dependencies>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
@@ -649,13 +842,11 @@
 						</dependency>
 					</dependencies>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.2.1</version>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
@@ -666,13 +857,11 @@
 						<downloadJavadocs>true</downloadJavadocs>
 					</configuration>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>2.3</version>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
@@ -727,14 +916,215 @@
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
-
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-license-info</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.unpack-license-info}</skip>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.tools</groupId>
+									<artifactId>build-resources</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<includes>LICENSE</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-and-license-files</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-notice-and-license-files-test</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>add-test-resource</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-license-to-apidoc</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/apidocs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-notice-license-to-classes</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-notice-license-to-test-classes</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+										<include>*LICENSE*</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<!-- 
+					Workaraound: sets properties to skip execution of copying NOTICE file
+					and unpacking of LICENCE inforamation on Maven projects with packaging pom. 
+					-->
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<exportAntProperties>true</exportAntProperties>
+							<target>
+								<condition property="skip.copy-notice-and-license-files" value="true" else="false">
+									<equals arg1="${project.packaging}" arg2="pom" />
+								</condition>
+								<condition property="skip.unpack-license-info" value="true" else="false">
+									<equals arg1="${project.packaging}" arg2="pom" />
+								</condition>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>

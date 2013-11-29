@@ -2,7 +2,6 @@ package io.joynr.capabilities;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -24,11 +23,13 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 
 public interface ParticipantIdStorage {
 
-    public abstract <T extends JoynrInterface> String getProviderParticipantId(Class<T> providedInterface,
-                                                                               String authenticationToken);
+    public abstract <T extends JoynrInterface> String getProviderParticipantId(String domain,
+                                                                               Class<T> providedInterface,
+                                                                               String authToken);
 
-    public abstract <T extends JoynrInterface> String getProviderParticipantId(Class<T> providedInterface,
-                                                                               String authenticationToken,
+    public abstract <T extends JoynrInterface> String getProviderParticipantId(String domain,
+                                                                               Class<T> providedInterface,
+                                                                               String authToken,
                                                                                String defaultValue);
 
 }

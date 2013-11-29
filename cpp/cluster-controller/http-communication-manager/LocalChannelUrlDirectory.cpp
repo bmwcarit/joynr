@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -24,32 +21,12 @@
 
 namespace joynr {
 
-
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_DOMAIN(){
-    static QString value("com.bmw");
-    return value;
-}
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_INTERFACENAME(){
-    static QString value("infrastructure/channelurldirectory");
-    return value;
-}
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_CHANNELID(){
-    static QString value( "discoverydirectory_channelid");
-    return value;
-}
-const QString& LocalChannelUrlDirectory::CHANNEL_URL_DIRECTORY_PARTICIPANTID(){
-    static QString value( "channelurldirectory_participantid");
-    return value;
-}
-
-
 joynr_logging::Logger* LocalChannelUrlDirectory::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "LocalChannelUrlDirectory");
 
-LocalChannelUrlDirectory::LocalChannelUrlDirectory(
-        QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy,
-        const QString &channelUrlDirectoryUrl):
+LocalChannelUrlDirectory::LocalChannelUrlDirectory(MessagingSettings& messagingSettings,
+        QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy):
+    messagingSettings(messagingSettings),
     channelUrlDirectoryProxy(channelUrlDirectoryProxy),
-    channelUrlDirectoryUrl(channelUrlDirectoryUrl),
     localCache()
 {
     init();
@@ -63,18 +40,29 @@ LocalChannelUrlDirectory::~LocalChannelUrlDirectory() {
 
 void LocalChannelUrlDirectory::init() {
 
-    types::ChannelUrlInformation urlInformation;
-    QList<QString> urls;
-
-    if(!this->channelUrlDirectoryUrl.endsWith("/")) {
-        this->channelUrlDirectoryUrl.append("/");
-    }
-    urls << this->channelUrlDirectoryUrl  + CHANNEL_URL_DIRECTORY_CHANNELID();
-    urlInformation.setUrls(urls);
+    // provisioning of Global Channel URL Directory URL
+    types::ChannelUrlInformation channelUrlDirectoryUrlInformation;
+    QList<QString> channelUrlDirectoryUrls;
+    QString channelUrlDirectoryUrl = messagingSettings.getChannelUrlDirectoryUrl();
+    channelUrlDirectoryUrls << channelUrlDirectoryUrl;
+    channelUrlDirectoryUrlInformation.setUrls(channelUrlDirectoryUrls);
     localCache.insert(
-                CHANNEL_URL_DIRECTORY_CHANNELID(),
-                urlInformation);
-    LOG_TRACE(logger, "Initialized with channelUrlDirectoryProxy ...+ url=" + urls.first());
+                messagingSettings.getChannelUrlDirectoryChannelId(),
+                channelUrlDirectoryUrlInformation);
+    LOG_TRACE(logger, QString("Provisioned Global Channel URL Directory URL (%1) into Local Channel URL Directory")
+              .arg(channelUrlDirectoryUrl));
+
+    // provisioning of Global Capabilities Directory URL
+    types::ChannelUrlInformation capabilitiesDirectoryUrlInformation;
+    QList<QString> capabilitiesDirectoryUrls;
+    QString capabilitiesDirectoryUrl = messagingSettings.getCapabilitiesDirectoryUrl();
+    capabilitiesDirectoryUrls << capabilitiesDirectoryUrl;
+    capabilitiesDirectoryUrlInformation.setUrls(capabilitiesDirectoryUrls);
+    localCache.insert(
+                messagingSettings.getCapabilitiesDirectoryChannelId(),
+                capabilitiesDirectoryUrlInformation);
+    LOG_TRACE(logger, QString("Provisioned Global Capabilities Directory URL (%1) into Local Channel URL Directory")
+              .arg(capabilitiesDirectoryUrl));
 }
 
 

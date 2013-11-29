@@ -2,7 +2,6 @@ package io.joynr.pubsub;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -37,7 +36,7 @@ public class PubSubTestProviderImpl extends DefaultTestProvider {
         complexTestAttribute.setLatitude(48.143554);
         complexTestAttribute.setLongitude(11.536564);
         complexTestAttribute.setAltitude(6.0);
-        complexTestAttribute.setGpsFix(GpsFixEnum.Mode3D);
+        complexTestAttribute.setGpsFix(GpsFixEnum.MODE3D);
     }
 
     @Override

@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -29,8 +26,11 @@
 
 class IMessageReceiver;
 #include "joynr/tests/DefaultTestProvider.h"
+#include "joynr/tests/TestProvider.h"
+#include "joynr/tests/TestRequestCaller.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "joynr/vehicle/DefaultGpsProvider.h"
 #include "QtCore"
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
@@ -77,13 +77,14 @@ class IMessageReceiver;
 #include "joynr/MessageRouter.h"
 #include "joynr/types/ProviderQosRequirements.h"
 
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/types/ChannelUrlInformation.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -331,7 +332,7 @@ class MockCommunicationManager : public joynr::HttpCommunicationManager
 {
 public:
     MockCommunicationManager():HttpCommunicationManager(joynr::MessagingSettings(*(new QSettings("BMW", "Joynr")))){};
-    MOCK_METHOD1(init, void(const joynr::LocalChannelUrlDirectory& channelUrlDirectory));
+    MOCK_METHOD1(init, void(const joynr::ILocalChannelUrlDirectory& channelUrlDirectory));
     MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
     MOCK_METHOD3(sendMessage,void(const QString&, const qint64&, const joynr::JoynrMessage&));
     MOCK_METHOD0(startReceiveQueue, void());
@@ -392,10 +393,10 @@ public:
 
 
 
-class MockGpsProvider : public joynr::vehicle::GpsProvider
+class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 {
     public:
-    MockGpsProvider() : joynr::vehicle::GpsProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
+    MockGpsProvider() : joynr::vehicle::DefaultGpsProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
     {
     };
     ~MockGpsProvider()
@@ -404,7 +405,7 @@ class MockGpsProvider : public joynr::vehicle::GpsProvider
     };
     /*void getLocation(RequestStatus& status, GpsLocation& result)
     {
-        result = GpsLocation(GpsFixEnum::Mode2D, 4,5,6,7);
+        result = GpsLocation(GpsFixEnum::MODE2D, 4,5,6,7);
     }
     */
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& result) );
@@ -428,48 +429,25 @@ class MockGpsProvider : public joynr::vehicle::GpsProvider
     }
 };
 
-class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
-public:
-    MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
-    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
-    MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
-    MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
-};
-
-class MockIRequestCallerDirectory : public joynr::IRequestCallerDirectory {
-public:
-    MOCK_METHOD1(lookupRequestCaller, QSharedPointer<joynr::RequestCaller>(const QString& participantId));
-    MOCK_METHOD1(containsRequestCaller, bool(const QString& participantId));
-};
-
-class MockEndpointAddress : public joynr::EndpointAddressBase {
-
-};
-
-
-
-template <typename Key, typename T>
-class MockDirectory : public joynr::IDirectory<Key, T> {
-public:
-    MOCK_METHOD1_T(lookup, QSharedPointer< T >(const Key& keyId));
-    MOCK_METHOD1_T(contains, bool(const Key& keyId));
-
-    MOCK_METHOD2_T(add, void(const Key &keyId, T* value));
-    MOCK_METHOD2_T(add, void(const Key& keyId, QSharedPointer < T > value));
-
-    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, qint64 ttl_ms));
-    MOCK_METHOD3_T(add, void(const Key& keyId, QSharedPointer < T > value, qint64 ttl_ms));
-    MOCK_METHOD1_T(remove, void(const Key& keyId));
-};
-
-typedef MockDirectory<QString, joynr::EndpointAddressBase> MockMessagingEndpointDirectory;
-
-
 class MockTestProvider : public joynr::tests::DefaultTestProvider
 {
 public:
+    MockTestProvider() :
+        joynr::tests::DefaultTestProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
+    {
+    };
     MockTestProvider(joynr::types::ProviderQos qos) :
-        DefaultTestProvider(qos) {}
+        DefaultTestProvider(qos)
+    {
+    };
+    ~MockTestProvider()
+    {
+        qDebug() << "I am being destroyed_ MockProvider";
+    };
+
+    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& result) );
+    MOCK_METHOD2(setLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation gpsLocation));
+
     void  sumInts(joynr::RequestStatus& status, int& result, QList<int>  ints) {
         result = 0;
         int j;
@@ -508,6 +486,53 @@ public:
         status.setCode(joynr::RequestStatusCode::OK);
     }
 };
+
+class MockTestRequestCaller : public joynr::tests::TestRequestCaller {
+public:
+//    MockTestRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
+    MockTestRequestCaller() : joynr::tests::TestRequestCaller(QSharedPointer<joynr::tests::TestProvider>(new MockTestProvider()) ) {}
+    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
+    MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+};
+
+class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
+public:
+    MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
+    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
+    MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+};
+
+
+class MockIRequestCallerDirectory : public joynr::IRequestCallerDirectory {
+public:
+    MOCK_METHOD1(lookupRequestCaller, QSharedPointer<joynr::RequestCaller>(const QString& participantId));
+    MOCK_METHOD1(containsRequestCaller, bool(const QString& participantId));
+};
+
+class MockEndpointAddress : public joynr::EndpointAddressBase {
+
+};
+
+
+
+template <typename Key, typename T>
+class MockDirectory : public joynr::IDirectory<Key, T> {
+public:
+    MOCK_METHOD1_T(lookup, QSharedPointer< T >(const Key& keyId));
+    MOCK_METHOD1_T(contains, bool(const Key& keyId));
+
+    MOCK_METHOD2_T(add, void(const Key &keyId, T* value));
+    MOCK_METHOD2_T(add, void(const Key& keyId, QSharedPointer < T > value));
+
+    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, qint64 ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key& keyId, QSharedPointer < T > value, qint64 ttl_ms));
+    MOCK_METHOD1_T(remove, void(const Key& keyId));
+};
+
+typedef MockDirectory<QString, joynr::EndpointAddressBase> MockMessagingEndpointDirectory;
+
 
 
 
@@ -550,41 +575,21 @@ public:
 };
 
 
-class MockLocalChannelUrlDirectory : public joynr::LocalChannelUrlDirectory {
+class MockLocalChannelUrlDirectory : public joynr::ILocalChannelUrlDirectory {
 public:
-    MockLocalChannelUrlDirectory() : LocalChannelUrlDirectory(QSharedPointer<joynr::infrastructure::ChannelUrlDirectoryProxy>(NULL),"") {}
-
     MOCK_METHOD3(registerChannelUrls, void(
                      QSharedPointer<joynr::Future<void> > future,
                      const QString& channelId,
-                     const joynr::types::ChannelUrlInformation& channelUrlInformation));
+                     joynr::types::ChannelUrlInformation channelUrlInformation));
 
     MOCK_METHOD2(unregisterChannelUrls, void(
-            QSharedPointer<joynr::Future<void> > future ,
+            QSharedPointer<joynr::Future<void> > future,
             const QString& channelId));
 
     MOCK_METHOD3(getUrlsForChannel, void(
             QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation> > future,
             const QString& channelId,
             const qint64& timeout_ms));
-};
-
-class MockMessageRouter : public joynr::MessageRouter {
-public:
-    MockMessageRouter() : MessageRouter(NULL) {}
-
-    MOCK_METHOD1(init, void(joynr::ICommunicationManager& comMgr));
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
-};
-
-class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
-public:
-    MockLocalCapabilitiesDirectory() : LocalCapabilitiesDirectory(NULL, NULL) {}
-
-    MOCK_METHOD5(registerGlobalCapability, void(const QString& domain, const QString& interfaceName, const joynr::types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::EndpointAddressBase> > endpointAddresses));
-    MOCK_METHOD5(getCapabilities, void(const QString& domain, const QString& interfaceName, QSharedPointer<joynr::ILocalCapabilitiesCallback> callBack, const qint64& reqCacheDataFreshness_ms, const joynr::types::ProviderQosRequirements& qos));
-    MOCK_METHOD3(getCapabilities, void(const QString& participantId, QSharedPointer<joynr::ILocalCapabilitiesCallback> callBack, const qint64& reqCacheDataFreshness_ms));
-    MOCK_METHOD1(removeCapability, void(const QString& participantId));
 };
 
 class MockVoidOperationCallback : public joynr::ICallback<void> {
@@ -599,8 +604,8 @@ public:
     MockParticipantIdStorage() : ParticipantIdStorage(QString("mock filename")) {
 
     }
-    MOCK_METHOD2(getProviderParticipantId, QString(const QString& interfaceName, const QString& authenticationToken));
-    MOCK_METHOD3(getProviderParticipantId, QString(const QString& interfaceName, const QString& authenticationToken, const QString& defaultValue));
+    MOCK_METHOD3(getProviderParticipantId, QString(const QString& domain, const QString& interfaceName, const QString& authenticationToken));
+    MOCK_METHOD4(getProviderParticipantId, QString(const QString& domain, const QString& interfaceName, const QString& authenticationToken, const QString& defaultValue));
 };
 
 #ifdef _MSC_VER

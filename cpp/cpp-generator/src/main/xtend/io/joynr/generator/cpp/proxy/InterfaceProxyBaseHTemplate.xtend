@@ -27,7 +27,7 @@ class InterfaceProxyBaseHTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "ProxyBase"
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"ProxyBase_h").toUpperCase
 		'''
@@ -56,9 +56,9 @@ class InterfaceProxyBaseHTemplate {
 		    void handleArbitrationFinished(const QString &participantId, QSharedPointer<joynr::EndpointAddressBase> endpointAddress);
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val returnType = getMappedDatatypeOrList(attribute)»
-				«var attributeName = attribute.name.toFirstUpper»         
-				QString subscribeTo«attributeName»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-				void unsubscribeFrom«attributeName»(QString& subscriptionId);
+				«var attributeName = attribute.joynrName»
+				QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+				void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
 			«ENDFOR»
 
 		protected:

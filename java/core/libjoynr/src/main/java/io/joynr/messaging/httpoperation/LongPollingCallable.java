@@ -2,7 +2,6 @@ package io.joynr.messaging.httpoperation;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -46,6 +45,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -84,8 +85,10 @@ public class LongPollingCallable implements Callable<Void> {
     private HttpGet httpget;
     protected int statusCode;
     private String statusText;
+    private RequestConfig defaultRequestConfig;
 
     public LongPollingCallable(CloseableHttpClient httpclient,
+                               RequestConfig defaultRequestConfig,
                                Boolean longPollingDisabled,
                                MessageReceiver messageReceiver,
                                ObjectMapper objectMapper,
@@ -94,6 +97,7 @@ public class LongPollingCallable implements Callable<Void> {
                                String channelId,
                                String receiverId) {
         this.httpclient = httpclient;
+        this.defaultRequestConfig = defaultRequestConfig;
         this.longPollingDisabled = longPollingDisabled;
         this.messageReceiver = messageReceiver;
         this.objectMapper = objectMapper;
@@ -155,6 +159,7 @@ public class LongPollingCallable implements Callable<Void> {
                     String body = entity == null ? null : EntityUtils.toString(entity, "UTF-8");
                     statusCode = response.getStatusLine().getStatusCode();
                     statusText = response.getStatusLine().getReasonPhrase();
+                    logger.debug("Long poll returned: {} reason: url {}", statusCode, httpget.getURI().toASCIIString());
                     return body;
                 }
             });
@@ -173,6 +178,7 @@ public class LongPollingCallable implements Callable<Void> {
             logger.warn("SocketException in long poll: {} message: {} message: {}",
                         httpget.getURI().toASCIIString(),
                         e.getMessage());
+            delay();
             return;
 
         } catch (IOException e) {
@@ -303,6 +309,8 @@ public class LongPollingCallable implements Callable<Void> {
 
     public void setChannelUrl(String channelUrl) {
         this.httpget = new HttpGet(channelUrl);
+        Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
+        httpget.setConfig(requestConfigBuilder.build());
         httpget.setHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);
         if (channelUrl.length() > 15) {
             this.id = "..." + channelUrl.substring(channelUrl.length() - 15);

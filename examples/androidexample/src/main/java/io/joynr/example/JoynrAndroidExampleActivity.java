@@ -2,7 +2,6 @@ package io.joynr.example;
 
 /*
  * #%L
- * joynr::java::public-examples::AndroidExample
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -26,7 +23,7 @@
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 #include "joynr/HttpCommunicationManager.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/TestProvider.h"
@@ -95,7 +92,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
     QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0 ,0 ,0 ,0 ,0 , 444);
+    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
     runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
     QThreadSleep::msleep(550);
@@ -158,21 +155,21 @@ TEST_F(End2EndRPCTest, call_void_operation)
 // tests in process subscription
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
-    QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(types::GpsFixEnum::Mode2D, 1.1, 2.2, 3.3, 0, 0, 0, 0, 0, 444);
-    runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
+    QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider());
+    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    runtime->registerCapability<tests::TestProvider>(domain, mockProvider, QString());
 
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder =
-            runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::TestProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
             ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
@@ -192,10 +189,10 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                 200, // maxInterval_ms
                 1000 // alertInterval_ms
     ));
-    gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     QThreadSleep::msleep(1500);
     //TODO CA: shared pointer for proxy builder?
-    delete gpsProxyBuilder;
+    delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }

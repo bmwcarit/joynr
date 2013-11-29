@@ -43,7 +43,7 @@ class InProcessGenerator {
 		for(serviceInterface: model.interfaces){
 			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
-			val serviceName = serviceInterface.name.toFirstUpper
+			val serviceName = serviceInterface.joynrName
 			
 			headerFileSystem.generateFile(
 				headerpath + serviceName + "InProcessConnector.h",

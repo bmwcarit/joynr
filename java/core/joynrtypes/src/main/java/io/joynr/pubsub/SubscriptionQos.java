@@ -2,7 +2,6 @@ package io.joynr.pubsub;
 
 /*
  * #%L
- * joynr::java::javaapi
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -70,8 +69,9 @@ public abstract class SubscriptionQos implements JoynrType {
      *            </ul>
      */
     public SubscriptionQos(long expiryDate, long publicationTtl) {
-        if (expiryDate <= System.currentTimeMillis()) {
-            logger.error("Subscription ExpiryDate is in the past");
+        long now = System.currentTimeMillis();
+        if (expiryDate <= now) {
+            logger.error("Subscription ExpiryDate {} is in the past. Now: {}", expiryDate, now);
         }
         this.expiryDate = expiryDate;
         publicationTtl = publicationTtl < MIN_PUBLICATION_TLL ? MIN_PUBLICATION_TLL : publicationTtl;
@@ -106,7 +106,7 @@ public abstract class SubscriptionQos implements JoynrType {
      * If a notification message can not be delivered within its time to live, it will be deleted from the system. This
      * value is provided in milliseconds.
      * 
-     * @return<br>publicationTtl_ms time-to-live in milliseconds.
+     * @return publicationTtl_ms time-to-live in milliseconds.
      * 
      */
     public long getPublicationTtl() {

@@ -2,7 +2,6 @@ package joynr;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -23,6 +22,9 @@ package joynr;
 public class SubscriptionStop implements JoynrMessageType {
 
     private String subscriptionId;
+
+    public SubscriptionStop() {
+    }
 
     public SubscriptionStop(String subscriptionId) {
         this.subscriptionId = subscriptionId;

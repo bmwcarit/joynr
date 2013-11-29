@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -21,6 +18,9 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <QSettings>
+#include <QFile>
+#include "joynr/MessagingSettings.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "utils/QThreadSleep.h"
 #include "tests/utils/MockObjects.h"
@@ -47,8 +47,35 @@ void localChannelUrlDirectoryTestPseudoGetChannelUrls(QSharedPointer<Future<type
     future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
 }
 
+class LocalChannelUrlDirectoryTest : public ::testing::Test {
+public:
+    LocalChannelUrlDirectoryTest() :
+        settingsFileName("LocalChannelUrlDirectoryTest.settings"),
+        settings(settingsFileName, QSettings::IniFormat),
+        messagingSettings(settings)
+    {}
 
-TEST(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
+    ~LocalChannelUrlDirectoryTest() {
+        QFile::remove(settingsFileName);
+    }
+
+    void SetUp(){
+
+    }
+
+    void TearDown(){
+
+    }
+
+protected:
+    QString settingsFileName;
+    QSettings settings;
+    MessagingSettings messagingSettings;
+};
+
+
+
+TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy =
             QSharedPointer<MockChannelUrlDirectoryProxy>(new MockChannelUrlDirectoryProxy());
 
@@ -57,7 +84,7 @@ TEST(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
                     A<QString>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
-    LocalChannelUrlDirectory localDirectory(mockChannelUrlDirectoryProxy, "ChannelDirectorypseudoUrl");
+    LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
     QSharedPointer<Future<types::ChannelUrlInformation> > futureUrls = QSharedPointer<Future<types::ChannelUrlInformation> >(
                 new Future<types::ChannelUrlInformation>());
     localDirectory.getUrlsForChannel(futureUrls,"pseudoChannelID", 20000);
@@ -73,7 +100,7 @@ TEST(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     EXPECT_EQ(urlInformation,channelInf);
 }
 
-TEST(LocalChannelUrlDirectoryTest, registerChannelUrls) {
+TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy =
             QSharedPointer<MockChannelUrlDirectoryProxy>(new MockChannelUrlDirectoryProxy());
 
@@ -82,14 +109,14 @@ TEST(LocalChannelUrlDirectoryTest, registerChannelUrls) {
                     A<QString>(),
                     _)).Times(1);
 
-    LocalChannelUrlDirectory localDirectory(mockChannelUrlDirectoryProxy, "ChannelDirectorypseudoUrl");
+    LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
     types::ChannelUrlInformation urlInformation;
     QSharedPointer<Future<void> > future(new Future<void>());
     localDirectory.registerChannelUrls(future, "myChannelId", urlInformation );
 }
 
-TEST(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
+TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy =
             QSharedPointer<MockChannelUrlDirectoryProxy>(new MockChannelUrlDirectoryProxy());
 
@@ -97,7 +124,7 @@ TEST(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
                     A<QSharedPointer<Future<void > > >(),
                     _)).Times(1);
 
-    LocalChannelUrlDirectory localDirectory(mockChannelUrlDirectoryProxy, "ChannelDirectorypseudoUrl");
+    LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
     types::ChannelUrlInformation urlInformation;
     QSharedPointer<Future<void> > future(new Future<void>());

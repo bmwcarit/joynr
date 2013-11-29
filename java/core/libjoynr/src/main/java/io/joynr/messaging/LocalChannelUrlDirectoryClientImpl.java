@@ -2,7 +2,6 @@ package io.joynr.messaging;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,6 +19,7 @@ package io.joynr.messaging;
  * #L%
  */
 
+import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.exceptions.JoynrException;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 import joynr.types.ChannelUrlInformation;
@@ -58,7 +58,20 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
 
         channelUrlStore.registerChannelUrls(channelId, channelUrlInformation);
         try {
-            channelUrlDirectoryClient.registerChannelUrls(channelId, channelUrlInformation);
+            channelUrlDirectoryClient.registerChannelUrls(new Callback<Void>() {
+
+                @Override
+                public void onSuccess(Void result) {
+                    // Do nothing
+                }
+
+                @Override
+                public void onFailure(JoynrException error) {
+                    //Currently not retrying. Using long TTL instead.
+
+                }
+            }, channelId, channelUrlInformation);
+
         } catch (JoynrException e) {
             logger.error("exception while registering channelId: {} channelUrls: {}", channelId, e.getMessage());
         }
@@ -80,12 +93,17 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
         ChannelUrlInformation channelUrlInformation = channelUrlStore.findChannelEntry(channelId);
         if (channelUrlInformation.getUrls().isEmpty()) {
             // retrieve from remote store
-            channelUrlInformation = channelUrlDirectoryClient.getUrlsForChannel(channelId);
-            if (channelUrlInformation != null && channelUrlInformation.getUrls() != null) {
-                channelUrlStore.registerChannelUrls(channelId, channelUrlInformation);
-            } else {
-                logger.error("No channelurls found for channel {}", channelId);
-                channelUrlInformation = new ChannelUrlInformation();
+            synchronized (channelUrlInformation) {
+                if (channelUrlInformation.getUrls().isEmpty()) {
+                    ChannelUrlInformation remoteChannelUrlInformation = channelUrlDirectoryClient.getUrlsForChannel(channelId);
+                    if (remoteChannelUrlInformation != null) {
+                        channelUrlInformation.setUrls(remoteChannelUrlInformation.getUrls());
+                    }
+                    if (remoteChannelUrlInformation == null || remoteChannelUrlInformation.getUrls() == null
+                            || remoteChannelUrlInformation.getUrls().size() == 0) {
+                        logger.error("No channelurls found for channel {}", channelId);
+                    }
+                }
             }
         }
 

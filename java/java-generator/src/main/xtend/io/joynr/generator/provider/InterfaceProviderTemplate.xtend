@@ -27,7 +27,7 @@ class InterfaceProviderTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "Provider"
 		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
@@ -54,7 +54,7 @@ class InterfaceProviderTemplate {
 		public interface «className» extends «syncClassName» {
 			
 			«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.name.toFirstLower»
+			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
 			«IF isReadable(attribute)»
 				@Override
@@ -62,7 +62,7 @@ class InterfaceProviderTemplate {
 			«ENDIF»
 
 			«IF isNotifiable(attribute)»
-				public void «attributeName.toFirstLower»Changed(«attributeType» «attributeName»);
+				public void «attributeName»Changed(«attributeType» «attributeName»);
 			«ENDIF»
 
 			«IF isWritable(attribute)»

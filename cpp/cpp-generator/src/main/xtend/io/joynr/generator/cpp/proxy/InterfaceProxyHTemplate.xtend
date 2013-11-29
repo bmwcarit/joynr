@@ -27,7 +27,7 @@ class InterfaceProxyHTemplate  {
 	@Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "AsyncProxy"
 		val syncClassName = interfaceName + "SyncProxy"
@@ -64,14 +64,14 @@ class InterfaceProxyHTemplate  {
 		             bool cached);
 
 			«FOR attribute: getAttributes(serviceInterface)»
-				«var attributeName = attribute.name.toFirstUpper»
+				«var attributeName = attribute.joynrName»
 				«val returnType = getMappedDatatypeOrList(attribute)»         
-				void unsubscribeFrom«attributeName»(QString &subscriptionId) {
-					«className»Base::unsubscribeFrom«attributeName»(subscriptionId);
+				void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
+					«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 				}
 
-				QString subscribeTo«attributeName»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
-					return «className»Base::subscribeTo«attributeName»(subscriptionListener, subscriptionQos);
+				QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+					return «className»Base::subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos);
 				}
 			«ENDFOR»
 		
@@ -79,11 +79,11 @@ class InterfaceProxyHTemplate  {
 		
 			// attributes
 			«FOR attribute: getAttributes(serviceInterface)»
-				«var attributeName = attribute.name.toFirstUpper»         
-				using «asyncClassName»::get«attributeName»;
-				using «asyncClassName»::set«attributeName»;
-				using «syncClassName»::get«attributeName»;
-				using «syncClassName»::set«attributeName»;
+				«var attributeName = attribute.joynrName»
+				using «asyncClassName»::get«attributeName.toFirstUpper»;
+				using «asyncClassName»::set«attributeName.toFirstUpper»;
+				using «syncClassName»::get«attributeName.toFirstUpper»;
+				using «syncClassName»::set«attributeName.toFirstUpper»;
 
 			«ENDFOR»
 		

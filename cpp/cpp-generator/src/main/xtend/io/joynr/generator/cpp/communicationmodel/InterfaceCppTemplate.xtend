@@ -32,7 +32,7 @@ class InterfaceCppTemplate {
 	private extension TemplateBase
 		
 	def generate(FInterface serviceInterface){
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
 		

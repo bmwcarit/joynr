@@ -31,8 +31,8 @@ class EnumHTemplate {
 	private extension JoynrCppGeneratorExtensions
 
 	def generate(FEnumerationType type){
-		val typeName = type.name;
-		val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+type.name+"_h").toUpperCase
+		val typeName = type.joynrName;
+		val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase
 	'''
 		«warning»
 		#ifndef «headerGuard»
@@ -50,7 +50,7 @@ class EnumHTemplate {
 		public:
 			enum «getNestedEnumName()» {
 				«FOR enumtype : getEnumElements(type) SEPARATOR ','»
-					«enumtype.name»
+					«enumtype.joynrName»
 				«ENDFOR»
 			};
 			// Constructors required by QT metatype system

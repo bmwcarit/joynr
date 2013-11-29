@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -22,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <QFile>
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
@@ -48,6 +46,9 @@ using namespace joynr;
 
 class MessagingTest : public ::testing::Test {
 public:
+    QString settingsFileName;
+    QSettings settings;
+    MessagingSettings messagingSettings;
     joynr_logging::Logger* logger;
     QString senderId;
     QString senderChannelId;
@@ -63,6 +64,9 @@ public:
     MessagingEndpointDirectory* messagingEndpointDirectory;
     MessageRouter* messageRouter;
     MessagingTest() :
+        settingsFileName("MessagingTest.settings"),
+        settings(settingsFileName, QSettings::IniFormat),
+        messagingSettings(settings),
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "MessagingTest")),
         senderId("senderParticipantId"),
         senderChannelId("senderChannelId"),
@@ -76,7 +80,7 @@ public:
         messageFactory(),
         mockCommunicationManager(),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingEndpointDirectory))
+        messageRouter(new MessageRouter(messagingSettings, messagingEndpointDirectory))
     {
         messageRouter->init(mockCommunicationManager);
 
@@ -85,6 +89,7 @@ public:
     ~MessagingTest(){
         delete messageRouter;
         delete messagingEndpointDirectory;
+        QFile::remove(settingsFileName);
     }
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingTest);

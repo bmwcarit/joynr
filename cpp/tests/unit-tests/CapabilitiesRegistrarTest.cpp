@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -82,6 +79,7 @@ TEST_F(CapabilitiesRegistrarTest, registerCapability){
     types::ProviderQos testQos;
     testQos.setPriority(100);
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
+                    domain,
                     IMockProviderInterface::getInterfaceName(),
                     authToken
     ))
@@ -108,6 +106,7 @@ TEST_F(CapabilitiesRegistrarTest, registerCapability){
 
 TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithDomainAndProviderObject){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
+                    domain,
                     IMockProviderInterface::getInterfaceName(),
                     authToken
     ))
@@ -136,6 +135,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     testQos.setPriority(100);
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
+                    domain,
                     IMockProviderInterface::getInterfaceName(),
                     authToken
     ))
@@ -182,6 +182,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     capabilitiesRegistrar->removeDispatcher(mockDispatcher1);
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
+                    domain,
                     IMockProviderInterface::getInterfaceName(),
                     authToken
     ))

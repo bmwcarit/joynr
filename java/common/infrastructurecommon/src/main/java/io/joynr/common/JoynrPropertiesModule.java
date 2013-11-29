@@ -2,7 +2,6 @@ package io.joynr.common;
 
 /*
  * #%L
- * joynr::java::common::guice-integration
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

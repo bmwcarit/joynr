@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -45,13 +42,15 @@ public:
     /**
      * Get a provider participant id
      */
-    virtual QString getProviderParticipantId(const QString& interfaceName,
+    virtual QString getProviderParticipantId(const QString& domain,
+                                     const QString& interfaceName,
                                      const QString& authenticationToken);
 
     /**
      * Get a provider participant id or use a default
      */
-    virtual QString getProviderParticipantId(const QString& interfaceName,
+    virtual QString getProviderParticipantId(const QString& domain,
+                                     const QString& interfaceName,
                                      const QString& authenticationToken,
                                      const QString& defaultValue);
 

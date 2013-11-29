@@ -36,7 +36,7 @@ class InterfaceHTemplate {
 	private extension JoynrCppGeneratorExtensions
 
 	def generate(FInterface serviceInterface){
-		val interfaceName = serviceInterface.name.toFirstUpper
+		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase
 	'''
 	«warning()»
@@ -47,7 +47,7 @@ class InterfaceHTemplate {
 	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
 			«IF isComplex(datatype as FType)»
-				«getNamespaceStarter(datatype as FType)» class «(datatype as FType).name»; «getNamespaceEnder(datatype as FType)»
+				«getNamespaceStarter(datatype as FType)» class «(datatype as FType).joynrName»; «getNamespaceEnder(datatype as FType)»
 			«ELSE»
 				#include "«getIncludeOf(datatype as FType)»"
 			«ENDIF»

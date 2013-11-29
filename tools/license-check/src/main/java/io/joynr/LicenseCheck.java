@@ -2,7 +2,6 @@ package io.joynr;
 
 /*
  * #%L
- * joynr::tools::license-check
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

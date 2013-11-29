@@ -65,7 +65,7 @@ class ProxyGenerator {
         for(fInterface: model.interfaces){
         	val sourcePath = sourceContainerPath + getPackageSourceDirectory(fInterface) + File::separator 
         	val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
-			var serviceName = fInterface.name.toFirstUpper
+			var serviceName = fInterface.joynrName
 						
 			headerFileSystem.generateFile(
 				headerPath + "I" + serviceName + "Connector.h",

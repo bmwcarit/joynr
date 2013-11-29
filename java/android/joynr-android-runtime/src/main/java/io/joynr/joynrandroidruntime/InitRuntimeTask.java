@@ -2,7 +2,6 @@ package io.joynr.joynrandroidruntime;
 
 /*
  * #%L
- * joynr::java::android::joynr-android-runtime
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -74,7 +73,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
             publishProgress("Properties loaded\n");
 
-            properties.setProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_CLIENT_REQUEST_TIMEOUT, "120000");
+            properties.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
 
             Injector injectorA = new JoynrInjectorFactory(properties).createChildInjector();
 

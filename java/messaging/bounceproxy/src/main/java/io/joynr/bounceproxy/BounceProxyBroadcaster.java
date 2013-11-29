@@ -2,7 +2,6 @@ package io.joynr.bounceproxy;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -23,13 +22,19 @@ package io.joynr.bounceproxy;
 import io.joynr.bounceproxy.filter.ExpirationFilter;
 import io.joynr.bounceproxy.filter.MessageSerializationFilter;
 
+import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.cpr.AtmosphereConfig;
-import org.atmosphere.cpr.DefaultBroadcaster;
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.util.SimpleBroadcaster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class BounceProxyBroadcaster extends DefaultBroadcaster {
+public class BounceProxyBroadcaster extends SimpleBroadcaster {
+    private static final Logger logger = LoggerFactory.getLogger(BounceProxyBroadcaster.class);
 
     public BounceProxyBroadcaster(String name, AtmosphereConfig config) {
         super(name, config);
@@ -41,6 +46,60 @@ public class BounceProxyBroadcaster extends DefaultBroadcaster {
         bc.addFilter(new ExpirationFilter());
         bc.addFilter(new MessageSerializationFilter());
 
+    }
+
+    @Override
+    public synchronized void cacheLostMessage(AtmosphereResource r) {
+        logger.trace("cacheLostMessage 1");
+        super.cacheLostMessage(r);
+    }
+
+    @Override
+    public synchronized void cacheLostMessage(AtmosphereResource r, AsyncWriteToken token) {
+        logger.trace("cacheLostMessage 2");
+        super.cacheLostMessage(r, token);
+    }
+
+    @Override
+    public synchronized void cacheLostMessage(AtmosphereResource r, AsyncWriteToken token, boolean force) {
+        logger.trace("cacheLostMessage 3");
+        super.cacheLostMessage(r, token, force);
+    }
+
+    @Override
+    public synchronized void cacheLostMessage(AtmosphereResource r, boolean force) {
+        logger.trace("cacheLostMessage 4");
+        super.cacheLostMessage(r, force);
+    }
+
+    @Override
+    public synchronized Future<Object> broadcast(Object msg) {
+        logger.trace("broadcast 1");
+        return super.broadcast(msg);
+    }
+
+    @Override
+    public synchronized Future<Object> broadcast(Object msg, AtmosphereResource r) {
+        logger.trace("broadcast 2");
+        return super.broadcast(msg, r);
+    }
+
+    @Override
+    public synchronized Future<Object> broadcast(Object msg, Set<AtmosphereResource> subset) {
+        logger.trace("broadcast 3");
+        return super.broadcast(msg, subset);
+    }
+
+    @Override
+    public synchronized Future<Object> broadcastOnResume(Object msg) {
+        logger.trace("broadcastOnResume 1");
+        return super.broadcastOnResume(msg);
+    }
+
+    @Override
+    protected synchronized void cacheAndSuspend(AtmosphereResource r) {
+        logger.trace("cacheAndSuspend 1");
+        super.cacheAndSuspend(r);
     }
 
     public String getName() {

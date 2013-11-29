@@ -1,6 +1,5 @@
-This project includes software developed by 
-BMW Car IT GmbH  
-http://www.bmw-carit.de/
+This project includes software developed by
+BMW Car IT GmbH (http://www.bmw-carit.de)
 and BMW Forschung & Technik GmbH
 
 Licensed under the Apache License, Version 2.0 (the
@@ -16,7 +15,7 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
 
-This project includes:
+This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Core under Apache License, Version 2.0
@@ -27,10 +26,10 @@ This project includes:
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  io.joynr.java.common:guice-integration under Apache-2
-  io.joynr.java.core:joynrtypes under Apache-2
-  io.joynr.java.messaging:messagingcommon under Apache-2
-  io.joynr.java.messaging:servletcommon under Apache-2
+  io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
@@ -49,3 +48,4 @@ This project includes:
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+

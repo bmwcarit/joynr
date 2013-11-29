@@ -30,7 +30,7 @@ class InterfaceSyncProxyHTemplate {
 	@Inject extension InterfaceUtil
 
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val syncClassName = interfaceName + "SyncProxy"
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"SyncProxy_h").toUpperCase

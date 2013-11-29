@@ -28,7 +28,7 @@ class InterfaceSubscriptionTemplate {
 	@Inject extension TemplateBase	
 	
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
@@ -64,7 +64,7 @@ public interface «subscriptionClassName» extends JoynrSubscriptionInterface, �
 «ENDFOR»	
 
 «FOR attribute: getAttributes(serviceInterface)»
-«var attributeName = attribute.name»
+«var attributeName = attribute.joynrName»
 «var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
 	«IF isReadable(attribute)»	
 		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)		

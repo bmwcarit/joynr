@@ -31,7 +31,7 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 	private extension JoynrCppGeneratorExtensions
 	
 	def generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.name.toFirstUpper;
+		val interfaceName = serviceInterface.joynrName;
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"JoynrMessagingConnector_h").toUpperCase
 		'''
 		«warning()»
@@ -73,29 +73,31 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 		
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val returnType = getMappedDatatypeOrList(attribute)»
-				virtual void get«attribute.name.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatypeOrList(attribute)»& «attribute.name»);
-				virtual void get«attribute.name.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future, QSharedPointer< joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
-				virtual void get«attribute.name.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future);
-				virtual void get«attribute.name.toFirstUpper»(QSharedPointer<joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
+				«val attributeName = attribute.joynrName»
+				virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatypeOrList(attribute)»& «attributeName»);
+				virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future, QSharedPointer< joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
+				virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future);
+				virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
 
-				virtual void set«attribute.name.toFirstUpper»(QSharedPointer<joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attribute.name»);
-				virtual void set«attribute.name.toFirstUpper»(joynr::RequestStatus &status, const «getMappedDatatypeOrList(attribute)»& «attribute.name»);
-				virtual void set«attribute.name.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attribute.name»);
-				virtual void set«attribute.name.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, «getMappedDatatypeOrList(attribute)» «attribute.name»);
+				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName»);
+				virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus &status, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
+				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName»);
+				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, «getMappedDatatypeOrList(attribute)» «attributeName»);
 
-				virtual QString subscribeTo«attribute.name.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-				virtual void unsubscribeFrom«attribute.name.toFirstUpper»(QString& subscriptionId);
+				virtual QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+				virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
 			«ENDFOR»
 		    
 			«FOR method: getMethods(serviceInterface)»
+				«val methodName = method.joynrName»
 				«IF getMappedOutputParameter(method).head == "void"»
-					virtual void «method.name» (joynr::RequestStatus &status «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+					virtual void «methodName» (joynr::RequestStatus &status «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 				«ELSE»
-					virtual void «method.name» (joynr::RequestStatus &status«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+					virtual void «methodName» (joynr::RequestStatus &status«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 				«ENDIF»
-				virtual void «method.name» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future, QSharedPointer< joynr::ICallback<«getMappedOutputParameter(method).head» > > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-				virtual void «method.name» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-				virtual void «method.name» (QSharedPointer<joynr::ICallback<«getMappedOutputParameter(method).head»> > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+				virtual void «methodName» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future, QSharedPointer< joynr::ICallback<«getMappedOutputParameter(method).head» > > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+				virtual void «methodName» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+				virtual void «methodName» (QSharedPointer<joynr::ICallback<«getMappedOutputParameter(method).head»> > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 			«ENDFOR»
 		};
 		«getNamespaceEnder(serviceInterface)»

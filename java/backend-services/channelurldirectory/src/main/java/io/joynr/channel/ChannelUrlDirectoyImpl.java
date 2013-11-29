@@ -2,7 +2,6 @@ package io.joynr.channel;
 
 /*
  * #%L
- * joynr::java::backend-services::channelurldirectory
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -21,10 +20,9 @@ package io.joynr.channel;
  */
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+
 import io.joynr.messaging.MessagingSettings;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.CheckForNull;
@@ -64,14 +62,8 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
 
         ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
         if (channelUrlInformation == null) {
-            String url = settings.getBounceProxyUrl().getSendUrl(channelId);
             channelUrlInformation = new ChannelUrlInformation();
-            List<String> urls = new ArrayList<String>();
-            urls.add(url);
-            channelUrlInformation.setUrls(urls);
-            logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing. Defaulting to bounceproxy: {}",
-                        channelId,
-                        channelUrlInformation);
+            logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing.", channelId, channelUrlInformation);
         } else {
             logger.debug("GLOBAL getUrlsForChannel ChannelUrls for channelId {} found: {}",
                          channelId,

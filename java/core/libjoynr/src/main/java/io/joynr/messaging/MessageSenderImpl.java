@@ -2,7 +2,6 @@ package io.joynr.messaging;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -33,10 +32,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 import joynr.JoynrMessage;
-import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,11 +56,9 @@ public class MessageSenderImpl implements MessageSender {
     private static final long SECONDS = 1000;
 
     private final MessagingSettings settings;
-    private SendRequestScheduler sendRequestScheduler;
+    private MessageScheduler sendRequestScheduler;
 
     private final String ownChannelId;
-
-    private final LocalChannelUrlDirectoryClient channelUrlClient;
 
     private final ObjectMapper objectMapper;
 
@@ -72,16 +67,14 @@ public class MessageSenderImpl implements MessageSender {
     private HttpConstants httpConstants;
 
     @Inject
-    public MessageSenderImpl(SendRequestScheduler sendRequestScheduler,
+    public MessageSenderImpl(MessageScheduler sendRequestScheduler,
                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
-                             LocalChannelUrlDirectoryClient localChannelUrlClient,
                              MessagingSettings settings,
                              ObjectMapper objectMapper,
                              IMessageReceivers messageReceivers,
                              HttpConstants httpConstants) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
-        this.channelUrlClient = localChannelUrlClient;
         this.settings = settings;
         this.objectMapper = objectMapper;
         this.messageReceivers = messageReceivers;
@@ -155,40 +148,9 @@ public class MessageSenderImpl implements MessageSender {
             throw new JoynrMessageNotSentException(errorMessage);
         }
 
-        logger.trace("SEND messageId: {} from: {} to: {} starting lookup of channelUrl", new Object[]{
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-        ChannelUrlInformation channelUrlInfo = channelUrlClient.getUrlsForChannel(channelId);
-        logger.trace("SEND messsageId: {} from: {} to: {} finished lookup of channelUrl", new Object[]{
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-
-        if (channelUrlInfo == null) {
-            String errorMsg = "channelId: " + channelId + " does not exist";
-            logger.error(errorMsg);
-            JoynrMessageNotSentException joynrMessageNotSentException = new JoynrMessageNotSentException(errorMsg);
-            messageReceivers.getReceiverForChannelId(getReplyToChannelId()).onError(message,
-                                                                                    joynrMessageNotSentException);
-            throw joynrMessageNotSentException;
-        }
-
-        List<String> urls = channelUrlInfo.getUrls();
-        if (urls.isEmpty()) {
-            String errorMsg = "no channelurl found for channelId: " + channelId;
-            logger.error(errorMsg);
-            JoynrMessageNotSentException joynrMessageNotSentException = new JoynrMessageNotSentException(errorMsg);
-            messageReceivers.getReceiverForChannelId(getReplyToChannelId()).onError(message,
-                                                                                    joynrMessageNotSentException);
-            throw joynrMessageNotSentException;
-        }
-        String url = urls.get(0) + "message/"; // TODO handle trying multiple channelUrls
-
         final MessageContainer messageContainer = new MessageContainer(channelId,
                                                                        message,
                                                                        ttlExpirationDate_ms,
-                                                                       url,
                                                                        httpConstants,
                                                                        objectMapper);
 

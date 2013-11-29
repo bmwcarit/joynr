@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -34,7 +31,7 @@
 #include "PrettyPrint.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 
 using namespace ::testing;
 

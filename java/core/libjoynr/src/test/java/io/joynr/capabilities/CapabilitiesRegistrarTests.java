@@ -2,7 +2,6 @@ package io.joynr.capabilities;
 
 /*
  * #%L
- * joynr::java::core::libjoynr
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -90,7 +89,8 @@ public class CapabilitiesRegistrarTests {
     public void registerWithCapRegistrar() {
 
         Mockito.when(provider.getProviderQos()).thenReturn(providerQos);
-        Mockito.when(participantIdStorage.getProviderParticipantId(Mockito.eq(ProvidedInterface.class),
+        Mockito.when(participantIdStorage.getProviderParticipantId(domain,
+                                                                   Mockito.eq(ProvidedInterface.class),
                                                                    Mockito.anyString())).thenReturn(participantId);
         Mockito.when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
 
@@ -109,7 +109,8 @@ public class CapabilitiesRegistrarTests {
     @Test
     public void unregisterCapability() {
         Mockito.when(provider.getProviderQos()).thenReturn(providerQos);
-        Mockito.when(participantIdStorage.getProviderParticipantId(Mockito.eq(ProvidedInterface.class),
+        Mockito.when(participantIdStorage.getProviderParticipantId(domain,
+                                                                   Mockito.eq(ProvidedInterface.class),
                                                                    Mockito.anyString())).thenReturn(participantId);
         registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
 

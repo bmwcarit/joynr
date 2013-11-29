@@ -2,7 +2,6 @@ package io.joynr.public_examples.android_location_provider;
 
 /*
  * #%L
- * joynr::java::public-examples::android-location-provider
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -74,9 +73,9 @@ public class AndroidLocationProvider extends GpsAbstractProvider {
                     joynrLocation.setLatitude(androidLocation.getLatitude());
                     joynrLocation.setLongitude(androidLocation.getLongitude());
                     joynrLocation.setAltitude(androidLocation.getAltitude());
-                    joynrLocation.setGpsFix(GpsFixEnum.Mode3D);
+                    joynrLocation.setGpsFix(GpsFixEnum.MODE3D);
                 } else {
-                    joynrLocation.setGpsFix(GpsFixEnum.ModeNoFix);
+                    joynrLocation.setGpsFix(GpsFixEnum.MODENOFIX);
                 }
                 // applies the location to the location provider and notifies onChange subscriptions
                 locationChanged(joynrLocation);

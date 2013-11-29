@@ -2,7 +2,6 @@ package joynr;
 
 /*
  * #%L
- * joynr::java::messaging::messagingcommon
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -26,6 +25,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * This is a value class that represents a JoynRPC function call as JSON. The class also offers a function to
  * deserialize the parameters as an Object[] using meta information.
@@ -41,6 +42,7 @@ public class Request implements JoynrMessageType {
 
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public Request(String methodName, Object[] params, String[] paramDatatypes, String requestReplyId) {
 
         this.params = params;
@@ -154,10 +156,12 @@ public class Request implements JoynrMessageType {
         return methodName;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Object[] getParams() {
         return params;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String[] getParamDatatypes() {
         return paramDatatypes;
     }

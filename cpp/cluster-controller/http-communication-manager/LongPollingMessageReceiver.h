@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -33,7 +30,7 @@
 
 namespace joynr {
 
-class LocalChannelUrlDirectory;
+class ILocalChannelUrlDirectory;
 
 class IMessageReceiver;
 
@@ -60,7 +57,7 @@ public:
                                IMessageReceiver* messageReceiver,
                                const LongPollingMessageReceiverSettings& settings,
                                QSemaphore* channelCreatedSemaphore,
-                               QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory);
+                               QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
     void run();
     void interrupt();
     bool isInterrupted();
@@ -80,7 +77,7 @@ private:
     QMutex interruptedMutex;
     bool interrupted;
     IMessageReceiver* messageReceiver;
-    QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory;
+    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;
     QSemaphore* channelCreatedSemaphore;

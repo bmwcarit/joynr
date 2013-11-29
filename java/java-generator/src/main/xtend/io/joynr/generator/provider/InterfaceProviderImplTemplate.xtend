@@ -27,7 +27,7 @@ class InterfaceProviderImplTemplate {
 	@Inject	extension TemplateBase
 	
 	def generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.name.toFirstUpper
+		val interfaceName =  serviceInterface.joynrName
 		val className = "Default" + interfaceName + "Provider"
 		val abstractProviderName = interfaceName + "AbstractProvider"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
@@ -73,7 +73,7 @@ import java.util.TreeSet;
 «««		«ENDFOR»
 		
 		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.name.toFirstLower»
+			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
 		
 			«IF isReadable(attribute)»
@@ -96,7 +96,7 @@ import java.util.TreeSet;
 		
 				
 		«FOR method: getMethods(serviceInterface)»
-		«val methodName = method.name»
+		«val methodName = method.joynrName»
 		«val outputParameters = getOutputParameters(method)»
 			«val outputParameterType = mapOutputParameters(outputParameters).iterator.next»
 			«val outputParameter = if (!outputParameters.isEmpty) outputParameters.iterator.next else null»
@@ -122,7 +122,7 @@ import java.util.TreeSet;
 			«ELSEIF outputParameterType.startsWith("List<")»
 				return new Array«outputParameterType»();
 			«ELSEIF isEnum(outputParameter.type)»
-				return «outputParameterType».«getEnumElements(getEnumType(outputParameter.type)).iterator.next.name»;
+				return «outputParameterType».«getEnumElements(getEnumType(outputParameter.type)).iterator.next.joynrName»;
 			«ELSE»
 				return new «outputParameterType»();	
 			«ENDIF»

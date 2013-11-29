@@ -27,7 +27,7 @@ class InterfaceProxyBaseCppTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface fInterface) {
-		val serviceName =  fInterface.name.toFirstUpper
+		val serviceName =  fInterface.joynrName
 		val className = serviceName + "ProxyBase"
 		
 		'''
@@ -69,26 +69,26 @@ class InterfaceProxyBaseCppTemplate {
 		}
 		
 		«FOR attribute: getAttributes(fInterface)»
-			«var attributeName = attribute.name.toFirstUpper»
+			«var attributeName = attribute.joynrName»
 			«val returnType = getMappedDatatypeOrList(attribute)»
-			void «className»::unsubscribeFrom«attributeName»(QString& subscriptionId)
+			void «className»::unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId)
 			{
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», because the communication end partner is not (yet) known");
 			        return;
 			    }
 			    else{
-			        connector->unsubscribeFrom«attributeName»(subscriptionId);
+			        connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 			    }
 			}
 			
-			QString «className»::subscribeTo«attributeName»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			QString «className»::subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», because the communication end partner is not (yet) known");
 			        return "";
 			    }
 			    else{
-			        return connector->subscribeTo«attributeName»(subscriptionListener, subscriptionQos);
+			        return connector->subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos);
 			    }
 			}
 

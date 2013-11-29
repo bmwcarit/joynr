@@ -2,7 +2,6 @@ package io.joynr.bounceproxy.datatype;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

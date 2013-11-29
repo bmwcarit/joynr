@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -86,9 +83,9 @@ public:
         );
     }
 
-    vehicle::IGps* createFixture(bool cacheEnabled) {
+    tests::ITest* createFixture(bool cacheEnabled) {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-        vehicle::GpsProxy* proxy = new vehicle::GpsProxy(
+        tests::TestProxy* proxy = new tests::TestProxy(
                     mockCapabilities,
                     endPointAddress,
                     mockConnectorFactory,
@@ -99,7 +96,7 @@ public:
                     cacheEnabled
                     );
         proxy->handleArbitrationFinished(providerParticipantId, endPointAddress);
-        return dynamic_cast<vehicle::IGps*>(proxy);
+        return dynamic_cast<tests::ITest*>(proxy);
     }
 
 protected:

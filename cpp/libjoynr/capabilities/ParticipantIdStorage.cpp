@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -31,13 +28,15 @@ ParticipantIdStorage::ParticipantIdStorage(const QString& filename) :
 {
 }
 
-QString ParticipantIdStorage::getProviderParticipantId(const QString& interfaceName,
+QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
+                                                       const QString& interfaceName,
                                                        const QString& authenticationToken)
 {
-    return getProviderParticipantId(interfaceName, authenticationToken, QString());
+    return getProviderParticipantId(domain, interfaceName, authenticationToken, QString());
 }
 
-QString ParticipantIdStorage::getProviderParticipantId(const QString& interfaceName,
+QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
+                                                       const QString& interfaceName,
                                                        const QString& authenticationToken,
                                                        const QString& defaultValue)
 {
@@ -47,7 +46,7 @@ QString ParticipantIdStorage::getProviderParticipantId(const QString& interfaceN
     // Arrange the provider ids by authentication token
     QString authToken = (!authenticationToken.isEmpty()) ? authenticationToken :
                                                            QString("default");
-    QString token = authToken + QString("/") + interfaceName;
+    QString token = QString("joynr.participant/%1|%2|%3").arg(domain).arg(interfaceName).arg(authToken);
 
     // Lookup the participant id
     QString participantId;

@@ -22,6 +22,7 @@ import com.google.inject.Inject
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FCompoundType
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import org.franca.core.franca.FField
 
 class ComplexTypeTemplate {
 
@@ -29,7 +30,7 @@ class ComplexTypeTemplate {
 	@Inject extension TemplateBase
 	
 	def generate(FCompoundType complexType) {
-		val typeName = complexType.name.toFirstUpper
+		val typeName = complexType.joynrName
 		val complexTypePackageName = getPackagePathWithJoynrPrefix(complexType, ".")
 		'''
 		«warning()»
@@ -59,58 +60,58 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	«FOR member : getMembers(complexType)»
 	«val memberType = getMappedDatatypeOrList(member).replace("::","__")»
 	«IF isArray(member)»
-	private «memberType» «member.name» = Lists.newArrayList();
+	private «memberType» «member.joynrName» = Lists.newArrayList();
 	«ELSE»
-	private «memberType» «member.name»;
+	private «memberType» «member.joynrName»;
 	«ENDIF»
 	«ENDFOR»
 	
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
-		this.«member.name» = «getDefaultValue(member)»;
+		this.«member.joynrName» = «getDefaultValue(member)»;
 		«ENDFOR»
 	}
 	
 
 	public «typeName»(
 		«FOR member : getMembersRecursive(complexType) SEPARATOR ','»
-		«getMappedDatatypeOrList(member).replace("::","__")» «member.name»
+		«getMappedDatatypeOrList(member).replace("::","__")» «member.joynrName»
 		«ENDFOR»
 		) {
 		«IF hasExtendsDeclaration(complexType)»
 			super(
 					«FOR member: getMembersRecursive(complexType.extendedType) SEPARATOR ','»
-						«member.name»
+						«member.joynrName»
 					«ENDFOR»
 			);
 		«ENDIF»
 		«FOR member : getMembers(complexType)»
-		this.«member.name» = «member.name»;
+		this.«member.joynrName» = «member.joynrName»;
 		«ENDFOR»
 	}
 	
 
 	«FOR member : getMembers(complexType)»
 	«val memberType = getMappedDatatypeOrList(member).replace("::","__")»
-	«val memberNameFirstToUpper = member.name.toFirstUpper»
-	public «memberType» get«member.name.toFirstUpper»() {
-		return this.«member.name»;
+	«val memberName = member.joynrName»
+	public «memberType» get«memberName.toFirstUpper»() {
+		return this.«member.joynrName»;
 	}
 	
-	public void set«memberNameFirstToUpper»(«memberType» «member.name») {
-		this.«member.name» = «member.name»;
+	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
+		this.«member.joynrName» = «member.joynrName»;
 	}
 	
 	«ENDFOR»
 	
 	@Override
 	public String toString() {
-		return "«complexType.name.toFirstUpper» ["
+		return "«typeName» ["
 		«IF hasExtendsDeclaration(complexType)»
 				+ super.toString() + ", "
 		«ENDIF»
 		«FOR member : getMembers(complexType) SEPARATOR " + \", \""»
-			+ "«member.name»=" + this.«member.name»
+			+ "«member.joynrName»=" + this.«member.joynrName»
 		«ENDFOR»
 		+ "]";
 	}
@@ -129,11 +130,11 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDIF»
 		«typeName» other = («typeName») obj;
 		«FOR member : getMembers(complexType)»
-			if (this.«member.name» == null) {
-				if (other.«member.name» != null) {
+			if (this.«member.joynrName» == null) {
+				if (other.«member.joynrName» != null) {
 					return false;
 				}
-			} else if (!this.«member.name».equals(other.«member.name»)){
+			} else if (!this.«member.joynrName».equals(other.«member.joynrName»)){
 				return false;
 			}
 		«ENDFOR»
@@ -144,14 +145,14 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	public int hashCode() {
 		final int prime = 31;
 		«IF hasExtendsDeclaration(complexType)»
-			int result = super.hashCode();
+			int _result = super.hashCode();
 		«ELSE»
-			int result = 1;
+			int _result = 1;
 		«ENDIF»
 		«FOR member : getMembers(complexType)»
-			result = prime * result + ((this.«member.name» == null) ? 0 : this.«member.name».hashCode());
+			_result = prime * _result + ((this.«member.joynrName» == null) ? 0 : this.«member.joynrName».hashCode());
 		«ENDFOR»
-		return result;
+		return _result;
 	}
 }
 

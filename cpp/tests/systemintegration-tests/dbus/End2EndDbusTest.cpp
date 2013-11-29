@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -26,7 +23,7 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "joynr/MessagingSettings.h"
-#include "common/SettingsMerger.h"
+#include "joynr/SettingsMerger.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/HttpCommunicationManager.h"
 

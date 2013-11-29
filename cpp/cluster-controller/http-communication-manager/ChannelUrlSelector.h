@@ -1,8 +1,5 @@
 /*
  * #%L
- * joynr::C++
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -26,7 +23,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
 
@@ -75,7 +72,7 @@ public:
     * @param channelUrlDirectoryProxy
     */
     virtual void init(
-             QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory,
+             QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
              const MessagingSettings& settings);
 
     /**
@@ -109,7 +106,7 @@ private:
     QString constructDefaultUrl(
             const QString& channelId);
     QString constructUrl(const QString& baseUrl);
-    QSharedPointer<LocalChannelUrlDirectory> channelUrlDirectory;
+    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
     QMap<QString, ChannelUrlSelectorEntry*> entries;
     qint64 timeForOneRecouperation;

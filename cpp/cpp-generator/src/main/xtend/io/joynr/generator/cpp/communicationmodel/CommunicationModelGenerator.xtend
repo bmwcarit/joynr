@@ -64,12 +64,12 @@ class CommunicationModelGenerator {
 				val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 				
 				headerFileSystem.generateFile(
-					headerpath + type.name.toFirstUpper + ".h",
+					headerpath + type.joynrName + ".h",
 					typeH.generate(type).toString
 				)
 	
 				sourceFileSystem.generateFile(
-					sourcepath + type.name.toFirstUpper + ".cpp",
+					sourcepath + type.joynrName + ".cpp",
 					typeCpp.generate(type).toString
 				)
 			}
@@ -79,7 +79,7 @@ class CommunicationModelGenerator {
 			val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			
 			headerFileSystem.generateFile(
-				headerpath + type.name.toFirstUpper + ".h",
+				headerpath + type.joynrName + ".h",
 				enumh.generate(type as FEnumerationType).toString
 			)
 		}
@@ -96,12 +96,12 @@ class CommunicationModelGenerator {
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
 
 			headerFileSystem.generateFile(
-				headerpath + "I" + serviceInterface.name.toFirstUpper + ".h",
+				headerpath + "I" + serviceInterface.joynrName + ".h",
 				interfaceH.generate(serviceInterface).toString
 			);
 			
 			sourceFileSystem.generateFile(
-				sourcepath + "I" + serviceInterface.name.toFirstUpper + ".cpp",
+				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
 				interfaceCpp.generate(serviceInterface).toString
 			);
 		}

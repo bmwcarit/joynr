@@ -27,7 +27,7 @@ class InterfaceProxyTemplate {
 	@Inject extension TemplateBase
 
 	def generate(FInterface fInterface) {
-		val interfaceName =  fInterface.name.toFirstUpper
+		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
