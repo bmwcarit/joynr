@@ -17,6 +17,8 @@ under the License.
 
 This project has dependencies to:
   AOP alliance under Public Domain
+  Apache HttpClient under Apache License
+  Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Core under Apache License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
@@ -25,7 +27,6 @@ This project has dependencies to:
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
-  Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   grizzly-framework under CDDL+GPL
   grizzly-http under CDDL+GPL
   grizzly-http-server under CDDL+GPL
@@ -34,8 +35,6 @@ This project has dependencies to:
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  HttpClient under Apache License
-  HttpCore under Apache License
   io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:channelurldirectory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
@@ -46,14 +45,10 @@ This project has dependencies to:
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messagingservlet under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-JAXRS-base under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-JAXRS-JSON under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
@@ -64,17 +59,8 @@ This project has dependencies to:
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
   jersey-grizzly2 under CDDL 1.1 or GPL2 w/ CPE
   jersey-grizzly2-servlet under CDDL 1.1 or GPL2 w/ CPE
-  jersey-guice under CDDL 1.1 or GPL2 w/ CPE
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
-  Jetty :: Continuation under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty Orbit :: Servlet API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL

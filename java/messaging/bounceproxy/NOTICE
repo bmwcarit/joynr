@@ -16,23 +16,15 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
-  ASM Analysis under BSD
-  ASM Commons under BSD
   ASM Core under Apache License, Version 2.0
-  ASM Tree under BSD
-  ASM Util under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
   Common Annotations 1.1 API under lgpl
-  Commons Codec under The Apache Software License, Version 2.0
-  Commons Collections under The Apache Software License, Version 2.0
-  Commons Lang under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   dom4j under BSD License
   EJB 3.1 API under lgpl
@@ -41,13 +33,8 @@ This project has dependencies to:
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
-  Groovy under Apache License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  Hamcrest library under New BSD License
-  HttpClient under Apache License
-  HttpCore under Apache License
-  HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
@@ -85,17 +72,14 @@ This project has dependencies to:
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
-  JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  jsr181-api under CDDL+GPLv2
   JUnit under Common Public License Version 1.0
-  Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Reflections under WTFPL
-  REST Assured under Apache 2.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
   StAX API under The Apache Software License, Version 2.0
-  TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
 

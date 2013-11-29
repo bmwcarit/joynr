@@ -18,5 +18,7 @@ under the License.
 This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discoverydirectoryservlet under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
 

@@ -16,14 +16,12 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
+  Apache HttpClient under Apache License
+  Apache HttpClient Mime under Apache License
+  Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
-  ASM Analysis under BSD
-  ASM Commons under BSD
   ASM Core under Apache License, Version 2.0
-  ASM Tree under BSD
-  ASM Util under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
@@ -32,9 +30,9 @@ This project has dependencies to:
   codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
-  Commons Collections under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
+  Data Mapper for Jackson under The Apache Software License, Version 2.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
@@ -56,14 +54,11 @@ This project has dependencies to:
   grizzly-portunif under CDDL+GPL
   grizzly-rcm under CDDL+GPL
   grizzly-utils under CDDL+GPL
-  Groovy under Apache License, Version 2.0
+  Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
-  HttpClient under Apache License
-  HttpCore under Apache License
-  HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
@@ -75,7 +70,6 @@ This project has dependencies to:
   io.joynr.java.backend-services:channelurldirectoryservlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discoverydirectoryservlet under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:service-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
   io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
@@ -89,6 +83,7 @@ This project has dependencies to:
   io.joynr.java:backend-services under The Apache Software License, Version 2.0
   io.joynr.java:common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
+  io.joynr.java:integration-tests under The Apache Software License, Version 2.0
   io.joynr.java:java-generator under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
@@ -96,6 +91,7 @@ This project has dependencies to:
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr:java under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
+  Jackson under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
@@ -144,7 +140,9 @@ This project has dependencies to:
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
   JSON (JavaScript Object Notation) under provided without support or warranty
-  JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  json-path under Apache 2.0
+  JSON.simple under The Apache Software License, Version 2.0
+  jsr181-api under CDDL+GPLv2
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
@@ -169,6 +167,7 @@ This project has dependencies to:
   OSGi R4 Foundation EE under The Apache Software License, Version 2.0
   Reflections under WTFPL
   REST Assured under Apache 2.0
+  rest-assured-common under Apache 2.0
   RoboGuice under Apache 2
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
@@ -178,4 +177,5 @@ This project has dependencies to:
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  xml-path under Apache 2.0
 

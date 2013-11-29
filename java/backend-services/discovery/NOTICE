@@ -17,6 +17,9 @@ under the License.
 
 This project has dependencies to:
   AOP alliance under Public Domain
+  Apache HttpClient under Apache License
+  Apache HttpClient Mime under Apache License
+  Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Core under Apache License, Version 2.0
   atmosphere-annotations under CDDL or Apache License 2.0
@@ -28,6 +31,7 @@ This project has dependencies to:
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
+  Data Mapper for Jackson under The Apache Software License, Version 2.0
   dom4j under BSD License
   EJB 3.1 API under lgpl
   Expression Language 2.2 API under lgpl
@@ -44,11 +48,11 @@ This project has dependencies to:
   grizzly-portunif under CDDL+GPL
   grizzly-rcm under CDDL+GPL
   grizzly-utils under CDDL+GPL
+  Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  HttpClient under Apache License
-  HttpCore under Apache License
+  Hamcrest library under New BSD License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
@@ -64,6 +68,7 @@ This project has dependencies to:
   io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
+  Jackson under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
@@ -92,15 +97,21 @@ This project has dependencies to:
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
-  JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  json-path under Apache 2.0
+  JSON.simple under The Apache Software License, Version 2.0
+  jsr181-api under CDDL+GPLv2
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Reflections under WTFPL
+  REST Assured under Apache 2.0
+  rest-assured-common under Apache 2.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
   StAX API under The Apache Software License, Version 2.0
+  TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  xml-path under Apache 2.0
 

@@ -31,6 +31,8 @@ This project has dependencies to:
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
+  Mockito under The MIT License
+  Objenesis under MIT License
   org.eclipse.core.contenttype under Eclipse Public License - v 1.0
   org.eclipse.core.expressions under Eclipse Public License - v 1.0
   org.eclipse.core.filesystem under Eclipse Public License - v 1.0

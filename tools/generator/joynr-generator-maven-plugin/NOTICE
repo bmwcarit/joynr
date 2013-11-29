@@ -31,7 +31,7 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:maven-joynr-generator-plugin under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0

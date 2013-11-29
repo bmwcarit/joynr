@@ -19,6 +19,8 @@ This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
   codegen under Eclipse Public License - v 1.0
+  core under Mozilla Public License Version 2.0
+  dbus under Mozilla Public License Version 2.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
@@ -30,6 +32,8 @@ This project has dependencies to:
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
   io.joynr.cpp:libs under The Apache Software License, Version 2.0
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discoverydirectoryservlet under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr:cpp under The Apache Software License, Version 2.0
@@ -52,8 +56,6 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  org.genivi.commonapi:core under Mozilla Public License Version 2.0
-  org.genivi.commonapi:dbus under Mozilla Public License Version 2.0
   OSGi R4 Foundation EE under The Apache Software License, Version 2.0
   Reflections under WTFPL
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
