@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JOYn Java generator
+Bundle-SymbolicName: io.joynr.generator.java
+Bundle-Version: 2.0.0.qualifier
+Bundle-Vendor: BMW AG
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Export-Package: io.joynr.generator
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
+ io.joynr.generator.framework;bundle-version="2.0.0"

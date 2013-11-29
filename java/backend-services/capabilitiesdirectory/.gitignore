@@ -1,0 +1,13 @@
+target
+.classpath
+.project
+.settings
+gen
+bin
+.checkstyle
+src/main/generated*
+capabilitiesdump
+logs
+joynr.properties
+*.log
+

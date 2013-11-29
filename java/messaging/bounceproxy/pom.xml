@@ -1,0 +1,284 @@
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.joynr.java.messaging</groupId>
+	<artifactId>bounceproxy</artifactId>
+	<packaging>war</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<url>http://maven.apache.org</url>
+
+	<parent>
+		<groupId>io.joynr.java</groupId>
+		<artifactId>messaging</artifactId>
+		<version>0.5.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<properties>
+		<atmosphere-jersey-version>2.0.1</atmosphere-jersey-version>
+		<atmosphere-runtime-version>2.0.1</atmosphere-runtime-version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-multipart</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>servletcommon</artifactId>
+			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-json</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.servlet</groupId>
+					<artifactId>jstl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messagingcommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-runtime</artifactId>
+			<version>${atmosphere-runtime-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-jersey</artifactId>
+			<version>${atmosphere-jersey-version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.atmosphere</groupId>
+					<artifactId>atmosphere-ping</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>eu.infomas</groupId>
+			<artifactId>annotation-detector</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.spec</groupId>
+			<artifactId>jboss-javaee-6.0</artifactId>
+			<version>1.0.0.Final</version>
+			<type>pom</type>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>jsf-api</artifactId>
+					<groupId>com.sun.faces</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jstl</artifactId>
+					<groupId>javax.servlet</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0-alpha-2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<property>
+									<name>log4j.configuration</name>
+									<value>file:///${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+						<version>1.6.6</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<webApp>
+						<contextPath>/bounceproxy</contextPath>
+						<descriptor>src/main/resources/WEB-INF/web.xml</descriptor>
+						<!-- defaultsDescriptor>src/main/webapp/WEB-INF/webdefault.xml</defaultsDescriptor -->
+					</webApp>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
+					<warName>${project.build.finalName}</warName>
+					<warSourceDirectory>src/main/resources</warSourceDirectory>
+					<attachClasses>true</attachClasses>
+					<webResources>
+						<resource>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>*LICENSE*</include>
+								<include>NOTICE*</include>
+							</includes>
+						</resource>
+						<resource>
+							<directory>${project.build.directory}</directory>
+							<includes>
+								<include>LICENSE</include>
+							</includes>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.mortbay.jetty</groupId>
+									<artifactId>jetty-runner</artifactId>
+									<version>${jetty.version}</version>
+									<destFileName>jetty-runner.jar</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.jetty</groupId>
+									<artifactId>jetty-websocket</artifactId>
+									<version>${jetty.version}</version>
+									<destFileName>jetty-websocket.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<!-- This plugin allows the single goal: assembly:single to create a 
+					singe distributable tar.gz file -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											properties-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0-alpha-2,)
+										</versionRange>
+										<goals>
+											<goal>
+												set-system-properties
+											</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+
+
+</project>

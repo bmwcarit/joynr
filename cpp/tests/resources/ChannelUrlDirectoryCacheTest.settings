@@ -1,0 +1,16 @@
+messaging]
+bounce-proxy-url=http://localhost:8080/bounceproxy-type
+channel-url-directory-url=http://localhost:8080/channelurldirectory/channels
+create-channel-retry-interval=500
+send-msg-retry-interval=500
+local-proxy-port=
+local-proxy-type=
+index=0
+longpoll-retry-interval=5000
+
+[capabilitiesClient]
+fakeDomain=integrationDomain
+fakeInterfaceName=integrationInterfaceName
+fakeChannelId=End2EndRPCTestRemote
+fakeParticipantId=participantId_End2EndRPCTestRemote
+

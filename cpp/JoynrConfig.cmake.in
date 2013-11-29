@@ -1,0 +1,63 @@
+# - Config file for the JOYn package
+# It defines the following variables
+#   JOYNR_INCLUDE_DIRS                       - default include directories for Joynr (default)
+#   JOYNR_LIBRARIES                          - default libraries to link against (default)
+#
+#   JOYNR_EXECUTABLES                        - the Joynr executables
+#
+#   JOYNR_CLUSTER_CONTROLLER_LIBRARIES       - libraries to link against if target should include the cluster controller
+#   JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS    - include directories for Joynr if target should include the cluster controller
+
+# This file is derived from a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
+# that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/). 
+# There are no attributions specified by the author.
+
+set(
+    USE_DBUS_COMMONAPI_COMMUNICATION
+    @USE_DBUS_COMMONAPI_COMMUNICATION@
+)
+
+# QT5
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt5Core REQUIRED)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include(@JoynrConfig_TARGETS_FILE@)
+
+# Compute paths
+get_filename_component(JOYNR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+# default configuration
+set(
+    JOYNR_INCLUDE_DIRS
+    "${Qt5Core_INCLUDE_DIRS}"
+    @JoynrConfig_INCLUDE_DIRS@
+)
+
+set(
+    JOYNR_LIBRARIES
+    @JoynrConfig_LIBRARIES@
+    "${Qt5Core_LIBRARIES}"
+)
+
+set(
+    JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS
+    "${JOYNR_INCLUDE_DIRS}"
+)
+
+set(
+    JOYNR_CLUSTER_CONTROLLER_LIBRARIES
+    "${JOYNR_LIBRARIES}"
+)
+
+set(JOYNR_EXECUTABLE)
+
+# configuration if dbus is used
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    list(
+        APPEND JOYNR_EXECUTABLE
+        @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})

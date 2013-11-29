@@ -1,0 +1,13 @@
+target
+.classpath
+.project
+.settings
+gen
+bin
+src/main/generated*
+joynr.properties
+/logs
+joynr_participantIds.properties
+testmessaging.properties
+capabilitiesdump
+/target

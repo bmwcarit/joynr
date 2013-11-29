@@ -1,0 +1,179 @@
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<groupId>io.joynr.cpp</groupId>
+	<artifactId>tests</artifactId>
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>pom</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+
+	<parent>
+		<groupId>io.joynr</groupId>
+		<artifactId>cpp</artifactId>
+		<version>0.5.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<dependencies>
+		<!-- This dependency is needed to ensure the correct build order.
+			Some artifacts is needed by the maven-dependency-plugin, which
+			copies them to the currrent build directory.
+		-->
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>bounceproxy</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+		<!-- This dependency is needed to ensure the correct build order.
+			Some artifacts is needed by the maven-dependency-plugin, which
+			copies them to the currrent build directory.
+		-->
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>discoverydirectoryservlet</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.joynr.tools.generator</groupId>
+				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate-common-test-classes</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca</model>
+							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+							<outputPath>${basedir}/gen</outputPath>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-cpp-test-classes</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/model</model>
+							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+							<outputPath>${basedir}/gen</outputPath>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.joynr.cpp</groupId>
+						<artifactId>cpp-generator</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
+							<include>**</include> </includes> </fileset> -->
+						<fileset>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>gen/communication-model/**</include>
+								<include>gen/in-process/**</include>
+								<include>gen/joynr-messaging/**</include>
+								<include>gen/provider/**</include>
+								<include>gen/proxy/**</include>
+								<include>gen/include/**</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-integration-test-dependencies</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.java.messaging</groupId>
+									<artifactId>bounceproxy</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>bounceproxy.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>discoverydirectoryservlet</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>discovery.war</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<configuration>
+					<webApp>
+						<contextPath>/</contextPath>
+					</webApp>
+					<stopPort>9966</stopPort>
+					<stopKey>joynr</stopKey>
+					<contextHandlers>
+						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+							<war>${project.build.directory}/bounceproxy.war</war>
+							<contextPath>/bounceproxy</contextPath>
+						</contextHandler>
+						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+							<war>${project.build.directory}/discovery.war</war>
+							<contextPath>/discovery</contextPath>
+						</contextHandler>
+					</contextHandlers>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

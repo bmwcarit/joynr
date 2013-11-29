@@ -1,0 +1,98 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package vehicle
+
+typeCollection radiotypes {
+	enumeration Country {
+		AUSTRALIA
+		AUSTRIA
+		CANADA
+		GERMANY
+		ITALY
+		UNITED_KINGDOM
+	}
+	
+	struct RadioStation {
+		String name 
+		String station
+		Country source
+	}
+}
+
+<** @description : "This is a description about the radio interface" **>
+interface Radio  {
+	/**
+	 * This attribute is subscribe-able and a getIsOn() and setIsOn(bool on) 
+	 * is generated.
+	 */
+	attribute Boolean isOn
+	
+	attribute Int32 numberOfStations
+	
+	/**
+	 * This attribute is subscribe-able and a getCurrentStation()
+	 * method is generated.
+	 */
+	attribute String currentStation readonly
+	
+	/**
+	 * An operation with no return value or parameters.
+	 */
+	method shuffleStations {}
+	
+	/**
+	 * An operation with return value and parameters.
+	 */
+	method addFavouriteStation {
+		in {
+			String radioStation
+		}
+		out {
+			Boolean returnValue
+		}
+	}
+	
+	/**
+	 * An operation with return value and parameters.
+	 */
+	method addFavouriteStationList {
+		in {
+			String [] radioStationList
+		}
+		out {
+			Boolean returnValue
+		}
+	}
+	
+//	method playCustomAudio {
+//		in {
+//			ByteBuffer buf
+//		}
+//	}
+	
+	/**
+	 * When this event is triggered, details about the radio 
+	 * station will be included. 
+	 */
+	broadcast weakSignal {
+		out {
+		  radiotypes.RadioStation radioStation
+		}
+	}
+}

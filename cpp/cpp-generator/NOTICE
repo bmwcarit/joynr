@@ -1,0 +1,53 @@
+This project includes software developed by
+BMW Car IT GmbH (http://www.bmw-carit.de)
+and BMW Forschung & Technik GmbH
+
+Licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations
+under the License.
+
+This project has dependencies to:
+  AOP alliance under Public Domain
+  Apache Log4j under The Apache Software License, Version 2.0
+  codegen under Eclipse Public License - v 1.0
+  dom4j under BSD License
+  Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
+  Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
+  Google Guice - Core Library under The Apache Software License, Version 2.0
+  Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
+  Hamcrest Core under New BSD License
+  io.joynr.cpp:cpp-generator under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
+  Javassist under MPL 1.1 or LGPL 2.1
+  javax.inject under The Apache Software License, Version 2.0
+  JUnit under Common Public License Version 1.0
+  org.eclipse.core.contenttype under Eclipse Public License - v 1.0
+  org.eclipse.core.expressions under Eclipse Public License - v 1.0
+  org.eclipse.core.filesystem under Eclipse Public License - v 1.0
+  org.eclipse.core.jobs under Eclipse Public License - v 1.0
+  org.eclipse.core.resources under Eclipse Public License - v 1.0
+  org.eclipse.core.runtime under Eclipse Public License - v 1.0
+  org.eclipse.equinox.app under Eclipse Public License - v 1.0
+  org.eclipse.equinox.common under Eclipse Public License - v 1.0
+  org.eclipse.equinox.preferences under Eclipse Public License - v 1.0
+  org.eclipse.equinox.registry under Eclipse Public License - v 1.0
+  org.eclipse.osgi under Eclipse Public License - v 1.0
+  org.eclipse.osgi.services under Eclipse Public License - v 1.0
+  org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
+  org.franca.core under Eclipse Public License - v 1.0
+  org.franca.core.dsl under Eclipse Public License - v 1.0
+  org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
+  OSGi R4 Foundation EE under The Apache Software License, Version 2.0
+  Reflections under WTFPL
+  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+

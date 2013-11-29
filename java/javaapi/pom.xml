@@ -1,0 +1,188 @@
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.joynr.java</groupId>
+	<artifactId>javaapi</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>io.joynr</groupId>
+		<artifactId>java</artifactId>
+		<version>0.5.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+
+	<properties>
+		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>joynrtypes</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messagingcommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.4</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-templates-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>templates</classifier>
+							<includes>
+								<include>${basedir}/src/main/xtend/*</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>build-test-jar</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>io.joynr.tools.generator</groupId>
+				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>mainSources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/main/franca</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/main/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testSources</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.joynr.java</groupId>
+						<artifactId>java-generator</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<version>${project.version}</version>
+					</dependency>		
+				</dependencies>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
+							<include>**</include> </includes> </fileset> -->
+						<fileset>
+							<directory>src/main/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>src/test/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<!-- <source>src/main/xtend</source> <source>src/main/xtend-gen</source> -->
+								<source>src/main/generated</source>
+							</sources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>add-test-source</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/test/generated</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

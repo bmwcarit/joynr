@@ -1,0 +1,1 @@
+java -Dport=8080  -Dlog4j.configuration=file:log4j.properties -jar bounceproxy-standalone.jar

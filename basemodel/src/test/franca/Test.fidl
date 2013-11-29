@@ -1,0 +1,317 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package tests
+
+import types.ExtendedTypes.* from "classpath:/common/Types.fidl"
+import types.TestTypes.* from "TestTypes.fidl"
+
+typeCollection testTypes {
+	
+	enumeration TestEnum {
+		ZERO = "0"
+		ONE = "1"
+		TWO = "2"
+	}
+	
+	struct ComplexTestType {
+		Int32 a 
+		Int32 b
+	}
+	
+	
+	struct ComplexTestType2 {
+		Int32 c 
+		Int32 d
+	}
+
+	struct BaseStruct {
+		ComplexTestType c
+		String a
+		GpsLocation l
+	}
+	
+	struct DerivedStruct extends BaseStruct {
+		String b
+	}
+	
+	struct AnotherDerivedStruct extends BaseStruct {
+		String d	
+	}
+	
+	struct ComplexStructUsingDerivedStruct {
+		DerivedStruct d 
+	}
+}
+
+
+
+interface test{
+	
+	version {major 0 minor 1}
+
+	attribute testTypes.TestEnum enumAttribute
+	attribute GpsLocation location readonly
+	attribute Trip mytrip readonly
+	attribute GpsLocation yourLocation readonly
+	attribute Int32 firstPrime readonly
+	
+	attribute Int32[] listOfInts readonly
+	attribute GpsLocation[] listOfLocations readonly
+	attribute String[] listOfStrings
+	
+	//Those two are needed for the java tests:
+	attribute Int32 testAttribute
+	attribute GpsLocation complexTestAttribute
+	
+	//Just two methods to test all the other combinations 
+	attribute Int32 readWriteAttribute
+	attribute Int32 readOnlyAttribute readonly
+	attribute Int32 writeOnly
+	
+	attribute Int32 notifyWriteOnly
+	attribute Int32 notifyReadOnly readonly 
+	attribute Int32 notifyReadWrite
+	
+	attribute Int32 notify
+
+	method addNumbers {
+		in {
+			Int32 first 
+			Int32 second
+			Int32 third // defaultValue 0
+		}
+		
+		out {
+			Int32 result
+		}	
+	}
+	
+	method sumInts {
+		in {
+			Int32[] ints
+		}
+		
+		out {
+			Int32 result
+		}
+	} 
+	
+	method methodWithNoInputParameters {
+		out {
+			Int32 result
+		}
+	}
+
+	method methodWithEnumParameter{
+		in {
+			testTypes.TestEnum input
+		} 
+		out {
+			Int32 result
+		}
+	}
+    
+	method methodWithEnumListParameter{
+		in {
+			testTypes.TestEnum[] input
+		} 
+		out {
+			Int32 result
+		}
+	}
+    
+	method methodWithEnumReturn{
+		in {
+			Int32 input
+		} 
+		out {
+			testTypes.TestEnum result
+		}
+	}
+    
+	method methodWithEnumListReturn{
+		in {
+			Int32 input
+		} 
+		out {
+			testTypes.TestEnum[] result
+		}
+	}
+
+
+	method  methodWithByteArray{
+		in {
+			Int8[] input
+		}
+		out {
+			Int8[] result
+		}
+	}
+
+	method  methodEnumDoubleParameters{
+		in {
+			testTypes.TestEnum enumParam
+			Double doubleParam
+		}
+	}
+
+	method  methodStringDoubleParameters{
+		in {
+			String stringParam
+			Double doubleParam
+		}
+	}
+
+	method  methodCustomCustomParameters{
+		in {
+			testTypes.ComplexTestType customParam1
+			testTypes.ComplexTestType2 customParam2
+		}
+	}
+
+	method  methodStringDoubleListParameters{
+		in {
+			String stringParam
+			Double[] doubleListParam
+		}
+	}
+
+	method  methodCustomCustomListParameters{
+		in {
+			testTypes.ComplexTestType customParam
+			testTypes.ComplexTestType2[] customListParam
+		}
+	}
+
+	method  customTypeAndListParameter{
+		in {
+			testTypes.ComplexTestType complexTestType
+			testTypes.BaseStruct[] complexArray
+		}
+	}
+
+	method voidOperation {
+		
+	}
+	
+	method stringAndBoolParameters{
+		in {
+			String stringParam
+			Boolean boolParam
+		}
+	}
+	
+	method returnPrimeNumbers {
+		in {
+			Int32 upperBound
+		}
+		
+		out {
+			Int32[] result
+		}
+	}
+
+	// used to test sending of Datatypes that contain lists as in/output parameters with lists. 
+	method optimizeTrip {
+		in {
+			Trip input
+		}
+		out {
+			Trip result
+		}
+	}
+
+	method overloadedOperation {
+		in {
+			testTypes.DerivedStruct input			
+		}
+		out {
+			String result
+		}
+	}
+	
+	method overloadedOperation{
+		in {
+			testTypes.AnotherDerivedStruct input
+		}
+		out {
+			String result
+		}
+	}
+	
+	method optimizeLocations {
+		in {
+			GpsLocation[] input
+		}
+		out {
+			GpsLocation[] result
+		}
+	}
+
+	method toLowerCase {
+		in {			
+			String inputString
+		}
+		out {
+			String result
+		}
+	} 
+	
+	method waitTooLong{
+		in {
+			Int64 ttl_ms			
+		}
+		out {
+			String result
+		}
+	} 
+	
+	method sayHello {
+		out {
+			String result
+		}
+	}
+//does not work, due to bug 654
+//    method Vowel[] optimizeWord {
+//    	inputWord : Vowel[]
+//    }	
+//	
+//	method Vowel optimizeVowel {
+//		inputVowel : Vowel
+//	}
+
+	method checkVowel {
+		in {
+			Vowel inputVowel			
+		}
+		out {
+			Boolean result
+		}
+	}	
+	
+	method optimizeLocationList {
+		in {			
+			GpsLocation[] inputList
+		}
+		out {
+			GpsLocation[] result
+		}
+	}
+}
+
