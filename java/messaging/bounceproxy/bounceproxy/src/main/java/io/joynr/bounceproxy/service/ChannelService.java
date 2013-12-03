@@ -65,6 +65,7 @@ import joynr.JoynrMessage;
 
 import org.atmosphere.annotation.Suspend;
 import org.atmosphere.cache.UUIDBroadcasterCache;
+import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.atmosphere.cpr.BroadcasterFactory;
 import org.atmosphere.jersey.Broadcastable;
@@ -173,6 +174,14 @@ public class ChannelService {
             if (broadcaster == null) {
                 broadcaster = defaultBroadcasterFactory.get(BounceProxyBroadcaster.class, ccid);
 
+            }
+
+            // avoids error where previous long poll from browser got message destined for new long poll
+            // especially as seen in js, where every second refresh caused a fail
+            for (AtmosphereResource resource : broadcaster.getAtmosphereResources()) {
+                if (resource.uuid() != null && resource.uuid().equals(atmosphereTrackingId)) {
+                    resource.resume();
+                }
             }
 
             UUIDBroadcasterCache broadcasterCache = (UUIDBroadcasterCache) broadcaster.getBroadcasterConfig()
