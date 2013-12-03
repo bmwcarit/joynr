@@ -81,9 +81,9 @@ The "jquery" included in some products is licensed under the â€œMIT/X11 licenseâ
 Files:
  - /java/backend-services/capabilitiesdirectoryui/src/main/resources/script/jquery-1.7.1.js
  - /java/backend-services/capabilitiesdirectoryui/src/main/resources/css/jquery-smooth.css
- - /java/messaging/bounceproxyui/src/main/webapp/script/jquery-1.7.1.js
- - /java/messaging/bounceproxyui/src/main/webapp/css/jquery-smooth.css
+ - /java/messaging/bounceproxy/bounceproxy-ui/src/main/webapp/script/jquery-1.7.1.js
+ - /java/messaging/bounceproxy/bounceproxy-ui/src/main/webapp/css/jquery-smooth.css
 
 A copy of that licese in the English original version is included in the
 /java/backend-services/capabilitiesdirectoryui/MIT-LICENSE document and
-java/messaging/bounceproxyui/MIT-LICENSE document.
+java/messaging/bounceproxy/bounceproxy-ui/MIT-LICENSE document.

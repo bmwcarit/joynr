@@ -72,7 +72,7 @@
 				<configuration>
 					<scanIntervalSeconds>1</scanIntervalSeconds>
 					<webApp>
-						<contextPath>/bounceproxyui</contextPath>
+						<contextPath>/bounceproxy-ui</contextPath>
 						<descriptor>src/main/webapp/WEB-INF/web.xml</descriptor>
 						<!-- defaultsDescriptor>src/main/webapp/WEB-INF/webdefault.xml</defaultsDescriptor -->
 					</webApp>

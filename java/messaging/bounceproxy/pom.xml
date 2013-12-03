@@ -34,5 +34,6 @@
 		<module>bounceproxy-standalone</module>
 		<module>bounceproxy-controller</module>	
 		<module>controlled-bounceproxy</module>
+		<module>bounceproxy-ui</module>
 	</modules>
 </project>
