@@ -34,6 +34,9 @@
 		<module>messagingcommon</module>
 		<module>messagingservlet</module>
 		<module>servletcommon</module>
+		<module>messaging-service</module>
+		<module>channel-service</module>
+		<module>bounceproxy-controller-service</module>
 	</modules>
 
 		<!-- specify dependencies here to be used in all submodules -->
