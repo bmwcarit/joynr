@@ -19,6 +19,8 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.guice.LowerCaseProperties;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,7 +78,7 @@ public class PropertyLoader {
      * @return
      */
     public static Properties loadProperties(String fileName) {
-        Properties properties = new Properties();
+        LowerCaseProperties properties = new LowerCaseProperties();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL url = classLoader.getResource(fileName);
 
@@ -86,6 +88,7 @@ public class PropertyLoader {
             try {
                 urlStream = url.openStream();
                 properties.load(urlStream);
+
                 logger.info("Properties from classpath loaded file: " + fileName);
             } catch (IOException e) {
                 logger.info("Properties from classpath not loaded because file not found: " + fileName);
@@ -101,13 +104,13 @@ public class PropertyLoader {
 
         // Override properties found on the classpath with any found in a file
         // of the same name
-        Properties propertiesFromFileSystem = loadProperties(new File(fileName));
+        LowerCaseProperties propertiesFromFileSystem = loadProperties(new File(fileName));
         properties.putAll(propertiesFromFileSystem);
         return properties;
     }
 
-    public static Properties loadProperties(File file) {
-        Properties properties = new Properties();
+    public static LowerCaseProperties loadProperties(File file) {
+        LowerCaseProperties properties = new LowerCaseProperties();
 
         // try opening from file system
         FileInputStream fileInputStream = null;
