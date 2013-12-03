@@ -52,8 +52,6 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 			<param-value>org.atmosphere.cache.UUIDBroadcasterCache</param-value>
 		</init-param>
 
-
-
 		<init-param>
 			<param-name>org.atmosphere.useBlocking</param-name>
 			<param-value>false</param-value>
@@ -69,8 +67,10 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 			<param-value>true</param-value>
 		</init-param>
 
-
-
+		<init-param>
+			<param-name>com.sun.jersey.config.feature.DisableWADL</param-name>
+			<param-value>true</param-value>
+		</init-param>
 
 		<init-param>
 			<param-name>org.atmosphere.cpr.BroadcasterCache.strategy</param-name>
