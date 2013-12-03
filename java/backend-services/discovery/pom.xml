@@ -51,7 +51,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-standalone</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>

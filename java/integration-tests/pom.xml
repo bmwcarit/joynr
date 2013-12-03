@@ -99,7 +99,7 @@
 			copies them to the currrent build directory.
 		-->
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
@@ -142,7 +142,7 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>io.joynr.java.messaging</groupId>
+									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 									<artifactId>bounceproxy</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
