@@ -52,32 +52,32 @@ option(
     "Use DBUS and CommonAPI to communicate between libjoynr and cluster-controller?"
     OFF
 )
-message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION="${USE_DBUS_COMMONAPI_COMMUNICATION})
+message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION=" ${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 option(
     BUILD_TESTS
     "Build test binaries?"
     ON
 )
-message(STATUS "option BUILD_TESTS="${BUILD_TESTS})
+message(STATUS "option BUILD_TESTS=" ${BUILD_TESTS})
 
 option(
     ENABLE_GCOV
     "Use GCOV to meassure test code coverage?"
     OFF
 )
-message(STATUS "option ENABLE_GCOV="${ENABLE_GCOV})
+message(STATUS "option ENABLE_GCOV=" ${ENABLE_GCOV})
 
 message(STATUS "############ VARIABLES ############")
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
 endif(NOT DEFINED JOYNR_SERVER)
-message(STATUS "variable JOYNR_SERVER="${JOYNR_SERVER})
+message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
-message(STATUS "variable CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
+message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
 #------- SYSTEM_ARCHITECTURE --------
-message(STATUS "variable CMAKE_SYSTEM_PROCESSOR="${CMAKE_SYSTEM_PROCESSOR})
+message(STATUS "variable CMAKE_SYSTEM_PROCESSOR=" ${CMAKE_SYSTEM_PROCESSOR})
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
     set(SYSTEM_ARCHITECTURE "x86")
 endif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
@@ -89,15 +89,15 @@ if(NOT DEFINED SYSTEM_ARCHITECTURE)
     message(WARNING "system architecture unknown")
     set(SYSTEM_ARCHITECTURE "unknown-system-architecture")
 endif(NOT DEFINED SYSTEM_ARCHITECTURE)
-message(STATUS "variable SYSTEM_ARCHITECTURE="${SYSTEM_ARCHITECTURE})
+message(STATUS "variable SYSTEM_ARCHITECTURE=" ${SYSTEM_ARCHITECTURE})
 
-message(STATUS "variable CMAKE_MODULE_PATH="${CMAKE_MODULE_PATH})
-message(STATUS "variable CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH})
-message(STATUS "variable CMAKE_ROOT="${CMAKE_ROOT})
+message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
+message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
+message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
-message(STATUS "variable JOYNR_BINARY_DIR="${JOYNR_BINARY_DIR})
+message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 
 if(${ENABLE_GCOV})
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/code-coverage")
@@ -138,13 +138,13 @@ if(${WIN32})
     if(NOT CURL_HOME)
         if(DEFINED ENV{CURL_HOME})
             message(STATUS "setting CURL_HOME from environment variable")
-            message(STATUS "environment variable CURL_HOME="$ENV{CURL_HOME})
+            message(STATUS "environment variable CURL_HOME=" $ENV{CURL_HOME})
             set(CURL_HOME $ENV{CURL_HOME})
         else()
             message(FATAL_ERROR "CURL_HOME variable not set")
         endif()
     endif(NOT CURL_HOME)
-    message(STATUS "variable CURL_HOME="${CURL_HOME})
+    message(STATUS "variable CURL_HOME=" ${CURL_HOME})
 
     find_path(CURL_INCLUDE_DIRS
         NAMES curl/curl.h
@@ -167,15 +167,15 @@ if(${WIN32})
         # saving the old state of CMAKE_FIND_LIBRARY_*
         set(CMAKE_FIND_LIBRARY_PREFIXES_org ${CMAKE_FIND_LIBRARY_PREFIXES})
         set(CMAKE_FIND_LIBRARY_SUFFIXES_org ${CMAKE_FIND_LIBRARY_SUFFIXES})
-        message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES_org="${CMAKE_FIND_LIBRARY_PREFIXES_org})
-        message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES_org="${CMAKE_FIND_LIBRARY_SUFFIXES_org})
+        message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES_org=" ${CMAKE_FIND_LIBRARY_PREFIXES_org})
+        message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES_org=" ${CMAKE_FIND_LIBRARY_SUFFIXES_org})
         # adding additional prefixes and suffixes
         set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} "lib")
         set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES} ".dll" ".dll.a" ".a")
     endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
-    message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES="${CMAKE_FIND_LIBRARY_PREFIXES})
-    message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES="${CMAKE_FIND_LIBRARY_SUFFIXES})
+    message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES=" ${CMAKE_FIND_LIBRARY_PREFIXES})
+    message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES=" ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
     find_library(CURL_LIBRARIES
         NAMES curldll
@@ -190,8 +190,8 @@ if(${WIN32})
         #       This would cause the variable to be unset.
         set(CMAKE_FIND_LIBRARY_PREFIXES "${CMAKE_FIND_LIBRARY_PREFIXES_org}")
         set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_FIND_LIBRARY_SUFFIXES_org}")
-        message(STATUS "variable restored CMAKE_FIND_LIBRARY_PREFIXES="${CMAKE_FIND_LIBRARY_PREFIXES})
-        message(STATUS "variable restored CMAKE_FIND_LIBRARY_SUFFIXES="${CMAKE_FIND_LIBRARY_SUFFIXES})
+        message(STATUS "variable restored CMAKE_FIND_LIBRARY_PREFIXES=" ${CMAKE_FIND_LIBRARY_PREFIXES})
+        message(STATUS "variable restored CMAKE_FIND_LIBRARY_SUFFIXES=" ${CMAKE_FIND_LIBRARY_SUFFIXES})
     endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
     if(CURL_INCLUDE_DIRS AND CURL_VERSION_STRING AND CURL_LIBRARIES)
@@ -204,10 +204,10 @@ else(${WIN32})
 endif(${WIN32})
 
 
-message(STATUS "variable CURL_FOUND="${CURL_FOUND})
-message(STATUS "variable CURL_VERSION_STRING="${CURL_VERSION_STRING})
-message(STATUS "variable CURL_INCLUDE_DIRS="${CURL_INCLUDE_DIRS})
-message(STATUS "variable CURL_LIBRARIES="${CURL_LIBRARIES})
+message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
+message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
+message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
+message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
 
 if(NOT CURL_FOUND)
 	message(FATAL_ERROR "Could not find library: curl.")
@@ -291,14 +291,14 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
         FIND_PACKAGE(PkgConfig)
     pkg_check_modules(DBUS1 REQUIRED dbus-1)
-    message(STATUS "variable DBUS_INCLUDE_DIRS="${DBUS1_INCLUDE_DIRS})
-    message(STATUS "variable DBUS1_LIBRARIES="${DBUS1_LIBRARIES})
+    message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
+    message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
     pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
-    message(STATUS "variable COMMONAPI_INCLUDE_DIRS="${COMMONAPI_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_LIBRARIES="${COMMONAPI_LIBRARIES})
+    message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
+    message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
     pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus)
-    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS="${COMMONAPI_DBUS_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES="${COMMONAPI_DBUS_LIBRARIES})
+    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
+    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
 
     include_directories(SYSTEM
 
