@@ -94,6 +94,7 @@ This project has dependencies to:
   JavaMail API under CDDL or GPLv2+CE
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
+  javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
   JAX-RS Core API under Apache License, Version 2.0
   JBoss Java Authentication SPI for Containers 1.0 API under lgpl
   JBoss Java EE 6.0 API Aggregate under lgpl
@@ -110,15 +111,18 @@ This project has dependencies to:
   Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty Orbit :: Servlet API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
-  JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  jsr181-api under CDDL+GPLv2
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
+  Mockito under The MIT License
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
