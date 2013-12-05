@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,39 +35,42 @@ public class ChannelInformationTest {
     BounceProxyInformation mock;
 
     @Test
-    public void testUriResolution() {
+    public void testCreationWithoutBounceProxyInformation() {
 
-        Mockito.when(mock.getLocation()).thenReturn(URI.create("http://joyn.testbaseuri.io/"));
-        Mockito.when(mock.getInstanceId()).thenReturn("xyz");
-
-        ChannelInformation ci = new ChannelInformation(mock, "channel-123");
-
-        Assert.assertEquals("http://joyn.testbaseuri.io/channels/channel-123;jsessionid=.xyz", ci.getLocation()
-                                                                                                 .toString());
+        try {
+            new ChannelInformation(null, "channel-123", URI.create("http://joyn.de/channel-123"));
+            Assert.fail("Should throw IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test
-    public void testUriResolutionWithoutSlash() {
+    public void testCreationWithoutChannelId() {
 
-        Mockito.when(mock.getLocation()).thenReturn(URI.create("http://joyn.testbaseuri.io/"));
-        Mockito.when(mock.getInstanceId()).thenReturn("xyz");
-
-        ChannelInformation ci = new ChannelInformation(mock, "channel-123");
-
-        Assert.assertEquals("http://joyn.testbaseuri.io/channels/channel-123;jsessionid=.xyz", ci.getLocation()
-                                                                                                 .toString());
+        try {
+            new ChannelInformation(mock, null, URI.create("http://joyn.de/channel-123"));
+            Assert.fail("Should throw IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test
-    public void testUriResolutionWithPath() {
+    public void testCreationWithoutChannelLocation() {
 
-        Mockito.when(mock.getLocation()).thenReturn(URI.create("http://joyn.testbaseuri.io/bounceproxy/"));
-        Mockito.when(mock.getInstanceId()).thenReturn("xyz");
-
-        ChannelInformation ci = new ChannelInformation(mock, "channel-123");
-
-        Assert.assertEquals("http://joyn.testbaseuri.io/bounceproxy/channels/channel-123;jsessionid=.xyz",
-                            ci.getLocation().toString());
+        try {
+            new ChannelInformation(mock, "channel-123", null);
+            Assert.fail("Should throw IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+        }
     }
 
+    @Test
+    public void testCreation() {
+
+        ChannelInformation ci = new ChannelInformation(mock, "channel-123", URI.create("http://joyn.de/channel-123"));
+
+        Assert.assertEquals("channel-123", ci.getChannelId());
+        Assert.assertEquals("http://joyn.de/channel-123", ci.getLocation().toString());
+        Assert.assertEquals(mock, ci.getBounceProxy());
+    }
 }

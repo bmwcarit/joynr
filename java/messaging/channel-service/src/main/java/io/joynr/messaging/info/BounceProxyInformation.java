@@ -31,25 +31,25 @@ import java.net.URI;
  */
 public class BounceProxyInformation {
 
+    /**
+     * The location of the bounce proxy at which it is reachable for cluster
+     * controllers.
+     */
     private URI location;
-    private String instanceId;
-    private String clusterId;
 
-    public BounceProxyInformation(String clusterId, String instanceId, URI location) {
+    /**
+     * The identifier of the bounce proxy.
+     */
+    private String id;
 
-        if (!location.toString().endsWith("/")) {
-            // for URI resolution, the URI has to end with a /
-            this.location = URI.create(location.toString() + "/");
-        } else {
-            this.location = location;
-        }
-
-        this.instanceId = instanceId;
-        this.clusterId = clusterId;
+    public BounceProxyInformation(String id, URI location) {
+        this.id = id;
+        this.location = location;
     }
 
     /**
-     * Gets the location of the bounce proxy.
+     * Gets the location of the bounce proxy at which it is reachable for
+     * cluster controllers.
      * 
      * @return location as URI
      */
@@ -58,21 +58,12 @@ public class BounceProxyInformation {
     }
 
     /**
-     * Gets the identifier of the bounce proxy, in the format "clusterId.instanceId".
+     * Gets the identifier of the bounce proxy.
      * 
      * @return an identifier
      */
     public String getId() {
-        return clusterId + "." + instanceId;
-    }
-
-    /**
-     * Returns the identifier of the bounce proxy instance only, without 
-     * 
-     * @return
-     */
-    public String getInstanceId() {
-        return instanceId;
+        return id;
     }
 
 }

@@ -92,7 +92,7 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(200 /* OK */, response.getStatusCode());
-        assertEquals("http://joyn-bpX.muc/bp/channels/channel-123;jsessionid=.Y", response.getHeader("Location"));
+        assertEquals("http://joyn-bpX.muc/bp/channels/channel-123", response.getHeader("Location"));
         assertEquals("X.Y", response.getHeader("bp"));
         Mockito.verify(mock).getChannelInformation("channel-123");
         Mockito.verifyNoMoreInteractions(mock);
@@ -112,17 +112,19 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());
-        assertEquals("http://joyn-bp0.muc/bp/channels/channel-123;jsessionid=.0", response.getHeader("Location"));
+        assertEquals("http://joyn-bp0.muc/bp/channels/channel-123", response.getHeader("Location"));
         assertEquals("0.0", response.getHeader("bp"));
         Mockito.verify(mock).getChannelInformation("channel-123");
         Mockito.verify(mock).createChannel("channel-123", null);
         Mockito.verifyNoMoreInteractions(mock);
     }
 
-    private ChannelInformation createChannelInfo(String bpId, String bpBaseUrl, String channelId) {
+    private ChannelInformation createChannelInfo(String bpId, String baseUrl, String ccid) {
 
-        String[] tokens = bpId.split("\\.");
-        BounceProxyInformation bpInfo = new BounceProxyInformation(tokens[0], tokens[1], URI.create(bpBaseUrl));
-        return new ChannelInformation(bpInfo, channelId);
+        BounceProxyInformation bounceProxy = new BounceProxyInformation(bpId, URI.create(baseUrl));
+        ChannelInformation info = new ChannelInformation(bounceProxy, ccid, URI.create(baseUrl + "/channels/" + ccid));
+
+        return info;
     }
+
 }

@@ -28,15 +28,12 @@ import org.junit.Test;
 public class BounceProxyInformationTest {
 
     @Test
-    public void testConstructor() {
+    public void testConstructorWithBpId() {
 
-        BounceProxyInformation bpInfo = new BounceProxyInformation("cluster0",
-                                                                   "instance0",
-                                                                   URI.create("http://joyn.baseuri.io"));
+        BounceProxyInformation bpInfo = new BounceProxyInformation("bp1", URI.create("http://joyn.baseuri.io"));
 
-        Assert.assertEquals("cluster0.instance0", bpInfo.getId());
-        Assert.assertEquals("instance0", bpInfo.getInstanceId());
-        Assert.assertEquals("http://joyn.baseuri.io/", bpInfo.getLocation().toString());
+        Assert.assertEquals("bp1", bpInfo.getId());
+        Assert.assertEquals("http://joyn.baseuri.io", bpInfo.getLocation().toString());
     }
 
 }

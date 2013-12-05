@@ -26,29 +26,78 @@ import java.net.URI;
  * Additional information about the channel.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class ChannelInformation {
 
     private String channelId;
     private BounceProxyInformation bounceProxy;
 
-    public ChannelInformation(BounceProxyInformation bounceProxy, String channelId) {
+    /**
+     * Absolute URI for the channel.
+     */
+    private URI channelLocation;
+
+    /**
+     * Creates new channel information.
+     * 
+     * @param bounceProxy
+     *            the bounce proxy that handles communication for this channel.
+     *            Must not be <code>null</code>.
+     * @param channelId
+     *            the channel identifier. Must not be <code>null</code>.
+     * @param channelLocation
+     *            the URL of the channel which is used for cluster controllers
+     *            for messaging on this channel. Must not be <code>null</code>.
+     * 
+     * @throws IllegalArgumentException
+     *             if any parameter is <code>null</code>
+     */
+    public ChannelInformation(BounceProxyInformation bounceProxy, String channelId, URI channelLocation) {
+
+        if (bounceProxy == null) {
+            throw new IllegalArgumentException("Parameter 'bounceProxy' must not be null");
+        }
+
+        if (channelId == null) {
+            throw new IllegalArgumentException("Parameter 'channelId' must not be null");
+        }
+
+        if (channelLocation == null) {
+            throw new IllegalArgumentException("Parameter 'channelLocation' must not be null");
+        }
+
         this.channelId = channelId;
         this.bounceProxy = bounceProxy;
+        this.channelLocation = channelLocation;
     }
 
+    /**
+     * Returns the identifier of this channel.
+     * 
+     * @return channel ID. Should not be <code>null</code>.
+     */
     public String getChannelId() {
         return this.channelId;
     }
 
+    /**
+     * Returns information about the bounce proxy handling communication for
+     * this channel.
+     * 
+     * @return information about the bounce proxy. Should not be <code>null</code>. 
+     */
     public BounceProxyInformation getBounceProxy() {
         return this.bounceProxy;
     }
 
+    /**
+     * Returns the location of the channel as it is used by cluster controllers
+     * to send messages to and retrieve messages from the channel.
+     * 
+     * @return a location. Should not be <code>null</code>.
+     */
     public URI getLocation() {
-
-        URI bpLocation = bounceProxy.getLocation();
-        return bpLocation.resolve("channels/" + channelId + ";jsessionid=." + bounceProxy.getInstanceId());
+        return this.channelLocation;
     }
 }
