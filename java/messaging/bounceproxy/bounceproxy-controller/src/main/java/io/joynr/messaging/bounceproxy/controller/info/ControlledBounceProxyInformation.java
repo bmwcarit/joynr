@@ -143,18 +143,15 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
         return locationForBpc;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ ((clusterId == null) ? 0 : clusterId.hashCode());
-		result = prime * result
-				+ ((instanceId == null) ? 0 : instanceId.hashCode());
-		result = prime * result
-				+ ((locationForBpc == null) ? 0 : locationForBpc.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((clusterId == null) ? 0 : clusterId.hashCode());
+        result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
+        result = prime * result + ((locationForBpc == null) ? 0 : locationForBpc.hashCode());
+        return result;
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -176,5 +173,5 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
         return bpInfo.getInstanceId().equals(instanceId) && bpInfo.clusterId.equals(clusterId)
                 && bpInfo.locationForBpc.equals(locationForBpc);
     }
-    
+
 }
