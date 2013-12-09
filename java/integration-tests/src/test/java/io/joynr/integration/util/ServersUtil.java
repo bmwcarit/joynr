@@ -62,12 +62,15 @@ public class ServersUtil {
         connector.setAcceptors(1);
         jettyServer.setConnectors(new Connector[]{ connector });
 
+        String serverUrl = "http://localhost:" + port;
+        System.getProperties().setProperty("hostPath", serverUrl);
+
         jettyServer.setHandler(contexts);
         jettyServer.start();
 
-        String serverUrl = "http://localhost:" + port;
         String bounceProxyUrl = serverUrl + BOUNCEPROXY_CONTEXT + "/";
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
+
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
         System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
         System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);

@@ -77,7 +77,7 @@ public class BootstrapUtil {
         if (appPackagesSetting != null) {
             appPackages = appPackagesSetting.split(";");
         }
-        Reflections reflections = new Reflections("io.joynr.runtime", appPackages);
+        Reflections reflections = new Reflections("io.joynr.runtime", "io.joynr.discovery", appPackages);
         Set<Class<? extends JoynrApplication>> joynrApplicationsClasses = reflections.getSubTypesOf(JoynrApplication.class);
         try {
 

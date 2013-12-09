@@ -22,7 +22,9 @@ package io.joynr.dispatcher;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
+import io.joynr.runtime.MessagingServletConfig;
 
 import java.util.Arrays;
 
@@ -44,12 +46,19 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     private final String channelId;
 
+    private boolean started;
+
+    @Inject
+    private MessagingSettings settings;
+
     private LocalChannelUrlDirectoryClient channelUrlDirectory;
 
     private boolean registered = false;
     private Object registeredSynchronizer = new Object();
 
     private LongPollingMessageReceiver longPollingReceiver;
+
+    private String contextRoot;
 
     private void setRegistered(boolean registered) {
         this.registered = registered;
@@ -58,11 +67,13 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     @Inject
     public ServletMessageReceiverImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       LocalChannelUrlDirectoryClient channelUrlDirectory,
-                                      LongPollingMessageReceiver longPollingReceiver) {
+                                      LongPollingMessageReceiver longPollingReceiver,
+                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot) {
         this.channelId = channelId;
         this.channelUrlDirectory = channelUrlDirectory;
         this.longPollingReceiver = longPollingReceiver;
-
+        this.contextRoot = contextRoot;
+        this.started = false;
     }
 
     @Override
@@ -82,7 +93,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
             throw illegalArgumentException;
         }
 
-        String[] urls = { hostPath + "/channels/" + channelId + "/" };
+        String[] urls = { hostPath + contextRoot + "/channels/" + channelId + "/" };
         channelUrlInformation.setUrls(Arrays.asList(urls));
 
         synchronized (registeredSynchronizer) {
@@ -103,7 +114,20 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     @Override
     public void shutdown(boolean clear) {
-        unregisterChannel();
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                unregisterChannel();
+            }
+        });
+
+        thread.start();
+        //wait 5 seconds for proper unregister, otherwise a dead discovery directory is assumed
+        try {
+            thread.join(5000);
+        } catch (InterruptedException e) {
+        }
         // if (clear)
         // messageListener = null;
 
@@ -117,7 +141,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     @Override
     public boolean isStarted() {
-        return messageListener != null;
+        return started;
     }
 
     public void receive(JoynrMessage message) {
@@ -188,6 +212,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
             registerChannelUrl();
         }
 
+        this.started = true;
     }
 
 }

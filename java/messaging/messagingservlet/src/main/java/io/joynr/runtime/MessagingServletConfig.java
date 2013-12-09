@@ -68,6 +68,8 @@ public class MessagingServletConfig extends GuiceServletContextListener {
 
     public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
     private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
+    public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
+
     private String servletModuleName;
 
     private static final Logger logger = LoggerFactory.getLogger(MessagingServletConfig.class);
@@ -161,6 +163,9 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         if (localDomain != null) {
             properties.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
         }
+
+        properties.put(PROPERTY_SERVLET_CONTEXT_ROOT, servletContext.getContextPath());
+        properties.putAll(new LowerCaseProperties(System.getProperties()));
         injector = BootstrapUtil.init(Guice.createInjector(Modules.EMPTY_MODULE),
                                       properties,
                                       Modules.override(jerseyServletModule).with(servletModule),
