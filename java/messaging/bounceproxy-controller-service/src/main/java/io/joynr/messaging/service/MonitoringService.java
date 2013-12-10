@@ -20,6 +20,8 @@ package io.joynr.messaging.service;
  * #L%
  */
 
+import java.util.List;
+
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.PerformanceMeasures;
 
@@ -30,6 +32,13 @@ import io.joynr.messaging.info.PerformanceMeasures;
  * 
  */
 public interface MonitoringService {
+
+    /**	
+     * Returns a list of registered bounce proxies.
+     * 	
+     * @return
+     */
+    public List<String> getRegisteredBounceProxies();
 
     /**
      * Registers a new bounce proxy.

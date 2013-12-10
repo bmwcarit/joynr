@@ -60,4 +60,14 @@ public enum BounceProxyStatus {
      */
     UNRESOLVED;
 
+    /**
+     * Returns whether the bounce proxy is in a status in which it can handle
+     * new channels.
+     * 
+     * @return <code>true</code> if new channels can be assigned to a bounce
+     *         proxy, <code>false</code> otherwise
+     */
+    public boolean isAssignable() {
+        return this == ALIVE || this == ACTIVE;
+    }
 }

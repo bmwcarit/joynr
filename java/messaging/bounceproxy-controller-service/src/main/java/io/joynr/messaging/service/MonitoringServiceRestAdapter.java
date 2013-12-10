@@ -27,6 +27,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -36,6 +37,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -59,6 +61,19 @@ public class MonitoringServiceRestAdapter {
 
     @Inject
     private MonitoringService monitoringService;
+
+    /**
+     * Returns a list of bounce proxies that are registered with the bounceproxy
+     * controller.
+     * 
+     * @return
+     */
+    @GET
+    @Produces("application/json")
+    public GenericEntity<List<String>> getBounceProxies() {
+        return new GenericEntity<List<String>>(monitoringService.getRegisteredBounceProxies()) {
+        };
+    }
 
     /**
      * Reports that a new bounce proxy instance has just been started. <br>
