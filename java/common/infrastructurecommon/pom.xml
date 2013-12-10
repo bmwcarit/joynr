@@ -43,7 +43,12 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.10.1.1</version>
+            <scope>test</scope>
+        </dependency>
 		<!-- dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messagingcommon</artifactId>
