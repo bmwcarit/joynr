@@ -35,94 +35,118 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public class PerformanceMeasures {
 
-    public enum Key {
+	public enum Key {
 
-        /**
-         * The number of long polls that are handled by the bounce proxy.
-         */
-        ACTIVE_LONGPOLL_COUNT("activeLongPolls"),
+		/**
+		 * The number of long polls that are handled by the bounce proxy.
+		 */
+		ACTIVE_LONGPOLL_COUNT("activeLongPolls"),
 
-        /**
-         * The number of channels the bounce proxy has assigned.
-         */
-        ASSIGNED_CHANNELS_COUNT("assignedChannels");
+		/**
+		 * The number of channels the bounce proxy has assigned.
+		 */
+		ASSIGNED_CHANNELS_COUNT("assignedChannels");
 
-        private String name;
+		private String name;
 
-        private Key(String name) {
-            this.name = name;
-        }
+		private Key(String name) {
+			this.name = name;
+		}
 
-        /**
-         * Creates a {@link Key} object from a string. This is used for
-         * performance measure keys that are handed over e.g. in the query
-         * string of a URL where a {@link Key} object as parameter is not
-         * possible or not handy.
-         * 
-         * @param name
-         *            the name of the {@link Key} object
-         * @return the matching {@link Key} object or <code>null</code> if
-         *         there's no such key.
-         */
-        @SuppressWarnings(value = "NP_NONNULL_RETURN_VIOLATION", justification = "Ignore unknown keys until it is specified which performance measures are used and how stable their definitions are")
-        public static Key fromString(String name) {
-            for (Key key : values()) {
-                if (key.name.equals(name)) {
-                    return key;
-                }
-            }
-            return null;
-        }
-    }
+		/**
+		 * Creates a {@link Key} object from a string. This is used for
+		 * performance measure keys that are handed over e.g. in the query
+		 * string of a URL where a {@link Key} object as parameter is not
+		 * possible or not handy.
+		 * 
+		 * @param name
+		 *            the name of the {@link Key} object
+		 * @return the matching {@link Key} object or <code>null</code> if
+		 *         there's no such key.
+		 */
+		@SuppressWarnings(value = "NP_NONNULL_RETURN_VIOLATION", justification = "Ignore unknown keys until it is specified which performance measures are used and how stable their definitions are")
+		public static Key fromString(String name) {
+			for (Key key : values()) {
+				if (key.name.equals(name)) {
+					return key;
+				}
+			}
+			return null;
+		}
+	}
 
-    private HashMap<Key, Integer> measures = new HashMap<Key, Integer>();
+	private HashMap<Key, Integer> measures = new HashMap<Key, Integer>();
 
-    public void addMeasure(String key, int value) {
+	/**
+	 * Adds a measure. This is a convenient method for
+	 * {@code addMeasure(k.toString(), i)}. If the key does not exist, for now
+	 * it is simply ignored without any warning.
+	 * 
+	 * @param key
+	 *            one of the available keys {@link Key} as string.
+	 * @param value
+	 */
+	public void addMeasure(String key, int value) {
 
-        Key k = Key.fromString(key);
+		Key k = Key.fromString(key);
 
-        if (k != null) {
-            measures.put(k, value);
-        } else {
-            // TODO for now, we just ignore the value
-        }
-    }
+		if (k != null) {
+			measures.put(k, value);
+		} else {
+			// TODO for now, we just ignore the value
+		}
+	}
 
-    public void addMeasure(Key key, int value) {
+	/**
+	 * Adds a measure. If the key is <code>null</code>, the measure is simply
+	 * ignored without any warning.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void addMeasure(Key key, int value) {
 
-        if (key != null) {
-            measures.put(key, value);
-        } else {
-            // TODO for now, we just ignore the value
-        }
-    }
+		if (key != null) {
+			measures.put(key, value);
+		} else {
+			// TODO for now, we just ignore the value
+		}
+	}
 
-    public boolean equals(Object obj) {
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
 
-        if (this == obj) {
-            return true;
-        }
+		if (this == obj) {
+			return true;
+		}
 
-        if (!(obj instanceof PerformanceMeasures)) {
-            return false;
-        }
+		if (!(obj instanceof PerformanceMeasures)) {
+			return false;
+		}
 
-        PerformanceMeasures p = (PerformanceMeasures) obj;
+		PerformanceMeasures p = (PerformanceMeasures) obj;
 
-        return p.measures.equals(measures);
-    }
+		return p.measures.equals(measures);
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((measures == null) ? 0 : measures.hashCode());
-        return result;
-    }
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((measures == null) ? 0 : measures.hashCode());
+		return result;
+	}
 
-    @Override
-    public String toString() {
-        return "PerformanceMeasures [measures=" + measures + "]";
-    }
+	@Override
+	public String toString() {
+		return "PerformanceMeasures [measures=" + measures + "]";
+	}
 
 }
