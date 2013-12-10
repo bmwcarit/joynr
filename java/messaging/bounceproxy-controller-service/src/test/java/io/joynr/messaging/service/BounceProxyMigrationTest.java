@@ -75,7 +75,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
                .delete(serverUrl + "/clusters/cluster0");
 
         assertEquals(202 /* Accepted */, response.getStatusCode());
-        Mockito.verify(mock).migrateCluster("cluster0");
+        Mockito.verify(mock).startClusterMigration("cluster0");
     }
 
     @Test

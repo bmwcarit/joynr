@@ -29,12 +29,13 @@ package io.joynr.messaging.service;
 public interface MigrationService {
 
     /**
-     * Migrates a whole cluster of bounce proxy instances to another cluster.
-     * For each channel a new decision is taken to which bounce proxy instance
-     * it will be migrated.
+     * Triggers the migration of a whole cluster of bounce proxy instances to
+     * another cluster. The migration itself, which is probably a long running
+     * task, has to be executed in its own thread. For each channel a new
+     * decision is taken to which bounce proxy instance it will be migrated.
      * 
      * @param clusterId the identifier of the cluster to migrate
      */
-    void migrateCluster(String clusterId);
+	void startClusterMigration(String clusterId);
 
 }
