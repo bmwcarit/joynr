@@ -36,4 +36,46 @@ public class BounceProxyInformationTest {
         Assert.assertEquals("http://joyn.baseuri.io", bpInfo.getLocation().toString());
     }
 
+    @Test
+    public void testEquals() {
+
+        BounceProxyInformation bpInfo1 = new BounceProxyInformation("bp", URI.create("http://www.joyn.de"));
+        BounceProxyInformation bpInfo2 = new BounceProxyInformation("bp", URI.create("http://www.joyn.de"));
+
+        Assert.assertTrue(bpInfo1.equals(bpInfo2));
+    }
+    
+    @Test
+    public void testEqualsForSameReferences() {
+
+        BounceProxyInformation bpInfo1 = new BounceProxyInformation("bp", URI.create("http://www.joyn.de"));
+
+        Assert.assertTrue(bpInfo1.equals(bpInfo1));
+    }
+
+    @Test
+    public void testNotEqualsForNull() {
+
+        BounceProxyInformation bpInfo1 = new BounceProxyInformation("bp", URI.create("http://www.joyn.de"));
+
+        Assert.assertFalse(bpInfo1.equals(null));
+    }
+    
+    @Test
+    public void testNotEqualDifferentIds() {
+
+        BounceProxyInformation bpInfo1 = new BounceProxyInformation("bp1", URI.create("http://www.joyn.de"));
+        BounceProxyInformation bpInfo2 = new BounceProxyInformation("bp2", URI.create("http://www.joyn.de"));
+
+        Assert.assertFalse(bpInfo1.equals(bpInfo2));
+    }
+
+    @Test
+    public void testNotEqualDifferentLocations() {
+
+        BounceProxyInformation bpInfo1 = new BounceProxyInformation("bp", URI.create("http://www.joyn1.de"));
+        BounceProxyInformation bpInfo2 = new BounceProxyInformation("bp", URI.create("http://www.joyn2.de"));
+
+        Assert.assertFalse(bpInfo1.equals(bpInfo2));
+    }
 }

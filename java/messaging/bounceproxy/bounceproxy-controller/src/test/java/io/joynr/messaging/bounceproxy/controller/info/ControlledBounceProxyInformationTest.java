@@ -58,4 +58,106 @@ public class ControlledBounceProxyInformationTest {
         } catch (IllegalArgumentException e) {
         }
     }
+
+    @Test
+    public void testEquals() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        ControlledBounceProxyInformation bpInfo2 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        Assert.assertTrue(bpInfo1.equals(bpInfo2));
+    }
+
+    @Test
+    public void testEqualsForSameReferences() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        Assert.assertTrue(bpInfo1.equals(bpInfo1));
+    }
+    
+    @Test
+    public void testNotEqualsForNull() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        Assert.assertFalse(bpInfo1.equals(null));
+    }
+    
+    @Test
+    public void testNotEqualsDifferentInstanceId() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        ControlledBounceProxyInformation bpInfo2 = new ControlledBounceProxyInformation("A",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        Assert.assertFalse(bpInfo1.equals(bpInfo2));
+    }
+
+    @Test
+    public void testNotEqualsDifferentClusterId() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        ControlledBounceProxyInformation bpInfo2 = new ControlledBounceProxyInformation("X",
+                                                                                        "B",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        Assert.assertFalse(bpInfo1.equals(bpInfo2));
+    }
+
+    @Test
+    public void testNotEqualsDifferentUrlForCc() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        ControlledBounceProxyInformation bpInfo2 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynA.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        Assert.assertFalse(bpInfo1.equals(bpInfo2));
+    }
+
+    @Test
+    public void testNotEqualsDifferentUrlForBpc() {
+
+        ControlledBounceProxyInformation bpInfo1 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynX.bmwgroup.net"));
+
+        ControlledBounceProxyInformation bpInfo2 = new ControlledBounceProxyInformation("X",
+                                                                                        "Y",
+                                                                                        URI.create("http://www.joynX.de"),
+                                                                                        URI.create("http://joynA.bmwgroup.net"));
+
+        Assert.assertFalse(bpInfo1.equals(bpInfo2));
+    }
 }
