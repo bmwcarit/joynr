@@ -85,7 +85,7 @@ public class ControlledBounceProxyInformationTest {
 
         Assert.assertTrue(bpInfo1.equals(bpInfo1));
     }
-    
+
     @Test
     public void testNotEqualsForNull() {
 
@@ -96,7 +96,7 @@ public class ControlledBounceProxyInformationTest {
 
         Assert.assertFalse(bpInfo1.equals(null));
     }
-    
+
     @Test
     public void testNotEqualsDifferentInstanceId() {
 

@@ -77,12 +77,12 @@ public class BounceProxyInformation {
 
     @Override
     public boolean equals(Object obj) {
-    	
-    	if(this == obj) {
-    		return true;
-    	}
 
-    	// returns false if obj is null
+        if (this == obj) {
+            return true;
+        }
+
+        // returns false if obj is null
         if (!(obj instanceof BounceProxyInformation)) {
             return false;
         }

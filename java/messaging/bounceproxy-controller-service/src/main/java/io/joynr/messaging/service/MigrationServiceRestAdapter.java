@@ -50,7 +50,7 @@ public class MigrationServiceRestAdapter {
     public Response migrateCluster(@PathParam("clusterid") final String clusterId) {
 
         // as this is a long running task, this has to be asynchronous
-    	migrationService.startClusterMigration(clusterId);
+        migrationService.startClusterMigration(clusterId);
 
         return Response.status(202 /* Accepted */).build();
     }

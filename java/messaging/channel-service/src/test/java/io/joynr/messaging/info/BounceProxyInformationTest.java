@@ -44,7 +44,7 @@ public class BounceProxyInformationTest {
 
         Assert.assertTrue(bpInfo1.equals(bpInfo2));
     }
-    
+
     @Test
     public void testEqualsForSameReferences() {
 
@@ -60,7 +60,7 @@ public class BounceProxyInformationTest {
 
         Assert.assertFalse(bpInfo1.equals(null));
     }
-    
+
     @Test
     public void testNotEqualDifferentIds() {
 
