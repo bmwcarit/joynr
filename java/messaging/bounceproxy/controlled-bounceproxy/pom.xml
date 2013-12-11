@@ -19,7 +19,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>io.joynr.java.messaging</groupId>
+	<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 	<artifactId>controlled-bounceproxy</artifactId>
 	<packaging>war</packaging>
 
@@ -38,7 +38,19 @@
 
 
 	<dependencies>
-		    
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 
 
@@ -56,6 +68,16 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<configuration>
+					<webAppSourceDirectory>${basedir}/src/main/java</webAppSourceDirectory>
+					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
+				</configuration>
+			</plugin>
+			
 		</plugins>
 
 	</build>
