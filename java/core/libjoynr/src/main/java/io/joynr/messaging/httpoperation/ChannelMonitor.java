@@ -20,7 +20,6 @@ package io.joynr.messaging.httpoperation;
  */
 
 import io.joynr.exceptions.JoynrChannelMissingException;
-
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;

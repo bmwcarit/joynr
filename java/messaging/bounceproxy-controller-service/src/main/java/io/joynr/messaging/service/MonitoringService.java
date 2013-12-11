@@ -20,10 +20,10 @@ package io.joynr.messaging.service;
  * #L%
  */
 
-import java.util.List;
-
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.PerformanceMeasures;
+
+import java.util.List;
 
 /**
  * Interface for monitoring service implementation.

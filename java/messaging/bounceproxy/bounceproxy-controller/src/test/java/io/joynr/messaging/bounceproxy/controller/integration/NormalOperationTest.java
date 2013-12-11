@@ -21,6 +21,7 @@ package io.joynr.messaging.bounceproxy.controller.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -29,7 +30,6 @@ import java.util.List;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.hamcrest.BaseMatcher;
-import static org.hamcrest.CoreMatchers.is;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;

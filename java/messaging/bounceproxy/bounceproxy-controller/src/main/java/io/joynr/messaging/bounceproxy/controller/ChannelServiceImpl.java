@@ -33,9 +33,6 @@ import io.joynr.messaging.service.ChannelService;
 import java.net.URI;
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
 import org.atmosphere.jersey.Broadcastable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

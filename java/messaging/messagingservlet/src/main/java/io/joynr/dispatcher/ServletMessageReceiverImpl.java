@@ -22,7 +22,6 @@ package io.joynr.dispatcher;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
 import io.joynr.runtime.MessagingServletConfig;
 
@@ -47,9 +46,6 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     private final String channelId;
 
     private boolean started;
-
-    @Inject
-    private MessagingSettings settings;
 
     private LocalChannelUrlDirectoryClient channelUrlDirectory;
 

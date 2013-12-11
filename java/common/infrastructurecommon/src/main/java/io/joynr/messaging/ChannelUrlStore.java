@@ -20,7 +20,6 @@ package io.joynr.messaging;
  */
 
 import java.util.HashMap;
-
 import java.util.List;
 
 import joynr.types.ChannelUrlInformation;

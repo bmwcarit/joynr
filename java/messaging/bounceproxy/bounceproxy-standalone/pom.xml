@@ -35,7 +35,7 @@
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<netbeans.compile.on.save>all</netbeans.compile.on.save>
 		<grizzly-version>1.9.31</grizzly-version>
-		<!-- workaround for m2e problem resolving artifacts with classifier -->
+
 		<webClassifier>classes</webClassifier>
 	</properties>
 
@@ -111,20 +111,6 @@
 		</dependency>
 	</dependencies>
 
-	<!-- workaround for m2e problem resolving artifacts with classifier -->
-	<profiles>
-		<profile>
-			<id>m2e</id>
-			<activation>
-				<property>
-					<name>m2e.version</name>
-				</property>
-			</activation>
-			<properties>
-				<webClassifier />
-			</properties>
-		</profile>
-	</profiles>
 
 	<build>
 		<finalName>${project.artifactId}</finalName>

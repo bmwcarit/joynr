@@ -23,12 +23,6 @@ package io.joynr.messaging.service;
 import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 
-import java.net.URI;
-
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.ChannelInformation;
-
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -47,9 +41,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
-
-    private String serverUrl;
+public class ChannelSetUpTest extends AbstractChannelSetUpTest {
 
     @Mock
     ChannelService mock;
@@ -70,13 +62,6 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
             }
 
         };
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
-        serverUrl = String.format("%s/some-channel-service/channels", getServerUrlWithoutPath());
     }
 
     @Test
@@ -117,14 +102,6 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
         Mockito.verify(mock).getChannelInformation("channel-123");
         Mockito.verify(mock).createChannel("channel-123", null);
         Mockito.verifyNoMoreInteractions(mock);
-    }
-
-    private ChannelInformation createChannelInfo(String bpId, String baseUrl, String ccid) {
-
-        BounceProxyInformation bounceProxy = new BounceProxyInformation(bpId, URI.create(baseUrl));
-        ChannelInformation info = new ChannelInformation(bounceProxy, ccid, URI.create(baseUrl + "/channels/" + ccid));
-
-        return info;
     }
 
 }

@@ -129,10 +129,10 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      * 
      */
     public void setMaxInterval(long maxInterval_ms) {
-        if (maxInterval_ms<this.getMinInterval()){
-        	maxInterval_ms = this.getMinInterval();
+        if (maxInterval_ms < this.getMinInterval()) {
+            maxInterval_ms = this.getMinInterval();
         }
-    	if (maxInterval_ms < MIN_MAX_INTERVAL) {
+        if (maxInterval_ms < MIN_MAX_INTERVAL) {
             this.maxInterval = MIN_MAX_INTERVAL;
             return;
         }

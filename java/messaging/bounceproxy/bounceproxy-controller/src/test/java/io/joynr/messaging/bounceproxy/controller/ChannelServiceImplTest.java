@@ -20,14 +20,14 @@ package io.joynr.messaging.bounceproxy.controller;
  * #L%
  */
 
-import java.net.URI;
-
+import static org.junit.Assert.assertEquals;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.info.ChannelInformation;
-import static org.junit.Assert.assertEquals;
+
+import java.net.URI;
 
 import org.junit.Before;
 import org.junit.Test;

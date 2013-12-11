@@ -64,6 +64,7 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
 
                                                                                         @Override
                                                                                         public boolean apply(BounceProxyRecord record) {
+                                                                                            if (record == null) return false;
                                                                                             return record.getStatus()
                                                                                                          .isAssignable();
                                                                                         }

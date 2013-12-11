@@ -31,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class DiscoveryAgent implements ArbitrationCallback {
 
     @SuppressFBWarnings("URF_UNREAD_FIELD")
+    @SuppressWarnings("unused")
     private ArbitrationStatus arbitrationStatus;
     private Lock arbitrationStatusLock = new ReentrantLock();
     private ArbitrationResult arbitrationResult;

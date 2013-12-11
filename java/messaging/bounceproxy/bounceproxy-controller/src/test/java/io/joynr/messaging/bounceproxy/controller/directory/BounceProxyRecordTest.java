@@ -21,11 +21,10 @@ package io.joynr.messaging.bounceproxy.controller.directory;
  */
 
 import static org.junit.Assert.assertEquals;
-
-import java.net.URI;
-
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+
+import java.net.URI;
 
 import org.junit.Before;
 import org.junit.Test;

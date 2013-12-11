@@ -20,7 +20,6 @@ package io.joynr.channel;
  */
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-
 import io.joynr.messaging.MessagingSettings;
 
 import java.util.concurrent.ConcurrentHashMap;

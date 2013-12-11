@@ -20,16 +20,16 @@ package io.joynr.messaging.bounceproxy.controller;
  * #L%
  */
 
-import java.net.URI;
-import java.util.List;
-
-import com.google.inject.Inject;
-
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.service.MonitoringService;
+
+import java.net.URI;
+import java.util.List;
+
+import com.google.inject.Inject;
 
 /**
  * Implementation of bounce proxy controller for monitoring service.

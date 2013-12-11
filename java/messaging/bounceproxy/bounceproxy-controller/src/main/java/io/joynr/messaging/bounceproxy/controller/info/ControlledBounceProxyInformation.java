@@ -20,9 +20,9 @@ package io.joynr.messaging.bounceproxy.controller.info;
  * #L%
  */
 
-import java.net.URI;
-
 import io.joynr.messaging.info.BounceProxyInformation;
+
+import java.net.URI;
 
 /**
  * Contains information for a bounce proxy that is controlled by a bounce proxy
