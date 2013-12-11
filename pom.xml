@@ -193,7 +193,7 @@
 				</property>
 			</activation>
 			<properties>
-				<licenseConfigurationVersion>1.0</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.1-SNAPSHOT</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
