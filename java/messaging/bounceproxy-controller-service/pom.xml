@@ -49,7 +49,17 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- test dependencies -->
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>service-common</artifactId>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive 
+		     Dependencies should come from service-common test-jar, but they aren't resolved
+		     transitively. Thus they are duplicated here. -->
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
@@ -66,32 +76,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
-		<!-- Need other Groovy version because of classpath issues with REST Assured. -->
+	
+		<!-- Need extra Groovy dependency because of classpath issues with REST Assured. -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
-			<version>1.8.6</version>
-		</dependency>
-		
-		<!-- Make sure glassfish servlet dependency is included before jetty server 
-			dependency. Otherwise Absent Code Error will arise as Jetty only includes 
-			interfaces but no implementations. -->
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.servlet</artifactId>
-			<version>3.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<scope>test</scope>
 			<version>${jetty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -99,24 +94,13 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- workaround end -->
+		
 	</dependencies>
-
-	<build>
-		<plugins>
-
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<classpathDependencyExcludes>
-						<!-- exclude code absent api -->
-						<classpathDependencyExcludes>javax:javaee-api</classpathDependencyExcludes>
-					</classpathDependencyExcludes>
-				</configuration>
-			</plugin>
-
-		</plugins>
-
-	</build>
 
 </project>

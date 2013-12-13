@@ -37,6 +37,7 @@
 		<module>messaging-service</module>
 		<module>channel-service</module>
 		<module>bounceproxy-controller-service</module>
+		<module>service-common</module>
 	</modules>
 
 		<!-- specify dependencies here to be used in all submodules -->
@@ -46,4 +47,5 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
+
 </project>

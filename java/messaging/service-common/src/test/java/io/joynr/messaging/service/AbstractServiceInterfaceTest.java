@@ -2,7 +2,7 @@ package io.joynr.messaging.service;
 
 /*
  * #%L
- * joynr::java::messaging::messaging-service
+ * joynr::java::messaging::service-common
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -33,6 +33,12 @@ import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
 
+/**
+ * Abstract test class that starts an embedded jetty server to test servlets on.
+ * 
+ * @author christina.strobel
+ * 
+ */
 public abstract class AbstractServiceInterfaceTest {
 
     private String serverUrl;

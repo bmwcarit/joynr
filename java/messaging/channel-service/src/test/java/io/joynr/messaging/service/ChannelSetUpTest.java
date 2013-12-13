@@ -23,6 +23,11 @@ package io.joynr.messaging.service;
 import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 
+import java.net.URI;
+
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.ChannelInformation;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,4 +119,10 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
         Mockito.verifyNoMoreInteractions(mock);
     }
 
+    private ChannelInformation createChannelInfo(String bpId, String bpBaseUrl, String channelId) {
+
+        String[] tokens = bpId.split("\\.");
+        BounceProxyInformation bpInfo = new BounceProxyInformation(tokens[0], tokens[1], URI.create(bpBaseUrl));
+        return new ChannelInformation(bpInfo, channelId);
+    }
 }

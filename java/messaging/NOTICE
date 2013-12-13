@@ -70,6 +70,7 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messagingservlet under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
@@ -94,7 +95,6 @@ This project has dependencies to:
   JavaMail API under CDDL or GPLv2+CE
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
-  javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
   JAX-RS Core API under Apache License, Version 2.0
   JBoss Java Authentication SPI for Containers 1.0 API under lgpl
   JBoss Java EE 6.0 API Aggregate under lgpl
