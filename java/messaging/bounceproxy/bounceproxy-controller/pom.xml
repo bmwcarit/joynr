@@ -28,7 +28,7 @@
 	<description>In a scalable environment with multiple bounce proxy instances, a bounceproxy controller 
 		is responsible for assigning channels to bounce proxy instances to distribute load.
 	</description>
-	
+
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
@@ -37,12 +37,121 @@
 	</parent>
 
 	<properties>
-		
+
 	</properties>
 
 
 	<dependencies>
-		    
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>bounceproxy-controller-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>hamcrest-core</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<artifactId>hamcrest-all</artifactId>
+			<groupId>org.hamcrest</groupId>
+			<version>1.3</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<exclusions>
+				<exclusion>
+					<artifactId>hamcrest-core</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>service-common</artifactId>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive 
+		     Dependencies should come from service-common test-jar, but they aren't resolved
+		     transitively. Thus they are duplicated here. -->
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<!-- Exclude Groovy because of classpath issue -->
+				<exclusion>
+					<groupId>org.codehaus.groovy</groupId>
+					<artifactId>groovy-xml</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.groovy</groupId>
+					<artifactId>groovy-json</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	
+		<!-- Need separate Groovy dependency because of classpath issues with REST Assured. -->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>${jetty.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- workaround end -->
+		
 	</dependencies>
 
 
@@ -62,6 +171,16 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<configuration>
+					<webAppSourceDirectory>${basedir}/src/main/java</webAppSourceDirectory>
+					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
+				</configuration>
+			</plugin>
+
 		</plugins>
 
 	</build>

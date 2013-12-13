@@ -52,7 +52,7 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
     private String serverUrl;
 
     @Mock
-    ChannelServiceDelegate mock;
+    ChannelService mock;
 
     @Override
     protected ServletModule getServletTestModule() {
@@ -62,9 +62,9 @@ public class ChannelSetUpTest extends AbstractServiceInterfaceTest {
             @Override
             protected void configureServlets() {
 
-                bind(ChannelServiceDelegate.class).toInstance(mock);
+                bind(ChannelService.class).toInstance(mock);
 
-                bind(ChannelService.class);
+                bind(ChannelServiceRestAdapter.class);
 
                 serve("/some-channel-service/*").with(GuiceContainer.class);
             }

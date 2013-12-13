@@ -58,6 +58,7 @@ This project has dependencies to:
   Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
+  Hamcrest All under New BSD License
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
@@ -156,6 +157,7 @@ This project has dependencies to:
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Mockito under The MIT License
   MXP1: Xml Pull Parser 3rd Edition (XPP3) under Indiana University Extreme! Lab Software License, vesion 1.1.1 or Public Domain or Apache Software License, version 1.1
+  Objenesis under MIT License
   org.eclipse.core.contenttype under Eclipse Public License - v 1.0
   org.eclipse.core.expressions under Eclipse Public License - v 1.0
   org.eclipse.core.filesystem under Eclipse Public License - v 1.0
