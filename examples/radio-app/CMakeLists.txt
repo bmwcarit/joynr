@@ -17,7 +17,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr REQUIRED)
+find_package(Joynr 0.6.0 REQUIRED)
 message(STATUS "JOYn variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
 message(STATUS "JOYn variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
 
