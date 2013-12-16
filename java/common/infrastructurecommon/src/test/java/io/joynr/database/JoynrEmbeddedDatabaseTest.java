@@ -43,8 +43,9 @@ public class JoynrEmbeddedDatabaseTest {
     private JoynrEmbeddedDatabase fixture;
 
     @Before
-    public void setUp() {
+    public void setUp() throws SQLException {
         fixture = Guice.createInjector(new JoynrEmbeddedDatabaseTestModule()).getInstance(JoynrEmbeddedDatabase.class);
+        fixture.start();
     }
 
     @After

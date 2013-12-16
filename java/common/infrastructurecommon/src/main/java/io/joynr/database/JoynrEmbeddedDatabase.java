@@ -34,9 +34,14 @@ public class JoynrEmbeddedDatabase {
     public static final String PROPERTY_DATABASE_NAME = "joynr.database.embedded.database";
     private Connection connection;
     private boolean started = false;
+    private String dbUrl;
 
     @Inject
-    public JoynrEmbeddedDatabase(@Named(PROPERTY_DATABASE_NAME) String dbUrl) throws SQLException {
+    public JoynrEmbeddedDatabase(@Named(PROPERTY_DATABASE_NAME) String dbUrl) {
+        this.dbUrl = dbUrl;
+    }
+
+    public void start() throws SQLException {
         connection = DriverManager.getConnection(dbUrl);
         started = true;
     }
