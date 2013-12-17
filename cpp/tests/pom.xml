@@ -171,6 +171,12 @@
 							<contextPath>/discovery</contextPath>
 						</contextHandler>
 					</contextHandlers>
+					<systemProperties>
+						<systemProperty>
+							<name>hostPath</name>
+							<value>http://localhost:8080</value>
+						</systemProperty>
+					</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>
