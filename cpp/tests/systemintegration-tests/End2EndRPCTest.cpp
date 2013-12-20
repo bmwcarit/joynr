@@ -49,8 +49,8 @@ public:
         domain(),
         runtime(NULL)
     {
-        QSettings* settings = SettingsMerger::mergeSettings(QString("resources/integrationtest.settings"));
-        SettingsMerger::mergeSettings(QString("resources/libjoynrintegrationtest.settings"), settings);
+        QSettings* settings = SettingsMerger::mergeSettings(QString("test-resources/integrationtest.settings"));
+        SettingsMerger::mergeSettings(QString("test-resources/libjoynrintegrationtest.settings"), settings);
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
         //This is a workaround to register the Metatypes for providerQos.
         //Normally a new datatype is registered in all datatypes that use the new datatype.

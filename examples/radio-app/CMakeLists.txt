@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 ######## Project settings ########
-project(radio-app-1.3.0)
+project(radio-app-0.6.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -10,7 +10,7 @@ add_definitions("-std=gnu++0x")
 set(
     JOYNR_SERVER
     "localhost:8080"
-    CACHE STRING "JOYn infrastructure server (BounceProxy, CapDir, ChannelUrlDir) to use in settings files."
+    CACHE STRING "joynr infrastructure server (BounceProxy, CapDir, ChannelUrlDir) to use in settings files."
 )
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
@@ -18,8 +18,12 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 
 # Pull in the Joynr configuration
 find_package(Joynr 0.6.0 REQUIRED)
-message(STATUS "JOYn variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
-message(STATUS "JOYn variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS=${JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_CLUSTER_CONTROLLER_LIBRARIES=${JOYNR_CLUSTER_CONTROLLER_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_EXECUTABLES=${JOYNR_EXECUTABLES}")
+message(STATUS "joynr variable JOYNR_RESOURCES_DIR=${JOYNR_RESOURCES_DIR}")
 
 ##### Helper variables for using generated code ###########
 
@@ -67,7 +71,7 @@ set(radio-app-provider_SOURCES
     "src/main/cpp/MyRadioProviderApplication.cpp"
 )
 
-# Link with the JOYn libraries
+# Link with the joynr libraries
 set(radio-app_LIBRARIES
     ${JOYNR_LIBRARIES}
 )
@@ -104,22 +108,17 @@ target_link_libraries(radio-app-consumer
     ${radio-app_LIBRARIES}
 )
 
-# function to copy joyn executables to current binary directory
-function(copy_JOYNR_EXECUTABLES target_name)
-    foreach(exec ${JOYNR_EXECUTABLE})
-        GET_FILENAME_COMPONENT(execName ${exec} NAME)
-        add_custom_command(
-            TARGET ${target_name}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-            ${exec}
-            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${execName}
-        )
-    endforeach(exec)
-endfunction(copy_JOYNR_EXECUTABLES)
+# copy joynr resources and settings
+file(
+    COPY ${JOYNR_RESOURCES_DIR}
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
-# copy joyn executables
-copy_JOYNR_EXECUTABLES(radio-app-consumer)
+# copy joynr executables
+file(
+    COPY ${JOYNR_EXECUTABLES}
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application
@@ -163,16 +162,16 @@ ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 # Visual Studio compiles to Debug and Release directories
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-provider.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoyn.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-provider.libjoyn.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-provider.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-consumer.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoyn.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug//resources/radio-app-consumer.libjoyn.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug//resources/radio-app-consumer.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoyn.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.libjoyn.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-consumer.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoyn.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release//resources/radio-app-consumer.libjoyn.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release//resources/radio-app-consumer.libjoynr.settings)
 ELSE()
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoyn.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.libjoyn.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoyn.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.libjoyn.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.libjoynr.settings)
 ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")

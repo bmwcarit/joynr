@@ -307,7 +307,7 @@ void messagingTestPseudoGetChannelUrls(QSharedPointer<Future<types::ChannelUrlIn
 
 
 TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChannel) {
-//    const QString settingsFileName ("resources/ChannelUrlSelectorTest.settings");
+//    const QString settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 //    MessagingSettings* settings = new MessagingSettings(new QSettings(settingsFileName, QSettings::IniFormat));
 //    int messageSendRetryInterval = 1000;
 

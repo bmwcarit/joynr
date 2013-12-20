@@ -62,8 +62,8 @@ public:
     QSemaphore semaphore;
 
     End2EndDbusTest() :
-        messageSettingsFilename("resources/SystemIntegrationTest1.settings"),
-        libjoynrSettingsFilename("resources/libjoynrintegrationtest.settings"),
+        messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
+        libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
         messagingQsettings(messageSettingsFilename, QSettings::IniFormat),
         libjoynrQsettings(libjoynrSettingsFilename, QSettings::IniFormat),
         messagingSettings(new MessagingSettings(messagingQsettings)),

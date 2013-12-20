@@ -64,7 +64,7 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
     const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName ("resources/ChannelUrlSelectorTest.settings");
+    const QString settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
@@ -101,7 +101,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
     const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName ("resources/ChannelUrlSelectorTest.settings");
+    const QString settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
@@ -150,7 +150,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName ("resources/ChannelUrlSelectorTest.settings");
+    const QString settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
     qint64 timeForOneRecouperation = 1000; //half a minute
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);

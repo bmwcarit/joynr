@@ -51,7 +51,7 @@ public:
     MockCapabilitiesStub* capMock;
 
     LibJoynrRuntimeTest():
-        libjoynrSettingsFilename("resources/libjoynrintegrationtest.settings"),
+        libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
         settings(new QSettings(libjoynrSettingsFilename, QSettings::IniFormat)),
         runtime(NULL),
         msgSkeleton(NULL),

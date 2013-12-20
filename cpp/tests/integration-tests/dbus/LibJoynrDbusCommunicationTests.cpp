@@ -46,7 +46,7 @@ public:
     Logger* logger;
 
     LibJoynrDbusCommunicationTests():
-        settingsFilename("resources/integrationtest.settings"),
+        settingsFilename("test-resources/integrationtest.settings"),
         settings(settingsFilename, QSettings::IniFormat),
         messagingSettings(new MessagingSettings(settings))
     {

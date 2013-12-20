@@ -56,8 +56,8 @@ public:
     QSettings settings;
     MessagingSettings* messagingSettings;
     CombinedRunTimeTest()
-        : settingsFilename("resources/integrationtest.settings"),
-          libjoynrSettingsFilename("resources/libjoynrintegrationtest.settings"),
+        : settingsFilename("test-resources/integrationtest.settings"),
+          libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
           runtime(NULL),
           mockCommunicationManager( new MockCommunicationManager() ),
           settings(settingsFilename, QSettings::IniFormat),

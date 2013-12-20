@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));
-    QString pathToLibJoynrSettings(dir + QString("/resources/radio-app-provider.libjoyn.settings"));
+    QString pathToLibJoynrSettings(dir + QString("/resources/radio-app-provider.libjoynr.settings"));
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // Initialise the quality of service settings

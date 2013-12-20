@@ -1,9 +1,10 @@
-# - Config file for the JOYn package
+# - Config file for the Joynr package
 # It defines the following variables
 #   JOYNR_INCLUDE_DIRS                       - default include directories for Joynr (default)
 #   JOYNR_LIBRARIES                          - default libraries to link against (default)
 #
 #   JOYNR_EXECUTABLES                        - the Joynr executables
+#   JOYNR_RESOURCES_DIR                      - directory containing resource and settigns files for Joynr executables
 #
 #   JOYNR_CLUSTER_CONTROLLER_LIBRARIES       - libraries to link against if target should include the cluster controller
 #   JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS    - include directories for Joynr if target should include the cluster controller
@@ -52,12 +53,16 @@ set(
     "${JOYNR_LIBRARIES}"
 )
 
-set(JOYNR_EXECUTABLE)
+set(JOYNR_EXECUTABLES)
+set(
+    JOYNR_RESOURCES_DIR
+    @JoynrConfig_INSTALL_BIN_DIR@/resources
+)
 
 # configuration if dbus is used
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
-        APPEND JOYNR_EXECUTABLE
+        APPEND JOYNR_EXECUTABLES
         @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
