@@ -69,8 +69,7 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public void updateStatus(String bpId, BounceProxyStatus status) {
-        // TODO Auto-generated method stub
-
+    		bounceProxyDirectory.updateBounceProxyStatus(bpId, status);
     }
 
     @Override
