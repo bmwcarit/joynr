@@ -21,8 +21,8 @@ package infrastructure
 import types.ExtendedTypes.* from "../common/Types.fidl"
 
 /**
- * The <code>GlobalCapabilitiesDirectory</code> is a JOYn internal interface. When a provider
- * that is globally available is registered with JOYn, the framework creates an entry for that
+ * The <code>GlobalCapabilitiesDirectory</code> is a joynr internal interface. When a provider
+ * that is globally available is registered with joynr, the framework creates an entry for that
  * provider in the global capabilities directory. These <code>{@link CapabilityInformation}</code>
  * entries contain access information as well as supported QoS. The information is later used in the
  * arbitration process to pick a provider for a proxy.  
