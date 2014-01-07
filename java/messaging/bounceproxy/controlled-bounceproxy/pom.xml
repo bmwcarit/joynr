@@ -100,6 +100,8 @@
 				<configuration>
 					<webAppSourceDirectory>${basedir}/src/main/java</webAppSourceDirectory>
 					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
+				    <stopKey>quit</stopKey>
+    				<stopPort>12345</stopPort>
 				</configuration>
 			</plugin>
 			
