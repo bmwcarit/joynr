@@ -24,12 +24,7 @@ import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,11 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  * The capabilities directory implementation for server-side capabilities querying.
@@ -62,25 +53,8 @@ import com.google.inject.name.Named;
 @Singleton
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
-    // TODO replace by jackson objectMapper
-    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     private CapabilitiesStore capabiltiesStore = new CapabilitiesStoreImpl();
-
-    private File dumpFile;
-
-    @Inject
-    public CapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId) {
-        File dumpDir = new File("capabilitiesdump");
-        if (!dumpDir.mkdir()) {
-            logger.trace("Could not create capabilitiesDump directory (maybe already existed)");
-        }
-        dumpFile = new File("capabilitiesdump/capabilities.json");
-        if (dumpFile.exists()) {
-            if (!dumpFile.delete()) {
-                logger.warn("Could not delete dumpfile");
-            }
-        }
-    }
 
     @Override
     public void registerCapability(CapabilityInformation capabilityInformation) {
@@ -88,7 +62,6 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         CapabilityEntry capabilityEntry = capabilityInformation2Entry(capabilityInformation);
         logger.debug("registered capability: {}", capabilityEntry);
         capabiltiesStore.registerCapability(capabilityEntry);
-        dumpCapabilities();
     }
 
     private CapabilityEntry capabilityInformation2Entry(CapabilityInformation capabilityInformation) {
@@ -106,7 +79,6 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         logger.debug("registered capabilities: interface {}", capabilityEntries.toString());
 
         capabiltiesStore.registerCapabilities(capabilityEntries);
-        dumpCapabilities();
     }
 
     @Override
@@ -114,7 +86,6 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         CapabilityEntry capabilityEntry = capabilityInformation2Entry(capability);
         logger.debug("removed capabilities: interface {}", capabilityEntry);
         capabiltiesStore.removeCapability(capabilityEntry);
-        dumpCapabilities();
     }
 
     @Override
@@ -126,7 +97,6 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         }
         logger.debug("Removing capabilities: Capabilities {}", capabilityEntries);
         capabiltiesStore.removeCapabilities(capabilityEntries);
-        dumpCapabilities();
     }
 
     @Override
@@ -155,26 +125,6 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             capabilityInformationList.add(entry.toCapabilityInformation());
         }
         return capabilityInformationList;
-    }
-
-    synchronized void dumpCapabilities() {
-        OutputStreamWriter fileWriter = null;
-        try {
-            fileWriter = new OutputStreamWriter(new FileOutputStream(dumpFile), "UTF-8");
-            String json = gson.toJson(capabiltiesStore.getAllCapabilities());
-            fileWriter.write(json);
-        } catch (IOException e) {
-            logger.error("dumpCapabilities: could not create capabilities directory dump file", e);
-        } finally {
-            if (fileWriter != null) {
-                try {
-                    fileWriter.close();
-                } catch (IOException e) {
-                    logger.error("dumpCapabilities: could not close fileWriter for capabilities directory dump file", e);
-                }
-            }
-        }
-
     }
 
     @Override

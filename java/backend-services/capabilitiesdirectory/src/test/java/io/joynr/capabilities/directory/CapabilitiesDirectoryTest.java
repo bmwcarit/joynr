@@ -50,11 +50,10 @@ public class CapabilitiesDirectoryTest {
     CapabilityInformation capInfo1;
     CapabilityInformation capInfo2;
     String postFix = "" + System.currentTimeMillis();
-    private String capDirChannelId = "discoverydirectory_channelid" + postFix;
 
     @Before
     public void setUp() {
-        capabilitiesDirectory = new CapabilitiesDirectoryImpl(capDirChannelId);
+        capabilitiesDirectory = new CapabilitiesDirectoryImpl();
         providerQos.setPriority((long) 123);
         capInfo1 = new CapabilityInformation(domain, thisInterface, providerQos, mcId, participantId1);
         capInfo2 = new CapabilityInformation(domain, anotherInterface, providerQos, mcId, participantId2);
@@ -113,27 +112,6 @@ public class CapabilitiesDirectoryTest {
         assertEquals(false, capabilitiesDirectory.getCapabilitiesForChannelId(mcId).contains(capInfo1));
     }
 
-    @Test
-    public void dumpCapabilites() throws Exception {
-
-        capabilitiesDirectory.registerCapabilities(getRandomCapabilitiesList(10, "test", "com"));
-
-        capabilitiesDirectory.dumpCapabilities();
-    }
-
-    private ArrayList<CapabilityInformation> getRandomCapabilitiesList(int count,
-                                                                       String interfacePrefix,
-                                                                       String domainType) {
-        ArrayList<CapabilityInformation> capabilities = new ArrayList<CapabilityInformation>(count);
-        for (int i = 0; i < count; i++) {
-            capabilities.add(new CapabilityInformation(getRandomDomain(domainType),
-                                                       getRandomInterface(interfacePrefix),
-                                                       providerQos,
-                                                       getRandomChannelId(),
-                                                       getRandomParticipantId()));
-        }
-        return capabilities;
-    }
 
     String getRandomParticipantId() {
         return "participantId-" + String.valueOf(UUID.randomUUID().getLeastSignificantBits()).substring(4);
