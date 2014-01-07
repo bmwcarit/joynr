@@ -1,5 +1,7 @@
 package io.joynr.servlet;
 
+import com.google.inject.AbstractModule;
+
 import io.joynr.discovery.DiscoveryDirectoriesModule;
 
 /*
@@ -21,11 +23,11 @@ import io.joynr.discovery.DiscoveryDirectoriesModule;
  * #L%
  */
 
-public class ServletModule extends DiscoveryDirectoriesModule {
+public class ServletModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        super.configure();
+        install(new DiscoveryDirectoriesModule());
     }
 
 }

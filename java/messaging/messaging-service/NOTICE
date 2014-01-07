@@ -25,7 +25,6 @@ This project has dependencies to:
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
-  dom4j under BSD License
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
@@ -49,7 +48,6 @@ This project has dependencies to:
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Java Servlet API under CDDL + GPLv2 with classpath exception
-  Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
   jersey-guice under CDDL 1.1 or GPL2 w/ CPE
@@ -70,12 +68,10 @@ This project has dependencies to:
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
-  Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   TagSoup under Apache License 2.0
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
   xml-path under Apache 2.0
 

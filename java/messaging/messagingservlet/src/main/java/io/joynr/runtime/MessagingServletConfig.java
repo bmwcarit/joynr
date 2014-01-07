@@ -29,10 +29,14 @@ import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
 
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +69,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  */
 
 public class MessagingServletConfig extends GuiceServletContextListener {
-
+    private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
     private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
     public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
@@ -92,13 +96,13 @@ public class MessagingServletConfig extends GuiceServletContextListener {
                 + MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE, servletContext));
 
         // TODO participantIds will be retrieved from auth certs later
-        //        properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(ChannelUrlDirectoryProvider.class,
-        //                                                                                              AUTH_TOKEN),
-        //                               properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID));
+        // properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(ChannelUrlDirectoryProvider.class,
+        // AUTH_TOKEN),
+        // properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID));
         //
-        //        properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(GlobalCapabilitiesDirectoryProvider.class,
-        //                                                                                              AUTH_TOKEN),
-        //                               properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID));
+        // properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(GlobalCapabilitiesDirectoryProvider.class,
+        // AUTH_TOKEN),
+        // properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID));
 
         if (appPropertiesFileName != null) {
             Properties appProperties = ServletPropertyLoader.loadProperties(appPropertiesFileName, servletContext);
@@ -110,10 +114,28 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         servletModuleName = properties.getProperty(INIT_PARAM_SERVLET_MODULE_CLASSNAME);
         servletModuleName = servletModuleName == null ? DEFAULT_SERVLET_MODULE_NAME : servletModuleName;
 
+        // create a reflection set used to find
+        // * all plugin application classes implementing the JoynApplication interface
+        // * all servlets annotated as WebServlet
+        // * the class implementing JoynrInjectorFactory (should be only one)
+        String appPackagesSetting = properties.getProperty(IO_JOYNR_APPS_PACKAGES);
+        String[] appPackages = null;
+        if (appPackagesSetting != null) {
+            appPackages = appPackagesSetting.split(";");
+        }
+
+        // TODO if reflections is ever a performance problem, can statically scan and save the reflections data using
+        // Maven,
+        // then work on the previously scanned data
+        // see: https://code.google.com/p/reflections/wiki/UseCases
+        Reflections reflections = new Reflections("io.joynr.runtime", "io.joynr.discovery", appPackages);
+        final Set<Class<?>> classesAnnotatedWithWebServlet = reflections.getTypesAnnotatedWith(WebServlet.class);
+
         // The jerseyServletModule injects the servicing classes using guice,
         // instead of letting jersey do it natively
         jerseyServletModule = new JerseyServletModule() {
 
+            @SuppressWarnings("unchecked")
             @Override
             protected void configureServlets() {
                 bind(GuiceContainer.class);
@@ -121,8 +143,30 @@ public class MessagingServletConfig extends GuiceServletContextListener {
 
                 bind(MessagingService.class);
 
-                // Route all requests through GuiceContainer
+                for (Class<?> webServletClass : classesAnnotatedWithWebServlet) {
+                    if (!HttpServlet.class.isAssignableFrom(webServletClass)) {
+                        continue;
+                    }
+
+                    bind(webServletClass);
+                    WebServlet webServletAnnotation = webServletClass.getAnnotation(WebServlet.class);
+
+                    //                    HttpServlet servlet = (HttpServlet) Guice.createInjector().getInstance(webServletClass);
+                    //                    serve(webServletAnnotation.value()[0]).with(servlet);
+                    serve(webServletAnnotation.value()[0]).with((Class<? extends HttpServlet>) webServletClass);
+
+                }
+
+                // Route html, js, jpg, png, css requests through GuiceContainer
+                // DefaultWrapperServlet defaultWrapperServlet = Guice.createInjector()
+                // .getInstance(DefaultWrapperServlet.class);
+                //                serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(defaultWrapperServlet);
+                bind(DefaultServletWrapper.class);
+                serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(DefaultServletWrapper.class);
+
+                // Route all other requests through GuiceContainer
                 serve("/*").with(GuiceContainer.class);
+
             }
 
             // this @SuppressWarnings is needed for the build on jenkins
@@ -166,8 +210,18 @@ public class MessagingServletConfig extends GuiceServletContextListener {
 
         properties.put(PROPERTY_SERVLET_CONTEXT_ROOT, servletContext.getContextPath());
         properties.putAll(new LowerCaseProperties(System.getProperties()));
-        injector = BootstrapUtil.init(Guice.createInjector(Modules.EMPTY_MODULE),
-                                      properties,
+
+        // find all plugin application classes implementing the JoynApplication interface
+        Set<Class<? extends JoynrApplication>> joynrApplicationsClasses = reflections.getSubTypesOf(JoynrApplication.class);
+        Set<Class<? extends AbstractJoynrInjectorFactory>> joynrInjectorFactoryClasses = reflections.getSubTypesOf(AbstractJoynrInjectorFactory.class);
+        assert (joynrInjectorFactoryClasses.size() == 1);
+
+        AbstractJoynrInjectorFactory injectorFactory = Guice.createInjector()
+                                                            .getInstance(joynrInjectorFactoryClasses.iterator().next());
+
+        injector = BootstrapUtil.init(properties,
+                                      joynrApplicationsClasses,
+                                      injectorFactory,
                                       Modules.override(jerseyServletModule).with(servletModule),
                                       new ServletMessagingModule());
 

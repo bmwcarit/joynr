@@ -36,7 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,22 +43,23 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 
 /**
- * Scans all subpackages under "de.bmw" for instances of
- * AbstractJoynApplication, which are then injected and run.
+ * Scans all subpackages under "de.bmw" for instances of AbstractJoynApplication, which are then injected and run.
  * 
  * @author david.katz
  * 
  */
 public class BootstrapUtil {
 
-    private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     private static final Logger logger = LoggerFactory.getLogger(BootstrapUtil.class);
     private static ExecutorService executionQueue;
     private static List<JoynrApplication> apps = new ArrayList<JoynrApplication>();
     private static final long timeout = 20;
     private static Injector joynrInjector;
 
-    public static Injector init(Injector injector, Properties properties, Module... modules) {
+    public static Injector init(Properties properties,
+                                Set<Class<? extends JoynrApplication>> joynrApplicationsClasses,
+                                AbstractJoynrInjectorFactory injectorFactory,
+                                Module... modules) {
         ThreadFactory threadFactory = new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -69,23 +69,7 @@ public class BootstrapUtil {
 
         executionQueue = Executors.newCachedThreadPool(threadFactory);
 
-        // find all plugin application classes implementing the JoynApplication
-        // interface
-        String appPackagesSetting = properties.getProperty(IO_JOYNR_APPS_PACKAGES);
-
-        String[] appPackages = null;
-        if (appPackagesSetting != null) {
-            appPackages = appPackagesSetting.split(";");
-        }
-        Reflections reflections = new Reflections("io.joynr.runtime", "io.joynr.discovery", appPackages);
-        Set<Class<? extends JoynrApplication>> joynrApplicationsClasses = reflections.getSubTypesOf(JoynrApplication.class);
         try {
-
-            Set<Class<? extends AbstractJoynrInjectorFactory>> joynrInjectorFactoryClasses = reflections.getSubTypesOf(AbstractJoynrInjectorFactory.class);
-            assert (joynrInjectorFactoryClasses.size() == 1);
-
-            AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()
-                                                                                                           .next());
 
             injectorFactory.updateInjectorModule(properties, modules);
 

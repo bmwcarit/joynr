@@ -67,6 +67,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+		</dependency>
+		
+		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-core</artifactId>
 			<scope>provided</scope>
