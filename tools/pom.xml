@@ -84,9 +84,7 @@
 				<exclusions>
 					<exclusion>
 						<artifactId>google-collect</artifactId>
-						<groupId>
-						com.google.code.google-collections
-					</groupId>
+						<groupId>com.google.code.google-collections</groupId>
 					</exclusion>
 				</exclusions>
 			</dependency>
