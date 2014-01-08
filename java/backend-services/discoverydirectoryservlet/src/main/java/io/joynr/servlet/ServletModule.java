@@ -1,8 +1,8 @@
 package io.joynr.servlet;
 
-import com.google.inject.AbstractModule;
-
 import io.joynr.discovery.DiscoveryDirectoriesModule;
+
+import com.google.inject.AbstractModule;
 
 /*
  * #%L

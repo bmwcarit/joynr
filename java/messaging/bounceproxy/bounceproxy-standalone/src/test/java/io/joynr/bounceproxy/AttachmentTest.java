@@ -27,6 +27,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import javax.annotation.Nullable;
+
 import joynr.JoynrMessage;
 
 import org.junit.Assert;
@@ -52,6 +54,7 @@ public class AttachmentTest extends BounceProxyTest {
         sendAttachmentMessage(channelId);
     }
 
+    @Nullable
     private Response sendAttachmentMessage(String channelId) {
         long ttl_ms = 1000000;
         String payload = "attachmentTest";
