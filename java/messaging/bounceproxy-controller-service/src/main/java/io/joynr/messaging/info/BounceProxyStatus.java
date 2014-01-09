@@ -70,4 +70,36 @@ public enum BounceProxyStatus {
     public boolean isAssignable() {
         return this == ALIVE || this == ACTIVE;
     }
+
+    /**
+     * Checks whether a transition from one status to another one is valid.
+     * 
+     * @param status
+     *            the new status
+     * @return <code>true</code> if the transition is valid, <code>false</code>
+     *         otherwise
+     */
+    public boolean isValidTransition(BounceProxyStatus status) {
+
+        // Invalid transitions are very rare as this is a simply state machine
+        // for which almost all transitions are valid. Thus this is not
+        // implemented with the state pattern but only with a simple check.
+
+        if (this == status) {
+            // transition to itself
+            return true;
+        }
+
+        if (this == EXCLUDED || this == UNRESOLVED) {
+            // these states can't be left without administrator interaction
+            return false;
+        }
+
+        if (this == SHUTDOWN && status != ALIVE) {
+            // can only go to alive from shutdown
+            return false;
+        }
+
+        return true;
+    }
 }
