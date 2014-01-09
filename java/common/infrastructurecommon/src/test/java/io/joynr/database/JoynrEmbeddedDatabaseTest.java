@@ -50,7 +50,8 @@ public class JoynrEmbeddedDatabaseTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws SQLException {
+    	fixture.close();
     }
 
     @Test
@@ -58,6 +59,12 @@ public class JoynrEmbeddedDatabaseTest {
         assertFalse(fixture.isTableAlreadyContainedInDatabase(testTable));
     }
 
+    @Test
+    public void testReconnectToDatabase() throws Exception {
+        fixture.close();
+        fixture.start();
+    }
+    
     @Test
     public void testTableExists() throws Exception {
         createTable();

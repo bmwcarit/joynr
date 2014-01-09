@@ -26,23 +26,27 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-public class JoynrEmbeddedDatabase {
+public abstract class JoynrEmbeddedDatabase {
 
     public static final String PROPERTY_DATABASE_NAME = "joynr.database.embedded.database";
-    private Connection connection;
     private boolean started = false;
-    private String dbUrl;
+    private Connection connection = null;
+    private String dbName;
 
-    @Inject
-    public JoynrEmbeddedDatabase(@Named(PROPERTY_DATABASE_NAME) String dbUrl) {
-        this.dbUrl = dbUrl;
+    public JoynrEmbeddedDatabase(String dbName) {
+        this.dbName = dbName;
     }
 
-    public void start() throws SQLException {
-        connection = DriverManager.getConnection(dbUrl);
+    public String getDBName() {
+        return dbName;
+    }
+
+    protected abstract String getDBCreateUrl();
+
+    protected abstract String getDBCloseUrl();
+
+    public synchronized void start() throws SQLException {
+        connection = DriverManager.getConnection(getDBCreateUrl());
         started = true;
     }
 
@@ -68,22 +72,34 @@ public class JoynrEmbeddedDatabase {
             throw new IllegalStateException("No database access shall be made while it is not started!");
         }
         Statement statement = connection.createStatement();
-        boolean result = statement.execute(sqlStatement);
-        statement.close();
+        boolean result = false;
+        try {
+            result = statement.execute(sqlStatement);
+        } finally {
+            statement.close();
+        }
         return result;
     }
 
-    public synchronized ResultSet executeQuery(String sqlStatement) throws SQLException {
+    public synchronized <T> T executeQuery(String sqlStatement, QueryProcessor<T> processor) throws SQLException {
         if (!started) {
             throw new IllegalStateException("No query shall be made to the database while it is not started!");
         }
         Statement statement = connection.createStatement();
-        ResultSet result = statement.executeQuery(sqlStatement);
-        return result;
+        try {
+            ResultSet resultSet = statement.executeQuery(sqlStatement);
+            T result = processor.processQueryResult(resultSet);
+            return result;
+        } finally {
+            statement.close();
+        }
     }
 
     public synchronized void close() throws SQLException {
-        connection.close();
+        if (connection != null) {
+            connection.close();
+            connection = null;
+        }
         started = false;
     }
 

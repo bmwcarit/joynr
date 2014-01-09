@@ -8,9 +8,9 @@ package io.joynr.database;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,24 +19,10 @@ package io.joynr.database;
  * #L%
  */
 
-import io.joynr.database.derby.JoynrDerbyDatabase;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.name.Named;
+public interface QueryProcessor<T> {
+	public T processQueryResult(ResultSet result) throws SQLException;
 
-public class JoynrEmbeddedDatabaseTestModule extends AbstractModule {
-
-    private static final String CONST_DATABASE_NAME = "testdb";
-
-    @Override
-    protected void configure() {
-        bind(JoynrEmbeddedDatabase.class).to(JoynrDerbyDatabase.class);
-    }
-
-    @Provides
-    @Named(JoynrEmbeddedDatabase.PROPERTY_DATABASE_NAME)
-    String provideDatabaseName() {
-        return CONST_DATABASE_NAME;
-    }
 }
