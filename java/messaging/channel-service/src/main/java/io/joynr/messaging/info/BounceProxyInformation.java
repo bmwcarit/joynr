@@ -48,6 +48,16 @@ public class BounceProxyInformation {
     }
 
     /**
+     * Sets the location of the bounce proxy at which it is reachable for
+     * cluster controllers.
+     * 
+     * @param location
+     */
+    public void setLocation(URI location) {
+        this.location = location;
+    }
+
+    /**
      * Gets the location of the bounce proxy at which it is reachable for
      * cluster controllers.
      * 
