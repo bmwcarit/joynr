@@ -135,6 +135,18 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
     }
 
     /**
+     * Sets the location at which the bounce proxy is reachable for the bounce
+     * proxy controller.
+     * 
+     * @param locationForBpc
+     *            bounce proxy url for bounce proxy controller that is possibly
+     *            on the same subnet
+     */
+    public void setLocationForBpc(URI locationForBpc) {
+        this.locationForBpc = locationForBpc;
+    }
+
+    /**
      * Returns the location for bounce proxy controllers.
      * 
      * @return
