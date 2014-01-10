@@ -32,6 +32,31 @@
 	</parent>
 
 
+	<profiles>
+		<profile>
+			<!-- 
+				Since profile inheritance does not work (cf. [1]), the activation
+				must be copied from the root POM and inserted here.
+				[1] http://stackoverflow.com/questions/11407259/is-it-possible-to-extend-a-profile-in-a-child-module 
+			-->
+			<id>carit-copyright</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+						<configuration>
+							<excludes>
+								<exclude>**/*.css</exclude>
+								<exclude>**/*.js</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
     <build>
         <sourceDirectory>src\main\resources</sourceDirectory>
     
@@ -76,16 +101,6 @@
 						<descriptor>src/main/webapp/WEB-INF/web.xml</descriptor>
 						<!-- defaultsDescriptor>src/main/webapp/WEB-INF/webdefault.xml</defaultsDescriptor -->
 					</webApp>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>**/*.css</exclude>
-						<exclude>**/*.js</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
         </plugins>

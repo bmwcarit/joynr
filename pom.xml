@@ -128,29 +128,19 @@
 			</build>
 		</profile>
 		<profile>
-			<id>DefaultConfiguration</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
-				<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
-			</properties>
-		</profile>
-		<profile>
-			<id>ContinuousBuildConfiguration</id>
+			<id>continuous-build-configuration</id>
 			<activation>
 				<property>
 					<name>JOYNR_CI</name>
 				</property>
 			</activation>
 			<properties>
-				<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
-				<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
+				<JOYNR_SERVER>joyntest:8080</JOYNR_SERVER>
+				<JOYNR_TEST_SERVER>joyntest:8080</JOYNR_TEST_SERVER>
 			</properties>
 		</profile>
 		<profile>
-			<id>findbugsProfile</id>
+			<id>findbugs</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -186,12 +176,12 @@
 			</build>
 		</profile>
 		<profile>
+			<!-- 
+				NOTE: if you change activation or the profile ID here, your also must
+				change it in the following child modules that extend this profile:
+				* io.joynr.java.messaging.bounceproxy:bounceproxy-ui
+			-->
 			<id>carit-copyright</id>
-			<activation>
-				<property>
-					<name>profile.carit-copyright</name>
-				</property>
-			</activation>
 			<properties>
 				<licenseConfigurationVersion>1.0.1-SNAPSHOT</licenseConfigurationVersion>
 			</properties>
@@ -262,6 +252,8 @@
 	</profiles>
 
 	<properties>
+		<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
+		<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
