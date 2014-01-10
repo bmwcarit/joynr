@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -48,18 +50,18 @@ import com.google.inject.Module;
  * @author david.katz
  * 
  */
-public class BootstrapUtil {
+public class JoynrApplicationLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(BootstrapUtil.class);
-    private static ExecutorService executionQueue;
-    private static List<JoynrApplication> apps = new ArrayList<JoynrApplication>();
+    private static final Logger logger = LoggerFactory.getLogger(JoynrApplicationLauncher.class);
+    private ExecutorService executionQueue;
+    private List<JoynrApplication> apps = new ArrayList<JoynrApplication>();
     private static final long timeout = 20;
-    private static Injector joynrInjector;
+    private Injector joynrInjector;
 
-    public static Injector init(Properties properties,
-                                Set<Class<? extends JoynrApplication>> joynrApplicationsClasses,
-                                AbstractJoynrInjectorFactory injectorFactory,
-                                Module... modules) {
+    public void init(Properties properties,
+                     Set<Class<? extends JoynrApplication>> joynrApplicationsClasses,
+                     AbstractJoynrInjectorFactory injectorFactory,
+                     Module... modules) {
         ThreadFactory threadFactory = new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -71,6 +73,8 @@ public class BootstrapUtil {
 
         try {
 
+            // updateInjectorModule must be called before getInjector can be called.
+            // for this reason the injector has to be created here, and not by the creator of the injectorFactory
             injectorFactory.updateInjectorModule(properties, modules);
 
             joynrInjector = injectorFactory.getInjector();
@@ -94,8 +98,6 @@ public class BootstrapUtil {
                 apps.add(app);
                 executionQueue.submit(app);
             }
-
-            return joynrInjector;
         } catch (RuntimeException e) {
             logger.error("ERROR", e);
             throw e;
@@ -109,19 +111,31 @@ public class BootstrapUtil {
      * @param clear
      */
     // TODO support clear properly
-    public static void shutdown(boolean clear) {
+    public void shutdown(boolean clear) {
         if (executionQueue != null) {
             executionQueue.shutdownNow();
         }
+
         if (joynrInjector != null) {
-            // switch to lp receiver and call servlet shutdown to be able to
-            // receive responses
+            // switch to lp receiver and call servlet shutdown to be able to receive responses
             ServletMessageReceiver servletReceiver = joynrInjector.getInstance(ServletMessageReceiver.class);
-            // servletReceiver.switchToLongPolling();
-            // for (JoynrApplication app : apps) {
-            // app.shutdown();
-            // }
-            servletReceiver.shutdown(clear);
+
+            Future<Void> switchToLongPolling = servletReceiver.switchToLongPolling();
+            try {
+                switchToLongPolling.get();
+                for (JoynrApplication app : apps) {
+                    try {
+                        app.shutdown();
+                    } catch (Exception e) {
+                        logger.error("error shutting down app: {} reason: {}", app.getClass(), e.getMessage());
+                    }
+                }
+
+                servletReceiver.shutdown(clear);
+            } catch (InterruptedException e1) {
+            } catch (ExecutionException e1) {
+            }
+
         }
         try {
             if (executionQueue != null) {
@@ -130,6 +144,10 @@ public class BootstrapUtil {
         } catch (InterruptedException e) {
             return;
         }
+    }
+
+    public Injector getJoynrInjector() {
+        return joynrInjector;
     }
 
 }

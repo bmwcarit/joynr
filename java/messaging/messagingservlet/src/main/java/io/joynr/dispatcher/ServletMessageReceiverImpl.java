@@ -22,10 +22,16 @@ package io.joynr.dispatcher;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
 import io.joynr.runtime.MessagingServletConfig;
 
 import java.util.Arrays;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import joynr.JoynrMessage;
 import joynr.types.ChannelUrlInformation;
@@ -33,6 +39,7 @@ import joynr.types.ChannelUrlInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -100,6 +107,10 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     @Override
     public void registerMessageListener(MessageArrivedListener registerMessageListener) {
+        if (this.messageListener == registerMessageListener) {
+            logger.warn("this messageListener {} is already registered", registerMessageListener);
+            return;
+        }
         if (this.messageListener == null && registerMessageListener != null) {
             this.messageListener = registerMessageListener;
         } else {
@@ -110,23 +121,23 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     @Override
     public void shutdown(boolean clear) {
-        Thread thread = new Thread(new Runnable() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
-            @Override
-            public void run() {
+        Callable<Void> unregisterChannelCallale = new Callable<Void>() {
+            public Void call() {
                 unregisterChannel();
+                return null;
             }
-        });
+        };
 
-        thread.start();
-        //wait 5 seconds for proper unregister, otherwise a dead discovery directory is assumed
+        Future<Void> unregisterFuture = executor.submit(unregisterChannelCallale);
         try {
-            thread.join(5000);
-        } catch (InterruptedException e) {
+            unregisterFuture.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logger.error("Error while shutting down: ", e.getMessage());
+        } finally {
+            executor.shutdownNow();
         }
-        // if (clear)
-        // messageListener = null;
-
     }
 
     @Override
@@ -179,11 +190,11 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public void switchToLongPolling() {
+    public Future<Void> switchToLongPolling(ReceiverStatusListener... statusListeners) {
         // switching to longPolling before the servlet is destroyed, to be able to unregister
         unregisterChannel();
         longPollingReceiver.registerMessageListener(messageListener);
-        longPollingReceiver.startReceiver();
+        return longPollingReceiver.startReceiver(statusListeners);
 
     }
 
@@ -198,7 +209,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public void startReceiver() {
+    public Future<Void> startReceiver(ReceiverStatusListener... statusListeners) {
         if (messageListener == null) {
             throw new IllegalStateException();
         }
@@ -209,6 +220,11 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         }
 
         this.started = true;
+
+        for (ReceiverStatusListener receiverStatusListener : statusListeners) {
+            receiverStatusListener.receiverStarted();
+        }
+        return Futures.immediateFuture(null);
     }
 
 }

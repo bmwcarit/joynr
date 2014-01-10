@@ -65,6 +65,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
     private String interfaceName;
     private String domain;
 
+    // CHECKSTYLE:OFF
     public ProxyInvocationHandler(String domain,
                                   String interfaceName,
                                   String proxyParticipantId,
@@ -73,6 +74,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
                                   RequestReplySender messageSender,
                                   RequestReplyDispatcher dispatcher,
                                   SubscriptionManager subscriptionManager) {
+        // CHECKSTYLE:ON
         this.domain = domain;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
@@ -125,8 +127,8 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
      * finished successfully , otherwise it will block up to the amount of milliseconds defined by the
      * arbitrationTimeout or until the ProxyInvocationHandler is notified about a successful connection.
      * 
-     * @return True if the connector was finished successfully in time, False if the connector failed or could not
-     *         be finished in time.
+     * @return True if the connector was finished successfully in time, False if the connector failed or could not be
+     *         finished in time.
      * @throws InterruptedException
      */
     public boolean waitForConnectorFinished() throws InterruptedException {
@@ -233,10 +235,12 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
 
     }
 
-    /** Sets the connector for this ProxyInvocationHandler after the DiscoveryAgent got
-     *  notified about a successful arbitration. Should be called from the DiscoveryAgent
+    /**
+     * Sets the connector for this ProxyInvocationHandler after the DiscoveryAgent got notified about a successful
+     * arbitration. Should be called from the DiscoveryAgent
      * 
-     * @param result from the previously invoked arbitration
+     * @param result
+     *            from the previously invoked arbitration
      */
     public void createConnector(ArbitrationResult result) {
         connectorStatusLock.lock();

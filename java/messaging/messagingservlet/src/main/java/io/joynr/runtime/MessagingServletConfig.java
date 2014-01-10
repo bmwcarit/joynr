@@ -19,7 +19,7 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.BootstrapUtil;
+import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceivers;
@@ -27,15 +27,16 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
+import io.joynr.servlet.JoynrWebServlet;
 
 import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +70,11 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  */
 
 public class MessagingServletConfig extends GuiceServletContextListener {
-    private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
-    private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
     public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
+    private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
+    private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
+    private static final String DEFAULT_SERVLET_MESSAGING_PROPERTIES = "defaultServletMessaging.properties";
 
     private String servletModuleName;
 
@@ -80,9 +82,9 @@ public class MessagingServletConfig extends GuiceServletContextListener {
     private String channelId;
 
     private JerseyServletModule jerseyServletModule;
-    private Injector injector;
     private IMessageReceivers messageReceivers = new MessageReceivers();
     private String localDomain;
+    private JoynrApplicationLauncher appLauncher = null;
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -92,8 +94,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // properties from appProperties will extend and override the default
         // properties
         String appPropertiesFileName = servletContext.getInitParameter("properties");
-        Properties properties = new LowerCaseProperties(ServletPropertyLoader.loadProperties("/"
-                + MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE, servletContext));
+        Properties properties = new LowerCaseProperties(PropertyLoader.loadProperties(DEFAULT_SERVLET_MESSAGING_PROPERTIES));
 
         // TODO participantIds will be retrieved from auth certs later
         // properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(ChannelUrlDirectoryProvider.class,
@@ -118,18 +119,18 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // * all plugin application classes implementing the JoynApplication interface
         // * all servlets annotated as WebServlet
         // * the class implementing JoynrInjectorFactory (should be only one)
+        String systemAppPackagesSetting = System.getProperties().getProperty(IO_JOYNR_APPS_PACKAGES);
         String appPackagesSetting = properties.getProperty(IO_JOYNR_APPS_PACKAGES);
-        String[] appPackages = null;
-        if (appPackagesSetting != null) {
-            appPackages = appPackagesSetting.split(";");
-        }
+        String[] appPackages = appPackagesSetting != null ? appPackagesSetting.split(";") : null;
+        String[] systemAppPackages = systemAppPackagesSetting != null ? systemAppPackagesSetting.split(";") : null;
+        appPackages = (String[]) ArrayUtils.addAll(appPackages, systemAppPackages);
 
         // TODO if reflections is ever a performance problem, can statically scan and save the reflections data using
         // Maven,
         // then work on the previously scanned data
         // see: https://code.google.com/p/reflections/wiki/UseCases
         Reflections reflections = new Reflections("io.joynr.runtime", "io.joynr.discovery", appPackages);
-        final Set<Class<?>> classesAnnotatedWithWebServlet = reflections.getTypesAnnotatedWith(WebServlet.class);
+        final Set<Class<?>> classesAnnotatedWithWebServlet = reflections.getTypesAnnotatedWith(JoynrWebServlet.class);
 
         // The jerseyServletModule injects the servicing classes using guice,
         // instead of letting jersey do it natively
@@ -149,18 +150,16 @@ public class MessagingServletConfig extends GuiceServletContextListener {
                     }
 
                     bind(webServletClass);
-                    WebServlet webServletAnnotation = webServletClass.getAnnotation(WebServlet.class);
-
-                    //                    HttpServlet servlet = (HttpServlet) Guice.createInjector().getInstance(webServletClass);
-                    //                    serve(webServletAnnotation.value()[0]).with(servlet);
-                    serve(webServletAnnotation.value()[0]).with((Class<? extends HttpServlet>) webServletClass);
+                    JoynrWebServlet webServletAnnotation = webServletClass.getAnnotation(JoynrWebServlet.class);
+                    if (webServletAnnotation == null) {
+                        logger.error("webServletAnnotation was NULL.");
+                        continue;
+                    }
+                    serve(webServletAnnotation.value()).with((Class<? extends HttpServlet>) webServletClass);
 
                 }
 
                 // Route html, js, jpg, png, css requests through GuiceContainer
-                // DefaultWrapperServlet defaultWrapperServlet = Guice.createInjector()
-                // .getInstance(DefaultWrapperServlet.class);
-                //                serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(defaultWrapperServlet);
                 bind(DefaultServletWrapper.class);
                 serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(DefaultServletWrapper.class);
 
@@ -209,21 +208,22 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         }
 
         properties.put(PROPERTY_SERVLET_CONTEXT_ROOT, servletContext.getContextPath());
-        properties.putAll(new LowerCaseProperties(System.getProperties()));
 
         // find all plugin application classes implementing the JoynApplication interface
         Set<Class<? extends JoynrApplication>> joynrApplicationsClasses = reflections.getSubTypesOf(JoynrApplication.class);
         Set<Class<? extends AbstractJoynrInjectorFactory>> joynrInjectorFactoryClasses = reflections.getSubTypesOf(AbstractJoynrInjectorFactory.class);
         assert (joynrInjectorFactoryClasses.size() == 1);
 
-        AbstractJoynrInjectorFactory injectorFactory = Guice.createInjector()
-                                                            .getInstance(joynrInjectorFactoryClasses.iterator().next());
+        Injector injector = Guice.createInjector();
+        AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()
+                                                                                                       .next());
+        appLauncher = injector.getInstance(JoynrApplicationLauncher.class);
 
-        injector = BootstrapUtil.init(properties,
-                                      joynrApplicationsClasses,
-                                      injectorFactory,
-                                      Modules.override(jerseyServletModule).with(servletModule),
-                                      new ServletMessagingModule());
+        appLauncher.init(properties,
+                         joynrApplicationsClasses,
+                         injectorFactory,
+                         Modules.override(jerseyServletModule).with(servletModule),
+                         new ServletMessagingModule());
 
         super.contextInitialized(servletContextEvent);
     }
@@ -231,13 +231,19 @@ public class MessagingServletConfig extends GuiceServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         // TODO when should be set clear?
-        BootstrapUtil.shutdown(true);
+        if (appLauncher != null) {
+            appLauncher.shutdown(true);
+        } else {
+            String msg = "Context cannot be destroyed, as bootstrapUtil has not been initialied correctly";
+            logger.error(msg);
+            throw new IllegalStateException(MessagingServletConfig.class.getSimpleName() + ":" + msg);
+        }
         super.contextDestroyed(servletContextEvent);
     }
 
     @Override
     protected Injector getInjector() {
-        return injector;
+        return appLauncher.getJoynrInjector();
     }
 
 }

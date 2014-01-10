@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Injector;
 
 public class ChannelUrlDirectoryTest {
-    private static final Logger logger = LoggerFactory.getLogger(ProviderProxyEnd2EndTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoryTest.class);
 
     @Rule
     public TestName name = new TestName();

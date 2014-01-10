@@ -19,6 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
+import java.util.concurrent.Future;
+
 import javax.annotation.CheckForNull;
 
 import joynr.JoynrMessage;
@@ -53,5 +55,8 @@ public interface MessageReceiver {
 
     boolean isChannelCreated();
 
-    void startReceiver();
+    /**
+     * @returns a future that signals when the receiver is ready to be used.  
+     */
+    Future<Void> startReceiver(ReceiverStatusListener... receiverStatusListeners);
 }

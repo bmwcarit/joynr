@@ -21,7 +21,6 @@ package io.joynr.messaging.httpoperation;
 
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
@@ -33,7 +32,6 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -58,12 +56,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Callable to keep a long polling channel alive and to process incoming
- * messages.
+ * Callable to keep a long polling channel alive and to process incoming messages.
  */
 
-public class LongPollingCallable implements Callable<Void> {
-    private static final Logger logger = LoggerFactory.getLogger(LongPollingCallable.class);
+public class LongPollChannel {
+    private static final Logger logger = LoggerFactory.getLogger(LongPollChannel.class);
     final SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss.SSS");
 
     public static final long LONGPOLLING_RETRY_INTERVAL_SECS = 5L;
@@ -87,15 +84,17 @@ public class LongPollingCallable implements Callable<Void> {
     private String statusText;
     private RequestConfig defaultRequestConfig;
 
-    public LongPollingCallable(CloseableHttpClient httpclient,
-                               RequestConfig defaultRequestConfig,
-                               Boolean longPollingDisabled,
-                               MessageReceiver messageReceiver,
-                               ObjectMapper objectMapper,
-                               MessagingSettings settings,
-                               HttpConstants httpConstants,
-                               String channelId,
-                               String receiverId) {
+    // CHECKSTYLE:OFF
+    public LongPollChannel(CloseableHttpClient httpclient,
+                           RequestConfig defaultRequestConfig,
+                           Boolean longPollingDisabled,
+                           MessageReceiver messageReceiver,
+                           ObjectMapper objectMapper,
+                           MessagingSettings settings,
+                           HttpConstants httpConstants,
+                           String channelId,
+                           String receiverId) {
+        // CHECKSTYLE:ON
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.longPollingDisabled = longPollingDisabled;
@@ -106,13 +105,11 @@ public class LongPollingCallable implements Callable<Void> {
         this.receiverId = receiverId;
     }
 
-    @Override
     /**
-     * Start long polling loop
-     * throws ExecutionExeption in order to terminate channel properly
-     * returns Void (null) in order to reconnect channel
+     * Start long polling loop throws ExecutionExeption in order to terminate channel properly returns Void (null) in
+     * order to reconnect channel
      */
-    public Void call() throws InterruptedException, JoynrException {
+    public Void longPollLoop() throws JoynrShutdownException {
         logger.debug("LongPollingCallable OPENING CHANNEL: {} ", id);
         try {
             // Long Polling Loop
@@ -127,13 +124,24 @@ public class LongPollingCallable implements Callable<Void> {
                 }
 
                 if (longPollingDisabled == true) {
-                    statusLock.lockInterruptibly();
+                    try {
+                        statusLock.lockInterruptibly();
+                    } catch (InterruptedException e) {
+                        throw new JoynrShutdownException("INTERRUPTED. Shutting down");
+                    }
                     logger.trace("Waiting for long polling to be resumed.");
                     statusChanged.awaitUninterruptibly();
 
                 } else {
                     longPoll();
-                    Thread.sleep(10);
+                    try {
+
+                        // prevent error when long polling connection was reestablished too soon after repsone being
+                        // returned
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        throw new JoynrShutdownException("INTERRUPTED. Shutting down");
+                    }
                 }
 
             }

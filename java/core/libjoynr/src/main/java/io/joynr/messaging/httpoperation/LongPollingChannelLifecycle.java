@@ -25,6 +25,7 @@ import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.ReceiverStatusListener;
 
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -32,7 +33,6 @@ import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -63,17 +63,18 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
- * Creation of a request to create a channel on the bounce proxy server.
- * 
- * 
+ * The channel lifecycle callable is started in a new thread and loops infinitely until an exception is thrown:
+ * <ul>
+ * <li> creates the channel (in a looop, until it is created or maxRetries is exceeded
+ * <li> longPolls (in a loop, until an exception is thrown or the system is being shutdown, ie started==false)
+ * </ul> 
  */
 @Singleton
-public class ChannelMonitor {
+public class LongPollingChannelLifecycle {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChannelMonitor.class);
+    private static final Logger logger = LoggerFactory.getLogger(LongPollingChannelLifecycle.class);
     protected static final long WAITTIME_MS = 10000;
     private String channelUrl = null;
-    private Future<Void> longPollingLoopFuture;
 
     private final String channelId;
 
@@ -83,8 +84,8 @@ public class ChannelMonitor {
     private LocalChannelUrlDirectoryClient channelUrlClient;
 
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("ChannelMonitor-%d").build();
-    private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(2, namedThreadFactory);
-    private LongPollingCallable longPollingCallable;
+    private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(1, namedThreadFactory);
+    private LongPollChannel longPollingCallable;
     private final ObjectMapper objectMapper;
     private boolean longPollingDisabled;
     private boolean started = false;
@@ -93,15 +94,16 @@ public class ChannelMonitor {
     private String receiverId;
     private CloseableHttpClient httpclient;
     private RequestConfig defaultRequestConfig;
+    private Future<Void> longPollingFuture;
 
     @Inject
     @Nullable
-    public ChannelMonitor(CloseableHttpClient httpclient,
-                          RequestConfig defaultRequestConfig,
-                          @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                          @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
-                          ObjectMapper objectMapper,
-                          HttpConstants httpConstants) {
+    public LongPollingChannelLifecycle(CloseableHttpClient httpclient,
+                                       RequestConfig defaultRequestConfig,
+                                       @Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                       @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
+                                       ObjectMapper objectMapper,
+                                       HttpConstants httpConstants) {
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.channelId = channelId;
@@ -110,22 +112,21 @@ public class ChannelMonitor {
         this.httpConstants = httpConstants;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "We are not interested in result")
-    public synchronized void startLongPolling(final MessageReceiver messageReceiver) {
-
-        //
-        if (channelMonitorExecutorService == null)
-            throw new IllegalStateException("Channel Monitor already shutdown");
+    public synchronized void startLongPolling(final MessageReceiver messageReceiver,
+                                              final ReceiverStatusListener... receiverStatusListeners) {
+        if (channelMonitorExecutorService == null) {
+            throw new JoynrShutdownException("Channel Monitor already shutdown");
+        }
 
         if (started == true) {
-            logger.error("only one long polling thread can be started per ChannelMonitor");
-            return;
+            throw new IllegalStateException("only one long polling thread can be started per ChannelMonitor");
         }
 
         started = true;
-        Callable<Boolean> channelMonitorCallable = new Callable<Boolean>() {
+
+        Callable<Void> channelLifecycleCallable = new Callable<Void>() {
             @Override
-            public Boolean call() {
+            public Void call() {
                 try {
                     checkServerTime();
                     final int maxRetries = settings.getMaxRetriesCount();
@@ -133,39 +134,34 @@ public class ChannelMonitor {
                     while (true) {
                         channelCreated = false;
                         // Create the channel with maximal "maxRetries" retries
-                        // TODO check if maxRetries is correct here or if left over retries from long poll loop should
-                        // be used
                         createChannelLoop(messageReceiver, maxRetries);
+
+                        // signal that the channel has been created
+                        for (ReceiverStatusListener statusListener : receiverStatusListeners) {
+                            statusListener.receiverStarted();
+                        }
 
                         // If it was not possible to create the channel exit
                         if (!isChannelCreated()) {
-                            logger.error("registerMessageReceiver channelId: " + channelId + " error occured. Exiting.");
-                            return false;
+                            String message = "registerMessageReceiver channelId: " + channelId
+                                    + " error occured. Exiting.";
+                            logger.error(message);
+                            // signal that the channel is in exception
+                            for (ReceiverStatusListener statusListener : receiverStatusListeners) {
+                                statusListener.receiverException(new JoynrShutdownException(message));
+                            }
                         }
                         // Start LONG POLL lifecycle. The future will only
-                        // return when the long poll loop has ended
-                        logger.debug("starting long poll within callable");
+                        // return when the long poll loop has ended,
+                        // otherwise will terminate with a JoynrShutdownException
                         longPollLoop(messageReceiver, maxRetries);
-                        logger.debug("ending long poll within callable");
                     }
-
-                    // These exceptions are outside the while loop because
-                    // they signal that we should shut down
-                } catch (JoynrShutdownException e) {
-                    return true;
-                } catch (InterruptedException e) {
-                    return true;
-                } catch (CancellationException e) {
-                    return true;
-                } catch (Exception e) {
-                    logger.error("Uncaught exception in startLongPoll. Shuting down long poll", e);
-                    return false;
                 } finally {
                     started = false;
                 }
             }
         };
-        channelMonitorExecutorService.submit(channelMonitorCallable);
+        longPollingFuture = channelMonitorExecutorService.submit(channelLifecycleCallable);
 
     }
 
@@ -195,6 +191,7 @@ public class ChannelMonitor {
                 serverTime = Long.parseLong(EntityUtils.toString(response.getEntity(), "UTF-8"));
             } catch (Exception e) {
                 logger.error("CheckServerTime: could not parse server time: {}", e.getMessage());
+                return;
             }
 
             long diff = Math.abs(serverTime - localTime);
@@ -211,52 +208,69 @@ public class ChannelMonitor {
                 try {
                     response.close();
                 } catch (IOException e) {
+                    logger.error("CheckServerTime: error {}", e.getMessage());
                 }
             }
         }
 
     }
 
-    private int longPollLoop(final MessageReceiver messageReceiver, int retries) throws InterruptedException {
+    private int longPollLoop(final MessageReceiver messageReceiver, int retries) throws JoynrShutdownException {
         while (retries > 0) {
             logger.info("LONG POLL LOOP: Start: retries: {}", retries);
             retries--;
             try {
 
-                longPollingLoopFuture = openChannel(getChannelUrl(), messageReceiver);
-                longPollingLoopFuture.get();
+                if (channelUrl == null) {
+                    logger.error("openChannel channelId: {} channelUrl cannot be NULL", channelId);
+                    throw new IllegalArgumentException("openChannel channelId: " + channelId
+                            + " channelUrl cannot be NULL");
+                }
+
+                if (started == false) {
+                    String errorMsg = "openChannel " + channelId + "failed: ChannelMonitor is shutdown";
+                    logger.error(errorMsg);
+                    throw new JoynrShutdownException(errorMsg);
+                }
+
+                // String id = getPrintableId(channelUrl);
+                synchronized (this) {
+                    this.longPollingCallable = new LongPollChannel(httpclient,
+                                                                   defaultRequestConfig,
+                                                                   longPollingDisabled,
+                                                                   messageReceiver,
+                                                                   objectMapper,
+                                                                   settings,
+                                                                   httpConstants,
+                                                                   channelId,
+                                                                   receiverId);
+                }
+                longPollingCallable.setChannelUrl(channelUrl);
+
+                longPollingCallable.longPollLoop();
+
+                // register is here because the registration response needs an open channel to be received.
+                // Otherwise register fails.
+                registerChannelUrl();
+
                 return retries;
 
-                // Errors in the LongPollingCallable are packed in the ExecutionException
-                // TODO examine which exceptions will be thrown and react
-            } catch (ExecutionException e) {
-                boolean wait = true;
+                // A thrown ShutdownException is not caught here. Should be caught in MessageReceiver
+            } catch (JoynrChannelMissingException e) {
+                // JoynChannelMissingException means the channel needs to be recreated, so exit
+                // the long poll loop and redo the whole lifecycle
+                logger.error("LONG POLL LOOP: error in long poll: {}", e.getMessage());
+                break;
+            } catch (RejectedExecutionException e) {
+                // Thrown when the thread pool cannot accept another runnable. Wait and try
+                // again
+                logger.error("LONG POLL LOOP: error in long poll: {}", e.getMessage());
+                long waitMs = settings.getLongPollRetryIntervalMs();
+                logger.info("LONG POLL LOOP: waiting for: {}", waitMs);
                 try {
-                    throw e.getCause();
-                } catch (JoynrShutdownException e1) {
-                    logger.info("LONG POLL LOOP: shutting down");
-                    wait = false;
-                    throw e1;
-                } catch (JoynrChannelMissingException e1) {
-                    // JoynChannelMissingException means the channel needs to be recreated, so exit
-                    // the long poll loop and redo the whole lifecycle
-                    logger.error("LONG POLL LOOP: error in long poll: {}", e.getMessage());
-                    break;
-                } catch (RejectedExecutionException e1) {
-                    // Thrown when the thread pool cannot accept another runnable. Wait and try
-                    // again
-                    logger.error("LONG POLL LOOP: error in long poll: {}", e1.getMessage());
-                    continue;
-                } catch (IllegalStateException e1) {
-                    logger.error("LONG POLL LOOP: error in long poll", e1);
-                } catch (Throwable e1) {
-                    logger.error("LONG POLL LOOP: error in long poll", e1);
-                } finally {
-                    if (wait) {
-                        long waitMs = settings.getLongPollRetryIntervalMs();
-                        logger.info("LONG POLL LOOP: waiting for: {}", waitMs);
-                        Thread.sleep(waitMs);
-                    }
+                    Thread.sleep(waitMs);
+                } catch (InterruptedException e1) {
+                    throw new JoynrShutdownException("INTERRUPT. Shutting down");
                 }
             }
 
@@ -267,25 +281,11 @@ public class ChannelMonitor {
     private int createChannelLoop(final MessageReceiver messageReceiver, int retries) {
         while (retries > 0) {
             retries--;
-            try {
-                createChannel();
-                // let the messageReceive know that we are ready for business
-                // TODO: usually would not be ready until after register with UrlDirectory is finished
-                synchronized (messageReceiver) {
-                    channelCreated = true;
-                    messageReceiver.notify();
-                }
-                break;
-            } catch (Exception e) {
-                logger.error("registerMessageReceiver channelId: {} error occured creating channel: {}",
-                             channelId,
-                             e.getMessage());
-            }
-            try {
-                Thread.sleep(settings.getSendMsgRetryIntervalMs());
-            } catch (InterruptedException e) {
-                return 0;
-            }
+
+            channelCreated = createChannel();
+            // let the messageReceive know that we are ready for business
+            // TODO: usually would not be ready until after register with UrlDirectory is finished
+            break;
         }
         return retries;
     }
@@ -321,6 +321,11 @@ public class ChannelMonitor {
         if (longPollingCallable != null) {
             longPollingCallable.shutdown();
         }
+
+        if (longPollingFuture != null) {
+            longPollingFuture.cancel(true);
+        }
+
     }
 
     /**
@@ -332,7 +337,7 @@ public class ChannelMonitor {
      * @throws TimeoutException
      * @throws ExecutionException
      */
-    private synchronized void createChannel() throws ClientProtocolException, IOException {
+    private synchronized boolean createChannel() {
 
         final String url = settings.getBounceProxyUrl().buildCreateChannelUrl(channelId);
 
@@ -346,6 +351,7 @@ public class ChannelMonitor {
         channelUrl = null;
 
         CloseableHttpResponse response = null;
+        boolean created = false;
         try {
             response = httpclient.execute(postCreateChannel);
             StatusLine statusLine = response.getStatusLine();
@@ -368,67 +374,27 @@ public class ChannelMonitor {
                 throw new JoynrChannelMissingException("channel url was null");
             }
 
+            created = true;
             logger.info("createChannel channelId: {} returned channelUrl {}", channelId, channelUrl);
 
+        } catch (ClientProtocolException e) {
+            logger.error("createChannel ERROR reason: {}", e.getMessage());
+        } catch (IOException e) {
+            logger.error("createChannel ERROR reason: {}", e.getMessage());
         } finally {
             if (response != null) {
-                response.close();
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    logger.error("createChannel ERROR reason: {}", e.getMessage());
+                }
             }
         }
+
+        return created;
     }
 
-    /**
-     * openChannel causes the long poll to reconnect. Exceptions are returned via the Future as well.
-     * 
-     * @param openChannelUrl
-     * @param messageReceiver
-     * @return
-     * @throws IllegalArgumentException
-     *             ,
-     */
-    synchronized Future<Void> openChannel(String openChannelUrl, MessageReceiver messageReceiver) {
-        if (openChannelUrl == null) {
-            logger.error("openChannel channelId: {} channelUrl cannot be NULL", channelId);
-            return new ExceptionFuture(new IllegalArgumentException("openChannel channelId: " + channelId
-                    + " channelUrl cannot be NULL"));
-        }
-
-        if (started == false) {
-            String errorMsg = "openChannel " + channelId + "failed: ChannelMonitor is shutdown";
-            logger.error(errorMsg);
-            return new ExceptionFuture(new JoynrShutdownException(errorMsg));
-        }
-
-        // String id = getPrintableId(channelUrl);
-        synchronized (this) {
-            this.longPollingCallable = new LongPollingCallable(httpclient,
-                                                               defaultRequestConfig,
-                                                               longPollingDisabled,
-                                                               messageReceiver,
-                                                               objectMapper,
-                                                               settings,
-                                                               httpConstants,
-                                                               channelId,
-                                                               receiverId);
-        }
-        longPollingCallable.setChannelUrl(openChannelUrl);
-
-        if (channelMonitorExecutorService == null || channelMonitorExecutorService.isShutdown()) {
-            throw new JoynrShutdownException("channel monitor already shut down");
-        }
-
-        Future<Void> future = null;
-        future = channelMonitorExecutorService.submit(longPollingCallable);
-
-        // register is here because the registration response needs an open channel to be received.
-        // Otherwise register fails.
-        registerChannelUrl();
-
-        return future;
-
-    }
-
-    private boolean registerChannelUrl() {
+    boolean registerChannelUrl() {
         if (channelUrl == null) {
             logger.error("REGISTER channelUrl, cannot be NULL");
             return false;
@@ -544,10 +510,19 @@ public class ChannelMonitor {
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "isStarted is just a getter for the flag")
+    /**
+     * Started is set as soon as startLongPolling is called, irrespective of whether the channel is created
+     * @return started
+     */
     public boolean isStarted() {
         return started;
     }
 
+    /**
+     * true if the channel has been created on the bounceproxy
+     * 
+     * @return
+     */
     public boolean isChannelCreated() {
         return channelCreated;
     }

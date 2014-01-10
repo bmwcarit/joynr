@@ -1,9 +1,9 @@
-package io.joynr.database;
+package io.joynr.servlet;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,17 @@ package io.joynr.database;
  * #L%
  */
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface QueryProcessor<T> {
-    public T processQueryResult(ResultSet result) throws SQLException;
+@Target({ ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface JoynrWebServlet {
+
+    String value();
 
 }

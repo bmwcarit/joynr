@@ -23,12 +23,19 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.ReceiverStatusListener;
+
+import java.util.concurrent.Future;
+
 import joynr.JoynrMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ObjectArrays;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -45,7 +52,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     protected final MessagingSettings settings;
     protected MessageArrivedListener messageListener = null;
     // private final MessageSender messageSender;
-    protected final ChannelMonitor channelMonitor;
+    protected final LongPollingChannelLifecycle channelMonitor;
 
     private final String channelId;
 
@@ -55,8 +62,10 @@ public class LongPollingMessageReceiver implements MessageReceiver {
 
     private Object registerSynchronizer = new Object();
 
+    private Future<Void> startLongPollingFuture;
+
     @Inject
-    public LongPollingMessageReceiver(ChannelMonitor channelMonitor,
+    public LongPollingMessageReceiver(LongPollingChannelLifecycle channelMonitor,
                                       MessagingSettings settings,
                                       ObjectMapper objectMapper) {
         this.channelMonitor = channelMonitor;
@@ -83,18 +92,34 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public synchronized void startReceiver() {
-        if (!isStarted()) {
-            channelMonitor.startLongPolling(this);
-            while (!channelMonitor.isChannelCreated()) {
-                try {
-                    wait();
-                    // TODO this may break our shutdown during channel creation. Use a JoynShutdown exception to signal
-                    // shutdown instead
-                } catch (InterruptedException e) {
+    public synchronized Future<Void> startReceiver(ReceiverStatusListener... receiverStatusListeners) {
+        if (isStarted()) {
+            return Futures.immediateFailedFuture(new IllegalStateException("receiver is already started"));
+        }
+
+        final SettableFuture<Void> channelCreatedFuture = SettableFuture.create();
+        ReceiverStatusListener[] statusListeners = ObjectArrays.concat(new ReceiverStatusListener() {
+
+            @Override
+            // Register the ChannelUrl once the receiver is started
+            public void receiverStarted() {
+                if (channelMonitor.isChannelCreated()) {
+                    channelMonitor.registerChannelUrl();
+                    //Signal that the channel is now created for anyone blocking on the future
+                    channelCreatedFuture.set(null);
                 }
             }
-        }
+
+            @Override
+            // Shutdown the receiver if an exception is thrown
+            public void receiverException(Throwable e) {
+                channelCreatedFuture.setException(e);
+                channelMonitor.shutdown();
+            }
+        }, receiverStatusListeners);
+
+        channelMonitor.startLongPolling(this, statusListeners);
+        return channelCreatedFuture;
     }
 
     @Override

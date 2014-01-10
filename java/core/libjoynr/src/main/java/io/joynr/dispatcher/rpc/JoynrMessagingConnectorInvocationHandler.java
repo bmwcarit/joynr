@@ -111,11 +111,11 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Request request = new Request(method.getName(), paramsWithoutCallback, paramDatatypesWithoutCallback);
         String requestReplyId = request.getRequestReplyId();
 
-        RpcAsyncRequestReplyCaller callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
-                                                                                                callback,
-                                                                                                future,
-                                                                                                method,
-                                                                                                methodMetaInformation);
+        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
+                                                                                                   callback,
+                                                                                                   future,
+                                                                                                   method,
+                                                                                                   methodMetaInformation);
 
         dispatcher.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, qosSettings.getRoundTripTtl_ms());
         messageSender.sendRequest(fromParticipantId,
