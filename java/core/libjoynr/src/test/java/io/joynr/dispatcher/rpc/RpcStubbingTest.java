@@ -136,8 +136,7 @@ public class RpcStubbingTest {
     private static final JoynrMessagingEndpointAddress endpointAddress = new JoynrMessagingEndpointAddress("channelId");
 
     @Before
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF",
-                                                      justification = "NPE in test would fail test")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                        JsonMappingException, IOException, JoynrMessageNotSentException {
 

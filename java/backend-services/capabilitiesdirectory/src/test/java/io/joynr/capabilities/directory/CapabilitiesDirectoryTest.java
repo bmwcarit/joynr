@@ -112,7 +112,6 @@ public class CapabilitiesDirectoryTest {
         assertEquals(false, capabilitiesDirectory.getCapabilitiesForChannelId(mcId).contains(capInfo1));
     }
 
-
     String getRandomParticipantId() {
         return "participantId-" + String.valueOf(UUID.randomUUID().getLeastSignificantBits()).substring(4);
     }

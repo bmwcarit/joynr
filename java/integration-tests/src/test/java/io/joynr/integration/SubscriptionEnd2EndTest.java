@@ -429,9 +429,7 @@ public class SubscriptionEnd2EndTest {
 
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value="NP_NULL_ON_SOME_PATH_EXCEPTION", 
-                                                      justification="NPE in test would fail test")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
     @SuppressWarnings("unchecked")
     @Test
     public void testSubscribeToNonExistentDomain() throws InterruptedException {
@@ -456,7 +454,7 @@ public class SubscriptionEnd2EndTest {
                                                                       System.currentTimeMillis() + 30000,
                                                                       0,
                                                                       0);
-               
+
         String subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(4000);
         proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId);
