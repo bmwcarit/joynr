@@ -2,6 +2,8 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrCommonAPI...")
 message(STATUS "#############################################\n")
 
+add_definitions(-DCOMMONAPI_INTERNAL_COMPILATION)
+
 set(
     JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}"

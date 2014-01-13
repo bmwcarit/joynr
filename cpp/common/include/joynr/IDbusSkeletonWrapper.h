@@ -23,10 +23,9 @@
 
 #include "joynr/joynrlogging.h"
 #include <QString>
-#include <CommonAPI/Factory.h>
+#include <CommonAPI/CommonAPI.h>
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/IDbusFactoryGenerator.h"
 
 namespace joynr {
 
@@ -37,7 +36,7 @@ class JOYNRCOMMON_EXPORT IDbusSkeletonWrapper
 {
 public:
     IDbusSkeletonWrapper(_CallBackClass& callBack, QString serviceAddress)
-        : factory(NULL),
+        : // factory(NULL),
           serviceAddress(serviceAddress),
           logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
     {
@@ -47,8 +46,10 @@ public:
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
 
         // register skeleton
-        factory = IDbusFactoryGenerator::getFactoryInstance(false, serviceAddress);
-        bool success = factory->registerService(skeleton, serviceAddress.toStdString());
+        auto runtime = CommonAPI::Runtime::load("DBus");
+        bool success = runtime->getServicePublisher()->registerService(skeleton, serviceAddress.toStdString(), runtime->createFactory());
+        // wait some time so that the service is registered and ready to use on dbus level
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if(success) {
             LOG_INFO(logger, "SUCCESS");
@@ -60,7 +61,11 @@ public:
     ~IDbusSkeletonWrapper() {
         LOG_INFO(logger, "Unregistering dbus skeleton from address: " + serviceAddress);
 
-        bool success = factory->unregisterService(serviceAddress.toStdString());
+        auto runtime = CommonAPI::Runtime::load("DBus");
+        bool success = runtime->getServicePublisher()->unregisterService(serviceAddress.toStdString());
+        // wait some time so that the service is unregistered on dbus level
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+
         if(success) {
             LOG_INFO(logger, "SUCCESS");
         } else {
@@ -74,7 +79,6 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusSkeletonWrapper);
-    std::shared_ptr<CommonAPI::Factory> factory;
     QString serviceAddress;
     joynr_logging::Logger* logger;
 };

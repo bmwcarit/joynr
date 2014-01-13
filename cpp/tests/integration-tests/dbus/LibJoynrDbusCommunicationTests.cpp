@@ -30,7 +30,6 @@
 
 #include "tests/utils/MockObjects.h"
 #include "joynr/IMessaging.h"
-#include "joynr/IDbusFactoryGenerator.h"
 
 #include <thread>
 #include <chrono>
@@ -63,14 +62,6 @@ public:
     void printResult(Logger* logger, QString text, bool result) {
         if(result) LOG_INFO(logger, text + " SUCCESS"); else LOG_ERROR(logger, text + " ERROR");
     }
-
-    void wait(int time) {
-        int8_t retries = 0;
-        while(retries<time) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            retries++;
-        }
-    }
 };
 
 TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
@@ -82,15 +73,19 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     auto provider = std::make_shared<DbusMessagingSkeleton>(*msgMock);
 
     // register skeleton
-    auto factory = IDbusFactoryGenerator::getFactoryInstance(false, ccMessagingAddress);
-    bool success = factory->registerService(provider, ccMessagingAddress.toStdString());
+    auto runtime = CommonAPI::Runtime::load("DBus");
+    auto factory = runtime->createFactory();
+
+    bool success = runtime->getServicePublisher()->registerService(provider, ccMessagingAddress.toStdString(), factory);
     ASSERT_TRUE(success);
     printResult(logger, "registerService", success);
 
     // get proxy
-    auto factory2 = IDbusFactoryGenerator::getFactoryInstance(true, ccMessagingAddress);
+    auto runtime2 = CommonAPI::Runtime::load("DBus");
+    auto factory2 = runtime2->createFactory();
     auto proxy = factory2->buildProxy<joynr::messaging::IMessagingProxy>(ccMessagingAddress.toStdString());
-    wait(2);
+    // wait some time so that the proxy is ready to use on dbus level
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // call method
     joynr::messaging::IMessaging::JoynrMessage message;
@@ -104,8 +99,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     ASSERT_TRUE(status == CommonAPI::CallStatus::SUCCESS);
 
     // unregister service
-    factory = IDbusFactoryGenerator::getFactoryInstance(false, ccMessagingAddress);
-    success = factory->unregisterService(ccMessagingAddress.toStdString());
+    success = runtime->getServicePublisher()->unregisterService(ccMessagingAddress.toStdString());
     printResult(logger, "unregisterService", success);
     ASSERT_TRUE(success);
 
@@ -117,10 +111,11 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     printResult(logger, "proxy available:", proxy->isAvailable());
 
     // register service
-    factory = IDbusFactoryGenerator::getFactoryInstance(false, ccMessagingAddress);
-    success = factory->registerService(provider, ccMessagingAddress.toStdString());
+    success = runtime->getServicePublisher()->registerService(provider, ccMessagingAddress.toStdString(), factory);
     printResult(logger, "registerService", success);
     ASSERT_TRUE(success);
+    // wait some time so that the service is registered on dbus level
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // call method
     proxy->transmit(message, qos, status);
@@ -128,8 +123,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     ASSERT_TRUE(status == CommonAPI::CallStatus::SUCCESS);
 
     // unregister service
-    factory = IDbusFactoryGenerator::getFactoryInstance(false, ccMessagingAddress);
-    success = factory->unregisterService(ccMessagingAddress.toStdString());
+    success = runtime->getServicePublisher()->unregisterService(ccMessagingAddress.toStdString());
     printResult(logger, "unregisterService", success);
     ASSERT_TRUE(success);
 
@@ -197,7 +191,6 @@ TEST_F(LibJoynrDbusCommunicationTests, DISABLED_connection_test) {
     // delete skeleton
     delete msgSkeleton;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_FALSE(msgStub->isProxyAvailabe());
     delete msgStub;
 }
@@ -230,8 +223,8 @@ TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
     // error on transmission
     msgStub->transmit(msg, qos);
 
-    // stub not availabe: NOT WORKING IN CURRENT DBUS IMPLEMENTATION
-    // ASSERT_FALSE(msgStub->isProxyAvailabe());
+    // stub not availabe
+    ASSERT_FALSE(msgStub->isProxyAvailabe());
 
     delete msgStub;
     delete msgMock;

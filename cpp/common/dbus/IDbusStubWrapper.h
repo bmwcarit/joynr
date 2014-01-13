@@ -23,11 +23,9 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-#include <CommonAPI/Proxy.h>
-#include <CommonAPI/Factory.h>
+#include <CommonAPI/CommonAPI.h>
 
 #include "joynr/joynrlogging.h"
-#include "joynr/IDbusFactoryGenerator.h"
 
 #include <QString>
 #include <thread>
@@ -41,7 +39,6 @@ class JOYNRCOMMON_EXPORT IDbusStubWrapper
 public:
     IDbusStubWrapper(QString serviceAddress)
         : serviceAddress(serviceAddress),
-          factory(NULL),
           proxy(NULL),
           logger(NULL),
           proxyEvent(NULL),
@@ -107,7 +104,6 @@ private:
 protected:
 
     QString serviceAddress;
-    std::shared_ptr<CommonAPI::Factory> factory;
     std::shared_ptr<_ProxyClass<>> proxy;
     joynr_logging::Logger* logger;
 
@@ -117,7 +113,7 @@ protected:
 
     void init() {
         // get proxy
-        factory = IDbusFactoryGenerator::getFactoryInstance(true, serviceAddress);
+        auto factory = CommonAPI::Runtime::load("DBus")->createFactory();
         proxy = factory->buildProxy<_ProxyClass>(serviceAddress.toStdString());
 
         auto callBack = std::bind(&IDbusStubWrapper::proxyEventListener, this, std::placeholders::_1);

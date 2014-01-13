@@ -334,9 +334,9 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
         return false;
     }
 
-    override isReadonly(FAttribute fAttribute) { (fAttribute.readonly!=null) }
+    override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
 
-    override isObservable(FAttribute fAttribute) { !(fAttribute.noSubscriptions!=null) }
+    override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
 
 	override getPrimitiveTypeName(FBasicTypeId basicType) {
 		switch basicType {

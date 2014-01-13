@@ -18,7 +18,7 @@
  */
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "common/dbus/DbusMessagingUtil.h"
-#include <CommonAPI/types.h>
+#include <CommonAPI/CommonAPI.h>
 
 namespace joynr {
 
