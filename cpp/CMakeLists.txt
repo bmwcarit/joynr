@@ -289,16 +289,18 @@ ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     message(STATUS "### DBUS CommonAPI configuration ###")
 
-        FIND_PACKAGE(PkgConfig)
+    find_package(PkgConfig)
     pkg_check_modules(DBUS1 REQUIRED dbus-1)
     message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
     message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
+    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1)
     message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus)
+    message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
+    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1)
     message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
+    message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
 
     include_directories(SYSTEM
 
