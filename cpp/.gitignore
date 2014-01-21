@@ -1,4 +1,4 @@
-CMakeLists.txt.user
+CMakeLists.txt.user*
 cluster-controller/include/joynr/JoynrClusterControllerExport.h
 common/include/joynr/JoynrCommonExport.h
 common/include/joynr/JoynrConfig.h
