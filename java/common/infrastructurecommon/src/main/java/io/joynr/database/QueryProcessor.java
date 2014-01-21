@@ -23,6 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public interface QueryProcessor<T> {
-	public T processQueryResult(ResultSet result) throws SQLException;
+    public T processQueryResult(ResultSet result) throws SQLException;
 
 }

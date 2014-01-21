@@ -51,7 +51,7 @@ public class JoynrEmbeddedDatabaseTest {
 
     @After
     public void tearDown() throws SQLException {
-    	fixture.close();
+        fixture.close();
     }
 
     @Test
@@ -64,7 +64,7 @@ public class JoynrEmbeddedDatabaseTest {
         fixture.close();
         fixture.start();
     }
-    
+
     @Test
     public void testTableExists() throws Exception {
         createTable();
