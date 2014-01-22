@@ -25,10 +25,10 @@ import io.joynr.messaging.info.PerformanceMeasures;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -36,13 +36,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import com.google.inject.Inject;
 
@@ -56,7 +53,7 @@ import com.google.inject.Inject;
  * @author christina.strobel
  * 
  */
-@Path("/controller")
+@Path("/controller/bounceproxies")
 public class MonitoringServiceRestAdapter {
 
     @Inject
@@ -69,7 +66,7 @@ public class MonitoringServiceRestAdapter {
      * @return
      */
     @GET
-    @Produces("application/json")
+    @Produces({ MediaType.APPLICATION_JSON })
     public GenericEntity<List<String>> getBounceProxies() {
         return new GenericEntity<List<String>>(monitoringService.getRegisteredBounceProxies()) {
         };
@@ -81,15 +78,18 @@ public class MonitoringServiceRestAdapter {
      * previous shutdown.
      * 
      * @param bpId
+     *            the identifier of the bounce proxy
      * @param urlForCc
+     *            the bounce proxy URL used by cluster controllers
      * @param urlForBpc
+     *            the bounce proxy URL used by the bounce proxy controller
      * @return
      */
-    @POST
+    @PUT
     @Produces({ MediaType.TEXT_PLAIN })
     public Response reportStartup(@QueryParam("bpid") String bpId,
-                                  @HeaderParam("url4cc") String urlForCc,
-                                  @HeaderParam("url4bpc") String urlForBpc) {
+                                  @QueryParam("url4cc") String urlForCc,
+                                  @QueryParam("url4bpc") String urlForBpc) {
 
         if (!monitoringService.isRegistered(bpId)) {
 
@@ -106,61 +106,51 @@ public class MonitoringServiceRestAdapter {
     }
 
     /**
-     * Refreshes the status of a bounce proxy instance. This could either apply
-     * to performance monitoring measures like active long polls or to the
-     * status itself such as active or shutdown.
+     * Refreshes the status of a bounce proxy instance, e.g. signals a shutdown.
      * 
      * @param bpId
-     * @param status
-     * @param activeLongPollCount
+     *            the identifier of the bounce proxy
+     * @param statusParam
+     *            the status to be reported
      * @return
      */
     @PUT
-    @Path("/{bpid: ([A-Z,a-z,0-9,_,\\-]+)(\\.)([A-Z,a-z,0-9,_,\\-]+)}")
+    @Path("/{bpid: ([A-Z,a-z,0-9,_,\\-]+)(\\.)([A-Z,a-z,0-9,_,\\-]+)}/lifecycle")
     @Produces({ MediaType.TEXT_PLAIN })
-    public Response reportStatus(@PathParam("bpid") String bpId,
-                                 @QueryParam("status") BounceProxyStatusParam statusParam,
-                                 @Context UriInfo ui) {
+    public Response reportShutdown(@PathParam("bpid") String bpId,
+                                   @QueryParam("status") BounceProxyStatusParam statusParam) {
 
-        // TODO This API should be rewritten to have two different methods for
-        // this. Now either one set of parameters (status) or the other set of
-        // parameters (performance measures) are used, but not all of them
-        // together.
-
-        if (statusParam != null && BounceProxyStatus.UNRESOLVED.equals(statusParam.getStatus())) {
+        if (BounceProxyStatus.UNRESOLVED.equals(statusParam.getStatus())) {
             // bounce proxy sent an unknown status
             throw new WebApplicationException(Status.BAD_REQUEST);
-        } else if (statusParam != null && BounceProxyStatus.SHUTDOWN.equals(statusParam.getStatus())) {
-            monitoringService.updateStatus(bpId, statusParam.getStatus());
+
         } else {
-
-            MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-            PerformanceMeasures performanceMeasures = new PerformanceMeasures();
-
-            for (Entry<String, List<String>> entry : queryParams.entrySet()) {
-
-                // we only expect one value per key
-                String key = entry.getKey();
-                if (entry.getValue().size() != 1) {
-                    // TODO for now, we ignore malformed performance measures
-                } else {
-                    // should be int value
-                    String value = entry.getValue().get(0);
-
-                    try {
-                        int intVal = Integer.parseInt(value);
-                        performanceMeasures.addMeasure(key, intVal);
-                    } catch (NumberFormatException e) {
-                        // TODO for now, we ignore malformed performance
-                        // measures
-                    }
-                }
-            }
-
-            monitoringService.updatePerformanceMeasures(bpId, performanceMeasures);
+            monitoringService.updateStatus(bpId, statusParam.getStatus());
+            return Response.noContent().build();
         }
+    }
+
+    /**
+     * Refreshes the performance measures of a bounce proxy instance, e.g.
+     * active long polls.
+     * 
+     * @param bpId
+     *            the identifier of the bounce proxy
+     * @param performanceMap
+     *            key-value pairs of performance measures
+     * @return
+     */
+    @POST
+    @Path("/{bpid: ([A-Z,a-z,0-9,_,\\-]+)(\\.)([A-Z,a-z,0-9,_,\\-]+)}/performance")
+    @Consumes({ MediaType.APPLICATION_JSON })
+    @Produces({ MediaType.TEXT_PLAIN })
+    public Response reportPerformance(@PathParam("bpid") String bpId, Map<String, Integer> performanceMap) {
+
+        PerformanceMeasures performanceMeasures = new PerformanceMeasures();
+        performanceMeasures.addMeasures(performanceMap);
+
+        monitoringService.updatePerformanceMeasures(bpId, performanceMeasures);
 
         return Response.noContent().build();
     }
-
 }

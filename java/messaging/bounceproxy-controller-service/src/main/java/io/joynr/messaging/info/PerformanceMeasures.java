@@ -21,6 +21,8 @@ package io.joynr.messaging.info;
  */
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -78,6 +80,26 @@ public class PerformanceMeasures {
     private HashMap<Key, Integer> measures = new HashMap<Key, Integer>();
 
     /**
+     * Adds measures from a map with keys and integer values. If a key can't be
+     * mapped to a known {@link Key}, the value is ignored without any warning.
+     * 
+     * @param valueMap
+     */
+    public void addMeasures(Map<String, Integer> valueMap) {
+
+        for (Entry<String, Integer> values : valueMap.entrySet()) {
+
+            try {
+                addMeasure(values.getKey(), values.getValue().intValue());
+            } catch (NumberFormatException e) {
+                // TODO for now, we ignore malformed performance
+                // measures
+            }
+        }
+
+    }
+
+    /**
      * Adds a measure. This is a convenient method for
      * {@code addMeasure(k.toString(), i)}. If the key does not exist, for now
      * it is simply ignored without any warning.
@@ -113,7 +135,9 @@ public class PerformanceMeasures {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -132,7 +156,9 @@ public class PerformanceMeasures {
         return p.measures.equals(measures);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override

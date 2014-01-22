@@ -75,14 +75,14 @@ public class NormalOperationTest {
         Response responseCreateBp = //
         given(). //
                when()
-               .header("url4cc", "http://www.joynX.de/bp")
+               .queryParam("url4cc", "http://www.joynX.de/bp")
                .and()
-               .header("url4bpc", "http://joynX.bmwgroup.net/bp")
-               .post(serverUrl + "/controller?bpid=X.Y");
+               .queryParam("url4bpc", "http://joynX.bmwgroup.net/bp")
+               .put(serverUrl + "/controller/bounceproxies?bpid=X.Y");
         assertEquals(201 /* Created */, responseCreateBp.getStatusCode());
 
         // get bounce proxies list
-        Response listBps = given().get(serverUrl + "/controller");
+        Response listBps = given().get(serverUrl + "/controller/bounceproxies");
         assertEquals("[\"X.Y\"]", listBps.getBody().asString());
 
         // create channel on bounce proxy
@@ -106,23 +106,23 @@ public class NormalOperationTest {
         Response responseCreateFirstBp = //
         given(). //
                when()
-               .header("url4cc", "http://www.joynX.de/bp")
+               .queryParam("url4cc", "http://www.joynX.de/bp")
                .and()
-               .header("url4bpc", "http://joynX.bmwgroup.net/bp")
-               .post(serverUrl + "/controller?bpid=X.Y");
+               .queryParam("url4bpc", "http://joynX.bmwgroup.net/bp")
+               .put(serverUrl + "/controller/bounceproxies?bpid=X.Y");
         assertEquals(201 /* Created */, responseCreateFirstBp.getStatusCode());
 
         Response responseCreateSecondBp = //
         given(). //
                when()
-               .header("url4cc", "http://www.joynA.de/bp")
+               .queryParam("url4cc", "http://www.joynA.de/bp")
                .and()
-               .header("url4bpc", "http://joynA.bmwgroup.net/bp")
-               .post(serverUrl + "/controller?bpid=A.B");
+               .queryParam("url4bpc", "http://joynA.bmwgroup.net/bp")
+               .put(serverUrl + "/controller/bounceproxies?bpid=A.B");
         assertEquals(201 /* Created */, responseCreateSecondBp.getStatusCode());
 
         // get bounce proxies list
-        Response listBps = given().get(serverUrl + "/controller");
+        Response listBps = given().get(serverUrl + "/controller/bounceproxies");
         assertEquals("[\"X.Y\",\"A.B\"]", listBps.getBody().asString());
 
         // create channel on bounce proxy
