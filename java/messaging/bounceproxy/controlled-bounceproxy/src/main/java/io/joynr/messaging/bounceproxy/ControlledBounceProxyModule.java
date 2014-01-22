@@ -22,7 +22,11 @@ package io.joynr.messaging.bounceproxy;
 
 import io.joynr.messaging.service.ChannelService;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 
 public class ControlledBounceProxyModule extends AbstractModule {
 
@@ -33,9 +37,15 @@ public class ControlledBounceProxyModule extends AbstractModule {
      */
     @Override
     protected void configure() {
-
         bind(ChannelService.class).to(ChannelServiceImpl.class);
-
     }
 
+    @Provides
+    CloseableHttpClient getCloseableHttpClient() {
+        // For now, we provide the httpclient in here, as the configuration is
+        // different from messaging configuration (e.g. no proxy settings).
+        // If a custom configuration is needed, a separate provider should be
+        // created.
+        return HttpClients.createDefault();
+    }
 }

@@ -20,8 +20,11 @@ package io.joynr.messaging.bounceproxy.runtime;
  * #L%
  */
 
+import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
+import io.joynr.runtime.PropertyLoader;
 
 import javax.servlet.ServletContextEvent;
 
@@ -35,7 +38,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  * Servlet configuration for controlled bounceproxy servlet.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class ControlledBounceProxyServletConfig extends GuiceServletContextListener {
 
@@ -56,13 +59,38 @@ public class ControlledBounceProxyServletConfig extends GuiceServletContextListe
 
                 // Route all requests through GuiceContainer
                 serve("/*").with(GuiceContainer.class);
+
+                // Filter to only let requests pass if the bounce proxy has been
+                // initialized correctly, e.g. if it has registered with the
+                // bounce proxy controller.
+                filter("/*").through(BounceProxyInitializedFilter.class);
             }
 
         };
 
-        injector = Guice.createInjector(jerseyServletModule, new ControlledBounceProxyModule());
+        injector = Guice.createInjector(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties"),
+                                                                  BounceProxySystemPropertyLoader.loadProperties()),
+                                        jerseyServletModule,
+                                        new ControlledBounceProxyModule());
+
+        // Hook to send out message that bounce proxy has started and to start
+        // the performance monitoring loop.
+        MonitoringServiceClient monitoringServiceClient = injector.getInstance(MonitoringServiceClient.class);
+        monitoringServiceClient.startStartupReporting();
+
+        monitoringServiceClient.startPerformanceReport();
 
         super.contextInitialized(servletContextEvent);
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+
+        // Hook to send out message that the bounce proxy will shutdown.
+        MonitoringServiceClient monitoringServiceClient = injector.getInstance(MonitoringServiceClient.class);
+        monitoringServiceClient.reportShutdown();
+
+        super.contextDestroyed(servletContextEvent);
     }
 
     @Override
