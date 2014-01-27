@@ -21,6 +21,9 @@ package io.joynr.database.derby;
 
 import io.joynr.database.JoynrEmbeddedDatabase;
 
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,5 +57,16 @@ public class JoynrDerbyDatabase extends JoynrEmbeddedDatabase {
     @Override
     protected String getDBCloseUrl() {
         return dbUrl_prefix + ":" + getDBName() + dbUrl_closepostfix;
+    }
+    
+    
+    @Override
+    public synchronized void close() throws SQLException {
+    	try {
+    		DriverManager.getConnection(getDBCloseUrl());
+    	} catch (SQLException e) {
+    		log.debug("Expected exception \"" + e.getMessage() + "\" ocurred");
+    	}
+    	super.close();
     }
 }
