@@ -27,6 +27,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
+import io.joynr.servlet.DefaultServletWrapper;
 import io.joynr.servlet.JoynrWebServlet;
 
 import java.util.Properties;
@@ -72,6 +73,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 public class MessagingServletConfig extends GuiceServletContextListener {
     public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
     public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
+    public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
     private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
     private static final String DEFAULT_SERVLET_MESSAGING_PROPERTIES = "defaultServletMessaging.properties";

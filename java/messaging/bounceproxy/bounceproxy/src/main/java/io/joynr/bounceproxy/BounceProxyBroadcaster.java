@@ -49,9 +49,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public void cacheLostMessage(AtmosphereResource r) {
         synchronized (resources) {
             logger.trace("cacheLostMessage 1");
@@ -60,9 +58,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public void cacheLostMessage(AtmosphereResource r, AsyncWriteToken token) {
         synchronized (resources) {
             logger.trace("cacheLostMessage 2");
@@ -71,9 +67,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public void cacheLostMessage(AtmosphereResource r, AsyncWriteToken token, boolean force) {
         synchronized (resources) {
             logger.trace("cacheLostMessage 3");
@@ -82,9 +76,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public void cacheLostMessage(AtmosphereResource r, boolean force) {
         synchronized (resources) {
             logger.trace("cacheLostMessage 4");
@@ -93,9 +85,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public Future<Object> broadcast(Object msg) {
         synchronized (resources) {
             logger.trace("broadcast 1");
@@ -104,9 +94,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public Future<Object> broadcast(Object msg, AtmosphereResource r) {
         synchronized (resources) {
             logger.trace("broadcast 2");
@@ -115,9 +103,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public Future<Object> broadcast(Object msg, Set<AtmosphereResource> subset) {
         synchronized (resources) {
             logger.trace("broadcast 3");
@@ -126,9 +112,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     public Future<Object> broadcastOnResume(Object msg) {
         synchronized (resources) {
             logger.trace("broadcastOnResume 1");
@@ -137,9 +121,7 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER",
-                                                      justification = "Can only sync on resources because that is what Atomosphere is doing in super")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "Can only sync on resources because that is what Atomosphere is doing in super")
     protected void cacheAndSuspend(AtmosphereResource r) {
         synchronized (resources) {
             logger.trace("cacheAndSuspend 1");

@@ -31,10 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -120,9 +118,7 @@ public class JoynrApplicationLauncher {
             // switch to lp receiver and call servlet shutdown to be able to receive responses
             ServletMessageReceiver servletReceiver = joynrInjector.getInstance(ServletMessageReceiver.class);
 
-            Future<Void> switchToLongPolling = servletReceiver.switchToLongPolling();
-            try {
-                switchToLongPolling.get();
+            if (servletReceiver.switchToLongPolling()) {
                 for (JoynrApplication app : apps) {
                     try {
                         app.shutdown();
@@ -130,12 +126,8 @@ public class JoynrApplicationLauncher {
                         logger.error("error shutting down app: {} reason: {}", app.getClass(), e.getMessage());
                     }
                 }
-
                 servletReceiver.shutdown(clear);
-            } catch (InterruptedException e1) {
-            } catch (ExecutionException e1) {
             }
-
         }
         try {
             if (executionQueue != null) {
@@ -144,6 +136,7 @@ public class JoynrApplicationLauncher {
         } catch (InterruptedException e) {
             return;
         }
+
     }
 
     public Injector getJoynrInjector() {

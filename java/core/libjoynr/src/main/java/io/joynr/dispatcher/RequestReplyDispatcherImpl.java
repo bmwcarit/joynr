@@ -244,8 +244,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 }
             } catch (IOException e) {
                 logger.error("Error extracting payload for message " + message.getId() + ", raw payload: "
-                                     + message.getPayload(),
-                             e.getMessage());
+                        + message.getPayload(), e.getMessage());
             }
         }
 
@@ -455,6 +454,9 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                     try {
                         // TODO shall be moved to request manager and not handled by dispatcher
                         Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                        logger.debug("executing request from message: {} request: {}",
+                                     message.getId(),
+                                     request.getRequestReplyId());
 
                         Reply reply = jsonRequestInterpreter.execute(requestCaller, request);
                         // String replyMcid =

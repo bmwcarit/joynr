@@ -58,15 +58,14 @@ public class JoynrDerbyDatabase extends JoynrEmbeddedDatabase {
     protected String getDBCloseUrl() {
         return dbUrl_prefix + ":" + getDBName() + dbUrl_closepostfix;
     }
-    
-    
+
     @Override
     public synchronized void close() throws SQLException {
-    	try {
-    		DriverManager.getConnection(getDBCloseUrl());
-    	} catch (SQLException e) {
-    		log.debug("Expected exception \"" + e.getMessage() + "\" ocurred");
-    	}
-    	super.close();
+        try {
+            DriverManager.getConnection(getDBCloseUrl());
+        } catch (SQLException e) {
+            log.debug("Expected exception \"" + e.getMessage() + "\" ocurred");
+        }
+        super.close();
     }
 }

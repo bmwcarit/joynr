@@ -78,7 +78,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<!-- <webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml> -->
-					<warName>${project.build.finalName}</warName>
+					<warName>discovery</warName>
 					<warSourceDirectory>src/main/resources</warSourceDirectory>
 					<configuration>
 						<!-- no default value -->

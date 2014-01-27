@@ -69,7 +69,7 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public void updateStatus(String bpId, BounceProxyStatus status) {
-    		bounceProxyDirectory.updateBounceProxyStatus(bpId, status);
+        bounceProxyDirectory.updateBounceProxyStatus(bpId, status);
     }
 
     @Override

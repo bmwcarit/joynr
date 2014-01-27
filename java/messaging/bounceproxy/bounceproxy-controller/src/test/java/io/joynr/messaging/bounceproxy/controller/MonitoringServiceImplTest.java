@@ -40,45 +40,43 @@ import com.google.inject.Injector;
 @RunWith(MockitoJUnitRunner.class)
 public class MonitoringServiceImplTest {
 
-	private MonitoringServiceImpl monitoringService;
+    private MonitoringServiceImpl monitoringService;
 
-	@Mock
-	BounceProxyDirectory bpDirectoryMock;
+    @Mock
+    BounceProxyDirectory bpDirectoryMock;
 
-	@Before
-	public void setUp() {
+    @Before
+    public void setUp() {
 
-		Injector injector = Guice.createInjector(new AbstractModule() {
+        Injector injector = Guice.createInjector(new AbstractModule() {
 
-			@Override
-			protected void configure() {
-				bind(BounceProxyDirectory.class).toInstance(bpDirectoryMock);
-			}
+            @Override
+            protected void configure() {
+                bind(BounceProxyDirectory.class).toInstance(bpDirectoryMock);
+            }
 
-		});
+        });
 
-		monitoringService = injector.getInstance(MonitoringServiceImpl.class);
-	}
+        monitoringService = injector.getInstance(MonitoringServiceImpl.class);
+    }
 
-	@Test
-	public void testRegisterBounceProxy() {
+    @Test
+    public void testRegisterBounceProxy() {
 
-		monitoringService.register("X.Y", "http://www.joynX.de/bp",
-				"http://joyn.bmwgroup.net/bpX");
+        monitoringService.register("X.Y", "http://www.joynX.de/bp", "http://joyn.bmwgroup.net/bpX");
 
-		Mockito.verify(bpDirectoryMock).addBounceProxy(
-				new ControlledBounceProxyInformation("X.Y", URI
-						.create("http://www.joynX.de/bp"), URI
-						.create("http://joyn.bmwgroup.net/bpX")));
-	}
+        Mockito.verify(bpDirectoryMock)
+               .addBounceProxy(new ControlledBounceProxyInformation("X.Y",
+                                                                    URI.create("http://www.joynX.de/bp"),
+                                                                    URI.create("http://joyn.bmwgroup.net/bpX")));
+    }
 
-	@Test
-	public void testShutdownBounceProxy() {
+    @Test
+    public void testShutdownBounceProxy() {
 
-		monitoringService.updateStatus("X.Y", BounceProxyStatus.SHUTDOWN);
+        monitoringService.updateStatus("X.Y", BounceProxyStatus.SHUTDOWN);
 
-		Mockito.verify(bpDirectoryMock).updateBounceProxyStatus("X.Y",
-				BounceProxyStatus.SHUTDOWN);
-	}
+        Mockito.verify(bpDirectoryMock).updateBounceProxyStatus("X.Y", BounceProxyStatus.SHUTDOWN);
+    }
 
 }

@@ -63,6 +63,8 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     private String contextRoot;
 
+    private int servletShutdownTimeout_ms;
+
     private void setRegistered(boolean registered) {
         this.registered = registered;
     }
@@ -71,11 +73,13 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public ServletMessageReceiverImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       LocalChannelUrlDirectoryClient channelUrlDirectory,
                                       LongPollingMessageReceiver longPollingReceiver,
-                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot) {
+                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
+                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
         this.channelId = channelId;
         this.channelUrlDirectory = channelUrlDirectory;
         this.longPollingReceiver = longPollingReceiver;
         this.contextRoot = contextRoot;
+        this.servletShutdownTimeout_ms = servletShutdownTimeout_ms;
         this.started = false;
     }
 
@@ -190,12 +194,25 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public Future<Void> switchToLongPolling(ReceiverStatusListener... statusListeners) {
-        // switching to longPolling before the servlet is destroyed, to be able to unregister
-        unregisterChannel();
-        longPollingReceiver.registerMessageListener(messageListener);
-        return longPollingReceiver.startReceiver(statusListeners);
-
+    public boolean switchToLongPolling() {
+        try {
+            // switching to longPolling before the servlet is destroyed, to be able to unregister
+            longPollingReceiver.registerMessageListener(messageListener);
+            Future<Void> startReceiver = longPollingReceiver.startReceiver();
+            startReceiver.get(servletShutdownTimeout_ms, TimeUnit.MILLISECONDS);
+            try {
+                unregisterChannel();
+                // catchinng the unregister separately to give the apps a chance to shutdown even if the unregister of
+                // the channel did not work. ie will still return true since long polling is indeed already active here.
+            } catch (Exception e) {
+                logger.error("error unregistering servlet channelurl: {}", e.getMessage());
+            }
+        } catch (Exception e) {
+            logger.error("error switching to long polling while shutting down servlet: {}", e.getMessage());
+            return false;
+        }
+        logger.debug("switched to long polling.");
+        return true;
     }
 
     private void unregisterChannel() {

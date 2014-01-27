@@ -20,13 +20,8 @@ package io.joynr.dispatcher;
  */
 
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.ReceiverStatusListener;
-
-import java.util.concurrent.Future;
-
-import javax.annotation.Nonnull;
 
 public interface ServletMessageReceiver extends MessageReceiver {
 
-    Future<Void> switchToLongPolling(@Nonnull ReceiverStatusListener... statuslisteners);
+    boolean switchToLongPolling();
 }

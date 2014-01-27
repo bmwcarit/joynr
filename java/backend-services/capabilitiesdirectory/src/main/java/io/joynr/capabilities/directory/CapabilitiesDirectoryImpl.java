@@ -21,7 +21,6 @@ package io.joynr.capabilities.directory;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
@@ -53,8 +53,12 @@ import com.google.inject.Singleton;
 @Singleton
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
+    private CapabilitiesStore capabiltiesStore;
 
-    private CapabilitiesStore capabiltiesStore = new CapabilitiesStoreImpl();
+    @Inject
+    public CapabilitiesDirectoryImpl(CapabilitiesStore capabiltiesStore) {
+        this.capabiltiesStore = capabiltiesStore;
+    }
 
     @Override
     public void registerCapability(CapabilityInformation capabilityInformation) {

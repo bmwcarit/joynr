@@ -1,4 +1,4 @@
-package io.joynr.runtime;
+package io.joynr.servlet;
 
 /*
  * #%L
@@ -28,12 +28,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Singleton
 public class DefaultServletWrapper extends HttpServlet {
+    Logger logger = LoggerFactory.getLogger(DefaultServletWrapper.class);
+
     private static final long serialVersionUID = 5341721660837975446L;
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        RequestDispatcher requestDispatcher = getServletContext().getNamedDispatcher("default");
-        requestDispatcher.forward(req, resp);
+        try {
+            RequestDispatcher requestDispatcher = getServletContext().getNamedDispatcher("default");
+            requestDispatcher.forward(req, resp);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
     }
 }

@@ -72,7 +72,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <webXml>${basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
-                    <warName>${project.build.finalName}</warName>
+                    <warName>bounceproxy-ui</warName>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
 					<webResources>
 						<resource>

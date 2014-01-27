@@ -192,7 +192,7 @@ public class MessageSenderImpl implements MessageSender {
                                          + " ms, new TTL expiration date: {}",
                                  messageContainer.getMessageId(),
                                  DateFormatter.format(messageContainer.getExpiryDate()));
-                    sendRequestScheduler.scheduleRequest(messageContainer,
+                    sendRequestScheduler.scheduleMessage(messageContainer,
                                                          delay_ms,
                                                          this,
                                                          messageReceivers.getReceiverForChannelId(getReplyToChannelId()));
@@ -219,7 +219,7 @@ public class MessageSenderImpl implements MessageSender {
         logger.trace("SEND messageId: {} from: {} to: {} scheduleRequest", new Object[]{ message.getId(),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-        sendRequestScheduler.scheduleRequest(messageContainer, 0, failureAction, receiverForChannelId);
+        sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction, receiverForChannelId);
     }
 
     /*

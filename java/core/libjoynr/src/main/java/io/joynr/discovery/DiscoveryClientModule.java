@@ -74,9 +74,10 @@ public class DiscoveryClientModule extends AbstractModule {
     ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                                               RequestReplySender messageSender,
                                                               RequestReplyDispatcher dispatcher,
-                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String disocveryDirectoriesDomain,
+                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
+                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
                                                               SubscriptionManager subscriptionManager) {
-        MessagingQos messagingQos = new MessagingQos(5 * 60 * 1000);
+        MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
 
         DiscoveryQos discoveryQos = new DiscoveryQos(1000,
                                                      ArbitrationStrategy.HighestPriority,
@@ -84,7 +85,7 @@ public class DiscoveryClientModule extends AbstractModule {
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
         ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = new ProxyBuilderDefaultImpl<ChannelUrlDirectoryProxy>(localCapabilitiesDirectory,
-                                                                                                                    disocveryDirectoriesDomain,
+                                                                                                                    discoveryDirectoriesDomain,
                                                                                                                     ChannelUrlDirectoryProxy.class,
                                                                                                                     messageSender,
                                                                                                                     dispatcher,

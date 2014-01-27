@@ -53,7 +53,7 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
     }
 
     @Override
-    public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
+    public void registerChannelUrls(final String channelId, final ChannelUrlInformation channelUrlInformation) {
         logger.debug("registered {} for {}", channelId, channelUrlInformation);
 
         channelUrlStore.registerChannelUrls(channelId, channelUrlInformation);
@@ -62,18 +62,21 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
 
                 @Override
                 public void onSuccess(Void result) {
-                    // Do nothing
+                    logger.debug("successfully registered channelId: {} channelUrls: {}",
+                                 channelId,
+                                 channelUrlInformation.getUrls());
                 }
 
                 @Override
-                public void onFailure(JoynrException error) {
+                public void onFailure(JoynrException e) {
                     //Currently not retrying. Using long TTL instead.
+                    logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
 
                 }
             }, channelId, channelUrlInformation);
 
         } catch (JoynrException e) {
-            logger.error("exception while registering channelId: {} channelUrls: {}", channelId, e.getMessage());
+            logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
         }
     }
 

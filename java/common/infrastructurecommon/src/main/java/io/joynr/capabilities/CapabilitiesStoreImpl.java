@@ -48,9 +48,6 @@ import com.google.inject.Singleton;
  * Capability informations are stored in a concurrentHashMap. Using a in memory
  * database could be possible optimization.
  */
-
-// TODO Evaluate pro /cons of a in memory database
-
 @Singleton
 public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
@@ -70,11 +67,12 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     private Object capsLock = new Object();
 
     public CapabilitiesStoreImpl() {
-        // do nothing
+        logger.debug("creating empty capabiltities store {}", this);
     }
 
     @Inject
     public CapabilitiesStoreImpl(CapabilitiesProvisioning staticProvisioning) {
+        logger.debug("creating CapabilitiesStore {} with static provisioning", this);
         registerCapabilities(staticProvisioning.getCapabilityEntries());
     }
 

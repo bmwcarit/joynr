@@ -21,6 +21,7 @@ package io.joynr.capabilities.directory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import io.joynr.capabilities.CapabilitiesStoreImpl;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -53,7 +54,7 @@ public class CapabilitiesDirectoryTest {
 
     @Before
     public void setUp() {
-        capabilitiesDirectory = new CapabilitiesDirectoryImpl();
+        capabilitiesDirectory = new CapabilitiesDirectoryImpl(new CapabilitiesStoreImpl());
         providerQos.setPriority((long) 123);
         capInfo1 = new CapabilityInformation(domain, thisInterface, providerQos, mcId, participantId1);
         capInfo2 = new CapabilityInformation(domain, anotherInterface, providerQos, mcId, participantId2);
