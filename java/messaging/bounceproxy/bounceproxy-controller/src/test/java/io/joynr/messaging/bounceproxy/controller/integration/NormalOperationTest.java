@@ -83,7 +83,7 @@ public class NormalOperationTest {
 
         // get bounce proxies list
         Response listBps = given().get(serverUrl + "/controller/bounceproxies");
-        assertEquals("[\"X.Y\"]", listBps.getBody().asString());
+        assertEquals("[{\"status\":\"ACTIVE\",\"bounceProxyId\":\"X.Y\"}]", listBps.getBody().asString());
 
         // create channel on bounce proxy
         Response responseCreateChannel = //
@@ -123,7 +123,8 @@ public class NormalOperationTest {
 
         // get bounce proxies list
         Response listBps = given().get(serverUrl + "/controller/bounceproxies");
-        assertEquals("[\"X.Y\",\"A.B\"]", listBps.getBody().asString());
+        assertEquals("[{\"status\":\"ACTIVE\",\"bounceProxyId\":\"X.Y\"},{\"status\":\"ACTIVE\",\"bounceProxyId\":\"A.B\"}]",
+                     listBps.getBody().asString());
 
         // create channel on bounce proxy
         Response responseCreateFirstChannel = //

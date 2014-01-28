@@ -23,6 +23,7 @@ package io.joynr.messaging.bounceproxy.controller;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.service.MonitoringService;
 
@@ -43,8 +44,8 @@ public class MonitoringServiceImpl implements MonitoringService {
     private BounceProxyDirectory bounceProxyDirectory;
 
     @Override
-    public List<String> getRegisteredBounceProxies() {
-        return bounceProxyDirectory.getBounceProxyIds();
+    public List<BounceProxyStatusInformation> getRegisteredBounceProxies() {
+        return bounceProxyDirectory.getBounceProxyStatusInformation();
     }
 
     @Override

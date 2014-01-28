@@ -25,6 +25,7 @@ import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -112,6 +113,11 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
     @Override
     public List<String> getBounceProxyIds() {
         return new LinkedList<String>(directory.keySet());
+    }
+
+    @Override
+    public List<BounceProxyStatusInformation> getBounceProxyStatusInformation() {
+        return new LinkedList<BounceProxyStatusInformation>(directory.values());
     }
 
 }

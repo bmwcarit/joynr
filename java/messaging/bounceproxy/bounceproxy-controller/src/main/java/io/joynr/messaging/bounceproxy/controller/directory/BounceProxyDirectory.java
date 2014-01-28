@@ -23,6 +23,7 @@ package io.joynr.messaging.bounceproxy.controller.directory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
 
 import java.util.List;
 
@@ -63,5 +64,7 @@ public interface BounceProxyDirectory {
     public void updateBounceProxyStatus(String bpId, BounceProxyStatus status);
 
     public List<String> getBounceProxyIds();
+
+    public List<BounceProxyStatusInformation> getBounceProxyStatusInformation();
 
 }

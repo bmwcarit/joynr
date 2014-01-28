@@ -21,6 +21,7 @@ package io.joynr.messaging.service;
  */
 
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public interface MonitoringService {
      * 	
      * @return
      */
-    public List<String> getRegisteredBounceProxies();
+    public List<BounceProxyStatusInformation> getRegisteredBounceProxies();
 
     /**
      * Registers a new bounce proxy.

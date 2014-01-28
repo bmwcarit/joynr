@@ -22,6 +22,7 @@ package io.joynr.messaging.bounceproxy.controller.directory;
 
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
 
 /**
  * Database record for a bounce proxy instance.
@@ -29,7 +30,7 @@ import io.joynr.messaging.info.BounceProxyStatus;
  * @author christina.strobel
  *
  */
-public class BounceProxyRecord {
+public class BounceProxyRecord implements BounceProxyStatusInformation {
 
     public static final long ASSIGNMENT_TIMESTAMP_NEVER = -1;
 
@@ -93,6 +94,11 @@ public class BounceProxyRecord {
     public void increaseAssignedChannels() {
         assignedChannels++;
         lastAssignedTimestamp = System.currentTimeMillis();
+    }
+
+    @Override
+    public String getBounceProxyId() {
+        return info.getId();
     }
 
 }

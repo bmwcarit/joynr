@@ -21,6 +21,7 @@ package io.joynr.messaging.service;
  */
 
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 
 import java.net.URI;
@@ -67,8 +68,8 @@ public class MonitoringServiceRestAdapter {
      */
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    public GenericEntity<List<String>> getBounceProxies() {
-        return new GenericEntity<List<String>>(monitoringService.getRegisteredBounceProxies()) {
+    public GenericEntity<List<BounceProxyStatusInformation>> getBounceProxies() {
+        return new GenericEntity<List<BounceProxyStatusInformation>>(monitoringService.getRegisteredBounceProxies()) {
         };
     }
 
