@@ -39,6 +39,7 @@ public class MonitoringServiceClient {
     private static final Logger logger = LoggerFactory.getLogger(MonitoringServiceClient.class);
 
     private final BounceProxyStartupReporter startupReporter;
+    private final BounceProxyShutdownReporter shutdownReporter;
 
     /**
      * Creates a new reporter for monitoring data.
@@ -47,8 +48,10 @@ public class MonitoringServiceClient {
      * @param shutdownReporter
      */
     @Inject
-    public MonitoringServiceClient(BounceProxyStartupReporter startupReporter) {
+    public MonitoringServiceClient(BounceProxyStartupReporter startupReporter,
+                                   BounceProxyShutdownReporter shutdownReporter) {
         this.startupReporter = startupReporter;
+        this.shutdownReporter = shutdownReporter;
     }
 
     /**
@@ -107,7 +110,8 @@ public class MonitoringServiceClient {
         // cancel any reporting first
         startupReporter.cancelReporting();
 
-        // TODO implementation
+        // send the shutdown message to the BPC
+        shutdownReporter.reportShutdown();
     }
 
 }

@@ -36,6 +36,7 @@ import com.google.inject.name.Named;
 public class BounceProxyControllerUrl {
 
     private static final String URL_PATH_SEPARATOR = "/";
+    private static final String LIFECYCLE_PATH = "lifecycle";
 
     private String baseUrl;
 
@@ -79,4 +80,15 @@ public class BounceProxyControllerUrl {
                 "&url4cc=" + url4cc + //
                 "&url4bpc=" + url4bpc;
     }
+
+    /**
+     * Returns the URL including path and query parameters to report bounce
+     * proxy shutdown.
+     * 
+     * @return
+     */
+    public String buildReportShutdownUrl() {
+        return this.baseUrl + this.bounceProxyId + "/" + LIFECYCLE_PATH + "?status=shutdown";
+    }
+
 }

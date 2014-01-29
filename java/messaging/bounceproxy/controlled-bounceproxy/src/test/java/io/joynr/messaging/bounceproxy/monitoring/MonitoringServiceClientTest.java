@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
-import io.joynr.runtime.PropertyLoader;
 
 import java.io.IOException;
 import java.net.URI;
@@ -89,8 +88,10 @@ public class MonitoringServiceClientTest {
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCEPROXY_URL_FOR_BPC, "http://joyn-bpX.muc/bp");
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCEPROXY_URL_FOR_CC, "http://joyn-bpX.de/bp");
 
-        Injector injector = Guice.createInjector(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties")),
-                                                 new PropertyLoadingModule(properties),
+        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS, "10");
+        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MAX_SEND_SHUTDOWN_TIME_SECS, "2");
+
+        Injector injector = Guice.createInjector(new PropertyLoadingModule(properties),
                                                  new ControlledBounceProxyModule());
 
         reporter = injector.getInstance(MonitoringServiceClient.class);
@@ -120,9 +121,9 @@ public class MonitoringServiceClientTest {
             Thread.sleep(100);
         }
 
-        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyHttpRequest("X.Y",
-                                                                                      "http://joyn-bpX.de/bp/",
-                                                                                      "http://joyn-bpX.muc/bp/")),
+        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
+                                                                                             "http://joyn-bpX.de/bp/",
+                                                                                             "http://joyn-bpX.muc/bp/")),
                                                  any(HttpResponse.class),
                                                  any(HttpContext.class));
         Assert.assertTrue(reporter.hasReportedStartup());
@@ -142,9 +143,9 @@ public class MonitoringServiceClientTest {
             Thread.sleep(100);
         }
 
-        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyHttpRequest("X.Y",
-                                                                                      "http://joyn-bpX.de/bp/",
-                                                                                      "http://joyn-bpX.muc/bp/")),
+        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
+                                                                                             "http://joyn-bpX.de/bp/",
+                                                                                             "http://joyn-bpX.muc/bp/")),
                                                  any(HttpResponse.class),
                                                  any(HttpContext.class));
         Assert.assertTrue(reporter.hasReportedStartup());
@@ -165,9 +166,9 @@ public class MonitoringServiceClientTest {
             Thread.sleep(100);
         }
 
-        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyHttpRequest("X.Y",
-                                                                                      "http://joyn-bpX.de/bp/",
-                                                                                      "http://joyn-bpX.muc/bp/")),
+        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
+                                                                                             "http://joyn-bpX.de/bp/",
+                                                                                             "http://joyn-bpX.muc/bp/")),
                                                  any(HttpResponse.class),
                                                  any(HttpContext.class));
         Assert.assertTrue(reporter.hasReportedStartup());
@@ -181,12 +182,51 @@ public class MonitoringServiceClientTest {
 
         reporter.startStartupReporting();
 
+        Thread.sleep(3000);
+
         // wait for a certain time, then shut down; this should end startup
         // reporting
         reporter.reportShutdown();
 
         Mockito.verifyZeroInteractions(handler);
         Assert.assertFalse(reporter.hasReportedStartup());
+    }
+
+    @Test
+    public void testNotifyNormalShutdown() throws Exception {
+        setMockedHttpRequestHandlerResponse(HttpStatus.SC_NO_CONTENT);
+
+        reporter.reportShutdown();
+
+        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyShutdownHttpRequest("X.Y")),
+                                                 any(HttpResponse.class),
+                                                 any(HttpContext.class));
+    }
+
+    @Test
+    public void testNotifyShutdownWithUnexpectedServerResponse() throws Exception {
+        setMockedHttpRequestHandlerResponse(HttpStatus.SC_CREATED);
+
+        reporter.reportShutdown();
+
+        // expecting 3 retries
+        verify(handler, Mockito.atLeast(2)).handle(Mockito.argThat(new IsAnyShutdownHttpRequest("X.Y")),
+                                                   any(HttpResponse.class),
+                                                   any(HttpContext.class));
+    }
+
+    @Test
+    public void testNotifyShutdownWhenServerIsUnreachable() throws Exception {
+
+        server.stop();
+        server.awaitTermination(3000);
+
+        long shutdownStart = System.currentTimeMillis();
+        reporter.reportShutdown();
+        long shutdownEnd = System.currentTimeMillis();
+
+        Assert.assertTrue("shutdown took longer than 2 seconds", shutdownEnd - shutdownStart > 2000);
+        Assert.assertTrue("shutdown took less than 3 seconds (with 1 second buffer", shutdownEnd - shutdownStart < 3000);
     }
 
     /**
@@ -218,20 +258,20 @@ public class MonitoringServiceClientTest {
 
     /**
      * Argument matcher to allow to only check for certain parts of the HTTP
-     * request. It will only check if query and header parameters are sent
-     * correctly. A full check for the whole header would not be very fault
+     * startup request. It will only check if query and header parameters are
+     * sent correctly. A full check for the whole header would not be very fault
      * tolerant as it includes timestamps etc.
      * 
      * @author christina.strobel
      * 
      */
-    class IsAnyHttpRequest extends ArgumentMatcher<HttpRequest> {
+    class IsAnyStartupHttpRequest extends ArgumentMatcher<HttpRequest> {
 
         private String bpId;
         private String url4cc;
         private Object url4bpc;
 
-        public IsAnyHttpRequest(String bpId, String url4cc, String url4bpc) {
+        public IsAnyStartupHttpRequest(String bpId, String url4cc, String url4bpc) {
             this.bpId = bpId;
             this.url4cc = url4cc;
             this.url4bpc = url4bpc;
@@ -277,6 +317,65 @@ public class MonitoringServiceClientTest {
             description.appendText("HTTP PUT request with ");
             description.appendText("query params: [bpid=" + bpId + "], ");
             description.appendText("header params: [url4cc=" + url4cc + ", url4bpc=" + url4bpc + "]");
+        }
+
+    }
+
+    /**
+     * Argument matcher to allow to only check for certain parts of the HTTP
+     * shutdown request. It will only check if query and header parameters are
+     * sent correctly. A full check for the whole header would not be very fault
+     * tolerant as it includes timestamps etc.
+     * 
+     * @author christina.strobel
+     * 
+     */
+    class IsAnyShutdownHttpRequest extends ArgumentMatcher<HttpRequest> {
+
+        private String bpId;
+
+        public IsAnyShutdownHttpRequest(String bpId) {
+            this.bpId = bpId;
+        }
+
+        public boolean matches(Object arg) {
+
+            try {
+                HttpRequest request = (HttpRequest) arg;
+
+                if (!request.getRequestLine().getMethod().equals("PUT")) {
+                    return false;
+                }
+
+                // path parameter has to contain bpid
+                URI uri = URI.create(request.getRequestLine().getUri());
+                if (!uri.getPath().endsWith("/" + bpId + "/lifecycle")) {
+                    return false;
+                }
+
+                // query parameter has to contain status=shutdown
+                List<NameValuePair> queryParameters = URLEncodedUtils.parse(new URI(request.getRequestLine().getUri()),
+                                                                            "UTF-8");
+
+                for (NameValuePair nameValuePair : queryParameters) {
+                    if (nameValuePair.getName().equals("status") && !nameValuePair.getValue().equals("shutdown")) {
+                        return false;
+                    }
+                }
+
+                return true;
+
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("HTTP request with ");
+            description.appendText("path params: [bpid=" + bpId + "], ");
+            description.appendText("query params: [status=shutdown]");
         }
 
     }

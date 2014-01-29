@@ -31,7 +31,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.http.StatusLine;
@@ -65,15 +64,19 @@ public class BounceProxyStartupReporter {
     private final BounceProxyControllerUrl bounceProxyControllerUrl;
     private final ControlledBounceProxyUrl controlledBounceProxyUrl;
 
+    private ExecutorService execService;
+
     @Inject
     public BounceProxyStartupReporter(CloseableHttpClient httpclient,
                                       BounceProxyControllerUrl bounceProxyControllerUrl,
                                       ControlledBounceProxyUrl controlledBounceProxyUrl,
+                                      ExecutorService execService,
                                       @Named(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS) long sendReportRetryIntervalMs) {
         this.httpclient = httpclient;
         this.sendReportRetryIntervalMs = sendReportRetryIntervalMs;
         this.bounceProxyControllerUrl = bounceProxyControllerUrl;
         this.controlledBounceProxyUrl = controlledBounceProxyUrl;
+        this.execService = execService;
     }
 
     /**
@@ -120,8 +123,6 @@ public class BounceProxyStartupReporter {
                 return false;
             }
         };
-
-        ExecutorService execService = Executors.newSingleThreadExecutor();
 
         // don't wait for the callable to end so that shutting down is possible
         // at any time
@@ -177,7 +178,13 @@ public class BounceProxyStartupReporter {
      * Cancels startup reporting.
      */
     public void cancelReporting() {
-        startupReportFuture.cancel(true);
+        if (startupReportFuture != null) {
+            startupReportFuture.cancel(true);
+        }
+        if (execService != null) {
+            // interrupt reporting loop
+            execService.shutdownNow();
+        }
     }
 
     /**
@@ -193,7 +200,7 @@ public class BounceProxyStartupReporter {
 
         // try forever to reach the bounce proxy, as otherwise the bounce proxy
         // isn't useful anyway
-        while (true) {
+        while (!startupReportFuture.isCancelled()) {
             try {
                 reportEventAsHttpRequest();
                 // if no exception is thrown, reporting was successful and we
@@ -205,7 +212,9 @@ public class BounceProxyStartupReporter {
                 // registered. It could be that two clients try to register with
                 // the same ID. Then we won't have to try to register forever.
                 // Do a more detailed error handling here!
-                logger.error("error notifying of Bounce Proxy startup: message: {}", e.getMessage());
+                logger.error("error notifying of Bounce Proxy startup: exception: {}, message: {}",
+                             e.getClass(),
+                             e.getMessage());
             }
             try {
                 Thread.sleep(sendReportRetryIntervalMs);
@@ -213,6 +222,7 @@ public class BounceProxyStartupReporter {
                 return false;
             }
         }
+        return false;
     }
 
     /**

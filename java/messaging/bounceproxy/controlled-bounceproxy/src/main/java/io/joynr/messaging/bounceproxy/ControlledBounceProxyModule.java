@@ -20,6 +20,9 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import io.joynr.messaging.service.ChannelService;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -27,6 +30,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 public class ControlledBounceProxyModule extends AbstractModule {
 
@@ -47,5 +51,11 @@ public class ControlledBounceProxyModule extends AbstractModule {
         // If a custom configuration is needed, a separate provider should be
         // created.
         return HttpClients.createDefault();
+    }
+
+    @Provides
+    @Singleton
+    ExecutorService getExecutorService() {
+        return Executors.newSingleThreadExecutor();
     }
 }
