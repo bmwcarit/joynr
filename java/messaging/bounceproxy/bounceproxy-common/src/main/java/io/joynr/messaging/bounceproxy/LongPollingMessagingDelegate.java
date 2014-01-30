@@ -20,8 +20,13 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
+import io.joynr.messaging.info.ChannelInformation;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -42,6 +47,29 @@ import org.slf4j.LoggerFactory;
 public class LongPollingMessagingDelegate {
 
     private static final Logger log = LoggerFactory.getLogger(LongPollingMessagingDelegate.class);
+
+    /**
+     * Gets a list of all channel information.
+     * 
+     * @return
+     */
+    public List<ChannelInformation> listChannels() {
+        LinkedList<ChannelInformation> entries = new LinkedList<ChannelInformation>();
+        Collection<Broadcaster> broadcasters = BroadcasterFactory.getDefault().lookupAll();
+        String name;
+        for (Broadcaster broadcaster : broadcasters) {
+            if (broadcaster instanceof BounceProxyBroadcaster) {
+                name = ((BounceProxyBroadcaster) broadcaster).getName();
+            } else {
+                name = broadcaster.getClass().getSimpleName();
+            }
+
+            Integer cachedSize = null;
+            entries.add(new ChannelInformation(name, broadcaster.getAtmosphereResources().size(), cachedSize));
+        }
+
+        return entries;
+    }
 
     /**
      * Creates a long polling channel.

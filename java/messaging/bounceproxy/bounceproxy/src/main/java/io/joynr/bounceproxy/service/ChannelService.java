@@ -37,8 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -127,20 +125,7 @@ public class ChannelService {
     @Produces("application/json")
     public GenericEntity<List<ChannelInformation>> listChannels() {
         try {
-            LinkedList<ChannelInformation> entries = new LinkedList<ChannelInformation>();
-            Collection<Broadcaster> broadcasters = BroadcasterFactory.getDefault().lookupAll();
-            String name;
-            for (Broadcaster broadcaster : broadcasters) {
-                if (broadcaster instanceof BounceProxyBroadcaster) {
-                    name = ((BounceProxyBroadcaster) broadcaster).getName();
-                } else {
-                    name = broadcaster.getClass().getSimpleName();
-                }
-
-                Integer cachedSize = null;
-                entries.add(new ChannelInformation(name, broadcaster.getAtmosphereResources().size(), cachedSize));
-            }
-
+            List<ChannelInformation> entries = longPollingDelegate.listChannels();
             return new GenericEntity<List<ChannelInformation>>(entries) {
             };
         } catch (Throwable e) {

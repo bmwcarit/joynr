@@ -34,10 +34,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
-	<properties>
-		<atmosphere-version>2.0.1</atmosphere-version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -55,25 +51,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.atmosphere</groupId>
-			<artifactId>atmosphere-jersey</artifactId>
-			<version>${atmosphere-version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.atmosphere</groupId>
-					<artifactId>atmosphere-ping</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>eu.infomas</groupId>
 			<artifactId>annotation-detector</artifactId>

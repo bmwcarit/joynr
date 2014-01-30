@@ -1,7 +1,5 @@
 package io.joynr.messaging.info;
 
-import javax.annotation.CheckForNull;
-
 /*
  * #%L
  * joynr::java::messaging::service-common
@@ -21,6 +19,8 @@ import javax.annotation.CheckForNull;
  * limitations under the License.
  * #L%
  */
+
+import javax.annotation.CheckForNull;
 
 /**
  * Information about a messaging channel that can be used by messaging clients.<br>
