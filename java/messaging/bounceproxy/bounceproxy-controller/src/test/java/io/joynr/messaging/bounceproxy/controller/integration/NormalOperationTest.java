@@ -22,8 +22,10 @@ package io.joynr.messaging.bounceproxy.controller.integration;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import io.joynr.messaging.info.BounceProxyStatus;
 
 import java.util.List;
 
@@ -82,8 +84,8 @@ public class NormalOperationTest {
         assertEquals(201 /* Created */, responseCreateBp.getStatusCode());
 
         // get bounce proxies list
-        Response listBps = given().get(serverUrl + "/controller/bounceproxies");
-        assertEquals("[{\"status\":\"ACTIVE\",\"bounceProxyId\":\"X.Y\"}]", listBps.getBody().asString());
+        JsonPath listBps = given().get(serverUrl + "/controller/bounceproxies").body().jsonPath();
+        assertThat(listBps, containsBounceProxy("X.Y", BounceProxyStatus.ALIVE));
 
         // create channel on bounce proxy
         Response responseCreateChannel = //
@@ -122,9 +124,10 @@ public class NormalOperationTest {
         assertEquals(201 /* Created */, responseCreateSecondBp.getStatusCode());
 
         // get bounce proxies list
-        Response listBps = given().get(serverUrl + "/controller/bounceproxies");
-        assertEquals("[{\"status\":\"ACTIVE\",\"bounceProxyId\":\"X.Y\"},{\"status\":\"ACTIVE\",\"bounceProxyId\":\"A.B\"}]",
-                     listBps.getBody().asString());
+        JsonPath listBps = given().get(serverUrl + "/controller/bounceproxies").getBody().jsonPath();
+        assertThat(listBps, allOf( //
+                                  containsBounceProxy("X.Y", BounceProxyStatus.ALIVE), //
+                                  containsBounceProxy("A.B", BounceProxyStatus.ALIVE)));
 
         // create channel on bounce proxy
         Response responseCreateFirstChannel = //
@@ -197,4 +200,37 @@ public class NormalOperationTest {
 
         };
     }
+
+    private Matcher<JsonPath> containsBounceProxy(final String id, final BounceProxyStatus status) {
+
+        return new BaseMatcher<JsonPath>() {
+
+            @Override
+            public boolean matches(Object item) {
+
+                JsonPath jsonPath = (JsonPath) item;
+
+                for (int i = 0; i < jsonPath.getList("").size(); i++) {
+
+                    if (jsonPath.get("[" + i + "].status").equals(status.name())
+                            && jsonPath.get("[" + i + "].bounceProxyId").equals(id)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("contains entry with status=" + status.name() + " and bounceProxyId=" + id);
+            }
+
+            @Override
+            public void describeMismatch(final Object item, final Description description) {
+                description.appendText("was").appendValue(((JsonPath) item).get(""));
+            }
+        };
+    }
+
 }

@@ -1,5 +1,7 @@
 package io.joynr.messaging.info;
 
+import java.util.Date;
+
 /*
  * #%L
  * joynr::java::messaging::bounceproxy-controller-service
@@ -24,7 +26,7 @@ package io.joynr.messaging.info;
  * Aggregates information about a bounce proxy and its status.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public interface BounceProxyStatusInformation {
 
@@ -41,4 +43,19 @@ public interface BounceProxyStatusInformation {
      * @return
      */
     public BounceProxyStatus getStatus();
+
+    /**
+     * Returns the freshness of this information, i.e. the timestamp when status
+     * information about this bounce proxy was updated last.
+     * 
+     * @return
+     */
+    public Date getFreshness();
+
+    /**
+     * Returns performance measures of this bounce proxy instance.
+     * 
+     * @return
+     */
+    public PerformanceMeasures getPerformanceMeasures();
 }

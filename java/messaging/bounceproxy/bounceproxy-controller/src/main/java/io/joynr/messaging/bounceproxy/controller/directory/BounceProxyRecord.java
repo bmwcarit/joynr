@@ -23,12 +23,17 @@ package io.joynr.messaging.bounceproxy.controller.directory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.PerformanceMeasures;
+
+import java.util.Date;
 
 /**
- * Database record for a bounce proxy instance.
+ * Database record for a bounce proxy instance.<br>
+ * This class does not contain any logic but only sets and gets attributes, as
+ * this only reflects an entry of a database.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class BounceProxyRecord implements BounceProxyStatusInformation {
 
@@ -36,7 +41,22 @@ public class BounceProxyRecord implements BounceProxyStatusInformation {
 
     private ControlledBounceProxyInformation info;
     private BounceProxyStatus status;
+    /**
+     * The performance measures as sent by the bounce proxy.
+     */
+    private PerformanceMeasures performanceMeasures;
 
+    /**
+     * The freshness of the record, i.e. the timestamp when this record was
+     * marked as up to date.
+     */
+    private long freshness;
+
+    /**
+     * The number of assigned channels as recorded by the bounce proxy
+     * controller. This should match with the number of assigned channels
+     * reported by the bounce proxy in {@link #performanceMeasures}.
+     */
     private int assignedChannels;
 
     private long lastAssignedTimestamp;
@@ -45,7 +65,7 @@ public class BounceProxyRecord implements BounceProxyStatusInformation {
         this.info = bpInfo;
         this.lastAssignedTimestamp = ASSIGNMENT_TIMESTAMP_NEVER;
         this.assignedChannels = 0;
-        this.status = BounceProxyStatus.ACTIVE;
+        this.status = BounceProxyStatus.ALIVE;
     }
 
     public ControlledBounceProxyInformation getInfo() {
@@ -60,8 +80,21 @@ public class BounceProxyRecord implements BounceProxyStatusInformation {
         return status;
     }
 
-    public void setStatus(BounceProxyStatus status) {
-        this.status = status;
+    /**
+     * Sets the status of the bounce proxy.
+     * 
+     * @param status
+     * @throws IllegalStateException
+     *             if setting this status is not possible for the current bounce
+     *             proxy status.
+     */
+    public void setStatus(BounceProxyStatus status) throws IllegalStateException {
+        // this checks if the transition is valid
+        if (this.status.isValidTransition(status)) {
+            this.status = status;
+        } else {
+            throw new IllegalStateException("Illegal status transition from " + this.status + " to " + status);
+        }
     }
 
     public int getAssignedChannels() {
@@ -89,11 +122,11 @@ public class BounceProxyRecord implements BounceProxyStatusInformation {
     }
 
     /**
-     * Increases the number of assigned channels and updates the timestamp of the latest channel assignment.
+     * Increases the number of assigned channels. The timestamp of the latest
+     * channel assignment has to be updated manually.
      */
     public void increaseAssignedChannels() {
         assignedChannels++;
-        lastAssignedTimestamp = System.currentTimeMillis();
     }
 
     @Override
@@ -101,4 +134,33 @@ public class BounceProxyRecord implements BounceProxyStatusInformation {
         return info.getId();
     }
 
+    @Override
+    public Date getFreshness() {
+        return new Date(freshness);
+    }
+
+    @Override
+    public PerformanceMeasures getPerformanceMeasures() {
+        return this.performanceMeasures;
+    }
+
+    /**
+     * Sets the performance measures for this records as they were sent by the
+     * bounce proxy.
+     * 
+     * @param performanceMeasures
+     */
+    public void setPerformanceMeasures(PerformanceMeasures performanceMeasures) {
+        this.performanceMeasures = performanceMeasures;
+    }
+
+    /**
+     * Updates the freshness of the record.
+     * 
+     * @param a
+     *            timestamp
+     */
+    public void setFreshness(long timestamp) {
+        this.freshness = timestamp;
+    }
 }
