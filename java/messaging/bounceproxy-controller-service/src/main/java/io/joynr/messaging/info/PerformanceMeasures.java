@@ -135,9 +135,26 @@ public class PerformanceMeasures {
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Returns the value for a measure key.
      * 
+     * @param key
+     * @return
+     */
+    public int getMeasure(Key key) {
+        return measures.get(key);
+    }
+
+    /**
+     * Returns all measures.
+     * 
+     * @return
+     */
+    public HashMap<Key, Integer> getMeasures() {
+        return measures;
+    }
+
+    /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
