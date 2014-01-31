@@ -20,10 +20,16 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
+import io.joynr.messaging.bounceproxy.monitoring.BounceProxyPerformanceMonitor;
+import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
+import io.joynr.messaging.service.ChannelService;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import io.joynr.messaging.service.ChannelService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -42,6 +48,7 @@ public class ControlledBounceProxyModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ChannelService.class).to(ChannelServiceImpl.class);
+        bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
     }
 
     @Provides
@@ -57,5 +64,31 @@ public class ControlledBounceProxyModule extends AbstractModule {
     @Singleton
     ExecutorService getExecutorService() {
         return Executors.newSingleThreadExecutor();
+    }
+
+    @Provides
+    @Singleton
+    ScheduledExecutorService getScheduledExecutorService() {
+        return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    /**
+     * TODO This is a temporary solution until bounce proxy is implemented and
+     * actual performance measures can be monitored.
+     * 
+     * @return
+     */
+    @Provides
+    BounceProxyPerformanceMonitor getBounceProxyPerformanceMonitor() {
+        return new BounceProxyPerformanceMonitor() {
+
+            @Override
+            public Map<String, Integer> getAsKeyValuePairs() {
+                HashMap<String, Integer> map = new HashMap<String, Integer>();
+                map.put("activeLongPolls", 0);
+                map.put("assignedChannels", 0);
+                return map;
+            }
+        };
     }
 }

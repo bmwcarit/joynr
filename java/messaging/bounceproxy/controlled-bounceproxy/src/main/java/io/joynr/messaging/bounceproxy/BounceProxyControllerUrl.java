@@ -37,6 +37,7 @@ public class BounceProxyControllerUrl {
 
     private static final String URL_PATH_SEPARATOR = "/";
     private static final String LIFECYCLE_PATH = "lifecycle";
+    private static final String PERFORMANCE_PATH = "performance";
 
     private String baseUrl;
 
@@ -89,6 +90,16 @@ public class BounceProxyControllerUrl {
      */
     public String buildReportShutdownUrl() {
         return this.baseUrl + this.bounceProxyId + "/" + LIFECYCLE_PATH + "?status=shutdown";
+    }
+
+    /**
+     * Returns the URL including path and query parameters to report performance
+     * measures of the bounce proxy instance.
+     * 
+     * @return the url to send performance reports to
+     */
+    public String buildReportPerformanceUrl() {
+        return baseUrl + this.bounceProxyId + "/" + PERFORMANCE_PATH;
     }
 
 }

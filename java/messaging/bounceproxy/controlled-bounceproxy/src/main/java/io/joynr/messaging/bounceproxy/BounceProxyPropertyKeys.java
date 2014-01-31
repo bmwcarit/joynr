@@ -45,6 +45,7 @@ public class BounceProxyPropertyKeys {
 
     public static final String PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS = "joynr.bounceproxy.send_lifecycle_report_retry_interval_ms";
     public static final String PROPERTY_BOUNCE_PROXY_MAX_SEND_SHUTDOWN_TIME_SECS = "joynr.bounceproxy.max_send_shutdown_report_time_secs";
+    public static final String PROPERTY_BOUNCE_PROXY_MONITORING_FREQUENCY_MS = "joynr.bounceproxy.monitoring_frequency_ms";
 
     /**
      * Returns the keys for all properties that should be configured as system

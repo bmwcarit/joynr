@@ -47,10 +47,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
@@ -64,6 +64,9 @@ public class MonitoringServiceClientTest {
 
     @Mock
     HttpRequestHandler handler;
+
+    @Mock
+    BounceProxyPerformanceMonitor mockPerformanceMonitor;
 
     private LocalTestServer server;
 
@@ -87,6 +90,7 @@ public class MonitoringServiceClientTest {
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_ID, "X.Y");
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCEPROXY_URL_FOR_BPC, "http://joyn-bpX.muc/bp");
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCEPROXY_URL_FOR_CC, "http://joyn-bpX.de/bp");
+        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MONITORING_FREQUENCY_MS, "100");
 
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS, "10");
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MAX_SEND_SHUTDOWN_TIME_SECS, "2");
@@ -229,6 +233,27 @@ public class MonitoringServiceClientTest {
         Assert.assertTrue("shutdown took less than 3 seconds (with 1 second buffer", shutdownEnd - shutdownStart < 3000);
     }
 
+    @Test
+    public void testReportPerformance() throws Exception {
+        setMockedHttpRequestHandlerResponse(HttpStatus.SC_NO_CONTENT);
+
+        reporter.startStartupReporting();
+
+        reporter.startPerformanceReport();
+
+        Thread.sleep(1000);
+
+        // sending report every 100ms in 1 second. For robustness, we test for
+        // at least 5 invocations
+        ArgumentCaptor<HttpRequest> argument1 = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(handler, Mockito.atLeast(5)).handle(argument1.capture(), any(HttpResponse.class), any(HttpContext.class));
+        Assert.assertThat(argument1.getValue(), MockitoTestUtils.isAnyPerformanceHttpRequest("X.Y", 0, 0));
+
+        // Shutdown all threads at the end. If we shutdown before test, the
+        // mocked handler is messed up with the shutdown report.
+        reporter.reportShutdown();
+    }
+
     /**
      * Sets the HTTP response returned by the
      * {@link HttpRequestHandler#handle(HttpRequest, HttpResponse, HttpContext)}
@@ -243,14 +268,7 @@ public class MonitoringServiceClientTest {
 
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
-        Answer<Void> answerForHttpResponse = new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                HttpResponse httpResponse = (HttpResponse) invocation.getArguments()[1];
-                httpResponse.setStatusCode(httpStatus);
-                return null;
-            }
-        };
-
+        Answer<Void> answerForHttpResponse = MockitoTestUtils.createAnswerForHttpResponse(httpStatus);
         Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
                                                                      any(HttpResponse.class),
                                                                      any(HttpContext.class));
@@ -379,4 +397,5 @@ public class MonitoringServiceClientTest {
         }
 
     }
+
 }

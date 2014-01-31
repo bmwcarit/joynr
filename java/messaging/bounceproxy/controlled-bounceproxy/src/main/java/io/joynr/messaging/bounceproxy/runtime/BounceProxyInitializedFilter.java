@@ -21,7 +21,7 @@ package io.joynr.messaging.bounceproxy.runtime;
  */
 
 import io.joynr.exceptions.JoynrException;
-import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
+import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
 
 import java.io.IOException;
 
@@ -46,7 +46,7 @@ import com.google.inject.Singleton;
 public class BounceProxyInitializedFilter implements Filter {
 
     @Inject
-    private MonitoringServiceClient monitoringServiceClient;
+    private BounceProxyLifecycleMonitor lifecycleMonitor;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -57,13 +57,13 @@ public class BounceProxyInitializedFilter implements Filter {
                                                                                              ServletException {
 
         // first check whether we are ready to accept events
-        if (monitoringServiceClient.hasReportedStartup()) {
+        if (lifecycleMonitor.isInitialized()) {
             // forward request
             chain.doFilter(request, response);
+        } else {
+	        // block request
+	        throw new JoynrException("Bounce proxy is not ready to accept requests.");
         }
-
-        // block request
-        throw new JoynrException("Bounce proxy is not ready to accept requests.");
     }
 
     @Override

@@ -34,12 +34,13 @@ import com.google.inject.Singleton;
  * 
  */
 @Singleton
-public class MonitoringServiceClient {
+public class MonitoringServiceClient implements BounceProxyLifecycleMonitor {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitoringServiceClient.class);
 
     private final BounceProxyStartupReporter startupReporter;
     private final BounceProxyShutdownReporter shutdownReporter;
+    private final BounceProxyPerformanceReporter performanceReporter;
 
     /**
      * Creates a new reporter for monitoring data.
@@ -49,9 +50,11 @@ public class MonitoringServiceClient {
      */
     @Inject
     public MonitoringServiceClient(BounceProxyStartupReporter startupReporter,
-                                   BounceProxyShutdownReporter shutdownReporter) {
+                                   BounceProxyShutdownReporter shutdownReporter,
+                                   BounceProxyPerformanceReporter performanceReporter) {
         this.startupReporter = startupReporter;
         this.shutdownReporter = shutdownReporter;
+        this.performanceReporter = performanceReporter;
     }
 
     /**
@@ -62,7 +65,8 @@ public class MonitoringServiceClient {
      * proxy controller.
      */
     public void startPerformanceReport() {
-        // TODO implementation
+        logger.debug("Starting bounce proxy reporting loop");
+        performanceReporter.startReporting();
     }
 
     /**
@@ -110,8 +114,15 @@ public class MonitoringServiceClient {
         // cancel any reporting first
         startupReporter.cancelReporting();
 
+        // quit performance report loop
+        performanceReporter.stopReporting();
+
         // send the shutdown message to the BPC
         shutdownReporter.reportShutdown();
     }
 
+    @Override
+    public boolean isInitialized() {
+        return hasReportedStartup();
+    }
 }
