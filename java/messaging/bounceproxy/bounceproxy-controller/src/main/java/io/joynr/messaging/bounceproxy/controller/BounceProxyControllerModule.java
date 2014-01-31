@@ -20,6 +20,9 @@ package io.joynr.messaging.bounceproxy.controller;
  * #L%
  */
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryBounceProxyDirectory;
@@ -32,6 +35,7 @@ import io.joynr.messaging.system.SystemTimeProvider;
 import io.joynr.messaging.system.TimestampProvider;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 
 /**
  * GUICE module to configure dependency injection for the bounce proxy
@@ -61,4 +65,12 @@ public class BounceProxyControllerModule extends AbstractModule {
         bind(ChannelAssignmentStrategy.class).to(RoundRobinAssignmentStrategy.class);
     }
 
+    @Provides
+    CloseableHttpClient getCloseableHttpClient() {
+        // For now, we provide the httpclient in here, as the configuration is
+        // different from messaging configuration (e.g. no proxy settings).
+        // If a custom configuration is needed, a separate provider should be
+        // created.
+        return HttpClients.createDefault();
+    }
 }

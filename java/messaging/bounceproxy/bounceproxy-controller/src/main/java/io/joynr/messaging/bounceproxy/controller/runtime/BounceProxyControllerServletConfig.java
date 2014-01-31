@@ -20,9 +20,11 @@ package io.joynr.messaging.bounceproxy.controller.runtime;
  * #L%
  */
 
+import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.controller.BounceProxyControllerModule;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MonitoringServiceRestAdapter;
+import io.joynr.runtime.PropertyLoader;
 
 import javax.servlet.ServletContextEvent;
 
@@ -36,7 +38,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  * Servlet configuration for bounceproxy controller servlet.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class BounceProxyControllerServletConfig extends GuiceServletContextListener {
 
@@ -61,7 +63,11 @@ public class BounceProxyControllerServletConfig extends GuiceServletContextListe
 
         };
 
-        injector = Guice.createInjector(jerseyServletModule, new BounceProxyControllerModule());
+        // The factory will automatically set all messaging settings etc. from
+        // default JOYnr property files.
+        injector = Guice.createInjector(new PropertyLoadingModule(PropertyLoader.loadProperties("bounceProxyController.properties")),
+                                        jerseyServletModule,
+                                        new BounceProxyControllerModule());
 
         super.contextInitialized(servletContextEvent);
     }

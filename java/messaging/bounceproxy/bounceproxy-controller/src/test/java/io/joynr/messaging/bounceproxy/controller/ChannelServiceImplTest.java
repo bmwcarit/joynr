@@ -23,6 +23,7 @@ package io.joynr.messaging.bounceproxy.controller;
 import static org.junit.Assert.assertEquals;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
+import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.info.ChannelInformation;
@@ -81,7 +82,7 @@ public class ChannelServiceImplTest {
     }
 
     @Test
-    public void testCreateChannel() {
+    public void testCreateChannel() throws JoynrProtocolException {
 
         ControlledBounceProxyInformation bpInfo = new ControlledBounceProxyInformation("X.Y",
                                                                                        URI.create("http://bpX.de"));

@@ -21,14 +21,24 @@ package io.joynr.messaging.bounceproxy.controller.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import io.joynr.messaging.bounceproxy.controller.IsCreateChannelHttpRequest;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.service.ChannelServiceConstants;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.localserver.LocalTestServer;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpRequestHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.hamcrest.BaseMatcher;
@@ -37,15 +47,28 @@ import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 
+@RunWith(MockitoJUnitRunner.class)
 public class NormalOperationTest {
 
     private String serverUrl;
 
     private Server jettyServer;
+
+    @Mock
+    HttpRequestHandler mockBounceProxyRequestHandler;
+
+    private LocalTestServer mockBounceProxy;
+    private String mockBounceProxyUrl;
 
     @Before
     public void setUp() throws Exception {
@@ -63,15 +86,28 @@ public class NormalOperationTest {
 
         int port = jettyServer.getConnectors()[0].getLocalPort();
         serverUrl = String.format("http://localhost:%d", port);
+
+        // use local test server to intercept http requests sent by the reporter
+        mockBounceProxy = new LocalTestServer(null, null);
+        mockBounceProxy.register("*", mockBounceProxyRequestHandler);
+        mockBounceProxy.start();
+
+        mockBounceProxyUrl = "http://localhost:" + mockBounceProxy.getServiceAddress().getPort() + "/";
     }
 
     @After
     public void tearDown() throws Exception {
         jettyServer.stop();
+        mockBounceProxy.stop();
     }
 
     @Test
-    public void testSimpleChannelSetupOnSingleBounceProxy() {
+    public void testSimpleChannelSetupOnSingleBounceProxy() throws Exception {
+
+        setMockedHttpResponseForChannel("channel-123",
+                                        "trackingId-123",
+                                        "X.Y",
+                                        "http://www.joynX.de/bp/channels/channel-123");
 
         // register new bounce proxy
         Response responseCreateBp = //
@@ -79,7 +115,7 @@ public class NormalOperationTest {
                when()
                .queryParam("url4cc", "http://www.joynX.de/bp")
                .and()
-               .queryParam("url4bpc", "http://joynX.bmwgroup.net/bp")
+               .queryParam("url4bpc", mockBounceProxyUrl)
                .put(serverUrl + "/controller/bounceproxies?bpid=X.Y");
         assertEquals(201 /* Created */, responseCreateBp.getStatusCode());
 
@@ -89,7 +125,8 @@ public class NormalOperationTest {
 
         // create channel on bounce proxy
         Response responseCreateChannel = //
-        given().post(serverUrl + "/channels?ccid=channel-123");
+        given().header(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID, "trackingId-123").post(serverUrl
+                + "/channels?ccid=channel-123");
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
         assertEquals("X.Y", responseCreateChannel.getHeader("bp"));
         assertEquals("http://www.joynX.de/bp/channels/channel-123;jsessionid=.Y",
@@ -99,10 +136,25 @@ public class NormalOperationTest {
         JsonPath listChannels = given().get(serverUrl + "/channels").getBody().jsonPath();
         assertThat(listChannels, is(numberOfChannels(1)));
         assertThat(listChannels, containsChannel("channel-123"));
+
+        // check if handler was called
+        Mockito.verify(mockBounceProxyRequestHandler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
+                       Mockito.any(HttpResponse.class),
+                       Mockito.any(HttpContext.class));
     }
 
     @Test
-    public void testSimpleChannelSetupOnTwoBounceProxies() {
+    public void testSimpleChannelSetupOnTwoBounceProxies() throws Exception {
+
+        setMockedHttpResponseForChannel("channel-123",
+                                        "trackingId-123",
+                                        "X.Y",
+                                        "http://www.joynX.de/bp/channels/channel-123");
+        setMockedHttpResponseForChannel("channel-abc",
+                                        "trackingId-abc",
+                                        "A.B",
+                                        "http://www.joynA.de/bp/channels/channel-abc");
 
         // register two bounce proxies
         Response responseCreateFirstBp = //
@@ -110,7 +162,7 @@ public class NormalOperationTest {
                when()
                .queryParam("url4cc", "http://www.joynX.de/bp")
                .and()
-               .queryParam("url4bpc", "http://joynX.bmwgroup.net/bp")
+               .queryParam("url4bpc", mockBounceProxyUrl)
                .put(serverUrl + "/controller/bounceproxies?bpid=X.Y");
         assertEquals(201 /* Created */, responseCreateFirstBp.getStatusCode());
 
@@ -119,7 +171,7 @@ public class NormalOperationTest {
                when()
                .queryParam("url4cc", "http://www.joynA.de/bp")
                .and()
-               .queryParam("url4bpc", "http://joynA.bmwgroup.net/bp")
+               .queryParam("url4bpc", mockBounceProxyUrl)
                .put(serverUrl + "/controller/bounceproxies?bpid=A.B");
         assertEquals(201 /* Created */, responseCreateSecondBp.getStatusCode());
 
@@ -131,7 +183,8 @@ public class NormalOperationTest {
 
         // create channel on bounce proxy
         Response responseCreateFirstChannel = //
-        given().post(serverUrl + "/channels?ccid=channel-123");
+        given().header(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID, "trackingId-123").post(serverUrl
+                + "/channels?ccid=channel-123");
         assertEquals(201 /* Created */, responseCreateFirstChannel.getStatusCode());
         assertEquals("X.Y", responseCreateFirstChannel.getHeader("bp"));
         assertEquals("http://www.joynX.de/bp/channels/channel-123;jsessionid=.Y",
@@ -139,7 +192,8 @@ public class NormalOperationTest {
 
         // create channel on different bounce proxy
         Response responseCreateSecondChannel = //
-        given().post(serverUrl + "/channels?ccid=channel-abc");
+        given().header(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID, "trackingId-abc").post(serverUrl
+                + "/channels?ccid=channel-abc");
         assertEquals(201 /* Created */, responseCreateSecondChannel.getStatusCode());
         assertEquals("A.B", responseCreateSecondChannel.getHeader("bp"));
         assertEquals("http://www.joynA.de/bp/channels/channel-abc;jsessionid=.B",
@@ -150,6 +204,28 @@ public class NormalOperationTest {
         assertThat(listChannels, is(numberOfChannels(2)));
         assertThat(listChannels, containsChannel("channel-123"));
         assertThat(listChannels, containsChannel("channel-abc"));
+    }
+
+    private void setMockedHttpResponseForChannel(final String ccid,
+                                                 final String trackingId,
+                                                 final String bpId,
+                                                 final String location) throws HttpException, IOException {
+        // HttpResponse is set as out parameter of the handle method. The way to
+        // set out parameters with Mockito is to use doAnswer
+        Answer<Void> answerForHttpResponse = new Answer<Void>() {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                HttpResponse httpResponse = (HttpResponse) invocation.getArguments()[1];
+                httpResponse.setStatusCode(HttpStatus.SC_CREATED);
+                httpResponse.setHeader("Location", location);
+                httpResponse.setHeader("bp", bpId);
+                return null;
+            }
+        };
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(mockBounceProxyRequestHandler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest(ccid, trackingId)),
+                       any(HttpResponse.class),
+                       any(HttpContext.class));
     }
 
     private Matcher<JsonPath> containsChannel(final String channelId) {

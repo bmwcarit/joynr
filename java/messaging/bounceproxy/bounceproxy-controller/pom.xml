@@ -54,15 +54,13 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
+		<dependency>
+	        <groupId>org.apache.httpcomponents</groupId>
+	        <artifactId>httpclient</artifactId>
+	    </dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -120,6 +118,19 @@
 			<type>test-jar</type>
 			<version>${project.version}</version>
 			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <type>test-jar</type>
+		    <scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>compile</scope>
 		</dependency>
 		
 		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive 
