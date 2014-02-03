@@ -159,7 +159,6 @@
 					<webApp>
 						<contextPath>/bounceproxy</contextPath>
 						<descriptor>src/main/resources/WEB-INF/web.xml</descriptor>
-						<!-- defaultsDescriptor>src/main/webapp/WEB-INF/webdefault.xml</defaultsDescriptor -->
 					</webApp>
 				</configuration>
 			</plugin>
