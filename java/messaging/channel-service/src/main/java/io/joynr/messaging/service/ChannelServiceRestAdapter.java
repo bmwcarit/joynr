@@ -85,7 +85,7 @@ public class ChannelServiceRestAdapter {
     }
 
     /**
-     * Open a long poll chanel for the given cluster controller.
+     * Open a long poll channel for the given cluster controller.
      *  The channel is closed automatically by the server at
      * regular intervals to ensure liveliness.
      * 
