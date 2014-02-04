@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-@Path("/channels")
+@Path("/channels/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
 /**
  * MessagingService is used by the messaging service of a cluster controller
  * to register for messages from other cluster controllers
@@ -83,7 +83,6 @@ public class MessagingServiceRestAdapter {
      * @return a location for querying the message status
      */
     @POST
-    @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
     @Produces({ MediaType.APPLICATION_JSON })
     public Response postMessage(@PathParam("ccid") String ccid, JoynrMessage message) {
 
