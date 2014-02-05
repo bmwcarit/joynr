@@ -98,11 +98,21 @@ public abstract class JoynrEmbeddedDatabase {
 
     public synchronized <T> T executeQuery(PreparedStatement preparedStatement, QueryProcessor<T> processor)
                                                                                                             throws SQLException {
+        
         if (!started) {
             throw new IllegalStateException("No query shall be made to the database while it is not started!");
         }
-        ResultSet resultSet = preparedStatement.executeQuery();
-        T result = processor.processQueryResult(resultSet);
+        
+        ResultSet resultSet = null;
+        T result = null;
+        try {
+            resultSet = preparedStatement.executeQuery();
+            result = processor.processQueryResult(resultSet);            
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
         return result;
     }
 
@@ -114,11 +124,11 @@ public abstract class JoynrEmbeddedDatabase {
         started = false;
     }
 
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
+    public synchronized PreparedStatement prepareStatement(String sql) throws SQLException {
         if (!started) {
             throw new IllegalStateException("No query shall be made to the database while it is not started!");
         }
-        
+
         return connection.prepareStatement(sql);
 
     }
