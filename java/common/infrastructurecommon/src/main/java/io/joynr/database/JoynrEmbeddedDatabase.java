@@ -22,6 +22,7 @@ package io.joynr.database;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -95,6 +96,16 @@ public abstract class JoynrEmbeddedDatabase {
         }
     }
 
+    public synchronized <T> T executeQuery(PreparedStatement preparedStatement, QueryProcessor<T> processor)
+                                                                                                            throws SQLException {
+        if (!started) {
+            throw new IllegalStateException("No query shall be made to the database while it is not started!");
+        }
+        ResultSet resultSet = preparedStatement.executeQuery();
+        T result = processor.processQueryResult(resultSet);
+        return result;
+    }
+
     public synchronized void close() throws SQLException {
         if (connection != null) {
             connection.close();
@@ -103,4 +114,12 @@ public abstract class JoynrEmbeddedDatabase {
         started = false;
     }
 
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        if (!started) {
+            throw new IllegalStateException("No query shall be made to the database while it is not started!");
+        }
+        
+        return connection.prepareStatement(sql);
+
+    }
 }
