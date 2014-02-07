@@ -61,8 +61,8 @@ public class BounceProxyInitializedFilter implements Filter {
             // forward request
             chain.doFilter(request, response);
         } else {
-	        // block request
-	        throw new JoynrException("Bounce proxy is not ready to accept requests.");
+            // block request
+            throw new JoynrException("Bounce proxy is not ready to accept requests.");
         }
     }
 

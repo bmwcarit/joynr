@@ -23,9 +23,13 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import io.joynr.common.ExpiryDate;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.datatypes.JoynrMessagingError;
+import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
@@ -76,8 +80,8 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 /**
- * This test sends bursts of 2 messages to a broadcaster on a bounceproxy and long polls for the results Reproducer for
- * current server-side problems
+ * This test sends bursts of 2 messages to a broadcaster on a bounceproxy and
+ * long polls for the results Reproducer for current server-side problems
  * 
  */
 public class BounceProxyServerTest {
@@ -128,7 +132,8 @@ public class BounceProxyServerTest {
     }
 
     @Test(timeout = 20000)
-    // This is a test to see if the atmos bug still exists. If the bug exists, the server will hang 20 secs
+    // This is a test to see if the atmos bug still exists. If the bug exists,
+    // the server will hang 20 secs
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
         createChannel(channelId);
         // createChannel(channelIdProvider);
@@ -161,7 +166,7 @@ public class BounceProxyServerTest {
             long elapsedTime_ms = System.currentTimeMillis() - startTime_ms;
 
             if (listOfJsonStrings.size() < 2 && elapsedTime_ms < maxTimePerRun) {
-                //Thread.sleep(100);
+                // Thread.sleep(100);
                 Response responseLongPoll2 = longPoll(channelId, 30000).get();
                 String responseBody2 = responseLongPoll2.getBody().asString();
                 List<String> listOfJsonStrings2 = Utilities.splitJson(responseBody2);
@@ -212,6 +217,32 @@ public class BounceProxyServerTest {
 
     }
 
+    @Test
+    public void testPostMessageToNonExistingChannel() throws Exception {
+
+        JoynrMessage message = new JoynrMessage();
+        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(100000l));
+        message.setPayload("payload-" + UUID.randomUUID().toString());
+
+        String serializedMessage = objectMapper.writeValueAsString(message);
+        /* @formatter:off */
+        Response postMessageResponse = onrequest().with()
+                                                  .body(serializedMessage)
+                                                  .when()
+                                                  .post("/channels/non-existing-channel/message/");
+
+        assertEquals(400 /* Bad Request */, postMessageResponse.getStatusCode());
+
+        String body = postMessageResponse.getBody().asString();
+        JoynrMessagingError error = objectMapper.readValue(body, JoynrMessagingError.class);
+        assertNotNull(error);
+
+        JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynrMessagingErrorCode(error.getCode());
+        assertNotNull(joynrMessagingErrorCode);
+        assertEquals(JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTFOUND, joynrMessagingErrorCode);
+    }
+
     // ///////////////////////
     // HELPERS
 
@@ -228,7 +259,8 @@ public class BounceProxyServerTest {
      * initialize a RequestSpecification with the given timeout
      * 
      * @param timeout_ms
-     *            : a SocketTimeoutException will be thrown if no response is received in this many milliseconds
+     *            : a SocketTimeoutException will be thrown if no response is
+     *            received in this many milliseconds
      * @return
      */
     private RequestSpecification onrequest(int timeout_ms) {
@@ -347,7 +379,8 @@ public class BounceProxyServerTest {
         objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
-        // objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+        // objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
+        // true);
         objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, true);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
@@ -388,7 +421,8 @@ public class BounceProxyServerTest {
         private long entryTimeStamp;
 
         /**
-         * the absolute time until the message should have reached it's destination
+         * the absolute time until the message should have reached it's
+         * destination
          */
 
         private long expiryDate;
@@ -433,7 +467,8 @@ public class BounceProxyServerTest {
         }
 
         /**
-         * Overriden to provide string represention of the message object for Atmosphere used in response.
+         * Overriden to provide string represention of the message object for
+         * Atmosphere used in response.
          * 
          * @return
          */
@@ -530,7 +565,8 @@ public class BounceProxyServerTest {
             this.body = body;
         }
 
-        // TODO bounceproxy does not accept messages with id / expired fields but sends messages containing them
+        // TODO bounceproxy does not accept messages with id / expired fields
+        // but sends messages containing them
         @JsonIgnore
         public boolean isExpired() {
             return getExpiryDate() < System.currentTimeMillis();

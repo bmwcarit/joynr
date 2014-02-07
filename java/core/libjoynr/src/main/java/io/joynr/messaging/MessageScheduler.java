@@ -255,7 +255,7 @@ public class MessageScheduler {
                     String body = EntityUtils.toString(entity, "UTF-8");
 
                     JoynrMessagingError error = objectMapper.readValue(body, JoynrMessagingError.class);
-                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynMessagingErrorCode(error.getCode());
+                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynrMessagingErrorCode(error.getCode());
                     logger.error(error.toString());
                     switch (joynrMessagingErrorCode) {
                     case JOYNRMESSAGINGERROR_CHANNELNOTFOUND:

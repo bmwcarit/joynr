@@ -212,7 +212,7 @@ public class LongPollChannel {
             if (responseBody != null) {
                 try {
                     JoynrMessagingError error = objectMapper.readValue(responseBody, JoynrMessagingError.class);
-                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynMessagingErrorCode(error.getCode());
+                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynrMessagingErrorCode(error.getCode());
                     logger.error(error.toString());
                     switch (joynrMessagingErrorCode) {
                     case JOYNRMESSAGINGERROR_CHANNELNOTFOUND:

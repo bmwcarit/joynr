@@ -19,14 +19,20 @@ package io.joynr.communications.exceptions;
  * #L%
  */
 
+import io.joynr.messaging.datatypes.JoynrErrorCode;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
-import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+/**
+ * This runtime exception can be thrown by servlets to indicate a specific error
+ * to a client.<br>
+ * It produces a HTTP error response and contains an error code that can be
+ * processed by the client.
+ */
 public class JoynrHttpException extends WebApplicationException {
 
     private static final long serialVersionUID = -8459325454159353237L;
@@ -37,11 +43,11 @@ public class JoynrHttpException extends WebApplicationException {
 
     }
 
-    public JoynrHttpException(Status status, JoynrMessagingErrorCode errorCode) {
+    public JoynrHttpException(Status status, JoynrErrorCode errorCode) {
         this(status.getStatusCode(), errorCode.getCode(), errorCode.getDescription());
     }
 
-    public JoynrHttpException(Status status, JoynrMessagingErrorCode errorCode, String message) {
+    public JoynrHttpException(Status status, JoynrErrorCode errorCode, String message) {
         this(status.getStatusCode(), errorCode.getCode(), errorCode.getDescription() + ": " + message);
     }
 

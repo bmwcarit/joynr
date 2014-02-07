@@ -19,50 +19,66 @@ package io.joynr.messaging.datatypes;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
-public enum JoynrMessagingErrorCode {
+/**
+ * Error codes related to messaging between joynr participants.
+ * 
+ */
+public enum JoynrMessagingErrorCode implements JoynrErrorCode {
 
     /**
      * Enum codes plus offset
      */
-    JOYNRMESSAGINGERROR_CHANNELNOTFOUND(1, "Channel not found"), JOYNRMESSAGINGERROR_CHANNELNOTSET(2, "Channel not set"), JOYNRMESSAGINGERROR_EXPIRYDATENOTSET(
-            3, "TTL not set"), JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED(4, "TTL expired"), JOYNRMESSAGINGERROR_INVALIDMESSAGE(
-            5, "Invalid message"), JOYNRMESSAGINGERROR_TRACKINGIDNOTSET(6, "Atmosphere Tracking Id not set");
+    JOYNRMESSAGINGERROR_CHANNELNOTFOUND(1, "Channel not found"), //
+    JOYNRMESSAGINGERROR_CHANNELNOTSET(2, "Channel not set"), //
+    JOYNRMESSAGINGERROR_EXPIRYDATENOTSET(3, "TTL not set"), //
+    JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED(4, "TTL expired"), //
+    JOYNRMESSAGINGERROR_INVALIDMESSAGE(5, "Invalid message"), //
+    JOYNRMESSAGINGERROR_TRACKINGIDNOTSET(6, "Atmosphere Tracking Id not set"), //
+    JOYNRMESSAGINGERROR_UNDEFINED(0, "Undefined error");
 
     private static final int OFFSET = 10000;
 
-    private static Map<Integer, JoynrMessagingErrorCode> codeToErrorCode;
     private int code;
     private String description;
-
-    static {
-        codeToErrorCode = new HashMap<Integer, JoynrMessagingErrorCode>();
-        for (JoynrMessagingErrorCode errorCode : values()) {
-            codeToErrorCode.put(errorCode.code, errorCode);
-        }
-    }
 
     private JoynrMessagingErrorCode(int code, String description) {
         this.code = OFFSET + code;
         this.description = description;
+        JoynrErrorCodeMapper.storeErrorCodeMapping(this);
     }
 
-    public static JoynrMessagingErrorCode getJoynMessagingErrorCode(int code) {
-        return codeToErrorCode.get(code);
+    /**
+     * Creates a {@link JoynrMessagingErrorCode} object from an integer error
+     * code.
+     * 
+     * @param code
+     *            error code as integer
+     * @return the matching {@link JoynrMessagingErrorCode} or
+     *         {@link JoynrMessagingErrorCode#JOYNRMESSAGINGERROR_UNDEFINED}, if
+     *         there's no matching code.
+     */
+    public static JoynrMessagingErrorCode getJoynrMessagingErrorCode(int code) {
+        JoynrErrorCode errorCode = JoynrErrorCodeMapper.getErrorCode(code);
+
+        if (errorCode == null || !(errorCode instanceof JoynrMessagingErrorCode)) {
+            return JOYNRMESSAGINGERROR_UNDEFINED;
+        }
+
+        return (JoynrMessagingErrorCode) errorCode;
     }
 
+    @Override
     public int getCode() {
         return code;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
     public static void main(String[] args) {
         System.out.println(JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTFOUND);
-        System.out.println(JoynrMessagingErrorCode.getJoynMessagingErrorCode(OFFSET + 3));
+        System.out.println(JoynrMessagingErrorCode.getJoynrMessagingErrorCode(OFFSET + 3));
     }
 }
