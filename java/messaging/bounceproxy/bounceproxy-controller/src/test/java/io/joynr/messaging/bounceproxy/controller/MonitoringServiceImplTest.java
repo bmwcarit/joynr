@@ -21,14 +21,18 @@ package io.joynr.messaging.bounceproxy.controller;
  */
 
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
 
 import java.net.URI;
 
+import org.junit.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -65,18 +69,25 @@ public class MonitoringServiceImplTest {
 
         monitoringService.register("X.Y", "http://www.joynX.de/bp", "http://joyn.bmwgroup.net/bpX");
 
-        Mockito.verify(bpDirectoryMock)
-               .addBounceProxy(new ControlledBounceProxyInformation("X.Y",
-                                                                    URI.create("http://www.joynX.de/bp"),
-                                                                    URI.create("http://joyn.bmwgroup.net/bpX")));
+        ArgumentCaptor<ControlledBounceProxyInformation> argument = ArgumentCaptor.forClass(ControlledBounceProxyInformation.class);
+        Mockito.verify(bpDirectoryMock).addBounceProxy(argument.capture(), Mockito.anyLong());
+        Assert.assertEquals("X.Y", argument.getValue().getId());
+        Assert.assertEquals(URI.create("http://www.joynX.de/bp"), argument.getValue().getLocation());
+        Assert.assertEquals(URI.create("http://joyn.bmwgroup.net/bpX"), argument.getValue().getLocationForBpc());
     }
 
     @Test
     public void testShutdownBounceProxy() {
 
+        Mockito.when(bpDirectoryMock.containsBounceProxy("X.Y")).thenReturn(true);
+        Mockito.when(bpDirectoryMock.getBounceProxy("X.Y"))
+               .thenReturn(new BounceProxyRecord(new ControlledBounceProxyInformation("X.Y", null)));
+
         monitoringService.updateStatus("X.Y", BounceProxyStatus.SHUTDOWN);
 
-        Mockito.verify(bpDirectoryMock).updateBounceProxyStatus("X.Y", BounceProxyStatus.SHUTDOWN);
+        ArgumentCaptor<BounceProxyRecord> argument = ArgumentCaptor.forClass(BounceProxyRecord.class);
+        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture(), Mockito.anyLong());
+        Assert.assertEquals("X.Y", argument.getValue().getBounceProxyId());
+        Assert.assertEquals(BounceProxyStatus.SHUTDOWN, argument.getValue().getStatus());
     }
-
 }

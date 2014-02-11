@@ -20,6 +20,8 @@ package io.joynr.messaging.service;
  * #L%
  */
 
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode;
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
@@ -36,7 +38,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -101,7 +102,7 @@ public class MonitoringServiceRestAdapter {
         } else {
 
             // startup after a crash or a shutdown
-            monitoringService.reset(bpId, urlForCc, urlForBpc);
+            monitoringService.update(bpId, urlForCc, urlForBpc);
             return Response.noContent().build();
         }
     }
@@ -123,9 +124,18 @@ public class MonitoringServiceRestAdapter {
 
         if (BounceProxyStatus.UNRESOLVED.equals(statusParam.getStatus())) {
             // bounce proxy sent an unknown status
-            throw new WebApplicationException(Status.BAD_REQUEST);
+            throw new JoynrHttpException(Status.BAD_REQUEST,
+                                         JoynrBounceProxyControlErrorCode.BOUNCEPROXY_STATUS_UNKNOWN,
+                                         "status '" + statusParam.getPassedInStatus() + "'");
 
         } else {
+
+            if (!monitoringService.isRegistered(bpId)) {
+                throw new JoynrHttpException(Status.BAD_REQUEST,
+                                             JoynrBounceProxyControlErrorCode.BOUNCEPROXY_UNKNOWN,
+                                             "bounce proxy '" + bpId + "'");
+            }
+
             monitoringService.updateStatus(bpId, statusParam.getStatus());
             return Response.noContent().build();
         }
@@ -146,6 +156,12 @@ public class MonitoringServiceRestAdapter {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.TEXT_PLAIN })
     public Response reportPerformance(@PathParam("bpid") String bpId, Map<String, Integer> performanceMap) {
+
+        if (!monitoringService.isRegistered(bpId)) {
+            throw new JoynrHttpException(Status.BAD_REQUEST,
+                                         JoynrBounceProxyControlErrorCode.BOUNCEPROXY_UNKNOWN,
+                                         "bounce proxy '" + bpId + "'");
+        }
 
         PerformanceMeasures performanceMeasures = new PerformanceMeasures();
         performanceMeasures.addMeasures(performanceMap);

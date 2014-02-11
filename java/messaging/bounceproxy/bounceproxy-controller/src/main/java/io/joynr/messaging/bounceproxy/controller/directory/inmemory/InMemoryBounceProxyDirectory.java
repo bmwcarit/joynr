@@ -24,7 +24,6 @@ import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 
 import java.util.Collection;
@@ -37,7 +36,7 @@ import com.google.common.collect.Collections2;
 import com.google.inject.Singleton;
 
 /**
- * Directory which stores all registered bounce proxies in memory. 
+ * Directory which stores all registered bounce proxies in memory.
  * 
  * @author christina.strobel
  * 
@@ -60,65 +59,72 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
     @Override
     public List<BounceProxyRecord> getAssignableBounceProxies() {
 
-        Collection<BounceProxyRecord> assignableBounceProxies = Collections2.filter(directory.values(),
-                                                                                    new Predicate<BounceProxyRecord>() {
+        Predicate<BounceProxyRecord> statusIsAssignablePredicate = new Predicate<BounceProxyRecord>() {
 
-                                                                                        @Override
-                                                                                        public boolean apply(BounceProxyRecord record) {
-                                                                                            if (record == null)
-                                                                                                return false;
-                                                                                            return record.getStatus()
-                                                                                                         .isAssignable();
-                                                                                        }
-                                                                                    });
+            @Override
+            public boolean apply(BounceProxyRecord record) {
+                if (record == null)
+                    return false;
+                return record.getStatus().isAssignable();
+            }
+        };
+        Collection<BounceProxyRecord> assignableBounceProxies = Collections2.filter(directory.values(),
+                                                                                    statusIsAssignablePredicate);
 
         return new LinkedList<BounceProxyRecord>(assignableBounceProxies);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory
-     * #updateChannelAssignment(java.lang.String,
-     * io.joynr.messaging.info.BounceProxyInformation)
-     */
     @Override
-    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) {
+    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo, long timestamp) {
 
-        if (directory.containsKey(bpInfo.getId())) {
-            BounceProxyRecord record = directory.get(bpInfo.getId());
-            record.increaseAssignedChannels();
-            record.setLastAssignedTimestamp(System.currentTimeMillis());
-        }
+        if (!directory.containsKey(bpInfo.getId()))
+            throw new IllegalArgumentException("No bounce proxy with ID '" + bpInfo.getId()
+                    + "' available in the directory");
+
+        BounceProxyRecord record = directory.get(bpInfo.getId());
+        record.increaseAssignedChannels();
+        record.setLastAssignedTimestamp(timestamp);
     }
 
     @Override
     public BounceProxyRecord getBounceProxy(String bpId) {
+
+        if (!directory.containsKey(bpId))
+            throw new IllegalArgumentException("No bounce proxy with ID '" + bpId + "' available in the directory");
+
         return directory.get(bpId);
     }
 
     @Override
-    public void addBounceProxy(ControlledBounceProxyInformation bpInfo) {
+    public void addBounceProxy(ControlledBounceProxyInformation bpInfo, long timestamp) {
+
+        if (directory.containsKey(bpInfo.getId()))
+            throw new IllegalArgumentException("Bounce proxy with ID '" + bpInfo.getId()
+                    + "' already added to the directory");
 
         BounceProxyRecord record = new BounceProxyRecord(bpInfo);
+        record.setFreshness(timestamp);
         directory.put(bpInfo.getId(), record);
-    }
-
-    @Override
-    public void updateBounceProxyStatus(String bpId, BounceProxyStatus status) {
-        BounceProxyRecord record = directory.get(bpId);
-        record.setStatus(status);
-    }
-
-    @Override
-    public List<String> getBounceProxyIds() {
-        return new LinkedList<String>(directory.keySet());
     }
 
     @Override
     public List<BounceProxyStatusInformation> getBounceProxyStatusInformation() {
         return new LinkedList<BounceProxyStatusInformation>(directory.values());
+    }
+
+    @Override
+    public boolean containsBounceProxy(String bpId) {
+        return directory.containsKey(bpId);
+    }
+
+    @Override
+    public void updateBounceProxy(BounceProxyRecord bpRecord, long timestamp) throws IllegalArgumentException {
+        if (!directory.containsKey(bpRecord.getInfo().getId()))
+            throw new IllegalArgumentException("No bounce proxy with ID '" + bpRecord.getInfo().getId()
+                    + "' available in the directory");
+
+        bpRecord.setFreshness(timestamp);
+        directory.put(bpRecord.getInfo().getId(), bpRecord);
     }
 
 }

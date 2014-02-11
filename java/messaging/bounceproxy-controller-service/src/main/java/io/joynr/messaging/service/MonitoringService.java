@@ -34,9 +34,9 @@ import java.util.List;
  */
 public interface MonitoringService {
 
-    /**	
+    /**
      * Returns a list of registered bounce proxies.
-     * 	
+     * 
      * @return
      */
     public List<BounceProxyStatusInformation> getRegisteredBounceProxies();
@@ -56,7 +56,7 @@ public interface MonitoringService {
     void register(String bpId, String urlForCc, String urlForBpc);
 
     /**
-     * Resets a bounce proxy. This will update urls in case they changed after a
+     * Updates a bounce proxy. This will update urls in case they changed after a
      * new startup and will reset monitoring measures as well as the bounce
      * proxy status. After executing this method, subsequent channel assignments
      * have to take into account that any status measures for this bounce proxy
@@ -72,14 +72,14 @@ public interface MonitoringService {
      *            the base URL at which the bounce proxy will be reachable for
      *            the bounce proxy controller
      */
-    void reset(String bpId, String urlForCc, String urlForBpc);
+    void update(String bpId, String urlForCc, String urlForBpc);
 
     /**
      * Updates performance measures for a bounce proxy.
      * 
-     * @param bounceProxy
+     * @param bpId
      *            the ID of the bounce proxy
-     * @param performance
+     * @param performanceMeasures
      *            several performance measures for the bounce proxy
      */
     void updatePerformanceMeasures(String bpId, PerformanceMeasures performanceMeasures);
@@ -87,12 +87,16 @@ public interface MonitoringService {
     /**
      * Updates status for a bounce proxy.
      * 
-     * @param bounceProxy
+     * @param bpId
+     *            the ID of the bounce proxy
+     * @param status
+     *            the status of a bounce proxy
      */
     void updateStatus(String bpId, BounceProxyStatus status);
 
     /**
-     * Returns if a bounce proxy instance has already been registered.
+     * Returns if a bounce proxy instance with the same ID has already been
+     * registered.
      * 
      * @param bpId
      * @return <code>true</code> if there's already a bounce proxy instance

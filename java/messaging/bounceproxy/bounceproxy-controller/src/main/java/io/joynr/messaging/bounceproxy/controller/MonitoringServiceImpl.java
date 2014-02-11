@@ -21,6 +21,7 @@ package io.joynr.messaging.bounceproxy.controller;
  */
 
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
@@ -36,7 +37,7 @@ import com.google.inject.Inject;
  * Implementation of bounce proxy controller for monitoring service.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class MonitoringServiceImpl implements MonitoringService {
 
@@ -50,33 +51,45 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public void register(String bpId, String urlForCc, String urlForBpc) {
-        ControlledBounceProxyInformation bpInfo = new ControlledBounceProxyInformation(bpId,
-                                                                                       URI.create(urlForCc),
-                                                                                       URI.create(urlForBpc));
-        bounceProxyDirectory.addBounceProxy(bpInfo);
+
+        if (!bounceProxyDirectory.containsBounceProxy(bpId)) {
+            ControlledBounceProxyInformation bpInfo = new ControlledBounceProxyInformation(bpId,
+                                                                                           URI.create(urlForCc),
+                                                                                           URI.create(urlForBpc));
+            bounceProxyDirectory.addBounceProxy(bpInfo, System.currentTimeMillis());
+        }
     }
 
     @Override
-    public void reset(String bpId, String urlForCc, String urlForBpc) {
-        // TODO Auto-generated method stub
+    public void update(String bpId, String urlForCc, String urlForBpc) {
 
+        BounceProxyRecord bounceProxyRecord = bounceProxyDirectory.getBounceProxy(bpId);
+        bounceProxyRecord.getInfo().setLocation(URI.create(urlForCc));
+        bounceProxyRecord.getInfo().setLocationForBpc(URI.create(urlForBpc));
+        bounceProxyRecord.setStatus(BounceProxyStatus.ALIVE);
+        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, System.currentTimeMillis());
     }
 
     @Override
     public void updatePerformanceMeasures(String bpId, PerformanceMeasures performanceMeasures) {
-        // TODO Auto-generated method stub
 
+        BounceProxyRecord bounceProxyRecord = bounceProxyDirectory.getBounceProxy(bpId);
+        bounceProxyRecord.setPerformanceMeasures(performanceMeasures);
+        bounceProxyRecord.setStatus(BounceProxyStatus.ACTIVE);
+        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, System.currentTimeMillis());
     }
 
     @Override
     public void updateStatus(String bpId, BounceProxyStatus status) {
-        bounceProxyDirectory.updateBounceProxyStatus(bpId, status);
+
+        BounceProxyRecord bounceProxyRecord = bounceProxyDirectory.getBounceProxy(bpId);
+        bounceProxyRecord.setStatus(status);
+        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, System.currentTimeMillis());
     }
 
     @Override
     public boolean isRegistered(String bpId) {
-        // TODO Auto-generated method stub
-        return false;
+        return bounceProxyDirectory.containsBounceProxy(bpId);
     }
 
 }

@@ -20,8 +20,9 @@ package io.joynr.messaging.bounceproxy.runtime;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
+import io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode;
 
 import java.io.IOException;
 
@@ -31,6 +32,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.ws.rs.core.Response.Status;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -62,7 +64,7 @@ public class BounceProxyInitializedFilter implements Filter {
             chain.doFilter(request, response);
         } else {
             // block request
-            throw new JoynrException("Bounce proxy is not ready to accept requests.");
+            throw new JoynrHttpException(Status.FORBIDDEN, JoynrBounceProxyControlErrorCode.BOUNCEPROXY_NOT_INITIALIZED);
         }
     }
 

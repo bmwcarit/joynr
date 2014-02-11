@@ -116,7 +116,7 @@ public class ChannelServiceImpl implements ChannelService {
             ChannelInformation channelInfo = new ChannelInformation(bpInfo, ccid, channelLocationForCc);
 
             channelDirectory.addChannel(channelInfo);
-            bounceProxyDirectory.updateChannelAssignment(ccid, bpInfo);
+            bounceProxyDirectory.updateChannelAssignment(ccid, bpInfo, System.currentTimeMillis());
 
             return channelInfo;
 

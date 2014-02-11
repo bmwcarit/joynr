@@ -101,7 +101,9 @@ public class RoundRobinAssignmentTest {
         BounceProxyInformation bounceProxy = assignmentStrategy.calculateBounceProxy("channel-123");
 
         Assert.assertEquals("X.Y", bounceProxy.getId());
-        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment("channel-123", bounceProxy);
+        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment(Mockito.eq("channel-123"),
+                                                                               Mockito.eq(bounceProxy),
+                                                                               Mockito.anyLong());
     }
 
     @Test
@@ -117,7 +119,9 @@ public class RoundRobinAssignmentTest {
         BounceProxyInformation bounceProxy = assignmentStrategy.calculateBounceProxy("channel-123");
 
         Assert.assertEquals("X3.Y3", bounceProxy.getId());
-        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment("channel-123", bounceProxy);
+        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment(Mockito.eq("channel-123"),
+                                                                               Mockito.eq(bounceProxy),
+                                                                               Mockito.anyLong());
     }
 
     @Test
@@ -133,7 +137,9 @@ public class RoundRobinAssignmentTest {
         BounceProxyInformation bounceProxy = assignmentStrategy.calculateBounceProxy("channel-123");
 
         Assert.assertEquals("X3.Y3", bounceProxy.getId());
-        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment("channel-123", bounceProxy);
+        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment(Mockito.eq("channel-123"),
+                                                                               Mockito.eq(bounceProxy),
+                                                                               Mockito.anyLong());
     }
 
     @Test
@@ -149,7 +155,9 @@ public class RoundRobinAssignmentTest {
         BounceProxyInformation bounceProxy = assignmentStrategy.calculateBounceProxy("channel-123");
 
         Assert.assertEquals("X2.Y2", bounceProxy.getId());
-        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment("channel-123", bounceProxy);
+        Mockito.verify(directoryMock, Mockito.never()).updateChannelAssignment(Mockito.eq("channel-123"),
+                                                                               Mockito.eq(bounceProxy),
+                                                                               Mockito.anyLong());
     }
 
     private BounceProxyRecord createBounceProxyRecord(String bpId) {

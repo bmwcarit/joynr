@@ -42,6 +42,7 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:channel-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
   Jackson under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1

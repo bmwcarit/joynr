@@ -22,7 +22,6 @@ package io.joynr.messaging.bounceproxy.controller.directory;
 
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 
 import java.util.List;
@@ -54,17 +53,75 @@ public interface BounceProxyDirectory {
      * 
      * @param ccid
      * @param bpInfo
+     * @param the
+     *            timestamp in ms when this channel assignment was done
+     * 
+     * @throws IllegalArgumentException
+     *             if no bounce proxy with this ID is registered in the
+     *             directory
      */
-    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo);
+    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo, long timestamp)
+                                                                                                   throws IllegalArgumentException;
 
-    public BounceProxyRecord getBounceProxy(String bpId);
+    /**
+     * Gets a record of a bounce proxy. Before calling this method, it should be
+     * checked with {@link #containsBounceProxy(String)} if a bounce proxy with
+     * this ID has been added to the directory.
+     * 
+     * @param bpId
+     *            the identifier of the bounce proxy
+     * @return a bounce proxy record with this ID
+     * @throws IllegalArgumentException
+     *             if no bounce proxy with this ID is registered in the
+     *             directory
+     */
+    public BounceProxyRecord getBounceProxy(String bpId) throws IllegalArgumentException;
 
-    public void addBounceProxy(ControlledBounceProxyInformation bpInfo);
+    /**
+     * Checks whether a certain bounce proxy is registered in the directory.
+     * 
+     * @param bpId
+     *            the identifier of the bounce proxy
+     * @return <code>true</code> if there is a record for this bounce proxy,
+     *         <code>false</code> if it never has been registered.
+     */
+    public boolean containsBounceProxy(String bpId);
 
-    public void updateBounceProxyStatus(String bpId, BounceProxyStatus status);
+    /**
+     * Adds a new bounce proxy that hasn't been registered before to the
+     * directory. Before adding a new bounce proxy, it should be checked with
+     * {@link #containsBounceProxy(String)} whether a bounce proxy with this
+     * identifier is already registered.
+     * 
+     * @param bpInfo
+     *            information about the bounce proxy.
+     * @param timestamp
+     *            the timestamp in milliseconds
+     * @throws IllegalArgumentException
+     *             if the bounce proxy has already been registered before
+     */
+    public void addBounceProxy(ControlledBounceProxyInformation bpInfo, long timestamp) throws IllegalArgumentException;
 
-    public List<String> getBounceProxyIds();
+    /**
+     * Updates the record about an existing bounce proxy. The bounce proxy
+     * record to be updated should be retrieved by
+     * {@link #getBounceProxy(String)} before.
+     * 
+     * @param bpRecord
+     *            the updated record of a bounce proxy
+     * @param timestamp
+     *            the timestamp in milliseconds when this record was updated
+     * @throws IllegalArgumentException
+     *             if no bounce proxy with the same ID is registered in the
+     *             directory
+     */
+    public void updateBounceProxy(BounceProxyRecord bpRecord, long timestamp) throws IllegalArgumentException;
 
+    /**
+     * Returns the list of registered bounce proxies including information such
+     * as performance measures, freshness and status.
+     * 
+     * @return
+     */
     public List<BounceProxyStatusInformation> getBounceProxyStatusInformation();
-
 }

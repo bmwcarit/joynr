@@ -41,6 +41,12 @@
 	<dependencies>
 	
 		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messagingcommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.sun.jersey.contribs</groupId>
 			<artifactId>jersey-guice</artifactId>
 			<scope>test</scope>
@@ -51,7 +57,7 @@
 			<artifactId>jetty-webapp</artifactId>
 			<scope>test</scope>
 		</dependency>
-	
+
 	</dependencies>
 	
 	<build>
