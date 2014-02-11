@@ -105,7 +105,12 @@
 			<artifactId>groovy-all</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>service-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 

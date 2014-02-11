@@ -27,6 +27,7 @@ import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.service.MonitoringService;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
 import java.util.List;
@@ -44,6 +45,9 @@ public class MonitoringServiceImpl implements MonitoringService {
     @Inject
     private BounceProxyDirectory bounceProxyDirectory;
 
+    @Inject
+    private TimestampProvider timestampProvider;
+
     @Override
     public List<BounceProxyStatusInformation> getRegisteredBounceProxies() {
         return bounceProxyDirectory.getBounceProxyStatusInformation();
@@ -56,7 +60,7 @@ public class MonitoringServiceImpl implements MonitoringService {
             ControlledBounceProxyInformation bpInfo = new ControlledBounceProxyInformation(bpId,
                                                                                            URI.create(urlForCc),
                                                                                            URI.create(urlForBpc));
-            bounceProxyDirectory.addBounceProxy(bpInfo, System.currentTimeMillis());
+            bounceProxyDirectory.addBounceProxy(bpInfo, timestampProvider.getCurrentTime());
         }
     }
 
@@ -67,7 +71,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         bounceProxyRecord.getInfo().setLocation(URI.create(urlForCc));
         bounceProxyRecord.getInfo().setLocationForBpc(URI.create(urlForBpc));
         bounceProxyRecord.setStatus(BounceProxyStatus.ALIVE);
-        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, System.currentTimeMillis());
+        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, timestampProvider.getCurrentTime());
     }
 
     @Override
@@ -76,7 +80,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         BounceProxyRecord bounceProxyRecord = bounceProxyDirectory.getBounceProxy(bpId);
         bounceProxyRecord.setPerformanceMeasures(performanceMeasures);
         bounceProxyRecord.setStatus(BounceProxyStatus.ACTIVE);
-        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, System.currentTimeMillis());
+        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, timestampProvider.getCurrentTime());
     }
 
     @Override
@@ -84,7 +88,7 @@ public class MonitoringServiceImpl implements MonitoringService {
 
         BounceProxyRecord bounceProxyRecord = bounceProxyDirectory.getBounceProxy(bpId);
         bounceProxyRecord.setStatus(status);
-        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, System.currentTimeMillis());
+        bounceProxyDirectory.updateBounceProxy(bounceProxyRecord, timestampProvider.getCurrentTime());
     }
 
     @Override

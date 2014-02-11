@@ -29,6 +29,7 @@ import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrat
 import io.joynr.messaging.bounceproxy.controller.util.ChannelUrlUtil;
 import io.joynr.messaging.info.ChannelInformation;
 import io.joynr.messaging.service.ChannelService;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
 import java.util.List;
@@ -60,6 +61,9 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Inject
     RemoteBounceProxyFacade bpFacade;
+
+    @Inject
+    private TimestampProvider timestampProvider;
 
     /*
      * (non-Javadoc)
@@ -116,7 +120,7 @@ public class ChannelServiceImpl implements ChannelService {
             ChannelInformation channelInfo = new ChannelInformation(bpInfo, ccid, channelLocationForCc);
 
             channelDirectory.addChannel(channelInfo);
-            bounceProxyDirectory.updateChannelAssignment(ccid, bpInfo, System.currentTimeMillis());
+            bounceProxyDirectory.updateChannelAssignment(ccid, bpInfo, timestampProvider.getCurrentTime());
 
             return channelInfo;
 

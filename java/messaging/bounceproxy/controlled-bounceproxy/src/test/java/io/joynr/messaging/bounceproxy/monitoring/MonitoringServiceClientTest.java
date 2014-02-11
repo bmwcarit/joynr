@@ -24,7 +24,10 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
+import io.joynr.messaging.bounceproxy.ChannelServiceImpl;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.service.ChannelService;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.io.IOException;
 import java.net.URI;
@@ -66,7 +69,7 @@ public class MonitoringServiceClientTest {
     HttpRequestHandler handler;
 
     @Mock
-    BounceProxyPerformanceMonitor mockPerformanceMonitor;
+    TimestampProvider mockTimestampProvider;
 
     private LocalTestServer server;
 
@@ -92,11 +95,18 @@ public class MonitoringServiceClientTest {
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCEPROXY_URL_FOR_CC, "http://joyn-bpX.de/bp");
         properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MONITORING_FREQUENCY_MS, "100");
 
-        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS, "10");
-        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MAX_SEND_SHUTDOWN_TIME_SECS, "2");
+        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS, "100");
+        properties.put(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MAX_SEND_SHUTDOWN_TIME_SECS, "1");
 
         Injector injector = Guice.createInjector(new PropertyLoadingModule(properties),
-                                                 new ControlledBounceProxyModule());
+                                                 new ControlledBounceProxyModule() {
+                                                     @Override
+                                                     protected void configure() {
+                                                         bind(ChannelService.class).to(ChannelServiceImpl.class);
+                                                         bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
+                                                         bind(TimestampProvider.class).toInstance(mockTimestampProvider);
+                                                     }
+                                                 });
 
         reporter = injector.getInstance(MonitoringServiceClient.class);
     }
@@ -190,6 +200,9 @@ public class MonitoringServiceClientTest {
 
         // wait for a certain time, then shut down; this should end startup
         // reporting
+        // configuration: maximum time of 1 second, so at tick 1000 it should
+        // stop
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(0l, 0l, 500l, 1000l);
         reporter.reportShutdown();
 
         Mockito.verifyZeroInteractions(handler);
@@ -199,6 +212,14 @@ public class MonitoringServiceClientTest {
     @Test
     public void testNotifyNormalShutdown() throws Exception {
         setMockedHttpRequestHandlerResponse(HttpStatus.SC_NO_CONTENT);
+
+        // configuration: maximum time of 1 second, so at tick 1000 it should
+        // stop
+        // note: the loop should only be executed once and then succeed, but
+        // just in case something goes wrong with the server, we set ticks.
+        // Otherwise if server startup fails, the loop would never end as time
+        // doesn't progress
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(0l, 0l, 500l, 1000l);
 
         reporter.reportShutdown();
 
@@ -210,13 +231,17 @@ public class MonitoringServiceClientTest {
     @Test
     public void testNotifyShutdownWithUnexpectedServerResponse() throws Exception {
         setMockedHttpRequestHandlerResponse(HttpStatus.SC_CREATED);
+        // configuration: maximum time of 1 second, so at tick 1000 it should
+        // stop
+        // note: for the first two times we return 0, as it is once called
+        // before the while loop
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(0l, 0l, 500l, 1000l);
 
         reporter.reportShutdown();
 
-        // expecting 3 retries
-        verify(handler, Mockito.atLeast(2)).handle(Mockito.argThat(new IsAnyShutdownHttpRequest("X.Y")),
-                                                   any(HttpResponse.class),
-                                                   any(HttpContext.class));
+        verify(handler, Mockito.times(2)).handle(Mockito.argThat(new IsAnyShutdownHttpRequest("X.Y")),
+                                                 any(HttpResponse.class),
+                                                 any(HttpContext.class));
     }
 
     @Test
@@ -225,12 +250,16 @@ public class MonitoringServiceClientTest {
         server.stop();
         server.awaitTermination(3000);
 
-        long shutdownStart = System.currentTimeMillis();
-        reporter.reportShutdown();
-        long shutdownEnd = System.currentTimeMillis();
+        // configuration: maximum time of 1 second, so at tick 1000 it should
+        // stop
+        // note: for the first two times we return 0, as it is once called
+        // before the while loop
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(0l, 0l, 500l, 1000l);
 
-        Assert.assertTrue("shutdown took longer than 2 seconds", shutdownEnd - shutdownStart > 2000);
-        Assert.assertTrue("shutdown took less than 3 seconds (with 1 second buffer", shutdownEnd - shutdownStart < 3000);
+        reporter.reportShutdown();
+
+        // after the 4th call and return value 1000l the loop should be ended
+        verify(mockTimestampProvider, Mockito.times(4)).getCurrentTime();
     }
 
     @Test
@@ -251,6 +280,13 @@ public class MonitoringServiceClientTest {
 
         // Shutdown all threads at the end. If we shutdown before test, the
         // mocked handler is messed up with the shutdown report.
+        // configuration: maximum time of 1 second, so at tick 1000 it should
+        // stop
+        // note: the loop should only be executed once and then succeed, but
+        // just in case something goes wrong with the server, we set ticks.
+        // Otherwise if server startup fails, the loop would never end as time
+        // doesn't progress
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(0l, 0l, 500l, 1000l);
         reporter.reportShutdown();
     }
 

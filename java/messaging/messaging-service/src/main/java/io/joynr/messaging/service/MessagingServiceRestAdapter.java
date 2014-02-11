@@ -24,6 +24,7 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
 
@@ -63,6 +64,9 @@ public class MessagingServiceRestAdapter {
     @Inject
     private MessagingService messagingService;
 
+    @Inject
+    private TimestampProvider timestampProvider;
+
     @Context
     UriInfo ui;
 
@@ -98,7 +102,7 @@ public class MessagingServiceRestAdapter {
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }
 
-            if (message.getExpiryDate() < System.currentTimeMillis()) {
+            if (message.getExpiryDate() < timestampProvider.getCurrentTime()) {
                 log.warn("POST message {} to cluster controller: {} dropped because: TTL expired",
                          ccid,
                          message.getId());

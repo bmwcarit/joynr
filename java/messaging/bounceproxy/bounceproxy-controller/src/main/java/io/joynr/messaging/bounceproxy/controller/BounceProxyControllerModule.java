@@ -28,6 +28,8 @@ import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrat
 import io.joynr.messaging.bounceproxy.controller.strategy.RoundRobinAssignmentStrategy;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.service.MonitoringService;
+import io.joynr.messaging.system.SystemTimeProvider;
+import io.joynr.messaging.system.TimestampProvider;
 
 import com.google.inject.AbstractModule;
 
@@ -53,6 +55,8 @@ public class BounceProxyControllerModule extends AbstractModule {
 
         bind(BounceProxyDirectory.class).to(InMemoryBounceProxyDirectory.class);
         bind(ChannelDirectory.class).to(InMemoryChannelDirectory.class);
+
+        bind(TimestampProvider.class).to(SystemTimeProvider.class);
 
         bind(ChannelAssignmentStrategy.class).to(RoundRobinAssignmentStrategy.class);
     }

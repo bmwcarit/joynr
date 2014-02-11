@@ -31,6 +31,8 @@ import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.serialize.NumberSerializer;
+import io.joynr.messaging.system.SystemTimeProvider;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -79,6 +81,8 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
             protected void configureServlets() {
 
                 bind(MessagingService.class).toInstance(mock);
+                bind(TimestampProvider.class).to(SystemTimeProvider.class);
+
                 bind(MessagingServiceRestAdapter.class);
 
                 serve("/*").with(GuiceContainer.class);

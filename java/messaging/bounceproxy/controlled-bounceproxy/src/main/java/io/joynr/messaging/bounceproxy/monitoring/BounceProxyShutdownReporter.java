@@ -23,6 +23,7 @@ package io.joynr.messaging.bounceproxy.monitoring;
 import io.joynr.exceptions.JoynrHttpException;
 import io.joynr.messaging.bounceproxy.BounceProxyControllerUrl;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -54,15 +55,19 @@ public class BounceProxyShutdownReporter {
 
     private final BounceProxyControllerUrl bounceProxyControllerUrl;
 
+    private final TimestampProvider timestampProvider;
+
     @Inject
     public BounceProxyShutdownReporter(CloseableHttpClient httpclient,
                                        BounceProxyControllerUrl bounceProxyControllerUrl,
+                                       TimestampProvider timestampProvider,
                                        @Named(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_SEND_LIFECYCLE_REPORT_RETRY_INTERVAL_MS) long sendReportRetryIntervalMs,
                                        @Named(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_MAX_SEND_SHUTDOWN_TIME_SECS) long maxSendShutdownTimeSecs) {
         this.httpclient = httpclient;
         this.sendReportRetryIntervalMs = sendReportRetryIntervalMs;
         this.maxSendShutdownTimeSecs = maxSendShutdownTimeSecs;
         this.bounceProxyControllerUrl = bounceProxyControllerUrl;
+        this.timestampProvider = timestampProvider;
     }
 
     /**
@@ -94,13 +99,13 @@ public class BounceProxyShutdownReporter {
      */
     private void reportEventLoop() {
 
-        long loopStartingTime = System.currentTimeMillis();
+        long loopStartingTime = timestampProvider.getCurrentTime();
         boolean shutdownReportSuccessful = false;
 
         // try for at most maxSendShutdownTimeSecs secs to reach the bounce
         // proxy, otherwise just shutdown
         while (!shutdownReportSuccessful
-                && (System.currentTimeMillis() - loopStartingTime) < maxSendShutdownTimeSecs * 1000) {
+                && (timestampProvider.getCurrentTime() - loopStartingTime) < maxSendShutdownTimeSecs * 1000) {
             try {
                 reportEventAsHttpRequest();
                 // if no exception is thrown, reporting was successful and we
