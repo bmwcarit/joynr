@@ -61,6 +61,7 @@ This project has dependencies to:
   io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.bounceproxy:bounceproxy-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-standalone under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-ui under The Apache Software License, Version 2.0

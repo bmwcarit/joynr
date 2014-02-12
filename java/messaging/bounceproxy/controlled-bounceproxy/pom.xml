@@ -111,6 +111,12 @@
 			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+			<artifactId>bounceproxy-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 	</dependencies>
 
 
