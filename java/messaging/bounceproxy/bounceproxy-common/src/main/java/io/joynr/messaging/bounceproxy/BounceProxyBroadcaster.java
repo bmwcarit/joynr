@@ -1,4 +1,4 @@
-package io.joynr.bounceproxy;
+package io.joynr.messaging.bounceproxy;
 
 /*
  * #%L
@@ -19,8 +19,8 @@ package io.joynr.bounceproxy;
  * #L%
  */
 
-import io.joynr.bounceproxy.filter.ExpirationFilter;
-import io.joynr.bounceproxy.filter.MessageSerializationFilter;
+import io.joynr.messaging.bounceproxy.filter.ExpirationFilter;
+import io.joynr.messaging.bounceproxy.filter.MessageSerializationFilter;
 
 import java.util.Set;
 import java.util.concurrent.Future;

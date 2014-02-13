@@ -1,4 +1,4 @@
-package io.joynr.bounceproxy.filter;
+package io.joynr.messaging.bounceproxy.filter;
 
 /*
  * #%L

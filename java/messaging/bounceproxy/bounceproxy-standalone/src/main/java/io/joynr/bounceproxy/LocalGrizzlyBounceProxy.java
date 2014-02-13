@@ -19,7 +19,7 @@ package io.joynr.bounceproxy;
  * #L%
  */
 
-import io.joynr.bounceproxy.filter.CorsFilter;
+import io.joynr.messaging.bounceproxy.filter.CorsFilter;
 import io.joynr.servlet.ServletUtil;
 
 import java.io.IOException;
@@ -77,7 +77,8 @@ public class LocalGrizzlyBounceProxy {
         sa.addInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
         sa.addInitParameter("org.atmosphere.cpr.broadcasterLifeCyclePolicy", "NEVER");
         sa.addInitParameter("org.atmosphere.cpr.broadcaster.shareableThreadPool", "true");
-        sa.addInitParameter("org.atmosphere.cpr.broadcasterClass", "io.joynr.bounceproxy.BounceProxyBroadcaster");
+        sa.addInitParameter("org.atmosphere.cpr.broadcasterClass",
+                            "io.joynr.messaging.bounceproxy.BounceProxyBroadcaster");
         sa.addInitParameter("org.atmosphere.cpr.broadcasterCacheClass", "org.atmosphere.cache.UUIDBroadcasterCache");
         sa.addInitParameter("org.atmosphere.cpr.BroadcasterCache.strategy", "beforeFilter");
 

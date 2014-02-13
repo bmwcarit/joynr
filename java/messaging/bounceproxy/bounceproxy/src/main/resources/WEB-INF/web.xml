@@ -41,10 +41,10 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 			<param-name>com.sun.jersey.config.property.packages</param-name>
 			<param-value>io.joynr.bounceproxy</param-value>
 		</init-param>
-
+		
 		<init-param>
 			<param-name>org.atmosphere.cpr.broadcasterClass</param-name>
-			<param-value>io.joynr.bounceproxy.BounceProxyBroadcaster</param-value>
+			<param-value>io.joynr.messaging.bounceproxy.BounceProxyBroadcaster</param-value>
 		</init-param>
 
 		<init-param>
@@ -96,7 +96,7 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
 	<filter>
 		<filter-name>cross-origin</filter-name>
-		<filter-class>io.joynr.bounceproxy.filter.CorsFilter</filter-class>
+		<filter-class>io.joynr.messaging.bounceproxy.filter.CorsFilter</filter-class>
 		<async-supported>true</async-supported>
 	</filter>
 	<filter-mapping>

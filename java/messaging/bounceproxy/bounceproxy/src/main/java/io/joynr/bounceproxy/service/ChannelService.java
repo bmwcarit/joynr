@@ -23,13 +23,14 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
-import io.joynr.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.bounceproxy.BounceProxyConstants;
 import io.joynr.bounceproxy.attachments.AttachmentStorage;
 import io.joynr.bounceproxy.attachments.InMemoryAttachmentStorage;
 import io.joynr.bounceproxy.info.ChannelInformation;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.MessagingModule;
+import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 
 import java.io.IOException;
@@ -64,8 +65,6 @@ import javax.ws.rs.core.UriInfo;
 import joynr.JoynrMessage;
 
 import org.atmosphere.annotation.Suspend;
-import org.atmosphere.cache.UUIDBroadcasterCache;
-import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.atmosphere.cpr.BroadcasterFactory;
 import org.atmosphere.jersey.Broadcastable;
@@ -111,12 +110,18 @@ public class ChannelService {
     HttpServletResponse response;
     private static AttachmentStorage attachmentStorage = new InMemoryAttachmentStorage();
 
+    // TODO This is initialized directly until refactoring the bounce proxy is
+    // done. Goal is to let bounce proxy implement the xxxRestAdapters and use
+    // Guice for injection.
+    private final LongPollingMessagingDelegate longPollingDelegate = new LongPollingMessagingDelegate();
+
     private static final int EXPIRE_TIME_CONNECTION = 20;
 
     /**
      * A simple HTML list view of channels. A JSP is used for rendering.
      * 
-     * @return a HTML list of available channels, and their resources (long poll connections) if connected.
+     * @return a HTML list of available channels, and their resources (long poll
+     *         connections) if connected.
      */
     @GET
     @Produces("application/json")
@@ -146,8 +151,9 @@ public class ChannelService {
     }
 
     /**
-     * HTTP POST to create a channel, returns location to new resource which can then be long polled. Since the channel
-     * id may later change to be a UUID, not using a PUT but rather POST with used id being returned
+     * HTTP POST to create a channel, returns location to new resource which can
+     * then be long polled. Since the channel id may later change to be a UUID,
+     * not using a PUT but rather POST with used id being returned
      * 
      */
     @POST
@@ -157,41 +163,10 @@ public class ChannelService {
         if (ccid == null || ccid.isEmpty())
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
 
-        throwExceptionIfTrackingIdnotSet(atmosphereTrackingId);
-
         try {
-            log.info("CREATE channel for cluster controller: {} trackingId: {} ", ccid, atmosphereTrackingId);
-            Broadcaster broadcaster = null;
-            // look for an existing broadcaster
 
-            BroadcasterFactory defaultBroadcasterFactory = BroadcasterFactory.getDefault();
-            if (defaultBroadcasterFactory == null) {
-                throw new JoynrHttpException(500, 10009, "broadcaster was null");
-            }
-
-            broadcaster = defaultBroadcasterFactory.lookup(Broadcaster.class, ccid, false);
-            // create a new one if none already exists
-            if (broadcaster == null) {
-                broadcaster = defaultBroadcasterFactory.get(BounceProxyBroadcaster.class, ccid);
-
-            }
-
-            // avoids error where previous long poll from browser got message destined for new long poll
-            // especially as seen in js, where every second refresh caused a fail
-            for (AtmosphereResource resource : broadcaster.getAtmosphereResources()) {
-                if (resource.uuid() != null && resource.uuid().equals(atmosphereTrackingId)) {
-                    resource.resume();
-                }
-            }
-
-            UUIDBroadcasterCache broadcasterCache = (UUIDBroadcasterCache) broadcaster.getBroadcasterConfig()
-                                                                                      .getBroadcasterCache();
-            broadcasterCache.activeClients().put(atmosphereTrackingId, System.currentTimeMillis());
-
-            // BroadcasterCacheInspector is not implemented corrected in Atmosphere 1.1.0RC4
-            // broadcasterCache.inspector(new MessageExpirationInspector());
-
-            URI location = ui.getBaseUriBuilder().path("/channels/" + ccid + "/").build();
+            String path = longPollingDelegate.createChannel(ccid, atmosphereTrackingId);
+            URI location = ui.getBaseUriBuilder().path(path).build();
             return Response.created(location).entity(ccid).build();
 
         } catch (WebApplicationException e) {
@@ -236,8 +211,9 @@ public class ChannelService {
     }
 
     /**
-     * Open a long poll chanel for the given cluster controller The channel is closed automatically by the server at
-     * regular intervals to ensure liveliness.
+     * Open a long poll chanel for the given cluster controller The channel is
+     * closed automatically by the server at regular intervals to ensure
+     * liveliness.
      * 
      * @param ccid
      * @return new message(s), or nothing if the channel is closed by the servr
@@ -254,7 +230,8 @@ public class ChannelService {
 
         try {
             log.debug("GET Channels open long poll channelId: {} trackingId: {}", ccid, atmosphereTrackingId);
-            // NOTE: as of Atmosphere 0.8.5: even though the parameter is set not to create the broadcaster if not
+            // NOTE: as of Atmosphere 0.8.5: even though the parameter is set
+            // not to create the broadcaster if not
             // found, if the
             // broadcaster is found, but set to "destroyed" then it is recreated
             // TODO when is a broadcaster "destroyed" ???
@@ -294,7 +271,8 @@ public class ChannelService {
     }
 
     /**
-     * Send a message to the given cluster controller like the above method postMessage
+     * Send a message to the given cluster controller like the above method
+     * postMessage
      */
     @POST
     @Consumes({ MediaType.TEXT_PLAIN })
