@@ -38,6 +38,8 @@ import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.messaging.ChannelUrlStore;
+import io.joynr.messaging.ChannelUrlStoreImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.LocalChannelUrlDirectoryClientImpl;
@@ -59,6 +61,7 @@ public class DiscoveryClientModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(ChannelUrlStore.class).to(ChannelUrlStoreImpl.class).in(Singleton.class);
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
         bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);

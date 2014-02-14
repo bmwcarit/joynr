@@ -20,68 +20,19 @@ package io.joynr.messaging;
  */
 
 import java.util.HashMap;
-import java.util.List;
 
 import joynr.types.ChannelUrlInformation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public interface ChannelUrlStore {
 
-/**
- * The ChannelUrlStore stores a list of channelIds mapped to their ChannelUrls.
- * 
- */
+    public abstract void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation);
 
-public class ChannelUrlStore {
-    private static final Logger logger = LoggerFactory.getLogger(ChannelUrlStore.class);
-    private HashMap<String, ChannelUrlInformation> registeredChannels = new HashMap<String, ChannelUrlInformation>();
+    public abstract void removeChannelUrls(String channelId);
 
-    public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
-        synchronized (registeredChannels) {
-            registeredChannels.put(channelId, channelUrlInformation);
-        }
-    }
+    public abstract ChannelUrlInformation findChannelEntry(String channelId);
 
-    public void removeChannelUrls(String channelId) {
-        synchronized (registeredChannels) {
-            registeredChannels.remove(channelId);
-        }
-    }
+    public abstract HashMap<String, ChannelUrlInformation> getAllChannelUrls();
 
-    public ChannelUrlInformation findChannelEntry(String channelId) {
-        synchronized (registeredChannels) {
-            ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
-            if (channelUrlInformation == null) {
-                channelUrlInformation = new ChannelUrlInformation();
-                registeredChannels.put(channelId, channelUrlInformation);
-            } else {
-                logger.debug("ChannelUrls for channelId {} found: {}", channelId, channelUrlInformation.toString());
-            }
+    public abstract void registerChannelUrl(String channelId, String channelUrl);
 
-            return channelUrlInformation;
-        }
-    }
-
-    public HashMap<String, ChannelUrlInformation> getAllChannelUrls() {
-        return new HashMap<String, ChannelUrlInformation>(registeredChannels);
-    }
-
-    public void registerChannelUrl(String channelId, String channelUrl) {
-        ChannelUrlInformation channelUrlInformation = null;
-
-        synchronized (registeredChannels) {
-            channelUrlInformation = registeredChannels.get(channelId);
-
-            if (channelUrlInformation == null) {
-                channelUrlInformation = new ChannelUrlInformation();
-                registeredChannels.put(channelId, channelUrlInformation);
-            }
-        }
-
-        synchronized (channelUrlInformation) {
-            List<String> urls = channelUrlInformation.getUrls();
-            urls.add(channelUrl);
-            channelUrlInformation.setUrls(urls);
-        }
-    }
 }

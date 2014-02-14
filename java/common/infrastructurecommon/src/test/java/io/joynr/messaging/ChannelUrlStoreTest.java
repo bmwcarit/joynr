@@ -33,7 +33,7 @@ public class ChannelUrlStoreTest {
 
     @Test
     public void testStoreMultipleUrlsForChannelId() throws Exception {
-        ChannelUrlStore store = new ChannelUrlStore();
+        ChannelUrlStore store = new ChannelUrlStoreImpl();
 
         String channelId = "testStoreMultipleUrlsForChannelId" + UUID.randomUUID().toString();
         int numberChannelUrls = 10;

@@ -37,16 +37,18 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
     private static final Logger logger = LoggerFactory.getLogger(LocalChannelUrlDirectoryClient.class);
 
     private final ChannelUrlDirectoryProxy channelUrlDirectoryClient;
-    private final ChannelUrlStore channelUrlStore = new ChannelUrlStore();
+    private final ChannelUrlStore channelUrlStore;
 
     @Inject
     public LocalChannelUrlDirectoryClientImpl(ChannelUrlDirectoryProxy channelUrlDirectoryClient,
+                                              ChannelUrlStore channelUrlStore,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
                                               MessagingSettings settings) {
         this.channelUrlDirectoryClient = channelUrlDirectoryClient;
+        this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);
 

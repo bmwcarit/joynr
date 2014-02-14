@@ -19,21 +19,28 @@ package io.joynr.discovery;
  * #L%
  */
 
+import java.util.HashMap;
+
 import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.directory.CapabilitiesClientDummy;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
 import io.joynr.channel.ChannelUrlDirectoyImpl;
+import io.joynr.messaging.ChannelUrlStore;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
+import joynr.types.ChannelUrlInformation;
 
+import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
 
 public class DiscoveryDirectoriesModule extends AbstractModule {
+
+    private static final HashMap<String, ChannelUrlInformation> emptyChannelUrlMap = Maps.newHashMap();
 
     @Override
     protected void configure() {
@@ -52,6 +59,36 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
     @Named(MessagingPropertyKeys.CHANNELID)
     String provideCapabilitiesDirectoryChannelId(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String discoveryDirectoriesChannelId) {
         return discoveryDirectoriesChannelId;
+    }
+
+    // An empty store.
+    // The ChannelUrlDirectory's joynlib should not use a cache, but rather ask the real ChannelUrlDirectory Provider when trying to resolve channelUrls
+    @Provides
+    ChannelUrlStore provideChannelUrlStore() {
+        return new ChannelUrlStore() {
+
+            @Override
+            public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
+            }
+
+            @Override
+            public void removeChannelUrls(String channelId) {
+            }
+
+            @Override
+            public ChannelUrlInformation findChannelEntry(String channelId) {
+                return new ChannelUrlInformation();
+            }
+
+            @Override
+            public HashMap<String, ChannelUrlInformation> getAllChannelUrls() {
+                return emptyChannelUrlMap;
+            }
+
+            @Override
+            public void registerChannelUrl(String channelId, String channelUrl) {
+            }
+        };
     }
 
 }
