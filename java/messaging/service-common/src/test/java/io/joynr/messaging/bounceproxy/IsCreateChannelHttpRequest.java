@@ -1,8 +1,8 @@
-package io.joynr.messaging.bounceproxy.controller;
+package io.joynr.messaging.bounceproxy;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::bounceproxy-controller
+ * joynr::java::messaging::service-common
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -19,8 +19,6 @@ package io.joynr.messaging.bounceproxy.controller;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.messaging.service.ChannelServiceConstants;
 
 import java.net.URI;
 import java.util.List;
@@ -48,7 +46,7 @@ public class IsCreateChannelHttpRequest extends ArgumentMatcher<HttpRequest> {
         HttpRequest request = (HttpRequest) argument;
 
         // check if tracking ID is sent in header
-        Header trackingIdHeader = request.getFirstHeader(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID);
+        Header trackingIdHeader = request.getFirstHeader("X-Atmosphere-tracking-id");
         if (trackingIdHeader == null) {
             // no tracking ID header set at all
             return false;
@@ -77,8 +75,8 @@ public class IsCreateChannelHttpRequest extends ArgumentMatcher<HttpRequest> {
 
     @Override
     public void describeTo(Description description) {
-        description.appendText("HTTP POST with query parameter ccid=" + ccid + " and header "
-                + ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID + "=" + trackingId);
+        description.appendText("HTTP POST with query parameter ccid=" + ccid + " and header X-Atmosphere-tracking-id="
+                + trackingId);
     }
 
 }

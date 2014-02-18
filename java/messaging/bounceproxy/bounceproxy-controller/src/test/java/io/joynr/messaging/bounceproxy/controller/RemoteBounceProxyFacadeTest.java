@@ -22,6 +22,7 @@ package io.joynr.messaging.bounceproxy.controller;
 
 import static org.mockito.Matchers.any;
 import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.messaging.bounceproxy.IsCreateChannelHttpRequest;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 
