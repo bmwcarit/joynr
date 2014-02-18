@@ -26,6 +26,8 @@ import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 import io.joynr.messaging.bounceproxy.ChannelServiceImpl;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
+import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.TimestampProvider;
 
@@ -105,6 +107,7 @@ public class MonitoringServiceClientTest {
                                                          bind(ChannelService.class).to(ChannelServiceImpl.class);
                                                          bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
                                                          bind(TimestampProvider.class).toInstance(mockTimestampProvider);
+                                                         bind(BounceProxyInformation.class).toProvider(BounceProxyInformationProvider.class);
                                                      }
                                                  });
 

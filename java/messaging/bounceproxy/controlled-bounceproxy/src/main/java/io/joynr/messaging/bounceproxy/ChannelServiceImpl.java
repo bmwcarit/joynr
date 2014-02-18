@@ -20,12 +20,18 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.ChannelInformation;
 import io.joynr.messaging.service.ChannelService;
 
+import java.net.URI;
 import java.util.List;
 
+import javax.ws.rs.core.UriBuilder;
+
 import org.atmosphere.jersey.Broadcastable;
+
+import com.google.inject.Inject;
 
 /**
  * Implementation of channel service for controlled bounce proxies.
@@ -34,6 +40,16 @@ import org.atmosphere.jersey.Broadcastable;
  *
  */
 public class ChannelServiceImpl implements ChannelService {
+
+    private LongPollingMessagingDelegate longPollingDelegate;
+
+    private final BounceProxyInformation bpInfo;
+
+    @Inject
+    public ChannelServiceImpl(LongPollingMessagingDelegate longPollingDelegate, BounceProxyInformation bpInfo) {
+        this.longPollingDelegate = longPollingDelegate;
+        this.bpInfo = bpInfo;
+    }
 
     @Override
     public List<ChannelInformation> listChannels() {
@@ -55,8 +71,11 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     public ChannelInformation createChannel(String ccid, String trackingId) {
-        // TODO Auto-generated method stub
-        return null;
+
+        String channelPath = longPollingDelegate.createChannel(ccid, trackingId);
+        URI channelLocation = UriBuilder.fromUri(bpInfo.getLocation()).path(channelPath).build();
+
+        return new ChannelInformation(bpInfo, ccid, channelLocation);
     }
 
     @Override
