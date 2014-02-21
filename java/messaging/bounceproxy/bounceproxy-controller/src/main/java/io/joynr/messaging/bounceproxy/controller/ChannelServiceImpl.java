@@ -146,9 +146,9 @@ public class ChannelServiceImpl implements ChannelService {
      * lang.String)
      */
     @Override
-    public void deleteChannel(String ccid) {
+    public boolean deleteChannel(String ccid) {
         // TODO Auto-generated method stub
-
+        return false;
     }
 
 }

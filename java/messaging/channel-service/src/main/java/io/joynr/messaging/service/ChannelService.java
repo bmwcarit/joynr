@@ -74,7 +74,9 @@ public interface ChannelService {
      * Deletes a channel for a channelId
      * 
      * @param ccid
+     * @return <code>true</code> if the channel was actually deleted,
+     *         <code>false</code> if not (e.g. because it never existed)
      */
-    public void deleteChannel(String ccid);
+    public boolean deleteChannel(String ccid);
 
 }

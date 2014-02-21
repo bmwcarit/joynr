@@ -153,9 +153,10 @@ public class ChannelServiceRestAdapter {
         try {
             log.info("DELETE channel for cluster controller: {}", ccid);
 
-            channelService.deleteChannel(ccid);
-
-            return Response.ok().build();
+            if (channelService.deleteChannel(ccid)) {
+                return Response.ok().build();
+            }
+            return Response.noContent().build();
 
         } catch (WebApplicationException e) {
             throw e;

@@ -37,7 +37,7 @@ import com.google.inject.Inject;
  * Implementation of channel service for controlled bounce proxies.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class ChannelServiceImpl implements ChannelService {
 
@@ -79,9 +79,8 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public void deleteChannel(String ccid) {
-        // TODO Auto-generated method stub
-
+    public boolean deleteChannel(String ccid) {
+        return longPollingDelegate.deleteChannel(ccid);
     }
 
 }

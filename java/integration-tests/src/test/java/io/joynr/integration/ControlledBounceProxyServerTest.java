@@ -21,6 +21,7 @@ package io.joynr.integration;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import io.joynr.integration.util.ServersUtil;
@@ -41,6 +42,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 
@@ -87,7 +89,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
     }
 
     @Test(timeout = 20000)
-    public void testSimpleChannelSetupOnSingleBounceProxy() throws Exception {
+    public void testSimpleChannelSetupAndDeletionOnSingleBounceProxy() throws Exception {
 
         // get bounce proxies list
         JsonPath listBps = given().get("controller/bounceproxies").body().jsonPath();
@@ -106,8 +108,26 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // list channels
         JsonPath listChannels = given().get("channels").getBody().jsonPath();
-        // TODO remove until delete channel is implemented assertThat(listChannels, is(numberOfChannels(1)));
+        assertThat(listChannels, is(numberOfChannels(1)));
         assertThat(listChannels, containsChannel("test-channel"));
+
+        String bpUrl = "http://localhost:" + bpPort + "/bounceproxy/";
+        RestAssured.baseURI = bpUrl;
+
+        assertEquals(200 /* OK */, given().delete("channels/test-channel/").thenReturn().statusCode());
+        // TODO include when listChannels is implemented for bounce proxies
+        //        JsonPath listBpChannels = given().get("channels").getBody().jsonPath();
+        //        assertThat(listBpChannels, is(numberOfChannels(0)));
+        //        assertThat(listBpChannels, not(containsChannel("test-channel")));
+    }
+
+    @Test(timeout = 20000)
+    public void testDeleteNonExistingChannel() throws Exception {
+
+        int bpPort = bounceProxyServerXY.getConnectors()[0].getPort();
+        RestAssured.baseURI = "http://localhost:" + bpPort + "/bounceproxy/";
+
+        assertEquals(204 /* No Content */, given().delete("channels/non-existing-channel").thenReturn().statusCode());
     }
 
     @Test

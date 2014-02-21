@@ -77,4 +77,20 @@ public class ChannelServiceImplTest {
         Assert.assertEquals("http://www.joynr.io/channels/channel-123/", channelInformation.getLocation().toString());
         Assert.assertEquals(bpInfoMock, channelInformation.getBounceProxy());
     }
+
+    @Test
+    public void testDeleteChannelSuccessful() {
+
+        Mockito.when(longPollingDelegateMock.deleteChannel("channel-123")).thenReturn(true);
+
+        Assert.assertTrue(channelService.deleteChannel("channel-123"));
+    }
+
+    @Test
+    public void testDeleteChannelFails() {
+
+        Mockito.when(longPollingDelegateMock.deleteChannel("channel-123")).thenReturn(false);
+
+        Assert.assertFalse(channelService.deleteChannel("channel-123"));
+    }
 }
