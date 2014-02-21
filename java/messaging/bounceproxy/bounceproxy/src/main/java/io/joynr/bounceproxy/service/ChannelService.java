@@ -188,19 +188,11 @@ public class ChannelService {
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}")
     public Response deleteChannel(@PathParam("ccid") String ccid) {
         try {
-            log.info("DELETE channel for cluster controller: " + ccid);
-            Broadcaster broadcaster = BroadcasterFactory.getDefault().lookup(Broadcaster.class, ccid, false);
-            if (broadcaster == null) {
-                return Response.noContent().build();
+
+            if (longPollingDelegate.deleteChannel(ccid)) {
+                return Response.ok().build();
             }
-
-            BroadcasterFactory.getDefault().remove(ccid);
-
-            broadcaster.resumeAll();
-            broadcaster.destroy();
-            // broadcaster.getBroadcasterConfig().forceDestroy();
-
-            return Response.ok().build();
+            return Response.noContent().build();
 
         } catch (WebApplicationException e) {
             throw e;

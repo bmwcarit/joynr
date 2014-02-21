@@ -94,6 +94,30 @@ public class LongPollingMessagingDelegate {
         return "/channels/" + ccid + "/";
     }
 
+    /**
+     * Deletes a channel from the broadcaster.
+     * 
+     * @param ccid
+     *            the channel to delete
+     * @return <code>true</code> if the channel existed and could be deleted,
+     *         <code>false</code> if there was no channel for the given ID and
+     *         therefore could not be deleted.
+     */
+    public boolean deleteChannel(String ccid) {
+        log.info("DELETE channel for cluster controller: " + ccid);
+        Broadcaster broadcaster = BroadcasterFactory.getDefault().lookup(Broadcaster.class, ccid, false);
+        if (broadcaster == null) {
+            return false;
+        }
+
+        BroadcasterFactory.getDefault().remove(ccid);
+
+        broadcaster.resumeAll();
+        broadcaster.destroy();
+        // broadcaster.getBroadcasterConfig().forceDestroy();
+        return true;
+    }
+
     private void throwExceptionIfTrackingIdnotSet(String atmosphereTrackingId) {
         if (atmosphereTrackingId == null || atmosphereTrackingId.isEmpty()) {
             log.error("atmosphereTrackingId NOT SET");
@@ -101,4 +125,5 @@ public class LongPollingMessagingDelegate {
                                          JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_TRACKINGIDNOTSET);
         }
     }
+
 }
