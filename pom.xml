@@ -422,6 +422,11 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>net.logstash.log4j</groupId>
+				<artifactId>jsonevent-layout</artifactId>
+				<version>1.5</version>
+			</dependency>			
+			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>1.6.6</version>
@@ -468,6 +473,7 @@
 				<artifactId>httpmime</artifactId>
 				<version>4.3</version>
 			</dependency>
+			
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-bom</artifactId>
