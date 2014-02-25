@@ -87,7 +87,7 @@ public class ServersUtil {
     private static WebAppContext discoveryWebApp() {
         WebAppContext discoveryWebapp = new WebAppContext();
         discoveryWebapp.setContextPath(DISCOVERY_CONTEXT);
-        discoveryWebapp.setWar("target/discoverydirectoryservlet.war");
+        discoveryWebapp.setWar("target/discovery.war");
         return discoveryWebapp;
     }
 

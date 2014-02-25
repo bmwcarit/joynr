@@ -155,7 +155,7 @@
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discoverydirectoryservlet.war</destFileName>
+									<destFileName>discovery.war</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
