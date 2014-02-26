@@ -184,14 +184,8 @@ public class MessagingServletConfig extends GuiceServletContextListener {
             servletModuleClass = this.getClass().getClassLoader().loadClass(servletModuleName);
             servletModule = (Module) servletModuleClass.newInstance();
         } catch (ClassNotFoundException e) {
-            logger.error("Servlet module class not found will use default configuration");
-        } catch (NullPointerException e) {
-            logger.error("No servlet module specified", e);
-        } catch (InstantiationException e) {
-            logger.error("", e);
-        } catch (IllegalAccessException e) {
-            logger.error("", e);
-        } catch (ClassCastException e) {
+            logger.debug("Servlet module class not found will use default configuration");
+        } catch (Exception e) {
             logger.error("", e);
         }
 
