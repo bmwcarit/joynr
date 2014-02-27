@@ -2,7 +2,7 @@ package io.joynr.generator.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package io.joynr.generator.communicationmodel
  * limitations under the License.
  */
 
-
 import com.google.inject.Inject
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FCompoundType
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import org.franca.core.franca.FField
 
 class ComplexTypeTemplate {
 
@@ -52,7 +50,7 @@ import com.google.common.collect.Lists;
 «ENDIF»
 
 @SuppressWarnings("serial")
-// NOTE: serialVersionUID is not defined since we don't have versioning in BMWIDL right now. 
+// NOTE: serialVersionUID is not defined since we don't support Franca versions right now. 
 //       The compiler will generate a serialVersionUID based on the class and its members
 //       (cf. http://docs.oracle.com/javase/6/docs/platform/serialization/spec/class.html#4100),
 //       which is probably more restrictive than what we want.
@@ -73,6 +71,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	}
 	
 
+	«IF !getMembersRecursive(complexType).empty»
 	public «typeName»(
 		«FOR member : getMembersRecursive(complexType) SEPARATOR ','»
 		«getMappedDatatypeOrList(member).replace("::","__")» «member.joynrName»
@@ -89,6 +88,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		this.«member.joynrName» = «member.joynrName»;
 		«ENDFOR»
 	}
+	«ENDIF»
 	
 
 	«FOR member : getMembers(complexType)»
@@ -128,7 +128,9 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 			if (!super.equals(obj))
 				return false;
 		«ENDIF»
+		«IF !getMembers(complexType).empty»
 		«typeName» other = («typeName») obj;
+		«ENDIF»
 		«FOR member : getMembers(complexType)»
 			if (this.«member.joynrName» == null) {
 				if (other.«member.joynrName» != null) {
@@ -143,16 +145,18 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
 		«IF hasExtendsDeclaration(complexType)»
-			int _result = super.hashCode();
+			int result = super.hashCode();
 		«ELSE»
-			int _result = 1;
+			int result = 1;
+		«ENDIF»
+		«IF !getMembers(complexType).empty»
+		final int prime = 31;
 		«ENDIF»
 		«FOR member : getMembers(complexType)»
-			_result = prime * _result + ((this.«member.joynrName» == null) ? 0 : this.«member.joynrName».hashCode());
+			result = prime * result + ((this.«member.joynrName» == null) ? 0 : this.«member.joynrName».hashCode());
 		«ENDFOR»
-		return _result;
+		return result;
 	}
 }
 

@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,11 @@ class TypeCppTemplate {
 			«ENDFOR»
 		}
 
-		«typeName»::«typeName»():
+		«typeName»::«typeName»() :
 			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«getExtendedType(type as FCompoundType).joynrName»(), 
+				«getExtendedType(type as FCompoundType).joynrName»()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+			«ELSE»
+				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
 			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','» 
 				m_«member.joynrName»(«getDefaultValue(member)»)
@@ -72,6 +74,7 @@ class TypeCppTemplate {
 			registerMetatypes();
 		}
 		
+		«IF !getMembersRecursive(type).empty»
 		«typeName»::«typeName»(
 			«FOR member: getMembersRecursive(type) SEPARATOR ','»
 			 	«getMappedDatatypeOrList(member)» new_«member.joynrName»
@@ -83,7 +86,9 @@ class TypeCppTemplate {
 				«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 					new_«member.joynrName»
 				«ENDFOR»
-				),
+				)«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+			«ELSE»
+				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
 			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','» 
 				m_«member.joynrName»(new_«member.joynrName») 
@@ -91,14 +96,14 @@ class TypeCppTemplate {
 		{
 			registerMetatypes();
 		}
-		
+		«ENDIF»
 		
 		//CopyConstructor
 		«typeName»::«typeName»(const «typeName»& «typeName.toFirstLower»Obj) :
 			«IF hasExtendsDeclaration(type as FCompoundType)»
 				«getExtendedType(type as FCompoundType).joynrName»(«typeName.toFirstLower»Obj), 
 			«ELSE»
-				QObject(),
+				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
 			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
 				m_«member.joynrName»(«typeName.toFirstLower»Obj.m_«member.joynrName»)
