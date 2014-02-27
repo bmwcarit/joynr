@@ -3,7 +3,7 @@ package io.joynr.channel;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 /**
  * Overrides the ChannelUrlDirectoryClient Provider to return a NO-OP provider
@@ -57,7 +58,8 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ChannelUrlDirectoryAbstractProvider.class).to(ChannelUrlDirectoyImpl.class);
-
+        bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
+                        .toInstance(5000l);
     }
 
     @Provides

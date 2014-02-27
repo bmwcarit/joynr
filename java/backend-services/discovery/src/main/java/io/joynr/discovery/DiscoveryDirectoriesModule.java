@@ -3,7 +3,7 @@ package io.joynr.discovery;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 public class DiscoveryDirectoriesModule extends AbstractModule {
 
@@ -45,6 +46,8 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ChannelUrlDirectoryAbstractProvider.class).to(ChannelUrlDirectoyImpl.class);
+        bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
+                        .toInstance(5000l);
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
         bind(GlobalCapabilitiesDirectoryClient.class).to(CapabilitiesClientDummy.class);
     }
