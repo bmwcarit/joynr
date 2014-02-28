@@ -27,6 +27,7 @@ import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
+import io.joynr.messaging.service.MessagingServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
 
 import java.util.HashMap;
@@ -91,6 +92,7 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
             @Override
             protected void configureJoynrServlets() {
                 bind(ChannelServiceRestAdapter.class);
+                bind(MessagingServiceRestAdapter.class);
 
                 // Filter to only let requests pass if the bounce proxy has been
                 // initialized correctly, e.g. if it has registered with the

@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import io.joynr.messaging.service.MessagingService;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -52,6 +53,8 @@ public class ControlledBounceProxyModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ChannelService.class).to(ChannelServiceImpl.class);
+        bind(MessagingService.class).to(MessagingServiceImpl.class);
+
         bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
         bind(TimestampProvider.class).to(SystemTimeProvider.class);
         bind(BounceProxyInformation.class).toProvider(BounceProxyInformationProvider.class);
