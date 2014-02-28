@@ -22,6 +22,7 @@ package io.joynr.integration;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.containsChannel;
@@ -112,12 +113,15 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         String bpUrl = "http://localhost:" + bpPort + "/bounceproxy/";
         RestAssured.baseURI = bpUrl;
 
+        JsonPath listBpChannels = given().get("channels").getBody().jsonPath();
+        assertThat(listBpChannels, is(numberOfChannels(2)));
+        assertThat(listBpChannels, containsChannel("test-channel"));
+        assertThat(listBpChannels, containsChannel("/*"));
+        
         assertEquals(200 /* OK */, given().delete("channels/test-channel/").thenReturn().statusCode());
-        // TODO include when listChannels is implemented for bounce proxies
-        // JsonPath listBpChannels =
-        // given().get("channels").getBody().jsonPath();
-        // assertThat(listBpChannels, is(numberOfChannels(0)));
-        // assertThat(listBpChannels, not(containsChannel("test-channel")));
+        JsonPath listBpChannelsAfterDelete = given().get("channels").getBody().jsonPath();
+        assertThat(listBpChannelsAfterDelete, is(numberOfChannels(1)));
+        assertThat(listBpChannelsAfterDelete, not(containsChannel("test-channel")));
     }
 
     @Test(timeout = 20000)

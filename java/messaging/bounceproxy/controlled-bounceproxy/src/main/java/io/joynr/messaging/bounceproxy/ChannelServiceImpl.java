@@ -54,8 +54,7 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     public List<ChannelInformation> listChannels() {
-        // TODO Auto-generated method stub
-        return null;
+        return longPollingDelegate.listChannels();
     }
 
     @Override
