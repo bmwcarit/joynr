@@ -23,12 +23,12 @@ package io.joynr.messaging.info;
 import java.net.URI;
 
 /**
- * Additional information about the channel.
+ * Class representing a messaging channel in a channel service.
  * 
  * @author christina.strobel
  * 
  */
-public class ChannelInformation {
+public class Channel {
 
     private String channelId;
     private BounceProxyInformation bounceProxy;
@@ -39,7 +39,7 @@ public class ChannelInformation {
     private URI channelLocation;
 
     /**
-     * Creates new channel information.
+     * Creates a new channel.
      * 
      * @param bounceProxy
      *            the bounce proxy that handles communication for this channel.
@@ -53,7 +53,7 @@ public class ChannelInformation {
      * @throws IllegalArgumentException
      *             if any parameter is <code>null</code>
      */
-    public ChannelInformation(BounceProxyInformation bounceProxy, String channelId, URI channelLocation) {
+    public Channel(BounceProxyInformation bounceProxy, String channelId, URI channelLocation) {
 
         if (bounceProxy == null) {
             throw new IllegalArgumentException("Parameter 'bounceProxy' must not be null");

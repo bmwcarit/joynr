@@ -23,7 +23,7 @@ package io.joynr.messaging.bounceproxy;
 import java.net.URI;
 
 import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,11 +71,11 @@ public class ChannelServiceImplTest {
         Mockito.when(longPollingDelegateMock.createChannel("channel-123", "trackingId-123"))
                .thenReturn("channels/channel-123/");
 
-        ChannelInformation channelInformation = channelService.createChannel("channel-123", "trackingId-123");
+        Channel channel = channelService.createChannel("channel-123", "trackingId-123");
 
-        Assert.assertEquals("channel-123", channelInformation.getChannelId());
-        Assert.assertEquals("http://www.joynr.io/channels/channel-123/", channelInformation.getLocation().toString());
-        Assert.assertEquals(bpInfoMock, channelInformation.getBounceProxy());
+        Assert.assertEquals("channel-123", channel.getChannelId());
+        Assert.assertEquals("http://www.joynr.io/channels/channel-123/", channel.getLocation().toString());
+        Assert.assertEquals(bpInfoMock, channel.getBounceProxy());
     }
 
     @Test

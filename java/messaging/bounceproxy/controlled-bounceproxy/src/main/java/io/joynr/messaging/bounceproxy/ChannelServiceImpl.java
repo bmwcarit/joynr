@@ -21,7 +21,7 @@ package io.joynr.messaging.bounceproxy;
  */
 
 import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.service.ChannelService;
 
 import java.net.URI;
@@ -52,13 +52,13 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public List<ChannelInformation> listChannels() {
+    public List<Channel> listChannels() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ChannelInformation getChannelInformation(String ccid) {
+    public Channel getChannel(String ccid) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -70,12 +70,12 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public ChannelInformation createChannel(String ccid, String trackingId) {
+    public Channel createChannel(String ccid, String trackingId) {
 
         String channelPath = longPollingDelegate.createChannel(ccid, trackingId);
         URI channelLocation = UriBuilder.fromUri(bpInfo.getLocation()).path(channelPath).build();
 
-        return new ChannelInformation(bpInfo, ccid, channelLocation);
+        return new Channel(bpInfo, ccid, channelLocation);
     }
 
     @Override

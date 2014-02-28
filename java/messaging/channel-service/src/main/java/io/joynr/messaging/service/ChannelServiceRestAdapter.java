@@ -22,7 +22,7 @@ package io.joynr.messaging.service;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -73,9 +73,9 @@ public class ChannelServiceRestAdapter {
      */
     @GET
     @Produces("application/json")
-    public GenericEntity<List<ChannelInformation>> listChannels() {
+    public GenericEntity<List<Channel>> listChannels() {
         try {
-            return new GenericEntity<List<ChannelInformation>>(channelService.listChannels()) {
+            return new GenericEntity<List<Channel>>(channelService.listChannels()) {
             };
         } catch (Throwable e) {
             log.error("GET channels listChannels: error: {}", e.getMessage());
@@ -125,20 +125,19 @@ public class ChannelServiceRestAdapter {
         if (ccid == null || ccid.isEmpty())
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
 
-        ChannelInformation channelInfo = channelService.getChannelInformation(ccid);
+        Channel channel = channelService.getChannel(ccid);
 
-        if (channelInfo != null) {
-            return Response.ok()
-                           .header("Location", channelInfo.getLocation().toString())
-                           .header("bp", channelInfo.getBounceProxy().getId())
-                           .build();
+        if (channel != null) {
+            return Response.ok().header("Location", channel.getLocation().toString()).header("bp",
+                                                                                             channel.getBounceProxy()
+                                                                                                    .getId()).build();
         }
 
         // look for an existing bounce proxy handling the channel
-        channelInfo = channelService.createChannel(ccid, atmosphereTrackingId);
+        channel = channelService.createChannel(ccid, atmosphereTrackingId);
 
         // TODO error handling
-        return Response.created(channelInfo.getLocation()).header("bp", channelInfo.getBounceProxy().getId()).build();
+        return Response.created(channel.getLocation()).header("bp", channel.getBounceProxy().getId()).build();
     }
 
     /**

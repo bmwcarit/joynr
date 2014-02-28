@@ -22,7 +22,7 @@ package io.joynr.messaging.service;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.info.ChannelStatus;
 
 import javax.servlet.http.HttpServletRequest;
@@ -81,23 +81,21 @@ public class ChannelRecoveryServiceRestAdapter {
 
         try {
 
-            ChannelInformation channelInfo = channelService.getChannelInformation(ccid);
+            Channel channel = channelService.getChannel(ccid);
 
-            if (channelInfo == null) {
+            if (channel == null) {
 
                 // bounce proxy controller lost data
-                channelInfo = channelService.createChannel(ccid, atmosphereTrackingId);
-                return Response.created(channelInfo.getLocation())
-                               .header("bp", channelInfo.getBounceProxy().getId())
-                               .build();
+                channel = channelService.createChannel(ccid, atmosphereTrackingId);
+                return Response.created(channel.getLocation()).header("bp", channel.getBounceProxy().getId()).build();
 
             } else {
 
-                if (!bpId.equals(channelInfo.getBounceProxy().getId())) {
+                if (!bpId.equals(channel.getBounceProxy().getId())) {
                     // channel was moved to another bounce proxy
                     return Response.ok()
-                                   .header("Location", channelInfo.getLocation().toString())
-                                   .header("bp", channelInfo.getBounceProxy().getId())
+                                   .header("Location", channel.getLocation().toString())
+                                   .header("bp", channel.getBounceProxy().getId())
                                    .build();
                 } else {
                     // bounce proxy exists, but was unreachable for cluster
@@ -143,11 +141,10 @@ public class ChannelRecoveryServiceRestAdapter {
                                 // channelServiceDelegate.markBounceProxyAsUnreachable(bpId);
 
                                 // create new channel on different bounce proxy
-                                ChannelInformation newChannelInfo = channelService.createChannel(ccid,
-                                                                                                 atmosphereTrackingId);
-                                return Response.created(newChannelInfo.getLocation())
-                                               .header("bp", newChannelInfo.getBounceProxy().getId())
-                                               .build();
+                                Channel newChannel = channelService.createChannel(ccid, atmosphereTrackingId);
+                                return Response.created(newChannel.getLocation()).header("bp",
+                                                                                         newChannel.getBounceProxy()
+                                                                                                   .getId()).build();
                             }
                         } else {
                             throw new JoynrHttpException(Status.BAD_REQUEST.getStatusCode(),

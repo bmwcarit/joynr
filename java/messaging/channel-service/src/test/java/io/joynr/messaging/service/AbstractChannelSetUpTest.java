@@ -21,7 +21,7 @@ package io.joynr.messaging.service;
  */
 
 import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 
 import java.net.URI;
 
@@ -41,12 +41,12 @@ public abstract class AbstractChannelSetUpTest extends AbstractServiceInterfaceT
         serverUrl = String.format("%s/some-channel-service/channels", getServerUrlWithoutPath());
     }
 
-    protected ChannelInformation createChannelInfo(String bpId, String baseUrl, String ccid) {
+    protected Channel createChannel(String bpId, String baseUrl, String ccid) {
 
         BounceProxyInformation bounceProxy = new BounceProxyInformation(bpId, URI.create(baseUrl));
-        ChannelInformation info = new ChannelInformation(bounceProxy, ccid, URI.create(baseUrl + "/channels/" + ccid));
+        Channel channel = new Channel(bounceProxy, ccid, URI.create(baseUrl + "/channels/" + ccid));
 
-        return info;
+        return channel;
     }
 
 }

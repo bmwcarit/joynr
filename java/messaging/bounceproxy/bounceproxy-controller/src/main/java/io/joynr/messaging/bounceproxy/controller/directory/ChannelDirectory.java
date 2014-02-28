@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller.directory;
  * #L%
  */
 
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 
 import java.util.List;
 
@@ -39,22 +39,22 @@ public interface ChannelDirectory {
      * 
      * @return
      */
-    public List<ChannelInformation> getChannels();
+    public List<Channel> getChannels();
 
     /**
-     * Returns the channel information for a certain channel ID.
+     * Returns the channel for a certain channel ID.
      * 
      * @param ccid the channel ID
      * @return the channel ID or <code>null</code> if no channel is stored for the ID.
      */
     @CheckForNull
-    public ChannelInformation getChannel(String ccid);
+    public Channel getChannel(String ccid);
 
     /**
      * Adds a new channel to the directory.
      * 
-     * @param channelInfo
+     * @param channel
      */
-    public void addChannel(ChannelInformation channelInfo);
+    public void addChannel(Channel channel);
 
 }

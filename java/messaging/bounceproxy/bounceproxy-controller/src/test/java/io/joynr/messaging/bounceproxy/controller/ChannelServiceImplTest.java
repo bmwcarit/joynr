@@ -26,7 +26,7 @@ import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
@@ -91,7 +91,7 @@ public class ChannelServiceImplTest {
                .thenReturn(URI.create("http://bpX.de/channels/channel-123"));
         Mockito.when(timestampProviderMock.getCurrentTime()).thenReturn(100l);
 
-        ChannelInformation channel = channelService.createChannel("channel-123", "trackingId-xyz");
+        Channel channel = channelService.createChannel("channel-123", "trackingId-xyz");
 
         assertEquals("channel-123", channel.getChannelId());
         assertEquals("X.Y", channel.getBounceProxy().getId());

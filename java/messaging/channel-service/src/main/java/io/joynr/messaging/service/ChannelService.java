@@ -20,7 +20,7 @@ package io.joynr.messaging.service;
  * #L%
  */
 
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public interface ChannelService {
      * 
      * @return
      */
-    public List<ChannelInformation> listChannels();
+    public List<Channel> listChannels();
 
     /**
      * Retrieves information such as URL used to post messages to this channel
@@ -50,7 +50,7 @@ public interface ChannelService {
      * @return information of the bounce proxy or <code>null</code> if the
      *         channel is not registered.
      */
-    public ChannelInformation getChannelInformation(String ccid);
+    public Channel getChannel(String ccid);
 
     /**
      * Opens a long poll channel.
@@ -68,7 +68,7 @@ public interface ChannelService {
      * @param ccid
      * @param trackingId
      */
-    public ChannelInformation createChannel(String ccid, String trackingId);
+    public Channel createChannel(String ccid, String trackingId);
 
     /**
      * Deletes a channel for a channelId

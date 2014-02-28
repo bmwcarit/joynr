@@ -29,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ChannelInformationTest {
+public class ChannelTest {
 
     @Mock
     BounceProxyInformation mock;
@@ -38,7 +38,7 @@ public class ChannelInformationTest {
     public void testCreationWithoutBounceProxyInformation() {
 
         try {
-            new ChannelInformation(null, "channel-123", URI.create("http://joyn.de/channel-123"));
+            new Channel(null, "channel-123", URI.create("http://joyn.de/channel-123"));
             Assert.fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
         }
@@ -48,7 +48,7 @@ public class ChannelInformationTest {
     public void testCreationWithoutChannelId() {
 
         try {
-            new ChannelInformation(mock, null, URI.create("http://joyn.de/channel-123"));
+            new Channel(mock, null, URI.create("http://joyn.de/channel-123"));
             Assert.fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
         }
@@ -58,7 +58,7 @@ public class ChannelInformationTest {
     public void testCreationWithoutChannelLocation() {
 
         try {
-            new ChannelInformation(mock, "channel-123", null);
+            new Channel(mock, "channel-123", null);
             Assert.fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
         }
@@ -67,10 +67,10 @@ public class ChannelInformationTest {
     @Test
     public void testCreation() {
 
-        ChannelInformation ci = new ChannelInformation(mock, "channel-123", URI.create("http://joyn.de/channel-123"));
+        Channel channel = new Channel(mock, "channel-123", URI.create("http://joyn.de/channel-123"));
 
-        Assert.assertEquals("channel-123", ci.getChannelId());
-        Assert.assertEquals("http://joyn.de/channel-123", ci.getLocation().toString());
-        Assert.assertEquals(mock, ci.getBounceProxy());
+        Assert.assertEquals("channel-123", channel.getChannelId());
+        Assert.assertEquals("http://joyn.de/channel-123", channel.getLocation().toString());
+        Assert.assertEquals(mock, channel.getBounceProxy());
     }
 }

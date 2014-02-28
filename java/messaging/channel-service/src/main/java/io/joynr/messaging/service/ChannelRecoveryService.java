@@ -20,7 +20,7 @@ package io.joynr.messaging.service;
  * #L%
  */
 
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 
 /**
  * Interface for service implementations of {@link ChannelRecoveryServiceRestAdapter}.
@@ -50,6 +50,6 @@ public interface ChannelRecoveryService extends ChannelService {
      * @param ccid
      * @param atmosphereTrackingId
      */
-    public ChannelInformation recoverChannel(String ccid, String atmosphereTrackingId);
+    public Channel recoverChannel(String ccid, String atmosphereTrackingId);
 
 }

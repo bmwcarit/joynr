@@ -27,7 +27,7 @@ import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.bounceproxy.controller.util.ChannelUrlUtil;
-import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.TimestampProvider;
 
@@ -64,14 +64,14 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Inject
     private TimestampProvider timestampProvider;
-
+    
     /*
      * (non-Javadoc)
      * 
      * @see io.joynr.messaging.service.ChannelServiceDelegate#listChannels()
      */
     @Override
-    public List<ChannelInformation> listChannels() {
+    public List<Channel> listChannels() {
         return channelDirectory.getChannels();
     }
 
@@ -83,7 +83,7 @@ public class ChannelServiceImpl implements ChannelService {
      * (java.lang.String)
      */
     @Override
-    public ChannelInformation getChannelInformation(String ccid) {
+    public Channel getChannel(String ccid) {
         return channelDirectory.getChannel(ccid);
     }
 
@@ -107,7 +107,7 @@ public class ChannelServiceImpl implements ChannelService {
      * lang.String, java.lang.String)
      */
     @Override
-    public ChannelInformation createChannel(String ccid, String trackingId) {
+    public Channel createChannel(String ccid, String trackingId) {
 
         try {
             // The controller has to assign the channel to a bounce proxy
@@ -117,12 +117,12 @@ public class ChannelServiceImpl implements ChannelService {
             URI channelLocation = bpFacade.createChannel(bpInfo, ccid, trackingId);
 
             URI channelLocationForCc = ChannelUrlUtil.createChannelLocation(bpInfo, ccid, channelLocation);
-            ChannelInformation channelInfo = new ChannelInformation(bpInfo, ccid, channelLocationForCc);
+            Channel channel = new Channel(bpInfo, ccid, channelLocationForCc);
 
-            channelDirectory.addChannel(channelInfo);
+            channelDirectory.addChannel(channel);
             bounceProxyDirectory.updateChannelAssignment(ccid, bpInfo, timestampProvider.getCurrentTime());
 
-            return channelInfo;
+            return channel;
 
         } catch (Throwable e) {
             // TODO do a more fine grained error handling catching different
