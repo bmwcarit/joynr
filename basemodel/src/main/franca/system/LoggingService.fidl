@@ -1,0 +1,54 @@
+/*
+ * #%L
+ * JOYn::java::backend-services::user-directory
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * __________________
+ *
+ * NOTICE:  Dissemination of this information or reproduction of this material
+ * is strictly  forbidden unless prior written permission is obtained from
+ * BMW Car IT GmbH.
+ * #L%
+ */
+package system
+
+typeCollection LoggingTypes {
+	enumeration JoynrLogLevel {
+		OFF
+		FATAL
+		ERROR
+		WARN
+		INFO
+		DEBUG
+		TRACE
+	}
+	
+	struct JoynrLoggedException {
+		String exceptionClass
+		String exceptionMessage
+	}
+	
+	struct JoynrLogEvent {
+		Int64 timestamp
+		String eventVersion
+		String host
+		String path
+		String message
+		JoynrLogLevel priority
+		JoynrLoggedException exception
+	}	
+}
+
+<** @description : "The logging interface is implemented by log4j and log4javascript appenders. Do not use directly" **>
+interface Logging  {
+
+	/**
+	 * An operation with return value and parameters.
+	 */
+	method log {
+		in {
+			LoggingTypes.JoynrLogEvent[] logEvents
+		}
+	}
+}
