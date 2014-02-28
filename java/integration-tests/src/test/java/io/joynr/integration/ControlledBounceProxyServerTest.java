@@ -117,7 +117,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         assertThat(listBpChannels, is(numberOfChannels(2)));
         assertThat(listBpChannels, containsChannel("test-channel"));
         assertThat(listBpChannels, containsChannel("/*"));
-        
+
         assertEquals(200 /* OK */, given().delete("channels/test-channel/").thenReturn().statusCode());
         JsonPath listBpChannelsAfterDelete = given().get("channels").getBody().jsonPath();
         assertThat(listBpChannelsAfterDelete, is(numberOfChannels(1)));

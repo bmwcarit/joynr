@@ -28,9 +28,7 @@ import io.joynr.bounceproxy.attachments.AttachmentStorage;
 import io.joynr.bounceproxy.attachments.InMemoryAttachmentStorage;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.MessagingModule;
-import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
-import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.info.ChannelInformation;
 
 import java.io.IOException;
@@ -203,25 +201,9 @@ public class ChannelService {
                               @HeaderParam("X-Cache-Index") Integer cacheIndex,
                               @HeaderParam(BounceProxyConstants.X_ATMOSPHERE_TRACKING_ID) String atmosphereTrackingId) {
 
-        throwExceptionIfTrackingIdnotSet(atmosphereTrackingId);
-
         try {
-            log.debug("GET Channels open long poll channelId: {} trackingId: {}", ccid, atmosphereTrackingId);
-            // NOTE: as of Atmosphere 0.8.5: even though the parameter is set
-            // not to create the broadcaster if not
-            // found, if the
-            // broadcaster is found, but set to "destroyed" then it is recreated
-            // TODO when is a broadcaster "destroyed" ???
-            Broadcaster broadcaster = BroadcasterFactory.getDefault().lookup(BounceProxyBroadcaster.class, ccid, false);
-            if (broadcaster == null) {
-                log.error("invalid request from {}", request.getRemoteHost());
-                // broadcaster not found for given ccid
-                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTFOUND);
-            }
 
-            // this causes the long poll, or immediate response if elements are
-            // in the cache
-            return new Broadcastable(broadcaster);
+            return longPollingDelegate.openChannel(ccid, atmosphereTrackingId, request.getRemoteHost());
         } catch (WebApplicationException e) {
             throw e;
         } catch (Throwable e) {
@@ -372,14 +354,6 @@ public class ChannelService {
             log.debug("Requested attachment. Failed to log attachment content");
         }
         return Response.ok(entity, MediaType.MULTIPART_FORM_DATA).build();
-    }
-
-    private void throwExceptionIfTrackingIdnotSet(String atmosphereTrackingId) {
-        if (atmosphereTrackingId == null || atmosphereTrackingId.isEmpty()) {
-            log.error("atmosphereTrackingId NOT SET");
-            throw new JoynrHttpException(Status.BAD_REQUEST,
-                                         JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_TRACKINGIDNOTSET);
-        }
     }
 
 }

@@ -20,6 +20,8 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTFOUND;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.atmosphere.cpr.BroadcasterFactory;
+import org.atmosphere.jersey.Broadcastable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,6 +147,39 @@ public class LongPollingMessagingDelegate {
         broadcaster.destroy();
         // broadcaster.getBroadcasterConfig().forceDestroy();
         return true;
+    }
+
+    /*
+     * Opens a channel for long polling.
+     * 
+     * @param ccid
+     *            the ID of the channel
+     * @param atmosphereTrackingId
+     *            the tracking ID
+     * @param remoteHost
+     *            the remote host that wants to open a channel
+     * @return
+     */
+    public Broadcastable openChannel(String ccid, String atmosphereTrackingId, String remoteHost) {
+
+        throwExceptionIfTrackingIdnotSet(atmosphereTrackingId);
+
+        log.debug("GET Channels open long poll channelId: {} trackingId: {}", ccid, atmosphereTrackingId);
+        // NOTE: as of Atmosphere 0.8.5: even though the parameter is set
+        // not to create the broadcaster if not
+        // found, if the
+        // broadcaster is found, but set to "destroyed" then it is recreated
+        // TODO when is a broadcaster "destroyed" ???
+        Broadcaster broadcaster = BroadcasterFactory.getDefault().lookup(BounceProxyBroadcaster.class, ccid, false);
+        if (broadcaster == null) {
+            log.error("invalid request from {}", remoteHost);
+            // broadcaster not found for given ccid
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTFOUND);
+        }
+
+        // this causes the long poll, or immediate response if elements are
+        // in the cache
+        return new Broadcastable(broadcaster);
     }
 
     private void throwExceptionIfTrackingIdnotSet(String atmosphereTrackingId) {
