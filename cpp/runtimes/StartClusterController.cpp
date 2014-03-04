@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include <QFile>
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/HttpCommunicationManager.h"
 #include "joynr/joynrlogging.h"
@@ -30,21 +31,35 @@ int main( int argc, char* argv[] )
 
     // Check the usage
     QString programName(argv[0]);
-    if(argc != 3) {
-        LOG_ERROR(logger, QString("USAGE: %1 <messageSettingsFile> <libjoynrSettingsFile>").arg(programName));
+    if(argc != 1 && argc != 3) {
+        LOG_FATAL(logger, QString("USAGE: %1 <messagingSettingsFile> <libjoynrSettingsFile>").arg(programName));
+        return 1;
+    }
+    QString messagingSettingsFilename("resources/default-messaging.settings");
+    QString libjoynrSettingsFilename("resources/default-libjoynr.settings");
+    if(argc == 3) {
+        messagingSettingsFilename = QString(argv[1]);
+        libjoynrSettingsFilename = QString(argv[2]);
+    } else {
+        LOG_INFO(logger, QString("No settings files provided. Try to load default settings..."));
+    }
+
+    QFile messagingSettingsFile(messagingSettingsFilename);
+    if(!messagingSettingsFile.exists()) {
+        LOG_FATAL(logger, QString("messaging settings file not found: %1").arg(messagingSettingsFilename));
+        return 1;
+    }
+    QFile libjoynrSettingsFile(libjoynrSettingsFilename);
+    if(!libjoynrSettingsFile.exists()) {
+        LOG_FATAL(logger, QString("libjoynr settings file not found: %1").arg(libjoynrSettingsFilename));
         return 1;
     }
 
-    // load messaging settings
-    QString messageSettingsFilename(argv[1]);
-    // load libjoynr settings
-    QString libjoynrSettingsFilename(argv[2]);
-
     // print the configuration
-    LOG_INFO(logger, "MessagingSettingsFile: " + messageSettingsFilename);
-    LOG_INFO(logger, "LibJoynrSettingsFile: " + libjoynrSettingsFilename);
+    LOG_INFO(logger, QString("using messaging settings file: %1").arg(messagingSettingsFilename));
+    LOG_INFO(logger, QString("using libjyonr settings file: %1").arg(libjoynrSettingsFilename));
 
-    QSettings* settings = SettingsMerger::mergeSettings(messageSettingsFilename);
+    QSettings* settings = SettingsMerger::mergeSettings(messagingSettingsFilename);
     SettingsMerger::mergeSettings(libjoynrSettingsFilename, settings);
 
     // create the cluster controller runtime

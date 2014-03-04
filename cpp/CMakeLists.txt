@@ -380,8 +380,12 @@ set(
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND JoynrConfig_LIBRARIES
+    set(
+        JoynrConfig_LIB_LIBRARIES
+        JoynrCommon
+        Joynr
+        qjson
+        log4qt
         JoynrRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -402,6 +406,15 @@ set(
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
 )
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    set(
+        JoynrConfig_LIB_INCLUDE_DIRS
+        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
+        ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+        ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+        ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
 

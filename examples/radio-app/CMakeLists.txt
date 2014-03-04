@@ -19,11 +19,12 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 # Pull in the Joynr configuration
 find_package(Joynr 0.6.0 REQUIRED)
 message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
-message(STATUS "joynr variable JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS=${JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_LIB_INCLUDE_DIRS=${JOYNR_LIB_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
-message(STATUS "joynr variable JOYNR_CLUSTER_CONTROLLER_LIBRARIES=${JOYNR_CLUSTER_CONTROLLER_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_LIB_LIBRARIES=${JOYNR_LIB_LIBRARIES}")
 message(STATUS "joynr variable JOYNR_EXECUTABLES=${JOYNR_EXECUTABLES}")
 message(STATUS "joynr variable JOYNR_RESOURCES_DIR=${JOYNR_RESOURCES_DIR}")
+message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
 
 ##### Helper variables for using generated code ###########
 
@@ -84,26 +85,26 @@ add_library(radio-app STATIC
     ${GENERATED_SOURCES}
 )
 
-# Compile the provider application
-add_executable(radio-app-provider
+# Compile the provider application (running in-process with cluster controller)
+add_executable(radio-app-provider-cc
     ${radio-app-provider_HEADERS}
     ${radio-app-provider_SOURCES}
 )
 
-# Compile the consumer application
-add_executable(radio-app-consumer
+# Compile the consumer application (running in-process with cluster controller)
+add_executable(radio-app-consumer-cc
     ${radio-app-consumer_HEADERS}
     ${radio-app-consumer_SOURCES}
 )
 
 # Link the provider application
-target_link_libraries(radio-app-provider
+target_link_libraries(radio-app-provider-cc
     radio-app
     ${radio-app_LIBRARIES}
 )
 
 # Link the consumer application
-target_link_libraries(radio-app-consumer
+target_link_libraries(radio-app-consumer-cc
     radio-app
     ${radio-app_LIBRARIES}
 )
@@ -114,6 +115,8 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+
+
 # copy joynr executables
 file(
     COPY ${JOYNR_EXECUTABLES}
@@ -121,28 +124,28 @@ file(
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    # Compile the provider application
-    add_executable(radio-app-provider_ClusterController
+    # Compile the provider application (requires: Dbus and running cluster controller)
+    add_executable(radio-app-provider
         ${radio-app-provider_HEADERS}
         ${radio-app-provider_SOURCES}
     )
 
     # Link the provider application
-    target_link_libraries(radio-app-provider_ClusterController
+    target_link_libraries(radio-app-provider
         radio-app
-        ${JOYNR_CLUSTER_CONTROLLER_LIBRARIES}
+        ${JOYNR_LIB_LIBRARIES}
     )
 
-    # Compile the consumer application
-    add_executable(radio-app-consumer_ClusterController
+    # Compile the consumer application (requires: Dbus and running cluster controller)
+    add_executable(radio-app-consumer
         ${radio-app-consumer_HEADERS}
         ${radio-app-consumer_SOURCES}
     )
 
     # Link the consumer application
-    target_link_libraries(radio-app-consumer_ClusterController
+    target_link_libraries(radio-app-consumer
         radio-app
-        ${JOYNR_CLUSTER_CONTROLLER_LIBRARIES}
+        ${JOYNR_LIB_LIBRARIES}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
@@ -165,13 +168,19 @@ IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-provider.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-consumer.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug//resources/radio-app-consumer.libjoynr.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/cc.messaging.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug//resources/cc.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-consumer.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release//resources/radio-app-consumer.libjoynr.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/cc.messaging.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release//resources/cc.libjoynr.settings)
 ELSE()
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.libjoynr.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.libjoynr.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.messaging.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.libjoynr.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.libjoynr.settings)
 ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
