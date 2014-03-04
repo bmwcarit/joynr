@@ -21,6 +21,9 @@ package io.joynr.messaging.bounceproxy;
  */
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTFOUND;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -31,6 +34,8 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.info.ChannelInformation;
 
 import javax.ws.rs.core.Response.Status;
+
+import joynr.JoynrMessage;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -180,6 +185,70 @@ public class LongPollingMessagingDelegate {
         // this causes the long poll, or immediate response if elements are
         // in the cache
         return new Broadcastable(broadcaster);
+    }
+
+    /**
+     * Posts a message to a long polling channel.
+     * 
+     * @param ccid
+     *            the identifier of the long polling channel
+     * @param message
+     *            the message to send
+     * @param remoteHost
+     *            the host posting the message. This information is mostly used
+     *            for logging purposes.
+     * @return the path segment for the message status. The path, appended to
+     *         the base URI of the messaging service, can be used to query the
+     *         message status
+     * 
+     * @throws JoynrHttpException
+     *             if one of:
+     *             <ul>
+     *             <li>ccid is not set</li>
+     *             <li>the message has expired or not expiry date is set</li>
+     *             <li>no channel registered for ccid</li>
+     *             </ul>
+     */
+    public String postMessage(String ccid, JoynrMessage message, String remoteHost) {
+        if (ccid == null) {
+            log.error("POST message {} to cluster controller: NULL. Dropped because: channel Id was not set. Request from: {}",
+                      message.getId(),
+                      remoteHost);
+
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
+        }
+
+        // send the message to the receiver.
+        if (message.getExpiryDate() == 0) {
+            log.error("POST message {} to cluster controller: {} dropped because: expiry date not set",
+                      ccid,
+                      message.getId());
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET, remoteHost);
+        }
+
+        if (message.getExpiryDate() < System.currentTimeMillis()) {
+            log.warn("POST message {} to cluster controller: {} dropped because: TTL expired", ccid, message.getId());
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED, remoteHost);
+        }
+
+        // look for an existing broadcaster
+        Broadcaster ccBroadcaster = BroadcasterFactory.getDefault().lookup(Broadcaster.class, ccid, false);
+        if (ccBroadcaster == null) {
+            // if the receiver has never registered with the bounceproxy
+            // (or his registration has expired) then return 204 no
+            // content.
+            log.error("POST message {} to cluster controller: {} dropped because: no channel found",
+                      ccid,
+                      message.getId());
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTFOUND);
+        }
+
+        if (ccBroadcaster.getAtmosphereResources().size() == 0) {
+            log.debug("no poll currently waiting for channelId: {}", ccid);
+        }
+        ccBroadcaster.broadcast(message);
+
+        return "messages/" + message.getId();
     }
 
     private void throwExceptionIfTrackingIdnotSet(String atmosphereTrackingId) {

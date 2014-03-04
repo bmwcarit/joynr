@@ -19,10 +19,7 @@ package io.joynr.bounceproxy.service;
  * #L%
  */
 
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTFOUND;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 import io.joynr.bounceproxy.BounceProxyConstants;
 import io.joynr.bounceproxy.attachments.AttachmentStorage;
 import io.joynr.bounceproxy.attachments.InMemoryAttachmentStorage;
@@ -61,8 +58,6 @@ import javax.ws.rs.core.UriInfo;
 import joynr.JoynrMessage;
 
 import org.atmosphere.annotation.Suspend;
-import org.atmosphere.cpr.Broadcaster;
-import org.atmosphere.cpr.BroadcasterFactory;
 import org.atmosphere.jersey.Broadcastable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -283,54 +278,14 @@ public class ChannelService {
             log.debug("******POST message {} to cluster controller: {}", msgId, ccid);
             log.trace("******POST message {} to cluster controller: {} extended info: \r\n {}", ccid, message);
 
-            if (ccid == null) {
-                log.error("POST message {} to cluster controller: NULL. Dropped because: channel Id was not set. Request from: {}",
-                          message.getId(),
-                          request.getRemoteHost());
-
-                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
-            }
-
-            // send the message to the receiver.
-            if (message.getExpiryDate() == 0) {
-                log.error("POST message {} to cluster controller: {} dropped because: expiry date not set",
-                          ccid,
-                          message.getId());
-                throw new JoynrHttpException(Status.BAD_REQUEST,
-                                             JOYNRMESSAGINGERROR_EXPIRYDATENOTSET,
-                                             request.getRemoteHost());
-            }
-
-            if (message.getExpiryDate() < System.currentTimeMillis()) {
-                log.warn("POST message {} to cluster controller: {} dropped because: TTL expired",
-                         ccid,
-                         message.getId());
-                throw new JoynrHttpException(Status.BAD_REQUEST,
-                                             JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED,
-                                             request.getRemoteHost());
-            }
-
-            // look for an existing broadcaster
-            Broadcaster ccBroadcaster = BroadcasterFactory.getDefault().lookup(Broadcaster.class, ccid, false);
-            if (ccBroadcaster == null) {
-                // if the receiver has never registered with the bounceproxy
-                // (or his registration has expired) then return 204 no
-                // content.
-                log.error("POST message {} to cluster controller: {} dropped because: no channel found",
-                          ccid,
-                          message.getId());
-                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTFOUND);
-            }
-
             response.setCharacterEncoding("UTF-8");
-            if (ccBroadcaster.getAtmosphereResources().size() == 0) {
-                log.debug("no poll currently waiting for channelId: {}", ccid);
-            }
-            ccBroadcaster.broadcast(message);
+
             // the location that can be queried to get the message
             // status
             // TODO REST URL for message status?
-            URI location = ui.getBaseUriBuilder().path("messages/" + msgId).build();
+            String path = longPollingDelegate.postMessage(ccid, message, request.getRemoteHost());
+
+            URI location = ui.getBaseUriBuilder().path(path).build();
             // return the message status location to the sender.
             return Response.created(location).header("msgId", msgId).build();
 
