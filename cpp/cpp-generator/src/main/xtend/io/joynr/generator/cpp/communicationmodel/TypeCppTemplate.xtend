@@ -99,16 +99,19 @@ class TypeCppTemplate {
 		«ENDIF»
 		
 		//CopyConstructor
-		«typeName»::«typeName»(const «typeName»& «typeName.toFirstLower»Obj) :
+		«typeName»::«typeName»(const «typeName»& other) :
 			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«getExtendedType(type as FCompoundType).joynrName»(«typeName.toFirstLower»Obj), 
+				«getExtendedType(type as FCompoundType).joynrName»(other), 
 			«ELSE»
 				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
 			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
-				m_«member.joynrName»(«typeName.toFirstLower»Obj.m_«member.joynrName»)
+				m_«member.joynrName»(other.m_«member.joynrName»)
 			«ENDFOR»
 		{
+			«IF getMembersRecursive(type).empty»
+			Q_UNUSED(other);
+    		«ENDIF»
 			registerMetatypes();		
 		}
 		
@@ -174,31 +177,37 @@ class TypeCppTemplate {
 		«ENDFOR»
 		
 		//AssignOperator
-		«typeName»& «typeName»::operator=(const «typeName»& «typeName.toFirstLower»Obj) {
+		«typeName»& «typeName»::operator=(const «typeName»& other) {
+			«IF getMembersRecursive(type).empty»
+			Q_UNUSED(other);
+    		«ENDIF»
 			«IF hasExtendsDeclaration(type as FCompoundType)»
 				«val base = getExtendedType(type as FCompoundType)»
-				«getMappedDatatype(base)»::operator=(«typeName.toFirstLower»Obj); 
+				«getMappedDatatype(base)»::operator=(other); 
 			«ENDIF»
 			«FOR member: getMembers(type as FCompoundType)»
-				this->m_«member.joynrName» = «typeName.toFirstLower»Obj.m_«member.joynrName»;
+				this->m_«member.joynrName» = other.m_«member.joynrName»;
 			«ENDFOR»
 		    return *this;
 		}
 		
-		bool «typeName»::operator==(const «typeName»& «typeName.toFirstLower»Obj) const {
+		bool «typeName»::operator==(const «typeName»& other) const {
+			«IF getMembersRecursive(type).empty»
+			Q_UNUSED(other);
+    		«ENDIF»
 			return
 			    «FOR member: getMembers(type as FCompoundType)»
-			    	this->m_«member.joynrName» == «typeName.toFirstLower»Obj.m_«member.joynrName» &&
+			    	this->m_«member.joynrName» == other.m_«member.joynrName» &&
 				«ENDFOR»
 				«IF hasExtendsDeclaration(type as FCompoundType)»
-					«getMappedDatatype(getExtendedType(type as FCompoundType))»::operator==(«typeName.toFirstLower»Obj);
+					«getMappedDatatype(getExtendedType(type as FCompoundType))»::operator==(other);
 				«ELSE»
 					true;
 				«ENDIF»
 		}
 
-		bool «typeName»::operator!=(const «typeName»& «typeName.toFirstLower»Obj) const {
-		    return !(*this==«typeName.toFirstLower»Obj);
+		bool «typeName»::operator!=(const «typeName»& other) const {
+		    return !(*this==other);
 		}
 		
 		QString «typeName»::toString() const {
