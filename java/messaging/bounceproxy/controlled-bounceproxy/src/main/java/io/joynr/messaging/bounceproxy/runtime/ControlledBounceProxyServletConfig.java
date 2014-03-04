@@ -25,6 +25,7 @@ import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MessagingServiceRestAdapter;
@@ -98,6 +99,7 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
                 // initialized correctly, e.g. if it has registered with the
                 // bounce proxy controller.
                 filter("/*").through(BounceProxyInitializedFilter.class);
+                filter("/*").through(CharacterEncodingFilter.class);
 
                 // TODO put configuration somewhere else
                 // This will be done with refactoring of the bounceproxy,

@@ -26,25 +26,23 @@ import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-//import io.joynr.util.PreconfiguredEndpointDirectoryModule;
+public class ControlledBounceProxyMessagingIntegrationTest extends AbstractMessagingIntegrationTest {
 
-/**
- * Tests the interaction of the dispatcher and communication manager.
- */
-public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
-
-    private static Server server;
+    private static Server bounceProxyServerXY;
+    private static Server bounceProxyControllerServer;
 
     @BeforeClass
     public static void startServer() throws Exception {
-        server = ServersUtil.startBounceproxy();
+        bounceProxyControllerServer = ServersUtil.startBounceproxyController();
+        bounceProxyServerXY = ServersUtil.startControlledBounceproxy("X.Y");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
     }
 
     @AfterClass
     public static void stopServer() throws Exception {
-        server.stop();
+        bounceProxyServerXY.stop();
+        bounceProxyControllerServer.stop();
     }
 
 }
