@@ -62,8 +62,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
 
     private Object registerSynchronizer = new Object();
 
-    private Future<Void> startLongPollingFuture;
-
     @Inject
     public LongPollingMessageReceiver(LongPollingChannelLifecycle channelMonitor,
                                       MessagingSettings settings,

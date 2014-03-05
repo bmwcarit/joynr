@@ -21,6 +21,7 @@ package io.joynr.database.derby;
 
 import io.joynr.database.JoynrEmbeddedDatabase;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -61,10 +62,15 @@ public class JoynrDerbyDatabase extends JoynrEmbeddedDatabase {
 
     @Override
     public synchronized void close() throws SQLException {
+    	Connection connection = null;
         try {
-            DriverManager.getConnection(getDBCloseUrl());
+            connection = DriverManager.getConnection(getDBCloseUrl());
         } catch (SQLException e) {
             log.debug("Expected exception \"" + e.getMessage() + "\" ocurred");
+        } finally {
+        	if (connection != null) {
+        		connection.close();
+        	}
         }
         super.close();
     }
