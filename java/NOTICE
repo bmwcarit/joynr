@@ -24,6 +24,7 @@ This project has dependencies to:
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Core under Apache License, Version 2.0
   atmosphere-annotations under CDDL or Apache License 2.0
+  atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0

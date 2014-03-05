@@ -76,10 +76,27 @@ public class ServersUtil {
         return server;
     }
 
-    public static Server startControlledBounceproxy() throws Exception {
+    public static Server startControlledBounceproxy(String bpId) throws Exception {
+
+        final int port = ServletUtil.findFreePort();
+        final String bpUrl = "http://localhost:" + port + "/bounceproxy/";
+
+        System.setProperty("joynr.bounceproxy.id", bpId);
+        System.setProperty("joynr.bounceproxy.controller.baseurl",
+                           System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL) + "controller/bounceproxies/");
+        System.setProperty("joynr.bounceproxy.url4cc", bpUrl);
+        System.setProperty("joynr.bounceproxy.url4bpc", bpUrl);
+
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createControlledBounceproxyWebApp() });
-        return startServer(contexts);
+        Server server = startServer(contexts, port);
+
+        System.clearProperty("joynr.bounceproxy.id");
+        System.clearProperty("joynr.bounceproxy.controller.baseurl");
+        System.clearProperty("joynr.bounceproxy.url4cc");
+        System.clearProperty("joynr.bounceproxy.url4bpc");
+
+        return server;
     }
 
     public static Server startBounceproxyController() throws Exception {
@@ -95,6 +112,11 @@ public class ServersUtil {
 
     private static Server startServer(ContextHandlerCollection contexts) throws IOException, Exception {
         final int port = ServletUtil.findFreePort();
+        return startServer(contexts, port);
+    }
+
+    private static Server startServer(ContextHandlerCollection contexts, int port) throws IOException, Exception {
+
         logger.info("PORT: http://localhost:{}", port);
         final Server jettyServer = new Server();
         AbstractConnector connector = new SelectChannelConnector();
@@ -122,6 +144,11 @@ public class ServersUtil {
         WebAppContext bounceproxyWebapp = new WebAppContext();
         bounceproxyWebapp.setContextPath(BOUNCEPROXY_CONTEXT);
         bounceproxyWebapp.setWar("target/controlled-bounceproxy.war");
+
+        // Makes jetty load classes in the same order as JVM. Otherwise there's
+        // a conflict loading loggers.
+        bounceproxyWebapp.setParentLoaderPriority(true);
+
         return bounceproxyWebapp;
     }
 
@@ -129,6 +156,11 @@ public class ServersUtil {
         WebAppContext bounceproxyWebapp = new WebAppContext();
         bounceproxyWebapp.setContextPath(BOUNCEPROXYCONTROLLER_CONTEXT);
         bounceproxyWebapp.setWar("target/bounceproxy-controller.war");
+
+        // Makes jetty load classes in the same order as JVM. Otherwise there's
+        // a conflict loading loggers.
+        bounceproxyWebapp.setParentLoaderPriority(true);
+
         return bounceproxyWebapp;
     }
 

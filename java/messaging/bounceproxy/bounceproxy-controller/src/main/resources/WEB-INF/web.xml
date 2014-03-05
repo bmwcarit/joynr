@@ -23,15 +23,18 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-	<filter>
-		<filter-name>guiceFilter</filter-name>
-		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>guiceFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
+	<!-- Contrary to the Guice servlet documentation, don't define the GuiceFilter here. 
+		 Reason: When GuiceFilter is defined in web.xml, it is created by the servlet container.
+		         No Guice injection is used then. To set filter pipelines in GuiceFilter, a static
+		         variable is used. The static variable is then overridden if more than one servlet
+		         is deployed in the same JVM (as for integration tests). The servlets return a 404
+		         response then.
+		         Using Guice injection for GuiceFilter, a member variable for the pipeline is set
+		         for each instance of GuiceFilter, which is the desired behaviour. Instantiation of
+		         GuiceFilter is done in the listener defined below.
+		 See also these Guice issues: 
+            	 - https://code.google.com/p/google-guice/issues/detail?id=618
+            	 - https://code.google.com/p/google-guice/issues/detail?id=635 -->
 
 	<listener>
 		<listener-class>io.joynr.messaging.bounceproxy.controller.runtime.BounceProxyControllerServletConfig</listener-class>

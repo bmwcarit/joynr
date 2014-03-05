@@ -20,9 +20,11 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
 import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
 import io.joynr.messaging.bounceproxy.monitoring.BounceProxyPerformanceMonitor;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
+import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.SystemTimeProvider;
 import io.joynr.messaging.system.TimestampProvider;
@@ -52,6 +54,7 @@ public class ControlledBounceProxyModule extends AbstractModule {
         bind(ChannelService.class).to(ChannelServiceImpl.class);
         bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
         bind(TimestampProvider.class).to(SystemTimeProvider.class);
+        bind(BounceProxyInformation.class).toProvider(BounceProxyInformationProvider.class);
     }
 
     @Provides

@@ -21,18 +21,17 @@ package io.joynr.messaging.bounceproxy.controller.runtime;
  */
 
 import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.guice.servlet.AbstractGuiceServletConfig;
+import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.controller.BounceProxyControllerModule;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MonitoringServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
 
-import javax.servlet.ServletContextEvent;
+import java.util.LinkedList;
+import java.util.List;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
-import com.sun.jersey.guice.JerseyServletModule;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import com.google.inject.Module;
 
 /**
  * Servlet configuration for bounceproxy controller servlet.
@@ -40,40 +39,30 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  * @author christina.strobel
  * 
  */
-public class BounceProxyControllerServletConfig extends GuiceServletContextListener {
+public class BounceProxyControllerServletConfig extends AbstractGuiceServletConfig {
 
-    private JerseyServletModule jerseyServletModule;
-    private Injector injector;
+    private final List<Module> modules;
 
-    @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-
-        // The jerseyServletModule injects the servicing classes using guice,
-        // instead of letting jersey do it natively
-        jerseyServletModule = new JerseyServletModule() {
-
-            @Override
-            protected void configureServlets() {
-                bind(ChannelServiceRestAdapter.class);
-                bind(MonitoringServiceRestAdapter.class);
-
-                // Route all requests through GuiceContainer
-                serve("/*").with(GuiceContainer.class);
-            }
-
-        };
-
-        // The factory will automatically set all messaging settings etc. from
-        // default JOYnr property files.
-        injector = Guice.createInjector(new PropertyLoadingModule(PropertyLoader.loadProperties("bounceProxyController.properties")),
-                                        jerseyServletModule,
-                                        new BounceProxyControllerModule());
-
-        super.contextInitialized(servletContextEvent);
+    public BounceProxyControllerServletConfig() {
+        modules = new LinkedList<Module>();
+        modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("bounceProxyController.properties")));
+        modules.add(new BounceProxyControllerModule());
     }
 
     @Override
-    protected Injector getInjector() {
-        return injector;
+    protected AbstractJoynrServletModule getJoynrServletModule() {
+        return new AbstractJoynrServletModule() {
+
+            @Override
+            protected void configureJoynrServlets() {
+                bind(ChannelServiceRestAdapter.class);
+                bind(MonitoringServiceRestAdapter.class);
+            }
+        };
+    }
+
+    @Override
+    protected List<Module> getJoynrModules() {
+        return modules;
     }
 }

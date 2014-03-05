@@ -120,6 +120,8 @@ public class ChannelServiceRestAdapter {
     public Response createChannel(@QueryParam("ccid") String ccid,
                                   @HeaderParam(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID) String atmosphereTrackingId) {
 
+        log.info("CREATE channel for channel ID: {}", ccid);
+
         if (ccid == null || ccid.isEmpty())
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
 
@@ -149,7 +151,7 @@ public class ChannelServiceRestAdapter {
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}")
     public Response deleteChannel(@PathParam("ccid") String ccid) {
         try {
-            log.info("DELETE channel for cluster controller: " + ccid);
+            log.info("DELETE channel for cluster controller: {}", ccid);
 
             channelService.deleteChannel(ccid);
 
@@ -158,7 +160,7 @@ public class ChannelServiceRestAdapter {
         } catch (WebApplicationException e) {
             throw e;
         } catch (Throwable e) {
-            log.error("DELETE channel for cluster controller: error: {}" + e.getMessage());
+            log.error("DELETE channel for cluster controller: error: {}", e.getMessage());
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
     }

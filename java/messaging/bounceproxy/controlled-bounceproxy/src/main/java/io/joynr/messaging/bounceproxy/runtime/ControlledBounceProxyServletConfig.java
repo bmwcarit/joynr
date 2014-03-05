@@ -21,18 +21,27 @@ package io.joynr.messaging.bounceproxy.runtime;
  */
 
 import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.guice.servlet.AbstractGuiceServletConfig;
+import io.joynr.guice.servlet.AbstractJoynrServletModule;
+import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.ServletContextEvent;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
-import com.sun.jersey.guice.JerseyServletModule;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import org.atmosphere.cache.UUIDBroadcasterCache;
+import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
+
+import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 /**
  * Servlet configuration for controlled bounceproxy servlet.
@@ -40,61 +49,82 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  * @author christina.strobel
  * 
  */
-public class ControlledBounceProxyServletConfig extends GuiceServletContextListener {
+public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConfig {
 
-    private JerseyServletModule jerseyServletModule;
-    private Injector injector;
+    private final List<Module> modules;
+    Map<String, String> params = new HashMap<String, String>();
+
+    public ControlledBounceProxyServletConfig() {
+        modules = new LinkedList<Module>();
+        modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties"),
+                                              BounceProxySystemPropertyLoader.loadProperties()));
+        modules.add(new ControlledBounceProxyModule());
+    }
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
-        // The jerseyServletModule injects the servicing classes using guice,
-        // instead of letting jersey do it natively
-        jerseyServletModule = new JerseyServletModule() {
-
-            @Override
-            protected void configureServlets() {
-
-                bind(ChannelServiceRestAdapter.class);
-
-                // Route all requests through GuiceContainer
-                serve("/*").with(GuiceContainer.class);
-
-                // Filter to only let requests pass if the bounce proxy has been
-                // initialized correctly, e.g. if it has registered with the
-                // bounce proxy controller.
-                filter("/*").through(BounceProxyInitializedFilter.class);
-            }
-
-        };
-
-        injector = Guice.createInjector(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties"),
-                                                                  BounceProxySystemPropertyLoader.loadProperties()),
-                                        jerseyServletModule,
-                                        new ControlledBounceProxyModule());
+        super.contextInitialized(servletContextEvent);
 
         // Hook to send out message that bounce proxy has started and to start
         // the performance monitoring loop.
-        MonitoringServiceClient monitoringServiceClient = injector.getInstance(MonitoringServiceClient.class);
+        MonitoringServiceClient monitoringServiceClient = getInjector().getInstance(MonitoringServiceClient.class);
         monitoringServiceClient.startStartupReporting();
 
         monitoringServiceClient.startPerformanceReport();
-
-        super.contextInitialized(servletContextEvent);
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
 
         // Hook to send out message that the bounce proxy will shutdown.
-        MonitoringServiceClient monitoringServiceClient = injector.getInstance(MonitoringServiceClient.class);
+        MonitoringServiceClient monitoringServiceClient = getInjector().getInstance(MonitoringServiceClient.class);
         monitoringServiceClient.reportShutdown();
 
         super.contextDestroyed(servletContextEvent);
     }
 
     @Override
-    protected Injector getInjector() {
-        return injector;
+    protected AbstractJoynrServletModule getJoynrServletModule() {
+        return new AbstractJoynrServletModule() {
+
+            @Override
+            protected void configureJoynrServlets() {
+                bind(ChannelServiceRestAdapter.class);
+
+                // Filter to only let requests pass if the bounce proxy has been
+                // initialized correctly, e.g. if it has registered with the
+                // bounce proxy controller.
+                filter("/*").through(BounceProxyInitializedFilter.class);
+
+                // TODO put configuration somewhere else
+                // This will be done with refactoring of the bounceproxy,
+                // when bounceproxy is also configured with Guice.
+                params.put("suspend.seconds", "20");
+                params.put("com.sun.jersey.config.property.packages", "io.joynr.messaging.bounceproxy");
+                params.put("org.atmosphere.cpr.broadcasterClass", BounceProxyBroadcaster.class.getName());
+                params.put("org.atmosphere.cpr.broadcasterCacheClass", UUIDBroadcasterCache.class.getName());
+                params.put("org.atmosphere.useBlocking", "false");
+                params.put("org.atmosphere.cpr.broadcasterLifeCyclePolicy", "NEVER");
+                params.put("org.atmosphere.cpr.broadcaster.shareableThreadPool", "true");
+                params.put("com.sun.jersey.config.feature.DisableWADL", "true");
+                params.put("org.atmosphere.cpr.BroadcasterCache.strategy", "beforeFilter");
+
+                bind(new TypeLiteral<Map<String, String>>() {
+                }).annotatedWith(Names.named("org.atmosphere.guice.AtmosphereGuiceServlet.properties"))
+                  .toInstance(params);
+            }
+
+            @Override
+            protected void bindJoynrServletClass() {
+                serve("/*").with(GuiceManagedAtmosphereServlet.class, params);
+            }
+
+        };
+    }
+
+    @Override
+    protected List<Module> getJoynrModules() {
+        return modules;
     }
 }
