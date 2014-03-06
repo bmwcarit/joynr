@@ -26,12 +26,12 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import io.joynr.bounceproxy.BounceProxyConstants;
 import io.joynr.bounceproxy.attachments.AttachmentStorage;
 import io.joynr.bounceproxy.attachments.InMemoryAttachmentStorage;
-import io.joynr.bounceproxy.info.ChannelInformation;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
+import io.joynr.messaging.info.ChannelInformation;
 
 import java.io.IOException;
 import java.io.InputStream;

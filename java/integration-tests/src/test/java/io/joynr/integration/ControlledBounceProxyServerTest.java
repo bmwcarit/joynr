@@ -24,9 +24,10 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.util.ServersUtil;
+import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.containsChannel;
+import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.numberOfChannels;
 
-import java.util.List;
+import io.joynr.integration.util.ServersUtil;
 
 import org.eclipse.jetty.server.Server;
 import org.hamcrest.BaseMatcher;
@@ -45,9 +46,6 @@ import org.slf4j.LoggerFactory;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTest {
 
@@ -116,9 +114,10 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         assertEquals(200 /* OK */, given().delete("channels/test-channel/").thenReturn().statusCode());
         // TODO include when listChannels is implemented for bounce proxies
-        //        JsonPath listBpChannels = given().get("channels").getBody().jsonPath();
-        //        assertThat(listBpChannels, is(numberOfChannels(0)));
-        //        assertThat(listBpChannels, not(containsChannel("test-channel")));
+        // JsonPath listBpChannels =
+        // given().get("channels").getBody().jsonPath();
+        // assertThat(listBpChannels, is(numberOfChannels(0)));
+        // assertThat(listBpChannels, not(containsChannel("test-channel")));
     }
 
     @Test(timeout = 20000)
@@ -166,60 +165,10 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         /* @formatter:off */
         JsonPath listChannels = given().get("channels").getBody().jsonPath();
         /* @formatter:on */
-        // TODO remove until delete channel is implemented assertThat(listChannels, is(numberOfChannels(2)));
+        // TODO remove until delete channel is implemented
+        // assertThat(listChannels, is(numberOfChannels(2)));
         assertThat(listChannels, containsChannel("channel-123"));
         assertThat(listChannels, containsChannel("channel-abc"));
-    }
-
-    private Matcher<JsonPath> containsChannel(final String channelId) {
-
-        return new BaseMatcher<JsonPath>() {
-
-            @Override
-            public boolean matches(Object item) {
-
-                JsonPath jsonPath = (JsonPath) item;
-
-                List<String> channelIds = jsonPath.getList("channelId");
-
-                for (String c : channelIds) {
-                    if (c.equals(channelId)) {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("contains channel ID '" + channelId + "'");
-            }
-
-        };
-    }
-
-    @SuppressWarnings(justification = "will be used when delete channel is implemented")
-    @SuppressFBWarnings(justification = "will be used when delete channel is implemented")
-    private Matcher<JsonPath> numberOfChannels(final int size) {
-
-        return new BaseMatcher<JsonPath>() {
-
-            @Override
-            public boolean matches(Object item) {
-
-                JsonPath jsonPath = (JsonPath) item;
-
-                List<String> channelIds = jsonPath.getList("channelId");
-                return channelIds.size() == size;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("contains " + size + " channels");
-            }
-
-        };
     }
 
     private Matcher<JsonPath> containsBounceProxy(final String id, final String status) {

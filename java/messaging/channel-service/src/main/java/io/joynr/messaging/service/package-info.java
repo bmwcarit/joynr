@@ -1,9 +1,4 @@
-/**
- * Service interface definitions for channel setup services.
- * 
- * @author christina.strobel
- *
- */
+@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
 package io.joynr.messaging.service;
 
 /*

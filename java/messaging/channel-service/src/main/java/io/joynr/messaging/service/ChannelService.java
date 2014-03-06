@@ -21,8 +21,11 @@ package io.joynr.messaging.service;
  */
 
 import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
 
 import java.util.List;
+
+import javax.annotation.CheckForNull;
 
 import org.atmosphere.jersey.Broadcastable;
 
@@ -39,7 +42,7 @@ public interface ChannelService {
      * 
      * @return
      */
-    public List<Channel> listChannels();
+    public List<ChannelInformation> listChannels();
 
     /**
      * Retrieves information such as URL used to post messages to this channel
@@ -47,9 +50,10 @@ public interface ChannelService {
      * 
      * @param ccid
      *            the channel to communication on
-     * @return information of the bounce proxy or <code>null</code> if the
-     *         channel is not registered.
+     * @return information of the bounce proxy or <code>null</code> if channel
+     *         for the ID does not exist
      */
+    @CheckForNull
     public Channel getChannel(String ccid);
 
     /**

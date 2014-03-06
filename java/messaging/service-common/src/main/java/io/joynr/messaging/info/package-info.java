@@ -1,9 +1,9 @@
-package io.joynr.bounceproxy.info;
-
-import javax.annotation.CheckForNull;
+@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
+package io.joynr.messaging.info;
 
 /*
  * #%L
+ * joynr::java::messaging::service-common
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,27 +20,3 @@ import javax.annotation.CheckForNull;
  * limitations under the License.
  * #L%
  */
-
-public class ChannelInformation {
-    public final String name;
-    public final Integer resources;
-    public final Integer cachedSize;
-
-    public ChannelInformation(String name, Integer resources, @CheckForNull Integer cachedSize) {
-        if (name == null) {
-            name = "";
-        }
-
-        this.name = name;
-        this.resources = resources;
-        this.cachedSize = cachedSize;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Integer getResources() {
-        return resources;
-    }
-}

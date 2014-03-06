@@ -22,6 +22,7 @@ package io.joynr.messaging.bounceproxy;
 
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
 import io.joynr.messaging.service.ChannelService;
 
 import java.net.URI;
@@ -52,7 +53,7 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public List<Channel> listChannels() {
+    public List<ChannelInformation> listChannels() {
         // TODO Auto-generated method stub
         return null;
     }

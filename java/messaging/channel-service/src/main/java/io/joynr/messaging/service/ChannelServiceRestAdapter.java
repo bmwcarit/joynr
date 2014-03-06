@@ -23,6 +23,7 @@ package io.joynr.messaging.service;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -73,9 +74,9 @@ public class ChannelServiceRestAdapter {
      */
     @GET
     @Produces("application/json")
-    public GenericEntity<List<Channel>> listChannels() {
+    public GenericEntity<List<ChannelInformation>> listChannels() {
         try {
-            return new GenericEntity<List<Channel>>(channelService.listChannels()) {
+            return new GenericEntity<List<ChannelInformation>>(channelService.listChannels()) {
             };
         } catch (Throwable e) {
             log.error("GET channels listChannels: error: {}", e.getMessage());

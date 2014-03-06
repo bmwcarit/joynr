@@ -1,9 +1,4 @@
-/**
- * Additional information needed for channel service interface.
- * 
- * @author christina.strobel
- *
- */
+@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
 package io.joynr.messaging.info;
 
 /*

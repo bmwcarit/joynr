@@ -76,8 +76,14 @@
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>service-common</artifactId>
-			<type>test-jar</type>
 			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>service-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		

@@ -28,10 +28,12 @@ import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInfor
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.bounceproxy.controller.util.ChannelUrlUtil;
 import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.atmosphere.jersey.Broadcastable;
@@ -64,15 +66,23 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Inject
     private TimestampProvider timestampProvider;
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see io.joynr.messaging.service.ChannelServiceDelegate#listChannels()
      */
     @Override
-    public List<Channel> listChannels() {
-        return channelDirectory.getChannels();
+    public List<ChannelInformation> listChannels() {
+        List<Channel> channels = channelDirectory.getChannels();
+
+        List<ChannelInformation> channelInformationList = new LinkedList<ChannelInformation>();
+        for (Channel channel : channels) {
+
+            ChannelInformation channelInfo = new ChannelInformation(channel.getChannelId(), 0, 0);
+            channelInformationList.add(channelInfo);
+        }
+        return channelInformationList;
     }
 
     /*

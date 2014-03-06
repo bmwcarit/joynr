@@ -64,7 +64,9 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
+		<!-- Don't use mockito-all here. 
+		     It contains hamcrest classes in its jar, which conflict with JUnit -->		
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
