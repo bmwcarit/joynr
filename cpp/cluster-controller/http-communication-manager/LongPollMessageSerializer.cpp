@@ -34,7 +34,7 @@ joynr_logging::Logger* LongPollMessageSerializer::logger = joynr_logging::Loggin
 
 LongPollMessageSerializer::LongPollMessageSerializer(
         MessageRouter * messageRouter,
-        Directory<QString, EndpointAddressBase>* partId2EndpointAddrDirectory
+        Directory<QString, joynr::system::Address>* partId2EndpointAddrDirectory
 ) :
     messageRouter(messageRouter),
     partId2EndpointAddrDirectory(partId2EndpointAddrDirectory)

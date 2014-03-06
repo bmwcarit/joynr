@@ -20,14 +20,14 @@
 #define JOYNRMESSAGINGENDPOINTADDRESS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 
 #include <QMetaType>
 #include <QString>
 
 namespace joynr {
 
-class JOYNRCOMMON_EXPORT JoynrMessagingEndpointAddress : public EndpointAddressBase {
+class JOYNRCOMMON_EXPORT JoynrMessagingEndpointAddress : public joynr::system::Address {
     Q_OBJECT
 
     Q_PROPERTY(QString channelId READ getChannelId WRITE setChannelId)

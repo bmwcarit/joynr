@@ -64,7 +64,7 @@ class CapabilityEntry;
 class DiscoveryQos;
 
 class InterfaceAddress;
-class EndpointAddressBase;
+namespace system { class Address; }
 namespace types { class ProviderQosRequirements;
                   class ProviderQos;
                   class CapabilitiesInformation;
@@ -82,7 +82,7 @@ public:
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
 
-    void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses);
+    void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses);
     void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId);
 
     /*
@@ -137,10 +137,10 @@ private:
 
     QList<types::CapabilityInformation> createCapabilitiesInformationList(const QString& domain, const QString& interfaceName, const QString& channelId, const types::ProviderQos& qos, const QString& participantId);
 /*
-    void addToCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses, bool isGlobal);
+    void addToCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal);
     void addToCache(const CapabilityEntry& entry);
 
-    void addToCacheIfAbsent(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses, bool isGlobal);
+    void addToCacheIfAbsent(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal);
 
     QList<CapabilityEntry> lookupCache(const InterfaceAddress& interfaceAddress, const qint64& reqCacheDataFreshness_ms);
 
@@ -154,7 +154,7 @@ private:
     bool callRecieverIfPossible(DiscoveryQos::DiscoveryScope& scope, QList<CapabilityEntry>& localCapabilities, QList<CapabilityEntry>& globalCapabilities, QSharedPointer<ILocalCapabilitiesCallback> callBack);
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
-    void insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache);
+    void insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache);
     QList<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress, const qint64& maxCacheAge, bool localEntries);
     QList<CapabilityEntry> searchCache(const QString& participantId, const qint64& maxCacheAge, bool localEntries);
 

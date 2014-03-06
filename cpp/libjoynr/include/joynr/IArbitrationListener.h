@@ -26,7 +26,7 @@
 
 namespace joynr {
 
-class EndpointAddressBase;
+namespace system { class Address; }
 
 /*
  *  IArbitrationListener is an interface used by ProviderArbitrator
@@ -39,7 +39,7 @@ public:
     virtual ~IArbitrationListener(){}
     virtual void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) =0;
     virtual void setParticipantId(const QString& participantId) = 0;
-    virtual void setEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress) =0;
+    virtual void setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress) =0;
 };
 
 

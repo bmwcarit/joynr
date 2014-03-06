@@ -39,7 +39,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "common/some-ip/SomeIpEndpointAddress.h"
+#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 #include "joynr/tests/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"

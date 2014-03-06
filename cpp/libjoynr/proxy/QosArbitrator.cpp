@@ -54,7 +54,7 @@ void QosArbitrator::attemptArbitration()
 // Returns true if arbitration was successful, false otherwise
 void QosArbitrator::receiveCapabilitiesLookupResults(const QList<CapabilityEntry> capabilityEntries){
     QString res = "";
-    QSharedPointer<EndpointAddressBase> endpointAddressResult;
+    QSharedPointer<joynr::system::Address> endpointAddressResult;
 
     // Check for empty results
     if (capabilityEntries.size() == 0) return;

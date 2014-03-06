@@ -26,21 +26,21 @@ const QString& JoynrMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE() {
 }
 
 JoynrMessagingEndpointAddress::JoynrMessagingEndpointAddress() :
-    EndpointAddressBase(),
+    Address(),
     channelId()
 {
 
 }
 
 JoynrMessagingEndpointAddress::JoynrMessagingEndpointAddress(const QString &channelId) :
-    EndpointAddressBase(),
+    Address(),
     channelId(channelId)
 {
 
 }
 
 JoynrMessagingEndpointAddress::JoynrMessagingEndpointAddress(const JoynrMessagingEndpointAddress &other) :
-    EndpointAddressBase(other),
+    Address(other),
     channelId(other.getChannelId())
 {
 }
@@ -51,14 +51,14 @@ JoynrMessagingEndpointAddress::~JoynrMessagingEndpointAddress(){
 
 JoynrMessagingEndpointAddress &JoynrMessagingEndpointAddress::operator =(const JoynrMessagingEndpointAddress &other)
 {
-    EndpointAddressBase::operator =(other);
+    Address::operator =(other);
     channelId = other.getChannelId();
     return *this;
 }
 
 bool JoynrMessagingEndpointAddress::operator ==(const JoynrMessagingEndpointAddress &other) const
 {
-    return EndpointAddressBase::operator ==(other)
+    return Address::operator ==(other)
             && channelId == other.getChannelId();
 }
 

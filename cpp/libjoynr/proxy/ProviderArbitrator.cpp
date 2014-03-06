@@ -69,7 +69,7 @@ void ProviderArbitrator::startArbitration(){
     }
 
     // If this point is reached the arbitration timed out
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationCanceledForever, "", QSharedPointer<EndpointAddressBase>());
+    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationCanceledForever, "", QSharedPointer<joynr::system::Address>());
 }
 
 QString ProviderArbitrator::getParticipantId(){
@@ -88,14 +88,14 @@ void ProviderArbitrator::setParticipantId(QString participantId){
     }
 }
 
-QSharedPointer<EndpointAddressBase> ProviderArbitrator::getEndpointAddress(){
+QSharedPointer<joynr::system::Address> ProviderArbitrator::getEndpointAddress(){
     if(endpointAddress.isNull()){
         throw JoynrArbitrationException("EndpointAddress is NULL: Called getEndpointAddress() before arbitration has finished / Arbitrator did not set endpointAddress.");
     }
     return endpointAddress;
 }
 
-void ProviderArbitrator::setEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress){
+void ProviderArbitrator::setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress){
     this->endpointAddress = endpointAddress;
     if(listenerSemaphore.tryAcquire(1)){
         assert(listener!=NULL);
@@ -104,7 +104,7 @@ void ProviderArbitrator::setEndpointAddress(QSharedPointer<EndpointAddressBase> 
     }
 }
 
-void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationStatusType arbitrationStatus, QString participantId, QSharedPointer<EndpointAddressBase> endpointAddress){
+void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationStatusType arbitrationStatus, QString participantId, QSharedPointer<joynr::system::Address> endpointAddress){
     setParticipantId(participantId);
     setEndpointAddress(endpointAddress);
     setArbitrationStatus(arbitrationStatus);

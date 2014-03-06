@@ -70,12 +70,10 @@ file(
     "in-process/*.h"
     "joynr-messaging/*.h"
     "cache/*.h"
-    "some-ip/*.h"
     "logging/*.h"
     "capabilities/*.h"
     "rpc/*.h"
     "exceptions/*.h"
-    "dbus/DbusMessagingEndpointAddress.h"
 )
 
 set(
@@ -91,12 +89,10 @@ file(
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
     "cache/*.cpp"
-    "some-ip/*.cpp"
     "logging/joynrlogging_log4qt.cpp"
     "capabilities/*.cpp"
     "rpc/*.cpp"
     "exceptions/*.cpp"
-    "dbus/DbusMessagingEndpointAddress.cpp"
     "SettingsMerger.cpp"
 )
 

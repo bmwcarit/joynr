@@ -30,7 +30,7 @@ class IJoynrMessageSender;
 class SubscriptionManager;
 class MessagingQos;
 class IClientCache;
-class EndpointAddressBase;
+namespace system { class Address; }
 
 // Default implementation of a JoynrMessagingConnectorFactoryHelper
 // Template specializations are found in the generated *JoynrMessagingConnector.h files
@@ -70,7 +70,7 @@ class JOYNR_EXPORT JoynrMessagingConnectorFactory {
 public:
     JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender, SubscriptionManager* subscriptionManager);
 
-    bool canBeCreated(QSharedPointer<EndpointAddressBase> endpointAddress);
+    bool canBeCreated(QSharedPointer<joynr::system::Address> endpointAddress);
 
     template <class T>
     T* create(

@@ -20,7 +20,7 @@
 #define SOMEIPENDPOINTADDRESS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 
 #include <QMetaType>
 #include <QString>
@@ -38,7 +38,7 @@ namespace joynr {
   *
   */
 
-class JOYNRCOMMON_EXPORT SomeIpEndpointAddress : public EndpointAddressBase {
+class JOYNRCOMMON_EXPORT SomeIpEndpointAddress : public joynr::system::Address {
     Q_OBJECT
 
     Q_PROPERTY(QString ipAddress READ getIpAddress WRITE setIpAddress)

@@ -23,7 +23,7 @@
 #include "joynr/CapabilitiesAggregator.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockLocalCapabilitiesDirectoryCallback.h"
-#include "common/in-process/InProcessMessagingEndpointAddress.h"
+#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
 #include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/IAttributeListener.h"
 
@@ -68,7 +68,7 @@ public:
                                              interfaceName,
                                              types::ProviderQos(),
                                              participantId,
-                                             QList<QSharedPointer<EndpointAddressBase> >(),
+                                             QList<QSharedPointer<joynr::system::Address> >(),
                                              true));
     }
 
@@ -113,7 +113,7 @@ TEST_F(CapabilitiesAggregatorTest, lookup_byId_addsInProcessAddress){
     ASSERT_EQ(1, results.size());
     CapabilityEntry firstEntry = results.first();
     ASSERT_EQ(1, firstEntry.getEndpointAddresses().size());
-    QSharedPointer<EndpointAddressBase> firstAddress = firstEntry.getEndpointAddresses().first();
+    QSharedPointer<joynr::system::Address> firstAddress = firstEntry.getEndpointAddresses().first();
     ASSERT_STREQ(InProcessEndpointAddress::ENDPOINTADDRESSTYPE.toLatin1(), firstAddress->metaObject()->className());
     QSharedPointer<InProcessEndpointAddress> inProcessAddress = firstAddress.dynamicCast<InProcessEndpointAddress>();
     EXPECT_EQ(requestCaller, inProcessAddress->getRequestCaller());
@@ -134,7 +134,7 @@ TEST_F(CapabilitiesAggregatorTest, lookup_byInterface_addsInProcessAddress){
     ASSERT_EQ(1, results.size());
     CapabilityEntry firstEntry = results.first();
     ASSERT_EQ(1, firstEntry.getEndpointAddresses().size());
-    QSharedPointer<EndpointAddressBase> firstAddress = firstEntry.getEndpointAddresses().first();
+    QSharedPointer<joynr::system::Address> firstAddress = firstEntry.getEndpointAddresses().first();
     ASSERT_STREQ(InProcessEndpointAddress::ENDPOINTADDRESSTYPE.toLatin1(), firstAddress->metaObject()->className());
     QSharedPointer<InProcessEndpointAddress> inProcessAddress = firstAddress.dynamicCast<InProcessEndpointAddress>();
     EXPECT_EQ(requestCaller, inProcessAddress->getRequestCaller());
@@ -203,7 +203,7 @@ TEST_F(CapabilitiesAggregatorTest, async_lookup_byId_addsInProcessAddress){
     ASSERT_EQ(1, results.size());
     CapabilityEntry firstEntry = results.first();
     ASSERT_EQ(1, firstEntry.getEndpointAddresses().size());
-    QSharedPointer<EndpointAddressBase> firstAddress = firstEntry.getEndpointAddresses().first();
+    QSharedPointer<joynr::system::Address> firstAddress = firstEntry.getEndpointAddresses().first();
     ASSERT_STREQ(InProcessEndpointAddress::ENDPOINTADDRESSTYPE.toLatin1(), firstAddress->metaObject()->className());
     QSharedPointer<InProcessEndpointAddress> inProcessAddress = firstAddress.dynamicCast<InProcessEndpointAddress>();
     EXPECT_EQ(requestCaller, inProcessAddress->getRequestCaller());
@@ -227,7 +227,7 @@ TEST_F(CapabilitiesAggregatorTest, async_lookup_byInterface_addsInProcessAddress
     ASSERT_EQ(1, results.size());
     CapabilityEntry firstEntry = results.first();
     ASSERT_EQ(1, firstEntry.getEndpointAddresses().size());
-    QSharedPointer<EndpointAddressBase> firstAddress = firstEntry.getEndpointAddresses().first();
+    QSharedPointer<joynr::system::Address> firstAddress = firstEntry.getEndpointAddresses().first();
     ASSERT_STREQ(InProcessEndpointAddress::ENDPOINTADDRESSTYPE.toLatin1(), firstAddress->metaObject()->className());
     QSharedPointer<InProcessEndpointAddress> inProcessAddress = firstAddress.dynamicCast<InProcessEndpointAddress>();
     EXPECT_EQ(requestCaller, inProcessAddress->getRequestCaller());
@@ -235,8 +235,8 @@ TEST_F(CapabilitiesAggregatorTest, async_lookup_byInterface_addsInProcessAddress
 
 TEST_F(CapabilitiesAggregatorTest, add){
     types::ProviderQos providerQos;
-    QList<QSharedPointer<EndpointAddressBase> > endpointAddressList;
-    QSharedPointer<EndpointAddressBase> messagingStubAddress(new MockEndpointAddress());
+    QList<QSharedPointer<joynr::system::Address> > endpointAddressList;
+    QSharedPointer<joynr::system::Address> messagingStubAddress(new MockEndpointAddress());
 
     EXPECT_CALL(*mockCapabilitiesStub, add(domain, interfaceName, participantId, providerQos, endpointAddressList,messagingStubAddress, ICapabilities::NO_TIMEOUT()))
                 .Times(1);
@@ -244,7 +244,7 @@ TEST_F(CapabilitiesAggregatorTest, add){
 }
 
 TEST_F(CapabilitiesAggregatorTest, addEndpoint){
-    QSharedPointer<EndpointAddressBase> messagingStubAddress(new MockEndpointAddress());
+    QSharedPointer<joynr::system::Address> messagingStubAddress(new MockEndpointAddress());
     EXPECT_CALL(*mockCapabilitiesStub, addEndpoint(participantId, messagingStubAddress, ICapabilities::NO_TIMEOUT()))
             .Times(1);
     capAggregator->addEndpoint(participantId, messagingStubAddress, ICapabilities::NO_TIMEOUT());

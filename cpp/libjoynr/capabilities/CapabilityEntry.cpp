@@ -19,7 +19,7 @@
 #include "joynr/CapabilityEntry.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "common/some-ip/SomeIpEndpointAddress.h"
+#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 
 namespace joynr {
 
@@ -44,7 +44,7 @@ CapabilityEntry::CapabilityEntry(const CapabilityEntry &other)
 {
 }
 
-CapabilityEntry::CapabilityEntry(const QString& domain, const QString& interfaceName, joynr::types::ProviderQos qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses, bool isGlobal, QObject *parent)
+CapabilityEntry::CapabilityEntry(const QString& domain, const QString& interfaceName, joynr::types::ProviderQos qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, QObject *parent)
     : QObject(parent),
       domain(domain),
       interfaceName(interfaceName),
@@ -78,8 +78,8 @@ bool CapabilityEntry::operator ==(const CapabilityEntry& other) const  {
 
     // check endpoint addresses
     for(int index = 0; index < this->endpointAddresses.size(); index++) {
-        EndpointAddressBase myAddr = *this->endpointAddresses.at(index).data();
-        EndpointAddressBase otherAddr = *other.endpointAddresses.at(index).data();
+        joynr::system::Address myAddr = *this->endpointAddresses.at(index).data();
+        joynr::system::Address otherAddr = *other.endpointAddresses.at(index).data();
 
         if(!(myAddr == otherAddr)) {
             return false;
@@ -122,15 +122,15 @@ QString CapabilityEntry::getParticipantId() const{
     return participantId;
 }
 
-void CapabilityEntry::setEndpointAddresses(QList<QSharedPointer<EndpointAddressBase> > endpointAddresses){
+void CapabilityEntry::setEndpointAddresses(QList<QSharedPointer<joynr::system::Address> > endpointAddresses){
     this->endpointAddresses = endpointAddresses;
 }
 
-QList<QSharedPointer<EndpointAddressBase> > CapabilityEntry::getEndpointAddresses() const{
+QList<QSharedPointer<joynr::system::Address> > CapabilityEntry::getEndpointAddresses() const{
     return endpointAddresses;
 }
 
-void CapabilityEntry::prependEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress){
+void CapabilityEntry::prependEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress){
     endpointAddresses.prepend(endpointAddress);
 }
 

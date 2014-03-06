@@ -21,7 +21,7 @@
 #include "joynr/InProcessDispatcher.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 #include "libjoynr/dbus/DBusDispatcherAdapter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
@@ -92,7 +92,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
     // register messaging skeleton using uuid
     QString messagingUuid = Util::createUuid().replace("-", "");
     QString libjoynrMessagingAddress("local:org.genivi.commonapi.joynr:libjoynr.messaging.id_" + messagingUuid);
-    QSharedPointer<EndpointAddressBase> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
+    QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
     joynrDispatcherAdapter = new DBusDispatcherAdapter(*joynrDispatcher, libjoynrMessagingAddress);
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);

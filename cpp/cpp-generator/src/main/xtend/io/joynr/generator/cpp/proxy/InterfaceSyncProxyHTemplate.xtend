@@ -47,12 +47,20 @@ class InterfaceSyncProxyHTemplate {
 		«getNamespaceStarter(serviceInterface)» 
 		class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
 		public:
-		    «syncClassName»(joynr::ICapabilities* capabilitiesStub, QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, joynr::ConnectorFactory* connectorFactory, joynr::IClientCache* cache, const QString& domain,
-		                                const joynr::ProxyQos& proxyQos, const joynr::MessagingQos& qosSettings, bool cached);
+		    «syncClassName»(
+		            joynr::ICapabilities* capabilitiesStub,
+		            QSharedPointer<joynr::system::Address> messagingAddress,
+		            joynr::ConnectorFactory* connectorFactory,
+		            joynr::IClientCache* cache,
+		            const QString& domain,
+		            const joynr::ProxyQos& proxyQos,
+		            const joynr::MessagingQos& qosSettings,
+		            bool cached
+		    );
 
-			«produceSyncGetters(serviceInterface, false)»
-			«produceSyncSetters(serviceInterface, false)»
-			«produceSyncMethods(serviceInterface, false)»
+		    «produceSyncGetters(serviceInterface, false)»
+		    «produceSyncSetters(serviceInterface, false)»
+		    «produceSyncMethods(serviceInterface, false)»
 		
 		    friend class «className»;
 		

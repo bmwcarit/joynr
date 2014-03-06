@@ -38,7 +38,7 @@ class JoynrMessagingEndpointAddress;
 namespace joynr_logging { class Logger; }
 class DelayedScheduler;
 class ThreadPoolDelayedScheduler;
-class EndpointAddressBase;
+namespace system { class Address; }
 template<typename Key, typename T> class Directory;
 class ICommunicationManager;
 
@@ -56,7 +56,7 @@ class ICommunicationManager;
 class JOYNRCLUSTERCONTROLLER_EXPORT MessageRouter {
 public:
     MessageRouter(MessagingSettings& messagingSettings,
-                  Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
+                  Directory<QString, joynr::system::Address>* routingTable,
                   int messageSendRetryInterval = 500,
                   int maxThreads = 6);
     virtual ~MessageRouter();
@@ -86,7 +86,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     MessagingSettings& messagingSettings;
     IMessagingStubFactory* messagingStubFactory;
-    Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory;
+    Directory<QString, joynr::system::Address>* routingTable;
     QThreadPool threadPool;
     ThreadPoolDelayedScheduler* delayedScheduler;
     static joynr_logging::Logger* logger;

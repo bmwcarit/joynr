@@ -20,7 +20,7 @@
 #define JOYNRMESSAGINGVIACCENDPOINTADDRESS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 
 #include <QString>
 
@@ -36,7 +36,7 @@ namespace joynr {
   * TODO: Maybe we can use a static JoynrMessagingViaCCEndpointAddress Object?
   */
 
-class JOYNRCOMMON_EXPORT JoynrMessagingViaCCEndpointAddress : public EndpointAddressBase {
+class JOYNRCOMMON_EXPORT JoynrMessagingViaCCEndpointAddress : public joynr::system::Address {
     Q_OBJECT
 public:
     JoynrMessagingViaCCEndpointAddress();

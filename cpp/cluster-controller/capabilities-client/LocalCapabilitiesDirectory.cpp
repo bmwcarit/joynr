@@ -27,7 +27,7 @@
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 #include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/DiscoveryQos.h"
 
@@ -67,7 +67,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
 
     //setting up the provisioned values for GlobalCapabilitiesClient
     //The GlobalCapabilitiesServer is also provisioned in MessageRouter
-    QList<QSharedPointer<EndpointAddressBase> > endpointAddress;
+    QList<QSharedPointer<joynr::system::Address> > endpointAddress;
     endpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(new JoynrMessagingViaCCEndpointAddress()));
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
@@ -83,7 +83,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
 
     //setting up the provisioned values for the ChannelUrlDirectory (domain, interface, participantId...)
     //The ChannelUrlDirectory is also provisioned in MessageRouter  (participantId -> channelId)
-    QList<QSharedPointer<EndpointAddressBase> > channelUrlDirEndpointAddress;
+    QList<QSharedPointer<joynr::system::Address> > channelUrlDirEndpointAddress;
     channelUrlDirEndpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(
                                             new JoynrMessagingViaCCEndpointAddress()));
     types::ProviderQos channelUrlDirProviderQos;
@@ -109,7 +109,7 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory() {
     participantId2LocalCapability.cleanup(0);
 }
 
-void LocalCapabilitiesDirectory::registerCapability(const QString &domain, const QString &interfaceName, const types::ProviderQos &qos, const QString &participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses) {
+void LocalCapabilitiesDirectory::registerCapability(const QString &domain, const QString &interfaceName, const types::ProviderQos &qos, const QString &participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses) {
     bool isGlobal = qos.getScope() == types::ProviderScope::GLOBAL;
 
     // register locally
@@ -126,7 +126,7 @@ void LocalCapabilitiesDirectory::registerCapability(const QString &domain, const
 }
 
 void LocalCapabilitiesDirectory::registerCapability(const QString &domain, const QString &interfaceName, const types::ProviderQos &qos, const QString &participantId) {
-    registerCapability(domain,interfaceName,qos,participantId,QList<QSharedPointer<EndpointAddressBase> >());
+    registerCapability(domain,interfaceName,qos,participantId,QList<QSharedPointer<joynr::system::Address> >());
 }
 
 void LocalCapabilitiesDirectory::removeCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
@@ -284,7 +284,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(QMap<QString, Capa
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        QSharedPointer<EndpointAddressBase> joynrAddress(new JoynrMessagingEndpointAddress(entryIterator.key()));
+        QSharedPointer<joynr::system::Address> joynrAddress(new JoynrMessagingEndpointAddress(entryIterator.key()));
         endpointDirectory->add(currentEntry.getParticipantId(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }
@@ -310,7 +310,7 @@ void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry, boo
     }
 }
 
-void LocalCapabilitiesDirectory::insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache) {
+void LocalCapabilitiesDirectory::insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache) {
     CapabilityEntry entry(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal);
 
     // do not dublicate entries:

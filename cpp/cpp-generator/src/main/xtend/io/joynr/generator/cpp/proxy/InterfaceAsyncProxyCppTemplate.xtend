@@ -44,10 +44,18 @@ class InterfaceAsyncProxyCppTemplate  {
 		#include <cassert>
 		
 		«getNamespaceStarter(fInterface)» 
-		«asyncClassName»::«asyncClassName»(joynr::ICapabilities* capabilitiesStub, QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, joynr::ConnectorFactory* connectorFactory, joynr::IClientCache *cache, const QString &domain,
-		                             const joynr::ProxyQos& proxyQos, const joynr::MessagingQos &qosSettings, bool cached)
-		    : joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), proxyQos, qosSettings, cached),
-		      «className»Base(capabilitiesStub, messagingEndpointAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
+		«asyncClassName»::«asyncClassName»(
+				joynr::ICapabilities* capabilitiesStub,
+				QSharedPointer<joynr::system::Address> messagingAddress,
+				joynr::ConnectorFactory* connectorFactory,
+				joynr::IClientCache *cache,
+				const QString &domain,
+		        const joynr::ProxyQos& proxyQos,
+		        const joynr::MessagingQos &qosSettings,
+		        bool cached
+		) :
+				joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), proxyQos, qosSettings, cached),
+		      	«className»Base(capabilitiesStub, messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
 		{
 		}
 		

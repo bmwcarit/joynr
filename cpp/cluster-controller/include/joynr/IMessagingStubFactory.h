@@ -23,13 +23,13 @@
 
 namespace joynr {
 
-class EndpointAddressBase;
+namespace system { class Address; }
 class IMessaging;
 
 class IMessagingStubFactory {
 public:
     virtual ~IMessagingStubFactory(){}
-    virtual QSharedPointer<IMessaging> create(QString destParticipantId, QSharedPointer <EndpointAddressBase> destEndpointAddress) = 0;
+    virtual QSharedPointer<IMessaging> create(QString destParticipantId, QSharedPointer <joynr::system::Address> destEndpointAddress) = 0;
     virtual void remove(QString destParticipantId) = 0;
     virtual bool contains(QString destParticipantId) = 0;
 };

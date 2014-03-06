@@ -74,7 +74,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(const QList<CapabilityE
                 LOG_TRACE(logger,"setting res to " + res);
                 //TODO decide which endpointAddress to choose
                 assert(capEntry.getEndpointAddresses().size()>0);
-                QSharedPointer<EndpointAddressBase> endpointAddressResult = capEntry.getEndpointAddresses().first();
+                QSharedPointer<joynr::system::Address> endpointAddressResult = capEntry.getEndpointAddresses().first();
                 updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res, endpointAddressResult);
                 return;
             }

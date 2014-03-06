@@ -79,7 +79,7 @@ void DbusCapabilitiesUtil::copyJoynrProviderQosToDbus(const types::ProviderQos& 
     dbusQos.supportsOnChangeSubscriptions = joynrQos.getSupportsOnChangeSubscriptions();
 }
 
-void DbusCapabilitiesUtil::copyJoynrEndPointListToDbus(const QList<QSharedPointer<EndpointAddressBase> >& joynrList, joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList) {
+void DbusCapabilitiesUtil::copyJoynrEndPointListToDbus(const QList<QSharedPointer<joynr::system::Address> >& joynrList, joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList) {
     int index = 0;
     for(auto it = joynrList.begin(); it != joynrList.end(); it++, index ++) {
         // at the moment only joynr messaging endpoint addresses are supported
@@ -108,7 +108,7 @@ void DbusCapabilitiesUtil::copyDbusCapaEntryToJoynr(const joynr::messaging::type
 
     // copy addressess
     // at the moment only joynr messaging endpoint addresses are supported
-    QList<QSharedPointer<EndpointAddressBase>> endPointAddrList;
+    QList<QSharedPointer<joynr::system::Address>> endPointAddrList;
     copyDbusEndPointListToJoynr(dbusEntry.endpointAdresses, endPointAddrList);
     joynrEntry.setEndpointAddresses(endPointAddrList);
 }
@@ -139,7 +139,7 @@ void DbusCapabilitiesUtil::copyDbusProviderQosToJoynr(const joynr::messaging::ty
     joynrQos.setSupportsOnChangeSubscriptions(dbusQos.supportsOnChangeSubscriptions);
 }
 
-void DbusCapabilitiesUtil::copyDbusEndPointListToJoynr(const joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList, QList<QSharedPointer<EndpointAddressBase> >& joynrList) {
+void DbusCapabilitiesUtil::copyDbusEndPointListToJoynr(const joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList, QList<QSharedPointer<joynr::system::Address> >& joynrList) {
     for(auto it = dbusEndPointList.begin(); it != dbusEndPointList.end(); it++) {
         QString channelId = QString::fromStdString((*it).endPointAddress);
         JoynrMessagingViaCCEndpointAddress* joynrAddr = new JoynrMessagingViaCCEndpointAddress();

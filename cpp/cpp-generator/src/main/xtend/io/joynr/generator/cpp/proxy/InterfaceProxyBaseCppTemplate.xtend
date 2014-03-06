@@ -43,18 +43,25 @@ class InterfaceProxyBaseCppTemplate {
 		
 		
 		«getNamespaceStarter(fInterface)»
-		«className»::«className»(joynr::ICapabilities* capabilitiesStub, QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, joynr::ConnectorFactory* connectorFactory, joynr::IClientCache *cache, const QString &domain,
-		                             const joynr::ProxyQos &proxyQos,const joynr::MessagingQos &qosSettings, bool cached) :
-				joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, proxyQos, qosSettings, cached),
-				capabilitiesStub(capabilitiesStub),
-				messagingEndpointAddress(messagingEndpointAddress),
-				connector(NULL)
-				
+		«className»::«className»(
+		        joynr::ICapabilities* capabilitiesStub,
+		        QSharedPointer<joynr::system::Address> messagingAddress,
+		        joynr::ConnectorFactory* connectorFactory,
+		        joynr::IClientCache *cache,
+		        const QString &domain,
+		        const joynr::ProxyQos &proxyQos,
+		        const joynr::MessagingQos &qosSettings,
+		        bool cached
+		) :
+		        joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, proxyQos, qosSettings, cached),
+		        capabilitiesStub(capabilitiesStub),
+		        messagingAddress(messagingAddress),
+		        connector(NULL)
 		{
 		}
 		
 		//tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
-		void «className»::handleArbitrationFinished(const QString &providerParticipantId, QSharedPointer<joynr::EndpointAddressBase> endpointAddress)
+		void «className»::handleArbitrationFinished(const QString &providerParticipantId, QSharedPointer<joynr::system::Address> endpointAddress)
 		{
 		    if (connector != NULL){
 		        delete connector;
@@ -62,7 +69,7 @@ class InterfaceProxyBaseCppTemplate {
 		    connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(fInterface, "::")»::I«serviceName»Connector>(domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached, proxyQos.getReqCacheDataFreshness_ms(), endpointAddress);
 		    
 		    if (connector->usesClusterController()){
-		         capabilitiesStub->addEndpoint(proxyParticipantId, messagingEndpointAddress, joynr::ICapabilities::NO_TIMEOUT());
+		         capabilitiesStub->addEndpoint(proxyParticipantId, messagingAddress, joynr::ICapabilities::NO_TIMEOUT());
 		    }
 		    
 		    joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, endpointAddress);

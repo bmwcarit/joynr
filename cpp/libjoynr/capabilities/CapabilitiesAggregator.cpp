@@ -88,8 +88,8 @@ void CapabilitiesAggregator::add(const QString &domain,
                                  const QString &interfaceName,
                                  const QString &participantId,
                                  const types::ProviderQos &qos,
-                                 QList<QSharedPointer<EndpointAddressBase> > endpointAddressList,
-                                 QSharedPointer<EndpointAddressBase> messagingStubAddress,
+                                 QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+                                 QSharedPointer<joynr::system::Address> messagingStubAddress,
                                  const qint64& timeout_ms){
     capabilitiesStub->add(domain,
                           interfaceName,
@@ -101,7 +101,7 @@ void CapabilitiesAggregator::add(const QString &domain,
 }
 
 void CapabilitiesAggregator::addEndpoint(const QString &participantId,
-                                         QSharedPointer<EndpointAddressBase> messagingStubAddress,
+                                         QSharedPointer<joynr::system::Address> messagingStubAddress,
                                          const qint64& timeout_ms){
     capabilitiesStub->addEndpoint(participantId, messagingStubAddress, timeout_ms);
 }

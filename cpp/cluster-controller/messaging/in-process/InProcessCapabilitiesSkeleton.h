@@ -45,13 +45,13 @@ public:
             const QString &interfaceName,
             const QString &participantId,
             const types::ProviderQos &qos,
-            QList<QSharedPointer<EndpointAddressBase> > endpointAddressList,
-            QSharedPointer<EndpointAddressBase> messagingStubAddress,
+            QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     );
     void addEndpoint(
             const QString& participantId,
-            QSharedPointer<EndpointAddressBase> messagingStubAddress,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     );
     QList<CapabilityEntry> lookup(const QString &domain, const QString &interfaceName, const types::ProviderQosRequirements& qos, const DiscoveryQos& discoveryQos);

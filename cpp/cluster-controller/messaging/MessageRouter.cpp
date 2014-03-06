@@ -23,7 +23,7 @@
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DelayedScheduler.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 
 #include <cassert>
 
@@ -40,13 +40,13 @@ MessageRouter::~MessageRouter() {
 
 MessageRouter::MessageRouter(
         MessagingSettings& messagingSettings,
-        Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
+        Directory<QString, joynr::system::Address>* routingTable,
         int messageSendRetryInterval,
         int maxThreads
 ) :
     messagingSettings(messagingSettings),
     messagingStubFactory(NULL),
-    partId2MessagingEndpointDirectory(partId2MessagingEndpointDirectory),
+    routingTable(routingTable),
     threadPool(),
     delayedScheduler()
 {
@@ -64,20 +64,20 @@ void MessageRouter::init(ICommunicationManager &comMgr)
 
 void MessageRouter::addProvisionedCapabilitiesDirectoryAddress()
 {
-    QSharedPointer<EndpointAddressBase> endpointAddress(
+    QSharedPointer<joynr::system::Address> endpointAddress(
                 new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
     );
-    partId2MessagingEndpointDirectory->add(
+    routingTable->add(
                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
                 endpointAddress
     );
 }
 
 void MessageRouter::addProvisionedChannelUrlDirectoryAddress() {
-    QSharedPointer<EndpointAddressBase> endpointAddress(
+    QSharedPointer<joynr::system::Address> endpointAddress(
                 new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
     );
-    partId2MessagingEndpointDirectory->add(
+    routingTable->add(
                 messagingSettings.getChannelUrlDirectoryParticipantId(),
                 endpointAddress
     );
@@ -99,16 +99,15 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
     */
     LOG_TRACE(logger, "Routing Message.");
     QString destinationPartId = message.getHeaderTo();
-    QSharedPointer <EndpointAddressBase> destEndpointAddress =
-            partId2MessagingEndpointDirectory->lookup(destinationPartId);
-    if (destEndpointAddress == NULL) {
-        LOG_DEBUG(logger, "No endpoint address found for participantId " + destinationPartId + ". Dropping the message");
-        partId2MessagingEndpointDirectory->lookup(destinationPartId);
+    QSharedPointer <joynr::system::Address> destAddress =
+            routingTable->lookup(destinationPartId);
+    if (destAddress.isNull()) {
+        LOG_ERROR(logger, "No endpoint address found for participantId " + destinationPartId + ". Dropping the message");
         return;
     }
     QSharedPointer<IMessaging> messagingStub = messagingStubFactory
                                                 ->create(destinationPartId,
-                                                         destEndpointAddress);
+                                                         destAddress);
     if (messagingStub.isNull()) {
         LOG_DEBUG(logger, "No send-stub found for endpoint address. Dropping the message");
         return;

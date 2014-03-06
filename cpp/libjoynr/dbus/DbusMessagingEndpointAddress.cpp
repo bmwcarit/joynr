@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 
 namespace joynr {
 
@@ -26,19 +26,19 @@ const QString& DbusMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE() {
 }
 
 DbusMessagingEndpointAddress::DbusMessagingEndpointAddress()
-    : EndpointAddressBase(),
+    : Address(),
       serviceAddress()
 {
 }
 
 DbusMessagingEndpointAddress::DbusMessagingEndpointAddress(const QString &serviceAddress)
-    : EndpointAddressBase(),
+    : Address(),
       serviceAddress(serviceAddress)
 {
 }
 
 DbusMessagingEndpointAddress::DbusMessagingEndpointAddress(const DbusMessagingEndpointAddress &other)
-    : EndpointAddressBase(),
+    : Address(),
       serviceAddress(other.getServiceAddress())
 {
 }
@@ -48,14 +48,14 @@ DbusMessagingEndpointAddress::~DbusMessagingEndpointAddress() {
 
 DbusMessagingEndpointAddress &DbusMessagingEndpointAddress::operator =(const DbusMessagingEndpointAddress &other)
 {
-    EndpointAddressBase::operator =(other);
+    Address::operator =(other);
     serviceAddress = other.getServiceAddress();
     return *this;
 }
 
 bool DbusMessagingEndpointAddress::operator ==(const DbusMessagingEndpointAddress &other) const
 {
-    return EndpointAddressBase::operator ==(other)
+    return Address::operator ==(other)
             && serviceAddress == other.getServiceAddress();
 }
 

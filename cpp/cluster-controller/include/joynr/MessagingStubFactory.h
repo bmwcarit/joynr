@@ -28,7 +28,7 @@ namespace joynr {
 
 class IMessaging;
 
-class EndpointAddressBase;
+namespace system { class Address; }
 class InProcessMessagingSkeleton;
 class ICommunicationManager;
 
@@ -52,16 +52,16 @@ public:
 
     QSharedPointer<IMessaging> create(
             QString destParticipantId,
-            QSharedPointer <EndpointAddressBase> destEndpointAddress);
+            QSharedPointer<joynr::system::Address> destinationAddress);
     void remove(QString destParticipantId);
     bool contains(QString destParticipantId);
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
-    bool isInProcessMessaging(QSharedPointer<EndpointAddressBase> destEndpointAddress);
-    bool isJoynr(QSharedPointer <EndpointAddressBase> destEndpointAddress);
-    bool isSomeIp(QSharedPointer <EndpointAddressBase> destEndpointAddress);
+    bool isInProcessMessaging(QSharedPointer<joynr::system::Address> destinationAddress);
+    bool isJoynr(QSharedPointer<joynr::system::Address> destinationAddress);
+    bool isSomeIp(QSharedPointer<joynr::system::Address> destinationAddress);
     bool isLocal(QString destParticipantId);
-    bool isDbus(QSharedPointer <EndpointAddressBase> destEndpointAddress);
+    bool isDbus(QSharedPointer<joynr::system::Address> destinationAddress);
     Directory<QString, IMessaging> partId2MessagingStubDirectory;
     ICommunicationManager& communicationManager;
 

@@ -37,12 +37,12 @@ QList<CapabilityEntry> InProcessCapabilitiesStub::lookup(const QString &particip
     return skeleton->lookup(participantId, discoveryQos);
 }
 
-void InProcessCapabilitiesStub::addEndpoint(const QString &participantId, QSharedPointer<EndpointAddressBase> messagingStubAddress, const qint64& timeout_ms){
+void InProcessCapabilitiesStub::addEndpoint(const QString &participantId, QSharedPointer<joynr::system::Address> messagingStubAddress, const qint64& timeout_ms){
     assert(skeleton!=NULL);
     skeleton->addEndpoint(participantId, messagingStubAddress, timeout_ms);
 }
 
-void InProcessCapabilitiesStub::add(const QString &domain, const QString &interfaceName, const QString &participantId, const types::ProviderQos &qos, QList<QSharedPointer<EndpointAddressBase> > endpointAddressList, QSharedPointer<EndpointAddressBase> messagingStubAddress, const qint64& timeout_ms){
+void InProcessCapabilitiesStub::add(const QString &domain, const QString &interfaceName, const QString &participantId, const types::ProviderQos &qos, QList<QSharedPointer<joynr::system::Address> > endpointAddressList, QSharedPointer<joynr::system::Address> messagingStubAddress, const qint64& timeout_ms){
     assert(skeleton!=NULL);
     skeleton->add(domain, interfaceName, participantId, qos, endpointAddressList, messagingStubAddress, timeout_ms);
 }

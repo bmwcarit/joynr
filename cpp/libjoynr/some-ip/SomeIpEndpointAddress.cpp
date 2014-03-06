@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "common/some-ip/SomeIpEndpointAddress.h"
+#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 
 namespace joynr {
 
@@ -26,7 +26,7 @@ const QString& SomeIpEndpointAddress::ENDPOINT_ADDRESS_TYPE() {
 }
 
 SomeIpEndpointAddress::SomeIpEndpointAddress() :
-    EndpointAddressBase(),
+    Address(),
     ipAddress(),
     port(-1)
 {
@@ -43,7 +43,7 @@ SomeIpEndpointAddress::~SomeIpEndpointAddress(){
 
 SomeIpEndpointAddress &SomeIpEndpointAddress::operator =(const SomeIpEndpointAddress &other)
 {
-    EndpointAddressBase::operator =(other);
+    Address::operator =(other);
     ipAddress = other.getIpAddress();
     port = other.getPort();
     return *this;
@@ -51,7 +51,7 @@ SomeIpEndpointAddress &SomeIpEndpointAddress::operator =(const SomeIpEndpointAdd
 
 bool SomeIpEndpointAddress::operator ==(const SomeIpEndpointAddress &other) const
 {
-    return EndpointAddressBase::operator ==(other)
+    return Address::operator ==(other)
             && ipAddress == other.getIpAddress()
             && port == other.getPort();
 }
@@ -72,14 +72,14 @@ void SomeIpEndpointAddress::setIpAddress(const QString &ipAddress)
 }
 
 SomeIpEndpointAddress::SomeIpEndpointAddress(const QString &ipAddress, int port) :
-    EndpointAddressBase(),
+    Address(),
     ipAddress(ipAddress),
     port(port)
 {
 }
 
 SomeIpEndpointAddress::SomeIpEndpointAddress(const SomeIpEndpointAddress &other) :
-    EndpointAddressBase(other),
+    Address(other),
     ipAddress(other.getIpAddress()),
     port(other.getPort())
 {

@@ -109,7 +109,7 @@ protected:
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
-    Directory<QString, EndpointAddressBase >* messagingEndpointDirectory;
+    Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     ICapabilities* capabilitiesSkeleton;

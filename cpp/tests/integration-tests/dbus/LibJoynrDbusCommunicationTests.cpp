@@ -25,7 +25,7 @@
 #include "joynr/DbusCapabilitiesSkeleton.h"
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 #include "QString"
 
 #include "tests/utils/MockObjects.h"
@@ -316,7 +316,7 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_addEndPoint) {
     MockCapabilitiesStub* capaMock = new MockCapabilitiesStub();
 
     EXPECT_CALL(*capaMock, addEndpoint(A<const QString&>(),
-                                  A<QSharedPointer<EndpointAddressBase>>(),
+                                  A<QSharedPointer<joynr::system::Address>>(),
                                   A<const qint64&>())).Times(1);
     auto capaSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capaMock, ccCapabilitiesAddress);
 
@@ -344,8 +344,8 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_add) {
                                A<const QString&>(),
                                A<const QString&>(),
                                A<const types::ProviderQos&>(),
-                               A<QList<QSharedPointer<EndpointAddressBase> >>(),
-                               A<QSharedPointer<EndpointAddressBase>>(),
+                               A<QList<QSharedPointer<joynr::system::Address> >>(),
+                               A<QSharedPointer<joynr::system::Address>>(),
                                A<const qint64&>())).Times(1);
     auto capaSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capaMock, ccCapabilitiesAddress);
 
@@ -357,7 +357,7 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_add) {
     QSharedPointer<DbusMessagingEndpointAddress> endPoint(new DbusMessagingEndpointAddress("defaultChannelId"));
     types::ProviderQos pQos;
     pQos.setPriority(5);
-    capaStub->add(QString("local"), QString("interface"), QString("participantId"), pQos, QList<QSharedPointer<EndpointAddressBase>>(), endPoint, 1000);
+    capaStub->add(QString("local"), QString("interface"), QString("participantId"), pQos, QList<QSharedPointer<joynr::system::Address>>(), endPoint, 1000);
 
     // delete skeleton
     delete capaSkeleton;

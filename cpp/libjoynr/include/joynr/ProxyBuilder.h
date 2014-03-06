@@ -89,7 +89,7 @@ private:
     /*
      * Sets the end point address.
      */
-    void setEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress);
+    void setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress);
 
     /*
       * arbitrationFinished is called when the arbitrationStatus is set to successful and the
@@ -120,7 +120,7 @@ private:
     ProviderArbitrator* arbitrator;
     QSemaphore arbitrationSemaphore;
     QString participantId;
-    QSharedPointer<EndpointAddressBase> endpointAddress;
+    QSharedPointer<joynr::system::Address> endpointAddress;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 };
@@ -227,7 +227,7 @@ void ProxyBuilder<T>::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusT
 }
 
 template<class T>
-void ProxyBuilder<T>::setEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress){
+void ProxyBuilder<T>::setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress){
     this->endpointAddress = endpointAddress;
 }
 

@@ -42,7 +42,7 @@
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ICommunicationManager.h"
 #include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
-#include "common/in-process/InProcessMessagingEndpointAddress.h"
+#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/Directory.h"
@@ -78,7 +78,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
     joynrMessageSender(NULL),
     app(app),
     capabilitiesClient(NULL),
-    messagingEndpointDirectory(new Directory<QString, EndpointAddressBase>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
+    messagingEndpointDirectory(new Directory<QString, joynr::system::Address>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
     localCapabilitiesDirectory(NULL),
     channelUrlDirectory(),
     capabilitiesSkeleton(NULL),
@@ -193,7 +193,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    QSharedPointer<EndpointAddressBase> messagingEndpointAddress(new InProcessMessagingEndpointAddress(libJoynrMessagingSkeleton));
+    QSharedPointer<joynr::system::Address> messagingEndpointAddress(new InProcessMessagingEndpointAddress(libJoynrMessagingSkeleton));
     //subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(subscriptionManager, publicationManager, inProcessPublicationSender);
     joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);

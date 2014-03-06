@@ -17,7 +17,7 @@
  * #L%
  */
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 #include "joynr/types/ProviderQos.h"
 #include "libjoynr/dbus/DbusCapabilitiesUtil.h"
 
@@ -78,7 +78,7 @@ QList<CapabilityEntry> DbusCapabilitiesStubAdapter::lookup(const QString &partic
     return list;
 }
 
-void DbusCapabilitiesStubAdapter::addEndpoint(const QString &participantId, QSharedPointer<EndpointAddressBase> messagingStubAddress, const qint64& timeout_ms){
+void DbusCapabilitiesStubAdapter::addEndpoint(const QString &participantId, QSharedPointer<joynr::system::Address> messagingStubAddress, const qint64& timeout_ms){
     logMethodCall("addEndpoint");
 
     CommonAPI::CallStatus status;
@@ -88,7 +88,7 @@ void DbusCapabilitiesStubAdapter::addEndpoint(const QString &participantId, QSha
     printCallStatus(status, "addEndpoint");
 }
 
-void DbusCapabilitiesStubAdapter::add(const QString &domain, const QString &interfaceName, const QString &participantId, const types::ProviderQos &qos, QList<QSharedPointer<EndpointAddressBase> > endpointAddressList, QSharedPointer<EndpointAddressBase> messagingStubAddress, const qint64& timeout_ms){
+void DbusCapabilitiesStubAdapter::add(const QString &domain, const QString &interfaceName, const QString &participantId, const types::ProviderQos &qos, QList<QSharedPointer<joynr::system::Address> > endpointAddressList, QSharedPointer<joynr::system::Address> messagingStubAddress, const qint64& timeout_ms){
     logMethodCall("add");
 
     joynr::messaging::types::Types::ProviderQos dbusQos;

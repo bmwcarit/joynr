@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "common/in-process/InProcessMessagingEndpointAddress.h"
+#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
 
 namespace joynr {
 
@@ -26,7 +26,7 @@ const QString& InProcessMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE() {
 }
 
 InProcessMessagingEndpointAddress::InProcessMessagingEndpointAddress(QSharedPointer<InProcessMessagingSkeleton> skeleton)
-    : EndpointAddressBase(),
+    : Address(),
       skeleton(skeleton)
 {
 

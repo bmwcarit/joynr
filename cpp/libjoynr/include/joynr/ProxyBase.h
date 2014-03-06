@@ -24,7 +24,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/ProxyQos.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 
 namespace joynr {
 
@@ -47,7 +47,7 @@ protected:
      *  handleArbitrationFinished has to be implemented by the concrete provider proxy.
      *  It is called as soon as the arbitration result is available.
      */
-    virtual void handleArbitrationFinished(const QString& participantId, QSharedPointer<EndpointAddressBase> endpointAddress);
+    virtual void handleArbitrationFinished(const QString& participantId, QSharedPointer<joynr::system::Address> providerAddress);
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
@@ -58,7 +58,7 @@ protected:
     bool cached;
     QString providerParticipantId;
     QString proxyParticipantId;
-    QSharedPointer<EndpointAddressBase> providerEndpointAddress;
+    QSharedPointer<joynr::system::Address> providerAddress;
     //TODO remove channelId when refactoring is finished and participantId & endpointAddresses are used
     QString destinationChannelId;
     static joynr_logging::Logger* logger;
