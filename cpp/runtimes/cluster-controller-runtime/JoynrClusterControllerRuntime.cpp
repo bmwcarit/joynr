@@ -180,9 +180,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
     // register dbus skeletons for capabilities and messaging interfaces
-    QString ccMessagingAddress(dbusSettings->getClusterControllerMessagingAddress());
+    QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
     ccDbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, ccMessagingAddress);
-    QString ccCapabilitiesAddress(dbusSettings->getClusterControllerCapabilitiesAddress());
+    QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
     ccDbusCapabilitiesAdapter = new DbusCapabilitiesAdapter(*messagingEndpointDirectory, *localCapabilitiesDirectory, ccCapabilitiesAddress, communicationManager->getReceiveChannelId());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 

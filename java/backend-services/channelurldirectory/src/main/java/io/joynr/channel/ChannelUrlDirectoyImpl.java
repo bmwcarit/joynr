@@ -78,34 +78,34 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
 
     private void cleanupRunnable() {
         while (true) {
-        	synchronized (cleanupThread) {
-	            if (inactiveChannelIds.size() == 0) {
-	                    try {
-	                    	cleanupThread.wait();
-	                    } catch (InterruptedException e) {
-	                    }
-	            } else {
-	                long currentTime = System.currentTimeMillis();
-	                long timeToSleep = -1;
-	                for (String channelId : inactiveChannelIds.keySet()) {
-	                    long passedTime = currentTime - inactiveChannelIds.get(channelId);
-	                    if (passedTime >= channelurInactiveTimeInMS) {
-	                        logger.debug("GLOBAL unregisterChannelUrls channelId: {}", channelId);
-	                        registeredChannels.remove(channelId);
-	                        inactiveChannelIds.remove(channelId);
-	                    } else {
-	                        if (timeToSleep == -1 || timeToSleep > channelurInactiveTimeInMS - passedTime) {
-	                            timeToSleep = channelurInactiveTimeInMS - passedTime;
-	                        }
-	                    }
-	                }
-	                if (timeToSleep != -1) {
+            synchronized (cleanupThread) {
+                if (inactiveChannelIds.size() == 0) {
+                    try {
+                        cleanupThread.wait();
+                    } catch (InterruptedException e) {
+                    }
+                } else {
+                    long currentTime = System.currentTimeMillis();
+                    long timeToSleep = -1;
+                    for (String channelId : inactiveChannelIds.keySet()) {
+                        long passedTime = currentTime - inactiveChannelIds.get(channelId);
+                        if (passedTime >= channelurInactiveTimeInMS) {
+                            logger.debug("GLOBAL unregisterChannelUrls channelId: {}", channelId);
+                            registeredChannels.remove(channelId);
+                            inactiveChannelIds.remove(channelId);
+                        } else {
+                            if (timeToSleep == -1 || timeToSleep > channelurInactiveTimeInMS - passedTime) {
+                                timeToSleep = channelurInactiveTimeInMS - passedTime;
+                            }
+                        }
+                    }
+                    if (timeToSleep != -1) {
                         try {
                             cleanupThread.wait(timeToSleep);
                         } catch (InterruptedException e) {
                         }
-	                }
-	            }
+                    }
+                }
             }
         }
     }

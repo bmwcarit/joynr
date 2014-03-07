@@ -199,7 +199,7 @@ set(
     "utils/TestQString.h"
     "utils/QThreadSleep.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
-	${JoynrTest_GENHEADERS}
+    ${JoynrTest_GENHEADERS}
 )
 
 set(
@@ -208,7 +208,7 @@ set(
     "utils/MockObjects.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
-	${JoynrTest_GENSOURCES}
+    ${JoynrTest_GENSOURCES}
 )
 
 ###############
@@ -219,6 +219,13 @@ file(
     GLOB g_UnitTests_SOURCES
     "unit-tests/*.cpp"
 )
+
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    list(
+        APPEND g_UnitTests_SOURCES
+        "unit-tests/dbus/DbusSettingsTest.cpp"
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_executable(
     g_UnitTests

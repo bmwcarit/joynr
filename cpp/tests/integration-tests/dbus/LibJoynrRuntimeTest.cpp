@@ -66,11 +66,11 @@ public:
     void SetUp() {
         DbusSettings* dbusSettings = new DbusSettings(*settings);
         // start skeletons
-        QString ccMessagingAddress(dbusSettings->getClusterControllerMessagingAddress());
+        QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
         msgMock = new MockMessaging();
         msgSkeleton = new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*msgMock, ccMessagingAddress);
 
-        QString ccCapabilitiesAddress(dbusSettings->getClusterControllerCapabilitiesAddress());
+        QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
         capMock = new MockCapabilitiesStub();
         capSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capMock, ccCapabilitiesAddress);
 

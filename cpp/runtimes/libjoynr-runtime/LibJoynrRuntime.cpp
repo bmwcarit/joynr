@@ -79,19 +79,19 @@ void LibJoynrRuntime::initializeAllDependencies() {
     inProcessDispatcher = new InProcessDispatcher();
 
     // create messaging send stub
-    QString ccMessagingAddress(dbusSettings->getClusterControllerMessagingAddress());
+    QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
     joynrMessagingSendStub = QSharedPointer<IMessaging>(new DbusMessagingStubAdapter(ccMessagingAddress));
     joynrMessageSender = new JoynrMessageSender(joynrMessagingSendStub);
     joynrDispatcher = new Dispatcher(joynrMessageSender);
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create capabilities send stub
-    QString ccCapabilitiesAddress(dbusSettings->getClusterControllerCapabilitiesAddress());
+    QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
     joynrCapabilitiesSendStub = new DbusCapabilitiesStubAdapter(ccCapabilitiesAddress);
 
     // register messaging skeleton using uuid
     QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingAddress("local:org.genivi.commonapi.joynr:libjoynr.messaging.id_" + messagingUuid);
+    QString libjoynrMessagingAddress("local:io.joynr.libjoynr.Messaging:libjoynr.messaging.participantid_" + messagingUuid);
     QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
     joynrDispatcherAdapter = new DBusDispatcherAdapter(*joynrDispatcher, libjoynrMessagingAddress);
 
