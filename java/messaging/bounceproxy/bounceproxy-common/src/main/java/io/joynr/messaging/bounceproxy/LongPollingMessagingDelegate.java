@@ -161,11 +161,12 @@ public class LongPollingMessagingDelegate {
      *            the ID of the channel
      * @param atmosphereTrackingId
      *            the tracking ID
-     * @param remoteHost
-     *            the remote host that wants to open a channel
      * @return
+     * @throws JoynrHttpException
+     *             if no channel with the given ID was found (e.g. because it
+     *             wasn't created before) or if the tracking ID wasn't set
      */
-    public Broadcastable openChannel(String ccid, String atmosphereTrackingId, String remoteHost) {
+    public Broadcastable openChannel(String ccid, String atmosphereTrackingId) {
 
         throwExceptionIfTrackingIdnotSet(atmosphereTrackingId);
 
@@ -177,7 +178,7 @@ public class LongPollingMessagingDelegate {
         // TODO when is a broadcaster "destroyed" ???
         Broadcaster broadcaster = BroadcasterFactory.getDefault().lookup(BounceProxyBroadcaster.class, ccid, false);
         if (broadcaster == null) {
-            log.error("invalid request from {}", remoteHost);
+            log.error("no broadcaster registered for channel {}", ccid);
             // broadcaster not found for given ccid
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTFOUND);
         }
@@ -194,9 +195,6 @@ public class LongPollingMessagingDelegate {
      *            the identifier of the long polling channel
      * @param message
      *            the message to send
-     * @param remoteHost
-     *            the host posting the message. This information is mostly used
-     *            for logging purposes.
      * @return the path segment for the message status. The path, appended to
      *         the base URI of the messaging service, can be used to query the
      *         message status
@@ -209,11 +207,10 @@ public class LongPollingMessagingDelegate {
      *             <li>no channel registered for ccid</li>
      *             </ul>
      */
-    public String postMessage(String ccid, JoynrMessage message, String remoteHost) {
+    public String postMessage(String ccid, JoynrMessage message) {
         if (ccid == null) {
-            log.error("POST message {} to cluster controller: NULL. Dropped because: channel Id was not set. Request from: {}",
-                      message.getId(),
-                      remoteHost);
+            log.error("POST message {} to cluster controller: NULL. Dropped because: channel Id was not set.",
+                      message.getId());
 
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
         }
@@ -223,12 +220,12 @@ public class LongPollingMessagingDelegate {
             log.error("POST message {} to cluster controller: {} dropped because: expiry date not set",
                       ccid,
                       message.getId());
-            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET, remoteHost);
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
         }
 
         if (message.getExpiryDate() < System.currentTimeMillis()) {
             log.warn("POST message {} to cluster controller: {} dropped because: TTL expired", ccid, message.getId());
-            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED, remoteHost);
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED);
         }
 
         // look for an existing broadcaster

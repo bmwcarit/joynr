@@ -112,11 +112,14 @@ public class MessagingServiceRestAdapter {
 
             if (!messagingService.isAssignedForChannel(ccid)) {
                 // scalability extensions: in case that other component should handle this channel
+                log.debug("POST message {}: Bounce Proxy not assigned for channel: {}", message, ccid);
 
                 if (messagingService.hasChannelAssignmentMoved(ccid)) {
                     // scalability extension: in case that this component was responsible before but isn't any more
+                    log.debug("POST message {}: Bounce Proxy assignment moved for channel: {}", message, ccid);
                     return Response.status(410 /* Gone */).build();
                 } else {
+                    log.debug("POST message {}: channel  unknown: {}", message, ccid);
                     return Response.status(404 /* Not Found */).build();
                 }
             }
@@ -125,6 +128,7 @@ public class MessagingServiceRestAdapter {
             // (or his registration has expired) then return 204 no
             // content.
             if (!messagingService.hasMessageReceiver(ccid)) {
+                log.debug("POST message {}: no receiver for channel: {}", message, ccid);
                 return Response.noContent().build();
             }
 

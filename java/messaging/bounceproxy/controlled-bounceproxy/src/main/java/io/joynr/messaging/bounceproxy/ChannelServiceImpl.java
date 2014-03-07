@@ -65,8 +65,7 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     public Broadcastable openChannel(String ccid, Integer cacheIndex, String atmosphereTrackingId) {
-        // TODO Auto-generated method stub
-        return null;
+        return longPollingDelegate.openChannel(ccid, atmosphereTrackingId);
     }
 
     @Override

@@ -198,8 +198,9 @@ public class ChannelService {
 
         try {
 
-            return longPollingDelegate.openChannel(ccid, atmosphereTrackingId, request.getRemoteHost());
+            return longPollingDelegate.openChannel(ccid, atmosphereTrackingId);
         } catch (WebApplicationException e) {
+            log.error("invalid long poll request from host {}", request.getRemoteHost());
             throw e;
         } catch (Throwable e) {
             log.error("GET Channels open long poll ccid: error: {}", e.getMessage());
@@ -283,13 +284,14 @@ public class ChannelService {
             // the location that can be queried to get the message
             // status
             // TODO REST URL for message status?
-            String path = longPollingDelegate.postMessage(ccid, message, request.getRemoteHost());
+            String path = longPollingDelegate.postMessage(ccid, message);
 
             URI location = ui.getBaseUriBuilder().path(path).build();
             // return the message status location to the sender.
             return Response.created(location).header("msgId", msgId).build();
 
         } catch (WebApplicationException e) {
+            log.error("Invalid request from host {}", request.getRemoteHost());
             throw e;
         } catch (Throwable e) {
             log.error("POST message for cluster controller: error: {}", e.getMessage());

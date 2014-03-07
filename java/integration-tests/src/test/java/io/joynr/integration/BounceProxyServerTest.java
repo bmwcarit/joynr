@@ -25,6 +25,8 @@ import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import com.jayway.restassured.RestAssured;
+
 public class BounceProxyServerTest extends AbstractBounceProxyServerTest {
 
     private static Server server;
@@ -42,5 +44,11 @@ public class BounceProxyServerTest extends AbstractBounceProxyServerTest {
     public static void main(String[] args) {
 
         org.junit.runner.JUnitCore.main(BounceProxyServerTest.class.getName());
+    }
+
+    @Override
+    protected String getBounceProxyBaseUri() {
+        // using single bounce proxy only
+        return RestAssured.baseURI;
     }
 }

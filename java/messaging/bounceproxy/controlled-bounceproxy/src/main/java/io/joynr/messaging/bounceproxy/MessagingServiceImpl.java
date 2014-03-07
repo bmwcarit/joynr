@@ -20,6 +20,8 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import com.google.inject.Inject;
+
 import joynr.JoynrMessage;
 import io.joynr.messaging.service.MessagingService;
 
@@ -31,13 +33,20 @@ import io.joynr.messaging.service.MessagingService;
  */
 public class MessagingServiceImpl implements MessagingService {
 
+    private LongPollingMessagingDelegate longPollingDelegate;
+
+    @Inject
+    public MessagingServiceImpl(LongPollingMessagingDelegate longPollingDelegate) {
+        this.longPollingDelegate = longPollingDelegate;
+    }
+
     /* (non-Javadoc)
      * @see io.joynr.messaging.service.MessagingService#hasMessageReceiver(java.lang.String)
      */
     @Override
     public boolean hasMessageReceiver(String ccid) {
-        // TODO Auto-generated method stub
-        return false;
+        // TODO query local resources if someone is registered
+        return true;
     }
 
     /* (non-Javadoc)
@@ -45,8 +54,7 @@ public class MessagingServiceImpl implements MessagingService {
      */
     @Override
     public void passMessageToReceiver(String ccid, JoynrMessage message) {
-        // TODO Auto-generated method stub
-
+        longPollingDelegate.postMessage(ccid, message);
     }
 
     /* (non-Javadoc)
@@ -54,8 +62,8 @@ public class MessagingServiceImpl implements MessagingService {
      */
     @Override
     public boolean isAssignedForChannel(String ccid) {
-        // TODO Auto-generated method stub
-        return false;
+        // TODO query local resources if messaging service is responsible for channel
+        return true;
     }
 
     /* (non-Javadoc)
@@ -63,7 +71,7 @@ public class MessagingServiceImpl implements MessagingService {
      */
     @Override
     public boolean hasChannelAssignmentMoved(String ccid) {
-        // TODO Auto-generated method stub
+        // TODO query local resources if messaging service was responsible for channel
         return false;
     }
 

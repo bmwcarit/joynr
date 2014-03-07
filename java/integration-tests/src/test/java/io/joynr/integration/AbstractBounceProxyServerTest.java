@@ -59,6 +59,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -126,6 +127,9 @@ public abstract class AbstractBounceProxyServerTest {
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
         createChannel(channelId);
         // createChannel(channelIdProvider);
+
+        RestAssured.baseURI = getBounceProxyBaseUri();
+
         int index = 1;
         List<String> expectedPayloads = new ArrayList<String>();
 
@@ -209,12 +213,7 @@ public abstract class AbstractBounceProxyServerTest {
     @Test
     public void testPostMessageToNonExistingChannel() throws Exception {
 
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(100000l));
-        message.setPayload("payload-" + UUID.randomUUID().toString());
-
-        String serializedMessage = objectMapper.writeValueAsString(message);
+        String serializedMessage = createJoynrMessage(100000l, "some-payload");
         /* @formatter:off */
         Response postMessageResponse = onrequest().with()
                                                   .body(serializedMessage)
@@ -293,12 +292,7 @@ public abstract class AbstractBounceProxyServerTest {
 
             public Response call() throws JsonGenerationException, JsonMappingException, IOException {
 
-                JoynrMessage message = new JoynrMessage();
-                message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-                message.setExpirationDate(ExpiryDate.fromRelativeTtl(relativeTtlMs));
-                message.setPayload(postPayload);
-
-                String serializedMessage = objectMapper.writeValueAsString(message);
+                String serializedMessage = createJoynrMessage(relativeTtlMs, postPayload);
                 /* @formatter:off */
                 Response response = onrequest().with()
                                                .body(serializedMessage)
@@ -392,6 +386,32 @@ public abstract class AbstractBounceProxyServerTest {
         objectMapper.registerModule(module);
         return objectMapper;
     }
+
+    protected String createJoynrMessage(final long relativeTtlMs, final String postPayload)
+                                                                                           throws JsonProcessingException {
+        return createJoynrMessage(relativeTtlMs, postPayload, null);
+    }
+
+    protected String createJoynrMessage(final long relativeTtlMs, final String postPayload, final String msgId)
+                                                                                                               throws JsonProcessingException {
+        JoynrMessage message = new JoynrMessage();
+        if (msgId != null) {
+            message.setHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID, msgId);
+        }
+        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(relativeTtlMs));
+        message.setPayload(postPayload);
+
+        String serializedMessage = objectMapper.writeValueAsString(message);
+        return serializedMessage;
+    }
+
+    /**
+     * Returns the url of the bounce proxy which should be used for messaging.
+     * 
+     * @return the url of the bounce proxy
+     */
+    protected abstract String getBounceProxyBaseUri();
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_typeName")
     @JsonTypeName(value = "MessageWrapper")

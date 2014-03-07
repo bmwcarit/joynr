@@ -26,7 +26,6 @@ import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
-import io.joynr.messaging.bounceproxy.controller.util.ChannelUrlUtil;
 import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.info.ChannelInformation;
 import io.joynr.messaging.service.ChannelService;
@@ -126,8 +125,7 @@ public class ChannelServiceImpl implements ChannelService {
 
             URI channelLocation = bpFacade.createChannel(bpInfo, ccid, trackingId);
 
-            URI channelLocationForCc = ChannelUrlUtil.createChannelLocation(bpInfo, ccid, channelLocation);
-            Channel channel = new Channel(bpInfo, ccid, channelLocationForCc);
+            Channel channel = new Channel(bpInfo, ccid, channelLocation);
 
             channelDirectory.addChannel(channel);
             bounceProxyDirectory.updateChannelAssignment(ccid, bpInfo, timestampProvider.getCurrentTime());

@@ -58,6 +58,8 @@ public class ControlledBounceProxyModule extends AbstractModule {
         bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
         bind(TimestampProvider.class).to(SystemTimeProvider.class);
         bind(BounceProxyInformation.class).toProvider(BounceProxyInformationProvider.class);
+
+        bind(LongPollingMessagingDelegate.class).asEagerSingleton();
     }
 
     @Provides

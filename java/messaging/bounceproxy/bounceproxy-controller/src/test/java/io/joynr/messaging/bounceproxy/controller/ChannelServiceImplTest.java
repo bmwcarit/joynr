@@ -96,7 +96,7 @@ public class ChannelServiceImplTest {
         assertEquals("channel-123", channel.getChannelId());
         assertEquals("X.Y", channel.getBounceProxy().getId());
         assertEquals("http://bpX.de", channel.getBounceProxy().getLocation().toString());
-        assertEquals("http://bpX.de/channels/channel-123;jsessionid=.Y", channel.getLocation().toString());
+        assertEquals("http://bpX.de/channels/channel-123", channel.getLocation().toString());
         Mockito.verify(channelDirectoryMock, Mockito.times(1)).addChannel(channel);
         Mockito.verify(bpDirectoryMock).updateChannelAssignment("channel-123", bpInfo, 100l);
     }
