@@ -41,10 +41,10 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrCommonAPI
     )
 
-    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
+    get_target_property(JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
     list(
         APPEND JoynrCommon_INCLUDE_DIRECTORIES
-        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 

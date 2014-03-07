@@ -19,11 +19,6 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
-//This only works in gcc 4.6 :(
-//This disables warnings from -WeffC++ for this compile unit. At the end of the file, Warnings are enabled again
-//#pragma GCC diagnostic ignored "-Weffc++"
-//#pragma GCC diagnostic ignored "-Wunused-parameters"
-
 class IMessageReceiver;
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProvider.h"
@@ -100,6 +95,11 @@ using ::testing::Property;
     #pragma warning( push )
     #pragma warning( disable : 4373 )
 #endif
+
+// Disable compiler warnings.
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#pragma GCC diagnostic ignored "-Wreorder"
+
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
@@ -612,8 +612,7 @@ public:
     #pragma warning( push )
 #endif
 
-#endif /* MOCKOBJECTS_H_ */
+// restore GCC diagnostic state
+#pragma GCC diagnostic pop
 
-// This only works in gcc 4.6
-// Resets the warning level to the one given in command line.
-//#pragma GCC diagnostic pop
+#endif /* MOCKOBJECTS_H_ */

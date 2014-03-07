@@ -49,14 +49,14 @@ add_library(
     ${JoynrCommonAPI_SOURCES}
 )
 
-add_definitions(-Wno-effc++ -Wno-unused-parameter)
-
 set_target_properties(
     JoynrCommonAPI
     PROPERTIES
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}"
+    # disable compiler warnings on CommonAPI generated code
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
 )
 
 install(

@@ -24,10 +24,19 @@
 #include "joynr/types/ProviderQosRequirements.h"
 
 #include "joynr/CapabilityEntry.h"
-#include "common-api/joynr/messaging/ICapabilities.h"
-#include "common-api/joynr/messaging/types/Types.h"
 
 #include "joynr/DiscoveryQos.h"
+
+// save the GCC diagnostic state
+#pragma GCC diagnostic push
+// Disable compiler warnings in this CommonAPI generated includes.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Weffc++"
+// include CommonAPI stuff here:
+#include "common-api/joynr/messaging/ICapabilities.h"
+#include "common-api/joynr/messaging/types/Types.h"
+// restore the old GCC diagnostic state
+#pragma GCC diagnostic pop
 
 namespace joynr {
 

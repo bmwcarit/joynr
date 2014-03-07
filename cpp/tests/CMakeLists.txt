@@ -10,11 +10,6 @@ set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
 if(${WIN32})
     set(DISABLE_PTHREAD_CMAKE_ARG ON)
 else()
-    #Disable some sets of warnings in test-directory.
-    remove_definitions(-Weffc++)
-    add_definitions(-Wno-unused-parameter)
-    add_definitions(-Wno-reorder)
-    set(DISABLE_PTHREAD_CMAKE_ARG OFF)
 endif(${WIN32})
 
 
@@ -239,6 +234,12 @@ add_dependencies(g_UnitTests googlemock)
 
 target_link_libraries(g_UnitTests ${test_TARGET_LIBRARIES})
 
+set_target_properties(
+    g_UnitTests
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+)
+
 ######################
 # g_IntegrationTests #
 ######################
@@ -268,6 +269,12 @@ add_dependencies(g_IntegrationTests googlemock)
 
 target_link_libraries(g_IntegrationTests ${test_TARGET_LIBRARIES})
 
+set_target_properties(
+    g_IntegrationTests
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+)
+
 ############################
 # g_SystemIntegrationTests #
 ############################
@@ -295,3 +302,9 @@ add_dependencies(g_SystemIntegrationTests googletest)
 add_dependencies(g_SystemIntegrationTests googlemock)
 
 target_link_libraries(g_SystemIntegrationTests ${test_TARGET_LIBRARIES})
+
+set_target_properties(
+    g_SystemIntegrationTests
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+)

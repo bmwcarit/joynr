@@ -71,8 +71,8 @@ public:
         clusterControllerRuntime(NULL),
         runtime1(NULL),
         runtime2(NULL),
-        domain("local"),
         testProxy(NULL),
+        domain("local"),
         semaphore(0)
     {
         // create the cluster controller runtime
