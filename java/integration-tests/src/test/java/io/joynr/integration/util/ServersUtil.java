@@ -39,7 +39,7 @@ public class ServersUtil {
 
     public static final String DISCOVERY_CONTEXT = "/discovery";
 
-    public static final String BOUNCEPROXYCONTROLLER_CONTEXT = "";
+    public static final String BOUNCEPROXYCONTROLLER_CONTEXT = "/controller";
 
     private static final Logger logger = LoggerFactory.getLogger(ServersUtil.class);
 
@@ -83,7 +83,7 @@ public class ServersUtil {
 
         System.setProperty("joynr.bounceproxy.id", bpId);
         System.setProperty("joynr.bounceproxy.controller.baseurl",
-                           System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL) + "controller/bounceproxies/");
+                           System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL));
         System.setProperty("joynr.bounceproxy.url4cc", bpUrl);
         System.setProperty("joynr.bounceproxy.url4bpc", bpUrl);
 
@@ -105,7 +105,7 @@ public class ServersUtil {
 
         Server server = startServer(contexts);
         String serverUrl = System.getProperties().getProperty("hostPath");
-        String bounceProxyUrl = serverUrl + "/";
+        String bounceProxyUrl = serverUrl + "/controller/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
         return server;
     }

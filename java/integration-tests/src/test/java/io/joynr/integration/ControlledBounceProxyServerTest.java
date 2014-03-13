@@ -94,7 +94,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
     public void testSimpleChannelSetupAndDeletionOnSingleBounceProxy() throws Exception {
 
         // get bounce proxies list
-        JsonPath listBps = given().get("controller/bounceproxies").body().jsonPath();
+        JsonPath listBps = given().get("bounceproxies").body().jsonPath();
         assertThat(listBps, anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")));
 
         // create channel on bounce proxy
@@ -145,7 +145,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // get bounce proxies list
         /* @formatter:off */
-        JsonPath listBps = given().get("controller/bounceproxies").getBody().jsonPath();
+        JsonPath listBps = given().get("bounceproxies").getBody().jsonPath();
         /* @formatter:on */
         assertThat(listBps, allOf( //
                                   anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //

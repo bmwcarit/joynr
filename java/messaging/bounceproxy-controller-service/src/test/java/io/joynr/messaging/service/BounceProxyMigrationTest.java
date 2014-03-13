@@ -63,7 +63,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        serverUrl = String.format("%s/controller", getServerUrlWithoutPath());
+        serverUrl = String.format("%s/migration", getServerUrlWithoutPath());
     }
 
     @Test

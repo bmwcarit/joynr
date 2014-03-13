@@ -33,7 +33,7 @@ import com.google.inject.Inject;
  * @author christina.strobel
  *
  */
-@Path("/controller")
+@Path("/migration")
 public class MigrationServiceRestAdapter {
 
     @Inject

@@ -75,7 +75,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
     public void setUp() throws Exception {
         super.setUp();
 
-        serverUrl = String.format("%s/controller/bounceproxies/", getServerUrlWithoutPath());
+        serverUrl = String.format("%s/bounceproxies/", getServerUrlWithoutPath());
     }
 
     @Test
