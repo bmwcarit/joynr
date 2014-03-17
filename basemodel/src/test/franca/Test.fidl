@@ -89,6 +89,7 @@ interface test{
 	attribute Int32 notifyReadWrite
 	
 	attribute Int32 notify
+	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
 	method addNumbers {
 		in {

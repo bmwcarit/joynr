@@ -37,6 +37,7 @@ public class PubSubTestProviderImpl extends DefaultTestProvider {
         complexTestAttribute.setLongitude(11.536564);
         complexTestAttribute.setAltitude(6.0);
         complexTestAttribute.setGpsFix(GpsFixEnum.MODE3D);
+        aTTRIBUTEWITHCAPITALLETTERS = 42;
     }
 
     @Override

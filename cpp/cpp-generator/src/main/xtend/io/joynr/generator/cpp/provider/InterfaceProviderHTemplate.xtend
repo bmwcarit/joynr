@@ -68,7 +68,7 @@ class InterfaceProviderHTemplate {
 	    // request status, result, (params......)*
 	
 		«FOR attribute: getAttributes(serviceInterface)»
-			«var attributeName = attribute.name»
+			«var attributeName = attribute.joynrName»
 			virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)»& result);
 			virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 			/**

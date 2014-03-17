@@ -39,8 +39,11 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
+import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.tests.TestProxy;
 import joynr.tests.TestSync;
@@ -74,6 +77,7 @@ public class LocalCommunicationTest {
     @Mock
     private SubscriptionListener<Integer> listener;
     private SubscriptionQos subscriptionQos;
+	private int lengthInMS = 2000;
 
     @Before
     public void setUp() throws Exception {
@@ -116,22 +120,72 @@ public class LocalCommunicationTest {
     // startup.
     @Test
     @Ignore
-    public void registerSubscriptionAndReceiveUpdatesForLongTime() throws InterruptedException {
-        int length = 10000; // length of test in ms
+    public void registerPeriodicSubscriptionAndReceiveUpdatesForLongTime() throws InterruptedException {
         int times = 5;
-
-        subscriptionQos = new PeriodicSubscriptionQos(10000 / times, // period_ms,
-                                                      System.currentTimeMillis() + length, // expiryDate
-                                                      2500, // alertInterval_ms,
-                                                      2500 // publicationTtl_ms
+        final int initialValue = 42;
+        
+        int period = lengthInMS  / times;
+		provider.setATTRIBUTEWITHCAPITALLETTERS(initialValue);
+		subscriptionQos = new PeriodicSubscriptionQos(period, // period_ms,
+                                                      System.currentTimeMillis() + lengthInMS, // expiryDate
+                                                      lengthInMS, // alertInterval_ms,
+                                                      lengthInMS/4 // publicationTtl_ms
         );
 
-        proxy.subscribeToTestAttribute(listener, subscriptionQos);
-        Thread.sleep(length);
+		proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
+		new Timer().scheduleAtFixedRate(new TimerTask() {
+			int value = initialValue;
+			@Override
+			public void run() {
+				value ++;
+				provider.setATTRIBUTEWITHCAPITALLETTERS(value);
+			}
+		}, period, period);
+        
+        Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
+        verify(listener, times(0)).publicationMissed();
+       // verify(listener, times(times)).receive(anyInt());
+        // TODO verify publications shipped correct data
+        for (int i = 42; i < 42+times; i++) {
+            verify(listener, times(1)).receive(eq(i));
+        }
+        verifyNoMoreInteractions(listener);
+    }
+
+    /* This is a manual test that subscribes for 30 seconds, and checks if all subscriptions arrive. In this case,
+     * the test expect publication in case of value change
+     */
+    
+    @Test
+    @Ignore
+    public void registerSubscriptionOnChangeAndReceiveUpdatesForLongTime() throws InterruptedException {
+        final int times = 5;
+        final int initialValue = 42;
+        
+        int period = lengthInMS / times;
+		provider.aTTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
+		subscriptionQos = new OnChangeSubscriptionQos(lengthInMS/4,
+                                                      System.currentTimeMillis() + lengthInMS, // expiryDate
+                                                      lengthInMS/4
+        );
+
+		new Timer().scheduleAtFixedRate(new TimerTask() {
+			int value = initialValue;
+			@Override
+			public void run() {
+				value ++;
+				if (value<initialValue + times){
+					provider.aTTRIBUTEWITHCAPITALLETTERSChanged(value);
+				}
+			}
+		}, period, period);
+        proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
+        
+        Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).publicationMissed();
         verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
-        for (int i = 42; i < 56; i++) {
+        for (int i = 42; i < 42+times; i++) {
             verify(listener, times(1)).receive(eq(i));
         }
         verifyNoMoreInteractions(listener);
