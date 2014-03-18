@@ -33,7 +33,7 @@ namespace joynr {
 joynr_logging::Logger* LongPollMessageSerializer::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "LongPollMessageSerializer");
 
 LongPollMessageSerializer::LongPollMessageSerializer(
-        MessageRouter * messageRouter,
+        QSharedPointer<MessageRouter> messageRouter,
         Directory<QString, joynr::system::Address>* partId2EndpointAddrDirectory
 ) :
     messageRouter(messageRouter),

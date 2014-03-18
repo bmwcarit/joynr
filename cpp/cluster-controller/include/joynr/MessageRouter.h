@@ -26,6 +26,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/IMessaging.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/system/RoutingProvider.h"
 
 #include <QSharedPointer>
 #include <QDateTime>
@@ -53,12 +54,14 @@ class ICommunicationManager;
   *  In sending, a ThreadPool of default size 6 is used with a 500ms default retry interval.
   */
 
-class JOYNRCLUSTERCONTROLLER_EXPORT MessageRouter {
+class JOYNRCLUSTERCONTROLLER_EXPORT MessageRouter : public joynr::system::RoutingProvider {
 public:
-    MessageRouter(MessagingSettings& messagingSettings,
-                  Directory<QString, joynr::system::Address>* routingTable,
-                  int messageSendRetryInterval = 500,
-                  int maxThreads = 6);
+    MessageRouter(
+            MessagingSettings& messagingSettings,
+            Directory<QString, joynr::system::Address>* routingTable,
+            int messageSendRetryInterval = 500,
+            int maxThreads = 6
+    );
     virtual ~MessageRouter();
 
 
@@ -78,6 +81,42 @@ public:
      * @param qos the QoS used to route the message.
      */
     virtual void route(const JoynrMessage& message, const MessagingQos& qos);
+
+    // inherited method from joynr::system::RoutingProvider
+    virtual void addNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId,
+            joynr::system::ChannelAddress channelAddress
+    );
+    // inherited method from joynr::system::RoutingProvider
+    virtual void addNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId,
+            joynr::system::CommonApiDbusAddress commonApiDbusAddress
+    );
+    // inherited method from joynr::system::RoutingProvider
+    virtual void addNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId,
+            joynr::system::BrowserAddress browserAddress
+    );
+    // inherited method from joynr::system::RoutingProvider
+    virtual void addNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId,
+            joynr::system::WebSocketAddress webSocketAddress
+    );
+    // inherited method from joynr::system::RoutingProvider
+    virtual void removeNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId
+    );
+    // inherited method from joynr::system::RoutingProvider
+    virtual void resolveNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            bool& resolved,
+            QString participantId
+    );
 
 private:
     void addProvisionedCapabilitiesDirectoryAddress();

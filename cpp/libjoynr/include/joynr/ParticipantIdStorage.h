@@ -39,6 +39,23 @@ public:
     ParticipantIdStorage(const QString& filename);
     virtual ~ParticipantIdStorage() {}
 
+    static const QString& STORAGE_FORMAT_STRING();
+
+    /**
+     * @brief setProviderParticipantId Sets a participant ID for a specific
+     * provider. This is useful for provisioning of provider participant IDs.
+     * @param domain the domain of the provider.
+     * @param interfaceName the interface name of the provider.
+     * @param authenticationToken the authentication token of the provider.
+     * @param participantId the participantId to set.
+     */
+    virtual void setProviderParticipantId(
+            const QString& domain,
+            const QString& interfaceName,
+            const QString& authenticationToken,
+            const QString& participantId
+    );
+
     /**
      * Get a provider participant id
      */
@@ -56,6 +73,11 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
+    QString createProviderKey(
+            const QString& domain,
+            const QString& interfaceName,
+            const QString& authenticationToken
+    );
     QString filename;
 };
 

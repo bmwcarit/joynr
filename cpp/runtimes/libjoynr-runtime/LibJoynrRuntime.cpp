@@ -34,7 +34,7 @@
 namespace joynr {
 
 LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
-    JoynrRuntime(),
+    JoynrRuntime(*settings),
     connectorFactory(NULL),
     publicationManager(NULL),
     subscriptionManager(NULL),
@@ -107,7 +107,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    QSharedPointer<ParticipantIdStorage> participantIdStorage(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     // initialize the dispatchers
     QList<IDispatcher *> dispatcherList;

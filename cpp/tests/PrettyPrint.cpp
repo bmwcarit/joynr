@@ -24,20 +24,26 @@
 #include "joynr/JoynrMessage.h"
 #include <gtest/gtest.h>
 #include "PrettyPrint.h"
+#include "joynr/types/TStruct.h"
 
 using namespace joynr;
 
 namespace joynr {
 namespace types {
+    void PrintTo(const joynr::types::TStruct& value, ::std::ostream* os) {
+        *os << joynr::JsonSerializer::serialize(value).constData();
+    }
+
     void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os) {
-      *os << joynr::JsonSerializer::serialize(value).constData();
+        *os << joynr::JsonSerializer::serialize(value).constData();
+    }
+
+    void PrintTo(const joynr::types::Trip& value, ::std::ostream* os) {
+        *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }
 }
 
- void PrintTo(const types::Trip& value, ::std::ostream* os) {
-  *os << JsonSerializer::serialize(value).constData() << std::endl;
-}
 
 
  void PrintTo(const JoynrMessage& value, ::std::ostream* os) {

@@ -28,6 +28,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include <QString>
+#include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/Request.h"
@@ -62,7 +63,7 @@ public:
     JoynrMessageFactory messageFactory;
     MockCommunicationManager mockCommunicationManager;
     MessagingEndpointDirectory* messagingEndpointDirectory;
-    MessageRouter* messageRouter;
+    QSharedPointer<MessageRouter> messageRouter;
     MessagingTest() :
         settingsFileName("MessagingTest.settings"),
         settings(settingsFileName, QSettings::IniFormat),
@@ -87,7 +88,6 @@ public:
         qos.setTtl(10000);
     }
     ~MessagingTest(){
-        delete messageRouter;
         delete messagingEndpointDirectory;
         QFile::remove(settingsFileName);
     }

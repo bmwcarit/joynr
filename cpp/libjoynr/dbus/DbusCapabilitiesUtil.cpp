@@ -151,7 +151,7 @@ void DbusCapabilitiesUtil::copyDbusEndPointListToJoynr(const joynr::messaging::t
 void DbusCapabilitiesUtil::copyJoynrDiscoveryQosToDbus(const DiscoveryQos& joynrDiscoveryQos, joynr::messaging::types::Types::DiscoveryQos& dbusDiscoveryQos) {
     // copy arbitration strategy
     switch (joynrDiscoveryQos.getArbitrationStrategy()) {
-    case DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL:
+    case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
         dbusDiscoveryQos.arbitrationStrategy = joynr::messaging::types::Types::ArbitrationStrategy::FIXED_CHANNEL;
         break;
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
@@ -209,7 +209,7 @@ void DbusCapabilitiesUtil::copyDbusDiscoveryQosToJoynr(const joynr::messaging::t
     // copy arbitration strategy
     switch (dbusDiscoveryQos.arbitrationStrategy) {
     case joynr::messaging::types::Types::ArbitrationStrategy::FIXED_CHANNEL:
-        joynrDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
+        joynrDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         break;
     case joynr::messaging::types::Types::ArbitrationStrategy::HIGHEST_PRIORITY:
         joynrDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

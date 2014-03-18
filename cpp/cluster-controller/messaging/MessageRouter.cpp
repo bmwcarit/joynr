@@ -24,6 +24,9 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/system/Address.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 
 #include <cassert>
 
@@ -44,11 +47,18 @@ MessageRouter::MessageRouter(
         int messageSendRetryInterval,
         int maxThreads
 ) :
-    messagingSettings(messagingSettings),
-    messagingStubFactory(NULL),
-    routingTable(routingTable),
-    threadPool(),
-    delayedScheduler()
+        joynr::system::RoutingProvider(joynr::types::ProviderQos(
+                QList<joynr::types::CustomParameter>(), // custom provider parameters
+                1,                                      // provider version
+                1,                                      // provider priority
+                joynr::types::ProviderScope::LOCAL,     // provider discovery scope
+                false                                   // supports on change subscriptions
+        )),
+        messagingSettings(messagingSettings),
+        messagingStubFactory(NULL),
+        routingTable(routingTable),
+        threadPool(),
+        delayedScheduler()
 {
     threadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
@@ -121,6 +131,84 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
                          DispatcherUtils::convertTtlToAbsoluteTime(qos.getTtl()) )
                      );
 }
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::ChannelAddress channelAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::ChannelAddress> address(
+                new joynr::system::ChannelAddress(channelAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::CommonApiDbusAddress commonApiDbusAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::CommonApiDbusAddress> address(
+                new joynr::system::CommonApiDbusAddress(commonApiDbusAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::BrowserAddress browserAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::BrowserAddress> address(
+                new joynr::system::BrowserAddress(browserAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::WebSocketAddress webSocketAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::WebSocketAddress> address(
+                new joynr::system::WebSocketAddress(webSocketAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::removeNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId
+) {
+    // TODO check if routing table is thread-safe
+    routingTable->remove(participantId);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::resolveNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        bool& resolved,
+        QString participantId
+) {
+    // TODO check if routing table is thread-safe
+    resolved = routingTable->contains(participantId);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
 
 /****
   * IMPLEMENTATION OF THE MESSAGE RUNNABLE

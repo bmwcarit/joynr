@@ -19,7 +19,6 @@
 package system
 
 import types.ExtendedTypes.* from "../common/Types.fidl"
-import system.* from "Routing.fidl"
 
 typeCollection DiscoveryTypes {
     enumeration DiscoveryScope  {
@@ -27,6 +26,14 @@ typeCollection DiscoveryTypes {
         LOCAL_THEN_GLOBAL
         LOCAL_AND_GLOBAL
         GLOBAL_ONLY
+    }
+
+    enumeration CommunicationMiddleware {
+        JOYNR
+        COMMONAPI_DBUS
+        BROWSER
+        WEBSOCKET
+        SOME_IP
     }
 
     struct DiscoveryQos {
@@ -40,7 +47,7 @@ typeCollection DiscoveryTypes {
         String domain
         ProviderQos qos
         String participantId
-        RoutingTypes.Address[] adresses
+        CommunicationMiddleware[] connections
         Boolean global
     }
 }
@@ -63,7 +70,7 @@ interface Discovery {
 	 * @param interfaceName the name of the provider interface
 	 * @param participantId the participant ID of the provider
 	 * @param qos the qos of the provider
-	 * @param endpointAddresses a list of endpoint addresses that can be used to access the provider
+	 * @param connections a list of communications middlewares that can be used to access the provider
 	 */
     method add {
         in {
@@ -71,7 +78,7 @@ interface Discovery {
             String interfaceName
             String participantId
             ProviderQos qos
-            RoutingTypes.Address[] addresses
+            DiscoveryTypes.CommunicationMiddleware[] connections
         }
     }
 

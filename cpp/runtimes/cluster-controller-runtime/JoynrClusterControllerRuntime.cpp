@@ -48,6 +48,7 @@
 #include "joynr/Directory.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
+#include "joynr/SystemServicesSettings.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -64,43 +65,45 @@ namespace joynr {
 using namespace joynr_logging;
 Logger* JoynrClusterControllerRuntime::logger = Logging::getInstance()->getLogger("JoynrClusterControllerRuntime", "JoynrClusterControllerRuntime");
 
-JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* app,
+JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
+        QCoreApplication* app,
         QSettings* settings,
-        ICommunicationManager* communicationManager) :
-    JoynrRuntime(),
-    joynrDispatcher(NULL),
-    inProcessDispatcher(NULL),
-    ccDispatcher(NULL),
-    publicationManager(NULL),
-    subscriptionManager(NULL),
-    joynrMessagingSendStub(NULL),
-    joynrMessagingSendSkeleton(NULL),
-    joynrMessageSender(NULL),
-    app(app),
-    capabilitiesClient(NULL),
-    messagingEndpointDirectory(new Directory<QString, joynr::system::Address>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
-    localCapabilitiesDirectory(NULL),
-    channelUrlDirectory(),
-    capabilitiesSkeleton(NULL),
-    cache(),
-    messageRouter(NULL),
-    channelUrlDirectoryProxy(NULL),
-    ccMessagingSkeleton(NULL),
-    libJoynrMessagingSkeleton(NULL),
-    communicationManager(communicationManager),
-    longpollMessageSerializer(NULL),
-    dispatcherList(),
-    inProcessConnectorFactory(NULL),
-    inProcessPublicationSender(NULL),
-    joynrMessagingConnectorFactory(NULL),
-    connectorFactory(NULL),
-    settings(settings),
-    messagingSettings(NULL),
-    libjoynrSettings(NULL)
+        ICommunicationManager* communicationManager
+) :
+        JoynrRuntime(*settings),
+        joynrDispatcher(NULL),
+        inProcessDispatcher(NULL),
+        ccDispatcher(NULL),
+        publicationManager(NULL),
+        subscriptionManager(NULL),
+        joynrMessagingSendStub(NULL),
+        joynrMessagingSendSkeleton(NULL),
+        joynrMessageSender(NULL),
+        app(app),
+        capabilitiesClient(NULL),
+        messagingEndpointDirectory(new Directory<QString, joynr::system::Address>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
+        localCapabilitiesDirectory(NULL),
+        channelUrlDirectory(),
+        capabilitiesSkeleton(NULL),
+        cache(),
+        messageRouter(NULL),
+        channelUrlDirectoryProxy(NULL),
+        ccMessagingSkeleton(NULL),
+        libJoynrMessagingSkeleton(NULL),
+        communicationManager(communicationManager),
+        longpollMessageSerializer(NULL),
+        dispatcherList(),
+        inProcessConnectorFactory(NULL),
+        inProcessPublicationSender(NULL),
+        joynrMessagingConnectorFactory(NULL),
+        connectorFactory(NULL),
+        settings(settings),
+        messagingSettings(NULL),
+        libjoynrSettings(NULL)
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-  , dbusSettings(NULL)
-  , ccDbusMessageRouterAdapter(NULL)
-  , ccDbusCapabilitiesAdapter(NULL)
+        , dbusSettings(NULL)
+        , ccDbusMessageRouterAdapter(NULL)
+        , ccDbusCapabilitiesAdapter(NULL)
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 {
@@ -123,7 +126,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
       * libjoynr side skeleton & dispatcher
       * This needs some preparation of libjoynr and clustercontroller parts.
       */
-    assert(settings);
     messagingSettings = new MessagingSettings(*settings);
     messagingSettings->printSettings();
     libjoynrSettings = new LibjoynrSettings(*settings);
@@ -133,7 +135,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     inProcessDispatcher = new InProcessDispatcher();
     /* CC */
-    messageRouter = new MessageRouter(*messagingSettings, messagingEndpointDirectory);
+    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(*messagingSettings, messagingEndpointDirectory));
 
     /* LibJoynr */
     assert(messageRouter);
@@ -209,7 +211,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    QSharedPointer<ParticipantIdStorage> participantIdStorage(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     capabilitiesRegistrar =  new CapabilitiesRegistrar(dispatcherList,
                                                        qSharedPointerDynamicCast<ICapabilities>(capabilitiesAggregator),
@@ -271,6 +273,20 @@ ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
     return new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 }
 
+void JoynrClusterControllerRuntime::registerRoutingProvider()
+{
+    QString domain(systemServicesSettings.getDomain());
+    QSharedPointer<joynr::system::RoutingProvider> routingProvider(messageRouter);
+    QString interfaceName(routingProvider->getInterfaceName());
+    QString authToken(systemServicesSettings.getCcRoutingProviderAuthenticationToken());
+    QString participantId(systemServicesSettings.getCcRoutingProviderParticipantId());
+
+    // provision the participant ID for the routing provider
+    participantIdStorage->setProviderParticipantId(domain, interfaceName, authToken, participantId);
+
+    registerCapability<joynr::system::RoutingProvider>(domain, routingProvider, authToken);
+}
+
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
     LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
     //joynrDispatcher needs to be deleted before messagingEndpointdirectory, because the dispatcherthreadpool
@@ -288,8 +304,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
     delete capabilitiesClient;
     capabilitiesClient = NULL;
 
-    delete messageRouter;
-    messageRouter = NULL;
     delete messagingEndpointDirectory;
     messagingEndpointDirectory = NULL;
     delete communicationManager;
@@ -342,6 +356,7 @@ JoynrClusterControllerRuntime *JoynrClusterControllerRuntime::create(QSettings* 
     JoynrClusterControllerRuntime* runtime = new JoynrClusterControllerRuntime(coreApplication, settings);
     runtime->startMessaging();
     runtime->waitForChannelCreation();
+    runtime->registerRoutingProvider();
     return runtime;
 }
 
