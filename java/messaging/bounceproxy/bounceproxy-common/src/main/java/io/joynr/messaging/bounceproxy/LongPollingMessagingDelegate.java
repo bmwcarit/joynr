@@ -24,14 +24,13 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
+import io.joynr.messaging.info.ChannelInformation;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
-import io.joynr.messaging.info.ChannelInformation;
 
 import javax.ws.rs.core.Response.Status;
 

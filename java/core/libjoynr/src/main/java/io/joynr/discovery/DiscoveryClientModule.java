@@ -36,8 +36,6 @@ import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.ChannelUrlStore;
 import io.joynr.messaging.ChannelUrlStoreImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -95,15 +93,8 @@ public class DiscoveryClientModule extends AbstractModule {
                                                                                                                     subscriptionManager);
 
         ChannelUrlDirectoryProxy proxy = null;
-        try {
-            proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
-        } catch (JoynrArbitrationException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         return proxy;
     }
@@ -137,15 +128,8 @@ public class DiscoveryClientModule extends AbstractModule {
                                                                                                                                       subscriptionManager);
 
         GlobalCapabilitiesDirectoryClient proxy = null;
-        try {
-            proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
-        } catch (JoynrArbitrationException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         return proxy;
     }

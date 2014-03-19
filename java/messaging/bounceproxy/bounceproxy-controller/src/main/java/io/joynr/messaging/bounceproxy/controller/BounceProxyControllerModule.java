@@ -20,9 +20,6 @@ package io.joynr.messaging.bounceproxy.controller;
  * #L%
  */
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryBounceProxyDirectory;
@@ -33,6 +30,9 @@ import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.service.MonitoringService;
 import io.joynr.messaging.system.SystemTimeProvider;
 import io.joynr.messaging.system.TimestampProvider;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

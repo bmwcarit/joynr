@@ -21,10 +21,10 @@ package io.joynr.messaging.service;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode.BOUNCEPROXY_STATUS_UNKNOWN;
 import static io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode.BOUNCEPROXY_UNKNOWN;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.PerformanceMeasures;
 

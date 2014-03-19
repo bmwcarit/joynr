@@ -25,7 +25,6 @@ import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
@@ -78,8 +77,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
 
     }
 
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass)
-                                                                                                                         throws JoynrIllegalStateException {
+    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
 
         if (domain == null || domain.isEmpty()) {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: domain was not set");

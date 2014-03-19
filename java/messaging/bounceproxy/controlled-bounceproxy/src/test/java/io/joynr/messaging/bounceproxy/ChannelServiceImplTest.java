@@ -20,10 +20,10 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
-import java.net.URI;
-
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.Channel;
+
+import java.net.URI;
 
 import org.junit.Assert;
 import org.junit.Before;

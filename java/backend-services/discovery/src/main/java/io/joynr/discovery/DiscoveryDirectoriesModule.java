@@ -19,8 +19,6 @@ package io.joynr.discovery;
  * #L%
  */
 
-import java.util.HashMap;
-
 import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.directory.CapabilitiesClientDummy;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
@@ -29,6 +27,9 @@ import io.joynr.messaging.ChannelUrlStore;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
+
+import java.util.HashMap;
+
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.ChannelUrlInformation;

@@ -23,7 +23,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -267,12 +266,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
         } catch (JoynrArbitrationException e) {
             LOG.error("No provider found", e);
-        } catch (JoynrIllegalStateException e) {
-            LOG.error("The API was used incorrectly", e);
         } catch (JoynrCommunicationException e) {
             LOG.error("The message was not sent: ", e);
-        } catch (InterruptedException e) {
-            LOG.error("The message was interupted: ", e);
-        }
+        } 
     }
 }

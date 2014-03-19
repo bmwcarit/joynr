@@ -26,6 +26,7 @@ import io.joynr.messaging.bounceproxy.monitoring.BounceProxyPerformanceMonitor;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.service.ChannelService;
+import io.joynr.messaging.service.MessagingService;
 import io.joynr.messaging.system.SystemTimeProvider;
 import io.joynr.messaging.system.TimestampProvider;
 
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import io.joynr.messaging.service.MessagingService;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;

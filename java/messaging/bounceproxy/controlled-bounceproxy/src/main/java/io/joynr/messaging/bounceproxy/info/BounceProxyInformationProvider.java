@@ -19,10 +19,10 @@ package io.joynr.messaging.bounceproxy.info;
  * #L%
  */
 
-import java.net.URI;
-
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 import io.joynr.messaging.info.BounceProxyInformation;
+
+import java.net.URI;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

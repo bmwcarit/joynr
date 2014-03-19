@@ -19,15 +19,6 @@ package io.joynr.integration;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
-import joynr.JoynrMessage;
-import joynr.types.ChannelUrlInformation;
 import io.joynr.capabilities.DummyCapabilitiesDirectory;
 import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
@@ -47,6 +38,16 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+
+import joynr.JoynrMessage;
+import joynr.types.ChannelUrlInformation;
 
 import org.junit.After;
 import org.junit.Before;

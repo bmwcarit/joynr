@@ -137,7 +137,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
     }
 
     @Override
-    public T build() throws JoynrArbitrationException, InterruptedException, JoynrIllegalStateException {
+    public T build() {
         // TODO test if this works
         return buildProxy();
     }

@@ -20,15 +20,15 @@ package io.joynr.messaging.info;
  * #L%
  */
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import org.junit.Test;
-
-import static io.joynr.messaging.info.BounceProxyStatus.ALIVE;
 import static io.joynr.messaging.info.BounceProxyStatus.ACTIVE;
+import static io.joynr.messaging.info.BounceProxyStatus.ALIVE;
 import static io.joynr.messaging.info.BounceProxyStatus.EXCLUDED;
 import static io.joynr.messaging.info.BounceProxyStatus.SHUTDOWN;
 import static io.joynr.messaging.info.BounceProxyStatus.UNRESOLVED;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 public class BounceProxyStatusTest {
 

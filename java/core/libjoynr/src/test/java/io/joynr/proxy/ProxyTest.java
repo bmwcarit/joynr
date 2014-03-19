@@ -161,17 +161,9 @@ public class ProxyTest {
                                                          Mockito.anyLong())).thenReturn(new Reply(requestReplyId,
                                                                                                   "Answer"));
 
-        try {
-            TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-            String result = proxy.method1();
-            Assert.assertEquals("Answer", result);
-        } catch (JoynrArbitrationException e) {
-            e.printStackTrace();
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        String result = proxy.method1();
+        Assert.assertEquals("Answer", result);
 
     }
 
@@ -181,7 +173,8 @@ public class ProxyTest {
         try {
             TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
-            // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call messageCallback on it.
+            // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
+            // messageCallback on it.
             Mockito.doAnswer(new Answer<Object>() {
                 public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
                                                                  IOException {
@@ -190,7 +183,7 @@ public class ProxyTest {
                     verify(dispatcher1).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
 
                     String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
-                    //pass the response to the replyCaller
+                    // pass the response to the replyCaller
                     replyCallerCaptor.getValue()
                                      .messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                     return null;
@@ -222,13 +215,14 @@ public class ProxyTest {
     @Test
     public void createProxyAndCallAsyncMethodFail() throws Exception {
 
-        //Expect this exception to be passed back to the callback onFailure and thrown in the future
+        // Expect this exception to be passed back to the callback onFailure and thrown in the future
         final JoynrCommunicationException expectedException = new JoynrCommunicationException();
-        //        final JoynCommunicationException expectedException = null;
+        // final JoynCommunicationException expectedException = null;
 
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
-        // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call messageCallback on it.
+        // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
+        // messageCallback on it.
         Mockito.doAnswer(new Answer<Object>() {
             public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
                                                              IOException {
@@ -236,7 +230,7 @@ public class ProxyTest {
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
                 verify(dispatcher1).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
 
-                //pass the exception to the replyCaller
+                // pass the exception to the replyCaller
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }

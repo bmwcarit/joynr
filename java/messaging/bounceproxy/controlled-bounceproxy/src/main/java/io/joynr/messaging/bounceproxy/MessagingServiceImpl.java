@@ -20,10 +20,10 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
-import com.google.inject.Inject;
-
-import joynr.JoynrMessage;
 import io.joynr.messaging.service.MessagingService;
+import joynr.JoynrMessage;
+
+import com.google.inject.Inject;
 
 /**
  * Implementation of messaging service for controlled bounce proxies.
