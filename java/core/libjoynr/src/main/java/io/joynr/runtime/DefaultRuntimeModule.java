@@ -24,8 +24,8 @@ import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplyDispatcherImpl;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.RequestReplySenderImpl;
-import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.RpcUtils;
+import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceivers;
@@ -34,7 +34,6 @@ import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.httpoperation.HttpClientProvider;
 import io.joynr.messaging.httpoperation.HttpDefaultRequestConfigProvider;
-import joynr.Request;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -43,23 +42,23 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 
 public class DefaultRuntimeModule extends AbstractModule {
-    // private static final Logger logger = LoggerFactory.getLogger(DefaultRuntimeModule.class);
 
     @Override
     protected void configure() {
-        bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
-
         bind(JoynrRuntime.class).to(JoynrRuntimeImpl.class).in(Singleton.class);
-        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(RequestReplySender.class).to(RequestReplySenderImpl.class);
         bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
-        bind(MessageSender.class).to(MessageSenderImpl.class);
-        // bind(MessageReceiver.class).to(LongPollingMessageReceiver.class);
-        bind(MessagingEndpointDirectory.class).in(Singleton.class);
-        requestStaticInjection(JoynrMessagingConnectorFactory.class, RpcUtils.class, Request.class);
 
+        bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
+        bind(MessageSender.class).to(MessageSenderImpl.class);
+        bind(MessagingEndpointDirectory.class).in(Singleton.class);
         bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
+
+        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+
+        requestStaticInjection(RpcUtils.class, JoynrAppenderManagerFactory.class);
     }
 
 }

@@ -16,7 +16,8 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  Apache Log4j under The Apache Software License, Version 2.0
+  Apache Log4j API under The Apache Software License, Version 2.0
+  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
@@ -26,5 +27,4 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   JUnit under Common Public License Version 1.0
   SLF4J API Module under MIT License
-  SLF4J LOG4J-12 Binding under MIT License
 

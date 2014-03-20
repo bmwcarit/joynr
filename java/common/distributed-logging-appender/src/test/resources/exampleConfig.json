@@ -1,0 +1,37 @@
+{
+    "configuration": {  "status": "error", "name": "RoutingTest",
+        "packages": "io.joynr.logging",
+        "appenders": {
+            "Console": {
+                "name": "STDOUT",
+                "PatternLayout": {
+                    "pattern": "%m%n"
+                }
+            },
+            "JoynrDistributed":{
+                "name":"DISTLOG",
+                "domain": "DOMAIN",
+                "flushPeriodSeconds":"1",
+                "PatternLayout":{
+                   "pattern":"%m%n"
+                }
+            }         
+        },
+        "loggers": {
+            "logger": {
+                "name": "testAppenderWaitsForFlush",
+                "level": "debug",
+                "additivity": "true",
+                "appender-ref": {
+                    "ref": "DISTLOG"
+                }
+            },
+            "root": {
+                "level": "debug",
+                "appender-ref": {
+                    "ref": "STDOUT"
+                }
+            }
+        }
+    }
+}
