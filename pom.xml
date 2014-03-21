@@ -69,7 +69,6 @@
             java/messaging/bounceproxy/bounceproxy-ui/pom.xml
             java/messaging/bounceproxy/controlled-bounceproxy/pom.xml
             java/messaging/bounceproxy/bounceproxy-controller/pom.xml
-            java/messaging/bounceproxy/bounceproxy/pom.xml
             -->
 		
 			<id>deploy-artifacts-to-sonatype</id>
