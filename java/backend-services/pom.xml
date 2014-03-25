@@ -34,8 +34,6 @@
 		<module>discovery</module>
 		<module>discoverydirectoryservlet</module>
 		<module>capabilitiesdirectory</module>
-		<module>capabilitiesdirectoryservlet</module>
 		<module>channelurldirectory</module>
-		<module>channelurldirectoryservlet</module>
   </modules>
 </project>

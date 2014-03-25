@@ -62,8 +62,6 @@
             to disable deployment of WAR files containing third-party software to
             Sonatype repositories.
             
-            java/backend-services/capabilitiesdirectoryservlet/pom.xml
-            java/backend-services/channelurldirectoryservlet/pom.xml
             java/backend-services/discoverydirectoryservlet/pom.xml
             java/messaging/messagingservlet/pom.xml
             java/messaging/bounceproxy/bounceproxy-ui/pom.xml

@@ -79,9 +79,7 @@ This project has dependencies to:
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:capabilitiesdirectoryservlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:channelurldirectory under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:channelurldirectoryservlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discoverydirectoryservlet under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0

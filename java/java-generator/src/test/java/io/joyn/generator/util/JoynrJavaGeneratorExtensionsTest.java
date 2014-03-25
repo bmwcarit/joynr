@@ -61,10 +61,10 @@ public class JoynrJavaGeneratorExtensionsTest {
         testIncludesOfFixture(true, true, "JoynrJavaGeneratorExtensionsTestWithMembers.fidl");
     }
 
-	private void testIncludesOfFixture(boolean shallIncludeTopLevel, boolean shallIncludeSecondLevel, String model) {
+    private void testIncludesOfFixture(boolean shallIncludeTopLevel, boolean shallIncludeSecondLevel, String model) {
         // this test shall check for correct import statements (avoiding
         // warnings) in case of hierachical structs
-		ModelLoader modelLoader = new ModelLoader(model);
+        ModelLoader modelLoader = new ModelLoader(model);
         Iterator<URI> modelUrisIterator = modelLoader.getURIs().iterator();
         URI modelUnderTest = modelUrisIterator.next();
         assertFalse(modelUrisIterator.hasNext());
@@ -92,12 +92,16 @@ public class JoynrJavaGeneratorExtensionsTest {
                             secondLevelStructAsInclude = true;
                         }
                     }
-                    assertEquals(TOP_LEVEL_STRUCT_INCLUDE + " shall NOT be part of includes", shallIncludeTopLevel, topLevelStructAsInclude);
-                    assertEquals(SECOND_LEVEL_STRUCT_TYPE_NAME + " shall be part of includes", shallIncludeSecondLevel, secondLevelStructAsInclude);
+                    assertEquals(TOP_LEVEL_STRUCT_INCLUDE + " shall NOT be part of includes",
+                                 shallIncludeTopLevel,
+                                 topLevelStructAsInclude);
+                    assertEquals(SECOND_LEVEL_STRUCT_TYPE_NAME + " shall be part of includes",
+                                 shallIncludeSecondLevel,
+                                 secondLevelStructAsInclude);
                 }
             }
         }
         assertTrue(typeFound);
-	}
+    }
 
 }
