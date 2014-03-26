@@ -30,7 +30,7 @@
 
 	<modules>
 		<module>radio-app</module>
-		<module>androidexample</module>
+		<module>android-example</module>
 		<module>android-location-provider</module>
 	</modules>
 	<dependencies>

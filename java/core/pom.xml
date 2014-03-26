@@ -31,6 +31,6 @@
 	</parent>
 	<modules>
 		<module>libjoynr</module>
-		<module>joynrtypes</module>
+		<module>joynr-types</module>
 	</modules>
 </project>

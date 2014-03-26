@@ -56,15 +56,15 @@ This project has dependencies to:
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
-  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-standalone under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl

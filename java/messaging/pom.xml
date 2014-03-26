@@ -31,9 +31,9 @@
 	</parent>
 	<modules>
 		<module>bounceproxy</module>
-		<module>messagingcommon</module>
-		<module>messagingservlet</module>
-		<module>servletcommon</module>
+		<module>messaging-common</module>
+		<module>messaging-servlet</module>
+		<module>servlet-common</module>
 		<module>messaging-service</module>
 		<module>channel-service</module>
 		<module>bounceproxy-controller-service</module>

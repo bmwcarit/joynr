@@ -47,7 +47,7 @@
 		-->
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discoverydirectoryservlet</artifactId>
+			<artifactId>discovery-directory-servlet</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -139,7 +139,7 @@
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discoverydirectoryservlet</artifactId>
+									<artifactId>discovery-directory-servlet</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>

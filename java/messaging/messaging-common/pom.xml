@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.joynr.java.messaging</groupId>
-	<artifactId>messagingcommon</artifactId>
+	<artifactId>messaging-common</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 
@@ -34,7 +34,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>joynrtypes</artifactId>
+			<artifactId>joynr-types</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

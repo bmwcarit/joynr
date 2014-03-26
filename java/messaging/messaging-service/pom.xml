@@ -42,7 +42,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>servletcommon</artifactId>
+			<artifactId>servlet-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		

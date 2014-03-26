@@ -38,12 +38,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>capabilitiesdirectory</artifactId>
+			<artifactId>capabilities-directory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>channelurldirectory</artifactId>
+			<artifactId>channel-url-directory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

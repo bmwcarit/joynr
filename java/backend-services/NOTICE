@@ -56,21 +56,21 @@ This project has dependencies to:
   Hamcrest library under New BSD License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
-  io.joynr.java.backend-services:capabilitiesdirectory under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:channelurldirectory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:channel-url-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discoverydirectoryservlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
-  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-standalone under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messagingservlet under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:backend-services under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl

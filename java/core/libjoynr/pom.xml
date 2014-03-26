@@ -33,7 +33,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
-			<artifactId>infrastructurecommon</artifactId>
+			<artifactId>infrastructure-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

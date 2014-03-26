@@ -17,31 +17,35 @@ under the License.
 
 This project has dependencies to:
   AOP alliance under Public Domain
-  Apache Log4j under The Apache Software License, Version 2.0
-  ASM Core under Apache License, Version 2.0
+  Apache HttpClient under Apache License
+  Apache HttpCore under Apache License
+  Commons Codec under The Apache Software License, Version 2.0
+  Commons Lang under The Apache Software License, Version 2.0
+  dom4j under BSD License
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
+  Google Android Library under Apache 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
-  Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
+  io.joynr.examples:android-example under The Apache Software License, Version 2.0
+  io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
+  io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
+  io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
+  io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr:basemodel under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-JAXRS-base under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-JAXRS-JSON under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Java Servlet API under CDDL + GPLv2 with classpath exception
+  Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
-  jersey-guice under CDDL 1.1 or GPL2 w/ CPE
-  jersey-server under CDDL 1.1 or GPL2 w/ CPE
-  jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
   JUnit under Common Public License Version 1.0
-  SLF4J API Module under MIT License
-  SLF4J LOG4J-12 Binding under MIT License
+  Logging under The Apache Software License, Version 2.0
+  Reflections under WTFPL
+  RoboGuice under Apache 2
+  SLF4J API and Google Android Binding under The MIT License
 

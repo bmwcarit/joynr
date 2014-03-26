@@ -39,14 +39,14 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:channel-service under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-service under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:servletcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   Jackson under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1

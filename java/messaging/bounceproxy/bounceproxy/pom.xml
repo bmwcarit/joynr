@@ -52,7 +52,7 @@
 		
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messagingcommon</artifactId>
+			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		

@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.joynr.java.backend-services</groupId>
-	<artifactId>capabilitiesdirectory</artifactId>
+	<artifactId>capabilities-directory</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 
@@ -44,7 +44,7 @@
 
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
-			<artifactId>infrastructurecommon</artifactId>
+			<artifactId>infrastructure-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

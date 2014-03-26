@@ -30,10 +30,10 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.common:infrastructurecommon under The Apache Software License, Version 2.0
-  io.joynr.java.core:joynrtypes under The Apache Software License, Version 2.0
+  io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messagingcommon under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr:basemodel under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1

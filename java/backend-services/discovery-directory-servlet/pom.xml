@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.joynr.java.backend-services</groupId>
-	<artifactId>discoverydirectoryservlet</artifactId>
+	<artifactId>discovery-directory-servlet</artifactId>
 	<packaging>war</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -79,14 +79,14 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messagingservlet</artifactId>
+			<artifactId>messaging-servlet</artifactId>
 			<version>${project.version}</version>
 			<classifier>classes</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messagingservlet</artifactId>
+			<artifactId>messaging-servlet</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -135,7 +135,7 @@
 					<overlays>
 						<overlay>
 							<groupId>io.joynr.java.messaging</groupId>
-							<artifactId>messagingservlet</artifactId>
+							<artifactId>messaging-servlet</artifactId>
 							<type>war</type>
 						</overlay>
 					</overlays>

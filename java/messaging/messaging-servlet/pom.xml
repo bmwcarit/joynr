@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.joynr.java.messaging</groupId>
-	<artifactId>messagingservlet</artifactId>
+	<artifactId>messaging-servlet</artifactId>
 	<packaging>war</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -99,13 +99,13 @@
 
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>servletcommon</artifactId>
+			<artifactId>servlet-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
-			<artifactId>infrastructurecommon</artifactId>
+			<artifactId>infrastructure-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -122,7 +122,7 @@
 
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messagingcommon</artifactId>
+			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
