@@ -65,7 +65,6 @@
             java/backend-services/discoverydirectoryservlet/pom.xml
             java/messaging/messagingservlet/pom.xml
             java/messaging/bounceproxy/bounceproxy-ui/pom.xml
-            java/messaging/bounceproxy/controlled-bounceproxy/pom.xml
             java/messaging/bounceproxy/bounceproxy-controller/pom.xml
             -->
 		
