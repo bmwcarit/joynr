@@ -18,7 +18,7 @@
  */
 #include "joynr/MessagingSettings.h"
 #include <assert.h>
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 #include "joynr/SettingsMerger.h"
 
 namespace joynr {

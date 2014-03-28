@@ -17,7 +17,7 @@
  * #L%
  */
 #include <QtCore/QUrlQuery>
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 
 namespace joynr {
 

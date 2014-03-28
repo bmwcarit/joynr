@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
+#include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
 #include "joynr/ICommunicationManager.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"

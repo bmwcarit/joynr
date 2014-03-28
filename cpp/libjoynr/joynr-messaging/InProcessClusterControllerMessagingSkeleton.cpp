@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
+#include "joynr-messaging/InProcessClusterControllerMessagingSkeleton.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 

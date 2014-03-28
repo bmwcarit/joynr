@@ -21,7 +21,7 @@
 #include "joynr/HttpCommunicationManager.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingSettings.h"
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 #include "PrettyPrint.h"
 #include "joynr/joynrlogging.h"
 

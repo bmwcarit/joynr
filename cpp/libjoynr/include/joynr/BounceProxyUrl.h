@@ -19,7 +19,7 @@
 #ifndef BOUNCEPROXYURL_H
 #define BOUNCEPROXYURL_H
 
-#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 
 #include <QObject>
@@ -27,7 +27,7 @@
 
 namespace joynr {
 
-class JOYNRCLUSTERCONTROLLER_EXPORT BounceProxyUrl : public QObject {
+class JOYNR_EXPORT BounceProxyUrl : public QObject {
     Q_OBJECT
 public:
     explicit BounceProxyUrl(const QString &bounceProxyChannelsBaseUrl, QObject* parent = 0);

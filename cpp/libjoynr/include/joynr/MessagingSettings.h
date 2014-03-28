@@ -19,7 +19,7 @@
 #ifndef MESSAGINGSETTINGS_H
 #define MESSAGINGSETTINGS_H
 
-#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include <QObject>
 #include <QSettings>
@@ -28,7 +28,7 @@ namespace joynr {
 
 class BounceProxyUrl;
 
-class JOYNRCLUSTERCONTROLLER_EXPORT MessagingSettings : public QObject {
+class JOYNR_EXPORT MessagingSettings : public QObject {
     Q_OBJECT
 
 public:

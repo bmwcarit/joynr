@@ -34,7 +34,7 @@
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 #include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
-#include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
+#include "libjoynr/joynr-messaging/InProcessClusterControllerMessagingSkeleton.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/MessageSender.h"

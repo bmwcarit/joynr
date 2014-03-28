@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 #include "utils/QThreadSleep.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"

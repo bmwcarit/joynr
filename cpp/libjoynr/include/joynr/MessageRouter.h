@@ -20,7 +20,7 @@
 #define MESSAGEROUTER_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
@@ -54,7 +54,7 @@ class ICommunicationManager;
   *  In sending, a ThreadPool of default size 6 is used with a 500ms default retry interval.
   */
 
-class JOYNRCLUSTERCONTROLLER_EXPORT MessageRouter : public joynr::system::RoutingProvider {
+class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider {
 public:
     MessageRouter(
             MessagingSettings& messagingSettings,

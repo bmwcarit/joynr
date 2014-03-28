@@ -21,14 +21,14 @@
 #include <QSharedPointer>
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/JoynrExport.h"
 #include "common/in-process/InProcessMessagingSkeleton.h"
 
 namespace joynr {
 
 class MessageRouter;
 
-class JOYNRCLUSTERCONTROLLER_EXPORT InProcessClusterControllerMessagingSkeleton : public InProcessMessagingSkeleton {
+class JOYNR_EXPORT InProcessClusterControllerMessagingSkeleton : public InProcessMessagingSkeleton {
 public:
     InProcessClusterControllerMessagingSkeleton(QSharedPointer<MessageRouter> router);
      void transmit(JoynrMessage& message, const MessagingQos& qoS) ;

@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "utils/TestQString.h"
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 
 using namespace joynr;
 

@@ -25,7 +25,7 @@
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/types/ChannelUrlInformation.h"
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;

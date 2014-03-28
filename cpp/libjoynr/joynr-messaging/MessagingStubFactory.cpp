@@ -20,11 +20,11 @@
 #include "common/in-process/InProcessMessagingStub.h"
 #include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
 #include "libjoynr/some-ip/SomeIpEndpointAddress.h"
-#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
+#include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
 
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
+#include "joynr-messaging/InProcessClusterControllerMessagingSkeleton.h"
 #include "joynr/ICommunicationManager.h"
 
 #include "joynr/RuntimeConfig.h"

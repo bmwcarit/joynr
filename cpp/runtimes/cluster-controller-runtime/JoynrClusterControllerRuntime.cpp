@@ -41,7 +41,7 @@
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ICommunicationManager.h"
-#include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
+#include "libjoynr/joynr-messaging/InProcessClusterControllerMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
