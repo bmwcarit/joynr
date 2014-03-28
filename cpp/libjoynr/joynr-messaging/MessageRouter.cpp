@@ -42,7 +42,6 @@ MessageRouter::~MessageRouter() {
 }
 
 MessageRouter::MessageRouter(
-        MessagingSettings& messagingSettings,
         Directory<QString, joynr::system::Address>* routingTable,
         int messageSendRetryInterval,
         int maxThreads
@@ -54,7 +53,6 @@ MessageRouter::MessageRouter(
                 joynr::types::ProviderScope::LOCAL,     // provider discovery scope
                 false                                   // supports on change subscriptions
         )),
-        messagingSettings(messagingSettings),
         messagingStubFactory(NULL),
         routingTable(routingTable),
         threadPool(),
@@ -68,29 +66,10 @@ void MessageRouter::init(ICommunicationManager &comMgr)
 {
     assert(messagingStubFactory == NULL);
     messagingStubFactory = new MessagingStubFactory(comMgr);
-    addProvisionedCapabilitiesDirectoryAddress();
-    addProvisionedChannelUrlDirectoryAddress();
 }
 
-void MessageRouter::addProvisionedCapabilitiesDirectoryAddress()
-{
-    QSharedPointer<joynr::system::Address> endpointAddress(
-                new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
-    );
-    routingTable->add(
-                messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                endpointAddress
-    );
-}
-
-void MessageRouter::addProvisionedChannelUrlDirectoryAddress() {
-    QSharedPointer<joynr::system::Address> endpointAddress(
-                new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
-    );
-    routingTable->add(
-                messagingSettings.getChannelUrlDirectoryParticipantId(),
-                endpointAddress
-    );
+void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address) {
+    routingTable->add(participantId, address);
 }
 
 /**

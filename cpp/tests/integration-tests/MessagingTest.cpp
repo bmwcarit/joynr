@@ -81,8 +81,18 @@ public:
         messageFactory(),
         mockCommunicationManager(),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingSettings, messagingEndpointDirectory))
+        messageRouter(new MessageRouter(messagingEndpointDirectory))
     {
+        // provision global capabilities directory
+        QSharedPointer<joynr::system::Address> endpointAddressCapa(
+            new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        );
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), endpointAddressCapa);
+        // provision channel url directory
+        QSharedPointer<joynr::system::Address> endpointAddressChannel(
+            new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        );
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
         messageRouter->init(mockCommunicationManager);
 
         qos.setTtl(10000);

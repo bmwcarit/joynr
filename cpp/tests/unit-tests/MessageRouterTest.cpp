@@ -22,6 +22,7 @@
 #include "gmock/gmock.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/JoynrMessagingEndpointAddress.h"
 
 
 using namespace joynr;
@@ -34,10 +35,21 @@ public:
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingSettings, messagingEndpointDirectory)),
+        messageRouter(new MessageRouter(messagingEndpointDirectory)),
         joynrMessage(),
         qos()
-    {}
+    {
+        // provision global capabilities directory
+        QSharedPointer<joynr::system::Address> endpointAddressCapa(
+            new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        );
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), endpointAddressCapa);
+        // provision channel url directory
+        QSharedPointer<joynr::system::Address> endpointAddressChannel(
+            new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        );
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
+    }
 
     ~MessageRouterTest() {
         QFile::remove(settingsFileName);

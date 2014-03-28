@@ -57,7 +57,6 @@ class ICommunicationManager;
 class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider {
 public:
     MessageRouter(
-            MessagingSettings& messagingSettings,
             Directory<QString, joynr::system::Address>* routingTable,
             int messageSendRetryInterval = 500,
             int maxThreads = 6
@@ -118,12 +117,11 @@ public:
             QString participantId
     );
 
+    void addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address);
+
 private:
-    void addProvisionedCapabilitiesDirectoryAddress();
-    void addProvisionedChannelUrlDirectoryAddress();
 
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
-    MessagingSettings& messagingSettings;
     IMessagingStubFactory* messagingStubFactory;
     Directory<QString, joynr::system::Address>* routingTable;
     QThreadPool threadPool;
