@@ -63,7 +63,6 @@
             Sonatype repositories.
             
             java/messaging/bounceproxy/bounceproxy-ui/pom.xml
-            java/messaging/bounceproxy/bounceproxy-controller/pom.xml
             -->
 		
 			<id>deploy-artifacts-to-sonatype</id>

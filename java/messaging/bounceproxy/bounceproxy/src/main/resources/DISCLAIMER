@@ -32,7 +32,7 @@ The software listed below included in some products is licensed under the "Commo
 - com.sun.jersey:jersey-server:1.17
 - com.sun.jersey:jersey-servlet:1.17
 
-Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v3.0". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document below. This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 3.0 supersedes other licenses. The complete corresponding source code is included in the files listed below.
+Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v3.0". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-3.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 3.0 supersedes other licenses. The complete corresponding source code is included in the files listed below.
 - com.google.code.findbugs:annotations:2.0.1
   Sources: WEB-INF/lib/annotations-2.0.1.jar
   
