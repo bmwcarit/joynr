@@ -32,50 +32,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-    <profiles>
-        <profile>
-            <!-- 
-            This is an extension of the deploy-artifacts-to-sonatype profile
-            in the root POM.
-            -->
-            <id>deploy-artifacts-to-sonatype</id>
-            <activation>
-                <!-- 
-                maven-jgitflow-plugin will set the performRelease property during
-                release and thus automatically activate this profile during release.
-                NOTE: You need to install GPG [1] and publish your public key to a key 
-                server.
-                The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
-                [2].
-                Follow instructions [3] to verify dependencies.
-                [1] https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With Maven
-                [2] http://maven.apache.org/plugins/maven-gpg-plugin/usage.html
-                [3] http://branchandbound.net/blog/security/2012/08/verify-dependencies-using-pgp/ 
-                -->
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <!--
-                    Skipping the maven-deploy-plugin during deployment to Sonatype
-                    repositories. This will prevent deployment of this war inlcuding
-                    third-party software to the Sonatype repositories.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
@@ -114,6 +70,20 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- 
+			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
+			It is pulled in as transitive dependency:
+			io.joynr.java.messaging:messaging-servlet:jar:classes:0.6.0-SNAPSHOT:compile
+			+- org.reflections:reflections:jar:0.9.8:compile
+			|  +- javassist:javassist:jar:3.12.1.GA:compile
+			Please double check the correct version if these dependencies change.
+		-->
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.12.1.GA</version>
+			<classifier>sources</classifier>
+		</dependency>
 	</dependencies>
 
 
@@ -125,7 +95,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<!-- <webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml> -->
-					<warName>discovery</warName>
+					<!-- warName>discovery</warName -->
 					<warSourceDirectory>src/main/resources</warSourceDirectory>
 					<configuration>
 						<!-- no default value -->
