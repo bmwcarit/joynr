@@ -114,6 +114,8 @@ public:
 
     void setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress);
 
+    void setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress);
+
 private:
 
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
@@ -123,6 +125,7 @@ private:
     ThreadPoolDelayedScheduler* delayedScheduler;
     joynr::system::RoutingProxy* parentRouter;
     QSharedPointer<joynr::system::Address> parentAddress;
+    QSharedPointer<joynr::system::Address> incomingAddress;
     static joynr_logging::Logger* logger;
 };
 

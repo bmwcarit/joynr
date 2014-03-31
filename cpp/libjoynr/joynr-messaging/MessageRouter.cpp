@@ -62,7 +62,8 @@ MessageRouter::MessageRouter(
         threadPool(),
         delayedScheduler(),
         parentRouter(NULL),
-        parentAddress(NULL)
+        parentAddress(NULL),
+        incomingAddress()
 {
     threadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
@@ -75,6 +76,10 @@ void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<
 void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress) {
     this->parentRouter = parentRouter;
     this->parentAddress = parentAddress;
+}
+
+void MessageRouter::setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress) {
+    this->incomingAddress = incomingAddress;
 }
 
 /**
