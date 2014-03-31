@@ -133,6 +133,8 @@ void MessageRouter::addNextHop(
     );
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    this->addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -147,6 +149,8 @@ void MessageRouter::addNextHop(
     );
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    this->addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -161,6 +165,8 @@ void MessageRouter::addNextHop(
     );
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    this->addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -175,6 +181,26 @@ void MessageRouter::addNextHop(
     );
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    this->addNextHopToParent(joynrInternalStatus, participantId);
+}
+
+void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId) {
+    // add to parent router
+    if(parentRouter != NULL && !incomingAddress.isNull()) {
+        if(incomingAddress->inherits("joynr::system::ChannelAddress")) {
+            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data()));
+        }
+        if(incomingAddress->inherits("joynr::system::CommonApiDbusAddress")) {
+            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::CommonApiDbusAddress*>(incomingAddress.data()));
+        }
+        if(incomingAddress->inherits("joynr::system::BrowserAddress")) {
+            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::BrowserAddress*>(incomingAddress.data()));
+        }
+        if(incomingAddress->inherits("joynr::system::WebSocketAddress")) {
+            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::WebSocketAddress*>(incomingAddress.data()));
+        }
+    }
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -185,6 +211,11 @@ void MessageRouter::removeNextHop(
     // TODO check if routing table is thread-safe
     routingTable->remove(participantId);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    // remove from parent router
+    if(parentRouter != NULL && !incomingAddress.isNull()) {
+        parentRouter->removeNextHop(joynrInternalStatus, participantId);
+    }
 }
 
 // inherited from joynr::system::RoutingProvider

@@ -127,6 +127,8 @@ private:
     QSharedPointer<joynr::system::Address> parentAddress;
     QSharedPointer<joynr::system::Address> incomingAddress;
     static joynr_logging::Logger* logger;
+
+    void addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId);
 };
 
 /**
