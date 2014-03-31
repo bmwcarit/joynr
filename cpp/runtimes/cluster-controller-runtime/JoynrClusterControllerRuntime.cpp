@@ -136,8 +136,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     inProcessDispatcher = new InProcessDispatcher();
     /* CC */
+    // create the messaging stub factory
+    MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
     // init message router
-    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory));
+    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, messagingStubFactory));
     // provision global capabilities directory
     QSharedPointer<joynr::system::Address> endpointAddressCapa(
                 new JoynrMessagingEndpointAddress(messagingSettings->getCapabilitiesDirectoryChannelId())
@@ -167,16 +169,15 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
       * ClusterController side
       *
       */
-    QString channelId;
-
-    if (communicationManager==NULL){
+    if(communicationManager.isNull()) {
         LOG_INFO(logger, "The communication manager supplied is NULL, creating the default HttpCommunicationManager");
-        communicationManager = new HttpCommunicationManager(*messagingSettings);
+        communicationManager = QSharedPointer<ICommunicationManager>(new HttpCommunicationManager(*messagingSettings));
     }
-    channelId = communicationManager->getReceiveChannelId();
+
+    QString channelId = communicationManager->getReceiveChannelId();
     longpollMessageSerializer = new LongPollMessageSerializer(messageRouter, messagingEndpointDirectory);
     communicationManager->setMessageDispatcher(longpollMessageSerializer); // LongpollingMessageReceiver will call the messageRouter when data received
-    messageRouter->init(*communicationManager);
+    messagingStubFactory->setCommunicationManager(communicationManager);
 
     //joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     //ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);
@@ -274,7 +275,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     channelUrlDirectory = QSharedPointer<ILocalChannelUrlDirectory>(
         new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy)
         );
-    ((HttpCommunicationManager*)communicationManager)->init(channelUrlDirectory);
+    communicationManager.dynamicCast<HttpCommunicationManager>()->init(channelUrlDirectory);
 
 }
 
@@ -318,7 +319,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
 
     delete messagingEndpointDirectory;
     messagingEndpointDirectory = NULL;
-    delete communicationManager;
 //    //~HttpCommunicationmanager will delete longpollmessageserializer, but MockCommunicationMgr will not delete it.
 //    //thus check if it has been set to NULL, and if not, try to delete it again.
 //    if (longpollMessageSerializer) {

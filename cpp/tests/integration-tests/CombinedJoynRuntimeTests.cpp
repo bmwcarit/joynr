@@ -78,6 +78,7 @@ public:
     ~CombinedRunTimeTest(){
         runtime->deleteChannel();
         runtime->stopMessaging();
+        delete mockCommunicationManager;
         delete runtime;
     }
 private:

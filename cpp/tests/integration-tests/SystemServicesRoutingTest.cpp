@@ -77,6 +77,7 @@ public:
         runtime->stopMessaging();
         delete runtime;
         delete settings;
+        delete mockCommunicationManager;
         QFile::remove(settingsFilename);
     }
 

@@ -61,8 +61,9 @@ public:
     QSharedPointer<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
 
     JoynrMessageFactory messageFactory;
-    MockCommunicationManager mockCommunicationManager;
+    QSharedPointer<MockCommunicationManager> mockCommunicationManager;
     MessagingEndpointDirectory* messagingEndpointDirectory;
+    MessagingStubFactory* messagingStubFactory;
     QSharedPointer<MessageRouter> messageRouter;
     MessagingTest() :
         settingsFileName("MessagingTest.settings"),
@@ -79,9 +80,10 @@ public:
         inProcessMessagingSkeleton(new MockInProcessMessagingSkeleton()),
 
         messageFactory(),
-        mockCommunicationManager(),
+        mockCommunicationManager(new MockCommunicationManager()),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingEndpointDirectory))
+        messagingStubFactory(new MessagingStubFactory()),
+        messageRouter(new MessageRouter(messagingEndpointDirectory, messagingStubFactory))
     {
         // provision global capabilities directory
         QSharedPointer<joynr::system::Address> endpointAddressCapa(
@@ -93,7 +95,7 @@ public:
             new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
-        messageRouter->init(mockCommunicationManager);
+        messagingStubFactory->setCommunicationManager(mockCommunicationManager);
 
         qos.setTtl(10000);
     }
@@ -125,10 +127,10 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
             .Times(0);
 
     // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(_,_,_))
+    EXPECT_CALL(*mockCommunicationManager, sendMessage(_,_,_))
             .Times(1);
 
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
             .WillOnce(ReturnRefOfCopy(senderChannelId));
 
     EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
@@ -180,10 +182,10 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
             .Times(1);
 
     // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(_,_,_))
+    EXPECT_CALL(*mockCommunicationManager, sendMessage(_,_,_))
             .Times(0);
 
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
             .Times(0);
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
 //            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
@@ -218,7 +220,7 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
             .Times(0);
 
     // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(_,_,_))
+    EXPECT_CALL(*mockCommunicationManager, sendMessage(_,_,_))
             .Times(0);
 
 // NOTE: LipciMessaging doesn't exists (2012-05-08)
@@ -244,9 +246,9 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
             .Times(0);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
+    EXPECT_CALL(*mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
             .Times(1);
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
             .WillOnce(ReturnRefOfCopy(senderChannelId));
 
 
@@ -283,9 +285,9 @@ TEST_F(MessagingTest, routeMultipleMessages)
             .Times(2);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
+    EXPECT_CALL(*mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
             .Times(1);
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
             .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 

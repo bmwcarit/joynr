@@ -43,6 +43,7 @@ MessageRouter::~MessageRouter() {
 
 MessageRouter::MessageRouter(
         Directory<QString, joynr::system::Address>* routingTable,
+        IMessagingStubFactory* messagingStubFactory,
         int messageSendRetryInterval,
         int maxThreads
 ) :
@@ -53,19 +54,13 @@ MessageRouter::MessageRouter(
                 joynr::types::ProviderScope::LOCAL,     // provider discovery scope
                 false                                   // supports on change subscriptions
         )),
-        messagingStubFactory(NULL),
+        messagingStubFactory(messagingStubFactory),
         routingTable(routingTable),
         threadPool(),
         delayedScheduler()
 {
     threadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
-}
-
-void MessageRouter::init(ICommunicationManager &comMgr)
-{
-    assert(messagingStubFactory == NULL);
-    messagingStubFactory = new MessagingStubFactory(comMgr);
 }
 
 void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address) {

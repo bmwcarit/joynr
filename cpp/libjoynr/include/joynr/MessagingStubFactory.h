@@ -46,7 +46,7 @@ public:
     virtual ~MessagingStubFactory();
     //MessagingStubFactory is created without the necessary skeletons.
     //Those Skeletons must be registered before the MessagingStubFactory is used.
-    MessagingStubFactory(ICommunicationManager& comMgr);
+    MessagingStubFactory();
 
     //void registerInProcessMessagingSkeleton(QSharedPointer<InProcessMessagingSkeleton> messagingSkeleton);
 
@@ -55,6 +55,7 @@ public:
             QSharedPointer<joynr::system::Address> destinationAddress);
     void remove(QString destParticipantId);
     bool contains(QString destParticipantId);
+    void setCommunicationManager(QSharedPointer<ICommunicationManager> comMgr);
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
     bool isInProcessMessaging(QSharedPointer<joynr::system::Address> destinationAddress);
@@ -63,7 +64,7 @@ private:
     bool isLocal(QString destParticipantId);
     bool isDbus(QSharedPointer<joynr::system::Address> destinationAddress);
     Directory<QString, IMessaging> partId2MessagingStubDirectory;
-    ICommunicationManager& communicationManager;
+    QSharedPointer<ICommunicationManager> communicationManager;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     Directory<QString, IMessaging> dbusMessagingStubDirectory;

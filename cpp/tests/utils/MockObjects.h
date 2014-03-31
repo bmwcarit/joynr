@@ -383,6 +383,7 @@ public:
     MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(QString destParticipantId, QSharedPointer< joynr::system::Address> destEndpointAddress));
     MOCK_METHOD1(remove, void(QString destParticipantId));
     MOCK_METHOD1(contains, bool(QString destPartId));
+    MOCK_METHOD1(setCommunicationManager, void(QSharedPointer<joynr::ICommunicationManager> comMgr));
 };
 
 

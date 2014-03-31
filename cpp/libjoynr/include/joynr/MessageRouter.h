@@ -58,19 +58,11 @@ class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider {
 public:
     MessageRouter(
             Directory<QString, joynr::system::Address>* routingTable,
+            IMessagingStubFactory* messagingStubFactory,
             int messageSendRetryInterval = 500,
             int maxThreads = 6
     );
     virtual ~MessageRouter();
-
-
-    /**
-     * @brief The init method must be called before the first message is routed.
-     * The CommmunicationManager is needed by the MessagingStubFactory to create
-     * MessagingStubs in order to route messages.
-     * @param comMgr the CommunicationManager to forward to the MessagingStubFactory.
-     */
-    virtual void init(ICommunicationManager& comMgr);
 
     /**
      * @brief Forwards the message to its endpoint (determined by inspecting the message

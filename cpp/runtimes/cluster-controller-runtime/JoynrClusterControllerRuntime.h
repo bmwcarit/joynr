@@ -126,7 +126,7 @@ protected:
     QSharedPointer<InProcessMessagingSkeleton> ccMessagingSkeleton;
     QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    ICommunicationManager* communicationManager;
+    QSharedPointer<ICommunicationManager> communicationManager;
     LongPollMessageSerializer* longpollMessageSerializer;
     QList<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;

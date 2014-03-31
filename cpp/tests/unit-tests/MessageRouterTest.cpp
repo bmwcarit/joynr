@@ -23,6 +23,7 @@
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/MessagingStubFactory.h"
 
 
 using namespace joynr;
@@ -35,7 +36,7 @@ public:
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingEndpointDirectory)),
+        messageRouter(new MessageRouter(messagingEndpointDirectory, new MessagingStubFactory())),
         joynrMessage(),
         qos()
     {

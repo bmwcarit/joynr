@@ -39,9 +39,9 @@ namespace joynr {
 
 MessagingStubFactory::~MessagingStubFactory() {}
 
-MessagingStubFactory::MessagingStubFactory(ICommunicationManager &comMgr) :
+MessagingStubFactory::MessagingStubFactory() :
     partId2MessagingStubDirectory(QString("MessagingStubFactory-MessagingStubDirectory")),
-    communicationManager(comMgr)
+    communicationManager()
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     ,dbusMessagingStubDirectory("dbusMessagingStubDirectory")
  #endif // USE_DBUS_COMMONAPI_COMMUNICATION
@@ -58,10 +58,12 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
     QSharedPointer<IMessaging> stub;
     if(isLocal(destParticipantId)) {}
 
-    if(isJoynr(destinationAddress)) { // make a sendstub that uses the communicationManager so send it!
+    if(isJoynr(destinationAddress)) {
+        assert(!communicationManager.isNull());
+        // make a sendstub that uses the communicationManager so send it!
         QSharedPointer<JoynrMessagingEndpointAddress> joynrAddress = destinationAddress
                 .dynamicCast<JoynrMessagingEndpointAddress>();
-        stub = QSharedPointer<IMessaging>(new JoynrMessagingStub(communicationManager, joynrAddress->getChannelId()));
+        stub = QSharedPointer<IMessaging>(new JoynrMessagingStub(*communicationManager, joynrAddress->getChannelId()));
         assert (!stub.isNull());
     }
     if(isInProcessMessaging(destinationAddress)) {
@@ -94,6 +96,10 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
     // QSharedPointer <IMessaging> messagingStub(stub);
     partId2MessagingStubDirectory.add(destParticipantId, stub);
     return stub;
+}
+
+void MessagingStubFactory::setCommunicationManager(QSharedPointer<ICommunicationManager> comMgr){
+    communicationManager = comMgr;
 }
 
 void MessagingStubFactory::remove(QString destParticipantId) {
