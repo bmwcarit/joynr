@@ -92,7 +92,7 @@ public class DispatcherMessageQueues {
     }
 
     public ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> getAndRemoveRequestMessages(String participantId) {
-        removeExpiredMessagesFromQueue(listenerMessageQueue.get(participantId));
+        removeExpiredMessagesFromQueue(responderMessageQueue.get(participantId));
         return responderMessageQueue.remove(participantId);
     }
 
