@@ -56,113 +56,104 @@ import org.slf4j.LoggerFactory;
  */
 public class BounceProxySystemPropertyLoader {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(BounceProxySystemPropertyLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(BounceProxySystemPropertyLoader.class);
 
-	private static final String CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES = "controlledBounceProxySystem.properties";
-	private static Properties systemPropertiesFromFile = null;
+    private static final String CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES = "controlledBounceProxySystem.properties";
+    private static Properties systemPropertiesFromFile = null;
 
-	/**
-	 * Loads all properties for the bounce proxy that have to be set as system
-	 * properties (see
-	 * {@link BounceProxyPropertyKeys#bounceProxySystemPropertyKeys}) or in the
-	 * file {@value #CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES}. System
-	 * properties have precedence over the file.
-	 * 
-	 * @return
-	 * @throws JoynrException
-	 *             if not all of the properties were set so that bounce proxy
-	 *             won't be able to start up correctly
-	 */
-	public static Properties loadProperties() {
+    /**
+     * Loads all properties for the bounce proxy that have to be set as system
+     * properties (see
+     * {@link BounceProxyPropertyKeys#bounceProxySystemPropertyKeys}) or in the
+     * file {@value #CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES}. System
+     * properties have precedence over the file.
+     * 
+     * @return
+     * @throws JoynrException
+     *             if not all of the properties were set so that bounce proxy
+     *             won't be able to start up correctly
+     */
+    public static Properties loadProperties() {
 
-		Properties properties = new Properties();
+        Properties properties = new Properties();
 
-		for (String key : BounceProxyPropertyKeys
-				.getPropertyKeysForSystemProperties()) {
+        for (String key : BounceProxyPropertyKeys.getPropertyKeysForSystemProperties()) {
 
-			String value = System.getProperty(key);
+            String value = System.getProperty(key);
 
-			if (value == null) {
+            if (value == null) {
 
-				value = loadPropertyFromFile(key);
+                value = loadPropertyFromFile(key);
 
-				if (value == null) {
-					throw new JoynrException("No value for system property '"
-							+ key + "' set. Unable to start Bounce Proxy");
-				}
-			}
+                if (value == null) {
+                    throw new JoynrException("No value for system property '" + key
+                            + "' set. Unable to start Bounce Proxy");
+                }
+            }
 
-			properties.put(key, value);
-		}
+            properties.put(key, value);
+        }
 
-		return properties;
-	}
+        return properties;
+    }
 
-	@CheckForNull
-	private static String loadPropertyFromFile(String key) {
+    @CheckForNull
+    private static String loadPropertyFromFile(String key) {
 
-		if (systemPropertiesFromFile == null) {
-			logger.info("Loading system properties file "
-					+ CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
-			systemPropertiesFromFile = PropertyLoader
-					.loadProperties(CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
-		}
+        if (systemPropertiesFromFile == null) {
+            logger.info("Loading system properties file " + CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
+            systemPropertiesFromFile = PropertyLoader.loadProperties(CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
+        }
 
-		if (systemPropertiesFromFile != null) {
-			String value = systemPropertiesFromFile.getProperty(key);
+        if (systemPropertiesFromFile != null) {
+            String value = systemPropertiesFromFile.getProperty(key);
 
-			logger.info("Trying to load property '" + key
-					+ "' from system properties file");
+            logger.info("Trying to load property '" + key + "' from system properties file");
 
-			if (value != null) {
-				return replaceVariableBySystemProperty(value);
-			}
-		}
+            if (value != null) {
+                return replaceVariableBySystemProperty(value);
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	/**
-	 * Replaces a variable defined by <code>${variable}</code> by a system
-	 * property with the key <code>variable</code>.
-	 * 
-	 * @param value
-	 *            a string with any number of variables defined
-	 * @return a string in which each occurrence of <code>${variable}</code> is
-	 *         replaced by {@link System#getProperty(String)} with
-	 *         <code>variable</code> as property key.
-	 * @throws JoynrException
-	 *             if the property key for the variable does not exist
-	 */
-	@CheckForNull
-	static String replaceVariableBySystemProperty(String value) {
+    /**
+     * Replaces a variable defined by <code>${variable}</code> by a system
+     * property with the key <code>variable</code>.
+     * 
+     * @param value
+     *            a string with any number of variables defined
+     * @return a string in which each occurrence of <code>${variable}</code> is
+     *         replaced by {@link System#getProperty(String)} with
+     *         <code>variable</code> as property key.
+     * @throws JoynrException
+     *             if the property key for the variable does not exist
+     */
+    @CheckForNull
+    static String replaceVariableBySystemProperty(String value) {
 
-		if (value == null)
-			return null;
+        if (value == null)
+            return null;
 
-		int startVariableIndex = value.indexOf("${");
+        int startVariableIndex = value.indexOf("${");
 
-		while (startVariableIndex >= 0) {
-			int endVariableIndex = value.indexOf("}", startVariableIndex);
+        while (startVariableIndex >= 0) {
+            int endVariableIndex = value.indexOf("}", startVariableIndex);
 
-			String propertyName = value.substring(startVariableIndex + 2,
-					endVariableIndex);
+            String propertyName = value.substring(startVariableIndex + 2, endVariableIndex);
 
-			String systemProperty = System.getProperty(propertyName);
+            String systemProperty = System.getProperty(propertyName);
 
-			if (systemProperty == null) {
-				throw new JoynrException(
-						"No value for system property '"
-								+ propertyName
-								+ "' set as defined in property file. Unable to start Bounce Proxy");
-			} else {
-				value = value.substring(0, startVariableIndex) + systemProperty
-						+ value.substring(endVariableIndex + 1);
-			}
-			startVariableIndex = value.indexOf("${");
-		}
+            if (systemProperty == null) {
+                throw new JoynrException("No value for system property '" + propertyName
+                        + "' set as defined in property file. Unable to start Bounce Proxy");
+            } else {
+                value = value.substring(0, startVariableIndex) + systemProperty + value.substring(endVariableIndex + 1);
+            }
+            startVariableIndex = value.indexOf("${");
+        }
 
-		return value;
-	}
+        return value;
+    }
 }
