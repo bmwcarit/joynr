@@ -100,8 +100,8 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
      */
     @CheckForNull
     @Override
-    public Object sendSyncMethod(Method method, Object[] args) throws IllegalArgumentException, InterruptedException,
-                                                              Throwable {
+    public Object executeSyncMethod(Method method, Object[] args) throws IllegalArgumentException,
+                                                                 InterruptedException, Throwable {
 
         try {
             if (waitForConnectorFinished()) {
