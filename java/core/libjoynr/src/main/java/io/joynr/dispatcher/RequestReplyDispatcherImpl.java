@@ -37,11 +37,6 @@ import io.joynr.pubsub.subscription.SubscriptionManager;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import joynr.JoynrMessage;
 import joynr.Reply;
@@ -53,10 +48,11 @@ import joynr.SubscriptionStop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -67,12 +63,8 @@ import com.google.inject.name.Named;
 @Singleton
 public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
-    // TODO tune threadpool size for RequestReplyDispatcherImpl
-    private static final int THREADPOOLSIZE = 10;
-
     private Map<String, PayloadListener<?>> oneWayRecipients = Maps.newHashMap();
     private Map<String, RequestCaller> requestCallerDirectory = Maps.newHashMap();
-    private final ScheduledExecutorService scheduler;
 
     private DispatcherMessageQueues messageQueues = new DispatcherMessageQueues();
     private ReplyCallerDirectory replyCallerDirectory;
@@ -118,9 +110,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.publicationManager = publicationManager;
         this.subscriptionManager = subscriptionManager;
         this.jsonRequestInterpreter = jsonRequestInterpreter;
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("RequestReplyDispatcher-%d")
-                                                                     .build();
-        scheduler = Executors.newScheduledThreadPool(THREADPOOLSIZE, namedThreadFactory);
 
         // TODO would be better not to have this in the constructor to prevent
         // any race condition issues with messages being
@@ -292,14 +281,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private void handlePublicationReceived(final JoynrMessage message) {
         logger.info("Publication received");
-        scheduler.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                deliverPublication(message);
-            }
-        });
-
+        deliverPublication(message);
     }
 
     @SuppressWarnings("unchecked")
@@ -332,14 +314,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
             SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(), SubscriptionStop.class);
             final String subscriptionId = subscriptionStop.getSubscriptionId();
-
-            scheduler.execute(new Runnable() {
-
-                @Override
-                public void run() {
-                    publicationManager.stopPublication(subscriptionId);
-                }
-            });
+            publicationManager.stopPublication(subscriptionId);
         } catch (Exception e) {
             logger.error("Error delivering subscription stop: {}", e.getMessage());
         }
@@ -348,42 +323,36 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private void handleSubscriptionRequestReceived(final JoynrMessage message) {
 
-        final String toParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
-        final String fromParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
+        final String toParticipantId = message.getTo();
+        final String fromParticipantId = message.getFrom();
         if (requestCallerDirectory.containsKey(toParticipantId)) {
+            RequestCaller requestCaller = null;
+            requestCaller = requestCallerDirectory.get(toParticipantId);
+            SubscriptionRequest subscriptionRequest;
             try {
-                scheduler.execute(new Runnable() {
+                subscriptionRequest = objectMapper.readValue(message.getPayload(), SubscriptionRequest.class);
+                String replyChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+                messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyChannelId));
 
-                    @Override
-                    public void run() {
-                        try {
-                            RequestCaller requestCaller = null;
-                            requestCaller = requestCallerDirectory.get(toParticipantId);
-                            SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
-                                                                                             SubscriptionRequest.class);
-                            String replyChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-                            messagingEndpointDirectory.put(fromParticipantId,
-                                                           new JoynrMessagingEndpointAddress(replyChannelId));
-
-                            publicationManager.addSubscriptionRequest(fromParticipantId,
-                                                                      toParticipantId,
-                                                                      subscriptionRequest,
-                                                                      requestCaller,
-                                                                      messageSender);
-                        } catch (Throwable e) {
-                            logger.error("Error processing message: \r\n {}", message, e);
-
-                        }
-                    }
-                });
-            } catch (Throwable e) {
-                logger.error("Error processing message: \r\n {}", message.toLogMessage(), e);
-
+                publicationManager.addSubscriptionRequest(fromParticipantId,
+                                                          toParticipantId,
+                                                          subscriptionRequest,
+                                                          requestCaller,
+                                                          messageSender);
+            } catch (JsonParseException e) {
+                logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
+                             new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
+            } catch (JsonMappingException e) {
+                logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
+                             new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
+            } catch (IOException e) {
+                logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
+                             new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
             }
 
         } else {
-            // TODO handle unkown participantID
-            logger.debug("Received subscriptionRequest for unkown participant. Discarding request.");
+            // TODO handle unknown participantID
+            logger.debug("Received subscriptionRequest for unknown participant. Discarding request.");
         }
 
     }
@@ -406,21 +375,17 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     @SuppressWarnings("unchecked")
     private void deliverMessageToListener(final PayloadListener listener, final JoynrMessage message) {
         try {
-            scheduler.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Object extractPayload = objectMapper.readValue(message.getPayload(), Object.class);
-                        listener.receive(extractPayload);
-                    } catch (Exception e) {
-                        logger.error("error: {} unable to extract payload from message {}",
-                                     e.getMessage(),
-                                     message.getId());
-                    }
-                }
-            });
-        } catch (RejectedExecutionException e) {
-            logger.error("Exception while scheduling listener: ", e);
+            Object extractPayload = objectMapper.readValue(message.getPayload(), Object.class);
+            listener.receive(extractPayload);
+        } catch (JsonParseException e) {
+            logger.error("Error parsing oneway payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding oneway.",
+                         new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
+        } catch (JsonMappingException e) {
+            logger.error("Error parsing oneway payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding oneway.",
+                         new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
+        } catch (IOException e) {
+            logger.error("Error parsing oneway payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding oneway.",
+                         new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
         }
     }
 
@@ -446,95 +411,76 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private void executeRequestAndRespond(final RequestCaller requestCaller, final JoynrMessage message) {
         try {
-            // TODO add timeout to the runnable to make sure a requestCaller can not block the thread for ever
-            scheduler.execute(new Runnable() {
+            // TODO shall be moved to request manager and not handled by dispatcher
+            Request request = objectMapper.readValue(message.getPayload(), Request.class);
+            logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
-                @Override
-                public void run() {
-                    try {
-                        // TODO shall be moved to request manager and not handled by dispatcher
-                        Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                        logger.debug("executing request from message: {} request: {}",
-                                     message.getId(),
-                                     request.getRequestReplyId());
-
-                        Reply reply = jsonRequestInterpreter.execute(requestCaller, request);
-                        // String replyMcid =
-                        // message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_TO);
-                        String originalReceiverParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
-                        String originalSenderParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
-                        long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
-                        if (expiryDate > System.currentTimeMillis()) {
-                            try {
-                                messageSender.sendReply(originalReceiverParticipantId,
-                                                        originalSenderParticipantId,
-                                                        reply,
-                                                        ExpiryDate.fromAbsolute(expiryDate));
-                            } catch (JoynrSendBufferFullException e) {
-                                // TODO React on exception thrown by sendReply
-                                logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);
-                            } catch (JoynrMessageNotSentException e) {
-                                // TODO React on JoynrMessageNotSentException
-                                // thrown by sendReply
-                                logger.error("Responder could not reply due to a JoynrMessageNotSentException: ", e);
-                            } catch (JoynrCommunicationException e) {
-                                // TODO React on JoynCommunicationException
-                                // thrown by sendReply
-                                logger.error("Responder could not reply due to a JoynCommunicationException: ", e);
-                            }
-
-                        } else {
-                            logger.error("Expiry Date exceeded. Reply discarded: messageId: {} requestReplyId: {}",
-                                         message.getId(),
-                                         reply.getRequestReplyId());
-                        }
-                        // } catch (IOException e) {
-                        // logger.error("Error processing message: \r\n {}",
-                        // message, e);
-                        // } catch (ClassNotFoundException e) {
-                        // e.printStackTrace();
-                        // TODO: how can the exception be passed on, outside of
-                        // the runnable, and to whom?
-                    } catch (Throwable e) {
-                        logger.error("Error processing message: \r\n {}", message, e);
-
-                    }
+            Reply reply = jsonRequestInterpreter.execute(requestCaller, request);
+            // String replyMcid =
+            // message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_TO);
+            String originalReceiverParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
+            String originalSenderParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
+            long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
+            if (expiryDate > System.currentTimeMillis()) {
+                try {
+                    messageSender.sendReply(originalReceiverParticipantId,
+                                            originalSenderParticipantId,
+                                            reply,
+                                            ExpiryDate.fromAbsolute(expiryDate));
+                } catch (JoynrSendBufferFullException e) {
+                    // TODO React on exception thrown by sendReply
+                    logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);
+                } catch (JoynrMessageNotSentException e) {
+                    // TODO React on JoynrMessageNotSentException
+                    // thrown by sendReply
+                    logger.error("Responder could not reply due to a JoynrMessageNotSentException: ", e);
+                } catch (JoynrCommunicationException e) {
+                    // TODO React on JoynCommunicationException
+                    // thrown by sendReply
+                    logger.error("Responder could not reply due to a JoynCommunicationException: ", e);
                 }
-            });
-        } catch (RejectedExecutionException e) {
-            logger.error("Exception while scheduling responder: ", e);
+
+            } else {
+                logger.error("Expiry Date exceeded. Reply discarded: messageId: {} requestReplyId: {}",
+                             message.getId(),
+                             reply.getRequestReplyId());
+            }
+            // } catch (IOException e) {
+            // logger.error("Error processing message: \r\n {}",
+            // message, e);
+            // } catch (ClassNotFoundException e) {
+            // e.printStackTrace();
+            // TODO: how can the exception be passed on, outside of
+            // the runnable, and to whom?
+        } catch (Throwable e) {
+            logger.error("Error processing message: \r\n {}", message, e);
+
         }
+
     }
 
     private void handleReplyMessageReceived(final JoynrMessage message) {
         // TODO shall be moved to (not yet existing) ReplyHandler
+
+        Reply reply;
         try {
-            final Reply reply = objectMapper.readValue(message.getPayload(), Reply.class);
-            final ReplyCaller callBack = replyCallerDirectory.getAndRemoveReplyCaller(reply.getRequestReplyId());
-            if (callBack == null) {
-                logger.warn("No reply caller found for id: " + reply.getRequestReplyId());
-                return;
-            }
-
-            final String serializedPayload = message.getPayload();
-            logger.debug("Parsed response from json with payload :" + serializedPayload);
-            scheduler.execute(new Runnable() {
-
-                public void run() {
-                    try {
-                        callBack.messageCallBack(reply);
-                    } catch (Exception e) {
-                        logger.error("error extracting reply payload from messageId: {} requestReplyId: {}",
-                                     message.getId(),
-                                     reply.getRequestReplyId());
-                    }
-                }
-            });
-        } catch (IOException e1) {
-            logger.error("Exception while creating JsonReply object: ", e1);
-        } catch (RejectedExecutionException e) {
-            logger.error("Exception while scheduling callback: ", e);
+            reply = objectMapper.readValue(message.getPayload(), Reply.class);
+        } catch (Exception e) {
+            logger.error("Error parsing reply payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding reply.",
+                         new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
+            return;
         }
+
+        final ReplyCaller callBack = replyCallerDirectory.getAndRemoveReplyCaller(reply.getRequestReplyId());
+        if (callBack == null) {
+            logger.warn("No reply caller found for id: " + reply.getRequestReplyId());
+            return;
+        }
+
+        final String serializedPayload = message.getPayload();
+        logger.debug("Parsed response from json with payload :" + serializedPayload);
+
+        callBack.messageCallBack(reply);
     }
 
     public void shutdown(boolean clear) {
@@ -545,18 +491,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             messageReceiver.shutdown(clear);
         } catch (Exception e) {
             logger.error("error shutting down messageReceiver");
-        }
-
-        try {
-            scheduler.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down scheduler");
-        }
-
-        try {
-            scheduler.awaitTermination(1000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
         }
 
         try {
