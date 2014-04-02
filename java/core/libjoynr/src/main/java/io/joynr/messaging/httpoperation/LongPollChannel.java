@@ -110,9 +110,8 @@ public class LongPollChannel {
      * order to reconnect channel
      */
     public Void longPollLoop() throws JoynrShutdownException {
-        logger.debug("LongPollingCallable OPENING CHANNEL: {} ", id);
+        logger.debug("LongPollingChannel OPENING CHANNEL: {} ", id);
         try {
-            // Long Polling Loop
             while (true) {
                 // start long poll if it has not been disabled.
                 // Checking the disable switch and request creation has
@@ -147,7 +146,7 @@ public class LongPollChannel {
             }
         } finally {
             // shutdown();
-            logger.info("LongPollingCallable CHANNEL: " + id + " long poll loop exited");
+            logger.info("LongPollingChannel CHANNEL: " + id + " long poll loop exited");
         }
     }
 
@@ -239,7 +238,7 @@ public class LongPollChannel {
 
         // the response body could contain multiple json objects
         List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
-        logger.info("LongPollingCallable CHANNEL: {} messages received: {}", listOfJsonStrings.size());
+        logger.info("LongPollingChannel CHANNEL: {} messages received: {}", listOfJsonStrings.size());
 
         // Tries to parse each message as a JoynrMessage or MessageWrapper
         for (String json : listOfJsonStrings) {
@@ -250,7 +249,7 @@ public class LongPollChannel {
                     messageReceiver.receive(message);
 
                 } else {
-                    logger.warn("LongPollingCallable CHANNEL: {} message was null", id);
+                    logger.warn("LongPollingChannel CHANNEL: {} message was null", id);
                 }
                 continue;
             } catch (JsonParseException e) {
@@ -274,7 +273,7 @@ public class LongPollChannel {
             } catch (IOException e) {
             }
         }
-        logger.debug("LongPollingCallable CHANNEL: {} SHUT DOWN", id);
+        logger.debug("LongPollingChannel CHANNEL: {} SHUT DOWN", id);
     }
 
     public void resume() {

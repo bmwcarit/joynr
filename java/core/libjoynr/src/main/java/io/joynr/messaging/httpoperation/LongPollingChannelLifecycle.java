@@ -85,7 +85,7 @@ public class LongPollingChannelLifecycle {
 
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("ChannelMonitor-%d").build();
     private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(1, namedThreadFactory);
-    private LongPollChannel longPollingCallable;
+    private LongPollChannel longPolling;
     private final ObjectMapper objectMapper;
     private boolean longPollingDisabled;
     private boolean started = false;
@@ -235,7 +235,7 @@ public class LongPollingChannelLifecycle {
 
                 // String id = getPrintableId(channelUrl);
                 synchronized (this) {
-                    this.longPollingCallable = new LongPollChannel(httpclient,
+                    this.longPolling = new LongPollChannel(httpclient,
                                                                    defaultRequestConfig,
                                                                    longPollingDisabled,
                                                                    messageReceiver,
@@ -245,9 +245,9 @@ public class LongPollingChannelLifecycle {
                                                                    channelId,
                                                                    receiverId);
                 }
-                longPollingCallable.setChannelUrl(channelUrl);
+                longPolling.setChannelUrl(channelUrl);
 
-                longPollingCallable.longPollLoop();
+                longPolling.longPollLoop();
 
                 // register is here because the registration response needs an open channel to be received.
                 // Otherwise register fails.
@@ -292,9 +292,9 @@ public class LongPollingChannelLifecycle {
 
     public synchronized void suspend() {
         this.longPollingDisabled = true;
-        if (longPollingCallable != null) {
+        if (longPolling != null) {
             logger.debug("Suspending longPollingCallable.");
-            longPollingCallable.suspend();
+            longPolling.suspend();
         } else {
             logger.debug("Called suspend before longPollingCallable was created.");
         }
@@ -302,8 +302,8 @@ public class LongPollingChannelLifecycle {
 
     public synchronized void resume() {
         this.longPollingDisabled = false;
-        if (longPollingCallable != null) {
-            longPollingCallable.resume();
+        if (longPolling != null) {
+            longPolling.resume();
         }
     }
 
@@ -318,8 +318,8 @@ public class LongPollingChannelLifecycle {
             channelMonitorExecutorService = null;
         }
 
-        if (longPollingCallable != null) {
-            longPollingCallable.shutdown();
+        if (longPolling != null) {
+            longPolling.shutdown();
         }
 
         if (longPollingFuture != null) {
