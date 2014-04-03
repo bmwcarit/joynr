@@ -36,7 +36,10 @@ import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import joynr.JoynrMessage;
 import joynr.Reply;
@@ -66,7 +69,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private Map<String, PayloadListener<?>> oneWayRecipients = Maps.newHashMap();
     private Map<String, RequestCaller> requestCallerDirectory = Maps.newHashMap();
 
-    private DispatcherMessageQueues messageQueues = new DispatcherMessageQueues();
+    private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>>> messageQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>>>();
+
     private ReplyCallerDirectory replyCallerDirectory;
 
     private MessagingEndpointDirectory messagingEndpointDirectory;
@@ -87,6 +91,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private boolean shutdown = false;
 
     private boolean registering = false;
+    private ScheduledExecutorService cleanupScheduler;
 
     @Inject
     // CHECKSTYLE:OFF
@@ -99,7 +104,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       ObjectMapper objectMapper,
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
-                                      JsonRequestInterpreter jsonRequestInterpreter) {
+                                      JsonRequestInterpreter jsonRequestInterpreter,
+                                      @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
         // CHECKSTYLE:ON
         this.messageSender = messageSender;
         this.messageReceiver = messageReceiver;
@@ -110,6 +116,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.publicationManager = publicationManager;
         this.subscriptionManager = subscriptionManager;
         this.jsonRequestInterpreter = jsonRequestInterpreter;
+        this.cleanupScheduler = cleanupScheduler;
 
         // TODO would be better not to have this in the constructor to prevent
         // any race condition issues with messages being
@@ -127,7 +134,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             oneWayRecipients.put(participantId, listener);
         }
 
-        ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> messageList = messageQueues.getAndRemoveOneWayMessages(participantId);
+        ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> messageList = messageQueue.remove(participantId);
         if (messageList != null) {
             for (ContentWithExpiryDate<JoynrMessage> messageItem : messageList) {
                 if (!messageItem.isExpired()) {
@@ -148,7 +155,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             startReceiver();
         }
 
-        ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> messageList = messageQueues.getAndRemoveRequestMessages(participantId);
+        ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> messageList = messageQueue.remove(participantId);
         if (messageList != null) {
             for (ContentWithExpiryDate<JoynrMessage> messageItem : messageList) {
                 if (!messageItem.isExpired()) {
@@ -365,7 +372,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             if (listener != null) {
                 deliverMessageToListener(listener, message);
             } else {
-                messageQueues.putOneWayMessage(toParticipantId,
+                putMessage(toParticipantId,
                                                message,
                                                ExpiryDate.fromAbsolute(message.getExpiryDate()));
             }
@@ -404,7 +411,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             executeRequestAndRespond(requestCallerDirectory.get(toParticipantId), message);
 
         } else {
-            messageQueues.putRequestMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
+            putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
             logger.info("No requestCaller found for participantId: {} queuing request message.", toParticipantId);
         }
     }
@@ -494,16 +501,31 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
 
         try {
-            messageQueues.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down messageQueues");
-        }
-
-        try {
             replyCallerDirectory.shutdown();
         } catch (Exception e) {
             logger.error("error shutting down replyCallerDirectory");
         }
     }
+        
+    private void putMessage(final String participantId,
+                            JoynrMessage message,
+                            ExpiryDate incomingTtlExpirationDate_ms) {
 
+        if (!messageQueue.containsKey(participantId)) {
+            ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> newMessageList = new ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>>();
+            messageQueue.putIfAbsent(participantId, newMessageList);
+        }
+       final  ContentWithExpiryDate<JoynrMessage> messageItem = new ContentWithExpiryDate<JoynrMessage>(message, incomingTtlExpirationDate_ms);
+        messageQueue.get(participantId).add(messageItem);
+        cleanupScheduler.schedule(new Runnable() {
+
+            @Override
+            public void run() {
+                messageQueue.get(participantId).remove(messageItem);
+                JoynrMessage message = messageItem.getContent();
+                logger.warn("TTL DISCARD. msgId: {} from: {} to: {} because it has expired. ", new String[]{message.getId(), message.getFrom(), message.getTo()});
+
+                
+            }}, incomingTtlExpirationDate_ms.getRelativeTtl(), TimeUnit.MILLISECONDS);
+    }
 }
