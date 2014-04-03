@@ -9,11 +9,12 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrRuntime;
 
 public class JoynrAppenderManagerFactory {
-    
+
     @Inject
     protected static JoynrRuntime runtime;
-    
+
     @Inject
-    @Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties properties;
+    @Named(MessagingPropertyKeys.JOYNR_PROPERTIES)
+    Properties properties;
 
 }
