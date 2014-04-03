@@ -48,9 +48,17 @@ class InterfaceAsyncProxyHTemplate {
 		«getNamespaceStarter(serviceInterface)» 
 		class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 		public:
-		    «asyncClassName»(joynr::ICapabilities* capabilitiesStub, QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, joynr::ConnectorFactory* connectorFactory, joynr::IClientCache* cache, const QString& domain,
-		                                const joynr::ProxyQos& proxyQos, const joynr::MessagingQos& qosSettings, bool cached);
-		                                
+		    «asyncClassName»(
+		            joynr::ICapabilities* capabilitiesStub,
+		            QSharedPointer<joynr::system::Address> messagingAddress,
+		            joynr::ConnectorFactory* connectorFactory,
+		            joynr::IClientCache* cache,
+		            const QString& domain,
+		            const joynr::ProxyQos& proxyQos,
+		            const joynr::MessagingQos& qosSettings,
+		            bool cached
+		    );
+
 			«produceAsyncGetters(serviceInterface, false)»
 			«produceAsyncSetters(serviceInterface, false)»
 			«produceAsyncMethods(serviceInterface, false)»

@@ -104,8 +104,8 @@ protected:
     QString interfaceName;
     QString expectedParticipantId;
     types::ProviderQos providerQos;
-    QList<QSharedPointer<EndpointAddressBase> > endpointAddressList;
-    QSharedPointer<EndpointAddressBase> messagingStubAddress;
+    QList<QSharedPointer<joynr::system::Address> > endpointAddressList;
+    QSharedPointer<joynr::system::Address> messagingStubAddress;
     qint64 reqCacheDataFreshness_ms;
     QSharedPointer<MockProvider> mockProvider;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
@@ -122,7 +122,7 @@ TEST_F(InProcessCapabilitiesTest, skeletonAddsToEPDirectory){
             .WillOnce(Return(QString("testLocalChannel")));
 
     capabilitiesSkeleton->add(domain, interfaceName, expectedParticipantId, providerQos, endpointAddressList, messagingStubAddress, ICapabilities::NO_TIMEOUT());
-    QSharedPointer<EndpointAddressBase> receivedEndpointAddress(messagingEndpointDirectory->lookup(expectedParticipantId));
+    QSharedPointer<joynr::system::Address> receivedEndpointAddress(messagingEndpointDirectory->lookup(expectedParticipantId));
     EXPECT_EQ(messagingStubAddress, receivedEndpointAddress);
 
     DiscoveryQos qos;

@@ -20,6 +20,7 @@
 #include <PrettyPrint.h>
 #include <QVariant>
 #include <QSharedPointer>
+#include <limits>
 #include "joynr/Util.h"
 #include "joynr/types/TEnum.h"
 #include "joynr/types/TStruct.h"
@@ -38,7 +39,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "common/some-ip/SomeIpEndpointAddress.h"
+#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 #include "joynr/tests/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
@@ -65,6 +66,39 @@ public:
     }
 
 protected:
+    template<class T>
+    void serializeDeserializeReply(T value) {
+        qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+        // setup reply object
+        Reply reply;
+        reply.setRequestReplyId(QString("TEST-requestReplyId"));
+        reply.setResponse(QVariant::fromValue(value));
+
+        QString expectedReplyString(
+                    "{"
+                        "\"_typeName\":\"joynr.Reply\","
+                        "\"requestReplyId\":\"%1\","
+                        "\"response\":%2"
+                    "}"
+        );
+        expectedReplyString = expectedReplyString
+                .arg(reply.getRequestReplyId())
+                .arg(value);
+        QByteArray expectedReply = expectedReplyString.toUtf8();
+
+        QByteArray jsonReply = JsonSerializer::serialize(reply);
+
+        EXPECT_EQ_QBYTEARRAY(expectedReply, jsonReply);
+
+        Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
+
+        EXPECT_EQ(value, receivedReply->getResponse().value<T>());
+
+        // clean up
+        delete receivedReply;
+    }
+
     joynr_logging::Logger* logger;
 };
 
@@ -134,6 +168,94 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     delete deserializedRequest;
 }
 
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt8) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // qint8 alias (signed) char
+    qint8 int8MinValue = std::numeric_limits<qint8>::min();
+    qint8 int8MaxValue = std::numeric_limits<qint8>::max();
+
+    serializeDeserializeReply<qint8>(int8MinValue);
+    serializeDeserializeReply<qint8>(int8MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt8) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // quint8 alias unsigned char
+    quint8 unsignedInt8MinValue = std::numeric_limits<quint8>::min();
+    quint8 unsignedInt8MaxValue = std::numeric_limits<quint8>::max();
+
+    serializeDeserializeReply<quint8>(unsignedInt8MinValue);
+    serializeDeserializeReply<quint8>(unsignedInt8MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt16) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // qint16 alias (signed) short
+    qint16 int16MinValue = std::numeric_limits<qint16>::min();
+    qint16 int16MaxValue = std::numeric_limits<qint16>::max();
+
+    serializeDeserializeReply<qint16>(int16MinValue);
+    serializeDeserializeReply<qint16>(int16MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt16) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // quint16 alias unsigned short
+    quint16 unsignedInt16MinValue = std::numeric_limits<quint16>::min();
+    quint16 unsignedInt16MaxValue = std::numeric_limits<quint16>::max();
+
+    serializeDeserializeReply<quint16>(unsignedInt16MinValue);
+    serializeDeserializeReply<quint16>(unsignedInt16MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt32) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // qint32 alias (signed) int
+    qint32 int32MinValue = std::numeric_limits<qint32>::min();
+    qint32 int32MaxValue = std::numeric_limits<qint32>::max();
+
+    serializeDeserializeReply<qint32>(int32MinValue);
+    serializeDeserializeReply<qint32>(int32MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt32) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // quint32 alias unsigned int
+    quint32 unsignedInt32MinValue = std::numeric_limits<quint32>::min();
+    quint32 unsignedInt32MaxValue = std::numeric_limits<quint32>::max();
+
+    serializeDeserializeReply<quint32>(unsignedInt32MinValue);
+    serializeDeserializeReply<quint32>(unsignedInt32MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt64) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // qint64 alias (signed) long long
+    qint64 int64MinValue = std::numeric_limits<qint64>::min();
+    qint64 int64MaxValue = std::numeric_limits<qint64>::max();
+
+    serializeDeserializeReply<qint64>(int64MinValue);
+    serializeDeserializeReply<qint64>(int64MaxValue);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt64) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+
+    // quint64 alias unsigned long long
+    quint64 unsignedInt64MinValue = std::numeric_limits<quint64>::min();
+    quint64 unsignedInt64MaxValue = std::numeric_limits<quint64>::max();
+
+    serializeDeserializeReply<quint64>(unsignedInt64MinValue);
+    serializeDeserializeReply<quint64>(unsignedInt64MaxValue);
+}
+
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 
     qRegisterMetaType<joynr::Request>("joynr::Request");
@@ -161,14 +283,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
     );
     expected = expected.arg(request.getRequestReplyId());
 
-    EXPECT_EQ(expected, QString(serializedContent));
-    LOG_DEBUG(logger, "Serialized method call: "+ serializedContent);
-    LOG_DEBUG(logger, "Expected method call: "+ expected);
-
-    // Expected literal is:
-    // { "_typeName" : "joynr.Request", "methodName" : "methodEnumDoubleParameters", "paramDatatypes" : [ "Integer", "Double" ], "params" : { "enumParam" : "ONE", "doubleParam" : 2.22 } }
-    EXPECT_EQ(expected, serializedContent);
-
+    EXPECT_EQ_QSTRING(expected, serializedContent);
 }
 
 TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {

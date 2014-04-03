@@ -28,7 +28,7 @@
 #include "joynr/DbusMessagingSkeleton.h"
 #include "joynr/DbusCapabilitiesSkeleton.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 #include "tests/utils/MockObjects.h"
 
 #include "common/dbus/DbusMessagingStubAdapter.h"
@@ -51,7 +51,7 @@ public:
     MockCapabilitiesStub* capMock;
 
     LibJoynrRuntimeTest():
-        libjoynrSettingsFilename("resources/libjoynrintegrationtest.settings"),
+        libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
         settings(new QSettings(libjoynrSettingsFilename, QSettings::IniFormat)),
         runtime(NULL),
         msgSkeleton(NULL),
@@ -66,11 +66,11 @@ public:
     void SetUp() {
         DbusSettings* dbusSettings = new DbusSettings(*settings);
         // start skeletons
-        QString ccMessagingAddress(dbusSettings->getClusterControllerMessagingAddress());
+        QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
         msgMock = new MockMessaging();
         msgSkeleton = new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*msgMock, ccMessagingAddress);
 
-        QString ccCapabilitiesAddress(dbusSettings->getClusterControllerCapabilitiesAddress());
+        QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
         capMock = new MockCapabilitiesStub();
         capSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capMock, ccCapabilitiesAddress);
 
@@ -110,7 +110,7 @@ TEST_F(LibJoynrRuntimeTest, get_proxy) {
                                   A<const types::ProviderQosRequirements&>(),
                                   A<const DiscoveryQos&>())).Times(1).WillRepeatedly(testing::Return(*result));
     EXPECT_CALL(*capMock, addEndpoint( A<const QString &>(),
-                                       A<QSharedPointer<EndpointAddressBase> >(),
+                                       A<QSharedPointer<joynr::system::Address> >(),
                                        A<const qint64& >())).Times(1);
 
     QString domain("localdomain");
@@ -135,8 +135,8 @@ TEST_F(LibJoynrRuntimeTest, register_unregister_capability) {
                                A<const QString&>(),
                                A<const QString&>(),
                                A<const types::ProviderQos&>(),
-                               A<QList<QSharedPointer<EndpointAddressBase> >>(),
-                               A<QSharedPointer<EndpointAddressBase>>(),
+                               A<QList<QSharedPointer<joynr::system::Address> >>(),
+                               A<QSharedPointer<joynr::system::Address>>(),
                                A<const qint64&>())).Times(1);
 
     QString domain("localdomain");

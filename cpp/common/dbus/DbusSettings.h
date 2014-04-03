@@ -32,21 +32,40 @@ class JOYNRCOMMON_EXPORT DbusSettings : public QObject {
     Q_OBJECT
 
 public:
-    static const QString& SETTING_CC_MESSAGING_ADDRESS();
-    static const QString& SETTING_CC_CAPABILITIES_ADDRESS();
+    static const QString& SETTING_CC_MESSAGING_DOMAIN();
+    static const QString& SETTING_CC_MESSAGING_SERVICENAME();
+    static const QString& SETTING_CC_MESSAGING_PARTICIPANTID();
+    static const QString& SETTING_CC_CAPABILITIES_DOMAIN();
+    static const QString& SETTING_CC_CAPABILITIES_SERVICENAME();
+    static const QString& SETTING_CC_CAPABILITIES_PARTICIPANTID();
+
+    static const QString& DEFAULT_DBUS_SETTINGS_FILENAME();
 
     explicit DbusSettings(QSettings& settings, QObject* parent = 0);
     DbusSettings(const DbusSettings& other);
 
     ~DbusSettings();
 
-    QString getClusterControllerMessagingAddress() const;
-    void setClusterControllerMessagingAddress(const QString& address);
+    QString getClusterControllerMessagingDomain() const;
+    void setClusterControllerMessagingDomain(const QString& domain);
+    QString getClusterControllerMessagingServiceName() const;
+    void setClusterControllerMessagingServiceName(const QString& serviceName);
+    QString getClusterControllerMessagingParticipantId() const;
+    void setClusterControllerMessagingParticipantId(const QString& participantId);
+    QString createClusterControllerMessagingAddressString() const;
 
-    QString getClusterControllerCapabilitiesAddress() const;
-    void setClusterControllerCapabilitiesAddress(const QString& address);
+    QString getClusterControllerCapabilitiesDomain() const;
+    void setClusterControllerCapabilitiesDomain(const QString& domain);
+    QString getClusterControllerCapabilitiesServiceName() const;
+    void setClusterControllerCapabilitiesServiceName(const QString& serviceName);
+    QString getClusterControllerCapabilitiesParticipantId() const;
+    void setClusterControllerCapabilitiesParticipantId(const QString& participantId);
+    QString createClusterControllerCapabilitiesAddressString() const;
 
     void printSettings() const;
+
+    bool contains(const QString& key) const;
+    QVariant value(const QString& key) const;
 
 private:
     void operator =(const DbusSettings &other);

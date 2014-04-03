@@ -108,12 +108,12 @@ public class MessageScheduler {
 
     }
 
-    public synchronized void scheduleRequest(final MessageContainer messageContainer,
+    public synchronized void scheduleMessage(final MessageContainer messageContainer,
                                              long delay_ms,
                                              final FailureAction failureAction,
                                              final MessageReceiver messageReceiver) throws JoynrSendBufferFullException {
         try {
-            logger.trace("scheduleRequest messageId: {} channelId {}",
+            logger.trace("scheduleMessage messageId: {} channelId {}",
                          messageContainer.getMessageId(),
                          messageContainer.getChannelId());
             // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
@@ -186,20 +186,19 @@ public class MessageScheduler {
             synchronized (executionQueue) {
                 executionQueue.submit(new Runnable() {
                     public void run() {
-                        send(messageContainer, failureAction);
+                        sendMessage(messageContainer, failureAction);
                     }
                 });
             }
         }
     }
 
-    private void send(final MessageContainer messageContainer, final FailureAction failureAction) {
+    private void sendMessage(final MessageContainer messageContainer, final FailureAction failureAction) {
         HttpContext context = new BasicHttpContext();
 
         String channelId = messageContainer.getChannelId();
         String messageId = messageContainer.getMessageId();
 
-        logger.trace("SEND executionQueue.run channelId: {}, messageId: {}", channelId, messageId);
         if (messageContainer.isExpired()) {
             logger.error("SEND executionQueue.run channelId: {}, messageId: {} TTL expired: ",
                          messageId,
@@ -214,6 +213,8 @@ public class MessageScheduler {
 
             String serializedMessage = messageContainer.getSerializedMessage();
             final String sendUrl = getSendUrl(messageContainer.getChannelId());
+            logger.debug("SENDING message channelId: {}, messageId: {} toUrl: {}", new String[]{ channelId, messageId,
+                    sendUrl });
             if (sendUrl == null) {
                 logger.error("SEND executionQueue.run channelId: {}, messageId: {} No channelId found",
                              messageId,
@@ -254,7 +255,7 @@ public class MessageScheduler {
                     String body = EntityUtils.toString(entity, "UTF-8");
 
                     JoynrMessagingError error = objectMapper.readValue(body, JoynrMessagingError.class);
-                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynMessagingErrorCode(error.getCode());
+                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynrMessagingErrorCode(error.getCode());
                     logger.error(error.toString());
                     switch (joynrMessagingErrorCode) {
                     case JOYNRMESSAGINGERROR_CHANNELNOTFOUND:

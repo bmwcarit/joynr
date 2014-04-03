@@ -5,3 +5,5 @@ target/
 /gen
 src/main/generated/
 bounceproxy.build-.log
+/java/messaging/messaging-service/logs
+THIRD-PARTY.properties

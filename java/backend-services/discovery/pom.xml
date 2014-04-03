@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -38,12 +38,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>capabilitiesdirectory</artifactId>
+			<artifactId>capabilities-directory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>channelurldirectory</artifactId>
+			<artifactId>channel-url-directory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -51,7 +51,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-standalone</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>

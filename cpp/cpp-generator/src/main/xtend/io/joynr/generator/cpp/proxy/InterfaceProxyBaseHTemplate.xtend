@@ -48,12 +48,20 @@ class InterfaceProxyBaseHTemplate {
 		«getNamespaceStarter(serviceInterface)» 
 		class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
 		public:
-		    «className»(joynr::ICapabilities* capabilitiesStub, QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, joynr::ConnectorFactory* connectorFactory, joynr::IClientCache* cache, const QString& domain,
-		                                const joynr::ProxyQos& proxyQos, const joynr::MessagingQos& qosSettings, bool cached);
+		    «className»(
+		            joynr::ICapabilities* capabilitiesStub,
+		            QSharedPointer<joynr::system::Address> messagingAddress,
+		            joynr::ConnectorFactory* connectorFactory,
+		            joynr::IClientCache* cache,
+		            const QString& domain,
+		            const joynr::ProxyQos& proxyQos,
+		            const joynr::MessagingQos& qosSettings,
+		            bool cached
+		    );
 		
 		    ~«className»();
 		
-		    void handleArbitrationFinished(const QString &participantId, QSharedPointer<joynr::EndpointAddressBase> endpointAddress);
+		    void handleArbitrationFinished(const QString &participantId, QSharedPointer<joynr::system::Address> endpointAddress);
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				«var attributeName = attribute.joynrName»
@@ -63,7 +71,7 @@ class InterfaceProxyBaseHTemplate {
 
 		protected:
 			joynr::ICapabilities* capabilitiesStub;
-			QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress; 
+			QSharedPointer<joynr::system::Address> messagingAddress; 
 		    I«interfaceName»Connector* connector;
 
 		private:

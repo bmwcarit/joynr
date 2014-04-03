@@ -10,11 +10,6 @@ set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
 if(${WIN32})
     set(DISABLE_PTHREAD_CMAKE_ARG ON)
 else()
-    #Disable some sets of warnings in test-directory.
-    remove_definitions(-Weffc++)
-    add_definitions(-Wno-unused-parameter)
-    add_definitions(-Wno-reorder)
-    set(DISABLE_PTHREAD_CMAKE_ARG OFF)
 endif(${WIN32})
 
 
@@ -84,25 +79,25 @@ message(STATUS "variable googlemock_binary_dir=${googlemock_binary_dir}")
 
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/resources/integrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Debug/resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Debug/resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrintegrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/resources/libjoynrintegrationtest.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Debug/resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Debug/resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Release/resources/integrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Release/resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Release/resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrintegrationtest.settings" "${JOYNR_BINARY_DIR}/Release/resources/libjoynrintegrationtest.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Release/resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Release/resources/libjoynrSystemIntegration2.settings")
+    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings")
+    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest1.settings")
+    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest2.settings")
+    configure_file("resources/libjoynrintegrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrintegrationtest.settings")
+    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings")
+    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration2.settings")
+    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/integrationtest.settings")
+    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest1.settings")
+    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest2.settings")
+    configure_file("resources/libjoynrintegrationtest.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrintegrationtest.settings")
+    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration1.settings")
+    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration2.settings")
 else()
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/resources/integrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrintegrationtest.settings" "${JOYNR_BINARY_DIR}/resources/libjoynrintegrationtest.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/resources/libjoynrSystemIntegration2.settings")
+    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/test-resources/integrationtest.settings")
+    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest1.settings")
+    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest2.settings")
+    configure_file("resources/libjoynrintegrationtest.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrintegrationtest.settings")
+    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration1.settings")
+    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration2.settings")
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 
@@ -199,7 +194,7 @@ set(
     "utils/TestQString.h"
     "utils/QThreadSleep.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
-	${JoynrTest_GENHEADERS}
+    ${JoynrTest_GENHEADERS}
 )
 
 set(
@@ -208,7 +203,7 @@ set(
     "utils/MockObjects.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
-	${JoynrTest_GENSOURCES}
+    ${JoynrTest_GENSOURCES}
 )
 
 ###############
@@ -219,6 +214,13 @@ file(
     GLOB g_UnitTests_SOURCES
     "unit-tests/*.cpp"
 )
+
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    list(
+        APPEND g_UnitTests_SOURCES
+        "unit-tests/dbus/DbusSettingsTest.cpp"
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_executable(
     g_UnitTests
@@ -231,6 +233,12 @@ add_dependencies(g_UnitTests googletest)
 add_dependencies(g_UnitTests googlemock)
 
 target_link_libraries(g_UnitTests ${test_TARGET_LIBRARIES})
+
+set_target_properties(
+    g_UnitTests
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+)
 
 ######################
 # g_IntegrationTests #
@@ -261,6 +269,12 @@ add_dependencies(g_IntegrationTests googlemock)
 
 target_link_libraries(g_IntegrationTests ${test_TARGET_LIBRARIES})
 
+set_target_properties(
+    g_IntegrationTests
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+)
+
 ############################
 # g_SystemIntegrationTests #
 ############################
@@ -288,3 +302,9 @@ add_dependencies(g_SystemIntegrationTests googletest)
 add_dependencies(g_SystemIntegrationTests googlemock)
 
 target_link_libraries(g_SystemIntegrationTests ${test_TARGET_LIBRARIES})
+
+set_target_properties(
+    g_SystemIntegrationTests
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+)

@@ -20,8 +20,17 @@
 #define DBUSMESSAGINGSKELETON_H
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
-#include "common-api/joynr/messaging/IMessagingStubDefault.h"
 #include "joynr/IMessaging.h"
+
+// save the GCC diagnostic state
+#pragma GCC diagnostic push
+// Disable compiler warnings in this CommonAPI generated includes.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Weffc++"
+// include CommonAPI stuff here:
+#include "common-api/joynr/messaging/IMessagingStubDefault.h"
+// restore the old GCC diagnostic state
+#pragma GCC diagnostic pop
 
 namespace joynr {
 

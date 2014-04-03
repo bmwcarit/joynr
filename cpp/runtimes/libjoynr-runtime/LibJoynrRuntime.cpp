@@ -21,7 +21,7 @@
 #include "joynr/InProcessDispatcher.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 #include "libjoynr/dbus/DBusDispatcherAdapter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
@@ -34,7 +34,7 @@
 namespace joynr {
 
 LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
-    JoynrRuntime(),
+    JoynrRuntime(*settings),
     connectorFactory(NULL),
     publicationManager(NULL),
     subscriptionManager(NULL),
@@ -79,20 +79,20 @@ void LibJoynrRuntime::initializeAllDependencies() {
     inProcessDispatcher = new InProcessDispatcher();
 
     // create messaging send stub
-    QString ccMessagingAddress(dbusSettings->getClusterControllerMessagingAddress());
+    QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
     joynrMessagingSendStub = QSharedPointer<IMessaging>(new DbusMessagingStubAdapter(ccMessagingAddress));
     joynrMessageSender = new JoynrMessageSender(joynrMessagingSendStub);
     joynrDispatcher = new Dispatcher(joynrMessageSender);
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create capabilities send stub
-    QString ccCapabilitiesAddress(dbusSettings->getClusterControllerCapabilitiesAddress());
+    QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
     joynrCapabilitiesSendStub = new DbusCapabilitiesStubAdapter(ccCapabilitiesAddress);
 
     // register messaging skeleton using uuid
     QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingAddress("local:org.genivi.commonapi.joynr:libjoynr.messaging.id_" + messagingUuid);
-    QSharedPointer<EndpointAddressBase> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
+    QString libjoynrMessagingAddress("local:io.joynr.libjoynr.Messaging:libjoynr.messaging.participantid_" + messagingUuid);
+    QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
     joynrDispatcherAdapter = new DBusDispatcherAdapter(*joynrDispatcher, libjoynrMessagingAddress);
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
@@ -107,7 +107,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    QSharedPointer<ParticipantIdStorage> participantIdStorage(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     // initialize the dispatchers
     QList<IDispatcher *> dispatcherList;

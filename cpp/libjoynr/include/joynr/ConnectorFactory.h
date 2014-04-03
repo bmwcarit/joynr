@@ -32,7 +32,7 @@
 
 namespace joynr {
 
-class EndpointAddressBase;
+namespace system { class Address; }
 class InProcessDispatcher;
 
 class JOYNR_EXPORT ConnectorFactory {
@@ -47,7 +47,7 @@ public:
               IClientCache *cache,
               bool cached,
               qint64 reqCacheDataFreshness_ms,
-              QSharedPointer<EndpointAddressBase> endpointAddress){
+              QSharedPointer<joynr::system::Address> endpointAddress){
 
         if (inProcessConnectorFactory->canBeCreated(endpointAddress)){
             return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId, endpointAddress.dynamicCast<InProcessEndpointAddress>());

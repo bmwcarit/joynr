@@ -25,11 +25,11 @@
 
 namespace joynr {
 
-class EndpointAddressBase;
+namespace system { class Address; }
 class IMessaging;
 
-    typedef Directory<QString, EndpointAddressBase > MessagingEndpointDirectory;
-    typedef IDirectory<QString, EndpointAddressBase > IMessagingEndpointDirectory;
+    typedef Directory<QString, joynr::system::Address > MessagingEndpointDirectory;
+    typedef IDirectory<QString, joynr::system::Address > IMessagingEndpointDirectory;
     typedef Directory<QString, IMessaging > MessageStubDirectory;
 
 

@@ -23,7 +23,7 @@ namespace joynr {
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
                                              QSharedPointer<ICapabilities> capabilitiesAggregator,
-                                             QSharedPointer<EndpointAddressBase> messagingStubAddress,
+                                             QSharedPointer<joynr::system::Address> messagingStubAddress,
                                              QSharedPointer<ParticipantIdStorage> participantIdStorage)
     : dispatcherList(dispatcherList),
       capabilitiesAggregator(capabilitiesAggregator),

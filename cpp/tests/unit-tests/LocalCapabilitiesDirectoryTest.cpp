@@ -72,8 +72,8 @@ public:
 
         // init a capentry recieved from the global capabilities directory
         types::ProviderQos qos;
-        QList<QSharedPointer<EndpointAddressBase> > epaList;
-        epaList.append(QSharedPointer<EndpointAddressBase>(new JoynrMessagingViaCCEndpointAddress()));
+        QList<QSharedPointer<joynr::system::Address> > epaList;
+        epaList.append(QSharedPointer<joynr::system::Address>(new JoynrMessagingViaCCEndpointAddress()));
         CapabilityEntry globalCapEntry(DOMAIN_1_NAME,
                                  INTERFACE_1_NAME,
                                  qos,

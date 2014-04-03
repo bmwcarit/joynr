@@ -23,7 +23,10 @@
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DelayedScheduler.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 
 #include <cassert>
 
@@ -40,15 +43,22 @@ MessageRouter::~MessageRouter() {
 
 MessageRouter::MessageRouter(
         MessagingSettings& messagingSettings,
-        Directory<QString, EndpointAddressBase>* partId2MessagingEndpointDirectory,
+        Directory<QString, joynr::system::Address>* routingTable,
         int messageSendRetryInterval,
         int maxThreads
 ) :
-    messagingSettings(messagingSettings),
-    messagingStubFactory(NULL),
-    partId2MessagingEndpointDirectory(partId2MessagingEndpointDirectory),
-    threadPool(),
-    delayedScheduler()
+        joynr::system::RoutingProvider(joynr::types::ProviderQos(
+                QList<joynr::types::CustomParameter>(), // custom provider parameters
+                1,                                      // provider version
+                1,                                      // provider priority
+                joynr::types::ProviderScope::LOCAL,     // provider discovery scope
+                false                                   // supports on change subscriptions
+        )),
+        messagingSettings(messagingSettings),
+        messagingStubFactory(NULL),
+        routingTable(routingTable),
+        threadPool(),
+        delayedScheduler()
 {
     threadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
@@ -64,20 +74,20 @@ void MessageRouter::init(ICommunicationManager &comMgr)
 
 void MessageRouter::addProvisionedCapabilitiesDirectoryAddress()
 {
-    QSharedPointer<EndpointAddressBase> endpointAddress(
+    QSharedPointer<joynr::system::Address> endpointAddress(
                 new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
     );
-    partId2MessagingEndpointDirectory->add(
+    routingTable->add(
                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
                 endpointAddress
     );
 }
 
 void MessageRouter::addProvisionedChannelUrlDirectoryAddress() {
-    QSharedPointer<EndpointAddressBase> endpointAddress(
+    QSharedPointer<joynr::system::Address> endpointAddress(
                 new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
     );
-    partId2MessagingEndpointDirectory->add(
+    routingTable->add(
                 messagingSettings.getChannelUrlDirectoryParticipantId(),
                 endpointAddress
     );
@@ -99,16 +109,15 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
     */
     LOG_TRACE(logger, "Routing Message.");
     QString destinationPartId = message.getHeaderTo();
-    QSharedPointer <EndpointAddressBase> destEndpointAddress =
-            partId2MessagingEndpointDirectory->lookup(destinationPartId);
-    if (destEndpointAddress == NULL) {
-        LOG_DEBUG(logger, "No endpoint address found for participantId " + destinationPartId + ". Dropping the message");
-        partId2MessagingEndpointDirectory->lookup(destinationPartId);
+    QSharedPointer <joynr::system::Address> destAddress =
+            routingTable->lookup(destinationPartId);
+    if (destAddress.isNull()) {
+        LOG_ERROR(logger, "No endpoint address found for participantId " + destinationPartId + ". Dropping the message");
         return;
     }
     QSharedPointer<IMessaging> messagingStub = messagingStubFactory
                                                 ->create(destinationPartId,
-                                                         destEndpointAddress);
+                                                         destAddress);
     if (messagingStub.isNull()) {
         LOG_DEBUG(logger, "No send-stub found for endpoint address. Dropping the message");
         return;
@@ -122,6 +131,84 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
                          DispatcherUtils::convertTtlToAbsoluteTime(qos.getTtl()) )
                      );
 }
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::ChannelAddress channelAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::ChannelAddress> address(
+                new joynr::system::ChannelAddress(channelAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::CommonApiDbusAddress commonApiDbusAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::CommonApiDbusAddress> address(
+                new joynr::system::CommonApiDbusAddress(commonApiDbusAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::BrowserAddress browserAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::BrowserAddress> address(
+                new joynr::system::BrowserAddress(browserAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::WebSocketAddress webSocketAddress
+) {
+    // TODO check if routing table is thread-safe
+    QSharedPointer<joynr::system::WebSocketAddress> address(
+                new joynr::system::WebSocketAddress(webSocketAddress)
+    );
+    routingTable->add(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::removeNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId
+) {
+    // TODO check if routing table is thread-safe
+    routingTable->remove(participantId);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::resolveNextHop(
+        joynr::RequestStatus& joynrInternalStatus,
+        bool& resolved,
+        QString participantId
+) {
+    // TODO check if routing table is thread-safe
+    resolved = routingTable->contains(participantId);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
 
 /****
   * IMPLEMENTATION OF THE MESSAGE RUNNABLE

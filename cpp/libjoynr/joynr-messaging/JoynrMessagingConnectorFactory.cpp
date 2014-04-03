@@ -18,7 +18,7 @@
  */
 
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 
@@ -34,7 +34,7 @@ JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(IJoynrMessageSend
 }
 
 
-bool JoynrMessagingConnectorFactory::canBeCreated(QSharedPointer<EndpointAddressBase> endpointAddress)
+bool JoynrMessagingConnectorFactory::canBeCreated(QSharedPointer<joynr::system::Address> endpointAddress)
 {
     QString endpointClassName = endpointAddress->metaObject()->className();
     //for creating the connector, no information is needed, so JoynrMessagingEndPointAddress and JoynrMessagingViaCCEndpointAddress should both work.

@@ -1,12 +1,17 @@
-# - Config file for the JOYn package
+# - Config file for the Joynr package
 # It defines the following variables
-#   JOYNR_INCLUDE_DIRS                       - default include directories for Joynr (default)
-#   JOYNR_LIBRARIES                          - default libraries to link against (default)
+#   JOYNR_INCLUDE_DIRS     - default include directories for Joynr (default)
+#                            this includes also header files needed to build the cluster controller
+#   JOYNR_LIBRARIES        - default libraries to link against (default)
+#                            this includes also libraries needed to build the cluster controller
 #
-#   JOYNR_EXECUTABLES                        - the Joynr executables
+#   JOYNR_EXECUTABLES      - the Joynr executables
+#   JOYNR_RESOURCES_DIR    - directory containing resource and settigns files for Joynr executables
 #
-#   JOYNR_CLUSTER_CONTROLLER_LIBRARIES       - libraries to link against if target should include the cluster controller
-#   JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS    - include directories for Joynr if target should include the cluster controller
+#   JOYNR_LIB_LIBRARIES    - libraries needed for standalone libJoynr
+#                            (without cluster controller, needs Dbus)
+#   JOYNR_LIB_DIRS         - include directories for for standalone libJoynr
+#                            (without cluster controller, needs Dbus)
 
 # This file is derived from a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/). 
@@ -42,22 +47,28 @@ set(
     "${Qt5Core_LIBRARIES}"
 )
 
+set(JOYNR_EXECUTABLES)
 set(
-    JOYNR_CLUSTER_CONTROLLER_INCLUDE_DIRS
-    "${JOYNR_INCLUDE_DIRS}"
+    JOYNR_RESOURCES_DIR
+    @JoynrConfig_INSTALL_BIN_DIR@/resources
 )
-
-set(
-    JOYNR_CLUSTER_CONTROLLER_LIBRARIES
-    "${JOYNR_LIBRARIES}"
-)
-
-set(JOYNR_EXECUTABLE)
 
 # configuration if dbus is used
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    set(
+        JOYNR_LIB_INCLUDE_DIRS
+        "${Qt5Core_INCLUDE_DIRS}"
+        @JoynrConfig_LIB_INCLUDE_DIRS@
+    )
+
+    set(
+        JOYNR_LIB_LIBRARIES
+        @JoynrConfig_LIB_LIBRARIES@
+        "${Qt5Core_LIBRARIES}"
+    )
+
     list(
-        APPEND JOYNR_EXECUTABLE
+        APPEND JOYNR_EXECUTABLES
         @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})

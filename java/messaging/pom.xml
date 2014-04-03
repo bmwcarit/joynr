@@ -7,7 +7,7 @@
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,16 +26,18 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
 		<module>bounceproxy</module>
-		<module>bounceproxyui</module>
-		<module>bounceproxy-standalone</module>
-		<module>messagingcommon</module>
-		<module>messagingservlet</module>
-		<module>servletcommon</module>
+		<module>messaging-common</module>
+		<module>messaging-servlet</module>
+		<module>servlet-common</module>
+		<module>messaging-service</module>
+		<module>channel-service</module>
+		<module>bounceproxy-controller-service</module>
+		<module>service-common</module>
 	</modules>
 
 		<!-- specify dependencies here to be used in all submodules -->
@@ -45,4 +47,5 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
+
 </project>

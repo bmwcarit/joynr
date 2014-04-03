@@ -56,8 +56,8 @@ public:
     QSettings settings;
     MessagingSettings* messagingSettings;
     CombinedRunTimeTest()
-        : settingsFilename("resources/integrationtest.settings"),
-          libjoynrSettingsFilename("resources/libjoynrintegrationtest.settings"),
+        : settingsFilename("test-resources/integrationtest.settings"),
+          libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
           runtime(NULL),
           mockCommunicationManager( new MockCommunicationManager() ),
           settings(settingsFilename, QSettings::IniFormat),
@@ -131,7 +131,7 @@ TEST_F(CombinedRunTimeTest, register_and_use_local_Provider)
    DiscoveryQos discoveryQos(1000);
    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
    discoveryQos.setDiscoveryTimeout(50);
-   discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
+   discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
    tests::TestProxy* testProxy = testProxyBuilder
@@ -184,7 +184,7 @@ TEST_F(CombinedRunTimeTest, DISABLED_register_and_use_local_TestProvider)
    DiscoveryQos discoveryQos(1000);
    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
    discoveryQos.setDiscoveryTimeout(50);
-   discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
+   discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
    tests::TestProxy* testProxy = testProxyBuilder
@@ -228,7 +228,7 @@ TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     discoveryQos.setDiscoveryTimeout(50);
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
     tests::TestProxy* testProxy = testProxyBuilder
@@ -267,7 +267,7 @@ TEST_F(CombinedRunTimeTest, unsubscribe_from_local_Provider) {
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     discoveryQos.setDiscoveryTimeout(50);
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
     tests::TestProxy* testProxy = testProxyBuilder

@@ -47,7 +47,7 @@ public:
      */
     enum class ArbitrationStrategy {
         NOT_SET = 0,
-        FIXED_CHANNEL = 1,
+        FIXED_PARTICIPANT = 1,
         LOCAL_ONLY = 2,
         KEYWORD = 3,
         HIGHEST_PRIORITY = 4

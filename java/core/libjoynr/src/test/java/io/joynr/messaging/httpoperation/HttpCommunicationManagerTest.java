@@ -27,6 +27,7 @@ import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
+import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
@@ -73,6 +74,7 @@ public class HttpCommunicationManagerTest {
     private String bounceProxyUrlString;
 
     @Before
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "correct use of RestAssured API")
     public void setUp() throws Exception {
 
         RestAssured.port = port;
@@ -105,7 +107,24 @@ public class HttpCommunicationManagerTest {
         message.setPayload("testMessage");
 
         longpollingMessageReceiver.registerMessageListener(dispatcher);
-        longpollingMessageReceiver.startReceiver();
+        final Object waitForChannelCreated = new Object();
+        longpollingMessageReceiver.startReceiver(new ReceiverStatusListener() {
+
+            @Override
+            public void receiverStarted() {
+                synchronized (waitForChannelCreated) {
+                    waitForChannelCreated.notify();
+                }
+            }
+
+            @Override
+            public void receiverException(Throwable e) {
+            }
+        });
+
+        synchronized (waitForChannelCreated) {
+            waitForChannelCreated.wait();
+        }
 
         // post to the channel to see if it exists
 

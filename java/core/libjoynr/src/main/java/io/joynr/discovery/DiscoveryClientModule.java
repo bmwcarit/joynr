@@ -36,8 +36,8 @@ import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.messaging.ChannelUrlStore;
+import io.joynr.messaging.ChannelUrlStoreImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.LocalChannelUrlDirectoryClientImpl;
@@ -59,6 +59,7 @@ public class DiscoveryClientModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(ChannelUrlStore.class).to(ChannelUrlStoreImpl.class).in(Singleton.class);
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
         bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
@@ -74,9 +75,10 @@ public class DiscoveryClientModule extends AbstractModule {
     ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                                               RequestReplySender messageSender,
                                                               RequestReplyDispatcher dispatcher,
-                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String disocveryDirectoriesDomain,
+                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
+                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
                                                               SubscriptionManager subscriptionManager) {
-        MessagingQos messagingQos = new MessagingQos(5 * 60 * 1000);
+        MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
 
         DiscoveryQos discoveryQos = new DiscoveryQos(1000,
                                                      ArbitrationStrategy.HighestPriority,
@@ -84,22 +86,15 @@ public class DiscoveryClientModule extends AbstractModule {
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
         ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = new ProxyBuilderDefaultImpl<ChannelUrlDirectoryProxy>(localCapabilitiesDirectory,
-                                                                                                                    disocveryDirectoriesDomain,
+                                                                                                                    discoveryDirectoriesDomain,
                                                                                                                     ChannelUrlDirectoryProxy.class,
                                                                                                                     messageSender,
                                                                                                                     dispatcher,
                                                                                                                     subscriptionManager);
 
         ChannelUrlDirectoryProxy proxy = null;
-        try {
-            proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
-        } catch (JoynrArbitrationException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         return proxy;
     }
@@ -133,15 +128,8 @@ public class DiscoveryClientModule extends AbstractModule {
                                                                                                                                       subscriptionManager);
 
         GlobalCapabilitiesDirectoryClient proxy = null;
-        try {
-            proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
-        } catch (JoynrArbitrationException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         return proxy;
     }

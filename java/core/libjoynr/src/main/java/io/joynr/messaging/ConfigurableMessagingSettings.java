@@ -29,9 +29,12 @@ import com.google.inject.name.Named;
 
 @Singleton
 public class ConfigurableMessagingSettings implements MessagingSettings {
-    //    public static final String PROPERTY_JOYNR_MESSAGING_CHANNELID = "joynr.messaging.channelId"; //NOT USUALLY SET BY THE APPLICATION!
-    //    public static final String PROPERTY_JOYNR_MESSAGING_CAPABILITIESDIRECTORYURL = "joynr.messaging.capabilitiesDirectoryUrl";
-    //    public static final String PROPERTY_JOYNR_MESSAGING_CHANNELURLDIRECTORYURL = "joynr.messaging.channelUrlDirectoryUrl";
+    // public static final String PROPERTY_JOYNR_MESSAGING_CHANNELID = "joynr.messaging.channelId"; //NOT USUALLY SET BY
+    // THE APPLICATION!
+    // public static final String PROPERTY_JOYNR_MESSAGING_CAPABILITIESDIRECTORYURL =
+    // "joynr.messaging.capabilitiesDirectoryUrl";
+    // public static final String PROPERTY_JOYNR_MESSAGING_CHANNELURLDIRECTORYURL =
+    // "joynr.messaging.channelUrlDirectoryUrl";
     // public static final String PROPERTY_BOUNCE_PROXY_URL = "joynr.messaging.bounceProxyUrl";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
@@ -62,6 +65,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     private int maximumParallelSends;
 
     @Inject
+    // CHECKSTYLE:OFF
     public ConfigurableMessagingSettings(@Named(MessagingPropertyKeys.BOUNCE_PROXY_URL) String bounceProxyUrl,
                                          @Named(PROPERTY_MAX_RETRY_COUNT) int maxRetriesCount,
                                          @Named(PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS) long createChannelRetryIntervalMs,
@@ -70,6 +74,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
                                          @Named(PROPERTY_LONG_POLL_RETRY_INTERVAL_MS) long longPollRetryIntervalMs,
                                          @Named(PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
                                          @Named(PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
+        // CHECKSTYLE:ON
         this.maxRetriesCount = maxRetriesCount;
         this.discoveryRequestTimeoutMs = discoveryRequestTimeoutMs;
         this.maximumParallelSends = maximumParallelSends;

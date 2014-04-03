@@ -38,8 +38,8 @@ void DbusCapabilitiesAdapter::add(
         const QString& interfaceName,
         const QString& participantId,
         const types::ProviderQos& qos,
-        QList<QSharedPointer<EndpointAddressBase> > endpointAddressList,
-        QSharedPointer<EndpointAddressBase> messagingStubAddress,
+        QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+        QSharedPointer<joynr::system::Address> messagingStubAddress,
         const qint64& timeout_ms
 ){
     Q_UNUSED(timeout_ms); //timeout does not make sense for in-process communication, but has to be in the method signature to fullfill common interface
@@ -55,7 +55,7 @@ void DbusCapabilitiesAdapter::add(
 
 void DbusCapabilitiesAdapter::addEndpoint(
         const QString& participantId,
-        QSharedPointer<EndpointAddressBase> messagingStubAddress,
+        QSharedPointer<joynr::system::Address> messagingStubAddress,
         const qint64& timeout_ms
 ){
     Q_UNUSED(timeout_ms); //timeout does not make sense for in-process communication, but has to be in the method signature to fullfill common interface

@@ -20,10 +20,19 @@ common-api-dbus-2.0.2 under Mozilla Public License Version 2.0
 - common-api
 --------------------------------------------------------------------------------
 
-"Common API" included in cpp/common-api/libs is licensed under
+"Common API" included in common-api/libs is licensed under
 "Mozilla Public License Version 2.0." A copy of that license in the English
-orginal version is included in the cpp/common-api/libs/LICENSE document.
-Source code is included in folder cpp/common-api/libs/.
+orginal version is included in the common-api/libs/LICENSE document.
+Source code is included in folder common-api/libs/.
+
+--------------------------------------------------------------------------------
+- guava-libraries
+--------------------------------------------------------------------------------
+
+The “guava” software included in some jar files in libs/common-api/ is
+licensed under the "Apache License, Version 2.0". A copy of that license in the
+English original version with a copyright notice, a disclaimer of warranty, and
+an exclusion of liability is included in the corresponding jar in lib/LICENSE.
 
 --------------------------------------------------------------------------------
 - liblog4qt

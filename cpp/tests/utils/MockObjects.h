@@ -19,11 +19,6 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
-//This only works in gcc 4.6 :(
-//This disables warnings from -WeffC++ for this compile unit. At the end of the file, Warnings are enabled again
-//#pragma GCC diagnostic ignored "-Weffc++"
-//#pragma GCC diagnostic ignored "-Wunused-parameters"
-
 class IMessageReceiver;
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProvider.h"
@@ -50,7 +45,7 @@ class IMessageReceiver;
 #include "joynr/JoynrMessageSender.h"
 
 #include "joynr/ICapabilities.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionReply.h"
@@ -101,6 +96,11 @@ using ::testing::Property;
     #pragma warning( disable : 4373 )
 #endif
 
+// Disable compiler warnings.
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#pragma GCC diagnostic ignored "-Wreorder"
+
+
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
     MOCK_METHOD1(registerCapabilities, void(QList<joynr::types::CapabilityInformation> capabilitiesInformationList));
@@ -136,7 +136,7 @@ public:
         : InProcessConnectorFactory(NULL,NULL,NULL) {
     }
 
-    MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::EndpointAddressBase> endpointAddress));
+    MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::system::Address> endpointAddress));
 };
 
 class MockDispatcher : public joynr::IDispatcher {
@@ -289,11 +289,11 @@ public:
                            const QString &interfaceName,
                            const QString &participantId,
                            const joynr::types::ProviderQos &qos,
-                           QList<QSharedPointer<joynr::EndpointAddressBase> > endpointAddressList,
-                           QSharedPointer<joynr::EndpointAddressBase> messagingStubAddress,
+                           QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+                           QSharedPointer<joynr::system::Address> messagingStubAddress,
                            const qint64& timeout));
     MOCK_METHOD3(addEndpoint, void(const QString &participantId,
-                           QSharedPointer<joynr::EndpointAddressBase> messagingStubAddress,
+                           QSharedPointer<joynr::system::Address> messagingStubAddress,
                                    const qint64& timeout));
     MOCK_METHOD4(lookup, QList<joynr::CapabilityEntry>(const QString &domain,
                                                 const QString &interfaceName,
@@ -380,7 +380,7 @@ public:
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
-    MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(QString destParticipantId, QSharedPointer< joynr::EndpointAddressBase> destEndpointAddress));
+    MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(QString destParticipantId, QSharedPointer< joynr::system::Address> destEndpointAddress));
     MOCK_METHOD1(remove, void(QString destParticipantId));
     MOCK_METHOD1(contains, bool(QString destPartId));
 };
@@ -511,7 +511,7 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const QString& participantId));
 };
 
-class MockEndpointAddress : public joynr::EndpointAddressBase {
+class MockEndpointAddress : public joynr::system::Address {
 
 };
 
@@ -531,7 +531,7 @@ public:
     MOCK_METHOD1_T(remove, void(const Key& keyId));
 };
 
-typedef MockDirectory<QString, joynr::EndpointAddressBase> MockMessagingEndpointDirectory;
+typedef MockDirectory<QString, joynr::system::Address> MockMessagingEndpointDirectory;
 
 
 
@@ -557,11 +557,11 @@ public:
 //virtual public IChannelUrlDirectory, virtual public ChannelUrlDirectorySyncProxy, virtual public ChannelUrlDirectoryAsyncProxy
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
-    MockChannelUrlDirectoryProxy() : ChannelUrlDirectoryProxy(NULL, QSharedPointer<joynr::EndpointAddressBase> (new joynr::EndpointAddressBase()), NULL, NULL, "domain",joynr::ProxyQos(), joynr::MessagingQos(), false),
+    MockChannelUrlDirectoryProxy() : ChannelUrlDirectoryProxy(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain",joynr::ProxyQos(), joynr::MessagingQos(), false),
         joynr::ProxyBase(NULL, NULL, "domain", "INTERFACE_NAME", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(NULL, QSharedPointer<joynr::EndpointAddressBase> (new joynr::EndpointAddressBase()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(NULL, QSharedPointer<joynr::EndpointAddressBase> (new joynr::EndpointAddressBase()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(NULL, QSharedPointer<joynr::EndpointAddressBase> (new joynr::EndpointAddressBase()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false){}
+        ChannelUrlDirectoryProxyBase(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
+        ChannelUrlDirectorySyncProxy(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
+        ChannelUrlDirectoryAsyncProxy(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false){}
 
 
     MOCK_METHOD2(getUrlsForChannel,void (QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation> > future,
@@ -612,8 +612,7 @@ public:
     #pragma warning( push )
 #endif
 
-#endif /* MOCKOBJECTS_H_ */
+// restore GCC diagnostic state
+#pragma GCC diagnostic pop
 
-// This only works in gcc 4.6
-// Resets the warning level to the one given in command line.
-//#pragma GCC diagnostic pop
+#endif /* MOCKOBJECTS_H_ */

@@ -20,7 +20,7 @@
 #define INPROCESSENDPOINTADDRESS_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 
 #include <QSharedPointer>
 
@@ -28,7 +28,7 @@ namespace joynr {
 
 class RequestCaller;
 
-class JOYNR_EXPORT InProcessEndpointAddress : public EndpointAddressBase {
+class JOYNR_EXPORT InProcessEndpointAddress : public joynr::system::Address {
     Q_OBJECT
 public:
     virtual ~InProcessEndpointAddress();

@@ -31,7 +31,7 @@
 #include <QString>
 #include <QDateTime>
 #include <QDataStream>
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 #include "joynr/types/ProviderQos.h"
 
 
@@ -44,7 +44,7 @@ class JOYNR_EXPORT CapabilityEntry : QObject
     Q_PROPERTY(QString domain READ getDomain WRITE setDomain)
     Q_PROPERTY(joynr__types__ProviderQos qos READ getQos WRITE setQos)
     Q_PROPERTY(QString participantId READ getParticipantId WRITE setParticipantId)
-    Q_PROPERTY(QList<QSharedPointer<EndpointAddressBase> > endpointAddresses READ getEndpointAddresses WRITE setEndpointAddresses)
+    Q_PROPERTY(QList<QSharedPointer<joynr::system::Address> > endpointAddresses READ getEndpointAddresses WRITE setEndpointAddresses)
     Q_PROPERTY(bool global READ isGlobal)
 
 public:
@@ -53,7 +53,15 @@ public:
 
     CapabilityEntry(const CapabilityEntry &other);
 
-    CapabilityEntry(const QString& domain, const QString& interfaceName, joynr::types::ProviderQos qos, const QString& participantId, QList<QSharedPointer<EndpointAddressBase> > endpointAddresses, bool isGlobal, QObject* parent = 0);
+    CapabilityEntry(
+            const QString& domain,
+            const QString& interfaceName,
+            joynr::types::ProviderQos qos,
+            const QString& participantId,
+            QList<QSharedPointer<joynr::system::Address> > endpointAddresses,
+            bool isGlobal,
+            QObject* parent = 0
+    );
 
     CapabilityEntry& operator =(const CapabilityEntry& other);
 
@@ -71,10 +79,10 @@ public:
     void setParticipantId(QString participantId);
 
 
-    void setEndpointAddresses(QList<QSharedPointer<EndpointAddressBase> > endpointAddresses);
-    QList<QSharedPointer<EndpointAddressBase> > getEndpointAddresses() const;
+    void setEndpointAddresses(QList<QSharedPointer<joynr::system::Address> > endpointAddresses);
+    QList<QSharedPointer<joynr::system::Address> > getEndpointAddresses() const;
 
-    void prependEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress);
+    void prependEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress);
 
     bool isGlobal() const;
     void setGlobal(bool global);
@@ -86,7 +94,7 @@ public:
     QString interfaceName;
     types::ProviderQos qos;
     QString participantId;
-    QList<QSharedPointer<EndpointAddressBase> > endpointAddresses;
+    QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
     bool global;
 };
 

@@ -41,10 +41,10 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrCommonAPI
     )
 
-    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
+    get_target_property(JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
     list(
         APPEND JoynrCommon_INCLUDE_DIRECTORIES
-        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
@@ -70,12 +70,10 @@ file(
     "in-process/*.h"
     "joynr-messaging/*.h"
     "cache/*.h"
-    "some-ip/*.h"
     "logging/*.h"
     "capabilities/*.h"
     "rpc/*.h"
     "exceptions/*.h"
-    "dbus/DbusMessagingEndpointAddress.h"
 )
 
 set(
@@ -91,12 +89,10 @@ file(
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
     "cache/*.cpp"
-    "some-ip/*.cpp"
     "logging/joynrlogging_log4qt.cpp"
     "capabilities/*.cpp"
     "rpc/*.cpp"
     "exceptions/*.cpp"
-    "dbus/DbusMessagingEndpointAddress.cpp"
     "SettingsMerger.cpp"
 )
 
@@ -163,3 +159,18 @@ install(
     DESTINATION "${INSTALL_INCLUDE_DIR}"
     FILES_MATCHING PATTERN "*.h"
 )
+
+# Visual Studio compiles to Debug and Release directories
+if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-system-services.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-system-services.settings)
+else()
+    # copy resources for build tree
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings)
+    # ...and for install tree
+    install(
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/
+    )
+endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

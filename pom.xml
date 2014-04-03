@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.5.0</version>
+	<version>0.6.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -56,23 +56,46 @@
 
 	<profiles>
 		<profile>
+            <!-- 
+            This profile is extended in several submodules with packaging type WAR
+            to disable deployment of WAR files containing third-party software to
+            Sonatype repositories.
+            
+            java/messaging/bounceproxy/bounceproxy-ui/pom.xml
+            -->
+		
 			<id>deploy-artifacts-to-sonatype</id>
 			<activation>
-				<!-- maven-jgitflow-plugin will set the performRelease property during
-					release and thus automatically activate this profile during release.
-					NOTE: You need to install GPG [1] and publish your public key to a key 
-					server.
-					The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
-					[2].
-					Follow instructions [3] to verify dependencies.
-					[1] https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven
-					[2] http://maven.apache.org/plugins/maven-gpg-plugin/usage.html
-					[3] http://branchandbound.net/blog/security/2012/08/verify-dependencies-using-pgp/ -->
+				<!--
+				maven-jgitflow-plugin will set the performRelease property during
+				release and thus automatically activate this profile during release.
+				NOTE: You need to install GPG [1] and publish your public key to a key 
+				server.
+				The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
+				[2].
+				Follow instructions [3] to verify dependencies.
+				[1] https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven
+				[2] http://maven.apache.org/plugins/maven-gpg-plugin/usage.html
+				[3] http://branchandbound.net/blog/security/2012/08/verify-dependencies-using-pgp/
+				-->
 				<property>
 					<name>performRelease</name>
 					<value>true</value>
 				</property>
 			</activation>
+            <properties>
+                <!--
+                This property will skip the execution of the maven-assembly-plugin during
+                deployment to Sonatype repositories. The plugin builds jar-with-dependencies
+                including third-party software that should not be deployed by this project.
+                
+                Following jar-with-dependencies are created during build:
+                java/backend-services/channelurldirectory/target/deploy/channelurldirectory-jar-with-dependencies.jar
+                java/backend-services/capabilitiesdirectory/target/deploy/capabilitiesdirectory-jar-with-dependencies.jar
+                java/backend-services/discovery/target/deploy/discovery-jar-with-dependencies.jar
+                -->
+                <assembly.skipAssembly>true</assembly.skipAssembly>
+            </properties>
 			<distributionManagement>
 				<snapshotRepository>
 					<id>sonatype-nexus-snapshots</id>
@@ -128,29 +151,19 @@
 			</build>
 		</profile>
 		<profile>
-			<id>DefaultConfiguration</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
-				<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
-			</properties>
-		</profile>
-		<profile>
-			<id>ContinuousBuildConfiguration</id>
+			<id>continuous-build-configuration</id>
 			<activation>
 				<property>
 					<name>JOYNR_CI</name>
 				</property>
 			</activation>
 			<properties>
-				<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
-				<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
+				<JOYNR_SERVER>joyntest:8080</JOYNR_SERVER>
+				<JOYNR_TEST_SERVER>joyntest:8080</JOYNR_TEST_SERVER>
 			</properties>
 		</profile>
 		<profile>
-			<id>findbugsProfile</id>
+			<id>findbugs</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -186,82 +199,151 @@
 			</build>
 		</profile>
 		<profile>
+			<!-- 
+				NOTE: if you change activation or the profile ID here, your also must
+				change it in the following child modules that extend this profile:
+				* io.joynr.java.messaging.bounceproxy:bounceproxy-ui
+			-->
 			<id>carit-copyright</id>
-			<activation>
-				<property>
-					<name>profile.carit-copyright</name>
-				</property>
-			</activation>
 			<properties>
-				<licenseConfigurationVersion>1.0</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.3</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>license-maven-plugin</artifactId>
-					<version>1.5</version>
-					<configuration>
-						<licenseName>apache_v2</licenseName>
-						<inceptionYear>2011</inceptionYear>
-						<organizationName>BMW Car IT GmbH</organizationName>
-						<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
-						<includes>
-							<include>**/*pom.xml</include>
-						</includes>
-						<extraExtensions>
-							<fidl>java</fidl>
-						</extraExtensions>
-					</configuration>
-					<executions>
-						<execution>
-							<id>add-third-party</id>
-							<phase>validate</phase>
-							<goals>
-								<goal>add-third-party</goal>
-							</goals>
-						</execution>
-						<execution>
-							<id>download-licenses</id>
-							<phase>validate</phase>
-							<goals>
-								<goal>download-licenses</goal>
-							</goals>
-						</execution>
-					</executions>
-					<dependencies>
-						<dependency>
-							<groupId>de.bmw.joynr</groupId>
-							<artifactId>license-configuration</artifactId>
-							<version>${licenseConfigurationVersion}</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-				<plugin>
-					<groupId>org.jasig.maven</groupId>
-					<artifactId>maven-notice-plugin</artifactId>
-					<version>1.0.6</version>
-					<configuration>
-						<noticeTemplate>/notice/NOTICE-JOYNR.template</noticeTemplate>
-						<licenseMapping>
-							<param>/notice/license-mappings.xml</param>
-							<param>/notice/license-mappings-local.xml</param>
-						</licenseMapping>
-					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>de.bmw.joynr</groupId>
-							<artifactId>license-configuration</artifactId>
-							<version>${licenseConfigurationVersion}</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-			</plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+						<version>1.5</version>
+						<configuration>
+							<licenseName>apache_v2</licenseName>
+							<inceptionYear>2011</inceptionYear>
+							<organizationName>BMW Car IT GmbH</organizationName>
+							<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
+							<includes>
+								<include>**/*pom.xml</include>
+							</includes>
+							<extraExtensions>
+								<fidl>java</fidl>
+							</extraExtensions>
+						</configuration>
+						<executions>
+							<execution>
+								<id>add-third-party</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>add-third-party</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>download-licenses</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>download-licenses</goal>
+								</goals>
+							</execution>
+						</executions>
+						<dependencies>
+							<dependency>
+								<groupId>de.bmw.joynr</groupId>
+								<artifactId>license-configuration</artifactId>
+								<version>${licenseConfigurationVersion}</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+					<plugin>
+						<groupId>org.jasig.maven</groupId>
+						<artifactId>maven-notice-plugin</artifactId>
+						<version>1.0.6</version>
+						<configuration>
+							<noticeTemplate>/notice/NOTICE-JOYNR.template</noticeTemplate>
+							<licenseMapping>
+								<param>/notice/license-mappings.xml</param>
+								<param>/notice/license-mappings-local.xml</param>
+							</licenseMapping>
+						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>de.bmw.joynr</groupId>
+								<artifactId>license-configuration</artifactId>
+								<version>${licenseConfigurationVersion}</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>carit-license</id>
+			<properties>
+				<licenseConfigurationVersion>1.0.3</licenseConfigurationVersion>
+				<!-- 
+					For unknown reasons useLicensesConfigFile and licensesConfigFile 
+					configuration properties must be set as global properties. It is
+					not sufficient to specify them directly in the plugin configuration.
+				-->
+	            <license.useLicensesConfigFile>true</license.useLicensesConfigFile>
+	            <license.licensesConfigFile>classpath://license/missinglicenses.xml</license.licensesConfigFile>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+						<version>1.3-JOYN.2</version>
+						<configuration>
+							<licenseName>apache_v2</licenseName>
+							<inceptionYear>2011</inceptionYear>
+							<organizationName>BMW Car IT GmbH</organizationName>
+							<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
+							<includes>
+								<include>**/*pom.xml</include>
+							</includes>
+							<extraExtensions>
+								<fidl>java</fidl>
+							</extraExtensions>
+							<licenseMerges>
+								<licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache
+									License, Version 2.0|Apache License, Version 2.0|Apache License V2.0|Apache 2|ASF
+									2.0|apache-2.0|Apache-2|Apache 2.0|Apache License 2.0|Apache
+									Software License - Version 2.0|Apache Software License - Version 2.0</licenseMerge>
+								<licenseMerge>CDDL-1.0|Common Development and Distribution License (CDDL) v1.0</licenseMerge>
+								<licenseMerge>MIT|The MIT License|MIT License</licenseMerge>
+								<licenseMerge>LGPL-2.1|Lesser Gnu Public License (LGPL), Version 2.1</licenseMerge>
+							</licenseMerges>
+							<generateBundle>true</generateBundle>
+				            <fileTemplate>license/joynr-third-party-file.ftl</fileTemplate>
+				            <bundleThirdPartyPath>${project.artifactId}-LICENSES.html</bundleThirdPartyPath>
+							<!-- 
+								For unknown reasons useLicensesConfigFile and licensesConfigFile 
+								configuration properties must be set as global properties. It is
+								not sufficient to specify them directly in the plugin configuration.
+							-->
+				            <useLicensesConfigFile>true</useLicensesConfigFile>
+				            <licensesConfigFile>classpath://license/missinglicenses.xml</licensesConfigFile>
+				            <excludedScopes>test</excludedScopes>
+				            <licenseResolver>classpath://license/resolver</licenseResolver>
+				            <!-- MissingFile is now replaced by the licenses config file -->
+				            <useMissingFile>true</useMissingFile>
+				            <failIfWarning>false</failIfWarning>
+				            <encoding>UTF-8</encoding>
+				            <canUpdateCopyright>true</canUpdateCopyright>
+						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>de.bmw.joynr</groupId>
+								<artifactId>license-configuration</artifactId>
+								<version>${licenseConfigurationVersion}</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>
 
 	<properties>
+		<JOYNR_SERVER>localhost:8080</JOYNR_SERVER>
+		<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -430,6 +512,11 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>net.logstash.log4j</groupId>
+				<artifactId>jsonevent-layout</artifactId>
+				<version>1.5</version>
+			</dependency>
+			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>1.6.6</version>
@@ -476,6 +563,7 @@
 				<artifactId>httpmime</artifactId>
 				<version>4.3</version>
 			</dependency>
+
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-bom</artifactId>
@@ -520,7 +608,7 @@
 						<groupId>org.codehaus.groovy</groupId>
 						<artifactId>groovy</artifactId>
 					</exclusion>
-				</exclusions>				
+				</exclusions>
 			</dependency>
 			<!-- included to prevent classpath issue with rest-asured -->
 			<dependency>
@@ -529,7 +617,7 @@
 				<!-- Needs to be the same version that REST Assured depends on -->
 				<version>2.1.2</version>
 				<scope>test</scope>
-			</dependency>		
+			</dependency>
 			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
@@ -558,27 +646,27 @@
 			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.core.dsl</artifactId>
-				<version>0.8.7</version>
+				<version>0.8.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.core</artifactId>
-				<version>0.8.7</version>
+				<version>0.8.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.deploymodel.dsl</artifactId>
-				<version>0.8.7</version>
+				<version>0.8.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
 				<artifactId>core</artifactId>
-				<version>2.0.2</version>
+				<version>2.1.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
 				<artifactId>dbus</artifactId>
-				<version>2.0.2</version>
+				<version>2.1.2</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -926,10 +1014,35 @@
 					<artifactId>maven-antrun-plugin</artifactId>
 					<version>1.7</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.3.1</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-maven-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>[3.0,3.1)</version>
+									<message>Wrong Maven version. You must use Maven 3.0.x to build joynr.</message>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

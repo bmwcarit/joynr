@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/DbusMessagingSkeleton.h"
-#include <CommonAPI/Factory.h>
+#include <CommonAPI/CommonAPI.h>
 
 #include "common/dbus/DbusMessagingUtil.h"
 

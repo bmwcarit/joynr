@@ -28,6 +28,26 @@ ParticipantIdStorage::ParticipantIdStorage(const QString& filename) :
 {
 }
 
+const QString &ParticipantIdStorage::STORAGE_FORMAT_STRING()
+{
+    static const QString value("joynr.participant/%1|%2|%3");
+    return value;
+}
+
+void ParticipantIdStorage::setProviderParticipantId(
+        const QString &domain,
+        const QString &interfaceName,
+        const QString &authenticationToken,
+        const QString &participantId
+) {
+    // Access the persistence file through a threadsafe QSettings object
+    QSettings settings(filename, QSettings::IniFormat);
+
+    QString providerKey = createProviderKey(domain, interfaceName, authenticationToken);
+    settings.setValue(providerKey, participantId);
+    settings.sync();
+}
+
 QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
                                                        const QString& interfaceName,
                                                        const QString& authenticationToken)
@@ -46,22 +66,34 @@ QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
     // Arrange the provider ids by authentication token
     QString authToken = (!authenticationToken.isEmpty()) ? authenticationToken :
                                                            QString("default");
-    QString token = QString("joynr.participant/%1|%2|%3").arg(domain).arg(interfaceName).arg(authToken);
+    QString providerKey = createProviderKey(domain, interfaceName, authToken);
 
     // Lookup the participant id
     QString participantId;
-    QVariant value = settings.value(token);
+    QVariant value = settings.value(providerKey);
 
     if (!value.isValid()) {
         // Persist a new participant Id, using the defaultValue if possible
         participantId = (!defaultValue.isEmpty()) ? defaultValue : Util::createUuid();
-        settings.setValue(token, participantId);
+        settings.setValue(providerKey, participantId);
         settings.sync();
     } else {
         participantId = value.toString();
     }
 
     return participantId;
+}
+
+QString ParticipantIdStorage::createProviderKey(
+        const QString &domain,
+        const QString &interfaceName,
+        const QString &authenticationToken
+) {
+    return STORAGE_FORMAT_STRING()
+            .arg(domain)
+            .arg(interfaceName)
+            .arg(authenticationToken)
+    ;
 }
 
 } // namespace joynr

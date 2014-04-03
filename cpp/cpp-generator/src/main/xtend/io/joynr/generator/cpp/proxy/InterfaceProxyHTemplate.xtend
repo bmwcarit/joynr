@@ -54,14 +54,16 @@ class InterfaceProxyHTemplate  {
 		«getNamespaceStarter(serviceInterface)» 
 		class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
 		public:    
-		    «className»(joynr::ICapabilities* capabilitiesStub,
-		    		 QSharedPointer<joynr::EndpointAddressBase> messagingEndpointAddress, 
-		    		 joynr::ConnectorFactory* connectorFactory,
-		             joynr::IClientCache* cache,
-		             const QString& domain,
-		             const joynr::ProxyQos& proxyQos,
-		             const joynr::MessagingQos& qosSettings,
-		             bool cached);
+		    «className»(
+		            joynr::ICapabilities* capabilitiesStub,
+		            QSharedPointer<joynr::system::Address> messagingAddress,
+		            joynr::ConnectorFactory* connectorFactory,
+		            joynr::IClientCache* cache,
+		            const QString& domain,
+		            const joynr::ProxyQos& proxyQos,
+		            const joynr::MessagingQos& qosSettings,
+		            bool cached
+		    );
 
 			«FOR attribute: getAttributes(serviceInterface)»
 				«var attributeName = attribute.joynrName»

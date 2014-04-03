@@ -62,8 +62,8 @@ public:
     QSemaphore semaphore;
 
     End2EndDbusTest() :
-        messageSettingsFilename("resources/SystemIntegrationTest1.settings"),
-        libjoynrSettingsFilename("resources/libjoynrintegrationtest.settings"),
+        messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
+        libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
         messagingQsettings(messageSettingsFilename, QSettings::IniFormat),
         libjoynrQsettings(libjoynrSettingsFilename, QSettings::IniFormat),
         messagingSettings(new MessagingSettings(messagingQsettings)),
@@ -71,8 +71,8 @@ public:
         clusterControllerRuntime(NULL),
         runtime1(NULL),
         runtime2(NULL),
-        domain("local"),
         testProxy(NULL),
+        domain("local"),
         semaphore(0)
     {
         // create the cluster controller runtime

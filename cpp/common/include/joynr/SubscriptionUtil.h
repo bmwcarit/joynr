@@ -20,11 +20,12 @@
 #define SUBSCRIPTIONUTIL_H
 
 #include "joynr/SubscriptionQos.h"
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr {
 
 
-class SubscriptionUtil
+class JOYNRCOMMON_EXPORT SubscriptionUtil
 {
 public:
     static bool isOnChangeSubscription(SubscriptionQos* qos);

@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -84,9 +84,7 @@
 				<exclusions>
 					<exclusion>
 						<artifactId>google-collect</artifactId>
-						<groupId>
-						com.google.code.google-collections
-					</groupId>
+						<groupId>com.google.code.google-collections</groupId>
 					</exclusion>
 				</exclusions>
 			</dependency>

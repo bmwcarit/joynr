@@ -39,14 +39,14 @@ class JOYNR_EXPORT CapabilitiesRegistrar {
 public:
     CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
                           QSharedPointer<ICapabilities> capabilitiesAggregator,
-                          QSharedPointer<EndpointAddressBase> messagingStubAddress,
+                          QSharedPointer<joynr::system::Address> messagingStubAddress,
                           QSharedPointer<ParticipantIdStorage> participantIdStorage);
 
     template <class T>
     QString registerCapability(const QString& domain, QSharedPointer<T> provider, QString authenticationToken){
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
-        QList<QSharedPointer<EndpointAddressBase> > endpointAddresses;
+        QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId =
@@ -100,7 +100,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
     QSharedPointer<ICapabilities> capabilitiesAggregator;
-    QSharedPointer<EndpointAddressBase> messagingStubAddress;
+    QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
 };
 

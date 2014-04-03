@@ -2,7 +2,7 @@ package io.joynr.generator.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -232,13 +232,18 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
+		getRequiredIncludesFor(datatype, true);
+	}
+	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype, boolean includingExendedType){
 		val members = getComplexAndEnumMembers(datatype);
 		
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOf(getExtendedType(datatype)))
+			if (includingExendedType){
+				typeList.add(getIncludeOf(getExtendedType(datatype)))
+			}
 
-			typeList.addAll(getRequiredIncludesFor(getExtendedType(datatype)))
+			typeList.addAll(getRequiredIncludesFor(getExtendedType(datatype), false))
 
 		}
 
@@ -334,9 +339,9 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
         return false;
     }
 
-    override isReadonly(FAttribute fAttribute) { (fAttribute.readonly!=null) }
+    override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
 
-    override isObservable(FAttribute fAttribute) { !(fAttribute.noSubscriptions!=null) }
+    override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
 
 	override getPrimitiveTypeName(FBasicTypeId basicType) {
 		switch basicType {

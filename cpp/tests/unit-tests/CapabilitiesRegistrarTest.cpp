@@ -66,7 +66,7 @@ protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
     QSharedPointer<MockCapabilitiesStub> mockCapabilitiesStub;
-    QSharedPointer<EndpointAddressBase> messagingStubAddress;
+    QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     QSharedPointer<MockProvider> mockProvider;

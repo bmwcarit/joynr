@@ -19,6 +19,10 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
@@ -32,7 +36,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -88,39 +91,33 @@ public class CapabilitiesRegistrarTests {
     @Test
     public void registerWithCapRegistrar() {
 
-        Mockito.when(provider.getProviderQos()).thenReturn(providerQos);
-        Mockito.when(participantIdStorage.getProviderParticipantId(domain,
-                                                                   Mockito.eq(ProvidedInterface.class),
-                                                                   Mockito.anyString())).thenReturn(participantId);
-        Mockito.when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
+        when(provider.getProviderQos()).thenReturn(providerQos);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
+        when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
 
         registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
-        Mockito.verify(localCapabilitiesDirectory)
-               .addCapability(Mockito.eq(new CapabilityEntry(domain,
-                                                             TestInterface.class,
-                                                             providerQos,
-                                                             participantId,
-                                                             CapabilityScope.LOCALGLOBAL)));
-        Mockito.verify(requestCallerFactory).create(provider, ProvidedInterface.class);
+        verify(localCapabilitiesDirectory).addCapability(eq(new CapabilityEntry(domain,
+                                                                                TestInterface.class,
+                                                                                providerQos,
+                                                                                participantId,
+                                                                                CapabilityScope.LOCALGLOBAL)));
+        verify(requestCallerFactory).create(provider, ProvidedInterface.class);
 
-        Mockito.verify(dispatcher).addRequestCaller(participantId, requestCaller);
+        verify(dispatcher).addRequestCaller(participantId, requestCaller);
     }
 
     @Test
     public void unregisterCapability() {
-        Mockito.when(provider.getProviderQos()).thenReturn(providerQos);
-        Mockito.when(participantIdStorage.getProviderParticipantId(domain,
-                                                                   Mockito.eq(ProvidedInterface.class),
-                                                                   Mockito.anyString())).thenReturn(participantId);
+        when(provider.getProviderQos()).thenReturn(providerQos);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
         registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
 
-        Mockito.verify(localCapabilitiesDirectory)
-               .removeCapability(Mockito.eq(new CapabilityEntry(domain,
-                                                                TestInterface.class,
-                                                                providerQos,
-                                                                participantId,
-                                                                CapabilityScope.LOCALGLOBAL)));
-        Mockito.verify(dispatcher).removeRequestCaller(Mockito.eq(participantId));
+        verify(localCapabilitiesDirectory).removeCapability(eq(new CapabilityEntry(domain,
+                                                                                   TestInterface.class,
+                                                                                   providerQos,
+                                                                                   participantId,
+                                                                                   CapabilityScope.LOCALGLOBAL)));
+        verify(dispatcher).removeRequestCaller(eq(participantId));
     }
 
 }

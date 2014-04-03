@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 ######## Project settings ########
-project(Joynr-0.5.0)
+project(joynr-0.6.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 5)
+set(JOYNR_MINOR_VERSION 6)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -52,32 +52,32 @@ option(
     "Use DBUS and CommonAPI to communicate between libjoynr and cluster-controller?"
     OFF
 )
-message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION="${USE_DBUS_COMMONAPI_COMMUNICATION})
+message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION=" ${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 option(
     BUILD_TESTS
     "Build test binaries?"
     ON
 )
-message(STATUS "option BUILD_TESTS="${BUILD_TESTS})
+message(STATUS "option BUILD_TESTS=" ${BUILD_TESTS})
 
 option(
     ENABLE_GCOV
     "Use GCOV to meassure test code coverage?"
     OFF
 )
-message(STATUS "option ENABLE_GCOV="${ENABLE_GCOV})
+message(STATUS "option ENABLE_GCOV=" ${ENABLE_GCOV})
 
 message(STATUS "############ VARIABLES ############")
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
 endif(NOT DEFINED JOYNR_SERVER)
-message(STATUS "variable JOYNR_SERVER="${JOYNR_SERVER})
+message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
-message(STATUS "variable CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
+message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
 #------- SYSTEM_ARCHITECTURE --------
-message(STATUS "variable CMAKE_SYSTEM_PROCESSOR="${CMAKE_SYSTEM_PROCESSOR})
+message(STATUS "variable CMAKE_SYSTEM_PROCESSOR=" ${CMAKE_SYSTEM_PROCESSOR})
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
     set(SYSTEM_ARCHITECTURE "x86")
 endif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
@@ -89,15 +89,15 @@ if(NOT DEFINED SYSTEM_ARCHITECTURE)
     message(WARNING "system architecture unknown")
     set(SYSTEM_ARCHITECTURE "unknown-system-architecture")
 endif(NOT DEFINED SYSTEM_ARCHITECTURE)
-message(STATUS "variable SYSTEM_ARCHITECTURE="${SYSTEM_ARCHITECTURE})
+message(STATUS "variable SYSTEM_ARCHITECTURE=" ${SYSTEM_ARCHITECTURE})
 
-message(STATUS "variable CMAKE_MODULE_PATH="${CMAKE_MODULE_PATH})
-message(STATUS "variable CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH})
-message(STATUS "variable CMAKE_ROOT="${CMAKE_ROOT})
+message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
+message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
+message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
-message(STATUS "variable JOYNR_BINARY_DIR="${JOYNR_BINARY_DIR})
+message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 
 if(${ENABLE_GCOV})
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/code-coverage")
@@ -138,13 +138,13 @@ if(${WIN32})
     if(NOT CURL_HOME)
         if(DEFINED ENV{CURL_HOME})
             message(STATUS "setting CURL_HOME from environment variable")
-            message(STATUS "environment variable CURL_HOME="$ENV{CURL_HOME})
+            message(STATUS "environment variable CURL_HOME=" $ENV{CURL_HOME})
             set(CURL_HOME $ENV{CURL_HOME})
         else()
             message(FATAL_ERROR "CURL_HOME variable not set")
         endif()
     endif(NOT CURL_HOME)
-    message(STATUS "variable CURL_HOME="${CURL_HOME})
+    message(STATUS "variable CURL_HOME=" ${CURL_HOME})
 
     find_path(CURL_INCLUDE_DIRS
         NAMES curl/curl.h
@@ -167,15 +167,15 @@ if(${WIN32})
         # saving the old state of CMAKE_FIND_LIBRARY_*
         set(CMAKE_FIND_LIBRARY_PREFIXES_org ${CMAKE_FIND_LIBRARY_PREFIXES})
         set(CMAKE_FIND_LIBRARY_SUFFIXES_org ${CMAKE_FIND_LIBRARY_SUFFIXES})
-        message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES_org="${CMAKE_FIND_LIBRARY_PREFIXES_org})
-        message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES_org="${CMAKE_FIND_LIBRARY_SUFFIXES_org})
+        message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES_org=" ${CMAKE_FIND_LIBRARY_PREFIXES_org})
+        message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES_org=" ${CMAKE_FIND_LIBRARY_SUFFIXES_org})
         # adding additional prefixes and suffixes
         set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} "lib")
         set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES} ".dll" ".dll.a" ".a")
     endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
-    message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES="${CMAKE_FIND_LIBRARY_PREFIXES})
-    message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES="${CMAKE_FIND_LIBRARY_SUFFIXES})
+    message(STATUS "variable CMAKE_FIND_LIBRARY_PREFIXES=" ${CMAKE_FIND_LIBRARY_PREFIXES})
+    message(STATUS "variable CMAKE_FIND_LIBRARY_SUFFIXES=" ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
     find_library(CURL_LIBRARIES
         NAMES curldll
@@ -190,8 +190,8 @@ if(${WIN32})
         #       This would cause the variable to be unset.
         set(CMAKE_FIND_LIBRARY_PREFIXES "${CMAKE_FIND_LIBRARY_PREFIXES_org}")
         set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_FIND_LIBRARY_SUFFIXES_org}")
-        message(STATUS "variable restored CMAKE_FIND_LIBRARY_PREFIXES="${CMAKE_FIND_LIBRARY_PREFIXES})
-        message(STATUS "variable restored CMAKE_FIND_LIBRARY_SUFFIXES="${CMAKE_FIND_LIBRARY_SUFFIXES})
+        message(STATUS "variable restored CMAKE_FIND_LIBRARY_PREFIXES=" ${CMAKE_FIND_LIBRARY_PREFIXES})
+        message(STATUS "variable restored CMAKE_FIND_LIBRARY_SUFFIXES=" ${CMAKE_FIND_LIBRARY_SUFFIXES})
     endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
     if(CURL_INCLUDE_DIRS AND CURL_VERSION_STRING AND CURL_LIBRARIES)
@@ -204,10 +204,10 @@ else(${WIN32})
 endif(${WIN32})
 
 
-message(STATUS "variable CURL_FOUND="${CURL_FOUND})
-message(STATUS "variable CURL_VERSION_STRING="${CURL_VERSION_STRING})
-message(STATUS "variable CURL_INCLUDE_DIRS="${CURL_INCLUDE_DIRS})
-message(STATUS "variable CURL_LIBRARIES="${CURL_LIBRARIES})
+message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
+message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
+message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
+message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
 
 if(NOT CURL_FOUND)
 	message(FATAL_ERROR "Could not find library: curl.")
@@ -258,8 +258,16 @@ IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${MSVCC_AUTO_INCLUDE} /RTC1 /GS /MP")
 ELSE()
         # libs/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for 3rd-Party code.
+        # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
+        # generated code.
         # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
-        set(GNU_CXX_FLAGS "-pipe -g -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector -Wswitch-enum -Wuninitialized")
+        set(GNU_CXX_FLAGS "-pipe -g")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Weffc++ -Wformat-security")
         IF(${WIN32})
                 # This setting does not work in linux:
                 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
@@ -271,34 +279,34 @@ ELSE()
            execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
            if (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7)
                 message(STATUS "C++11 activated.")
-                add_definitions("-std=gnu++11 -D_GLIBCXX_USE_NANOSLEEP")
+                add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
            elseif(GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
                 message(WARNING "C++0x activated. If you get any errors update to a compiler which fully supports C++11")
-                add_definitions("-std=gnu++0x")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
            else ()
                 message(FATAL_ERROR "C++11 needed. Therefore a gcc compiler with a version higher than 4.3 is needed.")
            endif()
         else(CMAKE_COMPILER_IS_GNUCXX)
-            add_definitions("-std=c++0x")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
         endif(CMAKE_COMPILER_IS_GNUCXX)
-        # set effective C++ and security warnings
-        add_definitions(-Weffc++)
-        add_definitions(-Wformat-security)
 ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     message(STATUS "### DBUS CommonAPI configuration ###")
 
-        FIND_PACKAGE(PkgConfig)
+    find_package(PkgConfig)
     pkg_check_modules(DBUS1 REQUIRED dbus-1)
-    message(STATUS "variable DBUS_INCLUDE_DIRS="${DBUS1_INCLUDE_DIRS})
-    message(STATUS "variable DBUS1_LIBRARIES="${DBUS1_LIBRARIES})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
-    message(STATUS "variable COMMONAPI_INCLUDE_DIRS="${COMMONAPI_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_LIBRARIES="${COMMONAPI_LIBRARIES})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus)
-    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS="${COMMONAPI_DBUS_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES="${COMMONAPI_DBUS_LIBRARIES})
+    message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
+    message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
+    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1)
+    message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
+    message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
+    message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
+    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1)
+    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
+    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
+    message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
 
     include_directories(SYSTEM
 
@@ -378,8 +386,12 @@ set(
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND JoynrConfig_LIBRARIES
+    set(
+        JoynrConfig_LIB_LIBRARIES
+        JoynrCommon
+        Joynr
+        qjson
+        log4qt
         JoynrRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -400,6 +412,15 @@ set(
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
 )
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    set(
+        JoynrConfig_LIB_INCLUDE_DIRS
+        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
+        ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+        ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+        ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
 

@@ -46,9 +46,11 @@ file(
     "dispatcher/*.h"
     "in-process/*.h"
     "joynr-messaging/*.h"
+    "some-ip/*.h"
     "provider/*.h"
     "proxy/*.h"
     "subscription/*.h"
+    "dbus/DbusMessagingEndpointAddress.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
 )
@@ -69,9 +71,11 @@ file(
     "dispatcher/*.cpp"
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
+    "some-ip/*.cpp"
     "provider/*.cpp"
     "proxy/*.cpp"
     "subscription/*.cpp"
+    "dbus/DbusMessagingEndpointAddress.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
 )

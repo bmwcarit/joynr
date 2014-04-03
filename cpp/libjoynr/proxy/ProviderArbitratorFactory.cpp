@@ -27,7 +27,7 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(const QString& d
     case DiscoveryQos::ArbitrationStrategy::NOT_SET:
         return new DefaultArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos);
         break;
-    case DiscoveryQos::ArbitrationStrategy::FIXED_CHANNEL:
+    case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
         return new FixedParticipantArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::LOCAL_ONLY:
         throw JoynrException("Arbitration: Local-only not implemented yet.");

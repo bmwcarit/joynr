@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));
-    QString pathToLibJoynrSettings(dir + QString("/resources/radio-app-consumer.libjoyn.settings"));
+    QString pathToLibJoynrSettings(dir + QString("/resources/radio-app-consumer.libjoynr.settings"));
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // Create proxy builder

@@ -105,8 +105,8 @@ public:
     qint64 getSendMsgMaxTtl() const;
     void setSendMsgMaxTtl(qint64 ttl_ms);
 
-    bool contains(const QString& key);
-    QVariant value(const QString& key);
+    bool contains(const QString& key) const;
+    QVariant value(const QString& key) const;
 
 signals:
 

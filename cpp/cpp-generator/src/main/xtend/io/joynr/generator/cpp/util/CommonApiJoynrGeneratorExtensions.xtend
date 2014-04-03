@@ -42,8 +42,8 @@ abstract class CommonApiJoynrGeneratorExtensions extends JoynrGeneratorExtension
 		// francaExtensions.getPrimitiveTypeName(basicType)
 	}
 	
-    override isReadonly(FAttribute fAttribute) { fAttribute.readonly!=null }
+    override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
 
-    override isObservable(FAttribute fAttribute) { !(fAttribute.noSubscriptions!=null) }
+    override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
 
 }

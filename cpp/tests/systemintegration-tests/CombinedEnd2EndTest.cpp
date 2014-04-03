@@ -82,8 +82,8 @@ public:
         qRegisterMetaTypeCi(),
         runtime1(NULL),
         runtime2(NULL),
-        settings1("resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
+        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
+        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
         baseUuid(QUuid::createUuid().toString()),
@@ -105,11 +105,11 @@ public:
 //        //TODO: also remove the variables qRegisterMetaTypeQos
 //        qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
 
-        QSettings* settings_1 = SettingsMerger::mergeSettings(QString("resources/SystemIntegrationTest1.settings"));
-        SettingsMerger::mergeSettings(QString("resources/libjoynrSystemIntegration1.settings"), settings_1);
+        QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
+        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
         runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1, new HttpCommunicationManager(messagingSettings1));
-        QSettings* settings_2 = SettingsMerger::mergeSettings(QString("resources/SystemIntegrationTest2.settings"));
-        SettingsMerger::mergeSettings(QString("resources/libjoynrSystemIntegration2.settings"), settings_2);
+        QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
+        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
         runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2, new HttpCommunicationManager(messagingSettings2));
     }
 

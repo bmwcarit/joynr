@@ -26,9 +26,11 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/exceptions.h"
 #include "joynr/ProxyBuilder.h"
+#include "joynr/ParticipantIdStorage.h"
 #include "joynr/CapabilitiesAggregator.h"
 #include "joynr/ICapabilities.h"
 #include "joynr/ProxyFactory.h"
+#include "joynr/SystemServicesSettings.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -36,15 +38,19 @@
 
 namespace joynr {
 
+class SystemServicesSettings;
+
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime {
 
 public:
 
-    JoynrRuntime() :
-        proxyFactory(NULL),
-        joynrCapabilitiesSendStub(NULL),
-        capabilitiesRegistrar(NULL),
-        capabilitiesAggregator(NULL)
+    JoynrRuntime(QSettings &settings) :
+            proxyFactory(NULL),
+            joynrCapabilitiesSendStub(NULL),
+            participantIdStorage(NULL),
+            capabilitiesRegistrar(NULL),
+            capabilitiesAggregator(NULL),
+            systemServicesSettings(settings)
     {
     }
 
@@ -82,8 +88,10 @@ protected:
 
     ProxyFactory* proxyFactory;
     ICapabilities* joynrCapabilitiesSendStub;
+    QSharedPointer<ParticipantIdStorage> participantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     QSharedPointer<CapabilitiesAggregator> capabilitiesAggregator;
+    SystemServicesSettings systemServicesSettings;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);

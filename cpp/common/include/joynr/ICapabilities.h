@@ -20,7 +20,7 @@
 #define ICAPABILITIES_H
 
 #include "joynr/MessagingQos.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/DiscoveryQos.h"
 #include <QString>
@@ -53,13 +53,13 @@ public:
             const QString& interfaceName,
             const QString& participantId,
             const types::ProviderQos& qos,
-            QList<QSharedPointer<EndpointAddressBase> > endpointAddressList,
-            QSharedPointer<EndpointAddressBase> messagingStubAddress,
+            QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     ) = 0;
     virtual void addEndpoint(
             const QString& participantId,
-            QSharedPointer<EndpointAddressBase> messagingStubAddress,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     ) = 0;
     virtual QList<CapabilityEntry> lookup(

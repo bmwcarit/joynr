@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,11 +76,13 @@ class TypeHTemplate {
 
 			//general methods
 			«typeName»();
+			«IF !getMembersRecursive(complexType).empty»
 			«typeName»(
 				«FOR member: getMembersRecursive(complexType) SEPARATOR","»
 					«getMappedDatatypeOrList(member)» «member.joynrName»
 				«ENDFOR»
 			);
+			«ENDIF»
 			«typeName»(const «typeName»& «typeName.toFirstLower»Obj);
 
 			virtual ~«typeName»();

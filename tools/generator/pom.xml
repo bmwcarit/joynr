@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tools</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
@@ -42,6 +42,10 @@
 			<plugin>
 				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
 				<artifactId>maven-java-formatter-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>	

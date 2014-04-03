@@ -258,7 +258,6 @@ public class ProviderProxyEnd2EndTest {
     public void registerProviderDoesNotBlock() throws InterruptedException {
         Assert.assertTrue("Register Provider should not block. Took " + timeTookToRegisterProvider
                 + "ms to register provider", timeTookToRegisterProvider < 100);
-        Thread.sleep(1000);
     }
 
     @Test(timeout = 3000)

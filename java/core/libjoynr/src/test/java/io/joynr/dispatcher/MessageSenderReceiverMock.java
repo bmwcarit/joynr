@@ -22,12 +22,15 @@ package io.joynr.dispatcher;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
+import io.joynr.messaging.ReceiverStatusListener;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 import joynr.JoynrMessage;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 
 /**
@@ -155,8 +158,9 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     }
 
     @Override
-    public void startReceiver() {
+    public Future<Void> startReceiver(ReceiverStatusListener... statusListeners) {
         started = true;
+
         if (isBlockInitialisation()) {
             // Added to check if Dispatcher blocks on addReplyCaller
             try {
@@ -165,6 +169,12 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
 
             }
         }
+
+        for (ReceiverStatusListener statusListener : statusListeners) {
+            statusListener.receiverStarted();
+        }
+
+        return Futures.immediateFuture(null);
 
     }
 }

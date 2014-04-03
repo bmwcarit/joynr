@@ -43,7 +43,7 @@ public:
     MessagingSettings* messagingSettings;
 
     ClockSkewTest() :
-        settings("resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
+        settings("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
         messagingSettings(new MessagingSettings(settings))
     {
     }

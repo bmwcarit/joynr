@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -36,7 +36,7 @@
 			copies them to the currrent build directory.
 		-->
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
@@ -47,7 +47,7 @@
 		-->
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discoverydirectoryservlet</artifactId>
+			<artifactId>discovery-directory-servlet</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -130,7 +130,7 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>io.joynr.java.messaging</groupId>
+									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 									<artifactId>bounceproxy</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
@@ -139,7 +139,7 @@
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discoverydirectoryservlet</artifactId>
+									<artifactId>discovery-directory-servlet</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
@@ -171,6 +171,12 @@
 							<contextPath>/discovery</contextPath>
 						</contextHandler>
 					</contextHandlers>
+					<systemProperties>
+						<systemProperty>
+							<name>hostPath</name>
+							<value>http://localhost:8080</value>
+						</systemProperty>
+					</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>

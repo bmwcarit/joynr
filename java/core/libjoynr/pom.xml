@@ -26,14 +26,14 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
-			<artifactId>infrastructurecommon</artifactId>
+			<artifactId>infrastructure-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -91,7 +91,7 @@
 			<scope>test</scope>
 		</dependency>			
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-standalone</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>

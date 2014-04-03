@@ -1,3 +1,0 @@
-[common-api]
-cluster-controller-messaging-address=local:org.genivi.commonapi.joyn:cc.messaging
-cluster-controller-capabilities-address=local:org.genivi.commonapi.joyn:cc.capabilities

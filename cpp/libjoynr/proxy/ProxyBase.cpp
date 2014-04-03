@@ -26,19 +26,26 @@ namespace joynr {
 using namespace joynr_logging;
 Logger* ProxyBase::logger = Logging::getInstance()->getLogger("ProxyBase", "ProxyBase");
 
-ProxyBase::ProxyBase(ConnectorFactory* connectorFactory, IClientCache *cache, const QString &domain, const QString &interfaceName, const ProxyQos &proxyQos, const MessagingQos &qosSettings, bool cached)
-
-    : connectorFactory(connectorFactory),
-      cache(cache),
-      domain(domain),
-      interfaceName(interfaceName),
-      proxyQos(proxyQos),
-      qosSettings(qosSettings),
-      cached(cached),
-      providerParticipantId(""),
-      proxyParticipantId(""),
-      providerEndpointAddress(NULL),
-      destinationChannelId("DummyChannelIdForRefactoring")
+ProxyBase::ProxyBase(
+        ConnectorFactory* connectorFactory,
+        IClientCache *cache,
+        const QString &domain,
+        const QString &interfaceName,
+        const ProxyQos &proxyQos,
+        const MessagingQos &qosSettings,
+        bool cached
+) :
+        connectorFactory(connectorFactory),
+        cache(cache),
+        domain(domain),
+        interfaceName(interfaceName),
+        proxyQos(proxyQos),
+        qosSettings(qosSettings),
+        cached(cached),
+        providerParticipantId(""),
+        proxyParticipantId(""),
+        providerAddress(NULL),
+        destinationChannelId("DummyChannelIdForRefactoring")
 {
     proxyParticipantId = QUuid::createUuid().toString();
     proxyParticipantId = proxyParticipantId.mid(1,proxyParticipantId.length()-2);
@@ -47,9 +54,9 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory, IClientCache *cache, co
 ProxyBase::~ProxyBase(){
 }
 
-void ProxyBase::handleArbitrationFinished(const QString &participantId, QSharedPointer<EndpointAddressBase> endpointAddress){
+void ProxyBase::handleArbitrationFinished(const QString &participantId, QSharedPointer<joynr::system::Address> providerAddress){
     providerParticipantId = participantId;
-    providerEndpointAddress = endpointAddress;
+    this->providerAddress = providerAddress;
 }
 
 

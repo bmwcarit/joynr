@@ -46,8 +46,8 @@ ACTION_P(ReleaseSemaphore,semaphore)
 }
 
 static const QString messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
-static const QString settingsFilename("resources/SystemIntegrationTest1.settings");
-static const QString libJoynrSettingsFilename("resources/libjoynrSystemIntegration1.settings");
+static const QString settingsFilename("test-resources/SystemIntegrationTest1.settings");
+static const QString libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
 
 class CapabilitiesClientTest : public Test {
 public:

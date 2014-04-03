@@ -34,7 +34,7 @@ InProcessCapabilitiesSkeleton::InProcessCapabilitiesSkeleton(IMessagingEndpointD
 
 }
 
-void InProcessCapabilitiesSkeleton::addEndpoint(const QString& participantId, QSharedPointer<EndpointAddressBase> messagingStubAddress, const qint64& timeout_ms){
+void InProcessCapabilitiesSkeleton::addEndpoint(const QString& participantId, QSharedPointer<joynr::system::Address> messagingStubAddress, const qint64& timeout_ms){
     Q_UNUSED(timeout_ms); //timeout does not make sense for in-process communication, but has to be in the method signature to fullfill common interface
     assert(messagingEndpointDirectory!=NULL);
     messagingEndpointDirectory->add(participantId, messagingStubAddress);
@@ -45,8 +45,8 @@ void InProcessCapabilitiesSkeleton::add(
         const QString &interfaceName,
         const QString &participantId,
         const types::ProviderQos &qos,
-        QList<QSharedPointer<EndpointAddressBase> > endpointAddressList,
-        QSharedPointer<EndpointAddressBase> messagingStubAddress,
+        QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+        QSharedPointer<joynr::system::Address> messagingStubAddress,
         const qint64& timeout_ms
 ) {
     Q_UNUSED(timeout_ms); //timeout does not make sense for in-process communication, but has to be in the method signature to fullfill common interface

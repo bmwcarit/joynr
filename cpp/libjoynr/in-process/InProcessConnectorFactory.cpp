@@ -31,7 +31,7 @@ InProcessConnectorFactory::InProcessConnectorFactory(
 {
 }
 
-bool InProcessConnectorFactory::canBeCreated(const QSharedPointer<EndpointAddressBase> endpointAddress)
+bool InProcessConnectorFactory::canBeCreated(const QSharedPointer<joynr::system::Address> endpointAddress)
 {
     QString currentClassName = endpointAddress->metaObject()->className();
     return currentClassName.compare(InProcessEndpointAddress::ENDPOINTADDRESSTYPE) == 0;

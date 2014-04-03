@@ -23,7 +23,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/IArbitrationListener.h"
-#include "joynr/EndpointAddressBase.h"
+#include "joynr/system/Address.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ICapabilities.h"
@@ -60,7 +60,7 @@ public:
      */
     QString getParticipantId();
 
-    QSharedPointer<EndpointAddressBase> getEndpointAddress();
+    QSharedPointer<joynr::system::Address> getEndpointAddress();
 
     /*
      *  setArbitrationCallback expects a callback to a JoynrProviderProxy object which
@@ -80,7 +80,7 @@ protected:
     /*
      *  setArbitrationStatus uses the callback to notify the ProviderProxy about the arbitration results.
      */
-    void updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationStatusType arbitrationStatus, QString participantId, QSharedPointer<EndpointAddressBase> endpointAddress);
+    void updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationStatusType arbitrationStatus, QString participantId, QSharedPointer<joynr::system::Address> endpointAddress);
     QSharedPointer<ICapabilities> capabilitiesStub;
     DiscoveryQos discoveryQos;
     QString domain;
@@ -91,9 +91,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(QString participantId);
-    void setEndpointAddress(QSharedPointer<EndpointAddressBase> endpointAddress);
+    void setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress);
     QString participantId;
-    QSharedPointer<EndpointAddressBase> endpointAddress;
+    QSharedPointer<joynr::system::Address> endpointAddress;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     QSemaphore listenerSemaphore;

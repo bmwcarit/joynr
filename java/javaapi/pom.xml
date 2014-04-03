@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -39,12 +39,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>joynrtypes</artifactId>
+			<artifactId>joynr-types</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messagingcommon</artifactId>
+			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

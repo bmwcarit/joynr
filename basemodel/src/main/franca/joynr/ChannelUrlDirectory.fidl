@@ -21,9 +21,9 @@ package infrastructure
 import types.ExtendedTypes.* from "../common/Types.fidl"
 
 /**
- * The <code>ChannelUrlDirectory</code> interface defines the interface of the JOYn internal
- * channel URL directory. The channel URL directory is a JOYn infrastructure 
- * backend component that resolves channel IDs to channel URLs. A JOYn Cluster
+ * The <code>ChannelUrlDirectory</code> interface defines the interface of the joynr internal
+ * channel URL directory. The channel URL directory is a joynr infrastructure 
+ * backend component that resolves channel IDs to channel URLs. A joynr Cluster
  * Controller is addressed using a unique channel ID. However, the channel ID
  * can be mapped on multiple channel URLs depending on network topology and 
  * reachability.

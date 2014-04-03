@@ -24,10 +24,19 @@
 #include "joynr/types/ProviderQosRequirements.h"
 
 #include "joynr/CapabilityEntry.h"
-#include "common-api/joynr/messaging/ICapabilities.h"
-#include "common-api/joynr/messaging/types/Types.h"
 
 #include "joynr/DiscoveryQos.h"
+
+// save the GCC diagnostic state
+#pragma GCC diagnostic push
+// Disable compiler warnings in this CommonAPI generated includes.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Weffc++"
+// include CommonAPI stuff here:
+#include "common-api/joynr/messaging/ICapabilities.h"
+#include "common-api/joynr/messaging/types/Types.h"
+// restore the old GCC diagnostic state
+#pragma GCC diagnostic pop
 
 namespace joynr {
 
@@ -48,8 +57,8 @@ public:
     static void copyJoynrProviderQosToDbus(const types::ProviderQos& joynrQos, joynr::messaging::types::Types::ProviderQos& dbusQos);
     static void copyDbusProviderQosToJoynr(const joynr::messaging::types::Types::ProviderQos& dbusQos, types::ProviderQos& joynrQos);
 
-    static void copyJoynrEndPointListToDbus(const QList<QSharedPointer<EndpointAddressBase> >& joynrList, joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList);
-    static void copyDbusEndPointListToJoynr(const joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList, QList<QSharedPointer<EndpointAddressBase> >& joynrList);
+    static void copyJoynrEndPointListToDbus(const QList<QSharedPointer<joynr::system::Address> >& joynrList, joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList);
+    static void copyDbusEndPointListToJoynr(const joynr::messaging::types::Types::EndpointAddressList& dbusEndPointList, QList<QSharedPointer<joynr::system::Address> >& joynrList);
 
     static void copyJoynrDiscoveryQosToDbus(const DiscoveryQos& joynrDiscoveryQos, joynr::messaging::types::Types::DiscoveryQos& dbusDiscoveryQos);
     static void copyDbusDiscoveryQosToJoynr(const joynr::messaging::types::Types::DiscoveryQos& dbusDiscoveryQos, DiscoveryQos& joynrDiscoveryQos);

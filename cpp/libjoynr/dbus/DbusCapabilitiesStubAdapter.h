@@ -23,9 +23,18 @@
 
 #include "joynr/JoynrExport.h"
 #include "common/dbus/IDbusStubWrapper.h"
-#include "joynr/messaging/ICapabilitiesProxy.h"
 #include "joynr/ICapabilities.h"
 #include <QString>
+
+// save the GCC diagnostic state
+#pragma GCC diagnostic push
+// Disable compiler warnings in this CommonAPI generated includes.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Weffc++"
+// include CommonAPI stuff here:
+#include "joynr/messaging/ICapabilitiesProxy.h"
+// restore the old GCC diagnostic state
+#pragma GCC diagnostic pop
 
 namespace joynr {
 
@@ -38,13 +47,13 @@ public:
             const QString &interfaceName,
             const QString &participantId,
             const types::ProviderQos &qos,
-            QList<QSharedPointer<EndpointAddressBase> > endpointAddressList,
-            QSharedPointer<EndpointAddressBase> messagingStubAddress,
+            QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     );
     void addEndpoint(
             const QString &participantId,
-            QSharedPointer<EndpointAddressBase> messagingStubAddress,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     );
     QList<CapabilityEntry> lookup(

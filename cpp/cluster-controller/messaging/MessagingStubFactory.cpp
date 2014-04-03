@@ -18,8 +18,8 @@
  */
 #include "joynr/MessagingStubFactory.h"
 #include "common/in-process/InProcessMessagingStub.h"
-#include "common/in-process/InProcessMessagingEndpointAddress.h"
-#include "common/some-ip/SomeIpEndpointAddress.h"
+#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
+#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 
 #include "joynr/IMessaging.h"
@@ -28,7 +28,7 @@
 #include "joynr/ICommunicationManager.h"
 
 #include "joynr/RuntimeConfig.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
@@ -50,7 +50,7 @@ MessagingStubFactory::MessagingStubFactory(ICommunicationManager &comMgr) :
 
 QSharedPointer<IMessaging> MessagingStubFactory::create(
         QString destParticipantId,
-        QSharedPointer <EndpointAddressBase> destEndpointAddress) {
+        QSharedPointer <joynr::system::Address> destinationAddress) {
 
     if (partId2MessagingStubDirectory.contains(destParticipantId)) {
         return partId2MessagingStubDirectory.lookup(destParticipantId);
@@ -58,23 +58,23 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
     QSharedPointer<IMessaging> stub;
     if(isLocal(destParticipantId)) {}
 
-    if(isJoynr(destEndpointAddress)) { // make a sendstub that uses the communicationManager so send it!
-        QSharedPointer<JoynrMessagingEndpointAddress> joynrAddress = destEndpointAddress
+    if(isJoynr(destinationAddress)) { // make a sendstub that uses the communicationManager so send it!
+        QSharedPointer<JoynrMessagingEndpointAddress> joynrAddress = destinationAddress
                 .dynamicCast<JoynrMessagingEndpointAddress>();
         stub = QSharedPointer<IMessaging>(new JoynrMessagingStub(communicationManager, joynrAddress->getChannelId()));
         assert (!stub.isNull());
     }
-    if(isInProcessMessaging(destEndpointAddress)) {
+    if(isInProcessMessaging(destinationAddress)) {
         QSharedPointer<InProcessMessagingEndpointAddress> inProcessMessagingAddress =
-                destEndpointAddress.dynamicCast<InProcessMessagingEndpointAddress>();
+                destinationAddress.dynamicCast<InProcessMessagingEndpointAddress>();
         stub = QSharedPointer<IMessaging>(new InProcessMessagingStub(inProcessMessagingAddress->getSkeleton()));
         assert (!stub.isNull());
     }
-    if(isSomeIp(destEndpointAddress)) {}
+    if(isSomeIp(destinationAddress)) {}
 
-    if(isDbus(destEndpointAddress)) {
+    if(isDbus(destinationAddress)) {
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-        QSharedPointer<DbusMessagingEndpointAddress> dbusAddress = destEndpointAddress.dynamicCast<DbusMessagingEndpointAddress>();
+        QSharedPointer<DbusMessagingEndpointAddress> dbusAddress = destinationAddress.dynamicCast<DbusMessagingEndpointAddress>();
         QString address = dbusAddress->getServiceAddress();
         // lookup address
         if(dbusMessagingStubDirectory.contains(address)) {
@@ -104,22 +104,22 @@ bool MessagingStubFactory::contains(QString destParticipantId) {
     return partId2MessagingStubDirectory.contains(destParticipantId);
 }
 
-bool MessagingStubFactory::isInProcessMessaging(QSharedPointer<EndpointAddressBase> destEndpointAddress){
-    if (destEndpointAddress->metaObject()->className() == InProcessMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
+bool MessagingStubFactory::isInProcessMessaging(QSharedPointer<joynr::system::Address> destinationAddress){
+    if (destinationAddress->metaObject()->className() == InProcessMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
         return true;
     }
     return false;
 }
 
-bool MessagingStubFactory::isJoynr(QSharedPointer <EndpointAddressBase> destEndpointAddress) {
-    if(destEndpointAddress->metaObject()->className() == JoynrMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
+bool MessagingStubFactory::isJoynr(QSharedPointer <joynr::system::Address> destinationAddress) {
+    if(destinationAddress->metaObject()->className() == JoynrMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
         return true;
     }
     return false;
 }
 
-bool MessagingStubFactory::isSomeIp(QSharedPointer <EndpointAddressBase> destEndpointAddress) {
-    if( destEndpointAddress->metaObject()->className() == SomeIpEndpointAddress::ENDPOINT_ADDRESS_TYPE() ) {
+bool MessagingStubFactory::isSomeIp(QSharedPointer <joynr::system::Address> destinationAddress) {
+    if( destinationAddress->metaObject()->className() == SomeIpEndpointAddress::ENDPOINT_ADDRESS_TYPE() ) {
         return true;
     }
     return false;
@@ -130,8 +130,8 @@ bool MessagingStubFactory::isLocal(QString destParticipantId) {
     return false;
 }
 
-bool MessagingStubFactory::isDbus(QSharedPointer<EndpointAddressBase> destEndpointAddress) {
-    if (destEndpointAddress->metaObject()->className() == DbusMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
+bool MessagingStubFactory::isDbus(QSharedPointer<joynr::system::Address> destinationAddress) {
+    if (destinationAddress->metaObject()->className() == DbusMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
         return true;
     }
     return false;

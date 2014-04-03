@@ -156,7 +156,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
      * @see io.joynr.proxy.ProxyBuilder#build()
      */
     @Override
-    public T build() throws JoynrArbitrationException, JoynrIllegalStateException {
+    public T build() {
         ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler();
 
         return ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
@@ -174,7 +174,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     }
 
     // Method called by both synchronous and asynchronous build() to create a ProxyInvocationHandler 
-    private ProxyInvocationHandler createProxyInvocationHandler() throws JoynrIllegalStateException {
+    private ProxyInvocationHandler createProxyInvocationHandler() {
         if (buildCalled) {
             throw new JoynrIllegalStateException("Proxy builder was already used to build a proxy. Please create a new proxy builder for each proxy.");
         }

@@ -18,7 +18,7 @@
  */
 #include "joynr/DbusCapabilitiesSkeleton.h"
 #include "libjoynr/dbus/DbusCapabilitiesUtil.h"
-#include "common/dbus/DbusMessagingEndpointAddress.h"
+#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
 
 namespace joynr {
 
@@ -41,7 +41,7 @@ void DbusCapabilitiesSkeleton::add(std::string domain,
     DbusMessagingEndpointAddress* dbusAddr = new DbusMessagingEndpointAddress(QString::fromStdString(messagingStubAddress.endPointAddress));
     QSharedPointer<DbusMessagingEndpointAddress >dbusAddrPointer(dbusAddr);
 
-    QList<QSharedPointer<EndpointAddressBase>> joynrList;
+    QList<QSharedPointer<joynr::system::Address>> joynrList;
     DbusCapabilitiesUtil::copyDbusEndPointListToJoynr(endpointAddressList, joynrList);
     // call
     callBack.add(QString::fromStdString(domain), QString::fromStdString(interfaceName), QString::fromStdString(participantId), joynrQos, joynrList, dbusAddrPointer, timeout_ms);

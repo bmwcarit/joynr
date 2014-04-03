@@ -303,11 +303,11 @@ void MessagingSettings::setSendMsgMaxTtl(qint64 ttl_ms) {
     settings.setValue(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
 
-bool MessagingSettings::contains(const QString& key) {
+bool MessagingSettings::contains(const QString& key) const {
     return settings.contains(key);
 }
 
-QVariant MessagingSettings::value(const QString& key) {
+QVariant MessagingSettings::value(const QString& key) const {
     return settings.value(key);
 }
 

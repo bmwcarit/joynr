@@ -23,10 +23,9 @@
 namespace joynr {
 
 InProcessClusterControllerMessagingSkeleton::InProcessClusterControllerMessagingSkeleton(
-        MessageRouter* router
-        )
-    :
-      router(router)
+        QSharedPointer<MessageRouter> router
+) :
+        router(router)
 {
 }
 

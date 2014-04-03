@@ -90,15 +90,14 @@ public:
     void runForever();
     void waitForChannelCreation();
     void deleteChannel();
+    void registerRoutingProvider();
 
- protected:
+protected:
     void initializeAllDependencies();
     virtual ConnectorFactory* createConnectorFactory(
             InProcessConnectorFactory* inProcessConnectorFactory,
             JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
 
-
-protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
@@ -109,7 +108,7 @@ protected:
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
-    Directory<QString, EndpointAddressBase >* messagingEndpointDirectory;
+    Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     ICapabilities* capabilitiesSkeleton;
@@ -119,7 +118,9 @@ protected:
     //CA is passed into different other classes, so ownership cannot be transferred.
     // => CA needs to be a QSP
     ClientQCache cache;
-    MessageRouter* messageRouter;
+    // messageRouter must be shared pointer since it is also registered as
+    // joynr::system::Routing provider and register capability expects shared pointer
+    QSharedPointer<MessageRouter> messageRouter;
     QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
     QSharedPointer<InProcessMessagingSkeleton> ccMessagingSkeleton;
@@ -149,7 +150,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
 friend class ::CombinedRunTimeTest;
-
 };
 
 

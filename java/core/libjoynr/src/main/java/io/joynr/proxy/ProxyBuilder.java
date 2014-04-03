@@ -22,7 +22,6 @@ package io.joynr.proxy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 
 /**
@@ -93,7 +92,7 @@ public interface ProxyBuilder<T extends JoynrInterface> {
      * @throws JoynrIllegalStateException
      * @throws InterruptedException
      */
-    public abstract T build() throws JoynrArbitrationException, InterruptedException, JoynrIllegalStateException;
+    public abstract T build();
 
     /**
      * Async version of {@link build}

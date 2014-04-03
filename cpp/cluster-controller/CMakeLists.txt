@@ -154,9 +154,20 @@ install(
 
 # Visual Studio compiles to Debug and Release directories
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-messaging.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-messaging.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-messaging.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-dbus.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-dbus.settings)
 else()
+    # copy resources for build tree
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings)
+    # ...and for install tree
+    install(
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings
+            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/
+    )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 

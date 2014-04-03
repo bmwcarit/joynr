@@ -23,8 +23,16 @@
 
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
+
+// save the GCC diagnostic state
+#pragma GCC diagnostic push
+// Disable compiler warnings in this CommonAPI generated includes.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+// include CommonAPI stuff here:
 #include "common-api/joynr/messaging/IMessaging.h"
 #include "common-api/joynr/messaging/types/Types.h"
+// restore the old GCC diagnostic state
+#pragma GCC diagnostic pop
 
 #include <QString>
 

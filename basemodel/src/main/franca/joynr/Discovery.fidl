@@ -1,0 +1,133 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package system
+
+import types.ExtendedTypes.* from "../common/Types.fidl"
+
+typeCollection DiscoveryTypes {
+    enumeration DiscoveryScope  {
+        LOCAL_ONLY
+        LOCAL_THEN_GLOBAL
+        LOCAL_AND_GLOBAL
+        GLOBAL_ONLY
+    }
+
+    enumeration CommunicationMiddleware {
+        JOYNR
+        COMMONAPI_DBUS
+        BROWSER
+        WEBSOCKET
+        SOME_IP
+    }
+
+    struct DiscoveryQos {
+        Int64 cacheMaxAge
+        DiscoveryScope discoveryScope
+        Boolean providerMustSupportOnChange
+    }
+
+    struct DiscoveryEntry {
+        String interfaceName
+        String domain
+        ProviderQos qos
+        String participantId
+        CommunicationMiddleware[] connections
+        Boolean global
+    }
+}
+
+/**
+ * The <code>Discovery</code> interface is a joynr internal interface. This
+ * interface is used by libjoynr to add, lookup or remove provider to joynr
+ * discovery. Internally joynr discovery consists of a centralized discovery
+ * directory (<code>GlobalCapabilitiesDirectory</code>) that is distributed
+ * to all cluster controller (<code>LocalCapabilitiesDirectory</code>).
+ */
+interface Discovery {
+
+	version {major 0 minor 1}
+
+	/**
+	 * Adds a provider to the joynr discovery.
+	 *
+	 * @param domain the domain to register the provider with
+	 * @param interfaceName the name of the provider interface
+	 * @param participantId the participant ID of the provider
+	 * @param qos the qos of the provider
+	 * @param connections a list of communications middlewares that can be used to access the provider
+	 */
+    method add {
+        in {
+            String domain
+            String interfaceName
+            String participantId
+            ProviderQos qos
+            DiscoveryTypes.CommunicationMiddleware[] connections
+        }
+    }
+
+	/**
+	 * Looks up a providers in the joynr discovery that match the requested QoS.
+	 * 
+	 * @param domain the domain to search for provider
+	 * @param interfaceName the interface the provider must implement
+	 * @param qos [not implemented yet] the minimum QoS the provider must offer
+	 * @param discoveryQos the QoS used for the lookup
+	 * 
+	 * @return a list of matching providers
+	 */
+    method lookup {
+        in {
+            String domain
+            String interfaceName
+            ProviderQosRequirements qos
+            DiscoveryTypes.DiscoveryQos discoveryQos
+        }
+        out {
+            DiscoveryTypes.DiscoveryEntry[] result
+        }
+    }
+
+	/**
+	 * Looks up a specific provider in the joynr discovery.
+	 * 
+	 * @param participantId the participant ID of the provider to look up
+	 * 
+	 * @return the provider matching the participant ID
+	 */
+    method lookup {
+        in {
+            String participantId
+        }
+        out {
+            DiscoveryTypes.DiscoveryEntry result
+        }
+    }
+
+	/**
+	 * Removes a provider from joynr discovery.
+	 *
+	 * @param participantId the participant ID of the provider to remove
+	 */
+    method remove {
+        in {
+            String participantId
+        }
+    }
+}

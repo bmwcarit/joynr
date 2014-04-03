@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/InProcessEndpointAddress.h"
-#include <iostream>
 
 namespace joynr {
 
@@ -26,10 +25,9 @@ const QString InProcessEndpointAddress::ENDPOINTADDRESSTYPE("joynr::InProcessEnd
 InProcessEndpointAddress::InProcessEndpointAddress(QSharedPointer<RequestCaller> requestCaller)
     : requestCaller(requestCaller)
 {
-    std::cout << "#### constructing InProcessEndPointerAddress" << std::endl;
 }
+
 InProcessEndpointAddress::~InProcessEndpointAddress(){
-    std::cout << "#### destructing InProcessEndPointerAddress" << std::endl;
 }
 
 QSharedPointer<RequestCaller> InProcessEndpointAddress::getRequestCaller() const{

@@ -18,6 +18,7 @@
  */
 #ifndef INPROCESSCLUSTERCONTROLLERMESSAGINGSKELETON_H
 #define INPROCESSCLUSTERCONTROLLERMESSAGINGSKELETON_H
+#include <QSharedPointer>
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
@@ -29,11 +30,11 @@ class MessageRouter;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT InProcessClusterControllerMessagingSkeleton : public InProcessMessagingSkeleton {
 public:
-    InProcessClusterControllerMessagingSkeleton(MessageRouter* router);
+    InProcessClusterControllerMessagingSkeleton(QSharedPointer<MessageRouter> router);
      void transmit(JoynrMessage& message, const MessagingQos& qoS) ;
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessClusterControllerMessagingSkeleton);
-    MessageRouter* router;
+    QSharedPointer<MessageRouter> router;
 };
 
 } // namespace joynr

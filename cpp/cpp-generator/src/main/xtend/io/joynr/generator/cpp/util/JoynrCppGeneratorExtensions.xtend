@@ -308,6 +308,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		case isInt(predefined)    : "Integer"
 		case isLong(predefined)   : "Long"
 		case isDouble(predefined) : "Double"
+		case isFloat(predefined)  : "Double"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") + 

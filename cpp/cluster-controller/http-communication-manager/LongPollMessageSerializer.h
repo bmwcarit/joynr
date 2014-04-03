@@ -24,12 +24,13 @@
 #include "cluster-controller/http-communication-manager/IMessageReceiver.h"
 
 #include <QString>
+#include <QSharedPointer>
 
 class QByteArray;
 
 namespace joynr {
 
-class EndpointAddressBase;
+namespace system { class Address; }
 template<typename Key, typename T> class Directory;
 class MessageRouter;
 namespace joynr_logging { class Logger; }
@@ -41,14 +42,14 @@ namespace joynr_logging { class Logger; }
 
 class JOYNRCLUSTERCONTROLLER_EXPORT LongPollMessageSerializer : public IMessageReceiver {
 public:
-    LongPollMessageSerializer(MessageRouter* messageRouter, Directory<QString, EndpointAddressBase>* partId2EndpointAddrDirectory);
+    LongPollMessageSerializer(QSharedPointer<MessageRouter> messageRouter, Directory<QString, joynr::system::Address>* partId2EndpointAddrDirectory);
     virtual ~LongPollMessageSerializer();
     void serializedMessageReceived(const QByteArray& serializedMessage);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LongPollMessageSerializer);
-    MessageRouter* messageRouter;
-    Directory<QString, EndpointAddressBase>* partId2EndpointAddrDirectory;
+    QSharedPointer<MessageRouter> messageRouter;
+    Directory<QString, joynr::system::Address>* partId2EndpointAddrDirectory;
     static joynr_logging::Logger* logger;
 };
 

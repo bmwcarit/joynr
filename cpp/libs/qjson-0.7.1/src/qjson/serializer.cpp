@@ -215,60 +215,88 @@ QByteArray Serializer::serialize( const QVariant &v )
     }
   } else if ( v.type() == QVariant::Bool ) { // boolean value?
     str = ( v.toBool() ? "true" : "false" );
-  } else if ( v.type() == QVariant::ULongLong ) { // large unsigned number?
+// remember the current state of GCC diagnostics
+#pragma GCC diagnostic push
+// disable GCC enum-compare warning:
+// Although v.type() is declared as returning QVariant::Type, the return value
+// should be interpreted as QMetaType::Type (cf. http://qt-project.org/doc/qt-5/qvariant.html#type).
+#pragma GCC diagnostic ignored "-Wenum-compare"
+  } else if ( v.type() == QMetaType::UChar        // quint8, unsigned char
+              || v.type() == QMetaType::UShort    // quint16, unsigned short
+              || v.type() == QMetaType::UInt      // quint32, unsigned int
+              || v.type() == QMetaType::ULong
+              || v.type() == QMetaType::ULongLong // quint64, unsigned long long
+  ) {
+// restore previous state of GCC diagnostics
+#pragma GCC diagnostic pop
     str = QByteArray::number( v.value<qulonglong>() );
-  } else if ( v.canConvert<qlonglong>() ) { // any signed number?
+// remember the current state of GCC diagnostics
+#pragma GCC diagnostic push
+// disable GCC enum-compare warning:
+// Although v.type() is declared as returning QVariant::Type, the return value
+// should be interpreted as QMetaType::Type (cf. http://qt-project.org/doc/qt-5/qvariant.html#type).
+#pragma GCC diagnostic ignored "-Wenum-compare"
+  } else if ( v.type() == QMetaType::SChar       // qint8, (signed) char
+              || v.type() == QMetaType::Char
+              || v.type() == QMetaType::Short    // qint16, (signed) short
+              || v.type() == QMetaType::Int      // qint32, (signed) int
+              || v.type() == QMetaType::Long
+              || v.type() == QMetaType::LongLong // qint64, (signed) long long
+  ) {
+// restore previous state of GCC diagnostics
+#pragma GCC diagnostic pop
     str = QByteArray::number( v.value<qlonglong>() );
-  } else if ( v.type() == static_cast<QVariant::Type>( QMetaType::Char ) ) { // byte
-    // QVariant.type() is documented to return a QMetaType::Type even though it is declared
-    // as returning a QVariant::Type
-    str = QByteArray::number( v.value<char>() );
-  } else if ( v.canConvert<QString>() ){ // can value be converted to string?
+  } else if (v.type() == QVariant::UserType) {
+    int typeId = v.userType();
+    // Does the variant contain a user defined enum?
+    if (enumIds->contains(typeId)) {
+        // enum
+        QMetaEnum metaEnum = enumIds->value(typeId);
+
+        // Convert the enum value to a key
+        const int *pvalue = static_cast<const int *>(v.constData());
+        QString key = QLatin1String(metaEnum.valueToKey(*pvalue));
+        str = sanitizeString(key);
+    } else {
+        // QObject
+        //If this point is reached, we know it came from a QObject of some sort
+        const QObject *obj  = static_cast<const QObject*>(v.constData());
+        QVariantMap result;
+        const QMetaObject *metaobject = obj->metaObject();
+        QVariant typeNameVariant(turnMetaObjectIntoTypename(metaobject));
+        result[QString::fromLatin1("_typeName")] = typeNameVariant;
+        int count = metaobject->propertyCount();
+        for (int i = 0; i < count; ++i) {
+            QMetaProperty metaproperty = metaobject->property(i);
+            const char *name = metaproperty.name();
+            // const char *typeName = metaproperty.typeName();
+            if (!metaproperty.isReadable() || !strcmp(name, "objectName")) {
+                continue;
+            }
+            QVariant value = obj->property(name);
+            result[QLatin1String(name)] = value;
+
+            // The line below sometimes fails with VisualStudio, see Joynr-1121
+            // std::cerr << "name: " << name << ", type: " << value.typeName() << std::endl;
+//            if (!strcmp(typeName, "QVariant")){// && value.type() == QVariant::UserType){
+//              const QObject *obj2  = static_cast<const QObject*>(value.constData());
+//              const QMetaObject *metaobject2 = obj2->metaObject();
+//              QVariant typeNameVariant(QString(metaobject2->className()));
+//              std::cout << metaobject2->className() << std::endl;
+//              result[QLatin1String(name)+ QLatin1String("_typeName")] = typeNameVariant;
+//            }
+
+        }
+        str = serialize( result );
+    }
+  } else if ( v.canConvert<QString>() ){ // Last chance: can value be converted to string?
     // this will catch QDate, QDateTime, QUrl, ...
     str = sanitizeString( v.toString() );
     //TODO: catch other values like QImage, QRect, ...
   } else {
-    // Does the variant contain a user defined enum?
-    if (v.type() == QVariant::UserType) {
-        int typeId = v.userType();
-        if (enumIds->contains(typeId)) {
-            QMetaEnum metaEnum = enumIds->value(typeId);
-
-            // Convert the enum value to a key
-            const int *pvalue = static_cast<const int *>(v.constData());
-            QString key = QLatin1String(metaEnum.valueToKey(*pvalue));
-            str = sanitizeString(key);
-            return str;
-        }
-    }
-
-    //If this point is reached, we know it came from a QObject of some sort
-    const QObject *obj  = static_cast<const QObject*>(v.constData());
-    QVariantMap result;
-    const QMetaObject *metaobject = obj->metaObject();
-    QVariant typeNameVariant(turnMetaObjectIntoTypename(metaobject));
-    result[QString::fromLatin1("_typeName")] = typeNameVariant;
-    int count = metaobject->propertyCount();
-    for (int i = 0; i < count; ++i) {
-      QMetaProperty metaproperty = metaobject->property(i);
-      const char *name = metaproperty.name();
-//      const char *typeName = metaproperty.typeName();
-      if (!metaproperty.isReadable() || !strcmp(name, "objectName"))
-        continue;
-      QVariant value = obj->property(name);
-      result[QLatin1String(name)] = value;
-	  // The line below sometimes fails with VisualStudio, see Joynr-1121
-	  // std::cerr << "name: " << name << ", type: " << value.typeName() << std::endl;
-/*      if (!strcmp(typeName, "QVariant")){// && value.type() == QVariant::UserType){
-          const QObject *obj2  = static_cast<const QObject*>(value.constData());
-          const QMetaObject *metaobject2 = obj2->metaObject();
-          QVariant typeNameVariant(QString(metaobject2->className()));
-          std::cout << metaobject2->className() << std::endl;
-          result[QLatin1String(name)+ QLatin1String("_typeName")] = typeNameVariant;
-      }
-*/
-    }
-    str = serialize( result );
+    // unable to serialize QVariant
+    // TODO: error handling
+    error = true;
   }
   if ( !error )
     return str;

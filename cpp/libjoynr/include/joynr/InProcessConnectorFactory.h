@@ -62,7 +62,7 @@ public:
                               PublicationManager* publicationManager,
                               InProcessPublicationSender* inProcessPublicationSender);
 
-    bool canBeCreated(const QSharedPointer<EndpointAddressBase> endpointAddress);
+    bool canBeCreated(const QSharedPointer<joynr::system::Address> endpointAddress);
     virtual ~InProcessConnectorFactory(){}
 
     template <class T>

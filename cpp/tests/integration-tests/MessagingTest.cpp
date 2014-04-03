@@ -28,11 +28,12 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include <QString>
+#include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
-#include "common/in-process/InProcessMessagingEndpointAddress.h"
+#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
 #include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
@@ -62,7 +63,7 @@ public:
     JoynrMessageFactory messageFactory;
     MockCommunicationManager mockCommunicationManager;
     MessagingEndpointDirectory* messagingEndpointDirectory;
-    MessageRouter* messageRouter;
+    QSharedPointer<MessageRouter> messageRouter;
     MessagingTest() :
         settingsFileName("MessagingTest.settings"),
         settings(settingsFileName, QSettings::IniFormat),
@@ -87,7 +88,6 @@ public:
         qos.setTtl(10000);
     }
     ~MessagingTest(){
-        delete messageRouter;
         delete messagingEndpointDirectory;
         QFile::remove(settingsFileName);
     }
@@ -307,7 +307,7 @@ void messagingTestPseudoGetChannelUrls(QSharedPointer<Future<types::ChannelUrlIn
 
 
 TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChannel) {
-//    const QString settingsFileName ("resources/ChannelUrlSelectorTest.settings");
+//    const QString settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 //    MessagingSettings* settings = new MessagingSettings(new QSettings(settingsFileName, QSettings::IniFormat));
 //    int messageSendRetryInterval = 1000;
 

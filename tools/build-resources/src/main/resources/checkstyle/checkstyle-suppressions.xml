@@ -30,12 +30,12 @@
 	<suppress checks="UnusedImports" files="[\\/]generated[\\/].*"/>     		
 	
 	<suppress checks="." files="[\\/]generated[\\/].*"/> <!--  For a start - deactivating all checkstyle tests in generated code -->
+	<suppress checks="." files="[\\/]generated-java[\\/].*"/> <!--  For a start - deactivating all checkstyle tests in generated code -->
 		
 	<suppress checks="." files="[\\/]fibex[\\/]"/>
 	<suppress checks="." files="\.xml$"/>
 	<suppress checks="." files="\.js$"/>
 	<suppress checks="." files="[\\/]demoApplications[\\/].*"/>
 	<suppress checks="." files="[\\/]demo_applications[\\/].*"/>
-			
-			
+	<suppress checks="." files="[\\/]xtend-gen[\\/].*"/>
 </suppressions>

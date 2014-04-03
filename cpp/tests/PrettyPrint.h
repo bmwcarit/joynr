@@ -25,11 +25,9 @@
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/types/GpsLocation.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
-#include "joynr/types/Trip.h"
 
 #define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
@@ -38,7 +36,12 @@
 
 namespace joynr {
 namespace types {
+    class TStruct;
+    void PrintTo(const joynr::types::TStruct& value, ::std::ostream* os);
+    class GpsLocation;
     void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os);
+    class Trip;
+    void PrintTo(const joynr::types::Trip& value, ::std::ostream* os);
 }
 }
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
@@ -48,6 +51,5 @@ void PrintTo(const QByteArray& value, ::std::ostream* os);
 //void PrintTo(const QVariant& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
-void PrintTo(const joynr::types::Trip& value, ::std::ostream* os);
 
 #endif /* PRETTYPRINT_H_ */

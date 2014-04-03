@@ -26,17 +26,14 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modules>
 		<module>discovery</module>
-		<module>discoverydirectoryservlet</module>
-		<module>capabilitiesdirectory</module>
-		<module>capabilitiesdirectoryservlet</module>
-		<module>capabilitiesdirectoryui</module>
-		<module>channelurldirectory</module>
-		<module>channelurldirectoryservlet</module>
+		<module>discovery-directory-servlet</module>
+		<module>capabilities-directory</module>
+		<module>channel-url-directory</module>
   </modules>
 </project>

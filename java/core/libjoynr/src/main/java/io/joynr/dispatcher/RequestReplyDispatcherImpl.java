@@ -23,13 +23,13 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.JsonRequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.SubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
@@ -37,10 +37,7 @@ import io.joynr.pubsub.subscription.SubscriptionManager;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -97,19 +94,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private boolean shutdown = false;
 
-    private String startReceiverThreadName = "ReqeustReplyDispatcherStartReceiverThread";
-
-    private ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(r, startReceiverThreadName);
-        }
-    });
-    private Future<?> future = null;
-
-    private Object registrationSynchronization = new Object();
+    private boolean registering = false;
 
     @Inject
+    // CHECKSTYLE:OFF
     public RequestReplyDispatcherImpl(RequestReplySender messageSender,
                                       IMessageReceivers messageReceivers,
                                       MessageReceiver messageReceiver,
@@ -120,6 +108,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
                                       JsonRequestInterpreter jsonRequestInterpreter) {
+        // CHECKSTYLE:ON
         this.messageSender = messageSender;
         this.messageReceiver = messageReceiver;
 
@@ -185,43 +174,38 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             throw new JoynrShutdownException("cannot start receiver: dispatcher is already shutting down");
         }
 
-        synchronized (registrationSynchronization) {
-            if (future == null) {
+        synchronized (messageReceiver) {
+            if (registering == false) {
+                registering = true;
                 messageReceiver.registerMessageListener(RequestReplyDispatcherImpl.this);
-                future = executor.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (messageReceiver) {
-                            if (!messageReceiver.isStarted()) {
-                                // The messageReceiver gets the message off the wire and passes
-                                // it on to the message Listener.
-                                // Registering the message listener for the first time can
-                                // trigger a registration with the channelUrlDirectory,
-                                // thus causing reply messages to be sent back to this message
-                                // Receiver. It is therefore necessary to register the
-                                // message receiver before registering the message listener.+
 
-                                // TODO this will lead to a unique messageReceiver => all servlets share one channelId
-                                messageReceiver.startReceiver();
-                            }
+                if (!messageReceiver.isStarted()) {
+                    // The messageReceiver gets the message off the wire and passes it on to the message Listener.
+                    // Starting the messageReceiver triggers a registration with the channelUrlDirectory, thus causing
+                    // reply messages to be sent back to this message Receiver. It is therefore necessary to register
+                    // the message receiver before registering the message listener.
+
+                    // NOTE LongPollMessageReceiver creates a channel synchronously before returning
+
+                    // TODO this will lead to a unique messageReceiver => all servlets share one channelId
+                    messageReceiver.startReceiver(new ReceiverStatusListener() {
+
+                        @Override
+                        public void receiverStarted() {
                         }
-                    }
-                });
+
+                        @Override
+                        // Exceptions that could not be resolved from within the receiver require a shutdown
+                        public void receiverException(Throwable e) {
+                            // clear == false means that offboard resources (registrations, existing channels etc are
+                            // not affected
+                            shutdown(false);
+                        }
+                    });
+
+                }
             }
         }
-
-        // If an exception was thrown during receiver startup. The next method call to startReceiver will get the
-        // exception. Not the one which started the thread!
-        if (future.isDone()) {
-            try {
-                future.get();
-            } catch (ExecutionException e) {
-                throw new JoynrException(e.getCause());
-            } catch (InterruptedException e) {
-                logger.debug("Interrupted start receiver future", e);
-            }
-        }
-
     }
 
     @Override
@@ -470,6 +454,9 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                     try {
                         // TODO shall be moved to request manager and not handled by dispatcher
                         Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                        logger.debug("executing request from message: {} request: {}",
+                                     message.getId(),
+                                     request.getRequestReplyId());
 
                         Reply reply = jsonRequestInterpreter.execute(requestCaller, request);
                         // String replyMcid =
@@ -553,12 +540,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN Dispatcher");
         shutdown = true;
-
-        try {
-            executor.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down executor service");
-        }
 
         try {
             messageReceiver.shutdown(clear);
