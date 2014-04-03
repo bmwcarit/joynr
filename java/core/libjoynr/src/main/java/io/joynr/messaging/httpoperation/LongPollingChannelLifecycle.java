@@ -83,7 +83,7 @@ public class LongPollingChannelLifecycle {
     @Inject
     private LocalChannelUrlDirectoryClient channelUrlClient;
 
-    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("ChannelMonitor-%d").build();
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.LongPoll-%d").build();
     private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(1, namedThreadFactory);
     private LongPollChannel longPolling;
     private final ObjectMapper objectMapper;
@@ -236,14 +236,14 @@ public class LongPollingChannelLifecycle {
                 // String id = getPrintableId(channelUrl);
                 synchronized (this) {
                     this.longPolling = new LongPollChannel(httpclient,
-                                                                   defaultRequestConfig,
-                                                                   longPollingDisabled,
-                                                                   messageReceiver,
-                                                                   objectMapper,
-                                                                   settings,
-                                                                   httpConstants,
-                                                                   channelId,
-                                                                   receiverId);
+                                                           defaultRequestConfig,
+                                                           longPollingDisabled,
+                                                           messageReceiver,
+                                                           objectMapper,
+                                                           settings,
+                                                           httpConstants,
+                                                           channelId,
+                                                           receiverId);
                 }
                 longPolling.setChannelUrl(channelUrl);
 

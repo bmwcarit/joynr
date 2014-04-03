@@ -52,7 +52,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     public static final String MESSAGE_RECEIVER_THREADNAME_PREFIX = "MessageReceiverThread";
 
     private static final Logger logger = LoggerFactory.getLogger(LongPollingMessageReceiver.class);
-    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("MessageReceiver-%d").build();
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageReceiver-%d").build();
     private ExecutorService messageReceiverExecutor = Executors.newCachedThreadPool(namedThreadFactory);
 
     protected final MessagingSettings settings;
