@@ -23,8 +23,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 
 import joynr.types.ProviderQosRequirements;
 
@@ -59,21 +57,6 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     public void removeCapability(CapabilityEntry interfaces) {
         logger.info("!!!!!!!!!!!!!!!removeCapabilities");
 
-    }
-
-    @Override
-    public Collection<CapabilityEntry> getCapabilities(final String domain,
-                                                       final String interfaceName,
-                                                       ProviderQosRequirements requestedQos,
-                                                       DiscoveryQos discoveryQos) {
-        logger.info("!!!!!!!!!!!!!!!getCapabilities sync");
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<CapabilityEntry> getCapabilities(String participantId, DiscoveryQos discoveryQos) {
-        logger.info("!!!!!!!!!!!!!!!getCapabilities");
-        return Collections.emptyList();
     }
 
     @Override

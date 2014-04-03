@@ -20,9 +20,6 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-
-import java.util.Collection;
-
 import joynr.types.ProviderQosRequirements;
 
 public interface LocalCapabilitiesDirectory {
@@ -46,30 +43,25 @@ public interface LocalCapabilitiesDirectory {
      * 
      * @param domain
      * @param interfaceName
-     * @param providerQos
-     * @param maxAgeOfCachedProviders
+     * @param requestedQos
+     * @param discoveryQos
+     * @param capabilitiesCallback
      * @return
      */
-    Collection<CapabilityEntry> getCapabilities(final String domain,
-                                                final String interfaceName,
-                                                ProviderQosRequirements requestedQos,
-                                                DiscoveryQos discoveryQos);
-
-    /**
-     * Searches for capabilities by participantId.
-     * 
-     * @param participantId
-     * @param maxAgeOfCachedProviders
-     * @return
-     */
-    Collection<CapabilityEntry> getCapabilities(String participantId, DiscoveryQos discoveryQos);
-
     void getCapabilities(String domain,
                          String interfaceName,
                          ProviderQosRequirements requestedQos,
                          DiscoveryQos discoveryQos,
                          CapabilitiesCallback capabilitiesCallback);
 
+    /**
+     * Searches for capabilities by participantId.
+     * 
+     * @param participantId
+     * @param discoveryQos
+     * @param callback
+     * @return
+     */
     void getCapabilities(String participantId, DiscoveryQos discoveryQos, CapabilitiesCallback callback);
 
     /**

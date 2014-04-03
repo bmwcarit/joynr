@@ -19,15 +19,14 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import static io.joynr.arbitration.DiscoveryScope.GLOBAL_ONLY;
-import static io.joynr.arbitration.DiscoveryScope.LOCAL_AND_GLOBAL;
-import static io.joynr.arbitration.DiscoveryScope.LOCAL_THEN_GLOBAL;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
+import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 
@@ -37,10 +36,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.CheckForNull;
 
@@ -55,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -77,20 +71,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     String localChannelId;
-
-    private ExecutorService executionQueue;
-
-    // @Inject
-    // @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID)
-    // String channelUrlDirectoryChannelId;
-
-    // @Inject
-    // @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID)
-    // String channelUrlDirectoryParticipantId;
-
-    // @Inject
-    // @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_DOMAIN)
-    // String channelUrlDirectoryDomain;
 
     @Inject
     public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryirectoriesDomain,
@@ -115,21 +95,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                                                            new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId),
                                                                            channelUrlDirectoryParticipantId,
                                                                            CapabilityScope.REMOTE));
-
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("CapabilitiesDirectoryLookup-"
-                + System.currentTimeMillis() + "%d").build();
-        executionQueue = Executors.newCachedThreadPool(namedThreadFactory);
     }
-
-    // public void init() {
-    // Object stubedCapabilitiesDirectory = JoynMessagingConnectorFactory.create(CapabilitiesDirectory.class,
-    // this.dispatcher,
-    // this.joynrMessageSender,
-    // clientParticipantId,
-    // CapabilitiesDirectory.CAPABILITIES_DIRECTORY_PARTICIPANTID,
-    // qosSettings);
-    //
-    // }
 
     /**
      * Adds capability to local and global directories,
@@ -141,52 +107,47 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
         capabilityEntry.endpointAddresses.add(joynrMessagingEndpointAddress);
 
-        // TODO replace this with inprocess address as soon as inprocess communication is available
         messagingEndpointDirectory.put(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
 
-        return addCapabilityAsync(capabilityEntry);
-    }
-
-    // Registers capabilities asynchronously
-    private RegistrationFuture addCapabilityAsync(final CapabilityEntry capabilityEntry) {
-
         final RegistrationFuture ret = new RegistrationFuture(capabilityEntry.getParticipantId());
-        try {
-            executionQueue.submit(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Register locally
-                    if (localCapabilitiesStore.hasCapability(capabilityEntry)) {
-                        ret.setStatus(RegistrationStatus.DONE);
-                        return;
-                    }
-                    localCapabilitiesStore.registerCapability(capabilityEntry);
-
-                    // Register globally
-                    if (!capabilityEntry.providerQos.getScope().equals(ProviderScope.LOCAL)) {
-                        ret.setStatus(RegistrationStatus.REGISTERING_GLOBALLY);
-                        try {
-                            CapabilityInformation capabilityInformation = capabilityEntry2Information(capabilityEntry);
-                            if (capabilityInformation != null) {
-                                logger.info("starting global registration for " + capabilityInformation.getDomain()
-                                        + " : " + capabilityInformation.getInterfaceName());
-                                globalCapabilitiesClient.registerCapability(capabilityInformation);
-                                logger.info("global registration for " + capabilityInformation.getDomain() + " : "
-                                        + capabilityInformation.getInterfaceName() + " completed");
-                            }
-                        } catch (JoynrArbitrationException e) {
-                            ret.setStatus(RegistrationStatus.ERROR);
-                            return;
-                        }
-                    }
-                    ret.setStatus(RegistrationStatus.DONE);
-                }
-            });
-        } catch (RejectedExecutionException e) {
-            ret.setStatus(RegistrationStatus.ERROR);
+        if (localCapabilitiesStore.hasCapability(capabilityEntry)) {
+            ret.setStatus(RegistrationStatus.DONE);
+            return ret;
         }
 
+        localCapabilitiesStore.registerCapability(capabilityEntry);
+
+        // Register globally
+        if (capabilityEntry.providerQos.getScope().equals(ProviderScope.GLOBAL)) {
+
+            ret.setStatus(RegistrationStatus.REGISTERING_GLOBALLY);
+
+            final CapabilityInformation capabilityInformation = capabilityEntry2Information(capabilityEntry);
+            if (capabilityInformation != null) {
+
+                logger.info("starting global registration for " + capabilityInformation.getDomain() + " : "
+                        + capabilityInformation.getInterfaceName());
+
+                globalCapabilitiesClient.registerCapability(new Callback<Void>() {
+
+                    @Override
+                    public void onSuccess(Void nothing) {
+                        logger.info("global registration for " + capabilityInformation.getDomain() + " : "
+                                + capabilityInformation.getInterfaceName() + " completed");
+                        ret.setStatus(RegistrationStatus.DONE);
+
+                    }
+
+                    @Override
+                    public void onFailure(JoynrException exception) {
+                        ret.setStatus(RegistrationStatus.ERROR);
+
+                    }
+                },
+                                                            capabilityInformation);
+            }
+        }
         return ret;
     }
 
@@ -215,52 +176,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 break;
             }
         }
-
-    }
-
-    @Override
-    public Collection<CapabilityEntry> getCapabilities(String domain,
-                                                       String interfaceName,
-                                                       ProviderQosRequirements requestedQos,
-                                                       DiscoveryQos discoveryQos) {
-        // assert (globalCapabilitiesClient != null);
-        Collection<CapabilityEntry> caps = new LinkedList<CapabilityEntry>();
-        DiscoveryScope scope = discoveryQos.getDiscoveryScope();
-
-        caps.addAll(localCapabilitiesStore.findCapabilitiesForInterfaceAddress(domain,
-                                                                               interfaceName,
-                                                                               requestedQos,
-                                                                               discoveryQos));
-
-        if ((caps.size() == 0) && (scope == GLOBAL_ONLY || scope == LOCAL_AND_GLOBAL || scope == LOCAL_THEN_GLOBAL)) {
-            if (globalCapabilitiesClient != null) {
-                List<CapabilityInformation> capInfoList = globalCapabilitiesClient.lookupCapabilities(domain,
-                                                                                                      interfaceName,
-                                                                                                      requestedQos);
-                Collection<CapabilityEntry> globalCaps = capabilityInformationList2Entries(capInfoList);
-                for (CapabilityEntry ce : globalCaps) {
-                    // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
-                    // EndpointAddress?
-                    // TODO when are entries purged from the messagingEndpointDirectory?
-                    if (ce.getParticipantId() != null && ce.getEndpointAddresses().size() > 0) {
-                        messagingEndpointDirectory.put(ce.getParticipantId(), ce.getEndpointAddresses().get(0));
-                    }
-                }
-                caps.addAll(globalCaps);
-            }
-        }
-        return caps;
-    }
-
-    @Override
-    public Collection<CapabilityEntry> getCapabilities(String participantId, DiscoveryQos discoveryQos) {
-        Collection<CapabilityEntry> caps = localCapabilitiesStore.findCapabilitiesForParticipantId(participantId,
-                                                                                                   discoveryQos);
-        if (caps.size() == 0 && !discoveryQos.isLocalOnly()) {
-            caps = capabilityInformationList2Entries(globalCapabilitiesClient.getCapabilitiesForParticipantId(participantId));
-        }
-
-        return caps;
     }
 
     @Override
@@ -269,24 +184,32 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                 final ProviderQosRequirements requestedQos,
                                 final DiscoveryQos discoveryQos,
                                 final CapabilitiesCallback capabilitiesCallback) {
-        try {
-            executionQueue.submit(new Runnable() {
 
-                @Override
-                public void run() {
-                    Collection<CapabilityEntry> caps = null;
-                    try {
-                        caps = getCapabilities(domain, interfaceName, requestedQos, discoveryQos);
-                        capabilitiesCallback.processCapabilitiesReceived(caps);
-                    } catch (Throwable e) {
-                        capabilitiesCallback.onError(e);
-                    }
-                }
+        Collection<CapabilityEntry> localCapabilities = localCapabilitiesStore.findCapabilitiesForInterfaceAddress(domain,
+                                                                                                                   interfaceName,
+                                                                                                                   requestedQos,
+                                                                                                                   discoveryQos);
+        DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
+        switch (discoveryScope) {
+        case LOCAL_ONLY:
+            capabilitiesCallback.processCapabilitiesReceived(localCapabilities);
+            break;
+        case LOCAL_THEN_GLOBAL:
+            if (localCapabilities.size() > 0) {
+                capabilitiesCallback.processCapabilitiesReceived(localCapabilities);
+            } else {
+                asyncGetGlobalCapabilitities(domain, interfaceName, requestedQos, null, capabilitiesCallback);
+            }
+            break;
+        case GLOBAL_ONLY:
+            asyncGetGlobalCapabilitities(domain, interfaceName, requestedQos, null, capabilitiesCallback);
+            break;
+        case LOCAL_AND_GLOBAL:
+            asyncGetGlobalCapabilitities(domain, interfaceName, requestedQos, localCapabilities, capabilitiesCallback);
+            break;
+        default:
+            break;
 
-            });
-
-        } catch (RejectedExecutionException e) {
-            capabilitiesCallback.onError(e);
         }
     }
 
@@ -294,23 +217,111 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     public void getCapabilities(final String participantId,
                                 final DiscoveryQos discoveryQos,
                                 final CapabilitiesCallback capabilitiesCallback) {
-        try {
-            executionQueue.submit(new Runnable() {
 
-                @Override
-                public void run() {
-                    try {
-                        Collection<CapabilityEntry> caps = getCapabilities(participantId, discoveryQos);
-                        capabilitiesCallback.processCapabilitiesReceived(caps);
-                    } catch (Throwable e) {
-                        capabilitiesCallback.onError(e);
-                    }
-                }
+        final Collection<CapabilityEntry> localCapabilities = localCapabilitiesStore.findCapabilitiesForParticipantId(participantId,
+                                                                                                                      discoveryQos);
 
-            });
-        } catch (RejectedExecutionException e) {
-            capabilitiesCallback.onError(e);
+        DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
+        switch (discoveryScope) {
+        case LOCAL_ONLY:
+            capabilitiesCallback.processCapabilitiesReceived(localCapabilities);
+            break;
+        case LOCAL_THEN_GLOBAL:
+            if (localCapabilities.size() > 0) {
+                capabilitiesCallback.processCapabilitiesReceived(localCapabilities);
+            } else {
+                asyncGetGlobalCapabilitities(participantId, null, capabilitiesCallback);
+            }
+            break;
+        case GLOBAL_ONLY:
+            asyncGetGlobalCapabilitities(participantId, null, capabilitiesCallback);
+            break;
+        case LOCAL_AND_GLOBAL:
+            asyncGetGlobalCapabilitities(participantId, localCapabilities, capabilitiesCallback);
+            break;
+        default:
+            break;
         }
+    }
+
+    private void registerIncomingEndpoints(Collection<CapabilityEntry> caps) {
+        for (CapabilityEntry ce : caps) {
+            // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
+            // EndpointAddress?
+            // TODO when are entries purged from the messagingEndpointDirectory?
+            if (ce.getParticipantId() != null && ce.getEndpointAddresses().size() > 0) {
+                messagingEndpointDirectory.put(ce.getParticipantId(), ce.getEndpointAddresses().get(0));
+            }
+        }
+    }
+
+    /**
+     * mixes in the localCapabilities to global capabilities found by domain/interface
+     * 
+     * @param localCapabilities
+     * @param capabilitiesCallback
+     * @param participantId
+     */
+    private void asyncGetGlobalCapabilitities(final String participantId,
+                                              Collection<CapabilityEntry> mixinCapabilities,
+                                              final CapabilitiesCallback capabilitiesCallback) {
+
+        final Collection<CapabilityEntry> localCapabilities = mixinCapabilities == null ? new LinkedList<CapabilityEntry>()
+                : mixinCapabilities;
+
+        globalCapabilitiesClient.getCapabilitiesForParticipantId(new Callback<List<CapabilityInformation>>() {
+
+            @Override
+            public void onSuccess(List<CapabilityInformation> capInfo) {
+                Collection<CapabilityEntry> caps = capabilityInformationList2Entries(capInfo);
+
+                registerIncomingEndpoints(caps);
+
+                caps.addAll(localCapabilities);
+                capabilitiesCallback.processCapabilitiesReceived(caps);
+            }
+
+            @Override
+            public void onFailure(JoynrException exception) {
+                capabilitiesCallback.onError(exception);
+
+            }
+        }, participantId);
+    }
+
+    /**
+     * mixes in the localCapabilities to global capabilities found by participantId
+     * 
+     * @param localCapabilities
+     * @param capabilitiesCallback
+     * @param participantId
+     */
+    private void asyncGetGlobalCapabilitities(final String domain,
+                                              final String interfaceName,
+                                              final ProviderQosRequirements requestedQos,
+                                              Collection<CapabilityEntry> mixinCapabilities,
+                                              final CapabilitiesCallback capabilitiesCallback) {
+
+        final Collection<CapabilityEntry> localCapabilities = mixinCapabilities == null ? new LinkedList<CapabilityEntry>()
+                : mixinCapabilities;
+
+        globalCapabilitiesClient.lookupCapabilities(new Callback<List<CapabilityInformation>>() {
+
+            @Override
+            public void onSuccess(List<CapabilityInformation> capInfo) {
+                Collection<CapabilityEntry> caps = capabilityInformationList2Entries(capInfo);
+
+                registerIncomingEndpoints(caps);
+
+                caps.addAll(localCapabilities);
+                capabilitiesCallback.processCapabilitiesReceived(caps);
+            }
+
+            @Override
+            public void onFailure(JoynrException exception) {
+                capabilitiesCallback.onError(exception);
+            }
+        }, domain, interfaceName, requestedQos);
     }
 
     @CheckForNull
@@ -353,7 +364,5 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 }
             }
         }
-
-        executionQueue.shutdown();
     }
 }
