@@ -37,6 +37,8 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -72,6 +74,8 @@ public class PushingPublicationTest {
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
+    private ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
+
     private SubscriptionRequest subscriptionRequest;
     private String subscriptionId;
     private String proxyId;
@@ -88,7 +92,7 @@ public class PushingPublicationTest {
                        JsonMappingException, IOException {
         provider = new PubSubTestProviderImpl();
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, cleanupScheduler);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";

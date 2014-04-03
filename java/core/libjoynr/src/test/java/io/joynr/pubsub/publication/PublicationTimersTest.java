@@ -29,6 +29,8 @@ import io.joynr.pubsub.PubSubTestProviderImpl;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
@@ -58,6 +60,9 @@ public class PublicationTimersTest {
     private RequestReplySender messageSender;
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
+
+    private ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
+
     private PeriodicSubscriptionQos qos;
 
     private PublicationManager publicationManager;
@@ -100,7 +105,7 @@ public class PublicationTimersTest {
         requestCallerFactory = new RequestCallerFactory();
 
         requestCaller = requestCallerFactory.create(provider, TestProxy.class);
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, cleanupScheduler);
     }
 
     @Test

@@ -25,7 +25,6 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationEndRunnable;
 import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation;
 
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public class PublicationManagerTest {
     @Mock
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
     @Mock
-    ScheduledExecutorService publicationEndScheduler;
+    ScheduledExecutorService cleanupScheduler;
     @Mock
     AttributePollInterpreter attributePollInterpreter;
 
@@ -113,8 +112,8 @@ public class PublicationManagerTest {
                                                         publicationStates,
                                                         publicationTimers,
                                                         subscriptionEndFutures,
-                                                        publicationEndScheduler,
-                                                        attributePollInterpreter);
+                                                        attributePollInterpreter,
+                                                        cleanupScheduler);
         subscriptionQos = new PeriodicSubscriptionQos(400, END_DATE_MS, 500, 1000);
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider, TestProvider.class);
@@ -143,9 +142,9 @@ public class PublicationManagerTest {
                                                                        Mockito.eq(publicationInformation));
         Mockito.verify(publicationStates).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID), Mockito.any(PubSubState.class));
         Mockito.verify(publicationTimers).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID), Mockito.any(PublicationTimer.class));
-        Mockito.verify(publicationEndScheduler).schedule(Mockito.any(PublicationEndRunnable.class),
-                                                         AdditionalMatchers.leq(DURATION_MS),
-                                                         Mockito.eq(TimeUnit.MILLISECONDS));
+        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
+                                                  AdditionalMatchers.leq(DURATION_MS),
+                                                  Mockito.eq(TimeUnit.MILLISECONDS));
         Mockito.verify(subscriptionEndFutures).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID),
                                                            Mockito.any(ScheduledFuture.class));
     }

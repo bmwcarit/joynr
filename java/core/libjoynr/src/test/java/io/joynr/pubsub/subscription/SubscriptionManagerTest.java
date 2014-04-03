@@ -60,9 +60,6 @@ public class SubscriptionManagerTest {
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
 
     @Mock
-    private ScheduledExecutorService subscriptionEndScheduler;
-
-    @Mock
     private PubSubState subscriptionState;
 
     private SubscriptionManager subscriptionManager;
@@ -71,6 +68,8 @@ public class SubscriptionManagerTest {
 
     @Mock
     private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
+    @Mock
+    private ScheduledExecutorService cleanupScheduler;
 
     @Before
     public void setUp() {
@@ -79,7 +78,7 @@ public class SubscriptionManagerTest {
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
-                                                          subscriptionEndScheduler);
+                                                          cleanupScheduler);
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";
@@ -120,9 +119,9 @@ public class SubscriptionManagerTest {
                                                            Mockito.eq(attributeSubscriptionCallback));
         Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
-        Mockito.verify(subscriptionEndScheduler).schedule(Mockito.any(SubscriptionEndRunnable.class),
-                                                          Mockito.eq(qos.getExpiryDate()),
-                                                          Mockito.eq(TimeUnit.MILLISECONDS));
+        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
+                                                  Mockito.eq(qos.getExpiryDate()),
+                                                  Mockito.eq(TimeUnit.MILLISECONDS));
     }
 
     @Test

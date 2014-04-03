@@ -27,10 +27,8 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
@@ -42,9 +40,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 @Singleton
 public class PublicationManagerImpl implements PublicationManager {
@@ -62,8 +60,8 @@ public class PublicationManagerImpl implements PublicationManager {
     // Map SubscriptionId -> UnregisterOnChange
     private final ConcurrentMap<String, UnregisterOnChange> unregisterOnChange;
 
-    ScheduledExecutorService publicationScheduler;
     private AttributePollInterpreter attributePollInterpreter;
+    private ScheduledExecutorService cleanupScheduler;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -121,16 +119,16 @@ public class PublicationManagerImpl implements PublicationManager {
     }
 
     @Inject
-    public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter) {
+    public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
+                                  @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
         super();
+        this.cleanupScheduler = cleanupScheduler;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
         this.publicationStates = Maps.newConcurrentMap();
         this.publicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.unregisterOnChange = Maps.newConcurrentMap();
-        ThreadFactory publicationEndThreadFactory = new ThreadFactoryBuilder().setNameFormat("Publication-%d").build();
-        this.publicationScheduler = Executors.newScheduledThreadPool(5, publicationEndThreadFactory);
         this.attributePollInterpreter = attributePollInterpreter;
 
     }
@@ -140,16 +138,16 @@ public class PublicationManagerImpl implements PublicationManager {
                            ConcurrentMap<String, PubSubState> publicationStates,
                            ConcurrentMap<String, PublicationTimer> publicationTimers,
                            ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
-                           ScheduledExecutorService publicationEndScheduler,
-                           AttributePollInterpreter attributePollInterpreter) {
+                           AttributePollInterpreter attributePollInterpreter,
+                           ScheduledExecutorService cleanupScheduler) {
         super();
         this.queuedSubscriptionRequests = queuedSubscriptionRequests;
         this.subscriptionId2PublicationInformation = subscriptionId2SubscriptionRequest;
         this.publicationStates = publicationStates;
         this.publicationTimers = publicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
-        this.publicationScheduler = publicationEndScheduler;
         this.attributePollInterpreter = attributePollInterpreter;
+        this.cleanupScheduler = cleanupScheduler;
 
         this.unregisterOnChange = Maps.newConcurrentMap();
     }
@@ -171,7 +169,7 @@ public class PublicationManagerImpl implements PublicationManager {
         }
 
         // See if the publications for this subscription are already handled
-        String subscriptionId = subscriptionRequest.getSubscriptionId();
+        final String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
             logger.info("Publication with id: " + subscriptionId + " already exists.");
             // TODO update subscription
@@ -195,7 +193,7 @@ public class PublicationManagerImpl implements PublicationManager {
                 logger.debug("there already was a pubState with that subscriptionId in the map");
             }
 
-            //TODO only use timer for periodic subscriptions
+            // TODO only use timer for periodic subscriptions
             final PublicationTimer timer = new PublicationTimer(providerParticipantId,
                                                                 proxyParticipantId,
                                                                 pubState,
@@ -207,17 +205,7 @@ public class PublicationManagerImpl implements PublicationManager {
             if (subscriptionQos instanceof HeartbeatSubscriptionInformation) {
                 timer.startTimer();
             } else {
-                // send initial value for onChange subscription in a new Thread, because we are still in the
-                // MessageReceiver Thread at this point
-                Runnable initalPublicationRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        logger.trace("SendingInitialPublication");
-                        timer.sendInitialPublication();
-                        logger.trace("finished sending InitialPublication");
-                    }
-                };
-                publicationScheduler.execute(initalPublicationRunnable);
+                timer.sendInitialPublication();
             }
 
             publicationTimers.putIfAbsent(subscriptionId, timer);
@@ -233,10 +221,15 @@ public class PublicationManagerImpl implements PublicationManager {
             }
 
             // Create a runnable to remove the publication when the subscription expires
-            PublicationEndRunnable endRunnable = new PublicationEndRunnable(subscriptionId);
-            ScheduledFuture<?> subscriptionEndFuture = publicationScheduler.schedule(endRunnable,
-                                                                                     subscriptionEndDelay,
-                                                                                     TimeUnit.MILLISECONDS);
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    logger.info("Publication expired...");
+                    removePublication(subscriptionId);
+                }
+
+            }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
             subscriptionEndFutures.putIfAbsent(subscriptionId, subscriptionEndFuture);
             logger.info("publication added: " + subscriptionRequest.toString());
 
@@ -298,22 +291,6 @@ public class PublicationManagerImpl implements PublicationManager {
         if (onChange != null) {
             onChange.unregister();
         }
-    }
-
-    class PublicationEndRunnable implements Runnable {
-
-        private final String subscriptionId;
-
-        public PublicationEndRunnable(String subscriptionId) {
-            this.subscriptionId = subscriptionId;
-        }
-
-        @Override
-        public void run() {
-            logger.info("Publication expired...");
-            removePublication(subscriptionId);
-        }
-
     }
 
     // Class that holds information needed to unregister an onChange subscription
@@ -380,7 +357,6 @@ public class PublicationManagerImpl implements PublicationManager {
 
     @Override
     public void shutdown() {
-        publicationScheduler.shutdownNow();
 
     }
 }
