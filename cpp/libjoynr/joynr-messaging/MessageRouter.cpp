@@ -37,6 +37,9 @@ Logger* MessageRouter::logger = Logging::getInstance()->getLogger("MSG", "Messag
 
 MessageRouter::~MessageRouter() {
     threadPool.waitForDone();
+    if(parentRouter != NULL) {
+        delete parentRouter;
+    }
     delete delayedScheduler;
     delete messagingStubFactory;
 }
@@ -57,7 +60,9 @@ MessageRouter::MessageRouter(
         messagingStubFactory(messagingStubFactory),
         routingTable(routingTable),
         threadPool(),
-        delayedScheduler()
+        delayedScheduler(),
+        parentRouter(NULL),
+        parentAddress(NULL)
 {
     threadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
@@ -65,6 +70,11 @@ MessageRouter::MessageRouter(
 
 void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address) {
     routingTable->add(participantId, address);
+}
+
+void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress) {
+    this->parentRouter = parentRouter;
+    this->parentAddress = parentAddress;
 }
 
 /**

@@ -26,6 +26,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/IMessaging.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingProvider.h"
 
 #include <QSharedPointer>
@@ -111,6 +112,8 @@ public:
 
     void addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address);
 
+    void setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress);
+
 private:
 
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
@@ -118,6 +121,8 @@ private:
     Directory<QString, joynr::system::Address>* routingTable;
     QThreadPool threadPool;
     ThreadPoolDelayedScheduler* delayedScheduler;
+    joynr::system::RoutingProxy* parentRouter;
+    QSharedPointer<joynr::system::Address> parentAddress;
     static joynr_logging::Logger* logger;
 };
 
