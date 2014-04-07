@@ -28,7 +28,6 @@
 
 namespace joynr {
 
-namespace types{ class ProviderQosRequirements; }
 /**
   * Interface for capabilities lookup and registration. Used by the CapabilitiesRegistrar and the arbitrator classes.
   *
@@ -65,7 +64,6 @@ public:
     virtual QList<CapabilityEntry> lookup(
             const QString& domain,
             const QString& interfaceName,
-            const types::ProviderQosRequirements& qos,
             const DiscoveryQos& discoveryQos
     ) = 0;
     virtual QList<CapabilityEntry> lookup(

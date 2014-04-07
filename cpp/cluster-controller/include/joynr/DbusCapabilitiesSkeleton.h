@@ -55,7 +55,6 @@ public:
 
     virtual void lookup1(std::string domain,
                     std::string interfaceName,
-                    joynr::messaging::types::Types::ProviderQosRequirement qos,
                     joynr::messaging::types::Types::DiscoveryQos discoveryQos,
                     joynr::messaging::types::Types::CapabilityEntryList& result);
 

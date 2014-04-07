@@ -54,7 +54,6 @@ public:
     virtual QList<CapabilityEntry> lookup(
             const QString& domain,
             const QString& interfaceName,
-            const types::ProviderQosRequirements& qos,
             const DiscoveryQos& discoveryQos
     );
     virtual QList<CapabilityEntry> lookup(

@@ -21,14 +21,6 @@
 
 namespace joynr {
 
-void DbusCapabilitiesUtil::copyJoynrProviderQosRequirementsToDbus(const types::ProviderQosRequirements& joynrProvQosRec, joynr::messaging::types::Types::ProviderQosRequirement& dbusProvQosRec) {
-    dbusProvQosRec.notYetImplemented = joynrProvQosRec.getNotYetImplemented();
-}
-
-void DbusCapabilitiesUtil::copyDbusProviderQosRequirementsToJoynr(const joynr::messaging::types::Types::ProviderQosRequirement& dbusProvQosRec, types::ProviderQosRequirements& joynrProvQosRec) {
-    joynrProvQosRec.setNotYetImplemented(dbusProvQosRec.notYetImplemented);
-}
-
 void DbusCapabilitiesUtil::copyJoynrCapaEntryListToDbus(const QList<CapabilityEntry>& joynrResult, joynr::messaging::types::Types::CapabilityEntryList& dbusList) {
     for(auto it = joynrResult.begin(); it != joynrResult.end(); it++) {
         joynr::messaging::types::Types::CapabilityEntry entry;

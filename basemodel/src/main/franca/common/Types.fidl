@@ -95,11 +95,6 @@ typeCollection ExtendedTypes {
 		Boolean supportsOnChangeSubscriptions 
 	}
 	
-	struct ProviderQosRequirements {
-		//the ProviderQosRequirements are not yet implemented. Currently empty datatypes are not supported, so we put a dummy bool in here.
-		Boolean notYetImplemented
-	}
-	
 	struct CapabilityInformation {
 		String domain
 		String interfaceName

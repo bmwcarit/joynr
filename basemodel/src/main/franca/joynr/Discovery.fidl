@@ -43,12 +43,11 @@ typeCollection DiscoveryTypes {
     }
 
     struct DiscoveryEntry {
-        String interfaceName
         String domain
-        ProviderQos qos
+        String interfaceName
         String participantId
+        ProviderQos qos
         CommunicationMiddleware[] connections
-        Boolean global
     }
 }
 
@@ -96,7 +95,6 @@ interface Discovery {
         in {
             String domain
             String interfaceName
-            ProviderQosRequirements qos
             DiscoveryTypes.DiscoveryQos discoveryQos
         }
         out {

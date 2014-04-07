@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import joynr.Reply;
 import joynr.Request;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -130,12 +129,11 @@ public class ProxyTest {
                                                                new JoynrMessagingEndpointAddress("testChannelId"),
                                                                "TestParticipantId",
                                                                CapabilityScope.LOCALONLY));
-                ((CapabilitiesCallback) args[4]).processCapabilitiesReceived(fakeCapabilitiesResult);
+                ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
         }).when(capabilitiesClient).getCapabilities(Mockito.<String> any(),
                                                     Mockito.<String> any(),
-                                                    Mockito.<ProviderQosRequirements> any(),
                                                     Mockito.<DiscoveryQos> any(),
                                                     Mockito.<CapabilitiesCallback> any());
 

@@ -25,7 +25,6 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import java.util.Collection;
 
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,12 +59,7 @@ public class HighestPriorityArbitrator extends Arbitrator {
         arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
         notifyArbitrationStatusChanged();
 
-        ProviderQosRequirements providerQosRequirements = new ProviderQosRequirements();
-        localCapabilitiesDirectory.getCapabilities(domain,
-                                                   interfaceName,
-                                                   providerQosRequirements,
-                                                   discoveryQos,
-                                                   callback);
+        localCapabilitiesDirectory.getCapabilities(domain, interfaceName, discoveryQos, callback);
 
     }
 

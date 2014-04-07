@@ -24,7 +24,6 @@
 #include "tests/utils/MockObjects.h"
 #include "utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
-#include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/IAttributeListener.h"
 
 using namespace ::testing;
@@ -126,11 +125,11 @@ TEST_F(CapabilitiesAggregatorTest, lookup_byInterface_addsInProcessAddress){
     EXPECT_CALL(*mockDispatcher, lookupRequestCaller(participantId))
             .Times(1)
             .WillOnce(Return(requestCaller));
-    EXPECT_CALL(*mockCapabilitiesStub, lookup(domain, interfaceName, _, _))
+    EXPECT_CALL(*mockCapabilitiesStub, lookup(domain, interfaceName, _))
             .Times(1)
             .WillOnce(Return(mockLookupResults));
 
-    QList<CapabilityEntry> results = capAggregator->lookup(domain, interfaceName, types::ProviderQosRequirements(), discoveryQos);
+    QList<CapabilityEntry> results = capAggregator->lookup(domain, interfaceName, discoveryQos);
     ASSERT_EQ(1, results.size());
     CapabilityEntry firstEntry = results.first();
     ASSERT_EQ(1, firstEntry.getEndpointAddresses().size());
@@ -163,7 +162,7 @@ TEST_F(CapabilitiesAggregatorTest, async_lookup_byId){
     EXPECT_EQ(mockLookupResults.at(0),results.at(0));
 }
 TEST_F(CapabilitiesAggregatorTest, async_lookup_byInterface){
-    EXPECT_CALL(*mockCapabilitiesStub, lookup(domain, interfaceName, _, _))
+    EXPECT_CALL(*mockCapabilitiesStub, lookup(domain, interfaceName, _))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &CapabilitiesAggregatorTest::fakeLookupBlocking));
     EXPECT_CALL(*mockDispatcher, containsRequestCaller(participantId))
@@ -175,7 +174,7 @@ TEST_F(CapabilitiesAggregatorTest, async_lookup_byInterface){
 
     QSharedPointer<MockLocalCapabilitiesDirectoryCallback> callback(new MockLocalCapabilitiesDirectoryCallback());
     QDateTime startTime(QDateTime::currentDateTime());
-    capAggregator->lookup(domain, interfaceName, types::ProviderQosRequirements(), discoveryQos, callback);
+    capAggregator->lookup(domain, interfaceName, discoveryQos, callback);
     QDateTime endTime(QDateTime::currentDateTime());
     //make shure the call was not blocking (mockCapabilitiesStub->lookup is blocking for 2 seconds)
     EXPECT_TRUE(startTime.msecsTo(endTime) < 2000);
@@ -216,12 +215,12 @@ TEST_F(CapabilitiesAggregatorTest, async_lookup_byInterface_addsInProcessAddress
     EXPECT_CALL(*mockDispatcher, lookupRequestCaller(participantId))
             .Times(1)
             .WillOnce(Return(requestCaller));
-    EXPECT_CALL(*mockCapabilitiesStub, lookup(domain, interfaceName, _, _))
+    EXPECT_CALL(*mockCapabilitiesStub, lookup(domain, interfaceName, _))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &CapabilitiesAggregatorTest::fakeLookupBlocking));
 
     QSharedPointer<MockLocalCapabilitiesDirectoryCallback> callback(new MockLocalCapabilitiesDirectoryCallback());
-    capAggregator->lookup(domain, interfaceName, types::ProviderQosRequirements(), discoveryQos, callback);
+    capAggregator->lookup(domain, interfaceName, discoveryQos, callback);
     QList<CapabilityEntry> results(callback->getResults(3000));
 
     ASSERT_EQ(1, results.size());

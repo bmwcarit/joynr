@@ -20,7 +20,6 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import joynr.types.ProviderQosRequirements;
 
 public interface LocalCapabilitiesDirectory {
     /**
@@ -50,7 +49,6 @@ public interface LocalCapabilitiesDirectory {
      */
     void getCapabilities(String domain,
                          String interfaceName,
-                         ProviderQosRequirements requestedQos,
                          DiscoveryQos discoveryQos,
                          CapabilitiesCallback capabilitiesCallback);
 

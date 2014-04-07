@@ -20,7 +20,6 @@
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/ICapabilities.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/types/CustomParameter.h"
 
 #include <cassert>
@@ -40,7 +39,6 @@ void KeywordArbitrator::attemptArbitration()
     receiveCapabilitiesLookupResults(
                 capabilitiesStub->lookup(domain,
                                          interfaceName,
-                                         types::ProviderQosRequirements(),
                                          discoveryQos));
 
 }

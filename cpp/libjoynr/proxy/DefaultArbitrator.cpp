@@ -19,7 +19,6 @@
 #include "joynr/DefaultArbitrator.h"
 #include "joynr/ICapabilities.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/ProviderQosRequirements.h"
 
 namespace joynr {
 
@@ -34,7 +33,6 @@ void DefaultArbitrator::attemptArbitration(){
     receiveCapabilitiesLookupResults(
                 capabilitiesStub->lookup(domain,
                                          interfaceName,
-                                         types::ProviderQosRequirements(),
                                          discoveryQos));
 }
 

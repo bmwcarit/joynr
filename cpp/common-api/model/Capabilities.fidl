@@ -50,7 +50,6 @@ interface ICapabilities {
         in {
             String domain
             String interfaceName
-            Types.ProviderQosRequirement qos
             Types.DiscoveryQos discoveryQos
         }
         out {

@@ -27,9 +27,9 @@ InProcessCapabilitiesStub::InProcessCapabilitiesStub(ICapabilities *skeleton)
 
 }
 
-QList<CapabilityEntry> InProcessCapabilitiesStub::lookup(const QString &domain, const QString &interfaceName, const types::ProviderQosRequirements &qos, const DiscoveryQos& discoveryQos){
+QList<CapabilityEntry> InProcessCapabilitiesStub::lookup(const QString &domain, const QString &interfaceName, const DiscoveryQos& discoveryQos){
     assert(skeleton!=NULL);
-    return skeleton->lookup(domain, interfaceName, qos, discoveryQos);
+    return skeleton->lookup(domain, interfaceName, discoveryQos);
 }
 
 QList<CapabilityEntry> InProcessCapabilitiesStub::lookup(const QString &participantId, const DiscoveryQos& discoveryQos){

@@ -21,7 +21,6 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/types/ProviderQosRequirements.h"
 
 #include "joynr/CapabilityEntry.h"
 
@@ -44,9 +43,6 @@ class DbusCapabilitiesUtil
 {
 public:
     DbusCapabilitiesUtil();
-
-    static void copyJoynrProviderQosRequirementsToDbus(const types::ProviderQosRequirements& joynrProvQosRec, joynr::messaging::types::Types::ProviderQosRequirement& dbusProvQosRec);
-    static void copyDbusProviderQosRequirementsToJoynr(const joynr::messaging::types::Types::ProviderQosRequirement& dbusProvQosRec, types::ProviderQosRequirements& joynrProvQosRec);
 
     static void copyJoynrCapaEntryListToDbus(const QList<CapabilityEntry>& joynrResult, joynr::messaging::types::Types::CapabilityEntryList& dbusList);
     static void copyJoynrCapaEntryToDbus(const CapabilityEntry& joynrEntry, joynr::messaging::types::Types::CapabilityEntry& dbusEntry);

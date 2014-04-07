@@ -169,7 +169,6 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
     QSharedPointer<MockCapabilitiesStub> capaMock(new MockCapabilitiesStub());
     EXPECT_CALL(*capaMock.data(), lookup(A<const QString&>(),
                                   A<const QString&>(),
-                                  A<const types::ProviderQosRequirements&>(),
                                   A<const DiscoveryQos&>())).Times(5).WillRepeatedly(testing::Return(*result));
 
     DiscoveryQos discoveryQos;

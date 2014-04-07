@@ -58,19 +58,15 @@ void DbusCapabilitiesSkeleton::addEndPoint(std::string participantId,
 
 void DbusCapabilitiesSkeleton::lookup1(std::string domain,
                 std::string interfaceName,
-                joynr::messaging::types::Types::ProviderQosRequirement qos,
                 joynr::messaging::types::Types::DiscoveryQos discoveryQos,
                 joynr::messaging::types::Types::CapabilityEntryList& result) {
 
     // transform data
-    types::ProviderQosRequirements joynrQos;
-    DbusCapabilitiesUtil::copyDbusProviderQosRequirementsToJoynr(qos, joynrQos);
-
     DiscoveryQos joynrDiscoveryQos;
     DbusCapabilitiesUtil::copyDbusDiscoveryQosToJoynr(discoveryQos, joynrDiscoveryQos);
 
     // call the function
-    QList<CapabilityEntry> joynrResult = callBack.lookup(QString::fromStdString(domain), QString::fromStdString(interfaceName), joynrQos, joynrDiscoveryQos);
+    QList<CapabilityEntry> joynrResult = callBack.lookup(QString::fromStdString(domain), QString::fromStdString(interfaceName), joynrDiscoveryQos);
 
     // transform result
     DbusCapabilitiesUtil::copyJoynrCapaEntryListToDbus(joynrResult, result);

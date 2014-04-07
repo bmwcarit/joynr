@@ -24,8 +24,6 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/ICapabilities.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/types/ProviderQosRequirements.h"
-
 
 namespace joynr {
 
@@ -64,7 +62,6 @@ public:
      */
     QList<CapabilityEntry> lookup(const QString& domain,
                                   const QString& interfaceName,
-                                  const types::ProviderQosRequirements& qos,
                                   const DiscoveryQos& discoveryQos);
 
     /**
@@ -91,7 +88,6 @@ public:
      */
     void lookup(const QString& domain,
                 const QString& interfaceName,
-                const types::ProviderQosRequirements& qos,
                 const DiscoveryQos& discoveryQos,
                 QSharedPointer<ILocalCapabilitiesCallback> callback);
 

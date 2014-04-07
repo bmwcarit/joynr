@@ -36,19 +36,16 @@ DbusCapabilitiesStubAdapter::DbusCapabilitiesStubAdapter(QString serviceAddress)
     init();
 }
 
-QList<CapabilityEntry> DbusCapabilitiesStubAdapter::lookup(const QString &domain, const QString &interfaceName, const types::ProviderQosRequirements &qos, const DiscoveryQos& discoveryQos){
+QList<CapabilityEntry> DbusCapabilitiesStubAdapter::lookup(const QString &domain, const QString &interfaceName, const DiscoveryQos& discoveryQos){
     logMethodCall("lookup");
     // transform data
-    joynr::messaging::types::Types::ProviderQosRequirement dbusQos;
-    DbusCapabilitiesUtil::copyJoynrProviderQosRequirementsToDbus(qos, dbusQos);
-
     joynr::messaging::types::Types::DiscoveryQos dbusDiscoveryQos;
     DbusCapabilitiesUtil::copyJoynrDiscoveryQosToDbus(discoveryQos, dbusDiscoveryQos);
 
     // call
     CommonAPI::CallStatus status;
     joynr::messaging::types::Types::CapabilityEntryList capaEntryList;
-    proxy->lookup1(domain.toStdString(), interfaceName.toStdString(), dbusQos, dbusDiscoveryQos, status, capaEntryList);
+    proxy->lookup1(domain.toStdString(), interfaceName.toStdString(), dbusDiscoveryQos, status, capaEntryList);
     printCallStatus(status, "lookup");
 
     // transform result

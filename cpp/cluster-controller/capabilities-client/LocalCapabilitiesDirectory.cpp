@@ -28,7 +28,6 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/system/Address.h"
-#include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/DiscoveryQos.h"
 
 #include <QMutexLocker>
@@ -243,10 +242,8 @@ void LocalCapabilitiesDirectory::getCapabilities(
         const QString& domain,
         const QString& interfaceName,
         QSharedPointer<ILocalCapabilitiesCallback> callBack,
-        const DiscoveryQos& discoveryQos,
-        const types::ProviderQosRequirements& qos
+        const DiscoveryQos& discoveryQos
 ) {
-    Q_UNUSED(qos); //provider Requirements are currently not supported.
     InterfaceAddress interfaceAddress(domain, interfaceName);
 
     // get the local and cached entries

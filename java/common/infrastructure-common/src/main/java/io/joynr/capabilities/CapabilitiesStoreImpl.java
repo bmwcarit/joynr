@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import joynr.types.ProviderQosRequirements;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -363,7 +361,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Override
     public Collection<CapabilityEntry> findCapabilitiesForInterfaceAddress(final String domain,
                                                                            final String interfaceName,
-                                                                           final ProviderQosRequirements requestedQos,
                                                                            DiscoveryQos discoveryQos) {
 
         ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
@@ -376,7 +373,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
                     CapabilityEntry ce = capabilityKeyToCapabilityMapping.get(capId);
 
                     if (ce != null && ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
-                        if (checkQoSMatches(capId, ce, requestedQos, discoveryQos)) {
+                        if (checkQoSMatches(capId, ce, discoveryQos)) {
                             capabilitiesList.add(ce);
                         }
                     }
@@ -442,10 +439,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         }
     }
 
-    private boolean checkQoSMatches(String capId,
-                                    CapabilityEntry capInfo,
-                                    ProviderQosRequirements requestedQos,
-                                    DiscoveryQos discoveryQos) {
+    private boolean checkQoSMatches(String capId, CapabilityEntry capInfo, DiscoveryQos discoveryQos) {
         // TODO accept QoS parameters which are higher than/include the
         // requested ones
         // ProviderQos providerQos = capInfo.getProviderQos();

@@ -33,12 +33,10 @@ CapabilitiesAggregator::CapabilitiesAggregator(ICapabilities *capabilitiesStub,
 
 QList<CapabilityEntry> CapabilitiesAggregator::lookup(const QString &domain,
                                                       const QString &interfaceName,
-                                                      const types::ProviderQosRequirements &qos,
                                                       const DiscoveryQos& discoveryQos){
     QList<CapabilityEntry> results;
     results = capabilitiesStub->lookup(domain,
                                        interfaceName,
-                                       qos,
                                        discoveryQos);
     return checkForInprocessParticiants(results);
 }
@@ -54,13 +52,11 @@ QList<CapabilityEntry> CapabilitiesAggregator::lookup(const QString& participant
 
 void CapabilitiesAggregator::lookup(const QString& domain,
                                     const QString& interfaceName,
-                                    const types::ProviderQosRequirements& qos,
                                     const DiscoveryQos& discoveryQos,
                                     QSharedPointer<ILocalCapabilitiesCallback> callback)
 {
     threadPool.start(new CapabilitiesLookupByInterfaceRunnable(domain,
                                                                interfaceName,
-                                                               qos,
                                                                discoveryQos,
                                                                callback,
                                                                capabilitiesStub,

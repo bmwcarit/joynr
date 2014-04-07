@@ -54,7 +54,7 @@ public:
             QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     );
-    QList<CapabilityEntry> lookup(const QString &domain, const QString &interfaceName, const types::ProviderQosRequirements& qos, const DiscoveryQos& discoveryQos);
+    QList<CapabilityEntry> lookup(const QString &domain, const QString &interfaceName, const DiscoveryQos& discoveryQos);
     QList<CapabilityEntry> lookup(const QString& participantId, const DiscoveryQos& discoveryQos);
     void remove(const QString& participantId, const qint64& timeout_ms);
 

@@ -65,8 +65,7 @@ class DiscoveryQos;
 
 class InterfaceAddress;
 namespace system { class Address; }
-namespace types { class ProviderQosRequirements;
-                  class ProviderQos;
+namespace types { class ProviderQos;
                   class CapabilitiesInformation;
                 }
 
@@ -99,13 +98,11 @@ public:
     /*
      * Returns a list of capabilities matching the given domain and interfaceName, this is an asynchronous request,
      * must supply a callback.
-     * Will later be extended by ProviderQosReq so that only capabilities matching the Requirements will be returned
      */
-    virtual void getCapabilities(const QString& domain, const QString& interfaceName, QSharedPointer<ILocalCapabilitiesCallback> callBack, const DiscoveryQos& discoveryQos, const types::ProviderQosRequirements& qos);
+    virtual void getCapabilities(const QString& domain, const QString& interfaceName, QSharedPointer<ILocalCapabilitiesCallback> callBack, const DiscoveryQos& discoveryQos);
 
     /*
      * Returns a list of capabilities matching the given channelId.
-     * Will later be extended by ProviderQosReq so that only capabilities matching the Requirements will be returned
      */
     virtual void getCapabilities(const QString& participantId, QSharedPointer<ILocalCapabilitiesCallback> callBack, const DiscoveryQos& discoveryQos);
 

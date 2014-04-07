@@ -37,15 +37,13 @@ CapabilitiesLookupRunnable::CapabilitiesLookupRunnable(const DiscoveryQos& disco
 
 CapabilitiesLookupByInterfaceRunnable::CapabilitiesLookupByInterfaceRunnable(const QString &domain,
                                                                const QString &interfaceName,
-                                                               const types::ProviderQosRequirements &qos,
                                                                const DiscoveryQos& discoveryQos,
                                                                QSharedPointer<ILocalCapabilitiesCallback> callback,
                                                                ICapabilities *capabilitiesStub,
                                                                IRequestCallerDirectory *requestCallerDirectory)
     : CapabilitiesLookupRunnable(discoveryQos, callback, capabilitiesStub, requestCallerDirectory),
       domain(domain),
-      interfaceName(interfaceName),
-      qos(qos)
+      interfaceName(interfaceName)
 {
 
 }
@@ -53,7 +51,6 @@ CapabilitiesLookupByInterfaceRunnable::CapabilitiesLookupByInterfaceRunnable(con
 void CapabilitiesLookupByInterfaceRunnable::run(){
     QList<CapabilityEntry> results = capabilitiesStub->lookup(domain,
                                                               interfaceName,
-                                                              qos,
                                                               discoveryQos);
     InProcessEndpointAddressFactory::create(results, requestCallerDirectory);
     callback->capabilitiesReceived(results);

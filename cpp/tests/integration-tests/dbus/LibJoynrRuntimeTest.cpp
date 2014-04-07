@@ -107,7 +107,6 @@ TEST_F(LibJoynrRuntimeTest, get_proxy) {
     result->append(*defaultEntry);
     EXPECT_CALL(*capMock, lookup(A<const QString&>(),
                                   A<const QString&>(),
-                                  A<const types::ProviderQosRequirements&>(),
                                   A<const DiscoveryQos&>())).Times(1).WillRepeatedly(testing::Return(*result));
     EXPECT_CALL(*capMock, addEndpoint( A<const QString &>(),
                                        A<QSharedPointer<joynr::system::Address> >(),

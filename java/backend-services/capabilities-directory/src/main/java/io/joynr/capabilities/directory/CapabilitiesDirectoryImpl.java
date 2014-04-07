@@ -30,7 +30,6 @@ import java.util.List;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,14 +103,11 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public List<CapabilityInformation> lookupCapabilities(final String domain,
-                                                          final String interfaceName,
-                                                          ProviderQosRequirements qos) {
-        logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}", qos);
+    public List<CapabilityInformation> lookupCapabilities(final String domain, final String interfaceName) {
+        logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
         List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
         Collection<CapabilityEntry> entryCollection = capabiltiesStore.findCapabilitiesForInterfaceAddress(domain,
                                                                                                            interfaceName,
-                                                                                                           qos,
                                                                                                            DiscoveryQos.NO_FILTER);
         for (CapabilityEntry entry : entryCollection) {
             capabilityInformationList.add(entry.toCapabilityInformation());

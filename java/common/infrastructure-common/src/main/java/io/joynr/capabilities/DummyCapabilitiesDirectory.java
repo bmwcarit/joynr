@@ -24,8 +24,6 @@ import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.util.ArrayList;
 
-import joynr.types.ProviderQosRequirements;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +60,6 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     @Override
     public void getCapabilities(String domain,
                                 String interfaceName,
-                                ProviderQosRequirements requestedQos,
                                 DiscoveryQos discoveryQos,
                                 CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");

@@ -66,12 +66,11 @@ void DbusCapabilitiesAdapter::addEndpoint(
 QList<CapabilityEntry> DbusCapabilitiesAdapter::lookup(
         const QString& domain,
         const QString& interfaceName,
-        const types::ProviderQosRequirements& qos,
         const DiscoveryQos& discoveryQos
 ){
     dbusSkeletonWrapper->logMethodCall("lookup", "DbusCapabilitiesAdapter");
     QSharedPointer<DummyDbusCapabilitiesFuture> future(new DummyDbusCapabilitiesFuture());
-    localCapabilitiesDirectory.getCapabilities(domain,interfaceName, future, discoveryQos, qos);
+    localCapabilitiesDirectory.getCapabilities(domain,interfaceName, future, discoveryQos);
     //this will block forever when no result is received.
     return future->get(discoveryQos.getDiscoveryTimeout());
 }

@@ -22,7 +22,6 @@
 #include "joynr/ICapabilities.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/types/ProviderQosRequirements.h"
 
 #include <cassert>
 
@@ -45,7 +44,6 @@ void QosArbitrator::attemptArbitration()
    receiveCapabilitiesLookupResults(
         capabilitiesStub->lookup(domain,
                                  interfaceName,
-                                 types::ProviderQosRequirements(),
                                  discoveryQos
                                  ));
 }

@@ -78,10 +78,6 @@ typeCollection Types {
 
     array EndpointAddressList of EndpointAddressBase
 
-    struct ProviderQosRequirement {
-        Boolean notYetImplemented
-    }
-
     struct CapabilityEntry {
         String interfaceName
         String domain

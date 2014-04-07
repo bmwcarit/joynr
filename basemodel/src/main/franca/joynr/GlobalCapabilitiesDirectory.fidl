@@ -62,7 +62,6 @@ interface GlobalCapabilitiesDirectory{
 		in {
 			String domain
 			String interfaceName
-			ProviderQosRequirements qos
 		}
 		
 		out {

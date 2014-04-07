@@ -59,7 +59,6 @@ public:
     QList<CapabilityEntry> lookup(
             const QString &domain,
             const QString &interfaceName,
-            const types::ProviderQosRequirements &qos,
             const DiscoveryQos& discoveryQos
     );
     QList<CapabilityEntry> lookup(

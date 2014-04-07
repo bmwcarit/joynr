@@ -70,7 +70,6 @@ class IMessageReceiver;
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 
 #include "joynr/MessageRouter.h"
-#include "joynr/types/ProviderQosRequirements.h"
 
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
@@ -295,9 +294,8 @@ public:
     MOCK_METHOD3(addEndpoint, void(const QString &participantId,
                            QSharedPointer<joynr::system::Address> messagingStubAddress,
                                    const qint64& timeout));
-    MOCK_METHOD4(lookup, QList<joynr::CapabilityEntry>(const QString &domain,
+    MOCK_METHOD3(lookup, QList<joynr::CapabilityEntry>(const QString &domain,
                                                 const QString &interfaceName,
-                                                const joynr::types::ProviderQosRequirements &qos,
                                                 const joynr::DiscoveryQos& discoveryQos));
     MOCK_METHOD2(lookup, QList<joynr::CapabilityEntry>(const QString& participantId, const joynr::DiscoveryQos& discoveryQos));
     MOCK_METHOD2(remove, void(const QString& participantId, const qint64& timeout));

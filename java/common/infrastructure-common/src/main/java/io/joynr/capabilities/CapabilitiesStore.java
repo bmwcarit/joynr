@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import joynr.types.ProviderQosRequirements;
-
 public interface CapabilitiesStore {
 
     public abstract void registerCapability(CapabilityEntry capabilityEntry);
@@ -43,7 +41,6 @@ public interface CapabilitiesStore {
 
     public abstract Collection<CapabilityEntry> findCapabilitiesForInterfaceAddress(String domain,
                                                                                     String interfaceName,
-                                                                                    ProviderQosRequirements requestedQos,
                                                                                     DiscoveryQos discoveryQos);
 
     public abstract ArrayList<CapabilityEntry> findCapabilitiesForParticipantId(String participantId,

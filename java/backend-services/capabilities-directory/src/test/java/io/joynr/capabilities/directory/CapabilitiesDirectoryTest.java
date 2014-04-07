@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +46,6 @@ public class CapabilitiesDirectoryTest {
     String participantId1 = "testParticipantId1";
     String participantId2 = "testParticipantId2";
     ProviderQos providerQos = new ProviderQos();
-    ProviderQosRequirements providerQosRequirements = new ProviderQosRequirements();
     CapabilityInformation capInfo1;
     CapabilityInformation capInfo2;
     String postFix = "" + System.currentTimeMillis();
@@ -73,27 +71,19 @@ public class CapabilitiesDirectoryTest {
         capabilitiesDirectory.registerCapabilities(singleInterface);
         capabilitiesDirectory.registerCapabilities(multipleInterfaces);
 
-        assertEquals(multipleInterfaces.get(0), capabilitiesDirectory.lookupCapabilities(domain,
-                                                                                         thisInterface,
-                                                                                         providerQosRequirements)
+        assertEquals(multipleInterfaces.get(0), capabilitiesDirectory.lookupCapabilities(domain, thisInterface).get(0));
+        assertTrue(capabilitiesDirectory.lookupCapabilities(domain, thisInterface).contains(multipleInterfaces.get(0)));
+        assertEquals(multipleInterfaces.get(1), capabilitiesDirectory.lookupCapabilities(domain, anotherInterface)
                                                                      .get(0));
-        assertTrue(capabilitiesDirectory.lookupCapabilities(domain, thisInterface, providerQosRequirements)
-                                        .contains(multipleInterfaces.get(0)));
-        assertEquals(multipleInterfaces.get(1), capabilitiesDirectory.lookupCapabilities(domain,
-                                                                                         anotherInterface,
-                                                                                         providerQosRequirements)
-                                                                     .get(0));
-        assertTrue(capabilitiesDirectory.lookupCapabilities(domain, anotherInterface, providerQosRequirements)
+        assertTrue(capabilitiesDirectory.lookupCapabilities(domain, anotherInterface)
                                         .contains(multipleInterfaces.get(1)));
     }
 
     @Test
     public void registerCapabilityAndRequestChannels() throws Exception {
         capabilitiesDirectory.registerCapabilities(singleInterface);
-        assertEquals(singleInterface.get(0), capabilitiesDirectory.lookupCapabilities(domain,
-                                                                                      thisInterface,
-                                                                                      providerQosRequirements).get(0));
-        assertEquals(true, capabilitiesDirectory.lookupCapabilities(domain, thisInterface, providerQosRequirements)
+        assertEquals(singleInterface.get(0), capabilitiesDirectory.lookupCapabilities(domain, thisInterface).get(0));
+        assertEquals(true, capabilitiesDirectory.lookupCapabilities(domain, thisInterface)
                                                 .contains(singleInterface.get(0)));
 
     }

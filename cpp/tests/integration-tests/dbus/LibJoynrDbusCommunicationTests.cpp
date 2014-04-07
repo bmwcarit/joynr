@@ -249,7 +249,6 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_lookup1) {
 
     EXPECT_CALL(*capaMock, lookup(A<const QString&>(),
                                   A<const QString&>(),
-                                  A<const types::ProviderQosRequirements&>(),
                                   A<const DiscoveryQos&>())).Times(1).WillRepeatedly(testing::Return(*result));
     auto capaSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capaMock, ccCapabilitiesAddress);
 
@@ -258,7 +257,7 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_lookup1) {
     ASSERT_TRUE(capaStub->isProxyAvailabe());
 
     // call methodl
-    QList<CapabilityEntry> methodResult = capaStub->lookup(QString("local"), QString("myinterface"), types::ProviderQosRequirements(true), DiscoveryQos(1000));
+    QList<CapabilityEntry> methodResult = capaStub->lookup(QString("local"), QString("myinterface"), DiscoveryQos(1000));
     ASSERT_TRUE(methodResult.size() == result->size());
 
     // check for the same capabilities entry

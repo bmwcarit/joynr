@@ -372,9 +372,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             if (listener != null) {
                 deliverMessageToListener(listener, message);
             } else {
-                putMessage(toParticipantId,
-                                               message,
-                                               ExpiryDate.fromAbsolute(message.getExpiryDate()));
+                putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
             }
         }
     }
@@ -506,16 +504,15 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             logger.error("error shutting down replyCallerDirectory");
         }
     }
-        
-    private void putMessage(final String participantId,
-                            JoynrMessage message,
-                            ExpiryDate incomingTtlExpirationDate_ms) {
+
+    private void putMessage(final String participantId, JoynrMessage message, ExpiryDate incomingTtlExpirationDate_ms) {
 
         if (!messageQueue.containsKey(participantId)) {
             ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> newMessageList = new ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>>();
             messageQueue.putIfAbsent(participantId, newMessageList);
         }
-       final  ContentWithExpiryDate<JoynrMessage> messageItem = new ContentWithExpiryDate<JoynrMessage>(message, incomingTtlExpirationDate_ms);
+        final ContentWithExpiryDate<JoynrMessage> messageItem = new ContentWithExpiryDate<JoynrMessage>(message,
+                                                                                                        incomingTtlExpirationDate_ms);
         messageQueue.get(participantId).add(messageItem);
         cleanupScheduler.schedule(new Runnable() {
 
@@ -523,9 +520,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             public void run() {
                 messageQueue.get(participantId).remove(messageItem);
                 JoynrMessage message = messageItem.getContent();
-                logger.warn("TTL DISCARD. msgId: {} from: {} to: {} because it has expired. ", new String[]{message.getId(), message.getFrom(), message.getTo()});
+                logger.warn("TTL DISCARD. msgId: {} from: {} to: {} because it has expired. ", new String[]{
+                        message.getId(), message.getFrom(), message.getTo() });
 
-                
-            }}, incomingTtlExpirationDate_ms.getRelativeTtl(), TimeUnit.MILLISECONDS);
+            }
+        }, incomingTtlExpirationDate_ms.getRelativeTtl(), TimeUnit.MILLISECONDS);
     }
 }

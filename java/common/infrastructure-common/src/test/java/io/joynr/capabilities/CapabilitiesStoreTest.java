@@ -30,7 +30,6 @@ import java.util.HashSet;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 import joynr.types.ProviderScope;
 import joynr.vehicle.Gps;
 import joynr.vehicle.GpsAsync;
@@ -66,10 +65,7 @@ public class CapabilitiesStoreTest {
         DiscoveryQos discoveryQos = new DiscoveryQos(1000, ArbitrationStrategy.NotSet, 1000);
         try {
             store.registerCapability(capabilityEntry);
-            store.findCapabilitiesForInterfaceAddress("hello",
-                                                      GpsAsync.INTERFACE_NAME,
-                                                      new ProviderQosRequirements(),
-                                                      discoveryQos);
+            store.findCapabilitiesForInterfaceAddress("hello", GpsAsync.INTERFACE_NAME, discoveryQos);
         } catch (Exception e) {
             thrown = true;
         }
@@ -277,12 +273,10 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        ProviderQosRequirements requestedQos = new ProviderQosRequirements();
         DiscoveryQos discoveryQos = DiscoveryQos.NO_FILTER;
 
         Collection<CapabilityEntry> newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
                                                                                                  GpsAsync.INTERFACE_NAME,
-                                                                                                 requestedQos,
                                                                                                  discoveryQos);
 
         Assert.assertEquals(1, newlyEnteredCaps.size());
@@ -300,10 +294,7 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                     GpsAsync.INTERFACE_NAME,
-                                                                     requestedQos,
-                                                                     discoveryQos);
+        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain, GpsAsync.INTERFACE_NAME, discoveryQos);
 
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
@@ -322,10 +313,7 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                     GpsAsync.INTERFACE_NAME,
-                                                                     requestedQos,
-                                                                     discoveryQos);
+        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain, GpsAsync.INTERFACE_NAME, discoveryQos);
         Assert.assertEquals(2, newlyEnteredCaps.size());
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry1));
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry2));
@@ -362,12 +350,10 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        ProviderQosRequirements requestedQos = new ProviderQosRequirements();
         DiscoveryQos discoveryQos = DiscoveryQos.NO_FILTER;
 
         Collection<CapabilityEntry> newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
                                                                                                  Gps.INTERFACE_NAME,
-                                                                                                 requestedQos,
                                                                                                  discoveryQos);
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
@@ -401,10 +387,7 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                     Gps.INTERFACE_NAME,
-                                                                     requestedQos,
-                                                                     discoveryQos);
+        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain, Gps.INTERFACE_NAME, discoveryQos);
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry2, newlyEnteredCaps.iterator().next());
 

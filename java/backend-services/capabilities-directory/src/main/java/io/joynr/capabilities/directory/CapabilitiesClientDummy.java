@@ -26,7 +26,6 @@ import io.joynr.proxy.Future;
 import java.util.List;
 
 import joynr.types.CapabilityInformation;
-import joynr.types.ProviderQosRequirements;
 
 public class CapabilitiesClientDummy implements GlobalCapabilitiesDirectoryClient {
 
@@ -45,8 +44,7 @@ public class CapabilitiesClientDummy implements GlobalCapabilitiesDirectoryClien
     @Override
     public Future<List<CapabilityInformation>> lookupCapabilities(Callback<List<CapabilityInformation>> callback,
                                                                   String domain,
-                                                                  String interfaceName,
-                                                                  ProviderQosRequirements qos) {
+                                                                  String interfaceName) {
         assert (false);
         return null;
     }
@@ -90,9 +88,7 @@ public class CapabilitiesClientDummy implements GlobalCapabilitiesDirectoryClien
     }
 
     @Override
-    public List<CapabilityInformation> lookupCapabilities(String domain,
-                                                          String interfaceName,
-                                                          ProviderQosRequirements qos) {
+    public List<CapabilityInformation> lookupCapabilities(String domain, String interfaceName) {
         assert (false);
         return null;
     }

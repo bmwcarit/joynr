@@ -64,11 +64,10 @@ void InProcessCapabilitiesSkeleton::add(
 QList<CapabilityEntry> InProcessCapabilitiesSkeleton::lookup(
         const QString &domain,
         const QString &interfaceName,
-        const types::ProviderQosRequirements &qos,
         const DiscoveryQos& discoveryQos
 ){
     QSharedPointer<DummyCapabilitiesFuture> future(new DummyCapabilitiesFuture());
-    localCapabilitiesDirectory->getCapabilities(domain,interfaceName, future, discoveryQos, qos);
+    localCapabilitiesDirectory->getCapabilities(domain,interfaceName, future, discoveryQos);
     //this will block forever when no result is received.
     return future->get(discoveryQos.getDiscoveryTimeout());
 }

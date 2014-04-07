@@ -28,7 +28,6 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "cluster-controller/capabilities-client/GlobalCapabilitiesInformationCallback.h"
-#include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/Future.h"
 
 #include <QString>
@@ -105,7 +104,7 @@ void CapabilitiesClient::getCapabilitiesForInterfaceAddress(const QString& domai
                     new GlobalCapabilitiesInformationCallback(callback)
                     )
                 );
-    capabilitiesProxy->lookupCapabilities(icallback, domain, interfaceName, types::ProviderQosRequirements()); //QList QString is needed, because capabilititiesInterface on java expects a map<string, string>
+    capabilitiesProxy->lookupCapabilities(icallback, domain, interfaceName); //QList QString is needed, because capabilititiesInterface on java expects a map<string, string>
 }
 
 

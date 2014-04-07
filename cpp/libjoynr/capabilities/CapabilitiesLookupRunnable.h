@@ -20,7 +20,6 @@
 #define CAPABILITIESLOOKUPRUNNABLE_H
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/types/ProviderQosRequirements.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -70,7 +69,6 @@ class CapabilitiesLookupByInterfaceRunnable : public CapabilitiesLookupRunnable 
 public:
     CapabilitiesLookupByInterfaceRunnable(const QString& domain,
                                    const QString& interfaceName,
-                                   const types::ProviderQosRequirements& qos,
                                    const DiscoveryQos& discoveryQos,
                                    QSharedPointer<ILocalCapabilitiesCallback> callback,
                                    ICapabilities *capabilitiesStub,
@@ -80,7 +78,6 @@ public:
 private:
     QString domain;
     QString interfaceName;
-    types::ProviderQosRequirements qos;
 };
 
 } // namespace joynr

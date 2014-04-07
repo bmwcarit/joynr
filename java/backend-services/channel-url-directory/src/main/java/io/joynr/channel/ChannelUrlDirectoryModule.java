@@ -39,7 +39,6 @@ import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 import joynr.types.CapabilityInformation;
 import joynr.types.ChannelUrlInformation;
-import joynr.types.ProviderQosRequirements;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -193,9 +192,8 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             @Override
             public Future<List<CapabilityInformation>> lookupCapabilities(Callback<List<CapabilityInformation>> callback,
                                                                           String domain,
-                                                                          String interfaceName,
-                                                                          ProviderQosRequirements qos) {
-                return proxy.lookupCapabilities(callback, domain, interfaceName, qos);
+                                                                          String interfaceName) {
+                return proxy.lookupCapabilities(callback, domain, interfaceName);
             }
 
             @Override
@@ -225,11 +223,9 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public List<CapabilityInformation> lookupCapabilities(String domain,
-                                                                  String interfaceName,
-                                                                  ProviderQosRequirements qos) {
+            public List<CapabilityInformation> lookupCapabilities(String domain, String interfaceName) {
 
-                return proxy.lookupCapabilities(domain, interfaceName, qos);
+                return proxy.lookupCapabilities(domain, interfaceName);
             }
 
             @Override

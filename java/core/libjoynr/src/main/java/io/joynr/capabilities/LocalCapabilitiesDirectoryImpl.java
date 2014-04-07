@@ -43,7 +43,6 @@ import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 import joynr.types.ProviderScope;
 
 import org.slf4j.Logger;
@@ -144,8 +143,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                         ret.setStatus(RegistrationStatus.ERROR);
 
                     }
-                },
-                                                            capabilityInformation);
+                }, capabilityInformation);
             }
         }
         return ret;
@@ -181,13 +179,11 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     @Override
     public void getCapabilities(final String domain,
                                 final String interfaceName,
-                                final ProviderQosRequirements requestedQos,
                                 final DiscoveryQos discoveryQos,
                                 final CapabilitiesCallback capabilitiesCallback) {
 
         Collection<CapabilityEntry> localCapabilities = localCapabilitiesStore.findCapabilitiesForInterfaceAddress(domain,
                                                                                                                    interfaceName,
-                                                                                                                   requestedQos,
                                                                                                                    discoveryQos);
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
@@ -198,14 +194,14 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             if (localCapabilities.size() > 0) {
                 capabilitiesCallback.processCapabilitiesReceived(localCapabilities);
             } else {
-                asyncGetGlobalCapabilitities(domain, interfaceName, requestedQos, null, capabilitiesCallback);
+                asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
             }
             break;
         case GLOBAL_ONLY:
-            asyncGetGlobalCapabilitities(domain, interfaceName, requestedQos, null, capabilitiesCallback);
+            asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
             break;
         case LOCAL_AND_GLOBAL:
-            asyncGetGlobalCapabilitities(domain, interfaceName, requestedQos, localCapabilities, capabilitiesCallback);
+            asyncGetGlobalCapabilitities(domain, interfaceName, localCapabilities, capabilitiesCallback);
             break;
         default:
             break;
@@ -298,7 +294,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
      */
     private void asyncGetGlobalCapabilitities(final String domain,
                                               final String interfaceName,
-                                              final ProviderQosRequirements requestedQos,
                                               Collection<CapabilityEntry> mixinCapabilities,
                                               final CapabilitiesCallback capabilitiesCallback) {
 
@@ -321,7 +316,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             public void onFailure(JoynrException exception) {
                 capabilitiesCallback.onError(exception);
             }
-        }, domain, interfaceName, requestedQos);
+        }, domain, interfaceName);
     }
 
     @CheckForNull

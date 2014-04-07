@@ -28,7 +28,6 @@ import javax.annotation.CheckForNull;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 public class KeywordArbitrator extends Arbitrator {
 
@@ -51,13 +50,8 @@ public class KeywordArbitrator extends Arbitrator {
         arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
         notifyArbitrationStatusChanged();
         requestedKeyword = discoveryQos.getCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER).toString();
-        ProviderQosRequirements providerQosRequirements = new ProviderQosRequirements();
 
-        localCapabilitiesDirectory.getCapabilities(domain,
-                                                   interfaceName,
-                                                   providerQosRequirements,
-                                                   discoveryQos,
-                                                   callback);
+        localCapabilitiesDirectory.getCapabilities(domain, interfaceName, discoveryQos, callback);
     }
 
     @Override
