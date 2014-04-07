@@ -121,6 +121,18 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
                      );
 }
 
+
+void MessageRouter::addNextHop(
+        QString participantId,
+        QSharedPointer<joynr::system::Address> inprocessAddress
+) {
+    // TODO check if routing table is thread-safe
+    routingTable->add(participantId, inprocessAddress);
+
+    joynr::RequestStatus status;
+    this->addNextHopToParent(status, participantId);
+}
+
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
         joynr::RequestStatus& joynrInternalStatus,

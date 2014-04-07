@@ -116,6 +116,11 @@ public:
 
     void setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress);
 
+    virtual void addNextHop(
+            QString participantId,
+            QSharedPointer<joynr::system::Address> inprocessAddress
+    );
+
 private:
 
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
