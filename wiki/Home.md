@@ -67,8 +67,8 @@ Run the discovery directories locally along with the bounceproxy:
 
 ```
 <JOYNR>$ mvn clean install -DskipTests
-<JOYNR>$ cd java/backend-services/discoverydirectoryservlet
-<JOYNR>/java/backend-services/discoverydirectoryservlet$ mvn jetty:run
+<JOYNR>$ cd java/backend-services/discovery-directory-servlet
+<JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
 ```
 
 You can also deploy one or more joynr applications to a servlet engine without reconfiguring the applications themselves:
