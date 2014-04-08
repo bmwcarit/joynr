@@ -30,7 +30,6 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"

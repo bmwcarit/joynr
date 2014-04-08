@@ -23,7 +23,7 @@
 #include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
 
 #include "joynr/IMessaging.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/ICommunicationManager.h"
 
 #include "joynr/RuntimeConfig.h"
@@ -60,8 +60,8 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
     if(isJoynr(destinationAddress)) {
         assert(!communicationManager.isNull());
         // make a sendstub that uses the communicationManager so send it!
-        QSharedPointer<JoynrMessagingEndpointAddress> joynrAddress = destinationAddress
-                .dynamicCast<JoynrMessagingEndpointAddress>();
+        QSharedPointer<system::ChannelAddress> joynrAddress = destinationAddress
+                .dynamicCast<system::ChannelAddress>();
         stub = QSharedPointer<IMessaging>(new JoynrMessagingStub(*communicationManager, joynrAddress->getChannelId()));
         assert (!stub.isNull());
     }
@@ -117,10 +117,7 @@ bool MessagingStubFactory::isInProcessMessaging(QSharedPointer<joynr::system::Ad
 }
 
 bool MessagingStubFactory::isJoynr(QSharedPointer <joynr::system::Address> destinationAddress) {
-    if(destinationAddress->metaObject()->className() == JoynrMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
-        return true;
-    }
-    return false;
+    return destinationAddress->inherits(system::ChannelAddress::staticMetaObject.className());
 }
 
 bool MessagingStubFactory::isSomeIp(QSharedPointer <joynr::system::Address> destinationAddress) {

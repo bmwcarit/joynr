@@ -29,7 +29,6 @@
 #include "joynr/SubscriptionCallback.h"
 #include "QString"
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "tests/utils/MockObjects.h"

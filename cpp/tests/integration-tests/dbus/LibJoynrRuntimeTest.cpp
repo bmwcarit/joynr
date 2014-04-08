@@ -27,7 +27,7 @@
 #include "joynr/IDbusSkeletonWrapper.h"
 #include "joynr/DbusMessagingSkeleton.h"
 #include "joynr/DbusCapabilitiesSkeleton.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/system/CommonApiDbusAddress.h"
 #include "tests/utils/MockObjects.h"
 
@@ -77,7 +77,7 @@ public:
         QList<CapabilityEntry>* result = new QList<CapabilityEntry>();
         types::ProviderQos* pQos = new types::ProviderQos();
         pQos->setPriority(5);
-        QSharedPointer<JoynrMessagingEndpointAddress> endPoint(new JoynrMessagingEndpointAddress("CC.RoutingProvider.ParticipantId"));
+        QSharedPointer<system::ChannelAddress> endPoint(new system::ChannelAddress("CC.RoutingProvider.ParticipantId"));
         CapabilityEntry* defaultEntry = new CapabilityEntry();
         defaultEntry->setParticipantId("CC.RoutingProvider.ParticipantId");
         defaultEntry->setQos(*pQos);
@@ -111,7 +111,7 @@ TEST_F(LibJoynrRuntimeTest, get_proxy) {
     QList<CapabilityEntry>* result = new QList<CapabilityEntry>();
     types::ProviderQos* pQos = new types::ProviderQos();
     pQos->setPriority(5);
-    QSharedPointer<JoynrMessagingEndpointAddress> endPoint(new JoynrMessagingEndpointAddress("defaultChannelId"));
+    QSharedPointer<system::ChannelAddress> endPoint(new system::ChannelAddress("defaultChannelId"));
     CapabilityEntry* defaultEntry = new CapabilityEntry();
     defaultEntry->setParticipantId("defaultDbusId");
     defaultEntry->setQos(*pQos);

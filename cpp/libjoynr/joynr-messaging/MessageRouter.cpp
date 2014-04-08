@@ -20,7 +20,6 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Directory.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/system/Address.h"

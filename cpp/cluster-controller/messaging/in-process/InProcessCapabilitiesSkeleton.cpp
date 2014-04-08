@@ -18,7 +18,7 @@
  */
 #include "cluster-controller/messaging/in-process/InProcessCapabilitiesSkeleton.h"
 #include "assert.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include <limits>
 
 namespace joynr {
@@ -56,7 +56,7 @@ void InProcessCapabilitiesSkeleton::add(
     assert(messagingStubAddress!=NULL);
     assert(!messagingStubAddress.isNull());
     // add the cc joynr messaging address to the endpoint address list
-    QSharedPointer<JoynrMessagingEndpointAddress> ccEndpointAddr(new JoynrMessagingEndpointAddress(ccChannelId));
+    QSharedPointer<system::ChannelAddress> ccEndpointAddr(new system::ChannelAddress(ccChannelId));
     endpointAddressList.append(ccEndpointAddr);
     localCapabilitiesDirectory->registerCapability(domain, interfaceName, qos, participantId, endpointAddressList); //TODO pass the timout
 }

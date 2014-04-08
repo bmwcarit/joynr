@@ -48,7 +48,7 @@
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/SystemServicesSettings.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -138,12 +138,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, messagingStubFactory));
     // provision global capabilities directory
     QSharedPointer<joynr::system::Address> endpointAddressCapa(
-                new JoynrMessagingEndpointAddress(messagingSettings->getCapabilitiesDirectoryChannelId())
+                new system::ChannelAddress(messagingSettings->getCapabilitiesDirectoryChannelId())
     );
     messageRouter->addProvisionedNextHop(messagingSettings->getCapabilitiesDirectoryParticipantId(), endpointAddressCapa);
     // provision channel url directory
     QSharedPointer<joynr::system::Address> endpointAddressChannel(
-                new JoynrMessagingEndpointAddress(messagingSettings->getChannelUrlDirectoryChannelId())
+                new system::ChannelAddress(messagingSettings->getChannelUrlDirectoryChannelId())
     );
     messageRouter->addProvisionedNextHop(messagingSettings->getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
 

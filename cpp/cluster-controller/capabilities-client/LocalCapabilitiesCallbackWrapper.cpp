@@ -17,7 +17,6 @@
  * #L%
  */
 #include "cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/LocalCapabilitiesDirectory.h"

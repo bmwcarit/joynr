@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/DbusCapabilitiesAdapter.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 
 namespace joynr {
 
@@ -48,7 +48,7 @@ void DbusCapabilitiesAdapter::add(
     assert(messagingStubAddress!=NULL);
     assert(!messagingStubAddress.isNull());
     // add the cc joynr messaging address to the endpoint address list
-    QSharedPointer<JoynrMessagingEndpointAddress> ccEndpointAddr(new JoynrMessagingEndpointAddress(ccChannelID));
+    QSharedPointer<system::ChannelAddress> ccEndpointAddr(new system::ChannelAddress(ccChannelID));
     endpointAddressList.append(ccEndpointAddr);
     localCapabilitiesDirectory.registerCapability(domain, interfaceName, qos, participantId, endpointAddressList); //TODO pass the timout
 }

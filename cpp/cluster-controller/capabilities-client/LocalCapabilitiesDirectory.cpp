@@ -22,7 +22,7 @@
 #include "cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h"
 #include "joynr/ProxyQos.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/exceptions.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -281,7 +281,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(QMap<QString, Capa
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        QSharedPointer<joynr::system::Address> joynrAddress(new JoynrMessagingEndpointAddress(entryIterator.key()));
+        QSharedPointer<joynr::system::Address> joynrAddress(new system::ChannelAddress(entryIterator.key()));
         endpointDirectory->add(currentEntry.getParticipantId(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }

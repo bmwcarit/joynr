@@ -24,7 +24,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
@@ -62,7 +62,7 @@ public:
         dummyParticipantId1 = QUuid::createUuid().toString();
         dummyParticipantId2 = QUuid::createUuid().toString();
         dummyParticipantId3 = QUuid::createUuid().toString();
-        localJoynrMessagingAddress1 = QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress("LOCAL_CHANNEL_ID"));
+        localJoynrMessagingAddress1 = QSharedPointer<system::ChannelAddress>(new system::ChannelAddress("LOCAL_CHANNEL_ID"));
         callback = QSharedPointer<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
@@ -135,7 +135,7 @@ protected:
     QString dummyParticipantId1;
     QString dummyParticipantId2;
     QString dummyParticipantId3;
-    QSharedPointer<JoynrMessagingEndpointAddress> localJoynrMessagingAddress1;
+    QSharedPointer<system::ChannelAddress> localJoynrMessagingAddress1;
     DiscoveryQos discoveryQos;
     QMap<QString, CapabilityEntry> globalCapEntryMap;
 

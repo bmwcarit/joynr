@@ -30,7 +30,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 
@@ -60,10 +60,10 @@ public:
         domain("cppProxyIntegrationTestDomain"),
         proxyQos(),
         messagingQos(),
-        endPointAddress(new JoynrMessagingEndpointAddress("endPointAddress"))
+        endPointAddress(new system::ChannelAddress("endPointAddress"))
     {
         //moved to initializationlist
-        //endPointAddress = QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress("endPointAddress"));
+        //endPointAddress = QSharedPointer<system::ChannelAddress>(new system::ChannelAddress("endPointAddress"));
     }
 
     // Sets up the test fixture.
@@ -89,7 +89,7 @@ protected:
     QString domain;
     ProxyQos proxyQos;
     MessagingQos messagingQos;
-    QSharedPointer<JoynrMessagingEndpointAddress> endPointAddress;
+    QSharedPointer<system::ChannelAddress> endPointAddress;
 
 
 private:

@@ -17,7 +17,7 @@
  * #L%
  */
 #include "cluster-controller/http-communication-manager/LongPollMessageSerializer.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/Util.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessageRouter.h"
@@ -62,7 +62,7 @@ void LongPollMessageSerializer::serializedMessageReceived(
     if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST || msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST){
         //TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
-        QSharedPointer<JoynrMessagingEndpointAddress> endPointAddress(new JoynrMessagingEndpointAddress(replyChannelId));
+        QSharedPointer<system::ChannelAddress> endPointAddress(new system::ChannelAddress(replyChannelId));
         partId2EndpointAddrDirectory->add(msg->getHeaderFrom(), endPointAddress);
     }
 

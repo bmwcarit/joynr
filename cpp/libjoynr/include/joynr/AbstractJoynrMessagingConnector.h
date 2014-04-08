@@ -23,7 +23,6 @@
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"

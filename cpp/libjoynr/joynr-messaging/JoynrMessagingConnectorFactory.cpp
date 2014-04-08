@@ -19,7 +19,7 @@
 
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/system/Address.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 
 #include <QSharedPointer>
@@ -38,7 +38,7 @@ bool JoynrMessagingConnectorFactory::canBeCreated(QSharedPointer<joynr::system::
 {
     QString endpointClassName = endpointAddress->metaObject()->className();
     //for creating the connector, no information is needed, so JoynrMessagingEndPointAddress and JoynrMessagingViaCCEndpointAddress should both work.
-    return (endpointClassName == JoynrMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) ||
+    return (endpointClassName == system::ChannelAddress::staticMetaObject.className()) ||
             (endpointClassName == JoynrMessagingViaCCEndpointAddress::ENDPOINT_ADDRESS_TYPE());
 }
 

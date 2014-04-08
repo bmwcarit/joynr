@@ -22,7 +22,7 @@
 #include "gmock/gmock.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 
 
@@ -42,12 +42,12 @@ public:
     {
         // provision global capabilities directory
         QSharedPointer<joynr::system::Address> endpointAddressCapa(
-            new JoynrMessagingEndpointAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+            new system::ChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), endpointAddressCapa);
         // provision channel url directory
         QSharedPointer<joynr::system::Address> endpointAddressChannel(
-            new JoynrMessagingEndpointAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+            new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
     }

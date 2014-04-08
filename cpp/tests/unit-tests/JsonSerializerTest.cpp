@@ -38,7 +38,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 #include "joynr/tests/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
@@ -832,10 +832,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-    qRegisterMetaType<joynr::JoynrMessagingEndpointAddress>("joynr::JoynrMessagingEndpointAddress");
+    qRegisterMetaType<joynr::system::ChannelAddress>("joynr::system::ChannelAddress");
     qRegisterMetaType<joynr::SomeIpEndpointAddress>("joynr::SomeIpEndpointAddress");
 
-    JoynrMessagingEndpointAddress joynr("TEST_channelId");
+    joynr::system::ChannelAddress joynr("TEST_channelId");
     SomeIpEndpointAddress someip("TEST_ipAddress", 42);
 
     // serialize
@@ -846,7 +846,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     LOG_DEBUG(logger, "serialized SomeIP endpoint address: "+ QString::fromUtf8(someipSerialized));
 
     // deserialize
-    JoynrMessagingEndpointAddress* joynrDeserialized = JsonSerializer::deserialize<JoynrMessagingEndpointAddress>(joynrSerialized);
+    joynr::system::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::ChannelAddress>(joynrSerialized);
     SomeIpEndpointAddress* someipDeserialized = JsonSerializer::deserialize<SomeIpEndpointAddress>(someipSerialized);
 
     EXPECT_EQ(joynr, *joynrDeserialized);

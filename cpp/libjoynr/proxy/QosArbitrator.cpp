@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/QosArbitrator.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 
 #include "joynr/ICapabilities.h"
 #include "joynr/DiscoveryQos.h"
