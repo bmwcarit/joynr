@@ -18,17 +18,22 @@
  */
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/ParticipantIdStorage.h"
+#include "joynr/RequestStatus.h"
 
 namespace joynr {
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
                                              QSharedPointer<ICapabilities> capabilitiesAggregator,
                                              QSharedPointer<joynr::system::Address> messagingStubAddress,
-                                             QSharedPointer<ParticipantIdStorage> participantIdStorage)
+                                             QSharedPointer<ParticipantIdStorage> participantIdStorage,
+                                             QSharedPointer<joynr::system::Address> dispatcherAddress,
+                                             QSharedPointer<MessageRouter> messageRouter)
     : dispatcherList(dispatcherList),
       capabilitiesAggregator(capabilitiesAggregator),
       messagingStubAddress(messagingStubAddress),
-      participantIdStorage(participantIdStorage)
+      participantIdStorage(participantIdStorage),
+      dispatcherAddress(dispatcherAddress),
+      messageRouter(messageRouter)
 {
 
 }
@@ -38,6 +43,9 @@ void CapabilitiesRegistrar::unregisterCapability(QString participantId){
         currentDispatcher->removeRequestCaller(participantId);
     }
     capabilitiesAggregator->remove(participantId, ICapabilities::NO_TIMEOUT());
+
+    joynr::RequestStatus status;
+    messageRouter->removeNextHop(status, participantId);
 }
 
 void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher){

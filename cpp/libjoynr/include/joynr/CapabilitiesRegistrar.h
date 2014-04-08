@@ -27,6 +27,7 @@
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/MessageRouter.h"
 
 #include <QString>
 #include <QList>
@@ -40,7 +41,9 @@ public:
     CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
                           QSharedPointer<ICapabilities> capabilitiesAggregator,
                           QSharedPointer<joynr::system::Address> messagingStubAddress,
-                          QSharedPointer<ParticipantIdStorage> participantIdStorage);
+                          QSharedPointer<ParticipantIdStorage> participantIdStorage,
+                          QSharedPointer<joynr::system::Address> dispatcherAddress,
+                          QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
     QString registerCapability(const QString& domain, QSharedPointer<T> provider, QString authenticationToken){
@@ -67,6 +70,10 @@ public:
                                     endpointAddresses,
                                     messagingStubAddress,
                                     ICapabilities::NO_TIMEOUT());
+
+        // add next hop to dispatcher
+        messageRouter->addNextHop(participantId, dispatcherAddress);
+
         return participantId;
     }
 
@@ -102,6 +109,8 @@ private:
     QSharedPointer<ICapabilities> capabilitiesAggregator;
     QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
+    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<MessageRouter> messageRouter;
 };
 
 

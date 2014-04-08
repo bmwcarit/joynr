@@ -27,6 +27,7 @@
 #include "joynr/IArbitrationListener.h"
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/ProviderArbitratorFactory.h"
+#include "joynr/MessageRouter.h"
 #include "joynr/exceptions.h"
 
 #include <QSemaphore>
@@ -43,7 +44,9 @@ public:
     ProxyBuilder(
             ProxyFactory* proxyFactory,
             QSharedPointer<ICapabilities> capabilitiesStub,
-            const QString& domain
+            const QString& domain,
+            QSharedPointer<joynr::system::Address> dispatcherAddress,
+            QSharedPointer<MessageRouter> messageRouter
     );
 
     ~ProxyBuilder();
@@ -123,13 +126,19 @@ private:
     QSharedPointer<joynr::system::Address> endpointAddress;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
+
+
+    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<MessageRouter> messageRouter;
 };
 
 template<class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory* proxyFactory,
         QSharedPointer<ICapabilities> capabilitiesStub,
-        const QString& domain
+        const QString& domain,
+        QSharedPointer<joynr::system::Address> dispatcherAddress,
+        QSharedPointer<MessageRouter> messageRouter
 ) :
     domain(domain),
     cached(false),
@@ -144,7 +153,9 @@ ProxyBuilder<T>::ProxyBuilder(
     participantId(""),
     endpointAddress(NULL),
     arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-    discoveryTimeout(-1)
+    discoveryTimeout(-1),
+    dispatcherAddress(dispatcherAddress),
+    messageRouter(messageRouter)
 {
 
 }
@@ -168,6 +179,8 @@ T* ProxyBuilder<T>::build() {
     T* proxy = proxyFactory->createProxy<T>(domain, proxyQos, runtimeQos, cached);
     waitForArbitration(discoveryTimeout);
     proxy->handleArbitrationFinished(participantId, endpointAddress);
+    // add next hop to dispatcher
+    messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
     return proxy;
 }
 

@@ -41,8 +41,7 @@
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ICommunicationManager.h"
-#include "libjoynr/joynr-messaging/InProcessClusterControllerMessagingSkeleton.h"
-#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
+#include "joynr/InProcessMessagingEndpointAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/Directory.h"
@@ -77,7 +76,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         ccDispatcher(NULL),
         publicationManager(NULL),
         subscriptionManager(NULL),
-        joynrMessagingSendStub(NULL),
         joynrMessagingSendSkeleton(NULL),
         joynrMessageSender(NULL),
         app(app),
@@ -87,9 +85,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         channelUrlDirectory(),
         capabilitiesSkeleton(NULL),
         cache(),
-        messageRouter(NULL),
         channelUrlDirectoryProxy(NULL),
-        ccMessagingSkeleton(NULL),
         libJoynrMessagingSkeleton(NULL),
         communicationManager(communicationManager),
         longpollMessageSerializer(NULL),
@@ -153,9 +149,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     /* LibJoynr */
     assert(messageRouter);
-    ccMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton> (new InProcessClusterControllerMessagingSkeleton(messageRouter));
-    joynrMessagingSendStub = QSharedPointer<IMessaging>(new InProcessMessagingStub(ccMessagingSkeleton));
-    joynrMessageSender = new JoynrMessageSender(joynrMessagingSendStub);
+    joynrMessageSender = new JoynrMessageSender(messageRouter);
     joynrDispatcher = new Dispatcher(joynrMessageSender);
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
@@ -226,10 +220,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
     participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
+    dispatcherAddress = messagingEndpointAddress;
     capabilitiesRegistrar =  new CapabilitiesRegistrar(dispatcherList,
                                                        qSharedPointerDynamicCast<ICapabilities>(capabilitiesAggregator),
                                                        messagingEndpointAddress,
-                                                       participantIdStorage);
+                                                       participantIdStorage,
+                                                       dispatcherAddress,
+                                                       messageRouter);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);

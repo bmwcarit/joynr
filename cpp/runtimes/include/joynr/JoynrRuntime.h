@@ -50,7 +50,9 @@ public:
             participantIdStorage(NULL),
             capabilitiesRegistrar(NULL),
             capabilitiesAggregator(NULL),
-            systemServicesSettings(settings)
+            systemServicesSettings(settings),
+            dispatcherAddress(NULL),
+            messageRouter(NULL)
     {
     }
 
@@ -77,7 +79,7 @@ public:
         if(!proxyFactory || !joynrCapabilitiesSendStub){
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<T>* builder = new ProxyBuilder<T>(proxyFactory, capabilitiesAggregator, domain);
+        ProxyBuilder<T>* builder = new ProxyBuilder<T>(proxyFactory, capabilitiesAggregator, domain, dispatcherAddress, messageRouter);
         return builder;
     }
 
@@ -92,6 +94,8 @@ protected:
     CapabilitiesRegistrar* capabilitiesRegistrar;
     QSharedPointer<CapabilitiesAggregator> capabilitiesAggregator;
     SystemServicesSettings systemServicesSettings;
+    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<MessageRouter> messageRouter;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);

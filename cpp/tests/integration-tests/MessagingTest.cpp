@@ -33,8 +33,7 @@
 #include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
-#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
-#include "libjoynr/joynr-messaging/InProcessClusterControllerMessagingSkeleton.h"
+#include "joynr/InProcessMessagingEndpointAddress.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/MessageSender.h"
@@ -136,12 +135,7 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
             .Times(1);
 
-    QSharedPointer<InProcessClusterControllerMessagingSkeleton> messagingSkeleton(
-                new InProcessClusterControllerMessagingSkeleton(messageRouter));
-    QSharedPointer<InProcessMessagingStub> messagingStub(
-                new InProcessMessagingStub(messagingSkeleton));
-
-    JoynrMessageSender messageSender(messagingStub);
+    JoynrMessageSender messageSender(messageRouter);
     QSharedPointer<IReplyCaller> replyCaller;
     messageSender.registerDispatcher(&mockDispatcher);
 

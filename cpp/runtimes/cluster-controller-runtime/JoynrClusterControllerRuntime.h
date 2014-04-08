@@ -49,7 +49,6 @@ namespace joynr {
 
 class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
-class InProcessMessagingStub;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class ICommunicationManager;
@@ -103,7 +102,6 @@ protected:
     IDispatcher* ccDispatcher;
     PublicationManager* publicationManager;
     SubscriptionManager* subscriptionManager;
-    QSharedPointer<IMessaging> joynrMessagingSendStub;
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
@@ -120,10 +118,8 @@ protected:
     ClientQCache cache;
     // messageRouter must be shared pointer since it is also registered as
     // joynr::system::Routing provider and register capability expects shared pointer
-    QSharedPointer<MessageRouter> messageRouter;
     QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
-    QSharedPointer<InProcessMessagingSkeleton> ccMessagingSkeleton;
     QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
     QSharedPointer<ICommunicationManager> communicationManager;

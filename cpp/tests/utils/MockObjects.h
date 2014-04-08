@@ -163,6 +163,17 @@ public:
   MOCK_METHOD2(test1, void(int a0, int a1));
 };
 
+class MockMessageRouter : public joynr::MessageRouter {
+public:
+    MockMessageRouter():
+        MessageRouter(NULL, NULL, 500, 0){
+
+    }
+    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
+    MOCK_METHOD2(addNextHop, void(QString participantId, QSharedPointer<joynr::system::Address> inprocessAddress));
+    MOCK_METHOD2(removeNextHop, void(joynr::RequestStatus& joynrInternalStatus, QString participantId));
+};
+
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
 public:
 

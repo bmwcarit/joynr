@@ -56,13 +56,16 @@ public:
         messagingStubAddress(new MockEndpointAddress()),
         reqCacheDataFreshness_ms(1000),
         mockProvider(new MockProvider()),
-        mockParticipantIdStorage(new MockParticipantIdStorage())
+        mockParticipantIdStorage(new MockParticipantIdStorage()),
+        mockMessageRouter(new MockMessageRouter())
     {
         dispatcherList.append(mockDispatcher);
         capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
                                                           capabilitiesAggregator,
                                                           messagingStubAddress,
-                                                          mockParticipantIdStorage);
+                                                          mockParticipantIdStorage,
+                                                          messagingStubAddress,
+                                                          mockMessageRouter);
 //    TM, 14.8.2012  Disabled, because after changes of IDL for capabilitiesDirectory providerQos does not have a radlaufsensor anymore.
 //        providerQos.setNumberOfRadumlaufsensors(123);
 
@@ -109,6 +112,7 @@ protected:
     qint64 reqCacheDataFreshness_ms;
     QSharedPointer<MockProvider> mockProvider;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
+    QSharedPointer<MockMessageRouter> mockMessageRouter;
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessCapabilitiesTest);
 };

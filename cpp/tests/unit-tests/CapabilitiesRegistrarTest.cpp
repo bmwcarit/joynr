@@ -41,7 +41,8 @@ public:
           capabilitiesRegistrar(NULL),
           mockProvider(new MockProvider()),
           domain("testDomain"),
-          expectedParticipantId("testParticipantId")
+          expectedParticipantId("testParticipantId"),
+          mockMessageRouter(new MockMessageRouter())
     {
 
     }
@@ -54,7 +55,9 @@ public:
                     dispatcherList,
                     mockCapabilitiesStub.dynamicCast<ICapabilities>(),
                     messagingStubAddress,
-                    mockParticipantIdStorage
+                    mockParticipantIdStorage,
+                    messagingStubAddress,
+                    mockMessageRouter
         );
     }
     void TearDown(){
@@ -72,6 +75,7 @@ protected:
     QSharedPointer<MockProvider> mockProvider;
     QString domain;
     QString expectedParticipantId;
+    QSharedPointer<MockMessageRouter> mockMessageRouter;
 };
 
 TEST_F(CapabilitiesRegistrarTest, registerCapability){

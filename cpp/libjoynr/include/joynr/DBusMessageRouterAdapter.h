@@ -16,26 +16,35 @@
  * limitations under the License.
  * #L%
  */
-#ifndef INPROCESSCLUSTERCONTROLLERMESSAGINGSKELETON_H
-#define INPROCESSCLUSTERCONTROLLERMESSAGINGSKELETON_H
-#include <QSharedPointer>
+#ifndef DBUSMESSAGEROUTERADAPTER_H
+#define DBUSMESSAGEROUTERADAPTER_H
+
 #include "joynr/PrivateCopyAssign.h"
 
+#include "joynr/MessageRouter.h"
+#include "joynr/IDbusSkeletonWrapper.h"
+#include "joynr/DbusMessagingSkeleton.h"
+#include "joynr/IMessaging.h"
+
 #include "joynr/JoynrExport.h"
-#include "common/in-process/InProcessMessagingSkeleton.h"
 
 namespace joynr {
 
-class MessageRouter;
-
-class JOYNR_EXPORT InProcessClusterControllerMessagingSkeleton : public InProcessMessagingSkeleton {
+class JOYNR_EXPORT DBusMessageRouterAdapter : public IMessaging
+{
 public:
-    InProcessClusterControllerMessagingSkeleton(QSharedPointer<MessageRouter> router);
-     void transmit(JoynrMessage& message, const MessagingQos& qoS) ;
+    DBusMessageRouterAdapter(MessageRouter& messageRouter, QString dbusAddress);
+
+    ~DBusMessageRouterAdapter();
+
+    virtual void transmit(JoynrMessage& message, const MessagingQos& qos);
+
 private:
-    DISALLOW_COPY_AND_ASSIGN(InProcessClusterControllerMessagingSkeleton);
-    QSharedPointer<MessageRouter> router;
+    DISALLOW_COPY_AND_ASSIGN(DBusMessageRouterAdapter);
+    IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>* dbusSkeletonWrapper;
+    MessageRouter& messageRouter;
 };
 
+
 } // namespace joynr
-#endif //INPROCESSCLUSTERCONTROLLERMESSAGINGSKELETON_H
+#endif // DBUSMESSAGEROUTERADAPTER_H

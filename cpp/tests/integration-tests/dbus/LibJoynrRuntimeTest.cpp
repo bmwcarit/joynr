@@ -72,6 +72,18 @@ public:
 
         QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
         capMock = new MockCapabilitiesStub();
+
+        // provision entry to arbitrate routing provider
+        QList<CapabilityEntry>* result = new QList<CapabilityEntry>();
+        types::ProviderQos* pQos = new types::ProviderQos();
+        pQos->setPriority(5);
+        QSharedPointer<JoynrMessagingEndpointAddress> endPoint(new JoynrMessagingEndpointAddress("CC.RoutingProvider.ParticipantId"));
+        CapabilityEntry* defaultEntry = new CapabilityEntry();
+        defaultEntry->setParticipantId("CC.RoutingProvider.ParticipantId");
+        defaultEntry->setQos(*pQos);
+        defaultEntry->prependEndpointAddress(endPoint);
+        result->append(*defaultEntry);
+        EXPECT_CALL(*capMock, lookup(A<const QString&>(), A<const DiscoveryQos&>())).WillRepeatedly(testing::Return(*result));
         capSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capMock, ccCapabilitiesAddress);
 
         // start libjoynr runtime

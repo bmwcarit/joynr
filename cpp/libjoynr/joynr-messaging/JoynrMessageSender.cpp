@@ -21,6 +21,7 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/Request.h"
+#include "joynr/MessageRouter.h"
 
 #include <QUuid>
 #include <cassert>
@@ -30,9 +31,9 @@ namespace joynr {
 joynr_logging::Logger* JoynrMessageSender::logger = joynr_logging::Logging::getInstance()->getLogger("JOYNR", "JoynrMessageSender");
 
 
-JoynrMessageSender::JoynrMessageSender(QSharedPointer<IMessaging> messagingStub)
+JoynrMessageSender::JoynrMessageSender(QSharedPointer<MessageRouter> messageRouter)
     : dispatcher(NULL),
-      messagingStub(messagingStub),
+      messageRouter(messageRouter),
       messageFactory() {
 
 }
@@ -65,8 +66,8 @@ void JoynrMessageSender::sendRequest(
                 qos,
                 request
     );
-    assert(!messagingStub.isNull());
-    messagingStub->transmit(message, qos);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
 
 }
 
@@ -82,8 +83,8 @@ void JoynrMessageSender::sendReply(
                 qos,
                 reply
     );
-    assert(!messagingStub.isNull());
-    messagingStub->transmit(message, qos);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
 }
 
 void JoynrMessageSender::sendSubscriptionRequest(
@@ -98,8 +99,8 @@ void JoynrMessageSender::sendSubscriptionRequest(
                 qos,
                 subscriptionRequest
     );
-    assert(!messagingStub.isNull());
-    messagingStub->transmit(message, qos);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
 }
 
 void JoynrMessageSender::sendSubscriptionReply(
@@ -114,8 +115,8 @@ void JoynrMessageSender::sendSubscriptionReply(
                 qos,
                 subscriptionReply
     );
-    assert(!messagingStub.isNull());
-    messagingStub->transmit(message, qos);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
 }
 
 void JoynrMessageSender::sendSubscriptionStop(
@@ -130,8 +131,8 @@ void JoynrMessageSender::sendSubscriptionStop(
                 qos,
                 subscriptionStop
     );
-    assert(!messagingStub.isNull());
-    messagingStub->transmit(message, qos);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
 }
 
 void JoynrMessageSender::sendSubscriptionPublication(
@@ -146,8 +147,8 @@ void JoynrMessageSender::sendSubscriptionPublication(
                 qos,
                 subscriptionPublication
     );
-    assert(!messagingStub.isNull());
-    messagingStub->transmit(message, qos);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
 }
 
 } // namespace joynr

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
+#include "joynr/InProcessMessagingEndpointAddress.h"
 
 namespace joynr {
 

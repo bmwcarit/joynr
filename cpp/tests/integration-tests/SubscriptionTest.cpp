@@ -56,7 +56,7 @@ ACTION_P(ReleaseSemaphore,semaphore)
 class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
-        mockMessaging(new MockMessaging()),
+        mockMessageRouter(new MockMessageRouter()),
         mockCallback(new MockCallback<types::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
@@ -67,7 +67,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(mockMessaging),
+        messageSender(mockMessageRouter),
         dispatcher(&messageSender),
         subscriptionManager(NULL),
         publicationManager(NULL)
@@ -88,7 +88,7 @@ public:
     }
 
 protected:
-    QSharedPointer<MockMessaging> mockMessaging;
+    QSharedPointer<MockMessageRouter> mockMessageRouter;
     QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;

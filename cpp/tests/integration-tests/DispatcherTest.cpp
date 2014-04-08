@@ -48,7 +48,7 @@ class DispatcherTest : public ::testing::Test {
 public:
     DispatcherTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "DispatcherTest")),
-        mockMessaging(new MockMessaging()),
+        mockMessageRouter(new MockMessageRouter()),
         mockCallback(new MockCallback<types::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
@@ -59,7 +59,7 @@ public:
         proxyParticipantId("TEST-proxyParticipantId"),
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
-        messageSender(mockMessaging),
+        messageSender(mockMessageRouter),
         dispatcher(&messageSender)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
@@ -74,7 +74,7 @@ public:
 
 protected:
     joynr_logging::Logger* logger;
-    QSharedPointer<MockMessaging> mockMessaging;
+    QSharedPointer<MockMessageRouter> mockMessageRouter;
     QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
@@ -144,8 +144,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     LOG_DEBUG(logger, QString("expectedReply.payload()=%1").arg(QString(expectedReply.getPayload())));
     // setup MockMessaging to expect the response
     EXPECT_CALL(
-                *mockMessaging,
-                transmit(
+                *mockMessageRouter,
+                route(
                     AllOf(
                         Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
                         Property(&JoynrMessage::getPayload, Eq(expectedReply.getPayload()))
