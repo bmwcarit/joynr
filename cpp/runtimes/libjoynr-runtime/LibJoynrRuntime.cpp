@@ -21,7 +21,7 @@
 #include "joynr/InProcessDispatcher.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
@@ -102,13 +102,18 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     // create messaging skeleton using uuid
     QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingAddress("local:io.joynr.libjoynr.Messaging:libjoynr.messaging.participantid_" + messagingUuid);
-    QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
+    QString libjoynrMessagingDomain("local");
+    QString libjoynrMessagingServiceName("io.joynr.libjoynr.Messaging");
+    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
+    QString libjoynrMessagingAddress(libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName + ":" + libjoynrMessagingId);
+    QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
     dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingAddress);
 
     // provision parent message router messaging address
     QSharedPointer<joynr::system::Address> endpointAddressParent(
-                new DbusMessagingEndpointAddress(dbusSettings->createClusterControllerMessagingAddressString())
+                new system::CommonApiDbusAddress(dbusSettings->getClusterControllerMessagingDomain(),
+                                                 dbusSettings->getClusterControllerMessagingServiceName(),
+                                                 dbusSettings->getClusterControllerMessagingParticipantId())
     );
     messageRouter->addProvisionedNextHop(systemServiceSettings->getCcRoutingProviderParticipantId(), endpointAddressParent);
 

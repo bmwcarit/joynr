@@ -17,7 +17,7 @@
  * #L%
  */
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
 #include "joynr/types/ProviderQos.h"
 #include "libjoynr/dbus/DbusCapabilitiesUtil.h"
 
@@ -79,8 +79,9 @@ void DbusCapabilitiesStubAdapter::addEndpoint(const QString &participantId, QSha
     logMethodCall("addEndpoint");
 
     CommonAPI::CallStatus status;
-    auto addr = dynamic_cast<DbusMessagingEndpointAddress*>(messagingStubAddress.data());
-    joynr::messaging::types::Types::EndpointAddressBase endPoint(addr->getServiceAddress().toStdString());
+    auto addr = dynamic_cast<system::CommonApiDbusAddress*>(messagingStubAddress.data());
+    QString serviceAddress = addr->getDomain() + ":" + addr->getServiceName() + ":" + addr->getParticipantId();
+    joynr::messaging::types::Types::EndpointAddressBase endPoint(serviceAddress.toStdString());
     proxy->addEndPoint(participantId.toStdString(), endPoint, timeout_ms, status);
     printCallStatus(status, "addEndpoint");
 }
@@ -94,8 +95,9 @@ void DbusCapabilitiesStubAdapter::add(const QString &domain, const QString &inte
     joynr::messaging::types::Types::EndpointAddressList endPointList;
     DbusCapabilitiesUtil::copyJoynrEndPointListToDbus(endpointAddressList, endPointList);
 
-    auto addr = dynamic_cast<DbusMessagingEndpointAddress*>(messagingStubAddress.data());
-    joynr::messaging::types::Types::EndpointAddressBase dbusEndPoint(addr->getServiceAddress().toStdString());
+    auto addr = dynamic_cast<system::CommonApiDbusAddress*>(messagingStubAddress.data());
+    QString serviceAddress = addr->getDomain() + ":" + addr->getServiceName() + ":" + addr->getParticipantId();
+    joynr::messaging::types::Types::EndpointAddressBase dbusEndPoint(serviceAddress.toStdString());
 
     CommonAPI::CallStatus status;
     proxy->add(domain.toStdString(), interfaceName.toStdString(), participantId.toStdString(), dbusQos, endPointList, dbusEndPoint, timeout_ms, status);

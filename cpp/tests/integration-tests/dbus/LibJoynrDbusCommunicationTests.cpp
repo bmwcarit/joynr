@@ -25,7 +25,7 @@
 #include "joynr/DbusCapabilitiesSkeleton.h"
 #include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
 #include "QString"
 
 #include "tests/utils/MockObjects.h"
@@ -324,7 +324,7 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_addEndPoint) {
     ASSERT_TRUE(capaStub->isProxyAvailabe());
 
     // call method
-    QSharedPointer<DbusMessagingEndpointAddress> endPoint(new DbusMessagingEndpointAddress("defaultChannelId"));
+    QSharedPointer<system::CommonApiDbusAddress> endPoint(new system::CommonApiDbusAddress("domain", "interface", "id"));
     capaStub->addEndpoint(QString("local"), endPoint, 1000);
 
     // delete skeleton
@@ -353,7 +353,7 @@ TEST_F(LibJoynrDbusCommunicationTests, capabilities_call_add) {
     ASSERT_TRUE(capaStub->isProxyAvailabe());
 
     // call method
-    QSharedPointer<DbusMessagingEndpointAddress> endPoint(new DbusMessagingEndpointAddress("defaultChannelId"));
+    QSharedPointer<system::CommonApiDbusAddress> endPoint(new system::CommonApiDbusAddress("domain", "interface", "id"));
     types::ProviderQos pQos;
     pQos.setPriority(5);
     capaStub->add(QString("local"), QString("interface"), QString("participantId"), pQos, QList<QSharedPointer<joynr::system::Address>>(), endPoint, 1000);

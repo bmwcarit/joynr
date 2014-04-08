@@ -28,7 +28,7 @@
 #include "joynr/DbusMessagingSkeleton.h"
 #include "joynr/DbusCapabilitiesSkeleton.h"
 #include "joynr/JoynrMessagingEndpointAddress.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
 #include "tests/utils/MockObjects.h"
 
 #include "common/dbus/DbusMessagingStubAdapter.h"

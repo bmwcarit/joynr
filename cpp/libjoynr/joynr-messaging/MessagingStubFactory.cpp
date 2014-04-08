@@ -27,7 +27,7 @@
 #include "joynr/ICommunicationManager.h"
 
 #include "joynr/RuntimeConfig.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
@@ -75,8 +75,8 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
 
     if(isDbus(destinationAddress)) {
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-        QSharedPointer<DbusMessagingEndpointAddress> dbusAddress = destinationAddress.dynamicCast<DbusMessagingEndpointAddress>();
-        QString address = dbusAddress->getServiceAddress();
+        QSharedPointer<system::CommonApiDbusAddress> dbusAddress = destinationAddress.dynamicCast<system::CommonApiDbusAddress>();
+        QString address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" + dbusAddress->getParticipantId();
         // lookup address
         if(dbusMessagingStubDirectory.contains(address)) {
             stub = dbusMessagingStubDirectory.lookup(address);
@@ -136,10 +136,7 @@ bool MessagingStubFactory::isLocal(QString destParticipantId) {
 }
 
 bool MessagingStubFactory::isDbus(QSharedPointer<joynr::system::Address> destinationAddress) {
-    if (destinationAddress->metaObject()->className() == DbusMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
-        return true;
-    }
-    return false;
+    return destinationAddress->inherits(system::CommonApiDbusAddress::staticMetaObject.className());
 }
 
 

@@ -50,7 +50,6 @@ file(
     "provider/*.h"
     "proxy/*.h"
     "subscription/*.h"
-    "dbus/DbusMessagingEndpointAddress.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
 )
@@ -75,7 +74,6 @@ file(
     "provider/*.cpp"
     "proxy/*.cpp"
     "subscription/*.cpp"
-    "dbus/DbusMessagingEndpointAddress.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
 )

@@ -18,7 +18,8 @@
  */
 #include "joynr/DbusCapabilitiesSkeleton.h"
 #include "libjoynr/dbus/DbusCapabilitiesUtil.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
+#include <QStringList>
 
 namespace joynr {
 
@@ -38,8 +39,10 @@ void DbusCapabilitiesSkeleton::add(std::string domain,
     types::ProviderQos joynrQos;
     DbusCapabilitiesUtil::copyDbusProviderQosToJoynr(qos, joynrQos);
 
-    DbusMessagingEndpointAddress* dbusAddr = new DbusMessagingEndpointAddress(QString::fromStdString(messagingStubAddress.endPointAddress));
-    QSharedPointer<DbusMessagingEndpointAddress >dbusAddrPointer(dbusAddr);
+    QString serviceAddress = QString::fromStdString(messagingStubAddress.endPointAddress);
+    QStringList list = serviceAddress.split(":");
+    system::CommonApiDbusAddress* dbusAddr = new system::CommonApiDbusAddress(list.at(0), list.at(1), list.at(2));
+    QSharedPointer<system::CommonApiDbusAddress>dbusAddrPointer(dbusAddr);
 
     QList<QSharedPointer<joynr::system::Address>> joynrList;
     DbusCapabilitiesUtil::copyDbusEndPointListToJoynr(endpointAddressList, joynrList);
@@ -51,8 +54,10 @@ void DbusCapabilitiesSkeleton::addEndPoint(std::string participantId,
                 joynr::messaging::types::Types::EndpointAddressBase messagingStubAddress,
                 int64_t timeout_ms) {
 
-    DbusMessagingEndpointAddress* dbusAddr = new DbusMessagingEndpointAddress(QString::fromStdString(messagingStubAddress.endPointAddress));
-    QSharedPointer<DbusMessagingEndpointAddress >dbusAddrPointer(dbusAddr);
+    QString serviceAddress = QString::fromStdString(messagingStubAddress.endPointAddress);
+    QStringList list = serviceAddress.split(":");
+    system::CommonApiDbusAddress* dbusAddr = new system::CommonApiDbusAddress(list.at(0), list.at(1), list.at(2));
+    QSharedPointer<system::CommonApiDbusAddress >dbusAddrPointer(dbusAddr);
     callBack.addEndpoint(QString::fromStdString(participantId), dbusAddrPointer, timeout_ms);
 }
 
