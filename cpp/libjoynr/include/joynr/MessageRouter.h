@@ -120,7 +120,7 @@ public:
 
     void addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address);
 
-    void setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress);
+    void setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress, QString parentParticipantId);
 
     void setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress);
 

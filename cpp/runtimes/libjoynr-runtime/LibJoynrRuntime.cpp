@@ -109,13 +109,6 @@ void LibJoynrRuntime::initializeAllDependencies() {
     QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
     dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingAddress);
 
-    // provision parent message router messaging address
-    QSharedPointer<joynr::system::Address> endpointAddressParent(
-                new system::CommonApiDbusAddress(dbusSettings->getClusterControllerMessagingDomain(),
-                                                 dbusSettings->getClusterControllerMessagingServiceName(),
-                                                 dbusSettings->getClusterControllerMessagingParticipantId())
-    );
-    messageRouter->addProvisionedNextHop(systemServiceSettings->getCcRoutingProviderParticipantId(), endpointAddressParent);
 
     // set incomming messaging address
     messageRouter->setIncommingAddress(libjoynrMessagingEndpoint);
@@ -149,6 +142,11 @@ void LibJoynrRuntime::initializeAllDependencies() {
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
     // create connection to parent routing service
+    QSharedPointer<joynr::system::Address> parentAddress(
+                new system::CommonApiDbusAddress(dbusSettings->getClusterControllerMessagingDomain(),
+                                                 dbusSettings->getClusterControllerMessagingServiceName(),
+                                                 dbusSettings->getClusterControllerMessagingParticipantId())
+    );
     QString routingDomain = systemServiceSettings->getDomain();
     QString routingProviderParticipantId = systemServiceSettings->getCcRoutingProviderParticipantId();
 
@@ -163,7 +161,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
                             ->setCached(false)
                             ->setDiscoveryQos(discoveryQos)
                             ->build();
-    messageRouter->setParentRouter(routingProxy, endpointAddressParent);
+    messageRouter->setParentRouter(routingProxy,  parentAddress, routingProviderParticipantId);
     delete routingProxyBuilder;
 }
 

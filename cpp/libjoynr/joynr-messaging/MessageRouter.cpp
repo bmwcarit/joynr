@@ -80,13 +80,14 @@ void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<
     routingTable->add(participantId, address);
 }
 
-void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress) {
+void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress, QString parentParticipantId) {
     this->parentRouter = parentRouter;
     this->parentAddress = parentAddress;
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
     joynr::RequestStatus status;
+    this->addNextHop(parentParticipantId, parentAddress);
     this->addNextHopToParent(status, parentRouter->getProxyParticipantId());
 }
 
