@@ -30,7 +30,7 @@
 #include "common/dbus/DbusSettings.h"
 #include "joynr/MessageRouter.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
-#include "joynr/InProcessMessagingEndpointAddress.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MessagingStubFactory.h"
 
 #include "joynr/Util.h"
@@ -98,7 +98,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     // create the inprocess skeleton for the dispatcher
     dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton> (new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = QSharedPointer<joynr::system::Address>(new InProcessMessagingEndpointAddress(dispatcherMessagingSkeleton));
+    dispatcherAddress = QSharedPointer<joynr::system::Address>(new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     // create messaging skeleton using uuid
     QString messagingUuid = Util::createUuid().replace("-", "");

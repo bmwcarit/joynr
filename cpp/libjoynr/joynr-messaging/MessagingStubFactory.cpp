@@ -18,7 +18,7 @@
  */
 #include "joynr/MessagingStubFactory.h"
 #include "common/in-process/InProcessMessagingStub.h"
-#include "joynr/InProcessMessagingEndpointAddress.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
 
 #include "joynr/IMessaging.h"
@@ -65,8 +65,8 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
         assert (!stub.isNull());
     }
     if(isInProcessMessaging(destinationAddress)) {
-        QSharedPointer<InProcessMessagingEndpointAddress> inProcessMessagingAddress =
-                destinationAddress.dynamicCast<InProcessMessagingEndpointAddress>();
+        QSharedPointer<InProcessMessagingAddress> inProcessMessagingAddress =
+                destinationAddress.dynamicCast<InProcessMessagingAddress>();
         stub = QSharedPointer<IMessaging>(new InProcessMessagingStub(inProcessMessagingAddress->getSkeleton()));
         assert (!stub.isNull());
     }
@@ -108,10 +108,7 @@ bool MessagingStubFactory::contains(QString destParticipantId) {
 }
 
 bool MessagingStubFactory::isInProcessMessaging(QSharedPointer<joynr::system::Address> destinationAddress){
-    if (destinationAddress->metaObject()->className() == InProcessMessagingEndpointAddress::ENDPOINT_ADDRESS_TYPE()) {
-        return true;
-    }
-    return false;
+    return destinationAddress->inherits(InProcessMessagingAddress::staticMetaObject.className());
 }
 
 bool MessagingStubFactory::isJoynr(QSharedPointer <joynr::system::Address> destinationAddress) {

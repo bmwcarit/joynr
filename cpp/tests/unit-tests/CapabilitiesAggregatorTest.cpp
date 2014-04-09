@@ -23,7 +23,6 @@
 #include "joynr/CapabilitiesAggregator.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockLocalCapabilitiesDirectoryCallback.h"
-#include "joynr/InProcessMessagingEndpointAddress.h"
 #include "joynr/IAttributeListener.h"
 
 using namespace ::testing;

@@ -28,12 +28,10 @@ namespace joynr {
 
 class InProcessMessagingSkeleton;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingEndpointAddress : public joynr::system::Address {
+class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::Address {
     Q_OBJECT
 public:
-    virtual ~InProcessMessagingEndpointAddress();
-    InProcessMessagingEndpointAddress(QSharedPointer<InProcessMessagingSkeleton> skeleton);
-    static const QString& ENDPOINT_ADDRESS_TYPE();
+    InProcessMessagingAddress(QSharedPointer<InProcessMessagingSkeleton> skeleton);
     QSharedPointer<InProcessMessagingSkeleton> getSkeleton() const;
 private:
     QSharedPointer<InProcessMessagingSkeleton> skeleton;

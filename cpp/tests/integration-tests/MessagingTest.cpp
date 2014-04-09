@@ -33,7 +33,7 @@
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/InProcessMessagingEndpointAddress.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/MessageSender.h"
@@ -184,8 +184,8 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
 //            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-    QSharedPointer<InProcessMessagingEndpointAddress> messagingSkeletonEndpointAddr =
-            QSharedPointer<InProcessMessagingEndpointAddress>(new InProcessMessagingEndpointAddress(inProcessMessagingSkeleton));
+    QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr =
+            QSharedPointer<InProcessMessagingAddress>(new InProcessMessagingAddress(inProcessMessagingSkeleton));
 
     messagingEndpointDirectory->add(receiverId, messagingSkeletonEndpointAddr);
 
@@ -285,8 +285,8 @@ TEST_F(MessagingTest, routeMultipleMessages)
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
             .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-    QSharedPointer<InProcessMessagingEndpointAddress> messagingSkeletonEndpointAddr =
-            QSharedPointer<InProcessMessagingEndpointAddress>(new InProcessMessagingEndpointAddress(inProcessMessagingSkeleton));
+    QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr =
+            QSharedPointer<InProcessMessagingAddress>(new InProcessMessagingAddress(inProcessMessagingSkeleton));
 
     messagingEndpointDirectory->add(receiverId2, messagingSkeletonEndpointAddr);
 
