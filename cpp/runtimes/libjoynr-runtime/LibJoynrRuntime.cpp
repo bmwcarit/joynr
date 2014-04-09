@@ -89,8 +89,18 @@ void LibJoynrRuntime::initializeAllDependencies() {
     QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
     joynrCapabilitiesSendStub = new DbusCapabilitiesStubAdapter(ccCapabilitiesAddress);
 
+    QString messagingUuid = Util::createUuid().replace("-", "");
+    QString libjoynrMessagingDomain("local");
+    QString libjoynrMessagingServiceName("io.joynr.libjoynr.Messaging");
+    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
+    QString libjoynrMessagingServiceUrl(libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName + ":" + libjoynrMessagingId);
+    QSharedPointer<joynr::system::Address> libjoynrMessagingAddress(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
+
     // create message router
-    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, new MessagingStubFactory()));
+    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, new MessagingStubFactory(), libjoynrMessagingAddress));
+
+    // create messaging skeleton using uuid
+    dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingServiceUrl);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
     joynrDispatcher = new Dispatcher(joynrMessageSender);
@@ -100,18 +110,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
     dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton> (new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
     dispatcherAddress = QSharedPointer<joynr::system::Address>(new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
-    // create messaging skeleton using uuid
-    QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingDomain("local");
-    QString libjoynrMessagingServiceName("io.joynr.libjoynr.Messaging");
-    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
-    QString libjoynrMessagingAddress(libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName + ":" + libjoynrMessagingId);
-    QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
-    dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingAddress);
 
-
-    // set incomming messaging address
-    messageRouter->setIncommingAddress(libjoynrMessagingEndpoint);
 
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
@@ -123,7 +122,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     connectorFactory = new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
-    proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingEndpoint, connectorFactory, NULL);
+    proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingAddress, connectorFactory, NULL);
 
     capabilitiesAggregator = QSharedPointer<CapabilitiesAggregator>(new CapabilitiesAggregator(joynrCapabilitiesSendStub, dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)));
 
@@ -136,7 +135,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
     dispatcherList.append(inProcessDispatcher);
     dispatcherList.append(joynrDispatcher);
 
-    capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList, capabilitiesAggregator, libjoynrMessagingEndpoint, participantIdStorage, dispatcherAddress, messageRouter);
+    capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList, capabilitiesAggregator, libjoynrMessagingAddress, participantIdStorage, dispatcherAddress, messageRouter);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);

@@ -71,6 +71,15 @@ public:
             int messageSendRetryInterval = 500,
             int maxThreads = 6
     );
+
+    MessageRouter(
+            Directory<QString, joynr::system::Address>* routingTable,
+            IMessagingStubFactory* messagingStubFactory,
+            QSharedPointer<joynr::system::Address> incomingAddress,
+            int messageSendRetryInterval = 500,
+            int maxThreads = 6
+    );
+
     virtual ~MessageRouter();
 
     /**
@@ -122,8 +131,6 @@ public:
 
     void setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress, QString parentParticipantId);
 
-    void setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress);
-
     virtual void addNextHop(
             QString participantId,
             QSharedPointer<joynr::system::Address> inprocessAddress
@@ -155,6 +162,8 @@ private:
                      QSharedPointer<joynr::system::Address> destAddress);
 
     void sendMessageToParticipant(QString& destinationPartId);
+
+    bool isChildMessageRouter();
 };
 
 /**

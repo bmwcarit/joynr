@@ -76,6 +76,18 @@ MessageRouter::MessageRouter(
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
 }
 
+MessageRouter::MessageRouter(
+        Directory<QString, joynr::system::Address>* routingTable,
+        IMessagingStubFactory* messagingStubFactory,
+        QSharedPointer<joynr::system::Address> incomingAddress,
+        int messageSendRetryInterval,
+        int maxThreads
+) :
+    MessageRouter(routingTable, messagingStubFactory, messageSendRetryInterval, maxThreads)
+{
+    this->incomingAddress = incomingAddress;
+}
+
 void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address) {
     routingTable->add(participantId, address);
 }
@@ -91,8 +103,12 @@ void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, Q
     this->addNextHopToParent(status, parentRouter->getProxyParticipantId());
 }
 
-void MessageRouter::setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress) {
-    this->incomingAddress = incomingAddress;
+bool MessageRouter::isChildMessageRouter(){
+    if(incomingAddress.isNull()) {
+        return false;
+    }
+    // if an incoming address is set, a parent message router is needed for correct configuration
+    return parentRouter != NULL && !parentAddress.isNull();
 }
 
 /**
@@ -121,7 +137,7 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
     }
 
     // try to resolve via parent message router
-    if(parentRouter != NULL && parentAddress != NULL){
+    if(this->isChildMessageRouter()){
         auto pair = QPair<JoynrMessage, MessagingQos>(message, qos);
         {
             QMutexLocker locker(&this->messageQueueMutex);
@@ -244,7 +260,7 @@ void MessageRouter::addNextHop(
 
 void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId) {
     // add to parent router
-    if(parentRouter != NULL && !incomingAddress.isNull()) {
+    if(this->isChildMessageRouter()) {
         if(incomingAddress->inherits("joynr::system::ChannelAddress")) {
             parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data()));
         }
@@ -270,7 +286,7 @@ void MessageRouter::removeNextHop(
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     // remove from parent router
-    if(parentRouter != NULL && !incomingAddress.isNull()) {
+    if(this->isChildMessageRouter()) {
         parentRouter->removeNextHop(joynrInternalStatus, participantId);
     }
 }
