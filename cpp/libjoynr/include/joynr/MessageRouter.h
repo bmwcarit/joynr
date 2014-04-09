@@ -28,12 +28,20 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingProvider.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/ICallback.h"
 
 #include <QSharedPointer>
 #include <QDateTime>
 #include <QThreadPool>
+#include <QSemaphore>
+#include <QPair>
+#include <QMap>
+#include <QSet>
+#include <QMutex>
 
 namespace joynr {
+
 
 class IMessagingStubFactory;
 class JoynrMessagingEndpointAddress;
@@ -121,6 +129,8 @@ public:
             QSharedPointer<joynr::system::Address> inprocessAddress
     );
 
+    friend class MessageRunnable;
+    friend class ResolveCallBack;
 private:
 
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
@@ -133,31 +143,54 @@ private:
     QSharedPointer<joynr::system::Address> incomingAddress;
     static joynr_logging::Logger* logger;
 
+    QMap<QString, QPair<JoynrMessage, MessagingQos>>* messageQueue;
+    mutable QMutex messageQueueMutex;
+    QSet<QString>* runningParentResolves;
+    mutable QMutex parentResolveMutex;
+
     void addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId);
+
+    void sendMessage(const JoynrMessage& message,
+                     const MessagingQos& qos,
+                     QSharedPointer<joynr::system::Address> destAddress);
+
+    void sendMessageToParticipant(QString& destinationPartId);
 };
 
 /**
-  * MessageRunnable is used to queue outgoing send operations in a ThreadPool.
-  */
-class MessageRunnable : public QRunnable, public ObjectWithDecayTime {
+ * Class to handle callbacks from resolve requests to the parent message router.
+ */
+
+class ResolveCallBack: public joynr::ICallback<bool> {
+public:
+    ResolveCallBack(MessageRouter& messageRouter, QString destinationParticipantId);
+
+    void onFailure(const RequestStatus status);
+
+    void onSuccess(const RequestStatus status, bool resolved);
+
+private:
+    MessageRouter& messageRouter;
+    QString destinationPartId;
+    static joynr_logging::Logger* logger;
+};
+
+/**
+ * Class to send message
+ */
+class MessageRunnable: public QRunnable, public ObjectWithDecayTime {
 public:
     MessageRunnable(const JoynrMessage& message,
                     const MessagingQos& qos,
-                    QSharedPointer<IMessaging> messagingStub,
-                    DelayedScheduler& delayedScheduler,
-                    const QDateTime& decayTime);
-    ~MessageRunnable();
+                    QSharedPointer<IMessaging> messagingStub);
     void run();
 
 private:
     JoynrMessage message;
     MessagingQos qos;
     QSharedPointer<IMessaging> messagingStub;
-    DelayedScheduler& delayedScheduler;
     static joynr_logging::Logger* logger;
-    static int messageRunnableCounter;
 };
-
 
 } // namespace joynr
 #endif //MESSAGEROUTER_H

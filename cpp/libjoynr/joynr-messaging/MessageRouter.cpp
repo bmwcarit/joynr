@@ -25,8 +25,10 @@
 #include "joynr/DelayedScheduler.h"
 #include "joynr/system/Address.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/JsonSerializer.h"
+
+#include <QMutexLocker>
 
 #include <cassert>
 
@@ -42,6 +44,8 @@ MessageRouter::~MessageRouter() {
     }
     delete delayedScheduler;
     delete messagingStubFactory;
+    delete messageQueue;
+    delete runningParentResolves;
 }
 
 MessageRouter::MessageRouter(
@@ -63,7 +67,11 @@ MessageRouter::MessageRouter(
         delayedScheduler(),
         parentRouter(NULL),
         parentAddress(NULL),
-        incomingAddress()
+        incomingAddress(),
+        messageQueue(new QMap<QString, QPair<JoynrMessage, MessagingQos>>()),
+        messageQueueMutex(),
+        runningParentResolves(new QSet<QString>()),
+        parentResolveMutex()
 {
     threadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
@@ -76,6 +84,11 @@ void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<
 void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress) {
     this->parentRouter = parentRouter;
     this->parentAddress = parentAddress;
+
+    // add the next hop to parent router
+    // this is necessary because during normal registration, the parent proxy is not yet set
+    joynr::RequestStatus status;
+    this->addNextHopToParent(status, parentRouter->getProxyParticipantId());
 }
 
 void MessageRouter::setIncommingAddress(QSharedPointer<joynr::system::Address> incomingAddress) {
@@ -96,31 +109,63 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
         return;
     }
     */
-    LOG_TRACE(logger, "Routing Message.");
+
+    // search for the destination address
     QString destinationPartId = message.getHeaderTo();
-    QSharedPointer <joynr::system::Address> destAddress =
-            routingTable->lookup(destinationPartId);
-    if (destAddress.isNull()) {
-        LOG_ERROR(logger, "No endpoint address found for participantId " + destinationPartId + ". Dropping the message");
+    QSharedPointer<joynr::system::Address> destAddress = routingTable->lookup(destinationPartId);
+
+    // schedule message for sending
+    if (!destAddress.isNull()) {
+        sendMessage(message, qos, destAddress);
         return;
     }
-    QSharedPointer<IMessaging> messagingStub = messagingStubFactory
-                                                ->create(destinationPartId,
-                                                         destAddress);
-    if (messagingStub.isNull()) {
-        LOG_DEBUG(logger, "No send-stub found for endpoint address. Dropping the message");
-        return;
+
+    // try to resolve via parent message router
+    if(parentRouter != NULL && parentAddress != NULL){
+        auto pair = QPair<JoynrMessage, MessagingQos>(message, qos);
+        {
+            QMutexLocker locker(&this->messageQueueMutex);
+            messageQueue->insertMulti(destinationPartId, pair);
+        }
+
+        {
+            QMutexLocker locker(&this->parentResolveMutex);
+            if(!runningParentResolves->contains(destinationPartId)) {
+                runningParentResolves->insert(destinationPartId);
+                auto callBack = QSharedPointer<ICallback<bool>>(new ResolveCallBack(*this, destinationPartId));
+                parentRouter->resolveNextHop(callBack, destinationPartId);
+            }
+        }
     }
-    //make runnable (to execute send on the stub) and schedule it
-    threadPool.start(new MessageRunnable(
-                         message,
-                         qos,
-                         messagingStub,
-                         *delayedScheduler,
-                         DispatcherUtils::convertTtlToAbsoluteTime(qos.getTtl()) )
-                     );
 }
 
+void MessageRouter::sendMessageToParticipant(QString& destinationPartId) {
+    {
+        QMutexLocker locker(&this->parentResolveMutex);
+        runningParentResolves->remove(destinationPartId);
+    }
+    while(true) {
+        QPair<JoynrMessage, MessagingQos> pair;
+        {
+            QMutexLocker locker(&this->messageQueueMutex);
+            if(messageQueue->contains(destinationPartId)) {
+                pair = messageQueue->take(destinationPartId);
+            } else {
+                break;
+            }
+        }
+        sendMessage(pair.first, pair.second, parentAddress);
+    }
+}
+
+void MessageRouter::sendMessage(const JoynrMessage& message,
+                                const MessagingQos& qos,
+                                QSharedPointer<joynr::system::Address> destAddress) {
+    auto stub = messagingStubFactory->create(message.getHeaderTo(), destAddress);
+    if(!stub.isNull()) {
+        threadPool.start(new MessageRunnable(message, qos, stub));
+    }
+}
 
 void MessageRouter::addNextHop(
         QString participantId,
@@ -242,40 +287,53 @@ void MessageRouter::resolveNextHop(
 }
 
 
-/****
-  * IMPLEMENTATION OF THE MESSAGE RUNNABLE
-  *
-  */
+/**
+ * IMPLEMENTATION of ResolveCallBack class
+ */
+
+Logger* ResolveCallBack::logger = Logging::getInstance()->getLogger("MSG", "ResolveCallBack");
+
+ResolveCallBack::ResolveCallBack(MessageRouter& messageRouter, QString destinationPartId):
+    messageRouter(messageRouter),
+    destinationPartId(destinationPartId)
+{
+}
+
+void ResolveCallBack::onFailure(const RequestStatus status) {
+    LOG_ERROR(logger, "Failed to resolve next hop for participant " + destinationPartId + ": " + status.toString());
+}
+
+void ResolveCallBack::onSuccess(const RequestStatus status, bool resolved) {
+    if(status.successful() && resolved) {
+        LOG_INFO(logger, "Got destination address for participant " + destinationPartId);
+        // save next hop in the routing table
+        messageRouter.addProvisionedNextHop(destinationPartId, messageRouter.parentAddress);
+        messageRouter.sendMessageToParticipant(destinationPartId);
+    }
+}
+
+/**
+ * IMPLEMENTATION of MessageRunnable class
+ */
+
 Logger* MessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "MessageRunnable");
-int MessageRunnable::messageRunnableCounter = 0;
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
                                  const MessagingQos& qos,
-                                 QSharedPointer<IMessaging> messagingStub,
-                                 DelayedScheduler& delayedScheduler,
-                                 const QDateTime& decayTime)
-    : ObjectWithDecayTime(decayTime),
-      message(message),
-      qos(qos),
-      messagingStub(messagingStub),
-      delayedScheduler(delayedScheduler)
+                                 QSharedPointer<IMessaging> messagingStub):
+    ObjectWithDecayTime(DispatcherUtils::convertTtlToAbsoluteTime(qos.getTtl())),
+    message(message),
+    qos(qos),
+    messagingStub(messagingStub)
 {
-    messageRunnableCounter++;
-}
-
-MessageRunnable::~MessageRunnable(){
-    messageRunnableCounter--;
 }
 
 void MessageRunnable::run() {
     if(!isExpired()) {
         messagingStub->transmit(message, qos);
     } else {
-        LOG_DEBUG(logger, "Message expired. Dropping the message");
+        LOG_ERROR(logger, "Message expired: dropping!");
     }
 }
-
-
-
 
 } // namespace joynr

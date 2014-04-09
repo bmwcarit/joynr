@@ -59,6 +59,9 @@ void ProxyBase::handleArbitrationFinished(const QString &participantId, QSharedP
     this->providerAddress = providerAddress;
 }
 
+QString ProxyBase::getProxyParticipantId() {
+    return this->proxyParticipantId;
+}
 
 
 } // namespace joynr

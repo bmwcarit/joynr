@@ -38,7 +38,12 @@ public:
                   const ProxyQos& proxyQos, const MessagingQos& qosSettings, bool cached);
     virtual ~ProxyBase();
 
-
+    /**
+     * Returns the participantId of the proxy object.
+     * Not shure if this should be part of the public api, but is needed in proxy builder to
+     * register the next hop on message router.
+     */
+    QString getProxyParticipantId();
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(ProxyBase);

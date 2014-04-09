@@ -263,7 +263,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
 
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
     QList<QSharedPointer<Future<int> > >testFutureList;
-    int numberOfMessages = 100;
+    int numberOfMessages = 2000;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){
         testFutureList.append(QSharedPointer<Future<int> >(new Future<int>() ) );
@@ -276,7 +276,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     }
 
     for (int i=0; i<numberOfMessages; i++){
-        testFutureList.at(i)->waitForFinished();
+        testFutureList.at(i)->waitForFinished(50 * numberOfMessages);
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
