@@ -60,7 +60,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
     bool isInProcessMessaging(QSharedPointer<joynr::system::Address> destinationAddress);
     bool isJoynr(QSharedPointer<joynr::system::Address> destinationAddress);
-    bool isSomeIp(QSharedPointer<joynr::system::Address> destinationAddress);
     bool isLocal(QString destParticipantId);
     bool isDbus(QSharedPointer<joynr::system::Address> destinationAddress);
     Directory<QString, IMessaging> partId2MessagingStubDirectory;

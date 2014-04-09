@@ -18,7 +18,6 @@
  */
 #include "joynr/CapabilityEntry.h"
 #include "joynr/JsonSerializer.h"
-#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 
 namespace joynr {
 

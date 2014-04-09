@@ -23,7 +23,7 @@
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
-#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -58,7 +58,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     }
 
     // Create a list of fake endpoint addresses
-    QSharedPointer<joynr::system::Address> endpointAddress(new SomeIpEndpointAddress("1.1.1.1", 80));
+    QSharedPointer<joynr::system::Address> endpointAddress(new joynr::system::ChannelAddress("channelId"));
     QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
     endpointAddresses << endpointAddress;
 
@@ -96,7 +96,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
 
 
     // Create a list of fake endpoint addresses
-    QSharedPointer<joynr::system::Address> endpointAddress(new SomeIpEndpointAddress("1.1.1.1", 80));
+    QSharedPointer<joynr::system::Address> endpointAddress(new joynr::system::ChannelAddress("channelId"));
     QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
     endpointAddresses << endpointAddress;
 
@@ -148,7 +148,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     participantId << QString("correct_keyword");
 
     // Create a list of fake endpoint addresses
-    QSharedPointer<joynr::system::Address> endpointAddress(new SomeIpEndpointAddress("1.1.1.1", 80));
+    QSharedPointer<joynr::system::Address> endpointAddress(new joynr::system::ChannelAddress("channelId"));
     QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
     endpointAddresses << endpointAddress;
 

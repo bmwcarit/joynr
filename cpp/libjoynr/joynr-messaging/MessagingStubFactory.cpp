@@ -19,7 +19,6 @@
 #include "joynr/MessagingStubFactory.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "joynr/InProcessMessagingEndpointAddress.h"
-#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 #include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
 
 #include "joynr/IMessaging.h"
@@ -71,7 +70,6 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
         stub = QSharedPointer<IMessaging>(new InProcessMessagingStub(inProcessMessagingAddress->getSkeleton()));
         assert (!stub.isNull());
     }
-    if(isSomeIp(destinationAddress)) {}
 
     if(isDbus(destinationAddress)) {
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -118,13 +116,6 @@ bool MessagingStubFactory::isInProcessMessaging(QSharedPointer<joynr::system::Ad
 
 bool MessagingStubFactory::isJoynr(QSharedPointer <joynr::system::Address> destinationAddress) {
     return destinationAddress->inherits(system::ChannelAddress::staticMetaObject.className());
-}
-
-bool MessagingStubFactory::isSomeIp(QSharedPointer <joynr::system::Address> destinationAddress) {
-    if( destinationAddress->metaObject()->className() == SomeIpEndpointAddress::ENDPOINT_ADDRESS_TYPE() ) {
-        return true;
-    }
-    return false;
 }
 
 bool MessagingStubFactory::isLocal(QString destParticipantId) {
