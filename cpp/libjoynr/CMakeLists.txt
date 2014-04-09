@@ -84,6 +84,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrLib_HEADERS}
         "dbus/DbusCapabilitiesStubAdapter.h"
         "dbus/DbusCapabilitiesUtil.h"
+        "dbus/DbusMessagingStubFactory.h"
     )
 
     set(
@@ -92,6 +93,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         "dbus/DbusCapabilitiesStubAdapter.cpp"
         "dbus/DbusCapabilitiesUtil.cpp"
         "dbus/DBusMessageRouterAdapter.cpp"
+        "dbus/DbusMessagingStubFactory.cpp"
     )
 
     set(
