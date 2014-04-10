@@ -138,8 +138,8 @@ public:
 
     friend class MessageRunnable;
     friend class ResolveCallBack;
-private:
 
+private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
     Directory<QString, joynr::system::Address>* routingTable;
@@ -155,6 +155,7 @@ private:
     QSet<QString>* runningParentResolves;
     mutable QMutex parentResolveMutex;
 
+    void init(int messageSendRetryInterval, int maxThreads);
     void addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId);
 
     void sendMessage(const JoynrMessage& message,
