@@ -49,15 +49,16 @@
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ChannelAddress.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include "libjoynr/joynr-messaging/JoynrMessagingStubFactory.h"
 
 #include <QCoreApplication>
 #include <QThread>
 #include <QMutex>
 #include <cassert>
 
-
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-
+#include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 namespace joynr {
@@ -134,6 +135,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     /* CC */
     // create the messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
+    #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
+    messagingStubFactory->registerStubFactory(new DbusMessagingStubFactory());
+    #endif // USE_DBUS_COMMONAPI_COMMUNICATION
+    messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
     // init message router
     messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, messagingStubFactory));
     // provision global capabilities directory
@@ -171,7 +176,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     QString channelId = communicationManager->getReceiveChannelId();
     longpollMessageSerializer = new LongPollMessageSerializer(messageRouter, messagingEndpointDirectory);
     communicationManager->setMessageDispatcher(longpollMessageSerializer); // LongpollingMessageReceiver will call the messageRouter when data received
-    messagingStubFactory->setCommunicationManager(communicationManager);
+    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(communicationManager));
 
     //joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     //ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);

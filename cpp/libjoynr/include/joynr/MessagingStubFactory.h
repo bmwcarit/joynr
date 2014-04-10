@@ -23,6 +23,7 @@
 #include "joynr/RuntimeConfig.h"
 #include "joynr/Directory.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/IMiddlewareMessagingStubFactory.h"
 
 namespace joynr {
 
@@ -52,22 +53,18 @@ public:
 
     QSharedPointer<IMessaging> create(
             QString destParticipantId,
-            QSharedPointer<joynr::system::Address> destinationAddress);
+            const joynr::system::Address& destinationAddress);
     void remove(QString destParticipantId);
     bool contains(QString destParticipantId);
-    void setCommunicationManager(QSharedPointer<ICommunicationManager> comMgr);
+
+    void registerStubFactory(IMiddlewareMessagingStubFactory* factory);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
-    bool isInProcessMessaging(QSharedPointer<joynr::system::Address> destinationAddress);
-    bool isJoynr(QSharedPointer<joynr::system::Address> destinationAddress);
-    bool isLocal(QString destParticipantId);
-    bool isDbus(QSharedPointer<joynr::system::Address> destinationAddress);
-    Directory<QString, IMessaging> partId2MessagingStubDirectory;
-    QSharedPointer<ICommunicationManager> communicationManager;
 
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    Directory<QString, IMessaging> dbusMessagingStubDirectory;
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
+    Directory<QString, IMessaging> partId2MessagingStubDirectory;
+    QList<IMiddlewareMessagingStubFactory*> factoryList;
+    QMutex mutex;
 };
 
 

@@ -37,6 +37,8 @@
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "libjoynr/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
 
 using namespace ::testing;
@@ -94,7 +96,8 @@ public:
             new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
-        messagingStubFactory->setCommunicationManager(mockCommunicationManager);
+        messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockCommunicationManager));
+        messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
         qos.setTtl(10000);
     }

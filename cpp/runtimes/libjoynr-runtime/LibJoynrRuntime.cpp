@@ -32,6 +32,8 @@
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MessagingStubFactory.h"
+#include "libjoynr/dbus/DbusMessagingStubFactory.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 #include "joynr/Util.h"
 
@@ -96,8 +98,13 @@ void LibJoynrRuntime::initializeAllDependencies() {
     QString libjoynrMessagingServiceUrl(libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName + ":" + libjoynrMessagingId);
     QSharedPointer<joynr::system::Address> libjoynrMessagingAddress(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
 
+    // create messaging stub factory
+    MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
+    messagingStubFactory->registerStubFactory(new DbusMessagingStubFactory());
+    messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
+
     // create message router
-    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, new MessagingStubFactory(), libjoynrMessagingAddress));
+    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingEndpointDirectory, messagingStubFactory, libjoynrMessagingAddress));
 
     // create messaging skeleton using uuid
     dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingServiceUrl);

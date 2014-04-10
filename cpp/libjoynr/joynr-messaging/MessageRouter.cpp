@@ -177,7 +177,7 @@ void MessageRouter::sendMessageToParticipant(QString& destinationPartId) {
 void MessageRouter::sendMessage(const JoynrMessage& message,
                                 const MessagingQos& qos,
                                 QSharedPointer<joynr::system::Address> destAddress) {
-    auto stub = messagingStubFactory->create(message.getHeaderTo(), destAddress);
+    auto stub = messagingStubFactory->create(message.getHeaderTo(), *destAddress);
     if(!stub.isNull()) {
         threadPool.start(new MessageRunnable(message, qos, stub));
     }

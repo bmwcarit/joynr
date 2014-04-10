@@ -30,10 +30,9 @@ class ICommunicationManager;
 class IMessagingStubFactory {
 public:
     virtual ~IMessagingStubFactory(){}
-    virtual QSharedPointer<IMessaging> create(QString destParticipantId, QSharedPointer <joynr::system::Address> destEndpointAddress) = 0;
+    virtual QSharedPointer<IMessaging> create(QString destParticipantId, const joynr::system::Address& destEndpointAddress) = 0;
     virtual void remove(QString destParticipantId) = 0;
     virtual bool contains(QString destParticipantId) = 0;
-    virtual void setCommunicationManager(QSharedPointer<ICommunicationManager> comMgr) = 0;
 };
 
 
