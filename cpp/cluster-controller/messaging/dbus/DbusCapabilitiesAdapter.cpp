@@ -70,9 +70,13 @@ QList<CapabilityEntry> DbusCapabilitiesAdapter::lookup(
 ){
     dbusSkeletonWrapper->logMethodCall("lookup", "DbusCapabilitiesAdapter");
     QSharedPointer<DummyDbusCapabilitiesFuture> future(new DummyDbusCapabilitiesFuture());
-    localCapabilitiesDirectory.getCapabilities(domain,interfaceName, future, discoveryQos);
+    joynr::system::DiscoveryQos newDiscoveryQos;
+    newDiscoveryQos.setCacheMaxAge(discoveryQos.getCacheMaxAge());
+    newDiscoveryQos.setProviderMustSupportOnChange(discoveryQos.getProviderMustSupportOnChange());
+    newDiscoveryQos.setDiscoveryScope(discoveryQos.getDiscoveryScope());
+    localCapabilitiesDirectory.getCapabilities(domain,interfaceName, future, newDiscoveryQos);
     //this will block forever when no result is received.
-    return future->get(discoveryQos.getDiscoveryTimeout());
+    return future->get();
 }
 
 QList<CapabilityEntry> DbusCapabilitiesAdapter::lookup(
@@ -81,8 +85,12 @@ QList<CapabilityEntry> DbusCapabilitiesAdapter::lookup(
 ) {
     dbusSkeletonWrapper->logMethodCall("lookup", "DbusCapabilitiesAdapter");
     QSharedPointer<DummyDbusCapabilitiesFuture> future(new DummyDbusCapabilitiesFuture());
-    localCapabilitiesDirectory.getCapabilities(participantId, future, discoveryQos);
-    return future->get(discoveryQos.getDiscoveryTimeout());
+    joynr::system::DiscoveryQos newDiscoveryQos;
+    newDiscoveryQos.setCacheMaxAge(discoveryQos.getCacheMaxAge());
+    newDiscoveryQos.setProviderMustSupportOnChange(discoveryQos.getProviderMustSupportOnChange());
+    newDiscoveryQos.setDiscoveryScope(discoveryQos.getDiscoveryScope());
+    localCapabilitiesDirectory.getCapabilities(participantId, future, newDiscoveryQos);
+    return future->get();
 }
 
 void DbusCapabilitiesAdapter::remove(const QString& participantId, const qint64& timeout_ms) {

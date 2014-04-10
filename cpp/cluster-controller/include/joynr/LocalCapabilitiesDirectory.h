@@ -50,8 +50,8 @@
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/DiscoveryQos.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/system/DiscoveryProvider.h"
 
 #include <QCache>
 #include <QVariantMap>
@@ -61,7 +61,6 @@ namespace joynr {
 
 class ICapabilitiesClient;
 class CapabilityEntry;
-class DiscoveryQos;
 
 class InterfaceAddress;
 namespace system { class Address; }
@@ -99,12 +98,21 @@ public:
      * Returns a list of capabilities matching the given domain and interfaceName, this is an asynchronous request,
      * must supply a callback.
      */
-    virtual void getCapabilities(const QString& domain, const QString& interfaceName, QSharedPointer<ILocalCapabilitiesCallback> callBack, const DiscoveryQos& discoveryQos);
+    virtual void getCapabilities(
+            const QString& domain,
+            const QString& interfaceName,
+            QSharedPointer<ILocalCapabilitiesCallback> callback,
+            const joynr::system::DiscoveryQos& discoveryQos
+    );
 
     /*
      * Returns a list of capabilities matching the given channelId.
      */
-    virtual void getCapabilities(const QString& participantId, QSharedPointer<ILocalCapabilitiesCallback> callBack, const DiscoveryQos& discoveryQos);
+    virtual void getCapabilities(
+            const QString& participantId,
+            QSharedPointer<ILocalCapabilitiesCallback> callback,
+            const joynr::system::DiscoveryQos& discoveryQos
+    );
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used when capabilities from the
@@ -146,9 +154,22 @@ private:
     QList<CapabilityEntry> filterCapabilities(const QList<CapabilityEntry>& list, bool global);
 */
 
-    bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress, const DiscoveryQos& discoveryQos, QSharedPointer<ILocalCapabilitiesCallback> callBack);
-    bool getLocalAndCachedCapabilities(const QString& participantId, const DiscoveryQos& discoveryQos, QSharedPointer<ILocalCapabilitiesCallback> callBack);
-    bool callRecieverIfPossible(DiscoveryQos::DiscoveryScope& scope, QList<CapabilityEntry>& localCapabilities, QList<CapabilityEntry>& globalCapabilities, QSharedPointer<ILocalCapabilitiesCallback> callBack);
+    bool getLocalAndCachedCapabilities(
+            const InterfaceAddress& interfaceAddress,
+            const joynr::system::DiscoveryQos& discoveryQos,
+            QSharedPointer<ILocalCapabilitiesCallback> callback
+    );
+    bool getLocalAndCachedCapabilities(
+            const QString& participantId,
+            const joynr::system::DiscoveryQos& discoveryQos,
+            QSharedPointer<ILocalCapabilitiesCallback> callback
+    );
+    bool callRecieverIfPossible(
+            joynr::system::DiscoveryScope::Enum& scope,
+            QList<CapabilityEntry>& localCapabilities,
+            QList<CapabilityEntry>& globalCapabilities,
+            QSharedPointer<ILocalCapabilitiesCallback> callback
+    );
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
     void insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache);

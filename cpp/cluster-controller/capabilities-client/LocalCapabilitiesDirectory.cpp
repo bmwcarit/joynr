@@ -28,7 +28,8 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/system/Address.h"
-#include "joynr/DiscoveryQos.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 
 #include <QMutexLocker>
 
@@ -159,45 +160,58 @@ void LocalCapabilitiesDirectory::removeCapability(const QString& participantId) 
     }
 }
 
-bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress, const DiscoveryQos& discoveryQos,  QSharedPointer<ILocalCapabilitiesCallback> callBack) {
-    DiscoveryQos::DiscoveryScope scope = discoveryQos.getDiscoveryScope();
+bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
+        const InterfaceAddress& interfaceAddress,
+        const joynr::system::DiscoveryQos& discoveryQos,
+        QSharedPointer<ILocalCapabilitiesCallback> callback
+) {
+    joynr::system::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
     QList<CapabilityEntry> localCapabilities = searchCache(interfaceAddress, -1, true);
     QList<CapabilityEntry> globalCapabilities = searchCache(interfaceAddress, discoveryQos.getCacheMaxAge(), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callBack);
+    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
-bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(const QString& participantId, const DiscoveryQos& discoveryQos, QSharedPointer<ILocalCapabilitiesCallback> callBack) {
-    DiscoveryQos::DiscoveryScope scope = discoveryQos.getDiscoveryScope();
+bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
+        const QString& participantId,
+        const joynr::system::DiscoveryQos& discoveryQos,
+        QSharedPointer<ILocalCapabilitiesCallback> callback
+) {
+    joynr::system::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
     QList<CapabilityEntry> localCapabilities = searchCache(participantId, -1, true);
     QList<CapabilityEntry> globalCapabilities = searchCache(participantId, discoveryQos.getCacheMaxAge(), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callBack);
+    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
-bool LocalCapabilitiesDirectory::callRecieverIfPossible(DiscoveryQos::DiscoveryScope& scope, QList<CapabilityEntry>& localCapabilities, QList<CapabilityEntry>& globalCapabilities, QSharedPointer<ILocalCapabilitiesCallback> callBack) {
+bool LocalCapabilitiesDirectory::callRecieverIfPossible(
+        joynr::system::DiscoveryScope::Enum& scope,
+        QList<CapabilityEntry>& localCapabilities,
+        QList<CapabilityEntry>& globalCapabilities,
+        QSharedPointer<ILocalCapabilitiesCallback> callback
+) {
     // return only local capabilities
-    if(scope == DiscoveryQos::DiscoveryScope::LOCAL_ONLY) {
-        callBack->capabilitiesReceived(localCapabilities);
+    if(scope == joynr::system::DiscoveryScope::LOCAL_ONLY) {
+        callback->capabilitiesReceived(localCapabilities);
         return true;
     }
 
     // return local then global capabilities
-    if(scope == DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL) {
+    if(scope == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL) {
         if(!localCapabilities.isEmpty()) {
-            callBack->capabilitiesReceived(localCapabilities);
+            callback->capabilitiesReceived(localCapabilities);
             return true;
         }
         if(!globalCapabilities.isEmpty()) {
-            callBack->capabilitiesReceived(globalCapabilities);
+            callback->capabilitiesReceived(globalCapabilities);
             return true;
         }
     }
 
     // return local and global capabilities
-    if(scope == DiscoveryQos::DiscoveryScope::LOCAL_AND_GLOBAL) {
+    if(scope == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // remove doublicates
         QList<CapabilityEntry> result;
         foreach (CapabilityEntry entry, localCapabilities + globalCapabilities) {
@@ -207,15 +221,15 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(DiscoveryQos::DiscoveryS
         }
         // return if entries found
         if(!result.isEmpty()) {
-            callBack->capabilitiesReceived(result);
+            callback->capabilitiesReceived(result);
             return true;
         }
     }
 
     // return the global cached entries
-    if(scope == DiscoveryQos::DiscoveryScope::GLOBAL_ONLY) {
+    if(scope == joynr::system::DiscoveryScope::GLOBAL_ONLY) {
         if(!globalCapabilities.isEmpty()) {
-            callBack->capabilitiesReceived(globalCapabilities);
+            callback->capabilitiesReceived(globalCapabilities);
             return true;
         }
     }
@@ -225,7 +239,7 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(DiscoveryQos::DiscoveryS
 void LocalCapabilitiesDirectory::getCapabilities(
         const QString& participantId,
         QSharedPointer<ILocalCapabilitiesCallback> callBack,
-        const DiscoveryQos& discoveryQos
+        const joynr::system::DiscoveryQos& discoveryQos
 ) {
     // get the local and cached entries
     bool recieverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callBack);
@@ -241,18 +255,18 @@ void LocalCapabilitiesDirectory::getCapabilities(
 void LocalCapabilitiesDirectory::getCapabilities(
         const QString& domain,
         const QString& interfaceName,
-        QSharedPointer<ILocalCapabilitiesCallback> callBack,
-        const DiscoveryQos& discoveryQos
+        QSharedPointer<ILocalCapabilitiesCallback> callback,
+        const joynr::system::DiscoveryQos& discoveryQos
 ) {
     InterfaceAddress interfaceAddress(domain, interfaceName);
 
     // get the local and cached entries
-    bool recieverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callBack);
+    bool recieverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
 
     // if no reciever is called, use the global capabilities directory
     if(!recieverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callBack, interfaceAddress, discoveryQos));
+        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callback, interfaceAddress, discoveryQos));
         this->capabilitiesClient->getCapabilitiesForInterfaceAddress(domain, interfaceName, wrappedCallBack);
     }
 }

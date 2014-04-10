@@ -64,9 +64,8 @@ public:
         dummyParticipantId3 = QUuid::createUuid().toString();
         localJoynrMessagingAddress1 = QSharedPointer<system::ChannelAddress>(new system::ChannelAddress("LOCAL_CHANNEL_ID"));
         callback = QSharedPointer<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
-        discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL);
+        discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
-        discoveryQos.setDiscoveryTimeout(ICapabilities::NO_TIMEOUT());
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
 
         // init a capentry recieved from the global capabilities directory
@@ -136,7 +135,7 @@ protected:
     QString dummyParticipantId2;
     QString dummyParticipantId3;
     QSharedPointer<system::ChannelAddress> localJoynrMessagingAddress1;
-    DiscoveryQos discoveryQos;
+    joynr::system::DiscoveryQos discoveryQos;
     QMap<QString, CapabilityEntry> globalCapEntryMap;
 
     static const QString INTERFACE_1_NAME;
@@ -177,7 +176,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilityAddsToCache) {
 
     DiscoveryQos qos;
     qos.setCacheMaxAge(LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ());
-    qos.setDiscoveryTimeout(ICapabilities::NO_TIMEOUT());
 
     localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
@@ -192,7 +190,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilityLocallyDoesNotCallCapab
 
     DiscoveryQos qos;
     qos.setCacheMaxAge(LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ());
-    qos.setDiscoveryTimeout(ICapabilities::NO_TIMEOUT());
 
     localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
@@ -400,8 +397,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
-    DiscoveryQos discoveryQos(5000);
-    discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_ONLY);
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(0);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME, INTERFACE_1_NAME, providerQos, dummyParticipantId1);
@@ -424,8 +422,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
-    DiscoveryQos discoveryQos(5000);
-    discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(0);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME, INTERFACE_1_NAME, providerQos, dummyParticipantId1);
@@ -458,8 +457,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
-    DiscoveryQos discoveryQos(5000);
-    discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::GLOBAL_ONLY);
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::GLOBAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(0);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME, INTERFACE_1_NAME, providerQos, dummyParticipantId1);
@@ -499,8 +499,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    DiscoveryQos discoveryQos(5000);
-    discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_ONLY);
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(1);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME, INTERFACE_1_NAME, providerQos, dummyParticipantId1);
@@ -519,8 +520,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    DiscoveryQos discoveryQos(100);
-    discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(100);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(1);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME, INTERFACE_1_NAME, providerQos, dummyParticipantId1);
@@ -557,8 +559,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    DiscoveryQos discoveryQos(100);
-    discoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::GLOBAL_ONLY);
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(100);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::GLOBAL_ONLY);
 
     //JoynrTimeOutException timeoutException;
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(1);

@@ -163,16 +163,16 @@ void DbusCapabilitiesUtil::copyJoynrDiscoveryQosToDbus(const DiscoveryQos& joynr
     }
 
     switch(joynrDiscoveryQos.getDiscoveryScope()) {
-    case DiscoveryQos::DiscoveryScope::GLOBAL_ONLY:
+    case joynr::system::DiscoveryScope::GLOBAL_ONLY:
         dbusDiscoveryQos.discoveryScope = joynr::messaging::types::Types::DiscoveryScope::GLOBAL_ONLY;
         break;
-    case DiscoveryQos::DiscoveryScope::LOCAL_ONLY:
+    case joynr::system::DiscoveryScope::LOCAL_ONLY:
         dbusDiscoveryQos.discoveryScope = joynr::messaging::types::Types::DiscoveryScope::LOCAL_ONLY;
         break;
-    case DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL:
+    case joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL:
         dbusDiscoveryQos.discoveryScope = joynr::messaging::types::Types::DiscoveryScope::LOCAL_THEN_GLOBAL;
         break;
-    case DiscoveryQos::DiscoveryScope::LOCAL_AND_GLOBAL:
+    case joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL:
         dbusDiscoveryQos.discoveryScope = joynr::messaging::types::Types::DiscoveryScope::LOCAL_AND_GLOBAL;
         break;
     default:
@@ -221,16 +221,16 @@ void DbusCapabilitiesUtil::copyDbusDiscoveryQosToJoynr(const joynr::messaging::t
 
     switch(dbusDiscoveryQos.discoveryScope) {
     case joynr::messaging::types::Types::DiscoveryScope::GLOBAL_ONLY:
-        joynrDiscoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::GLOBAL_ONLY);
+        joynrDiscoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::GLOBAL_ONLY);
         break;
     case joynr::messaging::types::Types::DiscoveryScope::LOCAL_ONLY:
-        joynrDiscoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_ONLY);
+        joynrDiscoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_ONLY);
         break;
     case joynr::messaging::types::Types::DiscoveryScope::LOCAL_THEN_GLOBAL:
-        joynrDiscoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL);
+        joynrDiscoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
         break;
     case joynr::messaging::types::Types::DiscoveryScope::LOCAL_AND_GLOBAL:
-        joynrDiscoveryQos.setDiscoveryScope(DiscoveryQos::DiscoveryScope::LOCAL_AND_GLOBAL);
+        joynrDiscoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL);
         break;
     default:
         assert(false);

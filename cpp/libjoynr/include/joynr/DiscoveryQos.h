@@ -27,6 +27,7 @@
 #include <QVariantMap>
 
 #include "joynr/types/CustomParameter.h"
+#include "joynr/system/DiscoveryScope.h"
 
 namespace joynr {
 
@@ -53,13 +54,6 @@ public:
         HIGHEST_PRIORITY = 4
     };
 
-    enum class DiscoveryScope {
-        LOCAL_ONLY = 0,
-        LOCAL_THEN_GLOBAL = 1,
-        LOCAL_AND_GLOBAL = 2,
-        GLOBAL_ONLY = 3
-    };
-
     static qint64& DEFAULT_DISCOVERYTIMEOUT();
 
     static qint64& NO_TIMEOUT();
@@ -70,7 +64,7 @@ public:
 
     static qint64& DO_NOT_USE_CACHE();
 
-    static DiscoveryScope& DEFAULT_DISCOVERYSCOPE();
+    static joynr::system::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
 
     static qint64& DEFAULT_RETRYINTERVAL();
 
@@ -184,7 +178,7 @@ public:
      *
      * @return the current set discovery scope
      */
-    DiscoveryScope getDiscoveryScope() const;
+    joynr::system::DiscoveryScope::Enum getDiscoveryScope() const;
 
     /**
      * The scope determines where the discovery process will look for matching providers, if LOCAL_ONLY,
@@ -195,7 +189,7 @@ public:
      * @param discoveryScope
      *                  discovery scope to be set
      */
-    void setDiscoveryScope(DiscoveryScope discoveryScope);
+    void setDiscoveryScope(joynr::system::DiscoveryScope::Enum discoveryScope);
 
     /**
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
@@ -223,7 +217,7 @@ private:
     ArbitrationStrategy arbitrationStrategy;
     qint64 discoveryTimeout;
     qint64 cacheMaxAge;
-    DiscoveryScope discoveryScope;
+    joynr::system::DiscoveryScope::Enum discoveryScope;
     bool providerMustSupportOnChange;
     qint64 retryInterval;
 };
