@@ -122,8 +122,6 @@ public:
         // register provider
         QString participantId = runtime1->registerCapability(domain, provider, authenticationToken);
         ASSERT_TRUE(participantId != NULL);
-
-        qDebug() << "Hello: Provider connected: " << participantId;
     }
 
     void connectProxy() {

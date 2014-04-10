@@ -99,8 +99,8 @@ void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, Q
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
     joynr::RequestStatus status;
-    this->addNextHop(parentParticipantId, parentAddress);
-    this->addNextHopToParent(status, parentRouter->getProxyParticipantId());
+    addNextHop(parentParticipantId, parentAddress);
+    addNextHopToParent(status, parentRouter->getProxyParticipantId());
 }
 
 bool MessageRouter::isChildMessageRouter(){
@@ -137,15 +137,15 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
     }
 
     // try to resolve via parent message router
-    if(this->isChildMessageRouter()){
+    if(isChildMessageRouter()){
         auto pair = QPair<JoynrMessage, MessagingQos>(message, qos);
         {
-            QMutexLocker locker(&this->messageQueueMutex);
+            QMutexLocker locker(&messageQueueMutex);
             messageQueue->insertMulti(destinationPartId, pair);
         }
 
         {
-            QMutexLocker locker(&this->parentResolveMutex);
+            QMutexLocker locker(&parentResolveMutex);
             if(!runningParentResolves->contains(destinationPartId)) {
                 runningParentResolves->insert(destinationPartId);
                 auto callBack = QSharedPointer<ICallback<bool>>(new ResolveCallBack(*this, destinationPartId));
@@ -157,13 +157,13 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
 
 void MessageRouter::sendMessageToParticipant(QString& destinationPartId) {
     {
-        QMutexLocker locker(&this->parentResolveMutex);
+        QMutexLocker locker(&parentResolveMutex);
         runningParentResolves->remove(destinationPartId);
     }
     while(true) {
         QPair<JoynrMessage, MessagingQos> pair;
         {
-            QMutexLocker locker(&this->messageQueueMutex);
+            QMutexLocker locker(&messageQueueMutex);
             if(messageQueue->contains(destinationPartId)) {
                 pair = messageQueue->take(destinationPartId);
             } else {
@@ -191,7 +191,7 @@ void MessageRouter::addNextHop(
     routingTable->add(participantId, inprocessAddress);
 
     joynr::RequestStatus status;
-    this->addNextHopToParent(status, participantId);
+    addNextHopToParent(status, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -207,7 +207,7 @@ void MessageRouter::addNextHop(
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    this->addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -223,7 +223,7 @@ void MessageRouter::addNextHop(
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    this->addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -239,7 +239,7 @@ void MessageRouter::addNextHop(
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    this->addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -255,12 +255,12 @@ void MessageRouter::addNextHop(
     routingTable->add(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    this->addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(joynrInternalStatus, participantId);
 }
 
 void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId) {
     // add to parent router
-    if(this->isChildMessageRouter()) {
+    if(isChildMessageRouter()) {
         if(incomingAddress->inherits("joynr::system::ChannelAddress")) {
             parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data()));
         }
@@ -286,7 +286,7 @@ void MessageRouter::removeNextHop(
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     // remove from parent router
-    if(this->isChildMessageRouter()) {
+    if(isChildMessageRouter()) {
         parentRouter->removeNextHop(joynrInternalStatus, participantId);
     }
 }
