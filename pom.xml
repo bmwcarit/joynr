@@ -219,9 +219,6 @@
 							<inceptionYear>2011</inceptionYear>
 							<organizationName>BMW Car IT GmbH</organizationName>
 							<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
-							<includes>
-								<include>**/*pom.xml</include>
-							</includes>
 							<extraExtensions>
 								<fidl>java</fidl>
 							</extraExtensions>

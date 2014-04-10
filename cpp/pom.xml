@@ -51,16 +51,12 @@
 						<addSvnKeyWords>true</addSvnKeyWords>
 						<licenseName>apache_v2</licenseName>
 						<roots>
-							<root>cluster-controller</root>
-							<root>common</root>
-							<root>cpp-generator</root>
-							<root>distribution</root>
-							<root>CMake</root>
-							<root>libjoynr</root>
-							<root>public-examples</root>
-							<root>runtimes</root>
-							<root>tests</root>
+							<root>.</root>
 						</roots>
+						<excludes>
+							<exclude>**/log4qt-0.3/**</exclude>
+							<exclude>**/qjson-0.7.1/**</exclude>
+						</excludes>
 					</configuration>
 				</plugin>
 			</plugins>
