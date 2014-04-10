@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef MESSAGESENDER_H_
-#define MESSAGESENDER_H_
+#ifndef HTTPSENDER_H_
+#define HTTPSENDER_H_
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/IMessageSender.h"
@@ -42,14 +42,14 @@ class HttpResult;
 
 
 
-class MessageSender : public IMessageSender {
+class HttpSender : public IMessageSender {
 public:
     static const qint64& MIN_ATTEMPT_TTL();
     static const qint64& MAX_ATTEMPT_TTL();
     static const qint64& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
-    MessageSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval);// int messageSendRetryInterval
-    ~MessageSender();
+    HttpSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval);// int messageSendRetryInterval
+    ~HttpSender();
     /**
     * @brief Sends the message to the messaging endpoint associated with the channelId.
     */
@@ -66,7 +66,7 @@ public:
             const MessagingSettings& settings);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(MessageSender);
+    DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BounceProxyUrl bounceProxyUrl;
     IChannelUrlSelector* channelUrlCache;
     const qint64 maxAttemptTtl_ms;
@@ -81,7 +81,7 @@ private:
     class SendMessageRunnable : public QRunnable, public ObjectWithDecayTime {
     public:
         SendMessageRunnable(
-                MessageSender* messageSender,
+                HttpSender* messageSender,
                 const QString& channelId,
                 const QDateTime& decayTime,
                 const QByteArray& data,
@@ -107,7 +107,7 @@ private:
         QString channelId;
         QByteArray data;
         DelayedScheduler& delayedScheduler;
-        MessageSender* messageSender;
+        HttpSender* messageSender;
         qint64 maxAttemptTtl_ms;
 
         static joynr_logging::Logger* logger;
@@ -117,4 +117,4 @@ private:
 
 
 } // namespace joynr
-#endif //MESSAGESENDER_H_
+#endif //HTTPSENDER_H_

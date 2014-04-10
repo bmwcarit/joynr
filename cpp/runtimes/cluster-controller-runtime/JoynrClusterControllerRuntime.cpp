@@ -21,7 +21,7 @@
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "joynr/HttpCommunicationManager.h"
-#include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "cluster-controller/http-communication-manager/LongPollMessageSerializer.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -191,7 +191,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     // create message sender
     if(messageSender.isNull()) {
         LOG_INFO(logger, "The message sender supplied is NULL, creating the default MessageSender");
-        messageSender = QSharedPointer<IMessageSender>(new MessageSender(messagingSettings->getBounceProxyUrl(),
+        messageSender = QSharedPointer<IMessageSender>(new HttpSender(messagingSettings->getBounceProxyUrl(),
                                                                          messagingSettings->getSendMsgMaxTtl(),
                                                                          messagingSettings->getSendMsgRetryInterval()
                                                                          ));

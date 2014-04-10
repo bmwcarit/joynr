@@ -19,7 +19,7 @@
 #include "JoynrMessagingStubFactory.h"
 
 #include "joynr/system/ChannelAddress.h"
-#include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 
 namespace  joynr {

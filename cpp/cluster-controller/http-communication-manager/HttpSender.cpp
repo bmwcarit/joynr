@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/JoynrMessage.h"
-#include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/DelayedScheduler.h"
@@ -36,19 +36,19 @@ namespace joynr {
 using namespace joynr_logging;
 
 
-const qint64& MessageSender::MIN_ATTEMPT_TTL() {
+const qint64& HttpSender::MIN_ATTEMPT_TTL() {
     static qint64 value = 2 * 1000;
     return value;
 }
 
-const qint64& MessageSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL() {
+const qint64& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL() {
     static qint64 value = 3;
     return value;
 }
 
-Logger* MessageSender::logger = Logging::getInstance()->getLogger("MSG", "MessageSender");
+Logger* HttpSender::logger = Logging::getInstance()->getLogger("MSG", "HttpSender");
 
-MessageSender::MessageSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval)
+HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval)
     : bounceProxyUrl(bounceProxyUrl),
       channelUrlCache(new ChannelUrlSelector(
                           this->bounceProxyUrl,
@@ -79,14 +79,14 @@ MessageSender::MessageSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAtt
 }
 
 
-void MessageSender::init(
+void HttpSender::init(
         QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
         const MessagingSettings& settings) {
     channelUrlCache->init(channelUrlDirectory, settings);
 }
 
 
-MessageSender::~MessageSender() {
+HttpSender::~HttpSender() {
     channelUrlContactorThreadPool.waitForDone();
     threadPool.waitForDone();
     delete channelUrlContactorDelayedScheduler;
@@ -94,7 +94,7 @@ MessageSender::~MessageSender() {
     delete channelUrlCache;
 }
 
-void MessageSender::sendMessage(
+void HttpSender::sendMessage(
         const QString& channelId,
         const QDateTime& decayTime,
         const JoynrMessage& message) {
@@ -129,12 +129,12 @@ void MessageSender::sendMessage(
   * Implementation of SendMessageRunnable
   *
   */
-Logger* MessageSender::SendMessageRunnable::logger = Logging::getInstance()->getLogger(
+Logger* HttpSender::SendMessageRunnable::logger = Logging::getInstance()->getLogger(
             "MSG", "MessageSender::SendMessageRunnable");
-int MessageSender::SendMessageRunnable::messageRunnableCounter = 0;
+int HttpSender::SendMessageRunnable::messageRunnableCounter = 0;
 
-MessageSender::SendMessageRunnable::SendMessageRunnable(
-        MessageSender* messageSender,
+HttpSender::SendMessageRunnable::SendMessageRunnable(
+        HttpSender* messageSender,
         const QString& channelId,
         const QDateTime& decayTime,
         const QByteArray& data,
@@ -150,11 +150,11 @@ MessageSender::SendMessageRunnable::SendMessageRunnable(
     messageRunnableCounter++;
 }
 
-MessageSender::SendMessageRunnable::~SendMessageRunnable(){
+HttpSender::SendMessageRunnable::~SendMessageRunnable(){
     messageRunnableCounter--;
 }
 
-void MessageSender::SendMessageRunnable::run() {
+void HttpSender::SendMessageRunnable::run() {
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
     if(isExpired()) {
         LOG_DEBUG(logger, "Message expired, expiration time: "
@@ -172,8 +172,8 @@ void MessageSender::SendMessageRunnable::run() {
     // just one (in case it is not available). So we use just a fraction, yet at least MIN... and
     // at most MAX... seconds.
      qint64 curlTimeout = std::max(
-                 getRemainingTtl_ms() / MessageSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
-                 MessageSender::MIN_ATTEMPT_TTL()
+                 getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
+                 HttpSender::MIN_ATTEMPT_TTL()
                  );
     QString url = resolveUrlForChannelId(curlTimeout);
     LOG_TRACE(logger,"going to buildRequest");
@@ -210,7 +210,7 @@ void MessageSender::SendMessageRunnable::run() {
                  + QString::number(QDateTime::currentMSecsSinceEpoch()) );
     }
 }
-QString MessageSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout) {
+QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout) {
          LOG_TRACE(logger, "obtaining Url with a curlTimeout of : " + QString::number(curlTimeout));
     RequestStatus status;
     //we also use the curl timeout here, to prevent long blocking during shutdown.
@@ -235,7 +235,7 @@ QString MessageSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTi
     return url;
 }
 
-HttpResult MessageSender::SendMessageRunnable::buildRequestAndSend(const QString &url, qint64 curlTimeout) {
+HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const QString &url, qint64 curlTimeout) {
     QSharedPointer<IHttpPostBuilder> sendMessageRequestBuilder(
                 HttpNetworking::getInstance()->createHttpPostBuilder(url));
 

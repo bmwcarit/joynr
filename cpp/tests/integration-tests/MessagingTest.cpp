@@ -36,7 +36,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
