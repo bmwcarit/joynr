@@ -38,23 +38,31 @@ namespace joynr {
 
 class JOYNR_EXPORT CapabilitiesRegistrar {
 public:
-    CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
-                          QSharedPointer<ICapabilities> capabilitiesAggregator,
-                          QSharedPointer<joynr::system::Address> messagingStubAddress,
-                          QSharedPointer<ParticipantIdStorage> participantIdStorage,
-                          QSharedPointer<joynr::system::Address> dispatcherAddress,
-                          QSharedPointer<MessageRouter> messageRouter);
+    CapabilitiesRegistrar(
+            QList<IDispatcher*> dispatcherList,
+            QSharedPointer<ICapabilities> capabilitiesAggregator,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
+            QSharedPointer<ParticipantIdStorage> participantIdStorage,
+            QSharedPointer<joynr::system::Address> dispatcherAddress,
+            QSharedPointer<MessageRouter> messageRouter
+    );
 
     template <class T>
-    QString registerCapability(const QString& domain, QSharedPointer<T> provider, QString authenticationToken){
+    QString registerCapability(
+            const QString& domain,
+            QSharedPointer<T> provider,
+            QString authenticationToken
+    ) {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
         QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId =
-                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
-                                                               authenticationToken);
+        QString participantId = participantIdStorage->getProviderParticipantId(
+                    domain,
+                    T::getInterfaceName(),
+                    authenticationToken
+        );
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             //TODO will the provider be registered at all dispatchers or
@@ -64,12 +72,14 @@ public:
         }
 
         // Get the provider participant id
-        capabilitiesAggregator->add(domain, T::getInterfaceName(),
-                                    participantId,
-                                    provider->getProviderQos(),
-                                    endpointAddresses,
-                                    messagingStubAddress,
-                                    ICapabilities::NO_TIMEOUT());
+        capabilitiesAggregator->add(
+                    domain, T::getInterfaceName(),
+                    participantId,
+                    provider->getProviderQos(),
+                    endpointAddresses,
+                    messagingStubAddress,
+                    ICapabilities::NO_TIMEOUT()
+        );
 
         // add next hop to dispatcher
         messageRouter->addNextHop(participantId, dispatcherAddress);
@@ -80,14 +90,20 @@ public:
     void unregisterCapability(QString participantId);
 
     template <class T>
-    QString unregisterCapability(const QString& domain, QSharedPointer<T> provider, QString authenticationToken){
+    QString unregisterCapability(
+            const QString& domain,
+            QSharedPointer<T> provider,
+            QString authenticationToken
+    ) {
         Q_UNUSED(domain)
         Q_UNUSED(provider)
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId =
-                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
-                                                               authenticationToken);
+        QString participantId = participantIdStorage->getProviderParticipantId(
+                    domain,
+                    T::getInterfaceName(),
+                    authenticationToken
+         );
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             //TODO will the provider be registered at all dispatchers or

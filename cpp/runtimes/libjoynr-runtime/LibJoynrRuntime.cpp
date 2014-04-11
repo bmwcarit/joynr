@@ -162,11 +162,12 @@ void LibJoynrRuntime::initializeAllDependencies() {
     discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
     discoveryQos.setDiscoveryTimeout(50);
 
-    auto routingProxyBuilder = this->getProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
-    auto routingProxy = routingProxyBuilder->setRuntimeQos(MessagingQos(5000))
-                            ->setCached(false)
-                            ->setDiscoveryQos(discoveryQos)
-                            ->build();
+    auto routingProxyBuilder = getProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
+    auto routingProxy = routingProxyBuilder
+            ->setRuntimeQos(MessagingQos(5000))
+            ->setCached(false)
+            ->setDiscoveryQos(discoveryQos)
+            ->build();
     messageRouter->setParentRouter(routingProxy,  parentAddress, routingProviderParticipantId);
     delete routingProxyBuilder;
 }

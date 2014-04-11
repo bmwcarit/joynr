@@ -29,7 +29,12 @@ namespace joynr {
 class FixedParticipantArbitrator : public ProviderArbitrator {
 public:
     virtual ~FixedParticipantArbitrator() { }
-    FixedParticipantArbitrator(const QString& domain,const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub,const DiscoveryQos &discoveryQos);
+    FixedParticipantArbitrator(
+            const QString& domain,
+            const QString& interfaceName,
+            QSharedPointer<ICapabilities> capabilitiesStub,
+            const DiscoveryQos &discoveryQos
+    );
 
     /*
      * Attempt to arbitrate with a set participant id

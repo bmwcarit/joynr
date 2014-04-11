@@ -22,23 +22,25 @@
 
 namespace joynr {
 
-CapabilitiesRegistrar::CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
-                                             QSharedPointer<ICapabilities> capabilitiesAggregator,
-                                             QSharedPointer<joynr::system::Address> messagingStubAddress,
-                                             QSharedPointer<ParticipantIdStorage> participantIdStorage,
-                                             QSharedPointer<joynr::system::Address> dispatcherAddress,
-                                             QSharedPointer<MessageRouter> messageRouter)
-    : dispatcherList(dispatcherList),
-      capabilitiesAggregator(capabilitiesAggregator),
-      messagingStubAddress(messagingStubAddress),
-      participantIdStorage(participantIdStorage),
-      dispatcherAddress(dispatcherAddress),
-      messageRouter(messageRouter)
+CapabilitiesRegistrar::CapabilitiesRegistrar(
+        QList<IDispatcher*> dispatcherList,
+        QSharedPointer<ICapabilities> capabilitiesAggregator,
+        QSharedPointer<joynr::system::Address> messagingStubAddress,
+        QSharedPointer<ParticipantIdStorage> participantIdStorage,
+        QSharedPointer<joynr::system::Address> dispatcherAddress,
+        QSharedPointer<MessageRouter> messageRouter
+) :
+    dispatcherList(dispatcherList),
+    capabilitiesAggregator(capabilitiesAggregator),
+    messagingStubAddress(messagingStubAddress),
+    participantIdStorage(participantIdStorage),
+    dispatcherAddress(dispatcherAddress),
+    messageRouter(messageRouter)
 {
 
 }
 
-void CapabilitiesRegistrar::unregisterCapability(QString participantId){
+void CapabilitiesRegistrar::unregisterCapability(QString participantId) {
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
@@ -48,11 +50,11 @@ void CapabilitiesRegistrar::unregisterCapability(QString participantId){
     messageRouter->removeNextHop(status, participantId);
 }
 
-void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher){
+void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher) {
     dispatcherList.append(dispatcher);
 }
 
-void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher){
+void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher) {
     dispatcherList.removeAll(dispatcher);
 }
 
