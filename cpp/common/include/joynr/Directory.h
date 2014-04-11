@@ -215,10 +215,11 @@ public:
 
 template <typename Key>
 void RemoverRunnable<Key, IReplyCaller>::run() {
-//    LOG_TRACE(logger, "Calling Directory<Key,IReplyCaller>" );
     QSharedPointer<IReplyCaller> value = directory->lookup(keyId);
-    value->timeOut();
-    directory->remove(keyId);
+    if (!value.isNull()) {
+         value->timeOut();
+         directory->remove(keyId);
+    }
 }
 
 template <typename Key>

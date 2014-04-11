@@ -216,7 +216,10 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 
     // pass reply
     interpreter.execute(caller, *reply);
+
+    // Clean up
     delete reply;
+    removeReplyCaller(requestReplyId);
 }
 
 
