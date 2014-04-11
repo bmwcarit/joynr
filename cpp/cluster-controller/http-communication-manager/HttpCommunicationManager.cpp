@@ -42,7 +42,6 @@ HttpCommunicationManager::HttpCommunicationManager(const MessagingSettings& sett
         : channelCreatedSemaphore(new QSemaphore(0)),
           channelId(),
           receiverId(),
-          messageDispatcher(NULL),
           settings(settings),
           messageReceiver(NULL),
           channelUrlDirectory(),
@@ -82,12 +81,6 @@ void HttpCommunicationManager::updateSettings() {
 
 HttpCommunicationManager::~HttpCommunicationManager() {
     LOG_TRACE(logger, "destructing HttpCommunicationManager");
-    delete messageDispatcher;
-}
-
-void HttpCommunicationManager::setMessageDispatcher(IMessageReceiver* messageDispatcher)
-{
-    this->messageDispatcher = messageDispatcher;
 }
 
 void HttpCommunicationManager::startReceiveQueue() {
@@ -109,7 +102,6 @@ void HttpCommunicationManager::startReceiveQueue() {
                 settings.getBounceProxyUrl(),
                 channelId,
                 receiverId,
-                messageDispatcher,
                 longPollSettings,
                 channelCreatedSemaphore,
                 channelUrlDirectory,

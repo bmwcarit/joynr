@@ -43,7 +43,6 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const BounceProxyUrl& bounceProxyUrl,
         const QString& channelId,
         const QString& receiverId,
-        IMessageReceiver* messageReceiver,
         const LongPollingMessageReceiverSettings &settings,
         QSemaphore *channelCreatedSemaphore,
         QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
@@ -54,7 +53,6 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
       settings(settings),
       interruptedMutex(),
       interrupted(false),
-      messageReceiver(messageReceiver),
       channelUrlDirectory(channelUrlDirectory),
       channelCreatedSemaphore(channelCreatedSemaphore),
       messageRouter(messageRouter)

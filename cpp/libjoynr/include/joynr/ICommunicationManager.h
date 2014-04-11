@@ -27,7 +27,6 @@
 namespace joynr {
 
 class JoynrMessage;
-class IMessageReceiver;
 class MessageRouter;
 class ILocalChannelUrlDirectory;
 
@@ -52,13 +51,6 @@ public:
       * Gets the channel ID of the receive channel for incoming messages.
       */
     virtual const QString& getReceiveChannelId() const = 0;
-
-    /**
-     * Sets the IMessageReceiver that handles the incoming Message. This has to be called before startReceiveQueue.
-     * This function is not thread safe.
-     * TODO: See if this can be moved to the constructor of all ICommunicationManagers.
-     */
-    virtual void setMessageDispatcher(IMessageReceiver* messageDispatcher) = 0;
 
     /**
       * Starts processing incomming messages. This method must be called

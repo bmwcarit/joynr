@@ -60,7 +60,6 @@ public:
     LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
                                const QString& channelId,
                                const QString& receiverId,
-                               IMessageReceiver* messageReceiver,
                                const LongPollingMessageReceiverSettings& settings,
                                QSemaphore* channelCreatedSemaphore,
                                QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
@@ -83,7 +82,6 @@ private:
 
     QMutex interruptedMutex;
     bool interrupted;
-    IMessageReceiver* messageReceiver;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;

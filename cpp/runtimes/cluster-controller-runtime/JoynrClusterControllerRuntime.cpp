@@ -23,7 +23,6 @@
 #include "joynr/HttpCommunicationManager.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "cluster-controller/http-communication-manager/LongPollMessageSerializer.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingSettings.h"
 #include "cluster-controller/capabilities-client/FakeCapabilitiesClient.h"
@@ -92,7 +91,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         libJoynrMessagingSkeleton(NULL),
         communicationManager(communicationManager),
         messageSender(messageSender),
-        longpollMessageSerializer(NULL),
         dispatcherList(),
         inProcessConnectorFactory(NULL),
         inProcessPublicationSender(NULL),
@@ -185,8 +183,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     }
 
     QString channelId = communicationManager->getReceiveChannelId();
-    longpollMessageSerializer = new LongPollMessageSerializer(messageRouter, messagingEndpointDirectory);
-    communicationManager->setMessageDispatcher(longpollMessageSerializer); // LongpollingMessageReceiver will call the messageRouter when data received
 
     // create message sender
     if(messageSender.isNull()) {
@@ -367,11 +363,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
 
     delete messagingEndpointDirectory;
     messagingEndpointDirectory = NULL;
-//    //~HttpCommunicationmanager will delete longpollmessageserializer, but MockCommunicationMgr will not delete it.
-//    //thus check if it has been set to NULL, and if not, try to delete it again.
-//    if (longpollMessageSerializer) {
-//        delete longpollMessageSerializer;
-//    }
     delete inProcessPublicationSender;
     inProcessPublicationSender = NULL;
     delete joynrMessageSender;

@@ -38,7 +38,6 @@ class CapabilitiesClientTest;
 namespace joynr {
 
 class JoynrMessage;
-class IMessageReceiver;
 class LongPollingMessageReceiver;
 class MessageRouter;
 
@@ -59,12 +58,6 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpCommunicationManager : public ICommunica
 public:
     explicit HttpCommunicationManager(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter);
     virtual ~HttpCommunicationManager();
-
-    /**
-     * Sets the IMessageReceiver that handles the incoming Message. This has to be called before startReceiveQueue.
-     * This function is not thread safe.
-     */
-    void setMessageDispatcher(IMessageReceiver* messageDispatcher);
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.
@@ -112,7 +105,6 @@ private:
     // Allows for registering multiple receivers for a single channel.
     QString receiverId;
 
-    IMessageReceiver* messageDispatcher;
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;

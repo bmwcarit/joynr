@@ -55,7 +55,6 @@ class ICommunicationManager;
 class IMessageSender;
 class CapabilitiesClient;
 class ICapabilitiesClient;
-class LongPollMessageSerializer;
 class PublicationManager;
 class SubscriptionManager;
 class InProcessDispatcher;
@@ -128,7 +127,6 @@ protected:
     QSharedPointer<ICommunicationManager> communicationManager;
     QSharedPointer<IMessageSender> messageSender;
 
-    LongPollMessageSerializer* longpollMessageSerializer;
     QList<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;

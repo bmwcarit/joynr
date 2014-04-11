@@ -351,7 +351,6 @@ public:
     MOCK_METHOD0(waitForReceiveQueueStarted, void());
     MOCK_METHOD0(updateSettings, void());
     MOCK_METHOD0(tryToDeleteChannel, bool());
-    MOCK_METHOD1(setMessageDispatcher,void(joynr::IMessageReceiver*));
 };
 
 class MockMessageSender : public joynr::IMessageSender
