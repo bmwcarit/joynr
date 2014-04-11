@@ -38,14 +38,15 @@ using namespace joynr_logging;
 Logger* HttpCommunicationManager::logger = Logging::getInstance()->getLogger("MSG", "HttpCommunicationManager");
 
 
-HttpCommunicationManager::HttpCommunicationManager(const MessagingSettings& settings)
+HttpCommunicationManager::HttpCommunicationManager(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter)
         : channelCreatedSemaphore(new QSemaphore(0)),
           channelId(),
           receiverId(),
           messageDispatcher(NULL),
           settings(settings),
           messageReceiver(NULL),
-          channelUrlDirectory()
+          channelUrlDirectory(),
+          messageRouter(messageRouter)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
     channelId = persist.getChannelId();
@@ -91,8 +92,8 @@ void HttpCommunicationManager::setMessageDispatcher(IMessageReceiver* messageDis
 
 void HttpCommunicationManager::startReceiveQueue() {
 
-    if (messageDispatcher == NULL || channelUrlDirectory.isNull()) {
-        LOG_FATAL(logger,"FAIL::receiveQueue started with no messageDispatcher/channelUrlDirectory.");
+    if (messageRouter.isNull() || channelUrlDirectory.isNull()) {
+        LOG_FATAL(logger,"FAIL::receiveQueue started with no messageRouter/channelUrlDirectory.");
     }
 
     // Get the settings specific to long polling
@@ -111,7 +112,8 @@ void HttpCommunicationManager::startReceiveQueue() {
                 messageDispatcher,
                 longPollSettings,
                 channelCreatedSemaphore,
-                channelUrlDirectory);
+                channelUrlDirectory,
+                messageRouter);
     messageReceiver->setObjectName(QString("HttpCommunicationManager-MessageReceiver"));
     messageReceiver->start();
 }

@@ -22,7 +22,6 @@
 #include <QtConcurrent/QtConcurrent>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/tests/TestProxy.h"
 #include "joynr/tests/DerivedStruct.h"
 #include "joynr/tests/AnotherDerivedStruct.h"
@@ -107,10 +106,10 @@ public:
 
         QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1, new HttpCommunicationManager(messagingSettings1));
+        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
         QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2, new HttpCommunicationManager(messagingSettings2));
+        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
     }
 
     void SetUp() {

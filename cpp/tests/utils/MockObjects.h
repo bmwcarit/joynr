@@ -81,6 +81,7 @@ class IMessageReceiver;
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/BounceProxyUrl.h"
+#include "joynr/Directory.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -339,11 +340,11 @@ public:
 };
 } // namespace joynr
 
-class MockCommunicationManager : public joynr::HttpCommunicationManager
+class MockCommunicationManager : public joynr::ICommunicationManager
 {
 public:
-    MockCommunicationManager():HttpCommunicationManager(joynr::MessagingSettings(*(new QSettings("BMW", "Joynr")))){};
-    MOCK_METHOD1(init, void(const joynr::ILocalChannelUrlDirectory& channelUrlDirectory));
+    MockCommunicationManager(){};
+    MOCK_METHOD1(init, void(QSharedPointer<joynr::ILocalChannelUrlDirectory> channelUrlDirectory));
     MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());

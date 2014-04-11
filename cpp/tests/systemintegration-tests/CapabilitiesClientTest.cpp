@@ -21,7 +21,6 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/TestProxy.h"
 #include "joynr/types/Trip.h"
@@ -68,8 +67,7 @@ public:
         channelId = storage.getChannelId();
         QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
         SettingsMerger::mergeSettings(libJoynrSettingsFilename, settings);
-        runtime = new JoynrClusterControllerRuntime(NULL, settings,
-                                           new HttpCommunicationManager(messagingSettings));
+        runtime = new JoynrClusterControllerRuntime(NULL, settings);
     }
 
     void SetUp() {

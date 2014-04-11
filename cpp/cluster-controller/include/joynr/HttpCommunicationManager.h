@@ -26,6 +26,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
+#include "joynr/Directory.h"
 
 #include <QString>
 #include <QSettings>
@@ -39,7 +40,11 @@ namespace joynr {
 class JoynrMessage;
 class IMessageReceiver;
 class LongPollingMessageReceiver;
-class IMessageSender;
+class MessageRouter;
+
+namespace system {
+    class Address;
+}
 
 
 /**
@@ -52,7 +57,7 @@ class IMessageSender;
 class JOYNRCLUSTERCONTROLLER_EXPORT HttpCommunicationManager : public ICommunicationManager {
 
 public:
-    explicit HttpCommunicationManager(const MessagingSettings& settings);
+    explicit HttpCommunicationManager(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter);
     virtual ~HttpCommunicationManager();
 
     /**
@@ -111,6 +116,7 @@ private:
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
+    QSharedPointer<MessageRouter> messageRouter;
 
     friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;

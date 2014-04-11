@@ -22,10 +22,7 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
-#include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
-#include "joynr/LibjoynrSettings.h"
-#include "joynr/HttpCommunicationManager.h"
 
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProxy.h"
@@ -47,11 +44,6 @@ public:
     QString messageSettingsFilename;
     QString libjoynrSettingsFilename;
 
-    QSettings messagingQsettings;
-    QSettings libjoynrQsettings;
-    MessagingSettings* messagingSettings;
-    LibjoynrSettings* libjoynrSettings;
-
     JoynrClusterControllerRuntime* clusterControllerRuntime;
     LibJoynrRuntime* runtime1;
     LibJoynrRuntime* runtime2;
@@ -64,10 +56,6 @@ public:
     End2EndDbusTest() :
         messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
         libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
-        messagingQsettings(messageSettingsFilename, QSettings::IniFormat),
-        libjoynrQsettings(libjoynrSettingsFilename, QSettings::IniFormat),
-        messagingSettings(new MessagingSettings(messagingQsettings)),
-        libjoynrSettings(new LibjoynrSettings(libjoynrQsettings)),
         clusterControllerRuntime(NULL),
         runtime1(NULL),
         runtime2(NULL),
@@ -78,13 +66,12 @@ public:
         // create the cluster controller runtime
         QSettings* settings = SettingsMerger::mergeSettings(messageSettingsFilename);
         SettingsMerger::mergeSettings(libjoynrSettingsFilename, settings);
-        clusterControllerRuntime = new JoynrClusterControllerRuntime(NULL, settings,
-                                           new HttpCommunicationManager(*messagingSettings));
+        clusterControllerRuntime = new JoynrClusterControllerRuntime(NULL, settings);
         clusterControllerRuntime->registerRoutingProvider();
 
         // create lib joynr runtimes
-        runtime1 = new LibJoynrRuntime(new QSettings(libjoynrSettingsFilename, QSettings::IniFormat));
-        runtime2 = new LibJoynrRuntime(new QSettings(libjoynrSettingsFilename, QSettings::IniFormat));
+        runtime1 = new LibJoynrRuntime(settings);
+        runtime2 = new LibJoynrRuntime(settings);
     }
 
     void SetUp() {
@@ -102,9 +89,6 @@ public:
             clusterControllerRuntime->stopMessaging();
             delete clusterControllerRuntime;
         }
-
-        delete messagingSettings;
-        delete libjoynrSettings;
     }
 
     ~End2EndDbusTest(){

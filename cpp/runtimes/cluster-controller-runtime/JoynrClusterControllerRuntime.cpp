@@ -181,7 +181,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
       */
     if(communicationManager.isNull()) {
         LOG_INFO(logger, "The communication manager supplied is NULL, creating the default HttpCommunicationManager");
-        communicationManager = QSharedPointer<ICommunicationManager>(new HttpCommunicationManager(*messagingSettings));
+        communicationManager = QSharedPointer<ICommunicationManager>(new HttpCommunicationManager(*messagingSettings, messageRouter));
     }
 
     QString channelId = communicationManager->getReceiveChannelId();
@@ -311,7 +311,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     channelUrlDirectory = QSharedPointer<ILocalChannelUrlDirectory>(
         new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy)
         );
-    communicationManager.dynamicCast<HttpCommunicationManager>()->init(channelUrlDirectory);
+    communicationManager->init(channelUrlDirectory);
     messageSender->init(channelUrlDirectory, *messagingSettings);
 }
 

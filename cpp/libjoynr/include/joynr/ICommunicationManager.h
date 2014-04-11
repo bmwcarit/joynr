@@ -22,10 +22,18 @@
 #include <QString>
 #include <QSharedPointer>
 
+#include "joynr/Directory.h"
+
 namespace joynr {
 
 class JoynrMessage;
 class IMessageReceiver;
+class MessageRouter;
+class ILocalChannelUrlDirectory;
+
+namespace system {
+    class Address;
+}
 
 /**
   * \class ICommunicationManager
@@ -78,6 +86,8 @@ public:
       * Will try to delete the channel from the server. Returns true if successfull, false if not.
       */
     virtual bool tryToDeleteChannel() = 0;
+
+    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) = 0;
 
 };
 
