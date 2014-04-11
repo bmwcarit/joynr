@@ -24,7 +24,6 @@
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "cluster-controller/http-communication-manager/IMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Future.h"

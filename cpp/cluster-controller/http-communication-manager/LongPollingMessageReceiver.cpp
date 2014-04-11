@@ -21,7 +21,6 @@
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
-#include "cluster-controller/http-communication-manager/IMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
