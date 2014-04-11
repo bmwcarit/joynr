@@ -100,13 +100,23 @@ static QByteArray sanitizeString( const QString& str )
   for (int i = 0; i < length; i++) {
      char ch = data[i].toLatin1();
      switch(ch) {
+     case '\b' :
+         ret.append("\\b");
+         break;
+     case '\f' :
+         ret.append("\\f");
+         break;
+     case '\n' :
+         ret.append("\\n");
+         break;
+     case '\r' :
+         ret.append("\\r");
+         break;
+     case '\t' :
+         ret.append("\\t");
+         break;
      case '\\' :
      case '\"' :
-     case '\b' :
-     case '\f' :
-     case '\n' :
-     case '\r' :
-     case '\t' :
          ret.append('\\');
          ret.append(ch);
          break;
@@ -136,13 +146,23 @@ static QByteArray sanitizeByteArray( const QByteArray& array )
   for (int i = 0; i < length; i++) {
      char ch = data[i];
      switch(ch) {
+     case '\b' :
+         ret.append("\\b");
+         break;
+     case '\f' :
+         ret.append("\\f");
+         break;
+     case '\n' :
+         ret.append("\\n");
+         break;
+     case '\r' :
+         ret.append("\\r");
+         break;
+     case '\t' :
+         ret.append("\\t");
+         break;
      case '\\' :
      case '\"' :
-     case '\b' :
-     case '\f' :
-     case '\n' :
-     case '\r' :
-     case '\t' :
          ret.append('\\');
          ret.append(ch);
          break;
