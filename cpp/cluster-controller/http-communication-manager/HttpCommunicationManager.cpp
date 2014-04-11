@@ -21,7 +21,6 @@
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "cluster-controller/http-communication-manager/MessageSender.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
@@ -44,7 +43,6 @@ HttpCommunicationManager::HttpCommunicationManager(const MessagingSettings& sett
           channelId(),
           receiverId(),
           messageDispatcher(NULL),
-          messageSender(NULL),
           settings(settings),
           messageReceiver(NULL),
           channelUrlDirectory()
@@ -59,22 +57,11 @@ void HttpCommunicationManager::init(){
     LOG_DEBUG(logger, "Print settings... ");
     settings.printSettings();
     updateSettings();
-    LOG_DEBUG(logger, "Init message sender...");
-    initMessageSender();
     LOG_DEBUG(logger, "Init finished.");
 }
 
-void HttpCommunicationManager::initMessageSender() {
-    messageSender = new MessageSender(settings.getBounceProxyUrl(),
-                                      settings.getSendMsgMaxTtl(),
-                                      settings.getSendMsgRetryInterval());
-}
-
 void HttpCommunicationManager::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) {
-    if(messageSender != NULL) {
-        this->channelUrlDirectory = channelUrlDirectory;
-        messageSender->init(channelUrlDirectory,settings);
-    }
+    this->channelUrlDirectory = channelUrlDirectory;
 }
 
 void HttpCommunicationManager::updateSettings() {
@@ -153,16 +140,6 @@ void HttpCommunicationManager::stopReceiveQueue() {
             messageReceiver = NULL;
         }
     }
-}
-
-IMessageSender* HttpCommunicationManager::getMessageSender() {
-    return messageSender;
-}
-
-void HttpCommunicationManager::sendMessage(const QString& channelId, const qint64& ttl_ms, const JoynrMessage& message) {
-    QDateTime decayTime = QDateTime::currentDateTime().addMSecs(ttl_ms);
-    assert (channelId != this->channelId); //this should handled by the inProcess or DBUS Messaging, so no message should be send via HttpComm.
-    messageSender->sendMessage(channelId, decayTime, message);
 }
 
 const QString& HttpCommunicationManager::getReceiveChannelId() const {

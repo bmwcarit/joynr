@@ -21,6 +21,7 @@
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "joynr/HttpCommunicationManager.h"
+#include "cluster-controller/http-communication-manager/MessageSender.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "cluster-controller/http-communication-manager/LongPollMessageSerializer.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -186,8 +187,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     QString channelId = communicationManager->getReceiveChannelId();
     longpollMessageSerializer = new LongPollMessageSerializer(messageRouter, messagingEndpointDirectory);
     communicationManager->setMessageDispatcher(longpollMessageSerializer); // LongpollingMessageReceiver will call the messageRouter when data received
+
+    // create message sender
     if(messageSender.isNull()) {
-        messageSender = QSharedPointer<IMessageSender>(communicationManager.dynamicCast<HttpCommunicationManager>()->getMessageSender());
+        LOG_INFO(logger, "The message sender supplied is NULL, creating the default MessageSender");
+        messageSender = QSharedPointer<IMessageSender>(new MessageSender(messagingSettings->getBounceProxyUrl(),
+                                                                         messagingSettings->getSendMsgMaxTtl(),
+                                                                         messagingSettings->getSendMsgRetryInterval()
+                                                                         ));
     }
     messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(messageSender, communicationManager->getReceiveChannelId()));
 
@@ -305,7 +312,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
         new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy)
         );
     communicationManager.dynamicCast<HttpCommunicationManager>()->init(channelUrlDirectory);
-
+    messageSender->init(channelUrlDirectory, *messagingSettings);
 }
 
 ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(

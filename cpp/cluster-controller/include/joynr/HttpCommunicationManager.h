@@ -82,7 +82,6 @@ public:
       */
     virtual void waitForReceiveQueueStarted();
 
-    virtual void sendMessage(const QString& channelId, const qint64& ttl_ms, const JoynrMessage& message);
     virtual void startReceiveQueue();
 
 
@@ -93,12 +92,9 @@ public:
 
     virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
 
-    IMessageSender* getMessageSender();
-
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpCommunicationManager);
     void init();
-    void initMessageSender();
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are available.
        Once the channel is created, one resource will be released. WaitForReceiveQueueStarted will try to
@@ -112,7 +108,6 @@ private:
     QString receiverId;
 
     IMessageReceiver* messageDispatcher;
-    IMessageSender* messageSender;
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;

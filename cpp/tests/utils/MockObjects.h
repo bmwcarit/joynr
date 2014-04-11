@@ -345,7 +345,6 @@ public:
     MockCommunicationManager():HttpCommunicationManager(joynr::MessagingSettings(*(new QSettings("BMW", "Joynr")))){};
     MOCK_METHOD1(init, void(const joynr::ILocalChannelUrlDirectory& channelUrlDirectory));
     MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
-    MOCK_METHOD3(sendMessage,void(const QString&, const qint64&, const joynr::JoynrMessage&));
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
     MOCK_METHOD0(waitForReceiveQueueStarted, void());

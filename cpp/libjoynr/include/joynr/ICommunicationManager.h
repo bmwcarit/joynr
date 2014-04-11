@@ -52,12 +52,6 @@ public:
      */
     virtual void setMessageDispatcher(IMessageReceiver* messageDispatcher) = 0;
 
-
-    /**
-      * Send the given message to the channel with the given channel ID.
-      */
-    virtual void sendMessage(const QString &channelId, const qint64& ttl_ms, const JoynrMessage &message) = 0;
-
     /**
       * Starts processing incomming messages. This method must be called
       * after creation in order to receive incoming messages.
