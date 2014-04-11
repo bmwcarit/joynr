@@ -43,6 +43,9 @@ public:
     HttpRequest* build();
     HttpRequestBuilder* withProxy(const QString& proxy);
     HttpRequestBuilder* withDebug();
+    HttpRequestBuilder* withCertificateAuthority(const QString& caFile);
+    HttpRequestBuilder* withClientCertificate(const QString& certificateFile);
+    HttpRequestBuilder* withClientCertificatePassword(const QString& password);
     HttpRequestBuilder* acceptGzip();
     HttpRequestBuilder* withConnectTimeout_ms(long timeout_ms);
     HttpRequestBuilder* withTimeout_ms(long timeout_ms);

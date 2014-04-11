@@ -70,6 +70,21 @@ public:
     virtual T* withDebug() = 0;
 
     /**
+     * Adds a certificate authority certificate file so that the server can be authenticated:
+     */
+    virtual T* withCertificateAuthority(const QString& caFile) = 0;
+
+    /**
+     * Adds a client certificate so that the server can authenticate this client
+     */
+    virtual T* withClientCertificate(const QString& certificateFile) = 0;
+
+    /**
+     * Enables the client certificate to be unlocked with a password
+     */
+    virtual T* withClientCertificatePassword(const QString& password) = 0;
+
+    /**
       * Adds an http header. Only ASCII characters are allowed.
       */
     virtual T* addHeader(const QString& name, const QString& value) = 0;
@@ -166,6 +181,21 @@ public:
       */
     void setHTTPDebugOn();
 
+    /**
+      * Sets the certificate authority that will be used to authenticate the server for HTTPS requests
+      */
+    void setCertificateAuthority(const QString& certificateAuthority);
+
+    /**
+      * Sets the client certificate that the server will use to authenticate the client during HTTPS requests
+      */
+    void setClientCertificate(const QString& clientCertificate);
+
+    /**
+      * Enables a password protected client certificate to be unlocked
+      */
+    void setClientCertificatePassword(const QString& clientCertificatePassword);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpNetworking);
     HttpNetworking();
@@ -175,6 +205,9 @@ private:
 
     QString proxy;
     long connectTimeout_ms;
+    QString certificateAuthority;
+    QString clientCertificate;
+    QString clientCertificatePassword;
     bool httpDebug;
 };
 

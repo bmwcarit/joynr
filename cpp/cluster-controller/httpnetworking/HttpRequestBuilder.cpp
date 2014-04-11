@@ -53,6 +53,20 @@ HttpRequestBuilder* HttpRequestBuilder::withProxy(const QString& proxy) {
     return this;
 }
 
+HttpRequestBuilder* HttpRequestBuilder::withCertificateAuthority(const QString& caFile) {
+    curl_easy_setopt(handle, CURLOPT_CAINFO, caFile.toLatin1().data());
+    return this;
+}
+
+HttpRequestBuilder* HttpRequestBuilder::withClientCertificate(const QString& certificateFile) {
+    curl_easy_setopt(handle, CURLOPT_SSLCERT, certificateFile.toLatin1().data());
+    return this;
+}
+
+HttpRequestBuilder* HttpRequestBuilder::withClientCertificatePassword(const QString& password) {
+    curl_easy_setopt(handle, CURLOPT_KEYPASSWD, password.toLatin1().data());
+    return this;
+}
 
 HttpRequestBuilder* HttpRequestBuilder::withDebug() {
     curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);

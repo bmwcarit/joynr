@@ -37,6 +37,9 @@ HttpNetworking::HttpNetworking() :
     curlHandlePool(NULL),
     proxy(),
     connectTimeout_ms(0),
+    certificateAuthority(),
+    clientCertificate(),
+    clientCertificatePassword(),
     httpDebug(false)
 {
     curl_global_init(CURL_GLOBAL_ALL);
@@ -59,6 +62,20 @@ HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url) {
     }
     // Set the connect timeout
     requestBuilder->withConnectTimeout_ms(connectTimeout_ms);
+
+    // Check for HTTPS options
+    if (!certificateAuthority.isEmpty()) {
+        requestBuilder->withCertificateAuthority(certificateAuthority);
+    }
+
+    if (!clientCertificate.isEmpty()) {
+        requestBuilder->withClientCertificate(clientCertificate);
+    }
+
+    if (!clientCertificatePassword.isEmpty()) {
+        requestBuilder->withClientCertificatePassword(clientCertificatePassword);
+    }
+
     return requestBuilder;
 }
 
@@ -76,9 +93,7 @@ IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const QString& url) {
 
 IHttpPostBuilder::~IHttpPostBuilder()
 {
-
 }
-
 
 void HttpNetworking::setGlobalProxy(const QString& proxy) {
     this->proxy = proxy;
@@ -91,6 +106,22 @@ void HttpNetworking::setHTTPDebugOn() {
 void HttpNetworking::setConnectTimeout_ms(long connectTimeout) {
     this->connectTimeout_ms = connectTimeout;
 }
+
+void HttpNetworking::setCertificateAuthority(const QString& certificateAuthority)
+{
+    this->certificateAuthority = certificateAuthority;
+}
+
+void HttpNetworking::setClientCertificate(const QString& clientCertificate)
+{
+    this->clientCertificate = clientCertificate;
+}
+
+void HttpNetworking::setClientCertificatePassword(const QString& clientCertificatePassword)
+{
+    this->clientCertificatePassword = clientCertificatePassword;
+}
+
 
 ICurlHandlePool* HttpNetworking::getCurlHandlePool() {
     return curlHandlePool;

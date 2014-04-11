@@ -85,6 +85,21 @@ const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()
     return value;
 }
 
+const QString& MessagingSettings::SETTING_CERTIFICATE_AUTHORITY() {
+    static const QString value("messaging/certificate-authority");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CLIENT_CERTIFICATE() {
+    static const QString value("messaging/client-certificate");
+    return value;
+}
+
+const QString& MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD() {
+    static const QString value("messaging/client-certificate-password");
+    return value;
+}
+
 const QString& MessagingSettings::SETTING_INDEX() {
     static const QString value("messaging/index");
     return value;
@@ -128,6 +143,30 @@ const QString& MessagingSettings::SETTING_LOCAL_PROXY_PORT() {
 const QString& MessagingSettings::SETTING_PERSISTENCE_FILENAME() {
     static const QString value("messaging/persistence-file");
     return value;
+}
+
+QString MessagingSettings::getCertificateAuthority() const {
+    return settings.value(SETTING_CERTIFICATE_AUTHORITY()).toString();
+}
+
+void MessagingSettings::setCertificateAuthority(const QString& certificateAuthority) {
+    settings.setValue(SETTING_CERTIFICATE_AUTHORITY(), certificateAuthority);
+}
+
+QString MessagingSettings::getClientCertificate() const {
+    return settings.value(SETTING_CLIENT_CERTIFICATE()).toString();
+}
+
+void MessagingSettings::setClientCertificate(const QString& clientCertificate) {
+    settings.setValue(SETTING_CLIENT_CERTIFICATE(), clientCertificate);
+}
+
+QString MessagingSettings::getClientCertificatePassword() const {
+    return settings.value(SETTING_CLIENT_CERTIFICATE_PASSWORD()).toString();
+}
+
+void MessagingSettings::setClientCertificatePassword(const QString& clientCertificatePassword) {
+    settings.setValue(SETTING_CLIENT_CERTIFICATE_PASSWORD(), clientCertificatePassword);
 }
 
 const QString& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME() {

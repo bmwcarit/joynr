@@ -77,6 +77,11 @@ void HttpReceiver::updateSettings() {
 
     // Set the connect timeout
     HttpNetworking::getInstance()->setConnectTimeout_ms(settings.getHttpConnectTimeout());
+
+    // HTTPS settings
+    HttpNetworking::getInstance()->setCertificateAuthority(settings.getCertificateAuthority());
+    HttpNetworking::getInstance()->setClientCertificate(settings.getClientCertificate());
+    HttpNetworking::getInstance()->setClientCertificatePassword(settings.getClientCertificatePassword());
 }
 
 

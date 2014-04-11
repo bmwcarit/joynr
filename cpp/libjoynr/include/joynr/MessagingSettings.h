@@ -54,6 +54,10 @@ public:
     static const QString& SETTING_LOCAL_PROXY_HOST();
     static const QString& SETTING_LOCAL_PROXY_PORT();
 
+    static const QString& SETTING_CERTIFICATE_AUTHORITY();
+    static const QString& SETTING_CLIENT_CERTIFICATE();
+    static const QString& SETTING_CLIENT_CERTIFICATE_PASSWORD();
+
     static const QString& SETTING_HTTP_DEBUG();
     static const QString& SETTING_PERSISTENCE_FILENAME();
     static const QString& SETTING_LONGPOLL_TIMEOUT_MS();
@@ -98,6 +102,12 @@ public:
     void setLocalProxyPort(const int& localProxyPort);
     void setHttpDebug(const bool& httpDebug);
     bool getHttpDebug() const;
+    QString getCertificateAuthority() const;
+    void setCertificateAuthority(const QString& certificateAuthority);
+    QString getClientCertificate() const;
+    void setClientCertificate(const QString& clientCertificate);
+    QString getClientCertificatePassword() const;
+    void setClientCertificatePassword(const QString& clientCertificatePassword);
     QString getMessagingPropertiesPersistenceFilename() const;
     void setMessagingPropertiesPersistenceFilename(const QString& persistenceFilename);
     qint64 getLongPollTimeout() const;
