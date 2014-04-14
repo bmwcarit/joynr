@@ -50,7 +50,7 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "libjoynr/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -69,7 +69,8 @@ Logger* JoynrClusterControllerRuntime::logger = Logging::getInstance()->getLogge
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         QCoreApplication* app,
         QSettings* settings,
-        ICommunicationManager* communicationManager
+        ICommunicationManager* communicationManager,
+        IMessageSender* messageSender
 ) :
         JoynrRuntime(*settings),
         joynrDispatcher(NULL),
@@ -89,6 +90,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         channelUrlDirectoryProxy(NULL),
         libJoynrMessagingSkeleton(NULL),
         communicationManager(communicationManager),
+        messageSender(messageSender),
         longpollMessageSerializer(NULL),
         dispatcherList(),
         inProcessConnectorFactory(NULL),
@@ -184,7 +186,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     QString channelId = communicationManager->getReceiveChannelId();
     longpollMessageSerializer = new LongPollMessageSerializer(messageRouter, messagingEndpointDirectory);
     communicationManager->setMessageDispatcher(longpollMessageSerializer); // LongpollingMessageReceiver will call the messageRouter when data received
-    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(communicationManager));
+    if(messageSender.isNull()) {
+        messageSender = QSharedPointer<IMessageSender>(communicationManager.dynamicCast<HttpCommunicationManager>()->getMessageSender());
+    }
+    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(messageSender, communicationManager->getReceiveChannelId()));
 
     //joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     //ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);

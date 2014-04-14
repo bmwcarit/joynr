@@ -20,6 +20,8 @@
 #define MESSAGESENDER_H_
 #include "joynr/PrivateCopyAssign.h"
 
+#include "joynr/IMessageSender.h"
+
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
@@ -40,7 +42,7 @@ class HttpResult;
 
 
 
-class MessageSender {
+class MessageSender : public IMessageSender {
 public:
     static const qint64& MIN_ATTEMPT_TTL();
     static const qint64& MAX_ATTEMPT_TTL();

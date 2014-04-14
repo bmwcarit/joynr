@@ -53,6 +53,7 @@ public:
     QString libjoynrSettingsFilename;
     JoynrClusterControllerRuntime* runtime;
     ICommunicationManager* mockCommunicationManager; //will be deleted when runtime is deleted.
+    MockMessageSender* mockMessageSender;
     QSettings settings;
     MessagingSettings* messagingSettings;
     CombinedRunTimeTest()
@@ -60,6 +61,7 @@ public:
           libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
           runtime(NULL),
           mockCommunicationManager( new MockCommunicationManager() ),
+          mockMessageSender(new MockMessageSender()),
           settings(settingsFilename, QSettings::IniFormat),
           messagingSettings(new MessagingSettings(settings))
     {
@@ -71,14 +73,13 @@ public:
         //a channelId for getReceiveChannelId.
         QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
         SettingsMerger::mergeSettings(libjoynrSettingsFilename, settings);
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager );
+        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager, mockMessageSender);
 
     }
 
     ~CombinedRunTimeTest(){
         runtime->deleteChannel();
         runtime->stopMessaging();
-        delete mockCommunicationManager;
         delete runtime;
     }
 private:

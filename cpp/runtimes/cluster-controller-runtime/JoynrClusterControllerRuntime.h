@@ -52,6 +52,7 @@ class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class ICommunicationManager;
+class IMessageSender;
 class CapabilitiesClient;
 class ICapabilitiesClient;
 class LongPollMessageSerializer;
@@ -75,7 +76,8 @@ public:
 
     JoynrClusterControllerRuntime(QCoreApplication* app,
                         QSettings* settings,
-                        ICommunicationManager* communicationManager = NULL
+                        ICommunicationManager* communicationManager = NULL,
+                        IMessageSender* = NULL
     );
 
     static JoynrClusterControllerRuntime* create(QSettings* settings);
@@ -124,6 +126,8 @@ protected:
     QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
     QSharedPointer<ICommunicationManager> communicationManager;
+    QSharedPointer<IMessageSender> messageSender;
+
     LongPollMessageSerializer* longpollMessageSerializer;
     QList<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;

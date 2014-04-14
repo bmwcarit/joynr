@@ -36,6 +36,7 @@ public:
     QString routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     ICommunicationManager* mockCommunicationManager;
+    MockMessageSender* mockMessageSender;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
@@ -47,6 +48,7 @@ public:
             routingProviderParticipantId(),
             runtime(NULL),
             mockCommunicationManager(new MockCommunicationManager()),
+            mockMessageSender(new MockMessageSender()),
             discoveryQos(),
             routingProxyBuilder(NULL),
             routingProxy(NULL)
@@ -67,7 +69,7 @@ public:
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager);
+        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager, mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerRoutingProvider();
     }
@@ -77,7 +79,6 @@ public:
         runtime->stopMessaging();
         delete runtime;
         delete settings;
-        delete mockCommunicationManager;
         QFile::remove(settingsFilename);
     }
 

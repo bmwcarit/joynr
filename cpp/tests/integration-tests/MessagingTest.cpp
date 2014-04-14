@@ -37,7 +37,7 @@
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/MessageSender.h"
-#include "libjoynr/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
 
@@ -63,6 +63,7 @@ public:
 
     JoynrMessageFactory messageFactory;
     QSharedPointer<MockCommunicationManager> mockCommunicationManager;
+    QSharedPointer<MockMessageSender> mockMessageSender;
     MessagingEndpointDirectory* messagingEndpointDirectory;
     MessagingStubFactory* messagingStubFactory;
     QSharedPointer<MessageRouter> messageRouter;
@@ -82,6 +83,7 @@ public:
 
         messageFactory(),
         mockCommunicationManager(new MockCommunicationManager()),
+        mockMessageSender(new MockMessageSender()),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
         messagingStubFactory(new MessagingStubFactory()),
         messageRouter(new MessageRouter(messagingEndpointDirectory, messagingStubFactory))
@@ -96,7 +98,7 @@ public:
             new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
-        messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockCommunicationManager));
+        messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
         messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
         qos.setTtl(10000);
@@ -119,8 +121,7 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     // - MessageRouter.route
     // - MessageRunnable.run
     // - JoynrMessagingStub.transmit (IMessaging)
-    //   -> adds reply-to header to Joynr message (ICommunicationManager.getReceiveChannelId)
-    // - MockCommunicationManager.sendMessage (ICommunicationManager)
+    // - MessageSender.send
 
 
     MockDispatcher mockDispatcher;
@@ -128,12 +129,9 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,Eq(qos)))
             .Times(0);
 
-    // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(*mockCommunicationManager, sendMessage(_,_,_))
+    // MessageSender should receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(1);
-
-    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
-            .WillOnce(ReturnRefOfCopy(senderChannelId));
 
     EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
             .Times(1);
@@ -178,8 +176,8 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
             .Times(1);
 
-    // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(*mockCommunicationManager, sendMessage(_,_,_))
+    // MessageSender should not receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
     EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
@@ -216,8 +214,8 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
             .Times(0);
 
-    // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(*mockCommunicationManager, sendMessage(_,_,_))
+    // MessageSender should not receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
 // NOTE: LipciMessaging doesn't exists (2012-05-08)
@@ -243,12 +241,8 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
             .Times(0);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(*mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),_,Eq(message)))
             .Times(1);
-    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
-            .WillOnce(ReturnRefOfCopy(senderChannelId));
-
-
 
     QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
             QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
@@ -281,9 +275,10 @@ TEST_F(MessagingTest, routeMultipleMessages)
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),Eq(qos)))
             .Times(2);
 
-    // HttpCommunicationManager should receive the message
-    EXPECT_CALL(*mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
+    // MessageSender should receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), _ , Eq(message)))
             .Times(1);
+
     EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
             .WillRepeatedly(ReturnRefOfCopy(senderChannelId));

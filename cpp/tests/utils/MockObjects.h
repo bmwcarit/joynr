@@ -79,6 +79,8 @@ class IMessageReceiver;
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/IMessageSender.h"
+#include "joynr/BounceProxyUrl.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -350,6 +352,13 @@ public:
     MOCK_METHOD0(updateSettings, void());
     MOCK_METHOD0(tryToDeleteChannel, bool());
     MOCK_METHOD1(setMessageDispatcher,void(joynr::IMessageReceiver*));
+};
+
+class MockMessageSender : public joynr::IMessageSender
+{
+public:
+    MOCK_METHOD3(sendMessage,void(const QString&, const QDateTime&, const joynr::JoynrMessage&));
+    MOCK_METHOD2(init,void(QSharedPointer<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
 };
 
 /*

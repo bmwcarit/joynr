@@ -19,13 +19,14 @@
 #include "JoynrMessagingStubFactory.h"
 
 #include "joynr/system/ChannelAddress.h"
-#include "joynr/ICommunicationManager.h"
-#include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
+#include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 
 namespace  joynr {
 
-JoynrMessagingStubFactory::JoynrMessagingStubFactory(QSharedPointer<ICommunicationManager> comMgr):
-    communicationManager(comMgr)
+JoynrMessagingStubFactory::JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender, QString receiveChannelId):
+    messageSender(messageSender),
+    receiveChannelId(receiveChannelId)
 {
 }
 
@@ -35,7 +36,7 @@ bool JoynrMessagingStubFactory::canCreate(const joynr::system::Address& destAddr
 
 QSharedPointer<IMessaging> JoynrMessagingStubFactory::create(const joynr::system::Address& destAddress) {
     const system::ChannelAddress* channelAddress = dynamic_cast<const system::ChannelAddress*>(&destAddress);
-    return QSharedPointer<IMessaging>(new JoynrMessagingStub(*communicationManager, channelAddress->getChannelId()));
+    return QSharedPointer<IMessaging>(new JoynrMessagingStub(messageSender, channelAddress->getChannelId(), receiveChannelId));
 }
 
 } // namespace joynr

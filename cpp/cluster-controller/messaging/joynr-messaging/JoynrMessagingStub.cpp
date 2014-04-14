@@ -16,27 +16,30 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/joynr-messaging/JoynrMessagingStub.h"
-#include "joynr/ICommunicationManager.h"
+#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
 
 namespace joynr {
 
 JoynrMessagingStub::JoynrMessagingStub(
-        ICommunicationManager& communicationManager,
-        QString destinationChannelId):
-    communicationManager(communicationManager),
-    destinationChannelId(destinationChannelId)
+        QSharedPointer<IMessageSender> messageSender,
+        QString destinationChannelId,
+        QString receiveChannelId):
+        messageSender(messageSender),
+        destinationChannelId(destinationChannelId),
+        receiveChannelId(receiveChannelId)
 {}
 
 JoynrMessagingStub::~JoynrMessagingStub() {}
 
 void JoynrMessagingStub::transmit(JoynrMessage& message, const MessagingQos& qos) {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST || message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST){
-        message.setHeaderReplyChannelId(communicationManager.getReceiveChannelId());
+        message.setHeaderReplyChannelId(receiveChannelId);
     }
-    communicationManager.sendMessage(destinationChannelId, qos.getTtl(),message);
+    QDateTime decayTime = QDateTime::currentDateTime().addMSecs(qos.getTtl());
+    messageSender->sendMessage(destinationChannelId, decayTime,message);
 }
 
 } // namespace joynr

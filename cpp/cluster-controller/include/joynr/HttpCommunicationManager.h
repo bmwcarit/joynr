@@ -39,7 +39,7 @@ namespace joynr {
 class JoynrMessage;
 class IMessageReceiver;
 class LongPollingMessageReceiver;
-class MessageSender;
+class IMessageSender;
 
 
 /**
@@ -93,6 +93,8 @@ public:
 
     virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
 
+    IMessageSender* getMessageSender();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpCommunicationManager);
     void init();
@@ -110,7 +112,7 @@ private:
     QString receiverId;
 
     IMessageReceiver* messageDispatcher;
-    MessageSender* messageSender;
+    IMessageSender* messageSender;
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;

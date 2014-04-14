@@ -94,7 +94,6 @@ void HttpCommunicationManager::updateSettings() {
 
 HttpCommunicationManager::~HttpCommunicationManager() {
     LOG_TRACE(logger, "destructing HttpCommunicationManager");
-    delete messageSender;
     delete messageDispatcher;
 }
 
@@ -156,6 +155,9 @@ void HttpCommunicationManager::stopReceiveQueue() {
     }
 }
 
+IMessageSender* HttpCommunicationManager::getMessageSender() {
+    return messageSender;
+}
 
 void HttpCommunicationManager::sendMessage(const QString& channelId, const qint64& ttl_ms, const JoynrMessage& message) {
     QDateTime decayTime = QDateTime::currentDateTime().addMSecs(ttl_ms);

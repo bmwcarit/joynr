@@ -23,17 +23,18 @@
 
 namespace joynr {
 
-class ICommunicationManager;
+class IMessageSender;
 
 class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory {
 
 public:
-    JoynrMessagingStubFactory(QSharedPointer<ICommunicationManager> comMgr);
+    JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender, QString receiveChannelId);
     QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress);
     bool canCreate(const joynr::system::Address& destAddress);
 
 private:
-    QSharedPointer<ICommunicationManager> communicationManager;
+    QSharedPointer<IMessageSender> messageSender;
+    QString receiveChannelId;
 };
 
 } // namespace joynr
