@@ -22,7 +22,7 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/ICommunicationManager.h"
-#include "joynr/HttpCommunicationManager.h"
+#include "joynr/HttpReceiver.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -52,7 +52,7 @@ public:
     QString settingsFilename;
     QString libjoynrSettingsFilename;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockCommunicationManager; //will be deleted when runtime is deleted.
+    ICommunicationManager* mockMessageReceiver; //will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
     QSettings settings;
     MessagingSettings* messagingSettings;
@@ -60,20 +60,20 @@ public:
         : settingsFilename("test-resources/integrationtest.settings"),
           libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
           runtime(NULL),
-          mockCommunicationManager( new MockCommunicationManager() ),
+          mockMessageReceiver( new MockMessageReceiver() ),
           mockMessageSender(new MockMessageSender()),
           settings(settingsFilename, QSettings::IniFormat),
           messagingSettings(new MessagingSettings(settings))
     {
         QString str("CombinedRunTimeTestChannelId");
 		assert(str.isEmpty() == false);
-        EXPECT_CALL(*(dynamic_cast<MockCommunicationManager*>(mockCommunicationManager)), getReceiveChannelId() )
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId() )
                 .WillRepeatedly(::testing::ReturnRefOfCopy(str));
-        //runtime can only be created, after MockCommunicationManager has been told to return
+        //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
         QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
         SettingsMerger::mergeSettings(libjoynrSettingsFilename, settings);
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager, mockMessageSender);
+        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver, mockMessageSender);
 
     }
 
@@ -96,7 +96,7 @@ void TearDown(){
 }
 
 TEST_F(CombinedRunTimeTest, communicationManagerMockReturnsChannelId){
-    ASSERT_NE(mockCommunicationManager->getReceiveChannelId(), "");
+    ASSERT_NE(mockMessageReceiver->getReceiveChannelId(), "");
 }
 
 TEST_F(CombinedRunTimeTest, instantiate_Runtime)
@@ -106,9 +106,9 @@ TEST_F(CombinedRunTimeTest, instantiate_Runtime)
 
 TEST_F(CombinedRunTimeTest, startMessaging_does_Not_Throw)
 {
-    EXPECT_CALL(*(dynamic_cast<MockCommunicationManager*>(mockCommunicationManager)), startReceiveQueue() )
+    EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), startReceiveQueue() )
             .Times(1);
-    EXPECT_CALL(*(dynamic_cast<MockCommunicationManager*>(mockCommunicationManager)), stopReceiveQueue() )
+    EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), stopReceiveQueue() )
             .Times(2);
 
     runtime->startMessaging();

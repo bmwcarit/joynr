@@ -65,7 +65,7 @@ class IMessageReceiver;
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/types/GpsLocation.h"
-#include "joynr/HttpCommunicationManager.h"
+#include "joynr/HttpReceiver.h"
 
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 
@@ -340,10 +340,10 @@ public:
 };
 } // namespace joynr
 
-class MockCommunicationManager : public joynr::ICommunicationManager
+class MockMessageReceiver : public joynr::ICommunicationManager
 {
 public:
-    MockCommunicationManager(){};
+    MockMessageReceiver(){};
     MOCK_METHOD1(init, void(QSharedPointer<joynr::ILocalChannelUrlDirectory> channelUrlDirectory));
     MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
     MOCK_METHOD0(startReceiveQueue, void());
@@ -400,7 +400,6 @@ public:
     MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(QString destParticipantId, const joynr::system::Address& destEndpointAddress));
     MOCK_METHOD1(remove, void(QString destParticipantId));
     MOCK_METHOD1(contains, bool(QString destPartId));
-    MOCK_METHOD1(setCommunicationManager, void(QSharedPointer<joynr::ICommunicationManager> comMgr));
 };
 
 

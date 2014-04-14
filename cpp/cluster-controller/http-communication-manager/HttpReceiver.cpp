@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/HttpCommunicationManager.h"
+#include "joynr/HttpReceiver.h"
 
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
@@ -34,10 +34,9 @@ namespace joynr {
 
 using namespace joynr_logging;
 
-Logger* HttpCommunicationManager::logger = Logging::getInstance()->getLogger("MSG", "HttpCommunicationManager");
+Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpReveicer");
 
-
-HttpCommunicationManager::HttpCommunicationManager(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter)
+HttpReceiver::HttpReceiver(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter)
         : channelCreatedSemaphore(new QSemaphore(0)),
           channelId(),
           receiverId(),
@@ -52,18 +51,18 @@ HttpCommunicationManager::HttpCommunicationManager(const MessagingSettings& sett
     init();
 }
 
-void HttpCommunicationManager::init(){
+void HttpReceiver::init(){
     LOG_DEBUG(logger, "Print settings... ");
     settings.printSettings();
     updateSettings();
     LOG_DEBUG(logger, "Init finished.");
 }
 
-void HttpCommunicationManager::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) {
+void HttpReceiver::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) {
     this->channelUrlDirectory = channelUrlDirectory;
 }
 
-void HttpCommunicationManager::updateSettings() {
+void HttpReceiver::updateSettings() {
     // Setup the proxy to use
     if(settings.getLocalProxyHost().isEmpty()) {
         HttpNetworking::getInstance()->setGlobalProxy(QString());
@@ -78,11 +77,11 @@ void HttpCommunicationManager::updateSettings() {
 }
 
 
-HttpCommunicationManager::~HttpCommunicationManager() {
+HttpReceiver::~HttpReceiver() {
     LOG_TRACE(logger, "destructing HttpCommunicationManager");
 }
 
-void HttpCommunicationManager::startReceiveQueue() {
+void HttpReceiver::startReceiveQueue() {
 
     if (messageRouter.isNull() || channelUrlDirectory.isNull()) {
         LOG_FATAL(logger,"FAIL::receiveQueue started with no messageRouter/channelUrlDirectory.");
@@ -109,7 +108,7 @@ void HttpCommunicationManager::startReceiveQueue() {
     messageReceiver->start();
 }
 
-void HttpCommunicationManager::waitForReceiveQueueStarted()
+void HttpReceiver::waitForReceiveQueueStarted()
 {
     LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
     channelCreatedSemaphore->acquire(1);
@@ -117,7 +116,7 @@ void HttpCommunicationManager::waitForReceiveQueueStarted()
 }
 
 
-void HttpCommunicationManager::stopReceiveQueue() {
+void HttpReceiver::stopReceiveQueue() {
     //currently channelCreatedSemaphore is not released here. This would be necessary if stopReceivequeue is called, before channel is created.
     LOG_DEBUG(logger, "stopReceiveQueue");
     if (messageReceiver!=NULL){
@@ -135,12 +134,12 @@ void HttpCommunicationManager::stopReceiveQueue() {
     }
 }
 
-const QString& HttpCommunicationManager::getReceiveChannelId() const {
+const QString& HttpReceiver::getReceiveChannelId() const {
     return channelId;
 }
 
 
-bool HttpCommunicationManager::tryToDeleteChannel() {
+bool HttpReceiver::tryToDeleteChannel() {
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to messageSender.
     //TODO channelUrl is known only to the LongPlooMessageReceiver!
     QString deleteChannelUrl = settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();

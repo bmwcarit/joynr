@@ -19,7 +19,6 @@
 #include <QFile>
 #include <QSettings>
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/SettingsMerger.h"
 #include "joynr/Util.h"

@@ -40,7 +40,7 @@ using namespace joynr_logging;
 
 /*
   * This test tries to create two combined Runtimes and will test communication
-  * between the two Runtimes via HttpCommunicationManager
+  * between the two Runtimes via HttpReceiver
   *
   */
 

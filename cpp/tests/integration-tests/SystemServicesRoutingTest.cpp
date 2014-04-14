@@ -22,7 +22,7 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/ICommunicationManager.h"
-#include "joynr/HttpCommunicationManager.h"
+#include "joynr/HttpReceiver.h"
 
 #include "joynr/system/RoutingProxy.h"
 
@@ -35,7 +35,7 @@ public:
     QString routingDomain;
     QString routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockCommunicationManager;
+    ICommunicationManager* mockMessageReceiver;
     MockMessageSender* mockMessageSender;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
@@ -47,7 +47,7 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(NULL),
-            mockCommunicationManager(new MockCommunicationManager()),
+            mockMessageReceiver(new MockMessageReceiver()),
             mockMessageSender(new MockMessageSender()),
             discoveryQos(),
             routingProxyBuilder(NULL),
@@ -64,12 +64,12 @@ public:
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockCommunicationManager*>(mockCommunicationManager)), getReceiveChannelId())
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
-        //runtime can only be created, after MockCommunicationManager has been told to return
+        //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager, mockMessageSender);
+        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver, mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerRoutingProvider();
     }

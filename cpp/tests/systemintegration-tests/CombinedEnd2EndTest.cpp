@@ -56,7 +56,7 @@ static const QString messagingPropertiesPersistenceFileName2("CombinedEnd2EndTes
 
 /*
   * This test tries to create two combined Runtimes and will test communication
-  * between the two Runtimes via HttpCommunicationManager
+  * between the two Runtimes via HttpReceiver
   *
   */
 
@@ -139,7 +139,7 @@ private:
 
 };
 
-TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveReply) {
+TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     // Provider: (runtime1)
     //This is a workaround to register the Metatypes for providerQos.
@@ -385,7 +385,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
 }
 
 
-TEST_F(CombinedEnd2EndTest, subscribeViaHttpCommunicationManagerAndReceiveReply) {
+TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     //This is a workaround to register the Metatypes for providerQos.
     //Normally a new datatype is registered in all datatypes that use the new datatype.
@@ -644,7 +644,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 }
 
 
-TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpCommunicationManager) {
+TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -700,7 +700,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpCommunicationManager) {
     delete testProxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, deleteChannelViaCommunicationManager) {
+TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     // Provider: (runtime1)
 

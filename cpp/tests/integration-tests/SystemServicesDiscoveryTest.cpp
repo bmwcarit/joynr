@@ -33,7 +33,7 @@ public:
     QString discoveryDomain;
     QString discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockCommunicationManager;
+    ICommunicationManager* mockMessageReceiver;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
@@ -44,7 +44,7 @@ public:
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(NULL),
-        mockCommunicationManager(new MockCommunicationManager()),
+        mockMessageReceiver(new MockMessageReceiver()),
         discoveryQos(),
         discoveryProxyBuilder(NULL),
         discoveryProxy(NULL)
@@ -60,12 +60,12 @@ public:
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesDiscoveryTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockCommunicationManager*>(mockCommunicationManager)), getReceiveChannelId())
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager);
+        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerDiscoveryProvider();
     }

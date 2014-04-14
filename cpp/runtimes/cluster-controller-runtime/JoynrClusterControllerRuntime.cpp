@@ -20,7 +20,7 @@
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "common/in-process/InProcessMessagingStub.h"
-#include "joynr/HttpCommunicationManager.h"
+#include "joynr/HttpReceiver.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -69,7 +69,7 @@ Logger* JoynrClusterControllerRuntime::logger = Logging::getInstance()->getLogge
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         QCoreApplication* app,
         QSettings* settings,
-        ICommunicationManager* communicationManager,
+        ICommunicationManager* messageReceiver,
         IMessageSender* messageSender
 ) :
         JoynrRuntime(*settings),
@@ -89,7 +89,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         cache(),
         channelUrlDirectoryProxy(NULL),
         libJoynrMessagingSkeleton(NULL),
-        communicationManager(communicationManager),
+        messageReceiver(messageReceiver),
         messageSender(messageSender),
         dispatcherList(),
         inProcessConnectorFactory(NULL),
@@ -177,12 +177,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
       * ClusterController side
       *
       */
-    if(communicationManager.isNull()) {
-        LOG_INFO(logger, "The communication manager supplied is NULL, creating the default HttpCommunicationManager");
-        communicationManager = QSharedPointer<ICommunicationManager>(new HttpCommunicationManager(*messagingSettings, messageRouter));
+    if(messageReceiver.isNull()) {
+        LOG_INFO(logger, "The message receiver supplied is NULL, creating the default MessageReceiver");
+        messageReceiver = QSharedPointer<ICommunicationManager>(new HttpReceiver(*messagingSettings, messageRouter));
     }
 
-    QString channelId = communicationManager->getReceiveChannelId();
+    QString channelId = messageReceiver->getReceiveChannelId();
 
     // create message sender
     if(messageSender.isNull()) {
@@ -192,7 +192,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                                                                          messagingSettings->getSendMsgRetryInterval()
                                                                          ));
     }
-    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(messageSender, communicationManager->getReceiveChannelId()));
+    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
 
     //joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     //ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);
@@ -223,7 +223,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
     ccDbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, ccMessagingAddress);
     QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
-    ccDbusCapabilitiesAdapter = new DbusCapabilitiesAdapter(*messagingEndpointDirectory, *localCapabilitiesDirectory, ccCapabilitiesAddress, communicationManager->getReceiveChannelId());
+    ccDbusCapabilitiesAdapter = new DbusCapabilitiesAdapter(*messagingEndpointDirectory, *localCapabilitiesDirectory, ccCapabilitiesAddress, messageReceiver->getReceiveChannelId());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
     /**
@@ -307,7 +307,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     channelUrlDirectory = QSharedPointer<ILocalChannelUrlDirectory>(
         new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy)
         );
-    communicationManager->init(channelUrlDirectory);
+    messageReceiver->init(channelUrlDirectory);
     messageSender->init(channelUrlDirectory, *messagingSettings);
 }
 
@@ -386,13 +386,13 @@ void JoynrClusterControllerRuntime::startMessaging() {
 //    assert(joynrDispatcher!=NULL);
 //    joynrDispatcher->startMessaging();
 //    joynrDispatcher->waitForMessaging();
-    assert(communicationManager!=NULL);
-    communicationManager->startReceiveQueue();
+    assert(messageReceiver!=NULL);
+    messageReceiver->startReceiveQueue();
 }
 
 void JoynrClusterControllerRuntime::stopMessaging() {
     //joynrDispatcher->stopMessaging();
-    communicationManager->stopReceiveQueue();
+    messageReceiver->stopReceiveQueue();
 }
 
 void JoynrClusterControllerRuntime::runForever() {
@@ -418,11 +418,11 @@ void JoynrClusterControllerRuntime::unregisterCapability(QString participantId) 
 }
 
 void JoynrClusterControllerRuntime::waitForChannelCreation() {
-    communicationManager->waitForReceiveQueueStarted();
+    messageReceiver->waitForReceiveQueueStarted();
 }
 
 void JoynrClusterControllerRuntime::deleteChannel() {
-   communicationManager->tryToDeleteChannel();
+   messageReceiver->tryToDeleteChannel();
 }
 
 } // namespace joynr

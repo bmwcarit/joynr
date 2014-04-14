@@ -24,7 +24,6 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/TestProvider.h"
 #include "joynr/tests/TestProxy.h"

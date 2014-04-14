@@ -62,7 +62,7 @@ public:
     QSharedPointer<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
 
     JoynrMessageFactory messageFactory;
-    QSharedPointer<MockCommunicationManager> mockCommunicationManager;
+    QSharedPointer<MockMessageReceiver> mockMessageReceiver;
     QSharedPointer<MockMessageSender> mockMessageSender;
     MessagingEndpointDirectory* messagingEndpointDirectory;
     MessagingStubFactory* messagingStubFactory;
@@ -82,7 +82,7 @@ public:
         inProcessMessagingSkeleton(new MockInProcessMessagingSkeleton()),
 
         messageFactory(),
-        mockCommunicationManager(new MockCommunicationManager()),
+        mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
         messagingStubFactory(new MessagingStubFactory()),
@@ -180,7 +180,7 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
     EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
-    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
             .Times(0);
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
 //            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
@@ -279,7 +279,7 @@ TEST_F(MessagingTest, routeMultipleMessages)
     EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), _ , Eq(message)))
             .Times(1);
 
-    EXPECT_CALL(*mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
             .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 

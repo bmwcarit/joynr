@@ -75,7 +75,7 @@ public:
 
     JoynrClusterControllerRuntime(QCoreApplication* app,
                         QSettings* settings,
-                        ICommunicationManager* communicationManager = NULL,
+                        ICommunicationManager* messageReceiver = NULL,
                         IMessageSender* = NULL
     );
 
@@ -124,7 +124,7 @@ protected:
 
     QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    QSharedPointer<ICommunicationManager> communicationManager;
+    QSharedPointer<ICommunicationManager> messageReceiver;
     QSharedPointer<IMessageSender> messageSender;
 
     QList<IDispatcher*> dispatcherList;

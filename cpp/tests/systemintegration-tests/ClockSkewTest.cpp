@@ -18,7 +18,6 @@
  */
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/BounceProxyUrl.h"

@@ -22,7 +22,6 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/ProxyBuilder.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/InProcessConnectorFactory.h"

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef HTTPCOMMUNICATIONMANAGER_H_
-#define HTTPCOMMUNICATIONMANAGER_H_
+#ifndef HTTPRECEIVER_H_
+#define HTTPRECEIVER_H_
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
@@ -47,17 +47,17 @@ namespace system {
 
 
 /**
-  * \class HttpCommunicationManager
+  * \class HttpReceiver
   * \brief Implements HTTP communication to the bounce proxy (backend)
   *
-  * Implements the ICommunicationManager interface using the httpnetworking
+  * Implements the IMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpCommunicationManager : public ICommunicationManager {
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public ICommunicationManager {
 
 public:
-    explicit HttpCommunicationManager(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter);
-    virtual ~HttpCommunicationManager();
+    explicit HttpReceiver(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter);
+    virtual ~HttpReceiver();
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.
@@ -91,7 +91,7 @@ public:
     virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(HttpCommunicationManager);
+    DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
     void init();
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are available.
@@ -119,4 +119,4 @@ private:
 
 
 } // namespace joynr
-#endif // HTTPCOMMUNICATIONMANAGER_H_
+#endif // HTTPRECEIVER_H_
