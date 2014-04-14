@@ -90,6 +90,7 @@ public:
     void waitForChannelCreation();
     void deleteChannel();
     void registerRoutingProvider();
+    void registerDiscoveryProvider();
 
 protected:
     void initializeAllDependencies();
@@ -107,7 +108,7 @@ protected:
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
     Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
-    LocalCapabilitiesDirectory* localCapabilitiesDirectory;
+    QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     ICapabilities* capabilitiesSkeleton;
     //Reason why CapabilitiesAggregator (CA) has to be a QSP:

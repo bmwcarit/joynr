@@ -38,6 +38,8 @@ public:
     static const QString& SETTING_DOMAIN();
     static const QString& SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN();
     static const QString& SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID();
+    static const QString& SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN();
+    static const QString& SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID();
 
     static const QString& DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME();
 
@@ -47,6 +49,10 @@ public:
     void setCcRoutingProviderAuthenticationToken(const QString& authenticationToken);
     QString getCcRoutingProviderParticipantId() const;
     void setCcRoutingProviderParticipantId(const QString& participantId);
+    QString getCcDiscoveryProviderAuthenticationToken() const;
+    void setCcDiscoveryProviderAuthenticationToken(const QString& authenticationToken);
+    QString getCcDiscoveryProviderParticipantId() const;
+    void setCcDiscoveryProviderParticipantId(const QString& participantId);
 
     bool contains(const QString& key) const;
     QVariant value(const QString& key) const;

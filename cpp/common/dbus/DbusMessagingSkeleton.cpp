@@ -19,6 +19,7 @@
 #include "joynr/DbusMessagingSkeleton.h"
 #include <CommonAPI/CommonAPI.h>
 
+#include "joynr/JoynrMessage.h"
 #include "common/dbus/DbusMessagingUtil.h"
 
 namespace joynr {

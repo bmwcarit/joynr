@@ -88,16 +88,6 @@ public:
       */
     virtual void getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    /*
-      Capabilities lookup for a known channelId.
-      */
-    virtual QList<types::CapabilityInformation> getCapabilitiesForChannelId(const QString& channelId);
-
-    /*
-      Asynchronous capabilities lookup for a known channelId.
-      */
-    virtual void getCapabilitiesForChannelId(const QString& channelId, QSharedPointer<IGlobalCapabilitiesCallback> callback);
-
     virtual void getCapabilitiesForParticipantId(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
     virtual ~CapabilitiesClient();

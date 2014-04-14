@@ -63,25 +63,39 @@ class ICapabilitiesClient;
 class CapabilityEntry;
 
 class InterfaceAddress;
-namespace system { class Address; }
+namespace system {
+    class Address;
+}
 namespace types { class ProviderQos;
                   class CapabilitiesInformation;
                 }
 
-class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory {
+class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory : public joynr::system::DiscoveryProvider {
 public:
     LocalCapabilitiesDirectory(
             MessagingSettings& messagingSettings,
             ICapabilitiesClient* capabilitiesClientPtr,
-            IMessagingEndpointDirectory* endpointDirectory);
+            IMessagingEndpointDirectory* endpointDirectory
+    );
 
     virtual ~LocalCapabilitiesDirectory();
 
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
 
-    void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses);
-    void registerCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId);
+    void registerCapability(
+            const QString& domain,
+            const QString& interfaceName,
+            const types::ProviderQos& qos,
+            const QString& participantId,
+            QList<QSharedPointer<joynr::system::Address> > endpointAddresses
+    );
+    void registerCapability(
+            const QString& domain,
+            const QString& interfaceName,
+            const types::ProviderQos& qos,
+            const QString& participantId
+    );
 
     /*
      * Remove capability from the cache, and for permanent removal from the backend, this method
@@ -89,8 +103,11 @@ public:
      * this method does not allow anyone to remove other capabilities from other cluster
      * controllers.
      */
-    void removeCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos);
-
+    void removeCapability(
+            const QString& domain,
+            const QString& interfaceName,
+            const types::ProviderQos& qos
+    );
 
     virtual void removeCapability(const QString& participantId);
 
@@ -106,12 +123,11 @@ public:
     );
 
     /*
-     * Returns a list of capabilities matching the given channelId.
+     * Returns a capability entry for a given participant ID or an empty list if it cannot be found.
      */
-    virtual void getCapabilities(
+    virtual void getCapability(
             const QString& participantId,
-            QSharedPointer<ILocalCapabilitiesCallback> callback,
-            const joynr::system::DiscoveryQos& discoveryQos
+            QSharedPointer<ILocalCapabilitiesCallback> callback
     );
 
     /*
@@ -131,10 +147,34 @@ public:
      */
     virtual void registerReceivedCapabilities(QMap<QString, CapabilityEntry> capabilityEntries);
 
-
-
-
-
+    // inherited method from joynr::system::DiscoveryProvider
+    virtual void add(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString domain,
+            QString interfaceName,
+            QString participantId,
+            joynr::types::ProviderQos qos,
+            QList<joynr::system::CommunicationMiddleware::Enum> connections
+    );
+    // inherited method from joynr::system::DiscoveryProvider
+    virtual void lookup(
+            joynr::RequestStatus& joynrInternalStatus,
+            QList<joynr::system::DiscoveryEntry> & result,
+            QString domain,
+            QString interfaceName,
+            joynr::system::DiscoveryQos discoveryQos
+    );
+    // inherited method from joynr::system::DiscoveryProvider
+    virtual void lookup(
+            joynr::RequestStatus& joynrInternalStatus,
+            joynr::system::DiscoveryEntry& result,
+            QString participantId
+    );
+    // inherited method from joynr::system::DiscoveryProvider
+    virtual void remove(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId
+    );
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
@@ -176,6 +216,15 @@ private:
     QList<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress, const qint64& maxCacheAge, bool localEntries);
     QList<CapabilityEntry> searchCache(const QString& participantId, const qint64& maxCacheAge, bool localEntries);
 
+    static void convertCapabilityEntryIntoDiscoveryEntry(
+            const CapabilityEntry& capabilityEntry,
+            joynr::system::DiscoveryEntry& discoveryEntry
+    );
+    static void convertCapabilityEntriesIntoDiscoveryEntries(
+            const QList<CapabilityEntry>& capabilityEntries,
+            QList<joynr::system::DiscoveryEntry>& discoveryEntries
+    );
+
     static joynr_logging::Logger* logger;
     ICapabilitiesClient* capabilitiesClient;
     QMutex* cacheLock;
@@ -191,6 +240,21 @@ private:
 
 };
 
+// NOTE: This future is used to convert the synchronous call of the middleware
+// to an asynchronous call to the local capabilities directory. It could be removed
+// once we have the possibility to call provider asynchronous.
+class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback {
+public:
+    LocalCapabilitiesFuture();
+    void capabilitiesReceived(QList<CapabilityEntry> capabilities);
+    QList<CapabilityEntry> get();
+    QList<CapabilityEntry> get(const qint64& timeout_ms);
+    virtual ~LocalCapabilitiesFuture(){}
+private:
+    QSemaphore futureSemaphore;
+    DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
+    QList<CapabilityEntry> capabilities;
+};
 
 } // namespace joynr
 #endif //LOCALCAPABILITIESDIRECTORY_H

@@ -36,8 +36,6 @@ public:
     virtual void removeCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList) =0;
     virtual QList<types::CapabilityInformation> getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName) =0;
     virtual void getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
-    virtual QList<types::CapabilityInformation> getCapabilitiesForChannelId(const QString& channelId) =0;
-    virtual void getCapabilitiesForChannelId(const QString& channelId, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
     virtual void getCapabilitiesForParticipantId(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
     virtual QString getLocalChannelId() =0;
 

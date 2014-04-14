@@ -21,7 +21,9 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrMessage.h"
+namespace joynr {
+    class JoynrMessage;
+}
 #include "joynr/MessagingQos.h"
 
 // save the GCC diagnostic state

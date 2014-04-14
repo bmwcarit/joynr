@@ -108,29 +108,15 @@ void CapabilitiesClient::getCapabilitiesForInterfaceAddress(const QString& domai
 }
 
 
-QList<types::CapabilityInformation> CapabilitiesClient::getCapabilitiesForChannelId(const QString& channelId){
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    Q_UNUSED(channelId);
-    assert(false); //not yet implemented
-    //capabilitiesProxy->getCapabilitiesForChannelId(channelId);
-    return QList<types::CapabilityInformation>();
-}
-
-void CapabilitiesClient::getCapabilitiesForChannelId(const QString& channelId, QSharedPointer<IGlobalCapabilitiesCallback> callback) {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    Q_UNUSED(channelId);
-    Q_UNUSED(callback);
-    assert(false); //not yet implemented
-
-    //capabilitiesProxy->getCapabilitiesForChannelId(channelId,callback);
-}
-
 void CapabilitiesClient::getCapabilitiesForParticipantId(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback){
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    Q_UNUSED(participantId);
-    Q_UNUSED(callback);
-    assert(false); //not yet implemented
-    //capabilitiesProxy->getCapabilitiesForParticipantId(participantId, callback);
+    //This callback in a callback is a workaround, see GlobalCapabilitiesInformationCallback.h for details
+    QSharedPointer<ICallback<QList<types::CapabilityInformation> > > icallback(
+                QSharedPointer<ICallback<QList<types::CapabilityInformation> > >(
+                    new GlobalCapabilitiesInformationCallback(callback)
+                    )
+                );
+    capabilitiesProxy->getCapabilitiesForParticipantId(icallback, participantId);
 }
 
 void CapabilitiesClient::init(QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)

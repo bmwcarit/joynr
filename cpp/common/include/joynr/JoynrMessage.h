@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef MESSAGE_H_
-#define MESSAGE_H_
+#ifndef JOYNRMESSAGE_H_
+#define JOYNRMESSAGE_H_
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -272,8 +272,11 @@ private:
     void generateAndSetMsgIdHeaderIfAbsent();
 };
 
+// printing JoynrMessage with google-test and google-mock
+void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::JoynrMessage)
-#endif /* MESSAGE_H_ */
+#endif /* JOYNRMESSAGE_H_ */
 

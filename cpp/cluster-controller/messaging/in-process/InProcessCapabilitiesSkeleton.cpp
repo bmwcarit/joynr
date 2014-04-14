@@ -26,10 +26,14 @@ namespace joynr {
 using namespace joynr_logging;
 Logger* InProcessCapabilitiesSkeleton::logger = Logging::getInstance()->getLogger("MSG", "InProcessCapabilitiesSkeleton");
 
-InProcessCapabilitiesSkeleton::InProcessCapabilitiesSkeleton(IMessagingEndpointDirectory *endpointDirectory, LocalCapabilitiesDirectory *localCapabilitiesDirectory, QString ccChannelId)
-    : messagingEndpointDirectory(endpointDirectory),
-      localCapabilitiesDirectory(localCapabilitiesDirectory),
-      ccChannelId(ccChannelId)
+InProcessCapabilitiesSkeleton::InProcessCapabilitiesSkeleton(
+        IMessagingEndpointDirectory *endpointDirectory,
+        QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
+        QString ccChannelId
+) :
+    messagingEndpointDirectory(endpointDirectory),
+    localCapabilitiesDirectory(localCapabilitiesDirectory),
+    ccChannelId(ccChannelId)
 {
 
 }
@@ -80,12 +84,9 @@ QList<CapabilityEntry> InProcessCapabilitiesSkeleton::lookup(
         const QString &participantId,
         const DiscoveryQos& discoveryQos
 ){
+    Q_UNUSED(discoveryQos);
     QSharedPointer<DummyCapabilitiesFuture> future(new DummyCapabilitiesFuture());
-    joynr::system::DiscoveryQos newDiscoveryQos;
-    newDiscoveryQos.setCacheMaxAge(discoveryQos.getCacheMaxAge());
-    newDiscoveryQos.setProviderMustSupportOnChange(discoveryQos.getProviderMustSupportOnChange());
-    newDiscoveryQos.setDiscoveryScope(discoveryQos.getDiscoveryScope());
-    localCapabilitiesDirectory->getCapabilities(participantId, future, newDiscoveryQos);
+    localCapabilitiesDirectory->getCapability(participantId, future);
     return future->get();
 }
 

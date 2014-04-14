@@ -73,7 +73,6 @@ public:
     }
 
     ~InProcessCapabilitiesTest(){
-        delete localCapabilitiesDirectory;
         delete mockCapabilitiesClient;
         delete messagingEndpointDirectory;
         delete mockDispatcher;
@@ -95,7 +94,7 @@ protected:
     MessagingSettings messagingSettings;
     MessagingEndpointDirectory* messagingEndpointDirectory;
     MockCapabilitiesClient* mockCapabilitiesClient;
-    LocalCapabilitiesDirectory* localCapabilitiesDirectory;
+    QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     InProcessCapabilitiesSkeleton* capabilitiesSkeleton;
     ICapabilities* capabilitiesStub;
     MockInProcessDispatcher* mockDispatcher;

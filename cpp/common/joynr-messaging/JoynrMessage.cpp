@@ -16,23 +16,22 @@
  * limitations under the License.
  * #L%
  */
-/*
- * JoynrMessage.cpp
- *
- *  Created on: Jul 28, 2011
- *      Author: grape
- */
-
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
 #include <QString>
 #include <QUuid>
+#include "joynr/JsonSerializer.h"
 
 namespace joynr {
 
 using namespace joynr_logging;
 
 Logger* JoynrMessage::logger = Logging::getInstance()->getLogger("MSG", "JoynrMessage");
+
+// printing JoynrMessage with google-test and google-mock
+void PrintTo(const JoynrMessage& value, ::std::ostream* os) {
+    *os << joynr::JsonSerializer::serialize(value).constData();
+}
 
 const QString& JoynrMessage::HEADER_CONTENT_TYPE() {
     static const QString headerContentType("contentType");

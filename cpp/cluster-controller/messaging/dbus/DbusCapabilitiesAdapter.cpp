@@ -83,13 +83,10 @@ QList<CapabilityEntry> DbusCapabilitiesAdapter::lookup(
         const QString& participantId,
         const DiscoveryQos& discoveryQos
 ) {
+    Q_UNUSED(discoveryQos);
     dbusSkeletonWrapper->logMethodCall("lookup", "DbusCapabilitiesAdapter");
     QSharedPointer<DummyDbusCapabilitiesFuture> future(new DummyDbusCapabilitiesFuture());
-    joynr::system::DiscoveryQos newDiscoveryQos;
-    newDiscoveryQos.setCacheMaxAge(discoveryQos.getCacheMaxAge());
-    newDiscoveryQos.setProviderMustSupportOnChange(discoveryQos.getProviderMustSupportOnChange());
-    newDiscoveryQos.setDiscoveryScope(discoveryQos.getDiscoveryScope());
-    localCapabilitiesDirectory.getCapabilities(participantId, future, newDiscoveryQos);
+    localCapabilitiesDirectory.getCapability(participantId, future);
     return future->get();
 }
 

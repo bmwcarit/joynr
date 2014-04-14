@@ -39,7 +39,11 @@ namespace joynr_logging { class Logger; }
 
 class JOYNRCLUSTERCONTROLLER_EXPORT InProcessCapabilitiesSkeleton : public ICapabilities {
 public:
-    InProcessCapabilitiesSkeleton(IMessagingEndpointDirectory* messagingEndpointDirectory, LocalCapabilitiesDirectory* localCapabilitiesDirectory, QString ccChannelId);
+    InProcessCapabilitiesSkeleton(
+            IMessagingEndpointDirectory* messagingEndpointDirectory,
+            QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
+            QString ccChannelId
+    );
     void add(
             const QString &domain,
             const QString &interfaceName,
@@ -54,8 +58,15 @@ public:
             QSharedPointer<joynr::system::Address> messagingStubAddress,
             const qint64& timeout_ms
     );
-    QList<CapabilityEntry> lookup(const QString &domain, const QString &interfaceName, const DiscoveryQos& discoveryQos);
-    QList<CapabilityEntry> lookup(const QString& participantId, const DiscoveryQos& discoveryQos);
+    QList<CapabilityEntry> lookup(
+            const QString &domain,
+            const QString &interfaceName,
+            const DiscoveryQos& discoveryQos
+    );
+    QList<CapabilityEntry> lookup(
+            const QString& participantId,
+            const DiscoveryQos& discoveryQos
+    );
     void remove(const QString& participantId, const qint64& timeout_ms);
 
 private:
@@ -63,7 +74,7 @@ private:
     static joynr_logging::Logger* logger;
 
     IMessagingEndpointDirectory* messagingEndpointDirectory;
-    LocalCapabilitiesDirectory* localCapabilitiesDirectory;
+    QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QString ccChannelId;
 };
 

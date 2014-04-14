@@ -174,10 +174,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilityAddsToCache) {
     EXPECT_CALL(*capabilitiesClient, registerCapabilities(_)).Times(1);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos(), dummyParticipantId1);
 
-    DiscoveryQos qos;
-    qos.setCacheMaxAge(LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ());
-
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
 }
 
@@ -188,10 +185,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilityLocallyDoesNotCallCapab
     providerQos.setScope(types::ProviderScope::LOCAL);
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME ,INTERFACE_1_NAME, providerQos, dummyParticipantId1);
 
-    DiscoveryQos qos;
-    qos.setCacheMaxAge(LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ());
-
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
 
 }
@@ -212,7 +206,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilityRemovesFromCache) {
 
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos(), dummyParticipantId1);
     localCapabilitiesDirectory->removeCapability(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     EXPECT_EQ(0, callback->getResults(TIMEOUT).size());
 }
 
@@ -280,10 +274,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, getCapabilitiesForParticipantIdReturnsCac
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeGetCapabilitiesForParticipantIdWithTwoResults));
 
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     callback->clearResults();
     EXPECT_CALL(*capabilitiesClient, getCapabilitiesForParticipantId(_,_)).Times(0);
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     QList<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(2, capabilities.size());
 
@@ -295,7 +289,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, getCapabilitiesForParticipantIdDelegatesT
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeGetCapabilitiesForParticipantIdWithThreeResults));
 
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     QList<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
 
     EXPECT_EQ(3, capabilities.size());
@@ -321,14 +315,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeGetCapabilitiesForParticipantIdWithTwoResults));
 
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     QThreadSleep::msleep(1000);
 
     // this should remove all entries in the cache
     localCapabilitiesDirectory->cleanCache(100);
     // retrieving capabilities will force a call to the backend as the cache is empty
     EXPECT_CALL(*capabilitiesClient, getCapabilitiesForParticipantId(_,_)).Times(1);
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
 
 }
 
@@ -378,7 +372,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
             .Times(0);
 
     localCapabilitiesDirectory->registerCapability(DOMAIN_1_NAME, INTERFACE_1_NAME, qos, dummyParticipantId1);
-    localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos);
+    localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
@@ -388,7 +382,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
-    EXPECT_THROW(localCapabilitiesDirectory->getCapabilities(dummyParticipantId1, callback, discoveryQos),
+    EXPECT_THROW(localCapabilitiesDirectory->getCapability(dummyParticipantId1, callback),
                  JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
 }
