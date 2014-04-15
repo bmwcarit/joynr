@@ -31,6 +31,7 @@ namespace joynr {
 
 class IMessageSender {
 public:
+    virtual ~IMessageSender() {}
     /**
     * @brief Sends the message to the messaging endpoint associated with the channelId.
     */

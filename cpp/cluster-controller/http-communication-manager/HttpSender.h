@@ -49,7 +49,7 @@ public:
     static const qint64& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval);// int messageSendRetryInterval
-    ~HttpSender();
+    virtual ~HttpSender();
     /**
     * @brief Sends the message to the messaging endpoint associated with the channelId.
     */
