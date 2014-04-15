@@ -142,6 +142,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
     Directory<QString, joynr::system::Address>* routingTable;
+    QMutex routingTableMutex;
     QThreadPool threadPool;
     ThreadPoolDelayedScheduler* delayedScheduler;
     joynr::system::RoutingProxy* parentRouter;
@@ -164,6 +165,8 @@ private:
     void sendMessageToParticipant(QString& destinationPartId);
 
     bool isChildMessageRouter();
+
+    void addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address);
 };
 
 /**

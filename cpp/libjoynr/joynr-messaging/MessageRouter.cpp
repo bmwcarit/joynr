@@ -62,6 +62,7 @@ MessageRouter::MessageRouter(
         )),
         messagingStubFactory(messagingStubFactory),
         routingTable(routingTable),
+        routingTableMutex(),
         threadPool(),
         delayedScheduler(),
         parentRouter(NULL),
@@ -91,6 +92,7 @@ MessageRouter::MessageRouter(
     )),
     messagingStubFactory(messagingStubFactory),
     routingTable(routingTable),
+    routingTableMutex(),
     threadPool(),
     delayedScheduler(),
     parentRouter(NULL),
@@ -115,7 +117,7 @@ void MessageRouter::init(int messageSendRetryInterval, int maxThreads)
 }
 
 void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address) {
-    routingTable->add(participantId, address);
+    addToRoutingTable(participantId, address);
 }
 
 void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, QSharedPointer<joynr::system::Address> parentAddress, QString parentParticipantId) {
@@ -154,7 +156,11 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
 
     // search for the destination address
     QString destinationPartId = message.getHeaderTo();
-    QSharedPointer<joynr::system::Address> destAddress = routingTable->lookup(destinationPartId);
+    QSharedPointer<joynr::system::Address> destAddress(NULL);
+    {
+        QMutexLocker locker(&routingTableMutex);
+        destAddress = routingTable->lookup(destinationPartId);
+    }
 
     // schedule message for sending
     if (!destAddress.isNull()) {
@@ -213,8 +219,7 @@ void MessageRouter::addNextHop(
         QString participantId,
         QSharedPointer<joynr::system::Address> inprocessAddress
 ) {
-    // TODO check if routing table is thread-safe
-    routingTable->add(participantId, inprocessAddress);
+    addToRoutingTable(participantId, inprocessAddress);
 
     joynr::RequestStatus status;
     addNextHopToParent(status, participantId);
@@ -226,11 +231,10 @@ void MessageRouter::addNextHop(
         QString participantId,
         joynr::system::ChannelAddress channelAddress
 ) {
-    // TODO check if routing table is thread-safe
     QSharedPointer<joynr::system::ChannelAddress> address(
                 new joynr::system::ChannelAddress(channelAddress)
     );
-    routingTable->add(participantId, address);
+    addToRoutingTable(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
@@ -242,11 +246,10 @@ void MessageRouter::addNextHop(
         QString participantId,
         joynr::system::CommonApiDbusAddress commonApiDbusAddress
 ) {
-    // TODO check if routing table is thread-safe
     QSharedPointer<joynr::system::CommonApiDbusAddress> address(
                 new joynr::system::CommonApiDbusAddress(commonApiDbusAddress)
     );
-    routingTable->add(participantId, address);
+    addToRoutingTable(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
@@ -258,11 +261,10 @@ void MessageRouter::addNextHop(
         QString participantId,
         joynr::system::BrowserAddress browserAddress
 ) {
-    // TODO check if routing table is thread-safe
     QSharedPointer<joynr::system::BrowserAddress> address(
                 new joynr::system::BrowserAddress(browserAddress)
     );
-    routingTable->add(participantId, address);
+    addToRoutingTable(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
@@ -274,11 +276,10 @@ void MessageRouter::addNextHop(
         QString participantId,
         joynr::system::WebSocketAddress webSocketAddress
 ) {
-    // TODO check if routing table is thread-safe
     QSharedPointer<joynr::system::WebSocketAddress> address(
                 new joynr::system::WebSocketAddress(webSocketAddress)
     );
-    routingTable->add(participantId, address);
+    addToRoutingTable(participantId, address);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
@@ -302,13 +303,20 @@ void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus
     }
 }
 
+void MessageRouter::addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address) {
+    QMutexLocker locker(&routingTableMutex);
+    routingTable->add(participantId, address);
+}
+
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::removeNextHop(
         joynr::RequestStatus& joynrInternalStatus,
         QString participantId
 ) {
-    // TODO check if routing table is thread-safe
-    routingTable->remove(participantId);
+    {
+        QMutexLocker locker(&routingTableMutex);
+        routingTable->remove(participantId);
+    }
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     // remove from parent router
@@ -323,8 +331,10 @@ void MessageRouter::resolveNextHop(
         bool& resolved,
         QString participantId
 ) {
-    // TODO check if routing table is thread-safe
-    resolved = routingTable->contains(participantId);
+    {
+        QMutexLocker locker(&routingTableMutex);
+        resolved = routingTable->contains(participantId);
+    }
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
