@@ -23,6 +23,7 @@
 #include "common/dbus/DbusSettings.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
+#include "joynr/SystemServicesSettings.h"
 
 #include "joynr/IDbusSkeletonWrapper.h"
 #include "joynr/DbusMessagingSkeleton.h"
@@ -39,65 +40,63 @@ class LibJoynrRuntimeTest : public testing::Test {
 
 public:
     QString libjoynrSettingsFilename;
-
-    QSettings* settings;
-
+    QSettings settings;
+    DbusSettings dbusSettings;
     LibJoynrRuntime* runtime;
 
-    IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>* msgSkeleton;
-    MockMessaging* msgMock;
+    MockMessaging mockMessaging;
+    IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging> msgSkeleton;
 
-    IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>* capSkeleton;
-    MockCapabilitiesStub* capMock;
+    MockCapabilitiesStub mockCapabilitiesStub;
+    IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities> capSkeleton;
 
-    LibJoynrRuntimeTest():
-        libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
-        settings(new QSettings(libjoynrSettingsFilename, QSettings::IniFormat)),
-        runtime(NULL),
-        msgSkeleton(NULL),
-        capSkeleton(NULL)
+    LibJoynrRuntimeTest() :
+            libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
+            settings(libjoynrSettingsFilename, QSettings::IniFormat),
+            dbusSettings(settings),
+            runtime(NULL),
+            mockMessaging(),
+            msgSkeleton(
+                mockMessaging,
+                dbusSettings.createClusterControllerMessagingAddressString()
+            ),
+            mockCapabilitiesStub(),
+            capSkeleton(
+                mockCapabilitiesStub,
+                dbusSettings.createClusterControllerCapabilitiesAddressString()
+            )
     {
+        SystemServicesSettings systemServicesSettings(settings);
+        // provision entry to arbitrate routing provider
+        QString routingProviderParticipantId(systemServicesSettings.getCcRoutingProviderParticipantId());
+        QList<CapabilityEntry> routingCapabilityEntries;
+        types::ProviderQos pQos;
+        pQos.setPriority(5);
+        QSharedPointer<system::ChannelAddress> routingProviderAddress(
+                    new system::ChannelAddress("LibJoynrRuntimeTest.ChannelId")
+        );
+        CapabilityEntry routingProviderCapabilityEntry;
+        routingProviderCapabilityEntry.setParticipantId(routingProviderParticipantId);
+        routingProviderCapabilityEntry.setQos(pQos);
+        routingProviderCapabilityEntry.prependEndpointAddress(routingProviderAddress);
+        routingCapabilityEntries.append(routingProviderCapabilityEntry);
+        EXPECT_CALL(
+                    mockCapabilitiesStub,
+                    lookup(routingProviderParticipantId, A<const DiscoveryQos&>())
+        )
+                    .WillRepeatedly(testing::Return(routingCapabilityEntries));
     }
 
     ~LibJoynrRuntimeTest() {
-        settings->deleteLater();
     }
 
     void SetUp() {
-        DbusSettings* dbusSettings = new DbusSettings(*settings);
-        // start skeletons
-        QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
-        msgMock = new MockMessaging();
-        msgSkeleton = new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*msgMock, ccMessagingAddress);
-
-        QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
-        capMock = new MockCapabilitiesStub();
-
-        // provision entry to arbitrate routing provider
-        QList<CapabilityEntry>* result = new QList<CapabilityEntry>();
-        types::ProviderQos* pQos = new types::ProviderQos();
-        pQos->setPriority(5);
-        QSharedPointer<system::ChannelAddress> endPoint(new system::ChannelAddress("CC.RoutingProvider.ParticipantId"));
-        CapabilityEntry* defaultEntry = new CapabilityEntry();
-        defaultEntry->setParticipantId("CC.RoutingProvider.ParticipantId");
-        defaultEntry->setQos(*pQos);
-        defaultEntry->prependEndpointAddress(endPoint);
-        result->append(*defaultEntry);
-        EXPECT_CALL(*capMock, lookup(A<const QString&>(), A<const DiscoveryQos&>())).WillRepeatedly(testing::Return(*result));
-        capSkeleton = new IDbusSkeletonWrapper<DbusCapabilitiesSkeleton, ICapabilities>(*capMock, ccCapabilitiesAddress);
-
         // start libjoynr runtime
         runtime = new LibJoynrRuntime(new QSettings(libjoynrSettingsFilename, QSettings::IniFormat));
-
-        delete dbusSettings;
     }
 
     void TearDown() {
         delete runtime;
-        delete msgSkeleton;
-        delete msgMock;
-        delete capSkeleton;
-        delete capMock;
     }
 };
 
@@ -107,24 +106,37 @@ TEST_F(LibJoynrRuntimeTest, instantiate_Runtime)
 }
 
 TEST_F(LibJoynrRuntimeTest, get_proxy) {
-    // create default entry
-    QList<CapabilityEntry>* result = new QList<CapabilityEntry>();
-    types::ProviderQos* pQos = new types::ProviderQos();
-    pQos->setPriority(5);
-    QSharedPointer<system::ChannelAddress> endPoint(new system::ChannelAddress("defaultChannelId"));
-    CapabilityEntry* defaultEntry = new CapabilityEntry();
-    defaultEntry->setParticipantId("defaultDbusId");
-    defaultEntry->setQos(*pQos);
-    defaultEntry->prependEndpointAddress(endPoint);
-    result->append(*defaultEntry);
-    EXPECT_CALL(*capMock, lookup(A<const QString&>(),
-                                  A<const QString&>(),
-                                  A<const DiscoveryQos&>())).Times(1).WillRepeatedly(testing::Return(*result));
-    EXPECT_CALL(*capMock, addEndpoint( A<const QString &>(),
-                                       A<QSharedPointer<joynr::system::Address> >(),
-                                       A<const qint64& >())).Times(1);
+    QString domain("LibJoynrRuntimeTest.Domain.A");
+    QString interface(vehicle::GpsProxy::getInterfaceName());
 
-    QString domain("localdomain");
+    // create default entry
+    QList<CapabilityEntry> capabilityEntries;
+    types::ProviderQos pQos;
+    pQos.setPriority(5);
+    QSharedPointer<system::ChannelAddress> defaultChannelAddress(
+                new system::ChannelAddress("LibJoynrRuntimeTest.ChannelId.A")
+    );
+    CapabilityEntry defaultEntry;
+    defaultEntry.setParticipantId("LibJoynrRuntimeTest.ParticipantId.A");
+    defaultEntry.setQos(pQos);
+    defaultEntry.prependEndpointAddress(defaultChannelAddress);
+    capabilityEntries.append(defaultEntry);
+    EXPECT_CALL(
+                mockCapabilitiesStub,
+                lookup(domain, interface, A<const DiscoveryQos&>())
+    )
+            .Times(1)
+            .WillRepeatedly(testing::Return(capabilityEntries));
+    EXPECT_CALL(
+                mockCapabilitiesStub,
+                addEndpoint(
+                    A<const QString &>(),
+                    A<QSharedPointer<joynr::system::Address> >(),
+                    A<const qint64& >()
+                )
+    )
+            .Times(1);
+
     ProxyBuilder<vehicle::GpsProxy>* proxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
     ASSERT_TRUE(proxyBuilder != NULL);
 
@@ -142,15 +154,23 @@ TEST_F(LibJoynrRuntimeTest, get_proxy) {
 }
 
 TEST_F(LibJoynrRuntimeTest, register_unregister_capability) {
-    EXPECT_CALL(*capMock, add(A<const QString&>(),
-                               A<const QString&>(),
-                               A<const QString&>(),
-                               A<const types::ProviderQos&>(),
-                               A<QList<QSharedPointer<joynr::system::Address> >>(),
-                               A<QSharedPointer<joynr::system::Address>>(),
-                               A<const qint64&>())).Times(1);
+    QString domain("LibJoynrRuntimeTest.Domain.A");
+    QString interface(vehicle::GpsProxy::getInterfaceName());
 
-    QString domain("localdomain");
+    EXPECT_CALL(
+                mockCapabilitiesStub,
+                add(
+                    domain,
+                    interface,
+                    A<const QString&>(),
+                    A<const types::ProviderQos&>(),
+                    A<QList<QSharedPointer<joynr::system::Address> >>(),
+                    A<QSharedPointer<joynr::system::Address>>(),
+                    A<const qint64&>()
+               )
+    )
+            .Times(1);
+
     QString authenticationToken("authToken");
 
     types::ProviderQos providerQos;
