@@ -278,14 +278,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                 );
         DiscoveryQos discoveryQos(10000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
-        QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
+        QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy (
             capabilitiesProxyBuilder
                 ->setRuntimeQos(MessagingQos(40000)) //TODO magic values.
                 ->setCached(true)
                 ->setDiscoveryQos(discoveryQos)
                 ->build()
             );
-        ((CapabilitiesClient*)capabilitiesClient)->init(cabilitiesProxy);
+        ((CapabilitiesClient*)capabilitiesClient)->init(capabilitiesProxy);
     }
 
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
