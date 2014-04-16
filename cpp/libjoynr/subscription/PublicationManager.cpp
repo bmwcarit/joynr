@@ -30,6 +30,7 @@
 #include "joynr/Util.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/SubscriptionUtil.h"
 
@@ -120,7 +121,7 @@ PublicationManager::PublicationManager(int maxThreads)
       delayedScheduler(NULL),
       shutDownMutex(),
       shuttingDown(false),
-      subscriptionRequestStorageFileName("SubscriptionRequests.persist"),
+      subscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()),
       queuedSubscriptionRequests(),
       queuedSubscriptionRequestsMutex(),
       currentScheduledPublications(),

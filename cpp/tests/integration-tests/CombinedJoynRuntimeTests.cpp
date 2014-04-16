@@ -89,7 +89,7 @@ void SetUp(){
 }
 
 void TearDown(){
-    QFile::remove("SubscriptionRequests.persist");
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
     QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
 }
 
@@ -211,7 +211,7 @@ TEST_F(CombinedRunTimeTest, DISABLED_register_and_use_local_TestProvider)
   * Tests if subscription works locally (polling attribute values).
   */
 TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
-    QFile::remove("SubscriptionRequests.persist");
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
     QString domain = "testDomain";
     QSharedPointer<MockTestProvider> mockProvider (new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444);
@@ -250,7 +250,7 @@ TEST_F(CombinedRunTimeTest, register_and_subscribe_to_local_Provider) {
 
 
 TEST_F(CombinedRunTimeTest, unsubscribe_from_local_Provider) {
-    QFile::remove("SubscriptionRequests.persist");
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
     QString domain = "testDomain2";
     QSharedPointer<MockTestProvider> mockProvider (new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444);

@@ -34,6 +34,7 @@ class JOYNR_EXPORT LibjoynrSettings : public QObject {
 public:
     static const QString& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
     static const QString& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
+    static const QString& DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME();
 
     explicit LibjoynrSettings(QSettings& settings, QObject* parent = 0);
     LibjoynrSettings(const LibjoynrSettings& other);

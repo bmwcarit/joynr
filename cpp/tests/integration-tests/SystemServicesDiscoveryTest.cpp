@@ -84,7 +84,7 @@ public:
     }
 
     void TearDown(){
-        QFile::remove("SubscriptionRequests.persist");
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
         delete discoveryProxy;
         delete discoveryProxyBuilder;

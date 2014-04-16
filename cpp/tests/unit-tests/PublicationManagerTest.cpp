@@ -26,6 +26,7 @@
 #include "joynr/IAttributeListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/LibjoynrSettings.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -60,7 +61,7 @@ inline Matcher<const SubscriptionPublication&> GpsAttributeMatcher() {
 
 TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnables) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::TestRequestInterpreter>("tests/Test");
@@ -106,7 +107,7 @@ TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnab
 
 
 TEST(PublicationManagerTest, stop_publications) {
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
@@ -158,7 +159,7 @@ TEST(PublicationManagerTest, stop_publications) {
 }
 
 TEST(PublicationManagerTest, remove_all_publications) {
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
@@ -200,7 +201,7 @@ TEST(PublicationManagerTest, remove_all_publications) {
 }
 
 TEST(PublicationManagerTest, restore_publications) {
-    QFile::remove("SubscriptionRequests.persist");
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
     qRegisterMetaType<PeriodicSubscriptionQos>("PeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
 
@@ -257,7 +258,7 @@ TEST(PublicationManagerTest, restore_publications) {
 
 TEST(PublicationManagerTest, add_onChangeSubscription) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
@@ -327,7 +328,7 @@ TEST(PublicationManagerTest, add_onChangeSubscription) {
 
 TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
@@ -397,7 +398,7 @@ TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
 
 TEST(PublicationManagerTest, remove_onChangeSubscription) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");

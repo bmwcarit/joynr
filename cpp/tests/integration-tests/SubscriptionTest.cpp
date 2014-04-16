@@ -36,6 +36,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/types/GpsLocation.h"
 
@@ -73,7 +74,7 @@ public:
     }
 
     void SetUp(){
-        QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager();
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
