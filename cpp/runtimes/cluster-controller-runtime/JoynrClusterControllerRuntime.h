@@ -43,7 +43,7 @@
 
 class QCoreApplication;
 class QString;
-class CombinedRunTimeTest;
+class JoynrClusterControllerRuntimeTest;
 
 namespace joynr {
 
@@ -73,10 +73,11 @@ template<typename Key, typename T> class Directory;
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime {
 public:
 
-    JoynrClusterControllerRuntime(QCoreApplication* app,
-                        QSettings* settings,
-                        IMessageReceiver* messageReceiver = NULL,
-                        IMessageSender* = NULL
+    JoynrClusterControllerRuntime(
+            QCoreApplication* app,
+            QSettings* settings,
+            IMessageReceiver* messageReceiver = NULL,
+            IMessageSender* = NULL
     );
 
     static JoynrClusterControllerRuntime* create(QSettings* settings);
@@ -148,7 +149,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
-friend class ::CombinedRunTimeTest;
+friend class ::JoynrClusterControllerRuntimeTest;
 };
 
 

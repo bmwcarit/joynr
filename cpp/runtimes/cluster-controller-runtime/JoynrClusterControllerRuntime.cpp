@@ -178,7 +178,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
       */
     if(messageReceiver.isNull()) {
         LOG_INFO(logger, "The message receiver supplied is NULL, creating the default MessageReceiver");
-        messageReceiver = QSharedPointer<IMessageReceiver>(new HttpReceiver(*messagingSettings, messageRouter));
+        messageReceiver = QSharedPointer<IMessageReceiver>(
+                    new HttpReceiver(*messagingSettings, messageRouter)
+        );
     }
 
     QString channelId = messageReceiver->getReceiveChannelId();
@@ -186,10 +188,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     // create message sender
     if(messageSender.isNull()) {
         LOG_INFO(logger, "The message sender supplied is NULL, creating the default MessageSender");
-        messageSender = QSharedPointer<IMessageSender>(new HttpSender(messagingSettings->getBounceProxyUrl(),
-                                                                         messagingSettings->getSendMsgMaxTtl(),
-                                                                         messagingSettings->getSendMsgRetryInterval()
-                                                                         ));
+        messageSender = QSharedPointer<IMessageSender>(
+                    new HttpSender(
+                        messagingSettings->getBounceProxyUrl(),
+                        messagingSettings->getSendMsgMaxTtl(),
+                        messagingSettings->getSendMsgRetryInterval()
+                    )
+        );
     }
     messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
 
