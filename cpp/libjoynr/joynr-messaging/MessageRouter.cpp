@@ -127,7 +127,7 @@ void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter, Q
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
     joynr::RequestStatus status;
-    addNextHop(parentParticipantId, parentAddress);
+    addProvisionedNextHop(parentParticipantId, parentAddress);
     addNextHopToParent(status, parentRouter->getProxyParticipantId());
 }
 
