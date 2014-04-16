@@ -43,6 +43,8 @@ namespace joynr {
 // defined:
 //    class JoynrMessage;
 //    void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+//    class MessagingQos;
+//    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
 namespace types {
     class TStruct;
     void PrintTo(const joynr::types::TStruct& value, ::std::ostream* os);
