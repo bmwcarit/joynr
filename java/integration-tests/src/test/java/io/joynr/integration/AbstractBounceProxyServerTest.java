@@ -23,6 +23,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import io.joynr.common.ExpiryDate;
@@ -91,20 +92,20 @@ public abstract class AbstractBounceProxyServerTest {
     private static final int DEFAULT_PORT = 8080;
     private static final String DEFAULT_PATH = "/bounceproxy";
 
-    private static final long maxTimePerRun = 5000;
-    private static final int maxRuns = 100;
-
-    private static final String channelId = "testSendAndReceiveMessagesOnServer_" + System.currentTimeMillis();
     private static final String payload = "payload";
+
+    private String channelId;
 
     Random generator = new Random();
 
     ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4);
-    private ObjectMapper objectMapper;
+    protected ObjectMapper objectMapper;
     private String receiverId = "bounceproxytest-" + UUID.randomUUID().toString();
 
     @Before
     public void setUp() throws Exception {
+
+        channelId = "testSendAndReceiveMessagesOnServer_" + System.currentTimeMillis();
 
         String serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
 
@@ -125,6 +126,10 @@ public abstract class AbstractBounceProxyServerTest {
     // This is a test to see if the atmos bug still exists. If the bug exists,
     // the server will hang 20 secs
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
+
+        final long maxTimePerRun = 5000;
+        final int maxRuns = 100;
+
         createChannel(channelId);
         // createChannel(channelIdProvider);
 
@@ -176,7 +181,56 @@ public abstract class AbstractBounceProxyServerTest {
             log.info(i + ": time elapsed to send messages and return long poll:" + elapsedTime_ms);
             assertThat("the long poll did not receive the messages in time", elapsedTime_ms, lessThan(maxTimePerRun));
 
+            if (payloads.size() == 2) {
+                assertFalse("Unresolved bug that causes duplicate messages to be sent",
+                            payloads.get(0).equals(payloads.get(1)));
+            }
             assertThat(payloads, hasItems(postPayload, postPayload2));
+        }
+
+    }
+
+    @Test(timeout = 1000000)
+    // This is a test to see if sending and receiving messages at the same time
+    // results in duplicate messages in the long poll.
+    public void testSendAndReceiveMessagesConcurrently() throws Exception {
+
+        final int maxRuns = 1000;
+
+        createChannel(channelId);
+        // createChannel(channelIdProvider);
+
+        RestAssured.baseURI = getBounceProxyBaseUri();
+
+        List<String> expectedPayloads = new ArrayList<String>();
+
+        for (int i = 0; i < maxRuns; i++) {
+
+            expectedPayloads.clear();
+
+            ScheduledFuture<Response> longPollConsumer = longPoll(channelId, 30000);
+
+            String postPayload = payload + i + "-" + UUID.randomUUID().toString();
+            expectedPayloads.add(postPayload);
+            ScheduledFuture<Response> postMessage = postMessage(channelId, 5000, postPayload);
+
+            // wait until the long poll returns
+            Response responseLongPoll = longPollConsumer.get();
+            String responseBody = responseLongPoll.getBody().asString();
+            List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
+
+            // wait until the POSTs are finished.
+            postMessage.get();
+
+            ArrayList<String> payloads = new ArrayList<String>();
+            for (String json : listOfJsonStrings) {
+                JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
+                payloads.add(message.getPayload());
+            }
+
+            assertFalse("Unresolved bug that causes duplicate messages to be sent", payloads.size() == 2);
+            assertEquals(1, payloads.size());
+            assertThat(payloads, hasItems(postPayload));
         }
 
     }
@@ -284,10 +338,10 @@ public abstract class AbstractBounceProxyServerTest {
      * @throws JsonMappingException
      * @throws IOException
      */
-    private ScheduledFuture<Response> postMessage(final String myChannelId,
-                                                  final long relativeTtlMs,
-                                                  final String postPayload) throws JsonGenerationException,
-                                                                           JsonMappingException, IOException {
+ private ScheduledFuture<Response> postMessage(final String myChannelId,
+                                                    final long relativeTtlMs,
+                                                    final String postPayload) throws JsonGenerationException,
+                                                                             JsonMappingException, IOException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
 
             public Response call() throws JsonGenerationException, JsonMappingException, IOException {
