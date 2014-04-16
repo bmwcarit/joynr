@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ICOMMUNICATIONMANAGER_H
-#define ICOMMUNICATIONMANAGER_H
+#ifndef IMESSAGERECEIVER_H
+#define IMESSAGERECEIVER_H
 
 #include <QString>
 #include <QSharedPointer>
@@ -35,17 +35,17 @@ namespace system {
 }
 
 /**
-  * \class ICommunicationManager
-  * \brief Interface for communication manager
+  * \class IMessageReceiver
+  * \brief Interface for message receiver
   *
   * This interface describes basic messaging functionality available in
-  * the Joynr framework. Especially, it offers a method to send a message to
-  * a given channel and a signal to notify about received messages.
+  * the Joynr framework. Especially, it offers a method to notify about
+  * received messages.
   */
-class ICommunicationManager {
+class IMessageReceiver {
 
 public:
-    virtual ~ICommunicationManager() {}
+    virtual ~IMessageReceiver() {}
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.
@@ -70,7 +70,7 @@ public:
     virtual void stopReceiveQueue() = 0;
 
     /**
-      * Update the settings of the Communication Manager
+      * Update the settings of the Message Receiver
       */
     virtual void updateSettings() = 0;
 
@@ -84,4 +84,4 @@ public:
 };
 
 } // namespace joynr
-#endif // IMESSAGING_H
+#endif // IMESSAGERECEIVER_H

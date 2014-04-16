@@ -50,7 +50,6 @@ class DelayedScheduler;
 class ThreadPoolDelayedScheduler;
 namespace system { class Address; }
 template<typename Key, typename T> class Directory;
-class ICommunicationManager;
 
 /**
   * Class MessageRouter receives incoming JoynrMessages on the ClusterController

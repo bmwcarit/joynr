@@ -51,7 +51,7 @@ class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
-class ICommunicationManager;
+class IMessageReceiver;
 class IMessageSender;
 class CapabilitiesClient;
 class ICapabilitiesClient;
@@ -75,7 +75,7 @@ public:
 
     JoynrClusterControllerRuntime(QCoreApplication* app,
                         QSettings* settings,
-                        ICommunicationManager* messageReceiver = NULL,
+                        IMessageReceiver* messageReceiver = NULL,
                         IMessageSender* = NULL
     );
 
@@ -124,7 +124,7 @@ protected:
 
     QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    QSharedPointer<ICommunicationManager> messageReceiver;
+    QSharedPointer<IMessageReceiver> messageReceiver;
     QSharedPointer<IMessageSender> messageSender;
 
     QList<IDispatcher*> dispatcherList;

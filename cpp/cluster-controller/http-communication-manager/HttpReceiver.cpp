@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/HttpReceiver.h"
+#include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"

@@ -31,7 +31,6 @@ class IMessaging;
 
 namespace system { class Address; }
 class InProcessMessagingSkeleton;
-class ICommunicationManager;
 
 /**
   * Creates/Stores <Middleware>MessagingStubs. MessagingStubs are used to contact remote ClusterControllers (HttpCommunicationManager)

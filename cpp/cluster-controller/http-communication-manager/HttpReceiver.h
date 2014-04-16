@@ -22,7 +22,7 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 
-#include "joynr/ICommunicationManager.h"
+#include "joynr/IMessageReceiver.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
@@ -53,7 +53,7 @@ namespace system {
   * Implements the IMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public ICommunicationManager {
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver {
 
 public:
     explicit HttpReceiver(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter);

@@ -25,7 +25,6 @@ namespace joynr {
 
 namespace system { class Address; }
 class IMessaging;
-class ICommunicationManager;
 
 class IMessagingStubFactory {
 public:

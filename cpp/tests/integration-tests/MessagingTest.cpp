@@ -24,7 +24,6 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/ICommunicationManager.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include <QString>

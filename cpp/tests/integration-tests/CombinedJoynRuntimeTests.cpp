@@ -21,8 +21,6 @@
 #include <gmock/gmock.h>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/ICommunicationManager.h"
-#include "joynr/HttpReceiver.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -52,7 +50,7 @@ public:
     QString settingsFilename;
     QString libjoynrSettingsFilename;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockMessageReceiver; //will be deleted when runtime is deleted.
+    IMessageReceiver* mockMessageReceiver; //will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
     QSettings settings;
     MessagingSettings* messagingSettings;

@@ -21,8 +21,6 @@
 #include <gmock/gmock.h>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/ICommunicationManager.h"
-#include "joynr/HttpReceiver.h"
 
 #include "joynr/system/RoutingProxy.h"
 
@@ -35,7 +33,7 @@ public:
     QString routingDomain;
     QString routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockMessageReceiver;
+    IMessageReceiver* mockMessageReceiver;
     MockMessageSender* mockMessageSender;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;

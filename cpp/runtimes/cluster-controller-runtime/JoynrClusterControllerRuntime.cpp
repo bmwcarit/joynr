@@ -20,7 +20,7 @@
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "common/in-process/InProcessMessagingStub.h"
-#include "joynr/HttpReceiver.h"
+#include "cluster-controller/http-communication-manager/HttpReceiver.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -40,7 +40,6 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/ICommunicationManager.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
@@ -69,7 +68,7 @@ Logger* JoynrClusterControllerRuntime::logger = Logging::getInstance()->getLogge
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         QCoreApplication* app,
         QSettings* settings,
-        ICommunicationManager* messageReceiver,
+        IMessageReceiver* messageReceiver,
         IMessageSender* messageSender
 ) :
         JoynrRuntime(*settings),
@@ -179,7 +178,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
       */
     if(messageReceiver.isNull()) {
         LOG_INFO(logger, "The message receiver supplied is NULL, creating the default MessageReceiver");
-        messageReceiver = QSharedPointer<ICommunicationManager>(new HttpReceiver(*messagingSettings, messageRouter));
+        messageReceiver = QSharedPointer<IMessageReceiver>(new HttpReceiver(*messagingSettings, messageRouter));
     }
 
     QString channelId = messageReceiver->getReceiveChannelId();

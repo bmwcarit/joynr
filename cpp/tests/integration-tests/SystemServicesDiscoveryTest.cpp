@@ -33,7 +33,7 @@ public:
     QString discoveryDomain;
     QString discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockMessageReceiver;
+    IMessageReceiver* mockMessageReceiver;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;

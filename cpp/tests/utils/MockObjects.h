@@ -19,7 +19,6 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
-class IMessageReceiver;
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProvider.h"
 #include "joynr/tests/TestRequestCaller.h"
@@ -32,7 +31,7 @@ class IMessageReceiver;
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/types/Trip.h"
-#include "joynr/ICommunicationManager.h"
+#include "joynr/IMessageReceiver.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
 #include "joynr/IClientCache.h"
@@ -65,7 +64,7 @@ class IMessageReceiver;
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/types/GpsLocation.h"
-#include "joynr/HttpReceiver.h"
+#include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 
@@ -340,7 +339,7 @@ public:
 };
 } // namespace joynr
 
-class MockMessageReceiver : public joynr::ICommunicationManager
+class MockMessageReceiver : public joynr::IMessageReceiver
 {
 public:
     MockMessageReceiver(){};
