@@ -81,7 +81,7 @@ protected:
     LibjoynrSettings* libjoynrSettings;
     DbusSettings* dbusSettings;
 
-    Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
+    Directory<QString, joynr::system::Address >* routingTable;
     SystemServicesSettings*  systemServiceSettings;
     QSharedPointer<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
