@@ -31,6 +31,7 @@
 #include "joynr/ICapabilities.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/system/DiscoveryProxy.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -38,23 +39,12 @@
 
 namespace joynr {
 
-class SystemServicesSettings;
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime {
 
 public:
 
-    JoynrRuntime(QSettings &settings) :
-            proxyFactory(NULL),
-            joynrCapabilitiesSendStub(NULL),
-            participantIdStorage(NULL),
-            capabilitiesRegistrar(NULL),
-            capabilitiesAggregator(NULL),
-            systemServicesSettings(settings),
-            dispatcherAddress(NULL),
-            messageRouter(NULL)
-    {
-    }
+    JoynrRuntime(QSettings &settings);
 
     virtual ~JoynrRuntime() {}
 
@@ -79,7 +69,13 @@ public:
         if(!proxyFactory || !joynrCapabilitiesSendStub){
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<T>* builder = new ProxyBuilder<T>(proxyFactory, capabilitiesAggregator, domain, dispatcherAddress, messageRouter);
+        ProxyBuilder<T>* builder = new ProxyBuilder<T>(
+                    proxyFactory,
+                    capabilitiesAggregator,
+                    domain,
+                    dispatcherAddress,
+                    messageRouter
+        );
         return builder;
     }
 
@@ -87,6 +83,7 @@ public:
                                       const QString& pathToMessagingSettings = "");
 
 protected:
+    joynr::system::DiscoveryProxy* createDiscoveryProxy();
 
     ProxyFactory* proxyFactory;
     ICapabilities* joynrCapabilitiesSendStub;
@@ -96,7 +93,7 @@ protected:
     SystemServicesSettings systemServicesSettings;
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
-
+    joynr::system::IDiscoverySync* discoveryProxy;
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
 };

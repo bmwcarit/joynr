@@ -28,6 +28,8 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/MessageRouter.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/joynrlogging.h"
 
 #include <QString>
 #include <QList>
@@ -41,6 +43,7 @@ public:
     CapabilitiesRegistrar(
             QList<IDispatcher*> dispatcherList,
             QSharedPointer<ICapabilities> capabilitiesAggregator,
+            joynr::system::IDiscoverySync& discoveryProxy,
             QSharedPointer<joynr::system::Address> messagingStubAddress,
             QSharedPointer<ParticipantIdStorage> participantIdStorage,
             QSharedPointer<joynr::system::Address> dispatcherAddress,
@@ -71,15 +74,39 @@ public:
             currentDispatcher->addRequestCaller(participantId,caller);
         }
 
-        // Get the provider participant id
         capabilitiesAggregator->add(
-                    domain, T::getInterfaceName(),
+                    domain,
+                    T::getInterfaceName(),
                     participantId,
                     provider->getProviderQos(),
                     endpointAddresses,
                     messagingStubAddress,
                     ICapabilities::NO_TIMEOUT()
         );
+
+        QList<joynr::system::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        joynr::RequestStatus status;
+        discoveryProxy.add(
+                    status,
+                    domain,
+                    T::getInterfaceName(),
+                    participantId,
+                    provider->getProviderQos(),
+                    connections
+        );
+        if(!status.successful()) {
+            LOG_ERROR(
+                        logger,
+                        QString("Unable to add provider (participant ID: %1, domain: %2, interface: %3) "
+                                "to discovery. Status code: %4."
+                        )
+                        .arg(participantId)
+                        .arg(domain)
+                        .arg(T::getInterfaceName())
+                        .arg(status.getCode().toString())
+            );
+        }
 
         // add next hop to dispatcher
         messageRouter->addNextHop(participantId, dispatcherAddress);
@@ -95,7 +122,6 @@ public:
             QSharedPointer<T> provider,
             QString authenticationToken
     ) {
-        Q_UNUSED(domain)
         Q_UNUSED(provider)
 
         // Get the provider participant Id - the persisted provider Id has priority
@@ -113,6 +139,30 @@ public:
         }
 
         capabilitiesAggregator->remove(participantId, ICapabilities::NO_TIMEOUT());
+
+        joynr::RequestStatus status;
+        discoveryProxy.remove(status, participantId);
+        if(!status.successful()) {
+            LOG_ERROR(
+                        logger,
+                        QString("Unable to remove provider (participant ID: %1, domain: %2, interface: %3) "
+                                "to discovery. Status code: %4."
+                        )
+                        .arg(participantId)
+                        .arg(domain)
+                        .arg(T::getInterfaceName())
+                        .arg(status.getCode().toString())
+            );
+        }
+
+        messageRouter->removeNextHop(status, participantId);
+        if(!status.successful()) {
+            LOG_ERROR(
+                        logger,
+                        QString("Unable to remove next hop (participant ID: %1) from message router.")
+                        .arg(participantId)
+            );
+        }
         return participantId;
     }
 
@@ -123,10 +173,12 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
     QSharedPointer<ICapabilities> capabilitiesAggregator;
+    joynr::system::IDiscoverySync& discoveryProxy;
     QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
+    static joynr_logging::Logger* logger;
 };
 
 

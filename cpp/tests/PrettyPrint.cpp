@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include <gtest/gtest.h>
 #include "PrettyPrint.h"
 #include <QtDebug>
 
@@ -23,7 +24,6 @@
 #include "joynr/types/GpsLocation.h"
 #include "joynr/types/Trip.h"
 #include "joynr/JoynrMessage.h"
-#include <gtest/gtest.h>
 #include "joynr/types/TStruct.h"
 #include "joynr/system/DiscoveryEntry.h"
 
@@ -54,6 +54,9 @@ void PrintTo(const QString& value, ::std::ostream* os) {
      *os << value.toStdString();
 }
 
+void PrintTo(const QChar& value, ::std::ostream* os) {
+     *os << value.toLatin1();
+}
 
 void PrintTo(const QByteArray& value, std::ostream* os)
 {

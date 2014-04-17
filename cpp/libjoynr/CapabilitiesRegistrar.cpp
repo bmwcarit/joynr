@@ -22,9 +22,13 @@
 
 namespace joynr {
 
+joynr_logging::Logger* CapabilitiesRegistrar::logger =
+        joynr_logging::Logging::getInstance()->getLogger("DIS", "CapabilitiesRegistrar");
+
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         QList<IDispatcher*> dispatcherList,
         QSharedPointer<ICapabilities> capabilitiesAggregator,
+        joynr::system::IDiscoverySync& discoveryProxy,
         QSharedPointer<joynr::system::Address> messagingStubAddress,
         QSharedPointer<ParticipantIdStorage> participantIdStorage,
         QSharedPointer<joynr::system::Address> dispatcherAddress,
@@ -32,6 +36,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 ) :
     dispatcherList(dispatcherList),
     capabilitiesAggregator(capabilitiesAggregator),
+    discoveryProxy(discoveryProxy),
     messagingStubAddress(messagingStubAddress),
     participantIdStorage(participantIdStorage),
     dispatcherAddress(dispatcherAddress),
@@ -47,7 +52,25 @@ void CapabilitiesRegistrar::unregisterCapability(QString participantId) {
     capabilitiesAggregator->remove(participantId, ICapabilities::NO_TIMEOUT());
 
     joynr::RequestStatus status;
+    discoveryProxy.remove(status, participantId);
+    if(!status.successful()) {
+        LOG_ERROR(
+                    logger,
+                    QString("Unable to remove provider (participant ID: %1) "
+                            "to discovery. Status code: %2."
+                    )
+                    .arg(participantId)
+                    .arg(status.getCode().toString())
+        );
+    }
     messageRouter->removeNextHop(status, participantId);
+    if(!status.successful()) {
+        LOG_ERROR(
+                    logger,
+                    QString("Unable to remove next hop (participant ID: %1) from message router.")
+                    .arg(participantId)
+        );
+    }
 }
 
 void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher) {

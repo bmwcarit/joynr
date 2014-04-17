@@ -258,9 +258,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     dispatcherAddress = libjoynrMessagingAddress;
+    discoveryProxy = localCapabilitiesDirectory.data();
     capabilitiesRegistrar =  new CapabilitiesRegistrar(
                 dispatcherList,
                 qSharedPointerDynamicCast<ICapabilities>(capabilitiesAggregator),
+                *discoveryProxy,
                 libjoynrMessagingAddress,
                 participantIdStorage,
                 dispatcherAddress,
@@ -374,6 +376,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
     delete messagingSettings;
     delete libjoynrSettings;
     delete capabilitiesRegistrar;
+    delete discoveryProxy;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;

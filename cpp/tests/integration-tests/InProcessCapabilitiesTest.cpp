@@ -47,6 +47,7 @@ public:
         mockDispatcher(new MockInProcessDispatcher()),
         dispatcherList(),
         capabilitiesAggregator(new CapabilitiesAggregator(capabilitiesStub, mockDispatcher)),
+        mockDiscovery(),
         capabilitiesRegistrar(NULL),
         domain("testDomain"),
         interfaceName("test/interface"),
@@ -60,12 +61,15 @@ public:
         mockMessageRouter(new MockMessageRouter())
     {
         dispatcherList.append(mockDispatcher);
-        capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
-                                                          capabilitiesAggregator,
-                                                          messagingStubAddress,
-                                                          mockParticipantIdStorage,
-                                                          messagingStubAddress,
-                                                          mockMessageRouter);
+        capabilitiesRegistrar = new CapabilitiesRegistrar(
+                    dispatcherList,
+                    capabilitiesAggregator,
+                    mockDiscovery,
+                    messagingStubAddress,
+                    mockParticipantIdStorage,
+                    messagingStubAddress,
+                    mockMessageRouter
+        );
 //    TM, 14.8.2012  Disabled, because after changes of IDL for capabilitiesDirectory providerQos does not have a radlaufsensor anymore.
 //        providerQos.setNumberOfRadumlaufsensors(123);
 
@@ -100,6 +104,7 @@ protected:
     MockInProcessDispatcher* mockDispatcher;
     QList<IDispatcher*> dispatcherList;
     QSharedPointer<CapabilitiesAggregator> capabilitiesAggregator;
+    MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;
 
     QString domain;
@@ -154,9 +159,21 @@ TEST_F(InProcessCapabilitiesTest, registrarAddsRequestCallerAndRegistersAtCC){
             .Times(1)
             .WillOnce(Return(QString("testLocalChannel")));
     EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(1)
-            .WillOnce(Return(types::ProviderQos()));
+            .Times(2)
+            .WillRepeatedly(Return(types::ProviderQos()));
 
+    joynr::RequestStatus status;
+    status.setCode(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(mockDiscovery, add(
+                    A<joynr::RequestStatus&>(),
+                    domain,
+                    IMockProviderInterface::getInterfaceName(),
+                    expectedParticipantId,
+                    _,
+                    _
+    ))
+            .WillOnce(SetArgReferee<0>(status))
+    ;
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
 
     EXPECT_CALL(*mockDispatcher, containsRequestCaller(expectedParticipantId))

@@ -19,11 +19,13 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include "PrettyPrint.h"
+
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProvider.h"
 #include "joynr/tests/TestRequestCaller.h"
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "QtCore"
 #include "utils/TestQString.h"
@@ -312,6 +314,152 @@ public:
                                                 const joynr::DiscoveryQos& discoveryQos));
     MOCK_METHOD2(lookup, QList<joynr::CapabilityEntry>(const QString& participantId, const joynr::DiscoveryQos& discoveryQos));
     MOCK_METHOD2(remove, void(const QString& participantId, const qint64& timeout));
+};
+
+class MockDiscovery : public joynr::system::IDiscovery {
+public:
+    MOCK_METHOD6(
+            add,
+            void(
+                joynr::RequestStatus& joynrInternalStatus ,
+                QString domain,
+                QString interfaceName,
+                QString participantId,
+                joynr::types::ProviderQos qos,
+                QList<joynr::system::CommunicationMiddleware::Enum> connections
+            )
+    );
+    MOCK_METHOD5(
+            lookup,
+            void(
+                joynr::RequestStatus& joynrInternalStatus,
+                QList<joynr::system::DiscoveryEntry> & result,
+                QString domain,
+                QString interfaceName,
+                joynr::system::DiscoveryQos discoveryQos
+            )
+    );
+    MOCK_METHOD3(
+            lookup,
+            void(
+                joynr::RequestStatus& joynrInternalStatus,
+                joynr::system::DiscoveryEntry& result,
+                QString participantId
+            )
+    );
+    MOCK_METHOD2(
+            remove,
+            void(
+                joynr::RequestStatus& joynrInternalStatus,
+                QString participantId
+            )
+    );
+    MOCK_METHOD6(
+            add,
+            void(
+                QSharedPointer<joynr::ICallback<void> > callback,
+                QString domain,
+                QString interfaceName,
+                QString participantId,
+                joynr::types::ProviderQos qos,
+                QList<joynr::system::CommunicationMiddleware::Enum> connections
+            )
+    );
+    MOCK_METHOD7(
+            add,
+            void(
+                QSharedPointer<joynr::Future<void> > future,
+                QSharedPointer<joynr::ICallback<void> > callback,
+                QString domain,
+                QString interfaceName,
+                QString participantId,
+                joynr::types::ProviderQos qos,
+                QList<joynr::system::CommunicationMiddleware::Enum> connections
+            )
+    );
+    MOCK_METHOD6(
+            add,
+            void(
+                QSharedPointer<joynr::Future<void> > future,
+                QString domain,
+                QString interfaceName,
+                QString participantId,
+                joynr::types::ProviderQos qos,
+                QList<joynr::system::CommunicationMiddleware::Enum> connections
+            )
+    );
+    MOCK_METHOD4(
+            lookup,
+            void(
+                QSharedPointer<joynr::ICallback<QList<joynr::system::DiscoveryEntry> > > callback,
+                QString domain,
+                QString interfaceName,
+                joynr::system::DiscoveryQos discoveryQos
+            )
+    );
+    MOCK_METHOD5(
+            lookup,
+            void(
+                QSharedPointer<joynr::Future<QList<joynr::system::DiscoveryEntry> > > future,
+                QSharedPointer<joynr::ICallback<QList<joynr::system::DiscoveryEntry> > > callback,
+                QString domain,
+                QString interfaceName,
+                joynr::system::DiscoveryQos discoveryQos
+            )
+    );
+    MOCK_METHOD4(
+            lookup,
+            void(
+                QSharedPointer<joynr::Future<QList<joynr::system::DiscoveryEntry> > > future,
+                QString domain,
+                QString interfaceName,
+                joynr::system::DiscoveryQos discoveryQos
+            )
+    );
+    MOCK_METHOD2(
+            lookup,
+            void(
+                QSharedPointer<joynr::ICallback<joynr::system::DiscoveryEntry> > callback,
+                QString participantId
+            )
+    );
+    MOCK_METHOD3(
+            lookup,
+            void(
+                QSharedPointer<joynr::Future<joynr::system::DiscoveryEntry> > future,
+                QSharedPointer<joynr::ICallback<joynr::system::DiscoveryEntry> > callback,
+                QString participantId
+            )
+    );
+    MOCK_METHOD2(
+            lookup,
+            void(
+                QSharedPointer<joynr::Future<joynr::system::DiscoveryEntry> > future,
+                QString participantId
+            )
+    );
+    MOCK_METHOD2(
+            remove,
+            void(
+                QSharedPointer<joynr::ICallback<void> > callback,
+                QString participantId
+            )
+    );
+    MOCK_METHOD3(
+            remove,
+            void(
+                QSharedPointer<joynr::Future<void> > future,
+                QSharedPointer<joynr::ICallback<void> > callback,
+                QString participantId
+            )
+    );
+    MOCK_METHOD2(
+            remove,
+            void(
+                QSharedPointer<joynr::Future<void> > future,
+                QString participantId
+            )
+    );
 };
 
 class IMockProviderInterface {

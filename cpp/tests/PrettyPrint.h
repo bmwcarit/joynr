@@ -20,8 +20,9 @@
 #define PRETTYPRINT_H_
 
 #include <gtest/gtest.h>
-#include <QtCore/QString>
-#include <QtCore/QByteArray>
+#include <QString>
+#include <QChar>
+#include <QByteArray>
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
@@ -59,6 +60,7 @@ namespace system {
 }
 }
 void PrintTo(const QString& value, ::std::ostream* os);
+void PrintTo(const QChar& value, ::std::ostream* os);
 void PrintTo(const QByteArray& value, ::std::ostream* os);
 //void PrintTo(const QObject& value, ::std::ostream* os);
 //void PrintTo(const QVariant& value, ::std::ostream* os);

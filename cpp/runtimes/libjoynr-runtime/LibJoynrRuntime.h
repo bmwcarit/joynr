@@ -82,7 +82,6 @@ protected:
     DbusSettings* dbusSettings;
 
     Directory<QString, joynr::system::Address >* routingTable;
-    SystemServicesSettings*  systemServiceSettings;
     QSharedPointer<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
     void initializeAllDependencies();

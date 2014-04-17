@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "PrettyPrint.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/LibjoynrSettings.h"
@@ -55,7 +56,10 @@ public:
     LibJoynrRuntime* runtime;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
+    joynr::types::ProviderQos mockTestProviderQos;
     QSharedPointer<MockTestProvider> mockTestProvider;
+    ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
+    joynr::system::DiscoveryProxy* discoveryProxy;
 
     LibJoynrRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
@@ -67,7 +71,16 @@ public:
             runtime(NULL),
             routingProxyBuilder(NULL),
             routingProxy(NULL),
-            mockTestProvider()
+            mockTestProviderQos(
+                QList<joynr::types::CustomParameter>(), // custom provider parameters
+                1,                                      // version
+                1,                                      // priority
+                joynr::types::ProviderScope::LOCAL,     // visibilitiy scope
+                false                                   // supports on change subscriptions
+            ),
+            mockTestProvider(),
+            discoveryProxyBuilder(NULL),
+            discoveryProxy(NULL)
     {
         QString channelId("LibJoynrRuntimeTest.ChannelId");
 
@@ -84,6 +97,8 @@ public:
         );
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         ccRuntime->registerRoutingProvider();
+        // discovery provider is normally registered in JoynrClusterControllerRuntime::create
+        ccRuntime->registerDiscoveryProvider();
     }
 
     ~LibJoynrRuntimeTest() {
@@ -100,10 +115,12 @@ public:
 
         SystemServicesSettings systemSettings(settings);
         systemSettings.printSettings();
-        QString routingDomain(systemSettings.getDomain());
+        QString systemServicesDomain(systemSettings.getDomain());
+
+        // setup routing proxy
         QString routingProviderParticipantId(systemSettings.getCcRoutingProviderParticipantId());
         routingProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
+                ->getProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
         DiscoveryQos discoveryQos;
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
@@ -114,20 +131,34 @@ public:
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
+        EXPECT_TRUE(routingProxy != NULL);
 
-        joynr::types::ProviderQos providerQos(
-                    QList<joynr::types::CustomParameter>(), // custom provider parameters
-                    1,                                      // version
-                    1,                                      // priority
-                    joynr::types::ProviderScope::LOCAL,     // visibilitiy scope
-                    false                                   // supports on change subscriptions
+        // setup discovery proxy
+        QString discoveryProviderParticipantId(systemSettings.getCcDiscoveryProviderParticipantId());
+        discoveryProxyBuilder = runtime
+                ->getProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+        discoveryQos = DiscoveryQos();
+        discoveryQos.setCacheMaxAge(1000);
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+        discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
+        discoveryQos.setDiscoveryTimeout(50);
+        discoveryProxy = discoveryProxyBuilder
+                ->setRuntimeQos(MessagingQos(5000))
+                ->setCached(false)
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+        EXPECT_TRUE(discoveryProxy != NULL);
+
+        mockTestProvider = QSharedPointer<MockTestProvider>(
+                    new MockTestProvider(mockTestProviderQos)
         );
-        mockTestProvider = QSharedPointer<MockTestProvider>(new MockTestProvider(providerQos));
     }
 
     void TearDown() {
         delete routingProxyBuilder;
         delete routingProxy;
+        delete discoveryProxyBuilder;
+        delete discoveryProxy;
         delete runtime;
         QFile::remove(temporarylibjoynrSettingsFilename);
         QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
@@ -152,7 +183,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
     RequestStatus status;
     bool resolved = false;
     routingProxy->resolveNextHop(status, resolved, participantId);
-    EXPECT_TRUE(status.successful());
+    ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 }
 
@@ -168,13 +199,37 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     RequestStatus status;
     bool resolved = false;
     routingProxy->resolveNextHop(status, resolved, participantId);
-    EXPECT_TRUE(status.successful());
+    ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 
     runtime->unregisterCapability(participantId);
     routingProxy->resolveNextHop(status, resolved, participantId);
-    EXPECT_TRUE(status.successful());
+    ASSERT_TRUE(status.successful());
     EXPECT_FALSE(resolved);
+}
+
+TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
+    QString domain("LibJoynrRuntimeTest.Domain.F");
+    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.F");
+
+    QString participantId = runtime->registerCapability<tests::TestProvider>(
+                domain,
+                mockTestProvider,
+                authenticationToken
+    );
+
+    joynr::system::DiscoveryEntry expectedDiscoveryEntry(
+                domain,
+                tests::TestProvider::getInterfaceName(),
+                participantId,
+                mockTestProviderQos,
+                QList<joynr::system::CommunicationMiddleware::Enum>()
+    );
+    RequestStatus status;
+    joynr::system::DiscoveryEntry discoveryEntry;
+    discoveryProxy->lookup(status, discoveryEntry, participantId);
+    ASSERT_TRUE(status.successful());
+    EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);
 }
 
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
@@ -200,7 +255,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
-    EXPECT_TRUE(testProxy != NULL);
+    ASSERT_TRUE(testProxy != NULL);
 
     delete testProxyBuilder;
     delete testProxy;
@@ -229,7 +284,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
-    EXPECT_TRUE(testProxy != NULL);
+    ASSERT_TRUE(testProxy != NULL);
 
     QList<int> ints;
     ints << 4 << 6 << 12;
@@ -238,7 +293,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     testProxy->sumInts(future, ints);
     future->waitForFinished(500);
 
-    EXPECT_TRUE(future->getStatus().successful());
+    ASSERT_TRUE(future->getStatus().successful());
     EXPECT_EQ(expectedSum, future->getValue());
 
     delete testProxyBuilder;
@@ -246,8 +301,8 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
 }
 
 TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
-    QString domain("LibJoynrRuntimeTest.Domain.D");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.D");
+    QString domain("LibJoynrRuntimeTest.Domain.E");
+    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.E");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::TestProvider>(
@@ -268,7 +323,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
-    EXPECT_TRUE(testProxy != NULL);
+    ASSERT_TRUE(testProxy != NULL);
 
     QList<int> ints;
     ints << 4 << 6 << 12;
@@ -276,7 +331,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     RequestStatus status;
     int sum = 0;
     testProxy->sumInts(status, sum, ints);
-    EXPECT_TRUE(status.successful());
+    ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedSum, sum);
 
     delete testProxyBuilder;
