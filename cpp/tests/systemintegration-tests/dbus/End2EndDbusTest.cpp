@@ -22,7 +22,6 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
-#include "joynr/SettingsMerger.h"
 
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProxy.h"
@@ -42,7 +41,6 @@ class End2EndDbusTest : public Test {
 
 public:
     QString messageSettingsFilename;
-    QString libjoynrSettingsFilename;
 
     JoynrClusterControllerRuntime* clusterControllerRuntime;
     LibJoynrRuntime* runtime1;
@@ -55,7 +53,6 @@ public:
 
     End2EndDbusTest() :
         messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
-        libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
         clusterControllerRuntime(NULL),
         runtime1(NULL),
         runtime2(NULL),
@@ -64,14 +61,15 @@ public:
         semaphore(0)
     {
         // create the cluster controller runtime
-        QSettings* settings = SettingsMerger::mergeSettings(messageSettingsFilename);
-        SettingsMerger::mergeSettings(libjoynrSettingsFilename, settings);
-        clusterControllerRuntime = new JoynrClusterControllerRuntime(NULL, settings);
+        clusterControllerRuntime = new JoynrClusterControllerRuntime(
+                    NULL,
+                    new QSettings(messageSettingsFilename, QSettings::IniFormat)
+        );
         clusterControllerRuntime->registerRoutingProvider();
 
         // create lib joynr runtimes
-        runtime1 = new LibJoynrRuntime(settings);
-        runtime2 = new LibJoynrRuntime(settings);
+        runtime1 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime2 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
     }
 
     void SetUp() {

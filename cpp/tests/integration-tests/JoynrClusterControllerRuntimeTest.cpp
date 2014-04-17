@@ -22,7 +22,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -43,19 +42,15 @@ using testing::AtLeast;
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     QString settingsFilename;
-    QString libjoynrSettingsFilename;
     JoynrClusterControllerRuntime* runtime;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
-    QSettings settings;
 
     JoynrClusterControllerRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
-            libjoynrSettingsFilename("test-resources/libjoynrintegrationtest.settings"),
             runtime(NULL),
             mockMessageReceiver(new MockMessageReceiver()),
-            mockMessageSender(new MockMessageSender()),
-            settings(settingsFilename, QSettings::IniFormat)
+            mockMessageSender(new MockMessageSender())
     {
         QString channelId("JoynrClusterControllerRuntimeTest.ChannelId");
 
@@ -64,9 +59,12 @@ public:
         EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
-        QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
-        SettingsMerger::mergeSettings(libjoynrSettingsFilename, settings);
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver, mockMessageSender);
+        runtime = new JoynrClusterControllerRuntime(
+                    NULL,
+                    new QSettings(settingsFilename, QSettings::IniFormat),
+                    mockMessageReceiver,
+                    mockMessageSender
+        );
     }
 
     ~JoynrClusterControllerRuntimeTest(){
