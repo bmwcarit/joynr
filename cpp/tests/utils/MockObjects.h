@@ -458,7 +458,6 @@ public:
     };
     ~MockTestProvider()
     {
-        qDebug() << "I am being destroyed_ MockProvider";
     };
 
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& result) );
