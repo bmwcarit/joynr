@@ -175,6 +175,7 @@ public class LongPollingChannelLifecycle {
             long localTimeBeforeRequest = System.currentTimeMillis();
 
             HttpGet getTime = new HttpGet(url);
+            getTime.setConfig(defaultRequestConfig);
             response = httpclient.execute(getTime);
 
             StatusLine statusLine = response.getStatusLine();
@@ -343,8 +344,6 @@ public class LongPollingChannelLifecycle {
 
         HttpPost postCreateChannel = new HttpPost(url.trim());
         postCreateChannel.setConfig(defaultRequestConfig);
-        postCreateChannel.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON()
-                + ";charset=UTF-8");
         postCreateChannel.addHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);
         postCreateChannel.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON());
 
