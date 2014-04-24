@@ -173,7 +173,7 @@
 					</contextHandlers>
 					<systemProperties>
 						<systemProperty>
-							<name>hostPath</name>
+							<name>joynr.servlet.hostPath</name>
 							<value>http://localhost:8080</value>
 						</systemProperty>
 					</systemProperties>
