@@ -88,13 +88,7 @@ public:
             const QString& interfaceName,
             const types::ProviderQos& qos,
             const QString& participantId,
-            QList<QSharedPointer<joynr::system::Address> > endpointAddresses
-    );
-    void registerCapability(
-            const QString& domain,
-            const QString& interfaceName,
-            const types::ProviderQos& qos,
-            const QString& participantId
+            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
     );
 
     /*
@@ -212,7 +206,16 @@ private:
     );
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
-    void insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache);
+    void insertInCache(
+            const QString& domain,
+            const QString& interfaceName,
+            const types::ProviderQos& qos,
+            const QString& participantId,
+            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
+            bool isGlobal,
+            bool localCache,
+            bool globalCache
+    );
     QList<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress, const qint64& maxCacheAge, bool localEntries);
     QList<CapabilityEntry> searchCache(const QString& participantId, const qint64& maxCacheAge, bool localEntries);
 

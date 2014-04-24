@@ -57,16 +57,16 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(QList<types::Capabil
     QList<CapabilityEntry> mergedEntries;
 
     foreach (types::CapabilityInformation capInfo, results){
-        //each CapabilityEntry matches to a remote Joynr CC, so we use a JoynrMessagingViaCCEndpointAddress, which is essentiall empty
-        //but tells the LibJoynr to simply use the MessageRouter of the Clustercontroller.
-        QList<QSharedPointer<joynr::system::Address> > epaList;
-        epaList.append(QSharedPointer<joynr::system::Address>(new JoynrMessagingViaCCEndpointAddress()));
-        CapabilityEntry capEntry(capInfo.getDomain(),
-                                 capInfo.getInterfaceName(),
-                                 capInfo.getProviderQos(),
-                                 capInfo.getParticipantId(),
-                                 epaList,
-                                 true);
+        QList<joynr::system::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        CapabilityEntry capEntry(
+                    capInfo.getDomain(),
+                    capInfo.getInterfaceName(),
+                    capInfo.getProviderQos(),
+                    capInfo.getParticipantId(),
+                    connections,
+                    true
+        );
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
         mergedEntries.append(capEntry);
     }

@@ -73,10 +73,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
 {
     //setting up the provisioned values for GlobalCapabilitiesClient
     //The GlobalCapabilitiesServer is also provisioned in MessageRouter
-    QList<QSharedPointer<joynr::system::Address> > endpointAddress;
-    endpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(
-                new JoynrMessagingViaCCEndpointAddress()
-    ));
+    QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections;
+    middlewareConnections.append(joynr::system::CommunicationMiddleware::JOYNR);
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
     this->insertInCache(
@@ -84,7 +82,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
                 infrastructure::IGlobalCapabilitiesDirectory::getInterfaceName(),
                 providerQos,
                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                endpointAddress,
+                middlewareConnections,
                 false,
                 true,
                 false
@@ -92,10 +90,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
 
     //setting up the provisioned values for the ChannelUrlDirectory (domain, interface, participantId...)
     //The ChannelUrlDirectory is also provisioned in MessageRouter  (participantId -> channelId)
-    QList<QSharedPointer<joynr::system::Address> > channelUrlDirEndpointAddress;
-    channelUrlDirEndpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(
-                new JoynrMessagingViaCCEndpointAddress()
-    ));
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
     this->insertInCache(
@@ -103,7 +97,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
                 infrastructure::IChannelUrlDirectory::getInterfaceName(),
                 channelUrlDirProviderQos,
                 messagingSettings.getChannelUrlDirectoryParticipantId(),
-                channelUrlDirEndpointAddress,
+                middlewareConnections,
                 false,
                 true,
                 false
@@ -125,12 +119,21 @@ void LocalCapabilitiesDirectory::registerCapability(
         const QString &interfaceName,
         const types::ProviderQos &qos,
         const QString &participantId,
-        QList<QSharedPointer<joynr::system::Address> > endpointAddresses
+        QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
 ) {
     bool isGlobal = qos.getScope() == types::ProviderScope::GLOBAL;
 
     // register locally
-    this->insertInCache(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal, true, isGlobal);
+    this->insertInCache(
+                domain,
+                interfaceName,
+                qos,
+                participantId,
+                middlewareConnections,
+                isGlobal,
+                true,
+                isGlobal
+    );
 
     // register globally
     if(isGlobal) {
@@ -146,21 +149,6 @@ void LocalCapabilitiesDirectory::registerCapability(
         }
         this->capabilitiesClient->registerCapabilities(registeredGlobalCapabilities);
     }
-}
-
-void LocalCapabilitiesDirectory::registerCapability(
-        const QString &domain,
-        const QString &interfaceName,
-        const types::ProviderQos &qos,
-        const QString &participantId
-) {
-    registerCapability(
-                domain,
-                interfaceName,
-                qos,
-                participantId,
-                QList<QSharedPointer<joynr::system::Address> >()
-    );
 }
 
 void LocalCapabilitiesDirectory::removeCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
@@ -345,10 +333,7 @@ void LocalCapabilitiesDirectory::add(
         types::ProviderQos qos,
         QList<system::CommunicationMiddleware::Enum> connections
 ) {
-    // TODO connections must be stored
-    Q_UNUSED(connections);
-
-    registerCapability(domain, interfaceName, qos, participantId);
+    registerCapability(domain, interfaceName, qos, participantId, connections);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
@@ -412,8 +397,17 @@ void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry, boo
     }
 }
 
-void LocalCapabilitiesDirectory::insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache) {
-    CapabilityEntry entry(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal);
+void LocalCapabilitiesDirectory::insertInCache(
+        const QString& domain,
+        const QString& interfaceName,
+        const types::ProviderQos& qos,
+        const QString& participantId,
+        QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
+        bool isGlobal,
+        bool localCache,
+        bool globalCache
+) {
+    CapabilityEntry entry(domain, interfaceName, qos, participantId, middlewareConnections, isGlobal);
 
     // do not dublicate entries:
     // the combination participantId is unique for [domain, interfaceName, authtoken]
@@ -422,7 +416,7 @@ void LocalCapabilitiesDirectory::insertInCache(const QString& domain, const QStr
     bool foundMatch = false;
     if(localCache) {
         QList<CapabilityEntry> entryList = searchCache(participantId, -1, true);
-        CapabilityEntry newEntry = CapabilityEntry(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal);
+        CapabilityEntry newEntry(domain, interfaceName, qos, participantId, middlewareConnections, isGlobal);
         foreach (CapabilityEntry oldEntry, entryList) {
             if (oldEntry == newEntry){
                 foundMatch = true;
@@ -463,9 +457,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
     discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
-    discoveryEntry.setConnections(connections);
+    discoveryEntry.setConnections(capabilityEntry.getMiddlewareConnections());
 }
 
 void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
