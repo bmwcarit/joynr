@@ -32,7 +32,6 @@
 #include "joynr/exceptions.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
-#include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 using namespace ::testing;
 using namespace joynr;
 

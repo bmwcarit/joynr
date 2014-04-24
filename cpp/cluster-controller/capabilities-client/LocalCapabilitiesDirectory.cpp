@@ -26,7 +26,6 @@
 #include "joynr/exceptions.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/system/Address.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"

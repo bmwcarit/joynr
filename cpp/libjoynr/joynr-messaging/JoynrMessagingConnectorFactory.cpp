@@ -20,7 +20,6 @@
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/system/Address.h"
 #include "joynr/system/ChannelAddress.h"
-#include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 
 #include <QSharedPointer>
 

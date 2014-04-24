@@ -60,8 +60,7 @@ public:
             return joynrMessagingConnectorFactory->create<T>(domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached, reqCacheDataFreshness_ms);
         }
 
-        //else if (endpointClassName == Lipci/SomeIp...)
-        LOG_ERROR(logger, "Can not create Connector: Unknown endpointAddress type.");
+        LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
         return NULL;
     }
 private:

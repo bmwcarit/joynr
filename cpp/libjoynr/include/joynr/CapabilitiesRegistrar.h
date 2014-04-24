@@ -56,7 +56,6 @@ public:
     ) {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
-        QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId = participantIdStorage->getProviderParticipantId(
