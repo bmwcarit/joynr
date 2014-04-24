@@ -27,7 +27,6 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         QList<IDispatcher*> dispatcherList,
-        QSharedPointer<ICapabilities> capabilitiesAggregator,
         joynr::system::IDiscoverySync& discoveryProxy,
         QSharedPointer<joynr::system::Address> messagingStubAddress,
         QSharedPointer<ParticipantIdStorage> participantIdStorage,
@@ -35,7 +34,6 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         QSharedPointer<MessageRouter> messageRouter
 ) :
     dispatcherList(dispatcherList),
-    capabilitiesAggregator(capabilitiesAggregator),
     discoveryProxy(discoveryProxy),
     messagingStubAddress(messagingStubAddress),
     participantIdStorage(participantIdStorage),
@@ -49,8 +47,6 @@ void CapabilitiesRegistrar::unregisterCapability(QString participantId) {
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
-    capabilitiesAggregator->remove(participantId, ICapabilities::NO_TIMEOUT());
-
     joynr::RequestStatus status;
     discoveryProxy.remove(status, participantId);
     if(!status.successful()) {

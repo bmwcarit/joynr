@@ -31,9 +31,6 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrRuntime.h"
 
-//needs to be included, so that capabilitiesAggregator can be passed as an ICapabilities to ProxyBuilder
-#include "joynr/CapabilitiesAggregator.h"
-
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"

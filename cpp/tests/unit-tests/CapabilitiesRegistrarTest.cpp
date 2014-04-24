@@ -35,7 +35,6 @@ class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
     CapabilitiesRegistrarTest() :
             mockDispatcher(NULL),
-            mockCapabilitiesStub(new MockCapabilitiesStub()),
             messagingStubAddress(),
             mockParticipantIdStorage(new MockParticipantIdStorage()),
             mockDiscovery(),
@@ -54,7 +53,6 @@ public:
 
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
-                    mockCapabilitiesStub.dynamicCast<ICapabilities>(),
                     mockDiscovery,
                     messagingStubAddress,
                     mockParticipantIdStorage,
@@ -70,7 +68,6 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    QSharedPointer<MockCapabilitiesStub> mockCapabilitiesStub;
     QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
@@ -93,21 +90,11 @@ TEST_F(CapabilitiesRegistrarTest, registerCapability){
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(2)
-            .WillOnce(Return(testQos))
+            .Times(1)
             .WillOnce(Return(testQos))
     ;
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
-    EXPECT_CALL(*mockCapabilitiesStub, add(
-                    domain,
-                    IMockProviderInterface::getInterfaceName(),
-                    expectedParticipantId,
-                    testQos,
-                    _,
-                    _,
-                    _
-    ));
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(mockDiscovery, add(
@@ -135,8 +122,6 @@ TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithDomainAndProviderObjec
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    EXPECT_CALL(*mockCapabilitiesStub, remove(expectedParticipantId, ICapabilities::NO_TIMEOUT()))
-            .Times(1);
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(mockDiscovery, remove(
@@ -152,8 +137,6 @@ TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithDomainAndProviderObjec
 
 TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithParticipantId){
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
-            .Times(1);
-    EXPECT_CALL(*mockCapabilitiesStub, remove(expectedParticipantId, ICapabilities::NO_TIMEOUT()))
             .Times(1);
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);
@@ -181,18 +164,8 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(2)
+            .Times(1)
             .WillRepeatedly(Return(testQos));
-
-    EXPECT_CALL(*mockCapabilitiesStub, add(
-                    domain,
-                    IMockProviderInterface::getInterfaceName(),
-                    expectedParticipantId,
-                    testQos,
-                    _,
-                    _,
-                    ICapabilities::NO_TIMEOUT()
-    ));
 
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);
@@ -244,18 +217,8 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(2)
+            .Times(1)
             .WillRepeatedly(Return(testQos));
-
-    EXPECT_CALL(*mockCapabilitiesStub, add(
-                    domain,
-                    IMockProviderInterface::getInterfaceName(),
-                    expectedParticipantId,
-                    testQos,
-                    _,
-                    _,
-                    ICapabilities::NO_TIMEOUT()
-    ));
 
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);

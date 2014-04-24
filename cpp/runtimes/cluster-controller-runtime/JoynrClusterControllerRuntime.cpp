@@ -255,12 +255,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     joynrCapabilitiesSendStub = new InProcessCapabilitiesStub(capabilitiesSkeleton);
     proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingAddress, connectorFactory, &cache);
 
-    capabilitiesAggregator = QSharedPointer<CapabilitiesAggregator>(
-                new CapabilitiesAggregator(
-                    joynrCapabilitiesSendStub,
-                    dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
-                )
-    );
     dispatcherList.append(joynrDispatcher);
     dispatcherList.append(inProcessDispatcher);
 
@@ -276,7 +270,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     );
     capabilitiesRegistrar =  new CapabilitiesRegistrar(
                 dispatcherList,
-                qSharedPointerDynamicCast<ICapabilities>(capabilitiesAggregator),
                 *discoveryProxy,
                 libjoynrMessagingAddress,
                 participantIdStorage,

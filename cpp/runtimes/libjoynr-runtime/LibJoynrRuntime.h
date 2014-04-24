@@ -32,7 +32,6 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/ProxyBuilder.h"
-#include "joynr/CapabilitiesAggregator.h"
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"

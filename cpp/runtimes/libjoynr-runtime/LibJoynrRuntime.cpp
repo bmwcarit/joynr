@@ -133,11 +133,6 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingAddress, connectorFactory, NULL);
 
-    capabilitiesAggregator = QSharedPointer<CapabilitiesAggregator>(new CapabilitiesAggregator(
-                joynrCapabilitiesSendStub,
-                dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
-    ));
-
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
     participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
@@ -197,7 +192,6 @@ void LibJoynrRuntime::initializeAllDependencies() {
     );
     capabilitiesRegistrar = new CapabilitiesRegistrar(
                 dispatcherList,
-                capabilitiesAggregator,
                 *discoveryProxy,
                 libjoynrMessagingAddress,
                 participantIdStorage,

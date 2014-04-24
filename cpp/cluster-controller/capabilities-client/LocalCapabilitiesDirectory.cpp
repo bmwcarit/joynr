@@ -376,11 +376,9 @@ void LocalCapabilitiesDirectory::lookup(
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     getCapability(participantId, future);
     QList<CapabilityEntry> capabilities = future->get();
-    // capabilities.size() should be <= 1 as soon as the dbus capabilities interface
-    // is removed
-    assert(capabilities.size() <= 2);
-    if(capabilities.size() <= 2) {
-        convertCapabilityEntryIntoDiscoveryEntry(capabilities.at(1), result);
+    assert(capabilities.size() <= 1);
+    if(capabilities.size() <= 1) {
+        convertCapabilityEntryIntoDiscoveryEntry(capabilities.first(), result);
     }
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }

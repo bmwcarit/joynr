@@ -27,7 +27,6 @@
 #include "joynr/exceptions.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ParticipantIdStorage.h"
-#include "joynr/CapabilitiesAggregator.h"
 #include "joynr/ICapabilities.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/SystemServicesSettings.h"
@@ -53,7 +52,6 @@ public:
             joynrCapabilitiesSendStub(NULL),
             participantIdStorage(NULL),
             capabilitiesRegistrar(NULL),
-            capabilitiesAggregator(NULL),
             systemServicesSettings(settings),
             dispatcherAddress(NULL),
             messageRouter(NULL),
@@ -105,7 +103,6 @@ protected:
     ICapabilities* joynrCapabilitiesSendStub;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
-    QSharedPointer<CapabilitiesAggregator> capabilitiesAggregator;
     SystemServicesSettings systemServicesSettings;
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;

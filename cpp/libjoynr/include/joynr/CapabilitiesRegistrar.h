@@ -42,7 +42,6 @@ class JOYNR_EXPORT CapabilitiesRegistrar {
 public:
     CapabilitiesRegistrar(
             QList<IDispatcher*> dispatcherList,
-            QSharedPointer<ICapabilities> capabilitiesAggregator,
             joynr::system::IDiscoverySync& discoveryProxy,
             QSharedPointer<joynr::system::Address> messagingStubAddress,
             QSharedPointer<ParticipantIdStorage> participantIdStorage,
@@ -73,16 +72,6 @@ public:
             assert(currentDispatcher!=NULL);
             currentDispatcher->addRequestCaller(participantId,caller);
         }
-
-        capabilitiesAggregator->add(
-                    domain,
-                    T::getInterfaceName(),
-                    participantId,
-                    provider->getProviderQos(),
-                    endpointAddresses,
-                    messagingStubAddress,
-                    ICapabilities::NO_TIMEOUT()
-        );
 
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
         connections.append(joynr::system::CommunicationMiddleware::JOYNR);
@@ -138,8 +127,6 @@ public:
             currentDispatcher->removeRequestCaller(participantId);
         }
 
-        capabilitiesAggregator->remove(participantId, ICapabilities::NO_TIMEOUT());
-
         joynr::RequestStatus status;
         discoveryProxy.remove(status, participantId);
         if(!status.successful()) {
@@ -172,7 +159,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
-    QSharedPointer<ICapabilities> capabilitiesAggregator;
     joynr::system::IDiscoverySync& discoveryProxy;
     QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
