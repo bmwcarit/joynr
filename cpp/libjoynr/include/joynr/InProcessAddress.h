@@ -16,24 +16,28 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/InProcessEndpointAddress.h"
+#ifndef INPROCESSADDRESS_H
+#define INPROCESSADDRESS_H
+
+#include "joynr/JoynrExport.h"
+#include "joynr/system/Address.h"
+
+#include <QSharedPointer>
 
 namespace joynr {
 
-const QString InProcessEndpointAddress::ENDPOINTADDRESSTYPE("joynr::InProcessEndpointAddress");
+class RequestCaller;
 
-InProcessEndpointAddress::InProcessEndpointAddress(QSharedPointer<RequestCaller> requestCaller)
-    : requestCaller(requestCaller)
-{
-}
-
-InProcessEndpointAddress::~InProcessEndpointAddress(){
-}
-
-QSharedPointer<RequestCaller> InProcessEndpointAddress::getRequestCaller() const{
-    return requestCaller;
-}
-
+class JOYNR_EXPORT InProcessAddress : public joynr::system::Address {
+    Q_OBJECT
+public:
+    virtual ~InProcessAddress();
+    InProcessAddress(QSharedPointer<RequestCaller> requestCaller);
+    QSharedPointer<RequestCaller> getRequestCaller() const;
+private:
+    QSharedPointer<RequestCaller> requestCaller;
+};
 
 
 } // namespace joynr
+#endif //INPROCESSADDRESS_H

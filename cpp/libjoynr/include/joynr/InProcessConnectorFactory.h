@@ -21,7 +21,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/InProcessEndpointAddress.h"
+#include "joynr/InProcessAddress.h"
 #include "joynr/system/CommunicationMiddleware.h"
 #include "joynr/IRequestCallerDirectory.h"
 
@@ -44,7 +44,7 @@ public:
     		PublicationManager* publicationManager,
             const QString& proxyParticipantId,
             const QString& providerParticipantId,
-            QSharedPointer<InProcessEndpointAddress> endpointAddress
+            QSharedPointer<InProcessAddress> endpointAddress
    	) {
 		Q_UNUSED(subscriptionManager);
 		Q_UNUSED(publicationManager);
@@ -77,8 +77,8 @@ public:
     ) {
         QSharedPointer<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
-        QSharedPointer<InProcessEndpointAddress> inProcessEndpointAddress(
-                    new InProcessEndpointAddress(requestCaller)
+        QSharedPointer<InProcessAddress> inProcessEndpointAddress(
+                    new InProcessAddress(requestCaller)
         );
 
 	    return InProcessConnectorFactoryHelper<T>().create(

@@ -176,19 +176,6 @@ private:
     MessagingSettings& messagingSettings;
 
     QList<types::CapabilityInformation> createCapabilitiesInformationList(const QString& domain, const QString& interfaceName, const QString& channelId, const types::ProviderQos& qos, const QString& participantId);
-/*
-    void addToCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal);
-    void addToCache(const CapabilityEntry& entry);
-
-    void addToCacheIfAbsent(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal);
-
-    QList<CapabilityEntry> lookupCache(const InterfaceAddress& interfaceAddress, const qint64& reqCacheDataFreshness_ms);
-
-    QList<CapabilityEntry> lookupCache(const QString& participantId, const qint64& reqCacheDataFreshness_ms);
-
-    QList<CapabilityEntry> filterCapabilities(const QList<CapabilityEntry>& list, bool global);
-*/
-
     bool getLocalAndCachedCapabilities(
             const InterfaceAddress& interfaceAddress,
             const joynr::system::DiscoveryQos& discoveryQos,
