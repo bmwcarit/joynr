@@ -32,6 +32,7 @@
 #include "joynr/ProxyFactory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/LocalDiscoveryAggregator.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -44,9 +45,26 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime {
 
 public:
 
-    JoynrRuntime(QSettings &settings);
+    // NOTE: The implementation of the constructor and destructor must be inside this
+    // header file because there are multiple implementations (cpp files) in folder
+    // cluster-controller-runtime and libjoynr-runtime.
+    JoynrRuntime(QSettings &settings) :
+            proxyFactory(NULL),
+            joynrCapabilitiesSendStub(NULL),
+            participantIdStorage(NULL),
+            capabilitiesRegistrar(NULL),
+            capabilitiesAggregator(NULL),
+            systemServicesSettings(settings),
+            dispatcherAddress(NULL),
+            messageRouter(NULL),
+            discoveryProxy(NULL)
+    {
+        systemServicesSettings.printSettings();
+    }
 
-    virtual ~JoynrRuntime() {}
+    virtual ~JoynrRuntime() {
+        delete discoveryProxy;
+    }
 
     template <class T>
     QString registerCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
@@ -71,7 +89,7 @@ public:
         }
         ProxyBuilder<T>* builder = new ProxyBuilder<T>(
                     proxyFactory,
-                    capabilitiesAggregator,
+                    *discoveryProxy,
                     domain,
                     dispatcherAddress,
                     messageRouter
@@ -83,8 +101,6 @@ public:
                                       const QString& pathToMessagingSettings = "");
 
 protected:
-    joynr::system::DiscoveryProxy* createDiscoveryProxy();
-
     ProxyFactory* proxyFactory;
     ICapabilities* joynrCapabilitiesSendStub;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
@@ -93,7 +109,7 @@ protected:
     SystemServicesSettings systemServicesSettings;
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
-    joynr::system::IDiscoverySync* discoveryProxy;
+    LocalDiscoveryAggregator* discoveryProxy;
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
 };

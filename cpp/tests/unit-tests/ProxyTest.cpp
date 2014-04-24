@@ -95,7 +95,7 @@ public:
                     MessagingQos(),
                     cacheEnabled
                     );
-        proxy->handleArbitrationFinished(providerParticipantId, endPointAddress);
+        proxy->handleArbitrationFinished(providerParticipantId, joynr::system::CommunicationMiddleware::JOYNR);
         return dynamic_cast<tests::ITest*>(proxy);
     }
 

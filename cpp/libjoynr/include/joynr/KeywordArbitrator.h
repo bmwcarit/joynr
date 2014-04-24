@@ -27,6 +27,11 @@
 
 namespace joynr {
 
+namespace system {
+    class IDiscoverySync;
+    class DiscoveryEntry;
+}
+
 /**
   * Arbitrator which requests CapabilityEntries for a give interfaceName and domain from
   * the LocalCapabilitiesDirectory and filters them by a keyword in the qos. The first endpointAddress
@@ -39,7 +44,12 @@ class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator {
 public:
     virtual ~KeywordArbitrator() { }
 
-    KeywordArbitrator(const QString& domain, const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub, const DiscoveryQos &discoveryQos);
+    KeywordArbitrator(
+            const QString& domain,
+            const QString& interfaceName,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            const DiscoveryQos &discoveryQos
+    );
 
     /*
      *  Attempts to the arbitrate. This function is called by the ProviderArbitrator
@@ -54,7 +64,9 @@ public:
     /*
      * Made public for testing purposes
      */
-    void receiveCapabilitiesLookupResults(const QList<CapabilityEntry> capabilityEntries);
+    void receiveCapabilitiesLookupResults(
+            const QList<joynr::system::DiscoveryEntry>& discoveryEntries
+    );
 
 private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);

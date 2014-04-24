@@ -29,6 +29,7 @@
 #include "joynr/ProviderArbitratorFactory.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/exceptions.h"
+#include "joynr/system/IDiscovery.h"
 
 #include <QSemaphore>
 #include <QList>
@@ -43,7 +44,7 @@ class ProxyBuilder: public IArbitrationListener  {
 public:
     ProxyBuilder(
             ProxyFactory* proxyFactory,
-            QSharedPointer<ICapabilities> capabilitiesStub,
+            joynr::system::IDiscoverySync& discoveryProxy,
             const QString& domain,
             QSharedPointer<joynr::system::Address> dispatcherAddress,
             QSharedPointer<MessageRouter> messageRouter
@@ -92,7 +93,7 @@ private:
     /*
      * Sets the end point address.
      */
-    void setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress);
+    void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection);
 
     /*
       * arbitrationFinished is called when the arbitrationStatus is set to successful and the
@@ -119,11 +120,11 @@ private:
     ProxyQos proxyQos;
     MessagingQos runtimeQos;
     ProxyFactory* proxyFactory;
-    QSharedPointer<ICapabilities> capabilitiesStub;
+    joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
     QSemaphore arbitrationSemaphore;
     QString participantId;
-    QSharedPointer<joynr::system::Address> endpointAddress;
+    joynr::system::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 
@@ -135,7 +136,7 @@ private:
 template<class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory* proxyFactory,
-        QSharedPointer<ICapabilities> capabilitiesStub,
+        joynr::system::IDiscoverySync& discoveryProxy,
         const QString& domain,
         QSharedPointer<joynr::system::Address> dispatcherAddress,
         QSharedPointer<MessageRouter> messageRouter
@@ -147,11 +148,11 @@ ProxyBuilder<T>::ProxyBuilder(
     proxyQos(),
     runtimeQos(),
     proxyFactory(proxyFactory),
-    capabilitiesStub(capabilitiesStub),
+    discoveryProxy(discoveryProxy),
     arbitrator(NULL),
     arbitrationSemaphore(1),
     participantId(""),
-    endpointAddress(NULL),
+    connection(joynr::system::CommunicationMiddleware::NONE),
     arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
     discoveryTimeout(-1),
     dispatcherAddress(dispatcherAddress),
@@ -178,7 +179,7 @@ template<class T>
 T* ProxyBuilder<T>::build() {
     T* proxy = proxyFactory->createProxy<T>(domain, proxyQos, runtimeQos, cached);
     waitForArbitration(discoveryTimeout);
-    proxy->handleArbitrationFinished(participantId, endpointAddress);
+    proxy->handleArbitrationFinished(participantId, connection);
     // add next hop to dispatcher
     messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
     return proxy;
@@ -217,7 +218,12 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(DiscoveryQos &discoveryQos) {
     //if DiscoveryQos is set, arbitration will be started. It shall be avoided that the setDiscoveryQos method can be called twice
     assert(!hasArbitrationStarted);
     discoveryTimeout = discoveryQos.getDiscoveryTimeout();
-    arbitrator = ProviderArbitratorFactory::createArbitrator(domain, T::getInterfaceName(), capabilitiesStub, discoveryQos);
+    arbitrator = ProviderArbitratorFactory::createArbitrator(
+                domain,
+                T::getInterfaceName(),
+                discoveryProxy,
+                discoveryQos
+    );
     arbitrationSemaphore.acquire();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();
@@ -229,7 +235,7 @@ template<class T>
 void ProxyBuilder<T>::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus){
    this->arbitrationStatus = arbitrationStatus;
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful){
-        if(!participantId.isEmpty() && !endpointAddress.isNull()){
+        if(!participantId.isEmpty() && connection != joynr::system::CommunicationMiddleware::NONE) {
             arbitrationSemaphore.release();
         } else {
             throw JoynrArbitrationFailedException("Arbitration was set to successfull by arbitrator, but either ParticipantId or MessagingEndpointAddress where empty");
@@ -240,8 +246,8 @@ void ProxyBuilder<T>::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusT
 }
 
 template<class T>
-void ProxyBuilder<T>::setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress){
-    this->endpointAddress = endpointAddress;
+void ProxyBuilder<T>::setConnection(const joynr::system::CommunicationMiddleware::Enum& connection){
+    this->connection = connection;
 }
 
 template<class T>

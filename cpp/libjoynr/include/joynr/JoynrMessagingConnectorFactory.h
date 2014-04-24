@@ -20,6 +20,7 @@
 #define JOYNRMESSAGINGCONNECTORFACTORY_H
 
 #include "joynr/JoynrExport.h"
+#include "joynr/system/CommunicationMiddleware.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -70,7 +71,7 @@ class JOYNR_EXPORT JoynrMessagingConnectorFactory {
 public:
     JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender, SubscriptionManager* subscriptionManager);
 
-    bool canBeCreated(QSharedPointer<joynr::system::Address> endpointAddress);
+    bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
 
     template <class T>
     T* create(

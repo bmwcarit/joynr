@@ -218,12 +218,14 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
                 authenticationToken
     );
 
+    QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
     joynr::system::DiscoveryEntry expectedDiscoveryEntry(
                 domain,
                 tests::TestProvider::getInterfaceName(),
                 participantId,
                 mockTestProviderQos,
-                QList<joynr::system::CommunicationMiddleware::Enum>()
+                connections
     );
     RequestStatus status;
     joynr::system::DiscoveryEntry discoveryEntry;

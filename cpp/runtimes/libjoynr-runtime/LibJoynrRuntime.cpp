@@ -67,7 +67,6 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     delete joynrCapabilitiesSendStub;
     delete inProcessDispatcher;
     delete capabilitiesRegistrar;
-    delete discoveryProxy;
     delete joynrMessageSender;
     delete joynrDispatcher;
     delete dbusMessageRouterAdapter;
@@ -122,7 +121,12 @@ void LibJoynrRuntime::initializeAllDependencies() {
     inProcessDispatcher = new InProcessDispatcher();
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    inProcessConnectorFactory = new InProcessConnectorFactory(subscriptionManager, publicationManager, inProcessPublicationSender);
+    inProcessConnectorFactory = new InProcessConnectorFactory(
+                subscriptionManager,
+                publicationManager,
+                inProcessPublicationSender,
+                dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
+    );
     joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
     connectorFactory = new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
@@ -146,13 +150,17 @@ void LibJoynrRuntime::initializeAllDependencies() {
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
+    discoveryProxy = new LocalDiscoveryAggregator(
+                *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher),
+                systemServicesSettings
+    );
+    QString systemServicesDomain = systemServicesSettings.getDomain();
     // create connection to parent routing service
     QSharedPointer<joynr::system::Address> ccMessagingAddress(
                 new system::CommonApiDbusAddress(dbusSettings->getClusterControllerMessagingDomain(),
                                                  dbusSettings->getClusterControllerMessagingServiceName(),
                                                  dbusSettings->getClusterControllerMessagingParticipantId())
     );
-    QString systemServicesDomain = systemServicesSettings.getDomain();
     QString routingProviderParticipantId = systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
@@ -171,7 +179,22 @@ void LibJoynrRuntime::initializeAllDependencies() {
     delete routingProxyBuilder;
 
     // setup discovery
-    discoveryProxy = createDiscoveryProxy();
+    QString discoveryProviderParticipantId = systemServicesSettings.getCcDiscoveryProviderParticipantId();
+    DiscoveryQos discoveryProviderDiscoveryQos;
+    discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
+    discoveryProviderDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryProviderDiscoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
+    discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
+
+    ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
+            getProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+    discoveryProxy->setDiscoveryProxy(
+                discoveryProxyBuilder
+                ->setRuntimeQos(MessagingQos(5000))
+                ->setCached(false)
+                ->setDiscoveryQos(discoveryProviderDiscoveryQos)
+                ->build()
+    );
     capabilitiesRegistrar = new CapabilitiesRegistrar(
                 dispatcherList,
                 capabilitiesAggregator,

@@ -26,20 +26,20 @@
 
 namespace joynr {
 
-JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
-                                                             SubscriptionManager* subscriptionManager) :
-        messageSender(messageSender),
-        subscriptionManager(subscriptionManager)
+JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
+        IJoynrMessageSender* messageSender,
+        SubscriptionManager* subscriptionManager
+) :
+    messageSender(messageSender),
+    subscriptionManager(subscriptionManager)
 {
 }
 
 
-bool JoynrMessagingConnectorFactory::canBeCreated(QSharedPointer<joynr::system::Address> endpointAddress)
-{
-    QString endpointClassName = endpointAddress->metaObject()->className();
-    //for creating the connector, no information is needed, so JoynrMessagingEndPointAddress and JoynrMessagingViaCCEndpointAddress should both work.
-    return (endpointClassName == system::ChannelAddress::staticMetaObject.className()) ||
-            (endpointClassName == JoynrMessagingViaCCEndpointAddress::ENDPOINT_ADDRESS_TYPE());
+bool JoynrMessagingConnectorFactory::canBeCreated(
+        const joynr::system::CommunicationMiddleware::Enum& connection
+) {
+    return connection == joynr::system::CommunicationMiddleware::JOYNR;
 }
 
 } // namespace joynr

@@ -22,6 +22,8 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/InProcessEndpointAddress.h"
+#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/IRequestCallerDirectory.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -58,15 +60,27 @@ public:
 // A factory that creates an InProcessConnector for a generated interface
 class JOYNR_EXPORT InProcessConnectorFactory {
 public:
-    InProcessConnectorFactory(SubscriptionManager* subscriptionManager,
-                              PublicationManager* publicationManager,
-                              InProcessPublicationSender* inProcessPublicationSender);
+    InProcessConnectorFactory(
+            SubscriptionManager* subscriptionManager,
+            PublicationManager* publicationManager,
+            InProcessPublicationSender* inProcessPublicationSender,
+            IRequestCallerDirectory* requestCallerDirectory
+    );
 
-    bool canBeCreated(const QSharedPointer<joynr::system::Address> endpointAddress);
+    bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
     virtual ~InProcessConnectorFactory(){}
 
     template <class T>
-    T* create(const QString& proxyParticipantId, const QString& providerParticipantId, QSharedPointer<InProcessEndpointAddress> inProcessEndpointAddress){
+    T* create(
+            const QString& proxyParticipantId,
+            const QString& providerParticipantId
+    ) {
+        QSharedPointer<RequestCaller> requestCaller =
+                requestCallerDirectory->lookupRequestCaller(providerParticipantId);
+        QSharedPointer<InProcessEndpointAddress> inProcessEndpointAddress(
+                    new InProcessEndpointAddress(requestCaller)
+        );
+
 	    return InProcessConnectorFactoryHelper<T>().create(
                     subscriptionManager,
                     publicationManager,
@@ -81,6 +95,7 @@ private:
     SubscriptionManager* subscriptionManager;
     PublicationManager* publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
+    IRequestCallerDirectory* requestCallerDirectory;
 };
 
 

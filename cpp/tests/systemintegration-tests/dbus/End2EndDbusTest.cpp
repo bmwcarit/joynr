@@ -66,6 +66,7 @@ public:
                     new QSettings(messageSettingsFilename, QSettings::IniFormat)
         );
         clusterControllerRuntime->registerRoutingProvider();
+        clusterControllerRuntime->registerDiscoveryProvider();
 
         // create lib joynr runtimes
         runtime1 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));

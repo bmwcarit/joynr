@@ -31,6 +31,10 @@
 
 namespace joynr {
 
+namespace system {
+    class IDiscoverySync;
+}
+
 class JOYNR_EXPORT ProviderArbitratorFactory {
 
 
@@ -38,7 +42,12 @@ public:
     /*
      *  Creates an arbitrator object using the type specified in the qosParameters.
      */
-    static ProviderArbitrator* createArbitrator(const QString& domain,const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub,const DiscoveryQos &discoveryQos);
+    static ProviderArbitrator* createArbitrator(
+            const QString& domain,
+            const QString& interfaceName,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            const DiscoveryQos &discoveryQos
+    );
 };
 
 

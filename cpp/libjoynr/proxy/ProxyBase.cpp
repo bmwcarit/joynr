@@ -44,19 +44,23 @@ ProxyBase::ProxyBase(
         cached(cached),
         providerParticipantId(""),
         proxyParticipantId(""),
-        providerAddress(NULL),
+        connection(NULL),
         destinationChannelId("DummyChannelIdForRefactoring")
 {
     proxyParticipantId = QUuid::createUuid().toString();
     proxyParticipantId = proxyParticipantId.mid(1,proxyParticipantId.length()-2);
 }
 
-ProxyBase::~ProxyBase(){
+ProxyBase::~ProxyBase() {
+    delete connection;
 }
 
-void ProxyBase::handleArbitrationFinished(const QString &participantId, QSharedPointer<joynr::system::Address> providerAddress){
+void ProxyBase::handleArbitrationFinished(
+        const QString &participantId,
+        const joynr::system::CommunicationMiddleware::Enum& connection
+) {
     providerParticipantId = participantId;
-    this->providerAddress = providerAddress;
+    this->connection = new joynr::system::CommunicationMiddleware::Enum(connection);
 }
 
 QString ProxyBase::getProxyParticipantId() {

@@ -34,6 +34,8 @@ typeCollection DiscoveryTypes {
         BROWSER
         WEBSOCKET
         SOME_IP
+        IN_PROCESS
+        NONE
     }
 
     struct DiscoveryQos {

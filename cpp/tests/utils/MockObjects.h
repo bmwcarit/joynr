@@ -136,7 +136,7 @@ class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
 public:
 
     MockInProcessConnectorFactory()
-        : InProcessConnectorFactory(NULL,NULL,NULL) {
+        : InProcessConnectorFactory(NULL,NULL,NULL,NULL) {
     }
 
     MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::system::Address> endpointAddress));

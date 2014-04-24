@@ -50,6 +50,7 @@
 #include "joynr/system/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "joynr/LocalDiscoveryAggregator.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -241,7 +242,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                 new InProcessMessagingAddress(libJoynrMessagingSkeleton)
     );
     //subscriptionManager = new SubscriptionManager(...)
-    inProcessConnectorFactory = new InProcessConnectorFactory(subscriptionManager, publicationManager, inProcessPublicationSender);
+    inProcessConnectorFactory = new InProcessConnectorFactory(
+                subscriptionManager,
+                publicationManager,
+                inProcessPublicationSender,
+                dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
+    );
     joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
     connectorFactory = createConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
@@ -249,7 +255,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     joynrCapabilitiesSendStub = new InProcessCapabilitiesStub(capabilitiesSkeleton);
     proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingAddress, connectorFactory, &cache);
 
-    capabilitiesAggregator = QSharedPointer<CapabilitiesAggregator>(new CapabilitiesAggregator(joynrCapabilitiesSendStub, dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)));
+    capabilitiesAggregator = QSharedPointer<CapabilitiesAggregator>(
+                new CapabilitiesAggregator(
+                    joynrCapabilitiesSendStub,
+                    dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
+                )
+    );
     dispatcherList.append(joynrDispatcher);
     dispatcherList.append(inProcessDispatcher);
 
@@ -258,7 +269,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     dispatcherAddress = libjoynrMessagingAddress;
-    discoveryProxy = localCapabilitiesDirectory.data();
+    discoveryProxy = new LocalDiscoveryAggregator(
+                *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher),
+                systemServicesSettings,
+                localCapabilitiesDirectory.data()
+    );
     capabilitiesRegistrar =  new CapabilitiesRegistrar(
                 dispatcherList,
                 qSharedPointerDynamicCast<ICapabilities>(capabilitiesAggregator),
@@ -376,7 +391,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
     delete messagingSettings;
     delete libjoynrSettings;
     delete capabilitiesRegistrar;
-    delete discoveryProxy;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;

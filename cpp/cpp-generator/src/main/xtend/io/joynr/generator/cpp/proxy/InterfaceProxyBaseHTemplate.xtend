@@ -23,7 +23,7 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class InterfaceProxyBaseHTemplate {
-	@Inject	extension JoynrCppGeneratorExtensions
+    @Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
 	def generate(FInterface serviceInterface) {
@@ -61,7 +61,10 @@ class InterfaceProxyBaseHTemplate {
 		
 		    ~«className»();
 		
-		    void handleArbitrationFinished(const QString &participantId, QSharedPointer<joynr::system::Address> endpointAddress);
+		    void handleArbitrationFinished(
+		            const QString &participantId,
+		            const joynr::system::CommunicationMiddleware::Enum& connection
+		    );
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				«var attributeName = attribute.joynrName»

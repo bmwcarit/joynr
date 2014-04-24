@@ -20,13 +20,13 @@
 #define IARBITRATIONLISTENER_H
 
 #include "joynr/ArbitrationStatus.h"
+#include "joynr/system/CommunicationMiddleware.h"
 
 #include <QString>
 #include <QSharedPointer>
 
 namespace joynr {
 
-namespace system { class Address; }
 
 /*
  *  IArbitrationListener is an interface used by ProviderArbitrator
@@ -37,9 +37,9 @@ class IArbitrationListener {
 public:
 
     virtual ~IArbitrationListener(){}
-    virtual void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) =0;
+    virtual void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) = 0;
     virtual void setParticipantId(const QString& participantId) = 0;
-    virtual void setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress) =0;
+    virtual void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection) = 0;
 };
 
 

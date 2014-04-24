@@ -465,7 +465,9 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
     discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
-    discoveryEntry.setConnections(QList<joynr::system::CommunicationMiddleware::Enum>());
+    QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
+    discoveryEntry.setConnections(connections);
 }
 
 void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(

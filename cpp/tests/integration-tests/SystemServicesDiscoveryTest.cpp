@@ -156,6 +156,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 false                                   // provider supports on change subscriptions
     );
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
     QList<joynr::system::DiscoveryEntry> expectedResult;
     expectedResult.append(joynr::system::DiscoveryEntry(
                 domain,
@@ -203,6 +204,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 false                                   // provider supports on change subscriptions
     );
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
     QList<joynr::system::DiscoveryEntry> expectedResult;
     expectedResult.append(joynr::system::DiscoveryEntry(
                 domain,
