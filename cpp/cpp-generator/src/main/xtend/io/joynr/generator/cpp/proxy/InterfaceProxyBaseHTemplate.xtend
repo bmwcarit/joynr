@@ -41,15 +41,10 @@ class InterfaceProxyBaseHTemplate {
 		#include "joynr/ProxyBase.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 		
-		namespace joynr {
-			class ICapabilities;
-		}
-		
 		«getNamespaceStarter(serviceInterface)» 
 		class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
 		public:
 		    «className»(
-		            joynr::ICapabilities* capabilitiesStub,
 		            QSharedPointer<joynr::system::Address> messagingAddress,
 		            joynr::ConnectorFactory* connectorFactory,
 		            joynr::IClientCache* cache,
@@ -73,7 +68,6 @@ class InterfaceProxyBaseHTemplate {
 			«ENDFOR»
 
 		protected:
-			joynr::ICapabilities* capabilitiesStub;
 			QSharedPointer<joynr::system::Address> messagingAddress; 
 		    I«interfaceName»Connector* connector;
 

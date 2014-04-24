@@ -24,7 +24,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
-#include "joynr/ICapabilities.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/ProxyQos.h"
 
@@ -39,22 +38,22 @@ class JoynrMessageSender;
 
 class JOYNR_EXPORT ProxyFactory {
 public:
-    ProxyFactory(ICapabilities* capabilitiesStub,
-                 QSharedPointer<joynr::system::Address> messagingEndpointAddress,
-                 ConnectorFactory* connectorFactory,
-                 IClientCache* cache);
+    ProxyFactory(
+            QSharedPointer<joynr::system::Address> messagingEndpointAddress,
+            ConnectorFactory* connectorFactory,
+            IClientCache* cache
+    );
 
     ~ProxyFactory();
 
     // Create a proxy of type T
     template<class T>
     T* createProxy(const QString& domain,const ProxyQos& proxyQos, const MessagingQos& qosSettings, bool cached) {
-        return new T(capabilitiesStub, messagingEndpointAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached);
+        return new T(messagingEndpointAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached);
     }
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
-	ICapabilities* capabilitiesStub;
     QSharedPointer<joynr::system::Address> messagingEndpointAddress;
     ConnectorFactory* connectorFactory;
     IClientCache* cache;

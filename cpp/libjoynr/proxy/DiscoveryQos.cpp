@@ -19,7 +19,6 @@
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/exceptions.h"
-#include "joynr/ICapabilities.h"
 
 namespace joynr {
 

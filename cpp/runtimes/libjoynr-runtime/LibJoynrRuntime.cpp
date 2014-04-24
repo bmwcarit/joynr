@@ -20,7 +20,6 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
-#include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
 #include "joynr/system/CommonApiDbusAddress.h"
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "joynr/PublicationManager.h"
@@ -64,7 +63,6 @@ LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
 
 LibJoynrRuntime::~LibJoynrRuntime() {
     delete proxyFactory;
-    delete joynrCapabilitiesSendStub;
     delete inProcessDispatcher;
     delete capabilitiesRegistrar;
     delete joynrMessageSender;
@@ -83,10 +81,6 @@ void LibJoynrRuntime::initializeAllDependencies() {
     libjoynrSettings->printSettings();
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
-
-    // create capabilities send stub
-    QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
-    joynrCapabilitiesSendStub = new DbusCapabilitiesStubAdapter(ccCapabilitiesAddress);
 
     QString messagingUuid = Util::createUuid().replace("-", "");
     QString libjoynrMessagingDomain("local");
@@ -131,7 +125,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
     connectorFactory = new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
-    proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingAddress, connectorFactory, NULL);
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, NULL);
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();

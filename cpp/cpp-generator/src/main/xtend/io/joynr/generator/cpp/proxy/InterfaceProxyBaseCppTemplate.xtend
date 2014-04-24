@@ -37,14 +37,12 @@ class InterfaceProxyBaseCppTemplate {
 		#include "joynr/exceptions.h"
 		#include "joynr/ConnectorFactory.h"
 		#include "joynr/ISubscriptionListener.h"
-		#include "joynr/ICapabilities.h"
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»InProcessConnector.h"
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»JoynrMessagingConnector.h"
 		
 		
 		«getNamespaceStarter(fInterface)»
 		«className»::«className»(
-		        joynr::ICapabilities* capabilitiesStub,
 		        QSharedPointer<joynr::system::Address> messagingAddress,
 		        joynr::ConnectorFactory* connectorFactory,
 		        joynr::IClientCache *cache,
@@ -54,7 +52,6 @@ class InterfaceProxyBaseCppTemplate {
 		        bool cached
 		) :
 		        joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, proxyQos, qosSettings, cached),
-		        capabilitiesStub(capabilitiesStub),
 		        messagingAddress(messagingAddress),
 		        connector(NULL)
 		{
@@ -78,10 +75,6 @@ class InterfaceProxyBaseCppTemplate {
 		                proxyQos.getReqCacheDataFreshness_ms(),
 		                connection
 		    );
-		    
-		    if (connector->usesClusterController()){
-		         capabilitiesStub->addEndpoint(proxyParticipantId, messagingAddress, joynr::ICapabilities::NO_TIMEOUT());
-		    }
 		    
 		    joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, connection);
 		}

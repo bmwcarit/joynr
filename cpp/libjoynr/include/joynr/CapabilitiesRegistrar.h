@@ -23,7 +23,6 @@
 #include "joynr/JoynrExport.h"
 
 #include "joynr/Provider.h"
-#include "joynr/ICapabilities.h"
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"

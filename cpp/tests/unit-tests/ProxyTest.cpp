@@ -43,21 +43,18 @@ public:
 
     ProxyTest() :
         mockConnectorFactory(),
-        mockInProcessConnectorFactory(),
-        mockCapabilities()
+        mockInProcessConnectorFactory()
     {}
     void SetUp() {
         AbstractSyncAsyncTest::SetUp();
         mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
         JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) NULL);
         mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
-        mockCapabilities = new MockCapabilitiesStub();
     }
 
     void TearDown(){
         AbstractSyncAsyncTest::TearDown();
         delete mockConnectorFactory;
-        delete mockCapabilities;
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
@@ -86,7 +83,6 @@ public:
     tests::ITest* createFixture(bool cacheEnabled) {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::TestProxy* proxy = new tests::TestProxy(
-                    mockCapabilities,
                     endPointAddress,
                     mockConnectorFactory,
                     &mockClientCache,
@@ -102,7 +98,6 @@ public:
 protected:
     ConnectorFactory* mockConnectorFactory;
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
-    MockCapabilitiesStub* mockCapabilities;
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyTest);
 };

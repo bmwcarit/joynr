@@ -20,77 +20,7 @@ package joynr.messaging.types
 
 typeCollection Types {
 
-    /* **************************************************** */
-    /* Type definitions for the capabilities directory API. */
-    /* **************************************************** */
-
-    struct CustomParameter {
-        String name
-        String value
-    }
-
-    array CustomParameterList of CustomParameter
-
-    enumeration ProviderScope {
-        GLOBAL
-        LOCAL
-    }
-
-    struct ProviderQos {
-        CustomParameterList customParameters
-        Int8 version1
-        Int64 priority
-        ProviderScope scope
-        Boolean supportsOnChangeSubscriptions
-    }
-
-    enumeration ArbitrationStrategy {
-        NOT_SET
-        FIXED_CHANNEL
-        LOCAL_ONLY
-        KEYWORD
-        HIGHEST_PRIORITY
-    }
-
-    enumeration DiscoveryScope  {
-        LOCAL_ONLY
-        LOCAL_THEN_GLOBAL
-        LOCAL_AND_GLOBAL
-        GLOBAL_ONLY
-    }
-
-    map CustomParameterMap {
-         String to CustomParameter
-    }
-
-    struct DiscoveryQos {
-        Int64 discoveryTimeout
-        ArbitrationStrategy arbitrationStrategy
-        Int64 cacheMaxAge
-        DiscoveryScope discoveryScope
-        Int64 retryInterval
-        Boolean providerMustSupportOnChange
-        CustomParameterMap customParameters
-    }
-
-    struct EndpointAddressBase {
-        String endPointAddress
-    }
-
-    array EndpointAddressList of EndpointAddressBase
-
-    struct CapabilityEntry {
-        String interfaceName
-        String domain
-        ProviderQos qos
-        String participantId
-        EndpointAddressList endpointAdresses
-        Boolean global
-    }
-
-    array CapabilityEntryList of CapabilityEntry
-
-    /* **************************************************** */
+   /* **************************************************** */
     /* Type definitions for joynr messaging API              */
     /* **************************************************** */
 

@@ -28,7 +28,6 @@
 
 #include "joynr/IDbusSkeletonWrapper.h"
 #include "joynr/DbusMessagingSkeleton.h"
-#include "joynr/DbusCapabilitiesSkeleton.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/system/CommonApiDbusAddress.h"
 #include "tests/utils/MockObjects.h"

@@ -49,7 +49,6 @@ class InterfaceAsyncProxyHTemplate {
 		class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 		public:
 		    «asyncClassName»(
-		            joynr::ICapabilities* capabilitiesStub,
 		            QSharedPointer<joynr::system::Address> messagingAddress,
 		            joynr::ConnectorFactory* connectorFactory,
 		            joynr::IClientCache* cache,

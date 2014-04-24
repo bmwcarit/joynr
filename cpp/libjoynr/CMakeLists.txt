@@ -82,16 +82,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrLib_HEADERS
         ${JoynrLib_HEADERS}
-        "dbus/DbusCapabilitiesStubAdapter.h"
-        "dbus/DbusCapabilitiesUtil.h"
         "dbus/DbusMessagingStubFactory.h"
     )
 
     set(
         JoynrLib_SOURCES
         ${JoynrLib_SOURCES}
-        "dbus/DbusCapabilitiesStubAdapter.cpp"
-        "dbus/DbusCapabilitiesUtil.cpp"
         "dbus/DBusMessageRouterAdapter.cpp"
         "dbus/DbusMessagingStubFactory.cpp"
     )

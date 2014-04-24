@@ -30,8 +30,6 @@
 #include "joynr/Request.h"
 #include "joynr/exceptions.h"
 #include "runtimes/JoynrMetaTypes.h"
-#include "libjoynr/in-process/InProcessCapabilitiesStub.h"
-#include "cluster-controller/messaging/in-process/InProcessCapabilitiesSkeleton.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/InProcessDispatcher.h"
@@ -85,7 +83,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         messagingEndpointDirectory(new Directory<QString, joynr::system::Address>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
         localCapabilitiesDirectory(NULL),
         channelUrlDirectory(),
-        capabilitiesSkeleton(NULL),
         cache(),
         channelUrlDirectoryProxy(NULL),
         libJoynrMessagingSkeleton(NULL),
@@ -102,7 +99,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
         , dbusSettings(NULL)
         , ccDbusMessageRouterAdapter(NULL)
-        , ccDbusCapabilitiesAdapter(NULL)
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 {
@@ -215,20 +211,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                     messagingEndpointDirectory
                 )
     );
-    capabilitiesSkeleton = new InProcessCapabilitiesSkeleton(
-                messagingEndpointDirectory,
-                localCapabilitiesDirectory,
-                channelId
-    );
-
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
     // register dbus skeletons for capabilities and messaging interfaces
     QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
     ccDbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, ccMessagingAddress);
-    QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
-    ccDbusCapabilitiesAdapter = new DbusCapabilitiesAdapter(*messagingEndpointDirectory, *localCapabilitiesDirectory, ccCapabilitiesAddress, messageReceiver->getReceiveChannelId());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
     /**
@@ -252,8 +240,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
 
     connectorFactory = createConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
-    joynrCapabilitiesSendStub = new InProcessCapabilitiesStub(capabilitiesSkeleton);
-    proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingAddress, connectorFactory, &cache);
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, &cache);
 
     dispatcherList.append(joynrDispatcher);
     dispatcherList.append(inProcessDispatcher);
@@ -387,7 +374,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;
-    delete ccDbusCapabilitiesAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     settings->clear();

@@ -27,7 +27,6 @@
 #include "joynr/exceptions.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ParticipantIdStorage.h"
-#include "joynr/ICapabilities.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
@@ -49,7 +48,6 @@ public:
     // cluster-controller-runtime and libjoynr-runtime.
     JoynrRuntime(QSettings &settings) :
             proxyFactory(NULL),
-            joynrCapabilitiesSendStub(NULL),
             participantIdStorage(NULL),
             capabilitiesRegistrar(NULL),
             systemServicesSettings(settings),
@@ -82,7 +80,7 @@ public:
 
     template <class T>
     ProxyBuilder<T>* getProxyBuilder(const QString& domain) {
-        if(!proxyFactory || !joynrCapabilitiesSendStub){
+        if(!proxyFactory){
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before startMessaging was called is not yet supported.");
         }
         ProxyBuilder<T>* builder = new ProxyBuilder<T>(
@@ -100,7 +98,6 @@ public:
 
 protected:
     ProxyFactory* proxyFactory;
-    ICapabilities* joynrCapabilitiesSendStub;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     SystemServicesSettings systemServicesSettings;

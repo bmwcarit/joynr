@@ -34,7 +34,6 @@
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
-#include "joynr/DbusCapabilitiesAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
@@ -109,7 +108,6 @@ protected:
     Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
     QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
-    ICapabilities* capabilitiesSkeleton;
     //Reason why CapabilitiesAggregator (CA) has to be a QSP:
     //CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()
     //CA has to be a pointer instead of a reference, because it has to be initialised to NULL (because other members are needed for its constructor)
@@ -139,7 +137,6 @@ protected:
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
-    DbusCapabilitiesAdapter* ccDbusCapabilitiesAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
     static joynr_logging::Logger* logger;

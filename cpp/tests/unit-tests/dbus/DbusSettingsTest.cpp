@@ -48,10 +48,6 @@ TEST_F(DbusSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_MESSAGING_DOMAIN()));
     EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_MESSAGING_SERVICENAME()));
     EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID()));
-
-    EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_CAPABILITIES_DOMAIN()));
-    EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_CAPABILITIES_SERVICENAME()));
-    EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_CAPABILITIES_PARTICIPANTID()));
 }
 
 TEST_F(DbusSettingsTest, overrideDefaultSettings) {

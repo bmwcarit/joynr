@@ -103,6 +103,6 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, NULL);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy((ICapabilities*)NULL, endPointAddress, connectorFactory, mockClientCache, domain, proxyQos, messagingQos, false);
+    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, proxyQos, messagingQos, false);
     ASSERT_TRUE(proxy != NULL);
 }

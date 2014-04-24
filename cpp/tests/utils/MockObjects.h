@@ -45,7 +45,6 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 
-#include "joynr/ICapabilities.h"
 #include "joynr/system/Address.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -296,24 +295,6 @@ class MockClientCache : public joynr::IClientCache {
 public:
    MOCK_METHOD2(lookUp, QVariant(const QString& attributeId, qint64 maxAcceptedAgeInMs));
    MOCK_METHOD2(insert, void(QString attributeId, QVariant value));
-};
-class MockCapabilitiesStub : public joynr::ICapabilities {
-public:
-    MOCK_METHOD7(add, void(const QString &domain,
-                           const QString &interfaceName,
-                           const QString &participantId,
-                           const joynr::types::ProviderQos &qos,
-                           QList<QSharedPointer<joynr::system::Address> > endpointAddressList,
-                           QSharedPointer<joynr::system::Address> messagingStubAddress,
-                           const qint64& timeout));
-    MOCK_METHOD3(addEndpoint, void(const QString &participantId,
-                           QSharedPointer<joynr::system::Address> messagingStubAddress,
-                                   const qint64& timeout));
-    MOCK_METHOD3(lookup, QList<joynr::CapabilityEntry>(const QString &domain,
-                                                const QString &interfaceName,
-                                                const joynr::DiscoveryQos& discoveryQos));
-    MOCK_METHOD2(lookup, QList<joynr::CapabilityEntry>(const QString& participantId, const joynr::DiscoveryQos& discoveryQos));
-    MOCK_METHOD2(remove, void(const QString& participantId, const qint64& timeout));
 };
 
 class MockDiscovery : public joynr::system::IDiscovery {
@@ -720,11 +701,12 @@ public:
 //virtual public IChannelUrlDirectory, virtual public ChannelUrlDirectorySyncProxy, virtual public ChannelUrlDirectoryAsyncProxy
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
-    MockChannelUrlDirectoryProxy() : ChannelUrlDirectoryProxy(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain",joynr::ProxyQos(), joynr::MessagingQos(), false),
+    MockChannelUrlDirectoryProxy() :
+        ChannelUrlDirectoryProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain",joynr::ProxyQos(), joynr::MessagingQos(), false),
         joynr::ProxyBase(NULL, NULL, "domain", "INTERFACE_NAME", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(NULL, QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false){}
+        ChannelUrlDirectoryProxyBase(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
+        ChannelUrlDirectorySyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
+        ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false){}
 
 
     MOCK_METHOD2(getUrlsForChannel,void (QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation> > future,
