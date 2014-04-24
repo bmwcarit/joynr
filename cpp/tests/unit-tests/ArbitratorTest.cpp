@@ -66,7 +66,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
         participantId << QString::number(priority);
     }
 
-    // Create a list of fake endpoint addresses
+    // Create a list of fake addresses
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
@@ -107,7 +107,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
         participantId << QString("onChange_%1").arg(priority);
     }
 
-    // Create a list of fake endpoint addresses
+    // Create a list of fake connections
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
@@ -163,7 +163,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
     participantId << QString("correct_keyword");
 
-    // Create a list of fake endpoint addresses
+    // Create a list of fake connections
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 

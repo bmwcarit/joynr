@@ -34,7 +34,7 @@ namespace system {
 
 /**
   * Arbitrator which requests CapabilityEntries for a give interfaceName and domain from
-  * the LocalCapabilitiesDirectory and filters them by a keyword in the qos. The first endpointAddress
+  * the LocalCapabilitiesDirectory and filters them by a keyword in the qos. The first address
   * of the first entry with the correct keyword is returned.
   */
 

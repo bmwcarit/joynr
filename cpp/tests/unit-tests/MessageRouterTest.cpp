@@ -40,15 +40,15 @@ public:
         qos()
     {
         // provision global capabilities directory
-        QSharedPointer<joynr::system::Address> endpointAddressCapa(
+        QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
             new system::ChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), endpointAddressCapa);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        QSharedPointer<joynr::system::Address> endpointAddressChannel(
+        QSharedPointer<joynr::system::Address> addressChannelUrlDirectory(
             new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), endpointAddressChannel);
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
     }
 
     ~MessageRouterTest() {

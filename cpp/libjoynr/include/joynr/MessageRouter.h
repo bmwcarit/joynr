@@ -80,7 +80,7 @@ public:
     virtual ~MessageRouter();
 
     /**
-     * @brief Forwards the message to its endpoint (determined by inspecting the message
+     * @brief Forwards the message towards its destination (determined by inspecting the message
      * header). NOTE: the init method must be called before the first message is routed.
      *
      * @param message the message to route.

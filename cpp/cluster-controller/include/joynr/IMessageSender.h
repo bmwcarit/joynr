@@ -33,7 +33,7 @@ class IMessageSender {
 public:
     virtual ~IMessageSender() {}
     /**
-    * @brief Sends the message to the messaging endpoint associated with the channelId.
+    * @brief Sends the message to the given channel.
     */
     virtual void sendMessage(
             const QString& channelId,

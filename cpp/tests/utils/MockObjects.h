@@ -138,7 +138,7 @@ public:
         : InProcessConnectorFactory(NULL,NULL,NULL,NULL) {
     }
 
-    MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::system::Address> endpointAddress));
+    MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::system::Address> address));
 };
 
 class MockDispatcher : public joynr::IDispatcher {

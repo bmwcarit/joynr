@@ -51,7 +51,7 @@ public:
     HttpSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval);// int messageSendRetryInterval
     virtual ~HttpSender();
     /**
-    * @brief Sends the message to the messaging endpoint associated with the channelId.
+    * @brief Sends the message to the given channel.
     */
     void sendMessage(
             const QString& channelId,

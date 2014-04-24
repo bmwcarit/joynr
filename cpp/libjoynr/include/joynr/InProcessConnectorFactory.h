@@ -44,13 +44,13 @@ public:
     		PublicationManager* publicationManager,
             const QString& proxyParticipantId,
             const QString& providerParticipantId,
-            QSharedPointer<InProcessAddress> endpointAddress
+            QSharedPointer<InProcessAddress> address
    	) {
 		Q_UNUSED(subscriptionManager);
 		Q_UNUSED(publicationManager);
         Q_UNUSED(proxyParticipantId);
         Q_UNUSED(providerParticipantId);
-        Q_UNUSED(endpointAddress);
+        Q_UNUSED(address);
         notImplemented();
         return 0;
     }

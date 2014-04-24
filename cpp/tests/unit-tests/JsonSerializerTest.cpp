@@ -842,8 +842,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     QByteArray joynrSerialized = JsonSerializer::serialize(joynr);
     QByteArray dbusSerialized = JsonSerializer::serialize(dbus);
     
-    LOG_DEBUG(logger, "serialized Joynr endpoint address: "+ QString::fromUtf8(joynrSerialized));
-    LOG_DEBUG(logger, "serialized Dbus endpoint address: "+ QString::fromUtf8(dbusSerialized));
+    LOG_DEBUG(logger, "serialized Joynr address: "+ QString::fromUtf8(joynrSerialized));
+    LOG_DEBUG(logger, "serialized Dbus address: "+ QString::fromUtf8(dbusSerialized));
 
     // deserialize
     joynr::system::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::ChannelAddress>(joynrSerialized);
