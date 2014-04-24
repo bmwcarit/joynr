@@ -75,8 +75,6 @@ protected:
     QString providerParticipantId;
     QString proxyParticipantId;
     joynr::system::CommunicationMiddleware::Enum* connection;
-    //TODO remove channelId when refactoring is finished and participantId & endpointAddresses are used
-    QString destinationChannelId;
     static joynr_logging::Logger* logger;
 };
 

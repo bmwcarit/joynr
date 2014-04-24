@@ -44,8 +44,7 @@ ProxyBase::ProxyBase(
         cached(cached),
         providerParticipantId(""),
         proxyParticipantId(""),
-        connection(NULL),
-        destinationChannelId("DummyChannelIdForRefactoring")
+        connection(NULL)
 {
     proxyParticipantId = QUuid::createUuid().toString();
     proxyParticipantId = proxyParticipantId.mid(1,proxyParticipantId.length()-2);
