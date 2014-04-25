@@ -63,7 +63,6 @@ public:
     JoynrMessageFactory messageFactory;
     QSharedPointer<MockMessageReceiver> mockMessageReceiver;
     QSharedPointer<MockMessageSender> mockMessageSender;
-    MessagingEndpointDirectory* messagingEndpointDirectory;
     MessagingStubFactory* messagingStubFactory;
     QSharedPointer<MessageRouter> messageRouter;
     MessagingTest() :
@@ -79,13 +78,11 @@ public:
         requestId("requestId"),
         qos(),
         inProcessMessagingSkeleton(new MockInProcessMessagingSkeleton()),
-
         messageFactory(),
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
-        messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
         messagingStubFactory(new MessagingStubFactory()),
-        messageRouter(new MessageRouter(messagingEndpointDirectory, messagingStubFactory))
+        messageRouter(new MessageRouter(messagingStubFactory))
     {
         // provision global capabilities directory
         QSharedPointer<joynr::system::Address> endpointAddressCapa(
@@ -103,7 +100,6 @@ public:
         qos.setTtl(10000);
     }
     ~MessagingTest(){
-        delete messagingEndpointDirectory;
         QFile::remove(settingsFileName);
     }
 private:
@@ -143,7 +139,7 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
             QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    messagingEndpointDirectory->add(receiverId, joynrMessagingEndpointAddr);
+    messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller);
 }
@@ -187,7 +183,7 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
     QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr =
             QSharedPointer<InProcessMessagingAddress>(new InProcessMessagingAddress(inProcessMessagingSkeleton));
 
-    messagingEndpointDirectory->add(receiverId, messagingSkeletonEndpointAddr);
+    messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr);
 
     messageRouter->route(message, qos);
 }
@@ -221,7 +217,7 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //    QSharedPointer<LipciEndpointAddress> messagingSkeletonEndpointAddr =
 //            QSharedPointer<LipciEndpointAddress>(new LipciEndpointAddress(messagingSkeleton));
 
-//    messagingEndpointDirectory->add(receiverId, messagingSkeletonEndpointAddr);
+//    messageRouter->add(receiverId, messagingSkeletonEndpointAddr);
     messageRouter->route(message, qos);
 }
 
@@ -247,7 +243,7 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
             QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    messagingEndpointDirectory->add(receiverId, joynrMessagingEndpointAddr);
+    messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageRouter->route(message, qos);
 }
@@ -282,16 +278,17 @@ TEST_F(MessagingTest, routeMultipleMessages)
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
             .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-    QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr =
-            QSharedPointer<InProcessMessagingAddress>(new InProcessMessagingAddress(inProcessMessagingSkeleton));
+    QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr(
+                new InProcessMessagingAddress(inProcessMessagingSkeleton)
+    );
 
-    messagingEndpointDirectory->add(receiverId2, messagingSkeletonEndpointAddr);
+    messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
 
     QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
             QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    messagingEndpointDirectory->add(receiverId, joynrMessagingEndpointAddr);
+    messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageRouter->route(message, qos);
     messageRouter->route(message2, qos);

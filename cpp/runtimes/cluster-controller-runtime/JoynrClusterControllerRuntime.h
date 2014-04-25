@@ -105,7 +105,6 @@ protected:
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
-    Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
     QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     //Reason why CapabilitiesAggregator (CA) has to be a QSP:

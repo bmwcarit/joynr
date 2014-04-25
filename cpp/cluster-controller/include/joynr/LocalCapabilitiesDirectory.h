@@ -52,6 +52,7 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryProvider.h"
+#include "joynr/MessageRouter.h"
 
 #include <QCache>
 #include <QVariantMap>
@@ -75,7 +76,7 @@ public:
     LocalCapabilitiesDirectory(
             MessagingSettings& messagingSettings,
             ICapabilitiesClient* capabilitiesClientPtr,
-            IMessagingEndpointDirectory* endpointDirectory
+            MessageRouter& messageRouter
     );
 
     virtual ~LocalCapabilitiesDirectory();
@@ -239,7 +240,7 @@ private:
     TypedClientMultiCache<QString, CapabilityEntry> participantId2LocalCapability;
 
     QList<types::CapabilityInformation> registeredGlobalCapabilities;
-    IMessagingEndpointDirectory* endpointDirectory;
+    MessageRouter& messageRouter;
 
 };
 

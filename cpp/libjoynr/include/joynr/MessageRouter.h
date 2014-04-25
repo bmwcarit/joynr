@@ -30,6 +30,7 @@
 #include "joynr/system/RoutingProvider.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/ICallback.h"
+#include "joynr/Directory.h"
 
 #include <QSharedPointer>
 #include <QDateTime>
@@ -49,7 +50,6 @@ namespace joynr_logging { class Logger; }
 class DelayedScheduler;
 class ThreadPoolDelayedScheduler;
 namespace system { class Address; }
-template<typename Key, typename T> class Directory;
 
 /**
   * Class MessageRouter receives incoming JoynrMessages on the ClusterController
@@ -65,14 +65,12 @@ template<typename Key, typename T> class Directory;
 class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider {
 public:
     MessageRouter(
-            Directory<QString, joynr::system::Address>* routingTable,
             IMessagingStubFactory* messagingStubFactory,
             int messageSendRetryInterval = 500,
             int maxThreads = 6
     );
 
     MessageRouter(
-            Directory<QString, joynr::system::Address>* routingTable,
             IMessagingStubFactory* messagingStubFactory,
             QSharedPointer<joynr::system::Address> incomingAddress,
             int messageSendRetryInterval = 500,
@@ -141,7 +139,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
-    Directory<QString, joynr::system::Address>* routingTable;
+    Directory<QString, joynr::system::Address> routingTable;
     QMutex routingTableMutex;
     QThreadPool threadPool;
     ThreadPoolDelayedScheduler* delayedScheduler;

@@ -35,8 +35,7 @@ public:
         settings(settingsFileName, QSettings::IniFormat),
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
-        messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingEndpointDirectory, new MessagingStubFactory())),
+        messageRouter(new MessageRouter(new MessagingStubFactory())),
         joynrMessage(),
         qos()
     {
@@ -66,7 +65,6 @@ protected:
     QSettings settings;
     MessagingSettings messagingSettings;
     MockMessagingStubFactory* messagingStubFactory;
-    MessagingEndpointDirectory* messagingEndpointDirectory;
     MessageRouter* messageRouter;
     JoynrMessage joynrMessage;
     MessagingQos qos;

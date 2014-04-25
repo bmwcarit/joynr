@@ -48,7 +48,6 @@ MessageRouter::~MessageRouter() {
 }
 
 MessageRouter::MessageRouter(
-        Directory<QString, joynr::system::Address>* routingTable,
         IMessagingStubFactory* messagingStubFactory,
         int messageSendRetryInterval,
         int maxThreads
@@ -61,7 +60,7 @@ MessageRouter::MessageRouter(
                 false                                   // supports on change subscriptions
         )),
         messagingStubFactory(messagingStubFactory),
-        routingTable(routingTable),
+        routingTable(QString("MessageRouter-RoutingTable")),
         routingTableMutex(),
         threadPool(),
         delayedScheduler(),
@@ -77,7 +76,6 @@ MessageRouter::MessageRouter(
 }
 
 MessageRouter::MessageRouter(
-        Directory<QString, joynr::system::Address>* routingTable,
         IMessagingStubFactory* messagingStubFactory,
         QSharedPointer<joynr::system::Address> incomingAddress,
         int messageSendRetryInterval,
@@ -91,7 +89,7 @@ MessageRouter::MessageRouter(
             false                                   // supports on change subscriptions
     )),
     messagingStubFactory(messagingStubFactory),
-    routingTable(routingTable),
+    routingTable(QString("MessageRouter-RoutingTable")),
     routingTableMutex(),
     threadPool(),
     delayedScheduler(),
@@ -159,7 +157,7 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
     QSharedPointer<joynr::system::Address> destAddress(NULL);
     {
         QMutexLocker locker(&routingTableMutex);
-        destAddress = routingTable->lookup(destinationPartId);
+        destAddress = routingTable.lookup(destinationPartId);
     }
 
     // schedule message for sending
@@ -305,7 +303,7 @@ void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus
 
 void MessageRouter::addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address) {
     QMutexLocker locker(&routingTableMutex);
-    routingTable->add(participantId, address);
+    routingTable.add(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -315,7 +313,7 @@ void MessageRouter::removeNextHop(
 ) {
     {
         QMutexLocker locker(&routingTableMutex);
-        routingTable->remove(participantId);
+        routingTable.remove(participantId);
     }
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
@@ -333,7 +331,7 @@ void MessageRouter::resolveNextHop(
 ) {
     {
         QMutexLocker locker(&routingTableMutex);
-        resolved = routingTable->contains(participantId);
+        resolved = routingTable.contains(participantId);
     }
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }

@@ -169,7 +169,7 @@ public:
 class MockMessageRouter : public joynr::MessageRouter {
 public:
     MockMessageRouter():
-        MessageRouter(NULL, NULL, 500, 0){
+        MessageRouter(NULL, 500, 0){
 
     }
     MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qos));

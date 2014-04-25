@@ -80,7 +80,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         joynrMessageSender(NULL),
         app(app),
         capabilitiesClient(NULL),
-        messagingEndpointDirectory(new Directory<QString, joynr::system::Address>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
         localCapabilitiesDirectory(NULL),
         channelUrlDirectory(),
         cache(),
@@ -138,7 +137,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
     // init message router
     messageRouter = QSharedPointer<MessageRouter>(
-                new MessageRouter(messagingEndpointDirectory, messagingStubFactory)
+                new MessageRouter(messagingStubFactory)
     );
     // provision global capabilities directory
     QSharedPointer<joynr::system::Address> globalCapabilitiesDirectoryAddress(
@@ -208,7 +207,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
                 new LocalCapabilitiesDirectory(
                     *messagingSettings,
                     capabilitiesClient,
-                    messagingEndpointDirectory
+                    *messageRouter
                 )
     );
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -349,8 +348,6 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
     LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
-    //joynrDispatcher needs to be deleted before messagingEndpointdirectory, because the dispatcherthreadpool
-    //might access the messageRouter, which might acces the messagingEndpointdirectory.
     if(joynrDispatcher != NULL){
         LOG_TRACE(logger, "joynrDispatcher");
         //joynrDispatcher->stopMessaging();
@@ -362,8 +359,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime() {
     delete capabilitiesClient;
     capabilitiesClient = NULL;
 
-    delete messagingEndpointDirectory;
-    messagingEndpointDirectory = NULL;
     delete inProcessPublicationSender;
     inProcessPublicationSender = NULL;
     delete joynrMessageSender;

@@ -43,8 +43,8 @@ public:
         settings(settingsFileName, QSettings::IniFormat),
         messagingSettings(settings),
         capabilitiesClient(new MockCapabilitiesClient()),
-        endpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, endpointDirectory)),
+        mockMessageRouter(),
+        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, mockMessageRouter)),
         dummyParticipantId1(),
         dummyParticipantId2(),
         localJoynrMessagingAddress1(),
@@ -88,7 +88,6 @@ public:
 
     void TearDown(){
         delete localCapabilitiesDirectory;
-        delete endpointDirectory;
         delete capabilitiesClient;
     }
 
@@ -134,7 +133,7 @@ protected:
     QSettings settings;
     MessagingSettings messagingSettings;
     MockCapabilitiesClient* capabilitiesClient;
-    MessagingEndpointDirectory* endpointDirectory;
+    MockMessageRouter mockMessageRouter;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QString dummyParticipantId1;
     QString dummyParticipantId2;

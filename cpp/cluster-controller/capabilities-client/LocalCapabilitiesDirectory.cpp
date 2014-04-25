@@ -52,7 +52,7 @@ const qint64& LocalCapabilitiesDirectory::DONT_USE_CACHE(){
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         MessagingSettings& messagingSettings,
         ICapabilitiesClient *capabilitiesClientPtr,
-        IMessagingEndpointDirectory *endpointDirectory
+        MessageRouter& messageRouter
 ) :
     joynr::system::DiscoveryProvider(joynr::types::ProviderQos(
             QList<joynr::types::CustomParameter>(), // custom provider parameters
@@ -69,7 +69,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
     interfaceAddress2LocalCapabilities(),
     participantId2LocalCapability(),
     registeredGlobalCapabilities(),
-    endpointDirectory(endpointDirectory)
+    messageRouter(messageRouter)
 {
     //setting up the provisioned values for GlobalCapabilitiesClient
     //The GlobalCapabilitiesServer is also provisioned in MessageRouter
@@ -313,13 +313,15 @@ void LocalCapabilitiesDirectory::cleanCache(qint64 maxAge_ms) {
 }
 
 
-void LocalCapabilitiesDirectory::registerReceivedCapabilities(QMap<QString, CapabilityEntry> capabilityEntries) {
+void LocalCapabilitiesDirectory::registerReceivedCapabilities(
+        QMap<QString, CapabilityEntry> capabilityEntries
+) {
     QMapIterator<QString, CapabilityEntry> entryIterator(capabilityEntries);
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
         QSharedPointer<joynr::system::Address> joynrAddress(new system::ChannelAddress(entryIterator.key()));
-        endpointDirectory->add(currentEntry.getParticipantId(), joynrAddress);
+        messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }
 }

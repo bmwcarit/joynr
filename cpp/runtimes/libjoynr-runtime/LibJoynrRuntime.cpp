@@ -55,7 +55,6 @@ LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
     settings(settings),
     libjoynrSettings(NULL),
     dbusSettings(NULL),
-    routingTable(new Directory<QString, joynr::system::Address>(QString("JoynrClusterControllerRuntime-MessagingEndpointDirectory"))),
     dispatcherMessagingSkeleton(NULL)
 {
     initializeAllDependencies();
@@ -70,7 +69,6 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     delete dbusMessageRouterAdapter;
     delete libjoynrSettings;
     delete dbusSettings;
-    delete routingTable;
     settings->clear();
     settings->deleteLater();
 }
@@ -95,7 +93,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
     messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
     // create message router
-    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(routingTable, messagingStubFactory, libjoynrMessagingAddress));
+    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory, libjoynrMessagingAddress));
 
     // create messaging skeleton using uuid
     dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingServiceUrl);
