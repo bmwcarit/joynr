@@ -20,6 +20,8 @@ package io.joynr.integration.matchers;
  * #L%
  */
 
+import io.joynr.messaging.util.Utilities;
+
 import java.util.List;
 
 import org.hamcrest.BaseMatcher;
@@ -29,6 +31,8 @@ import org.hamcrest.Matcher;
 import com.jayway.restassured.path.json.JsonPath;
 
 public class MessagingServiceResponseMatchers {
+
+    private static final String HEADER_MSG_ID = "header.msgId";
 
     public static Matcher<List<String>> containsMessage(final String msgId) {
 
@@ -42,7 +46,7 @@ public class MessagingServiceResponseMatchers {
 
                 for (String message : messages) {
                     JsonPath jsonMessage = new JsonPath(message);
-                    String msgIdInJson = jsonMessage.getString("header.msgId");
+                    String msgIdInJson = jsonMessage.getString(HEADER_MSG_ID);
 
                     if (msgIdInJson != null && msgIdInJson.equals(msgId)) {
                         return true;
@@ -56,6 +60,31 @@ public class MessagingServiceResponseMatchers {
             @Override
             public void describeTo(Description description) {
                 description.appendText("contains message ID '" + msgId + "'");
+            }
+
+        };
+    }
+
+    public static Matcher<String> isMessageUrlwithJsessionId(final String baseUrl,
+                                                             final String msgId,
+                                                             final String jsessionId,
+                                                             final String sessionIdName) {
+
+        return new BaseMatcher<String>() {
+
+            @Override
+            public boolean matches(Object item) {
+                String url = (String) item;
+                return url.equals(getExpectedUrl());
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("equals '" + getExpectedUrl() + "'");
+            }
+
+            private String getExpectedUrl() {
+                return Utilities.getSessionEncodedUrl(baseUrl + "messages/" + msgId, sessionIdName, jsessionId);
             }
 
         };

@@ -29,6 +29,7 @@ import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.httpoperation.FailureAction;
 import io.joynr.messaging.httpoperation.HttpConstants;
+import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -254,10 +255,29 @@ public class MessageScheduler {
 
         List<String> urls = channelUrlInfo.getUrls();
         if (!urls.isEmpty()) {
-            url = urls.get(0) + "message/"; // TODO handle trying multiple channelUrls
+            // in case sessions are used and the session is encoded in the URL, 
+            // we need to strip that from the URL and append session ID at the end
+            String encodedChannelUrl = urls.get(0); // TODO handle trying multiple channelUrls
+            url = encodeSendUrl(encodedChannelUrl);
         }
 
         return url;
+    }
+
+    private String encodeSendUrl(String encodedChannelUrl) {
+
+        if (Utilities.isSessionEncodedInUrl(encodedChannelUrl, httpConstants.getHTTP_SESSION_ID_NAME())) {
+            String channelUrlWithoutSessionId = Utilities.getUrlWithoutJsessionId(encodedChannelUrl,
+                                                                                  httpConstants.getHTTP_SESSION_ID_NAME());
+            String sessionId = Utilities.getSessionId(encodedChannelUrl, httpConstants.getHTTP_SESSION_ID_NAME());
+
+            return Utilities.getSessionEncodedUrl(channelUrlWithoutSessionId + "message/",
+                                                  httpConstants.getHTTP_SESSION_ID_NAME(),
+                                                  sessionId);
+
+        } else {
+            return encodedChannelUrl + "message/";
+        }
     }
 
     /**

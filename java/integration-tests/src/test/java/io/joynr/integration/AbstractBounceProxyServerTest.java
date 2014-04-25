@@ -338,10 +338,10 @@ public abstract class AbstractBounceProxyServerTest {
      * @throws JsonMappingException
      * @throws IOException
      */
- private ScheduledFuture<Response> postMessage(final String myChannelId,
-                                                    final long relativeTtlMs,
-                                                    final String postPayload) throws JsonGenerationException,
-                                                                             JsonMappingException, IOException {
+    private ScheduledFuture<Response> postMessage(final String myChannelId,
+                                                  final long relativeTtlMs,
+                                                  final String postPayload) throws JsonGenerationException,
+                                                                           JsonMappingException, IOException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
 
             public Response call() throws JsonGenerationException, JsonMappingException, IOException {

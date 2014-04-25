@@ -34,6 +34,8 @@ public enum JoynrMessagingErrorCode implements JoynrErrorCode {
     JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED(4, "TTL expired"), //
     JOYNRMESSAGINGERROR_INVALIDMESSAGE(5, "Invalid message"), //
     JOYNRMESSAGINGERROR_TRACKINGIDNOTSET(6, "Atmosphere Tracking Id not set"), //
+    JOYNRMESSAGINGERROR_SESSIONIDSET(7, "Session Id set"), //
+    JOYNRMESSAGINGERROR_SESSIONIDNOTSET(8, "Session Id not set"), //
     JOYNRMESSAGINGERROR_UNDEFINED(0, "Undefined error");
 
     private static final int OFFSET = 10000;

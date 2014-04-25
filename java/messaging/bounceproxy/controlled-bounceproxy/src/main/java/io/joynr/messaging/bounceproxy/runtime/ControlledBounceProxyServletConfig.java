@@ -26,6 +26,7 @@ import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
 import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
+import io.joynr.messaging.bounceproxy.filter.SessionFilter;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MessagingServiceRestAdapter;
@@ -35,11 +36,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContextEvent;
+import javax.servlet.SessionTrackingMode;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
@@ -53,13 +58,16 @@ import com.google.inject.name.Names;
  */
 public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(ControlledBounceProxyServletConfig.class);
+
     private final List<Module> modules;
     Map<String, String> params = new HashMap<String, String>();
 
     public ControlledBounceProxyServletConfig() {
         modules = new LinkedList<Module>();
         modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties"),
-                                              BounceProxySystemPropertyLoader.loadProperties()));
+                                              BounceProxySystemPropertyLoader.loadProperties(),
+                                              PropertyLoader.loadProperties("session.properties")));
         modules.add(new ControlledBounceProxyModule());
     }
 
@@ -68,12 +76,29 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
 
         super.contextInitialized(servletContextEvent);
 
+        logSessionHandlingConfig(servletContextEvent);
+
         // Hook to send out message that bounce proxy has started and to start
         // the performance monitoring loop.
         MonitoringServiceClient monitoringServiceClient = getInjector().getInstance(MonitoringServiceClient.class);
         monitoringServiceClient.startStartupReporting();
 
         monitoringServiceClient.startPerformanceReport();
+    }
+
+    private void logSessionHandlingConfig(ServletContextEvent servletContextEvent) {
+
+        Set<SessionTrackingMode> supportedTrackingModes = servletContextEvent.getServletContext()
+                                                                             .getDefaultSessionTrackingModes();
+        for (SessionTrackingMode trackingMode : supportedTrackingModes) {
+            logger.info("Supported session tracking mode enabled: {}", trackingMode);
+        }
+
+        Set<SessionTrackingMode> effectiveTrackingModes = servletContextEvent.getServletContext()
+                                                                             .getEffectiveSessionTrackingModes();
+        for (SessionTrackingMode trackingMode : effectiveTrackingModes) {
+            logger.info("Effective session tracking mode enabled: {}", trackingMode);
+        }
     }
 
     @Override
@@ -100,6 +125,7 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
                 // bounce proxy controller.
                 filter("/*").through(BounceProxyInitializedFilter.class);
                 filter("/*").through(CharacterEncodingFilter.class);
+                filter("/*").through(SessionFilter.class);
 
                 // TODO put configuration somewhere else
                 // This will be done with refactoring of the bounceproxy,

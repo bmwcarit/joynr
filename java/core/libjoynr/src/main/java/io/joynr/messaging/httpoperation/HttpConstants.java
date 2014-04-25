@@ -65,6 +65,9 @@ public class HttpConstants {
     @Inject
     @Named("joynr.http.idle_connection_timeout_ms")
     private int HTTP_IDLE_CONNECTION_TIMEOUT_MS; // prevents IdleTimeoutThread from being started by AHC
+    @Inject
+    @Named("joynr.http.session_id_name")
+    private String HTTP_SESSION_ID_NAME;
 
     // per connection
 
@@ -116,4 +119,7 @@ public class HttpConstants {
         return HEADER_X_ATMOSPHERE_TRACKING_ID;
     }
 
+    public String getHTTP_SESSION_ID_NAME() {
+        return HTTP_SESSION_ID_NAME;
+    }
 }
