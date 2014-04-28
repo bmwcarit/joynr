@@ -73,27 +73,14 @@ void DefaultArbitrator::receiveCapabilitiesLookupResults(
 
     // default arbitrator picks first entry
     joynr::system::DiscoveryEntry discoveredProvider = discoveryEntries.first();
-    if(discoveredProvider.getConnections().contains(joynr::system::CommunicationMiddleware::JOYNR)) {
-        joynr::system::CommunicationMiddleware::Enum preferredConnection(
-                selectPreferredCommunicationMiddleware(discoveredProvider.getConnections())
-        );
-        updateArbitrationStatusParticipantIdAndAddress(
-                    ArbitrationStatus::ArbitrationSuccessful,
-                    discoveredProvider.getParticipantId(),
-                    preferredConnection
-        );
-    } else {
-        LOG_ERROR(
-                    logger,
-                    QString("Arbitrated provider (participant ID: %1, domain: %2, interface %3) "
-                            "is not reachable through joynr messaging. Currently only joynr messaging "
-                            "is supported."
-                    )
-                    .arg(discoveredProvider.getParticipantId())
-                    .arg(domain)
-                    .arg(interfaceName)
-        );
-    }
+    joynr::system::CommunicationMiddleware::Enum preferredConnection(
+            selectPreferredCommunicationMiddleware(discoveredProvider.getConnections())
+    );
+    updateArbitrationStatusParticipantIdAndAddress(
+                ArbitrationStatus::ArbitrationSuccessful,
+                discoveredProvider.getParticipantId(),
+                preferredConnection
+    );
 }
 
 } // namespace joynr

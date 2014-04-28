@@ -66,11 +66,11 @@ TEST_F(ArbitratorTest, getHighestPriority) {
         participantId << QString::number(priority);
     }
 
-    // Create a list of fake addresses
+    // Create a list of fake connections
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
-    // Create a list of capability entries
+    // Create a list of discovery entries
     QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
         discoveryEntries << joynr::system::DiscoveryEntry(
@@ -111,7 +111,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
-    // Create a list of capability entries
+    // Create a list of discovery entries
     QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
         discoveryEntries << joynr::system::DiscoveryEntry(
@@ -167,7 +167,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
-    // Create a list of capability entries
+    // Create a list of discovery entries
     QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
         discoveryEntries << joynr::system::DiscoveryEntry(
