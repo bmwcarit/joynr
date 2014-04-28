@@ -35,7 +35,7 @@
 	</parent>
 	
 	<properties>
-		<atmosphere-version>2.0.1</atmosphere-version>
+		<atmosphere-version>2.0.8</atmosphere-version>
 	</properties>
 
 	<dependencies>	
