@@ -23,7 +23,6 @@ import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceivers;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
@@ -38,6 +37,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +72,12 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
 public class MessagingServletConfig extends GuiceServletContextListener {
     public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
+
+    //NOTE: all property identifiers must be lower-case only.
     public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
     public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
+    public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
+
     private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
     private static final String DEFAULT_SERVLET_MESSAGING_PROPERTIES = "defaultServletMessaging.properties";
@@ -81,11 +85,9 @@ public class MessagingServletConfig extends GuiceServletContextListener {
     private String servletModuleName;
 
     private static final Logger logger = LoggerFactory.getLogger(MessagingServletConfig.class);
-    private String channelId;
 
     private JerseyServletModule jerseyServletModule;
     private IMessageReceivers messageReceivers = new MessageReceivers();
-    private String localDomain;
     private JoynrApplicationLauncher appLauncher = null;
 
     @Override
@@ -95,7 +97,6 @@ public class MessagingServletConfig extends GuiceServletContextListener {
 
         // properties from appProperties will extend and override the default
         // properties
-        String appPropertiesFileName = servletContext.getInitParameter("properties");
         Properties properties = new LowerCaseProperties(PropertyLoader.loadProperties(DEFAULT_SERVLET_MESSAGING_PROPERTIES));
 
         // TODO participantIds will be retrieved from auth certs later
@@ -107,12 +108,16 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // AUTH_TOKEN),
         // properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID));
 
+        String appPropertiesFileName = servletContext.getInitParameter("properties");
         if (appPropertiesFileName != null) {
             Properties appProperties = ServletPropertyLoader.loadProperties(appPropertiesFileName, servletContext);
             properties.putAll(appProperties);
         } else {
             logger.warn("to load properties, set the initParameter 'properties' ");
         }
+
+        // add OS environment properties
+        properties.putAll(System.getenv());
 
         servletModuleName = properties.getProperty(INIT_PARAM_SERVLET_MODULE_CLASSNAME);
         servletModuleName = servletModuleName == null ? DEFAULT_SERVLET_MODULE_NAME : servletModuleName;
@@ -121,11 +126,10 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // * all plugin application classes implementing the JoynApplication interface
         // * all servlets annotated as WebServlet
         // * the class implementing JoynrInjectorFactory (should be only one)
-        String systemAppPackagesSetting = System.getProperties().getProperty(IO_JOYNR_APPS_PACKAGES);
-        String appPackagesSetting = properties.getProperty(IO_JOYNR_APPS_PACKAGES);
-        String[] appPackages = appPackagesSetting != null ? appPackagesSetting.split(";") : null;
-        String[] systemAppPackages = systemAppPackagesSetting != null ? systemAppPackagesSetting.split(";") : null;
-        appPackages = (String[]) ArrayUtils.addAll(appPackages, systemAppPackages);
+        String[] appPackages = mergeAppPackages(properties);
+
+        // Add Java system properties (set with -D)
+        properties.putAll(System.getProperties());
 
         // TODO if reflections is ever a performance problem, can statically scan and save the reflections data using
         // Maven,
@@ -193,17 +197,15 @@ public class MessagingServletConfig extends GuiceServletContextListener {
             servletModule = new EmptyModule();
         }
 
-        // bindings in jerseyServletNModule and ServletMessagingModule will
-        // override bindings in the
-        // defaultruntimemodule
-        if (channelId != null) {
-            properties.put(MessagingPropertyKeys.CHANNELID, channelId);
-        }
-        if (localDomain != null) {
-            properties.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
-        }
-
         properties.put(PROPERTY_SERVLET_CONTEXT_ROOT, servletContext.getContextPath());
+
+        String hostPath = properties.getProperty(PROPERTY_SERVLET_HOST_PATH);
+        if (hostPath == null) {
+            hostPath = properties.getProperty("hostpath");
+        }
+        if (hostPath != null) {
+            properties.setProperty(PROPERTY_SERVLET_HOST_PATH, hostPath);
+        }
 
         // find all plugin application classes implementing the JoynApplication interface
         Set<Class<? extends JoynrApplication>> joynrApplicationsClasses = reflections.getSubTypesOf(JoynrApplication.class);
@@ -215,6 +217,8 @@ public class MessagingServletConfig extends GuiceServletContextListener {
                                                                                                        .next());
         appLauncher = injector.getInstance(JoynrApplicationLauncher.class);
 
+        logger.info("starting joynr with properties: {}", properties);
+
         appLauncher.init(properties,
                          joynrApplicationsClasses,
                          injectorFactory,
@@ -222,6 +226,16 @@ public class MessagingServletConfig extends GuiceServletContextListener {
                          new ServletMessagingModule());
 
         super.contextInitialized(servletContextEvent);
+    }
+
+    private String[] mergeAppPackages(Properties properties) {
+        String systemAppPackagesSetting = System.getProperties().getProperty(IO_JOYNR_APPS_PACKAGES);
+        String appPackagesSetting = properties.getProperty(IO_JOYNR_APPS_PACKAGES);
+        String[] appPackages = appPackagesSetting != null ? appPackagesSetting.split(";") : null;
+        String[] systemAppPackages = systemAppPackagesSetting != null ? systemAppPackagesSetting.split(";") : null;
+        appPackages = (String[]) ArrayUtils.addAll(appPackages, systemAppPackages);
+        System.getProperties().setProperty(IO_JOYNR_APPS_PACKAGES, StringUtils.join(appPackages, ';'));
+        return appPackages;
     }
 
     @Override
