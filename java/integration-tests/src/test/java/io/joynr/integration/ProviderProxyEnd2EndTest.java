@@ -255,12 +255,6 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Test(timeout = 3000)
-    public void registerProviderDoesNotBlock() throws InterruptedException {
-        Assert.assertTrue("Register Provider should not block. Took " + timeTookToRegisterProvider
-                + "ms to register provider", timeTookToRegisterProvider < 100);
-    }
-
-    @Test(timeout = 3000)
     @Ignore
     public void registerProviderCreateProxyAndCallMethod() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
