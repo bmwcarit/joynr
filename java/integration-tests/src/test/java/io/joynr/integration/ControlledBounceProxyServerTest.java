@@ -421,13 +421,13 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         RestAssured.baseURI = bounceProxyServerXyUrl;
         super.testPostMessageToNonExistingChannel();
     }
-    
+
     @Ignore("ignore until duplicate messages bug is fixed")
     @Test(timeout = 20000)
     // This is a test to see if the atmos bug still exists. If the bug exists,
     // the server will hang 20 secs
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
-    	super.testSendAndReceiveMessagesOnAtmosphereServer();
+        super.testSendAndReceiveMessagesOnAtmosphereServer();
     }
 
     @Ignore("ignore until duplicate messages bug is fixed")
@@ -435,7 +435,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
     // This is a test to see if sending and receiving messages at the same time
     // results in duplicate messages in the long poll.
     public void testSendAndReceiveMessagesConcurrently() throws Exception {
-    	super.testSendAndReceiveMessagesConcurrently();
+        super.testSendAndReceiveMessagesConcurrently();
     }
 
     @Test

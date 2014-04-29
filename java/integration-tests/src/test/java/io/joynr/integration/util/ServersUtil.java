@@ -30,6 +30,8 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,16 @@ public class ServersUtil {
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
 
         Server server = startServer(contexts);
+        setBounceProxyUrl();
+        setDirectoriesUrl();
+        return server;
+    }
+
+    public static Server startSSLServers(SSLSettings settings) throws Exception {
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+
+        Server server = startSSLServer(contexts, settings);
         setBounceProxyUrl();
         setDirectoriesUrl();
         return server;
@@ -115,6 +127,12 @@ public class ServersUtil {
         return startServer(contexts, port);
     }
 
+    private static Server startSSLServer(ContextHandlerCollection contexts, SSLSettings settings) throws IOException,
+                                                                                                 Exception {
+        final int port = ServletUtil.findFreePort();
+        return startSSLServer(contexts, settings, port);
+    }
+
     private static Server startServer(ContextHandlerCollection contexts, int port) throws IOException, Exception {
 
         logger.info("PORT: http://localhost:{}", port);
@@ -125,6 +143,36 @@ public class ServersUtil {
         jettyServer.setConnectors(new Connector[]{ connector });
 
         String serverUrl = "http://localhost:" + port;
+        System.getProperties().setProperty("hostPath", serverUrl);
+
+        jettyServer.setHandler(contexts);
+        jettyServer.start();
+
+        return jettyServer;
+    }
+
+    private static Server startSSLServer(ContextHandlerCollection contexts, SSLSettings settings, int port)
+                                                                                                           throws IOException,
+                                                                                                           Exception {
+
+        logger.info("PORT: https://localhost:{}", port);
+        final Server jettyServer = new Server();
+
+        // Configure SSL
+        final SslContextFactory contextFactory = new SslContextFactory();
+        contextFactory.setKeyStorePath(settings.getKeyStorePath());
+        contextFactory.setTrustStore(settings.getTrustStorePath());
+        contextFactory.setKeyStorePassword(settings.getKeyStorePassword());
+        contextFactory.setTrustStorePassword(settings.getKeyStorePassword());
+        contextFactory.setNeedClientAuth(true);
+
+        // Create and use an SSL connector
+        SslSocketConnector connector = new SslSocketConnector(contextFactory);
+        connector.setPort(port);
+        connector.setAcceptors(1);
+        jettyServer.setConnectors(new Connector[]{ connector });
+
+        String serverUrl = "https://localhost:" + port;
         System.getProperties().setProperty("hostPath", serverUrl);
 
         jettyServer.setHandler(contexts);
