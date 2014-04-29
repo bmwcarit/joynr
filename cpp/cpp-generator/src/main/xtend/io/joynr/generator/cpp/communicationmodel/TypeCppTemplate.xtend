@@ -151,7 +151,16 @@ class TypeCppTemplate {
 				        iter++;
 				    }
 				}
-				
+
+			«ELSEIF isByteBuffer(member.type)»
+				QByteArray «typeName»::get«joynrName.toFirstUpper»Internal() const {
+					return m_«joynrName».toBase64();
+				}
+
+				void «typeName»::set«joynrName.toFirstUpper»Internal(const QByteArray& obj«joynrName.toFirstUpper»)  {
+					m_«joynrName» = QByteArray::fromBase64(obj«joynrName.toFirstUpper»);
+				}
+
 			«ELSE»
 				«IF isEnum(member.type)»
 					QString «typeName»::get«joynrName.toFirstUpper»Internal() const {
