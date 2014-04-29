@@ -150,6 +150,16 @@ qint64 MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS() {
     return value;
 }
 
+const QString& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS() {
+    static const QString value("messaging/http-connect-timeout");
+    return value;
+}
+
+qint64 MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS() {
+    static const qint64 value(1 * 60 * 1000);  // 1 minute
+    return value;
+}
+
 const QString& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS() {
     static const QString value("messaging/bounce-proxy-timeout");
     return value;
@@ -285,6 +295,14 @@ qint64 MessagingSettings::getLongPollTimeout() const {
 
 void MessagingSettings::setLongPollTimeout(qint64 timeout_ms) {
     settings.setValue(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
+}
+
+qint64 MessagingSettings::getHttpConnectTimeout() const {
+    return settings.value(SETTING_HTTP_CONNECT_TIMEOUT_MS()).toLongLong();
+}
+
+void MessagingSettings::setHttpConnectTimeout(qint64 timeout_ms) {
+    settings.setValue(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
 qint64 MessagingSettings::getBounceProxyTimeout() const {

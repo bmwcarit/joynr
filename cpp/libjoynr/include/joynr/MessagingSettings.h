@@ -57,12 +57,14 @@ public:
     static const QString& SETTING_HTTP_DEBUG();
     static const QString& SETTING_PERSISTENCE_FILENAME();
     static const QString& SETTING_LONGPOLL_TIMEOUT_MS();
+    static const QString& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const QString& SETTING_BOUNCEPROXY_TIMEOUT_MS();
     static const QString& SETTING_SEND_MESSAGE_MAX_TTL();
 
     static const QString& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const QString& DEFAULT_PERSISTENCE_FILENAME();
     static qint64 DEFAULT_LONGPOLL_TIMEOUT_MS();
+    static qint64 DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
     static qint64 DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
     static qint64 DEFAULT_SEND_MESSAGE_MAX_TTL();
 
@@ -100,6 +102,8 @@ public:
     void setMessagingPropertiesPersistenceFilename(const QString& persistenceFilename);
     qint64 getLongPollTimeout() const;
     void setLongPollTimeout(qint64 timeout_ms);
+    qint64 getHttpConnectTimeout() const;
+    void setHttpConnectTimeout(qint64 timeout_ms);
     qint64 getBounceProxyTimeout() const;
     void setBounceProxyTimeout(qint64 timeout_ms);
     qint64 getSendMsgMaxTtl() const;

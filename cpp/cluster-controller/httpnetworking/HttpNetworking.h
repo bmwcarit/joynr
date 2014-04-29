@@ -73,6 +73,7 @@ public:
       * Adds an http header. Only ASCII characters are allowed.
       */
     virtual T* addHeader(const QString& name, const QString& value) = 0;
+    virtual T* withConnectTimeout_ms(long timeout_ms) = 0;
     virtual T* withTimeout_ms(long timeout_ms) = 0;
 };
 
@@ -155,6 +156,11 @@ public:
     void setGlobalProxy(const QString& proxy);
 
     /**
+     * Sets the HTTP connect timeout
+     */
+    void setConnectTimeout_ms(long connectTimeout);
+
+    /**
       * Enables HTTP logging if available. The method of logging is dependent on the HTTP library
       * being used.
       */
@@ -168,6 +174,7 @@ private:
     ICurlHandlePool* curlHandlePool;
 
     QString proxy;
+    long connectTimeout_ms;
     bool httpDebug;
 };
 

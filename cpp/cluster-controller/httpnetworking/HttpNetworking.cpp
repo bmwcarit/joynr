@@ -36,6 +36,7 @@ HttpNetworking* HttpNetworking::httpNetworking = new HttpNetworking();
 HttpNetworking::HttpNetworking() :
     curlHandlePool(NULL),
     proxy(),
+    connectTimeout_ms(0),
     httpDebug(false)
 {
     curl_global_init(CURL_GLOBAL_ALL);
@@ -56,6 +57,8 @@ HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url) {
     if (httpDebug) {
         requestBuilder->withDebug();
     }
+    // Set the connect timeout
+    requestBuilder->withConnectTimeout_ms(connectTimeout_ms);
     return requestBuilder;
 }
 
@@ -83,6 +86,10 @@ void HttpNetworking::setGlobalProxy(const QString& proxy) {
 
 void HttpNetworking::setHTTPDebugOn() {
     this->httpDebug = true;
+}
+
+void HttpNetworking::setConnectTimeout_ms(long connectTimeout) {
+    this->connectTimeout_ms = connectTimeout;
 }
 
 ICurlHandlePool* HttpNetworking::getCurlHandlePool() {

@@ -44,6 +44,7 @@ public:
     HttpRequestBuilder* withProxy(const QString& proxy);
     HttpRequestBuilder* withDebug();
     HttpRequestBuilder* acceptGzip();
+    HttpRequestBuilder* withConnectTimeout_ms(long timeout_ms);
     HttpRequestBuilder* withTimeout_ms(long timeout_ms);
     HttpRequestBuilder* withContentType(const QString& contentType);
     HttpRequestBuilder* addHeader(const QString& name, const QString& value);

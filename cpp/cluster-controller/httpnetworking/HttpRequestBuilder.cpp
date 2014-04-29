@@ -84,6 +84,11 @@ HttpRequestBuilder* HttpRequestBuilder::withTimeout_ms(long timeout_ms) {
     return this;
 }
 
+HttpRequestBuilder* HttpRequestBuilder::withConnectTimeout_ms(long timeout_ms) {
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT_MS, timeout_ms);
+    return this;
+}
+
 HttpRequestBuilder* HttpRequestBuilder::acceptGzip() {
     curl_easy_setopt(handle, CURLOPT_ACCEPT_ENCODING, "gzip");
     return this;
