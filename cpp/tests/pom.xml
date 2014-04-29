@@ -156,6 +156,19 @@
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
+					<connectors>
+						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+							<port>8080</port>
+						</connector>
+						<connector implementation="org.eclipse.jetty.server.ssl.SslSocketConnector">
+							<port>8443</port>
+							<keystore>${basedir}/resources/localhost.jks</keystore>
+							<truststore>${basedir}/resources/truststore.jks</truststore>
+							<password>changeit</password>
+							<keyPassword>changeit</keyPassword>
+							<needClientAuth>true</needClientAuth>
+						</connector>
+					</connectors>
 					<webApp>
 						<contextPath>/</contextPath>
 					</webApp>

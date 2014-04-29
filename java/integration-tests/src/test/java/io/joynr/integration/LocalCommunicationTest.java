@@ -77,7 +77,7 @@ public class LocalCommunicationTest {
     @Mock
     private SubscriptionListener<Integer> listener;
     private SubscriptionQos subscriptionQos;
-	private int lengthInMS = 2000;
+    private int lengthInMS = 2000;
 
     @Before
     public void setUp() throws Exception {
@@ -123,30 +123,31 @@ public class LocalCommunicationTest {
     public void registerPeriodicSubscriptionAndReceiveUpdatesForLongTime() throws InterruptedException {
         int times = 5;
         final int initialValue = 42;
-        
-        int period = lengthInMS  / times;
-		provider.setATTRIBUTEWITHCAPITALLETTERS(initialValue);
-		subscriptionQos = new PeriodicSubscriptionQos(period, // period_ms,
+
+        int period = lengthInMS / times;
+        provider.setATTRIBUTEWITHCAPITALLETTERS(initialValue);
+        subscriptionQos = new PeriodicSubscriptionQos(period, // period_ms,
                                                       System.currentTimeMillis() + lengthInMS, // expiryDate
                                                       lengthInMS, // alertInterval_ms,
-                                                      lengthInMS/4 // publicationTtl_ms
+                                                      lengthInMS / 4 // publicationTtl_ms
         );
 
-		proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
-		new Timer().scheduleAtFixedRate(new TimerTask() {
-			int value = initialValue;
-			@Override
-			public void run() {
-				value ++;
-				provider.setATTRIBUTEWITHCAPITALLETTERS(value);
-			}
-		}, period, period);
-        
+        proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            int value = initialValue;
+
+            @Override
+            public void run() {
+                value++;
+                provider.setATTRIBUTEWITHCAPITALLETTERS(value);
+            }
+        }, period, period);
+
         Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).publicationMissed();
-       // verify(listener, times(times)).receive(anyInt());
+        // verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
-        for (int i = 42; i < 42+times; i++) {
+        for (int i = 42; i < 42 + times; i++) {
             verify(listener, times(1)).receive(eq(i));
         }
         verifyNoMoreInteractions(listener);
@@ -155,37 +156,36 @@ public class LocalCommunicationTest {
     /* This is a manual test that subscribes for 30 seconds, and checks if all subscriptions arrive. In this case,
      * the test expect publication in case of value change
      */
-    
+
     @Test
     @Ignore
     public void registerSubscriptionOnChangeAndReceiveUpdatesForLongTime() throws InterruptedException {
         final int times = 5;
         final int initialValue = 42;
-        
-        int period = lengthInMS / times;
-		provider.aTTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
-		subscriptionQos = new OnChangeSubscriptionQos(lengthInMS/4,
-                                                      System.currentTimeMillis() + lengthInMS, // expiryDate
-                                                      lengthInMS/4
-        );
 
-		new Timer().scheduleAtFixedRate(new TimerTask() {
-			int value = initialValue;
-			@Override
-			public void run() {
-				value ++;
-				if (value<initialValue + times){
-					provider.aTTRIBUTEWITHCAPITALLETTERSChanged(value);
-				}
-			}
-		}, period, period);
+        int period = lengthInMS / times;
+        provider.aTTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
+        subscriptionQos = new OnChangeSubscriptionQos(lengthInMS / 4, System.currentTimeMillis() + lengthInMS, // expiryDate
+                                                      lengthInMS / 4);
+
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            int value = initialValue;
+
+            @Override
+            public void run() {
+                value++;
+                if (value < initialValue + times) {
+                    provider.aTTRIBUTEWITHCAPITALLETTERSChanged(value);
+                }
+            }
+        }, period, period);
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
-        
+
         Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).publicationMissed();
         verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
-        for (int i = 42; i < 42+times; i++) {
+        for (int i = 42; i < 42 + times; i++) {
             verify(listener, times(1)).receive(eq(i));
         }
         verifyNoMoreInteractions(listener);
