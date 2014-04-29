@@ -43,7 +43,7 @@ public class BounceProxyRecordTest {
         BounceProxyRecord record = new BounceProxyRecord(info);
 
         assertEquals(info, record.getInfo());
-        assertEquals(0, record.getAssignedChannels());
+        assertEquals(0, record.getNumberOfAssignedChannels());
         assertEquals(BounceProxyRecord.ASSIGNMENT_TIMESTAMP_NEVER, record.getLastAssignedTimestamp());
         assertEquals(BounceProxyStatus.ALIVE, record.getStatus());
     }

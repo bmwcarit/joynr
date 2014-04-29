@@ -165,7 +165,9 @@ public class RoundRobinAssignmentTest {
 
         BounceProxyRecord record = createBounceProxyRecord(bpId);
 
-        record.setAssignedChannels(noOfAssignedChannels);
+        for (int i = 0; i < noOfAssignedChannels; i++) {
+            record.addAssignedChannel("channel-" + bpId + "-" + 1);
+        }
         record.setLastAssignedTimestamp(lastAssignedTimestamp);
 
         return record;

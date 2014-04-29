@@ -26,6 +26,8 @@ import io.joynr.messaging.info.PerformanceMeasures;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Database record for a bounce proxy instance.<br>
@@ -54,18 +56,18 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
     private long freshness;
 
     /**
-     * The number of assigned channels as recorded by the bounce proxy
-     * controller. This should match with the number of assigned channels
+     * A set of assigned channels as recorded by the bounce proxy
+     * controller. The size of this set should match with the number of assigned channels
      * reported by the bounce proxy in {@link #performanceMeasures}.
      */
-    private int assignedChannels;
+    private Set<String> assignedChannels;
 
     private long lastAssignedTimestamp;
 
     public BounceProxyRecord(ControlledBounceProxyInformation bpInfo) {
         this.info = bpInfo;
         this.lastAssignedTimestamp = ASSIGNMENT_TIMESTAMP_NEVER;
-        this.assignedChannels = 0;
+        this.assignedChannels = new HashSet<String>();
         this.status = BounceProxyStatus.ALIVE;
     }
 
@@ -98,14 +100,6 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
         }
     }
 
-    public int getAssignedChannels() {
-        return assignedChannels;
-    }
-
-    public void setAssignedChannels(int assignedChannels) {
-        this.assignedChannels = assignedChannels;
-    }
-
     /**
      * Returns the timestamp of the latest assignment of a channel to that
      * bounce proxy instance.
@@ -123,11 +117,22 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
     }
 
     /**
-     * Increases the number of assigned channels. The timestamp of the latest
+     * Adds an assigned channel if it doesn't exist yet. The timestamp of the latest
      * channel assignment has to be updated manually.
+     * 
+     * @param channelId the ID of the channel to be added
      */
-    public void increaseAssignedChannels() {
-        assignedChannels++;
+    public void addAssignedChannel(String channelId) {
+        assignedChannels.add(channelId);
+    }
+
+    /**
+     * Returns the number of channels assigned to this bounce proxy.
+     * 
+     * @return
+     */
+    public int getNumberOfAssignedChannels() {
+        return assignedChannels.size();
     }
 
     @Override

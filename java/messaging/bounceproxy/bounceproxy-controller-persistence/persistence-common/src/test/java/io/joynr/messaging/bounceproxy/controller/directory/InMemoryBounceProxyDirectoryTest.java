@@ -150,7 +150,7 @@ public class InMemoryBounceProxyDirectoryTest {
         BounceProxyRecord bounceProxy = directory.getBounceProxy("X.Y");
 
         assertNotNull(bounceProxy);
-        assertEquals(1, bounceProxy.getAssignedChannels());
+        assertEquals(1, bounceProxy.getNumberOfAssignedChannels());
         assertEquals(200, bounceProxy.getLastAssignedTimestamp());
     }
 

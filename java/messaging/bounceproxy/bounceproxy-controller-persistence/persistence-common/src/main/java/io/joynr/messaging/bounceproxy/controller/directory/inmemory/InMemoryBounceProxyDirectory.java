@@ -86,7 +86,7 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
                     + "' available in the directory");
 
         BounceProxyRecord record = directory.get(bpInfo.getId());
-        record.increaseAssignedChannels();
+        record.addAssignedChannel(ccid);
         record.setLastAssignedTimestamp(timestampProvider.getCurrentTime());
     }
 
