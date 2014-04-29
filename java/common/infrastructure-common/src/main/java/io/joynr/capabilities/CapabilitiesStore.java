@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,23 +28,20 @@ import java.util.HashSet;
 
 public interface CapabilitiesStore {
 
-    public abstract void registerCapability(CapabilityEntry capabilityEntry);
+    public abstract void add(CapabilityEntry capabilityEntry);
 
-    public abstract void registerCapabilities(Collection<? extends CapabilityEntry> interfaces);
+    public abstract void add(Collection<? extends CapabilityEntry> interfaces);
 
-    public abstract boolean removeCapability(CapabilityEntry capEntry);
+    public abstract boolean remove(String participantId);
 
-    public abstract void removeCapabilities(Collection<? extends CapabilityEntry> interfaces);
+    public abstract void remove(Collection<String> participantIds);
 
     public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint,
                                                                                   DiscoveryQos discoveryQos);
 
-    public abstract Collection<CapabilityEntry> findCapabilitiesForInterfaceAddress(String domain,
-                                                                                    String interfaceName,
-                                                                                    DiscoveryQos discoveryQos);
+    public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName, DiscoveryQos discoveryQos);
 
-    public abstract ArrayList<CapabilityEntry> findCapabilitiesForParticipantId(String participantId,
-                                                                                DiscoveryQos discoveryQos);
+    public abstract CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos);
 
     public abstract HashSet<CapabilityEntry> getAllCapabilities();
 

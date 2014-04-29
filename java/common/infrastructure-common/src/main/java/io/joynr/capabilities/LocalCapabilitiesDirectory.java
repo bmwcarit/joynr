@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ public interface LocalCapabilitiesDirectory {
      * 
      * @return
      */
-    RegistrationFuture addCapability(CapabilityEntry capabilityEntry);
+    RegistrationFuture add(CapabilityEntry capabilityEntry);
 
     /**
      * Removes capabilities from the list of local capabilities and at the capabilities directory.
      * 
      * @param interfaces
      */
-    void removeCapability(CapabilityEntry capability);
+    void remove(CapabilityEntry capabilityEntry);
 
     /**
      * Searches for capabilities by domain and interface name.
@@ -47,20 +47,20 @@ public interface LocalCapabilitiesDirectory {
      * @param capabilitiesCallback
      * @return
      */
-    void getCapabilities(String domain,
-                         String interfaceName,
-                         DiscoveryQos discoveryQos,
-                         CapabilitiesCallback capabilitiesCallback);
+    void lookup(String domain,
+                String interfaceName,
+                DiscoveryQos discoveryQos,
+                CapabilitiesCallback capabilitiesCallback);
 
     /**
-     * Searches for capabilities by participantId.
+     * Searches for capability by participantId.
      * 
      * @param participantId
      * @param discoveryQos
      * @param callback
      * @return
      */
-    void getCapabilities(String participantId, DiscoveryQos discoveryQos, CapabilitiesCallback callback);
+    void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

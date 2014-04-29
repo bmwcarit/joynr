@@ -148,41 +148,33 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
         return new GlobalCapabilitiesDirectoryClient() {
 
             @Override
-            public void unregisterCapability(CapabilityInformation capInfo) {
+            public void remove(String participantId) {
                 // Don't register capabilities globally for channelUrlDirectory
                 return;
             }
 
             @Override
-            public void unregisterCapabilities(List<CapabilityInformation> capabilities) {
+            public void remove(List<String> participantIds) {
                 // Don't register capabilities globally for channelUrlDirectory
                 return;
             }
 
             @Override
-            public void registerCapability(CapabilityInformation capability) {
-                // Don't register capabilities globally for channelUrlDirectory
-                return;
-
-            }
-
-            @Override
-            public void registerCapabilities(List<CapabilityInformation> capabilities) {
+            public void add(CapabilityInformation capability) {
                 // Don't register capabilities globally for channelUrlDirectory
                 return;
 
             }
 
             @Override
-            public void registerCapabilities(Callback<Void> callback, List<CapabilityInformation> capabilities) {
+            public void add(List<CapabilityInformation> capabilities) {
                 // Don't register capabilities globally for channelUrlDirectory
-                callback.onSuccess(null);
                 return;
 
             }
 
             @Override
-            public void registerCapability(Callback<Void> callback, CapabilityInformation capability) {
+            public void add(Callback<Void> callback, List<CapabilityInformation> capabilities) {
                 // Don't register capabilities globally for channelUrlDirectory
                 callback.onSuccess(null);
                 return;
@@ -190,54 +182,48 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<List<CapabilityInformation>> lookupCapabilities(Callback<List<CapabilityInformation>> callback,
-                                                                          String domain,
-                                                                          String interfaceName) {
-                return proxy.lookupCapabilities(callback, domain, interfaceName);
-            }
-
-            @Override
-            public Future<List<CapabilityInformation>> getCapabilitiesForChannelId(Callback<List<CapabilityInformation>> callback,
-                                                                                   String channelId) {
-
-                return proxy.getCapabilitiesForChannelId(callback, channelId);
-            }
-
-            @Override
-            public Future<List<CapabilityInformation>> getCapabilitiesForParticipantId(Callback<List<CapabilityInformation>> callback,
-                                                                                       String participantId) {
-
-                return proxy.getCapabilitiesForParticipantId(callback, participantId);
-            }
-
-            @Override
-            public void unregisterCapabilities(Callback<Void> callback, List<CapabilityInformation> capabilities) {
-                proxy.unregisterCapabilities(callback, capabilities);
+            public void add(Callback<Void> callback, CapabilityInformation capability) {
+                // Don't register capabilities globally for channelUrlDirectory
+                callback.onSuccess(null);
+                return;
 
             }
 
             @Override
-            public void unregisterCapability(Callback<Void> callback, CapabilityInformation capability) {
-                proxy.unregisterCapability(callback, capability);
+            public Future<List<CapabilityInformation>> lookup(Callback<List<CapabilityInformation>> callback,
+                                                              String domain,
+                                                              String interfaceName) {
+                return proxy.lookup(callback, domain, interfaceName);
+            }
+
+            @Override
+            public Future<CapabilityInformation> lookup(Callback<CapabilityInformation> callback, String participantId) {
+
+                return proxy.lookup(callback, participantId);
+            }
+
+            @Override
+            public void remove(Callback<Void> callback, List<String> participantIds) {
+                proxy.remove(callback, participantIds);
 
             }
 
             @Override
-            public List<CapabilityInformation> lookupCapabilities(String domain, String interfaceName) {
+            public void remove(Callback<Void> callback, String participantId) {
+                proxy.remove(callback, participantId);
 
-                return proxy.lookupCapabilities(domain, interfaceName);
             }
 
             @Override
-            public List<CapabilityInformation> getCapabilitiesForChannelId(String channelId) {
+            public List<CapabilityInformation> lookup(String domain, String interfaceName) {
 
-                return proxy.getCapabilitiesForChannelId(channelId);
+                return proxy.lookup(domain, interfaceName);
             }
 
             @Override
-            public List<CapabilityInformation> getCapabilitiesForParticipantId(String participantId) {
+            public CapabilityInformation lookup(String participantId) {
 
-                return proxy.getCapabilitiesForParticipantId(participantId);
+                return proxy.lookup(participantId);
             }
 
         };

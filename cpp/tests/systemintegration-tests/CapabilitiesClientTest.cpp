@@ -118,10 +118,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     capabilitiesInformationList.append(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
     LOG_DEBUG(logger,"Registering capabilities");
-    capabilitiesClient->registerCapabilities(capabilitiesInformationList);
+    capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
     //sync methods are not yet implemented
-//    QList<types::CapabilityInformation> capResultList = capabilitiesClient->getCapabilitiesForInterfaceAddress(capDomain, capInterface);
+//    QList<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
     QSharedPointer<IGlobalCapabilitiesCallbackMock> callback(new IGlobalCapabilitiesCallbackMock());
 
@@ -131,7 +131,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     LOG_DEBUG(logger,"get capabilities");
-    capabilitiesClient->getCapabilitiesForInterfaceAddress(capDomain, capInterface, callback);
+    capabilitiesClient->lookup(capDomain, capInterface, callback);
     semaphore.tryAcquire(1,10000);
     LOG_DEBUG(logger,"finished get capabilities");
 

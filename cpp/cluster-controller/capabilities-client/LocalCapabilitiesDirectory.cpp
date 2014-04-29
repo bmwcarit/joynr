@@ -113,7 +113,7 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory() {
     participantId2LocalCapability.cleanup(0);
 }
 
-void LocalCapabilitiesDirectory::registerCapability(
+void LocalCapabilitiesDirectory::add(
         const QString &domain,
         const QString &interfaceName,
         const types::ProviderQos &qos,
@@ -146,20 +146,19 @@ void LocalCapabilitiesDirectory::registerCapability(
         if(!registeredGlobalCapabilities.contains(capInfo)){
             registeredGlobalCapabilities.append(capInfo);
         }
-        this->capabilitiesClient->registerCapabilities(registeredGlobalCapabilities);
+        this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
 }
 
-void LocalCapabilitiesDirectory::removeCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
+void LocalCapabilitiesDirectory::remove(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
     //TODO does it make sense to remove any capability for a domain/interfaceName without knowing which provider registered the capability
     QMutexLocker locker(cacheLock);
     QList<CapabilityEntry> entries = interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
     for (int i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            QList<types::CapabilityInformation> capInfoList = createCapabilitiesInformationList(domain, interfaceName, capabilitiesClient->getLocalChannelId(), qos, entry.getParticipantId());
             registeredGlobalCapabilities.removeAll(types::CapabilityInformation(domain, interfaceName,qos, capabilitiesClient->getLocalChannelId(), entry.getParticipantId()));
-            capabilitiesClient->removeCapabilities(capInfoList);
+            capabilitiesClient->remove(entry.getParticipantId());
             participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
             interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
         }
@@ -168,17 +167,16 @@ void LocalCapabilitiesDirectory::removeCapability(const QString& domain, const Q
     }
 }
 
-void LocalCapabilitiesDirectory::removeCapability(const QString& participantId) {
+void LocalCapabilitiesDirectory::remove(const QString& participantId) {
     QMutexLocker lock(cacheLock);
     CapabilityEntry entry = participantId2LocalCapability.take(participantId);
     interfaceAddress2LocalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()),entry);
     if(entry.isGlobal()) {
         participantId2GlobalCapabilities.remove(participantId, entry);
         interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-
-        QList<types::CapabilityInformation> capInfoList = createCapabilitiesInformationList(entry.getDomain(), entry.getInterfaceName(), capabilitiesClient->getLocalChannelId(), entry.getQos(), entry.getParticipantId());
-        capabilitiesClient->removeCapabilities(capInfoList);
     }
+
+    capabilitiesClient->remove(participantId);
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -257,7 +255,7 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(
     return false;
 }
 
-void LocalCapabilitiesDirectory::getCapability(
+void LocalCapabilitiesDirectory::lookup(
         const QString& participantId,
         QSharedPointer<ILocalCapabilitiesCallback> callback
 ) {
@@ -270,11 +268,11 @@ void LocalCapabilitiesDirectory::getCapability(
     if (!recieverCalled) {
         // search for global entires in the global capabilities directory
         QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallback(new LocalCapabilitiesCallbackWrapper(this, callback, participantId, discoveryQos));
-        this->capabilitiesClient->getCapabilitiesForParticipantId(participantId, wrappedCallback);
+        this->capabilitiesClient->lookup(participantId, wrappedCallback);
     }
 }
 
-void LocalCapabilitiesDirectory::getCapabilities(
+void LocalCapabilitiesDirectory::lookup(
         const QString& domain,
         const QString& interfaceName,
         QSharedPointer<ILocalCapabilitiesCallback> callback,
@@ -289,7 +287,7 @@ void LocalCapabilitiesDirectory::getCapabilities(
     if(!recieverCalled) {
         // search for global entires in the global capabilities directory
         QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callback, interfaceAddress, discoveryQos));
-        this->capabilitiesClient->getCapabilitiesForInterfaceAddress(domain, interfaceName, wrappedCallBack);
+        this->capabilitiesClient->lookup(domain, interfaceName, wrappedCallBack);
     }
 }
 
@@ -334,7 +332,7 @@ void LocalCapabilitiesDirectory::add(
         types::ProviderQos qos,
         QList<system::CommunicationMiddleware::Enum> connections
 ) {
-    registerCapability(domain, interfaceName, qos, participantId, connections);
+    add(domain, interfaceName, qos, participantId, connections);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
@@ -347,7 +345,7 @@ void LocalCapabilitiesDirectory::lookup(
         joynr::system::DiscoveryQos discoveryQos
 ) {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
-    getCapabilities(domain, interfaceName, future, discoveryQos);
+    lookup(domain, interfaceName, future, discoveryQos);
     QList<CapabilityEntry> capabilities = future->get();
     convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
@@ -360,7 +358,7 @@ void LocalCapabilitiesDirectory::lookup(
         QString participantId
 ) {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
-    getCapability(participantId, future);
+    lookup(participantId, future);
     QList<CapabilityEntry> capabilities = future->get();
     assert(capabilities.size() <= 1);
     if(capabilities.size() <= 1) {
@@ -374,7 +372,7 @@ void LocalCapabilitiesDirectory::remove(
         joynr::RequestStatus& joynrInternalStatus,
         QString participantId
 ) {
-    removeCapability(participantId);
+    remove(participantId);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
@@ -470,12 +468,6 @@ void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
         convertCapabilityEntryIntoDiscoveryEntry(capabilityEntry, discoveryEntry);
         discoveryEntries.append(discoveryEntry);
     }
-}
-
-QList<types::CapabilityInformation> LocalCapabilitiesDirectory::createCapabilitiesInformationList(const QString& domain, const QString& interfaceName, const QString& channelId, const types::ProviderQos& qos, const QString& participantId) {
-    QList<types::CapabilityInformation> capInfoList;
-    capInfoList.push_back(types::CapabilityInformation(domain, interfaceName, qos, channelId, participantId));
-    return capInfoList;
 }
 
 LocalCapabilitiesFuture::LocalCapabilitiesFuture() :

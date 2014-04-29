@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,23 +45,23 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     }
 
     @Override
-    public RegistrationFuture addCapability(CapabilityEntry capabilityEntry) {
+    public RegistrationFuture add(CapabilityEntry capabilityEntry) {
         capabilityEntry.addEndpoint(new JoynrMessagingEndpointAddress(myChannelId));
         registeredCapabilities.add(capabilityEntry);
         return new RegistrationFuture(RegistrationStatus.DONE, capabilityEntry.getParticipantId());
     }
 
     @Override
-    public void removeCapability(CapabilityEntry interfaces) {
+    public void remove(CapabilityEntry interfaces) {
         logger.info("!!!!!!!!!!!!!!!removeCapabilities");
 
     }
 
     @Override
-    public void getCapabilities(String domain,
-                                String interfaceName,
-                                DiscoveryQos discoveryQos,
-                                CapabilitiesCallback capabilitiesCallback) {
+    public void lookup(String domain,
+                       String interfaceName,
+                       DiscoveryQos discoveryQos,
+                       CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
         ArrayList<CapabilityEntry> foundCapabilities = Lists.newArrayList();
         for (CapabilityEntry ce : registeredCapabilities) {
@@ -73,7 +73,7 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     }
 
     @Override
-    public void getCapabilities(String participantId, DiscoveryQos discoveryQos, CapabilitiesCallback callback) {
+    public void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
 
     }

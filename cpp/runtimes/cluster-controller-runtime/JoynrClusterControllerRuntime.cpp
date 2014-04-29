@@ -409,7 +409,7 @@ JoynrClusterControllerRuntime *JoynrClusterControllerRuntime::create(QSettings* 
 
 void JoynrClusterControllerRuntime::unregisterCapability(QString participantId) {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->unregisterCapability(participantId);
+    capabilitiesRegistrar->remove(participantId);
 }
 
 void JoynrClusterControllerRuntime::waitForChannelCreation() {

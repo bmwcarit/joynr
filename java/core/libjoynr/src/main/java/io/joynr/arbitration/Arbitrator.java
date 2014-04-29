@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrShutdownException;
 
-import java.util.Collection;
 import java.util.concurrent.Semaphore;
 
 import javax.annotation.CheckForNull;
@@ -52,7 +50,6 @@ public abstract class Arbitrator {
     protected ArbitrationCallback arbitrationListener;
     // Initialized with 0 to block until the listener is registered
     private Semaphore arbitrationListenerSemaphore = new Semaphore(0);
-    protected CapabilitiesCallback callback;
     private long arbitrationDeadline;
 
     public Arbitrator(final DiscoveryQos discoveryQos,
@@ -61,52 +58,31 @@ public abstract class Arbitrator {
         MINIMUM_ARBITRATION_RETRY_DELAY = minimumArbitrationRetryDelay;
         this.discoveryQos = discoveryQos;
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
-        callback = new CapabilitiesCallback() {
-
-            @Override
-            public void processCapabilitiesReceived(final Collection<CapabilityEntry> capabilities) {
-                // when using javax.annotatoins.NonNull annotation on capablities parameter it will
-                // cause a NoSuchMethodError
-                assert (capabilities != null);
-                selectProvider(capabilities);
-
-            }
-
-            // TODO JOYN-911 make sure we are shutting down correctly onError
-            @Override
-            public void onError(Throwable exception) {
-                try {
-                    throw exception;
-                } catch (IllegalStateException e) {
-                    logger.error("CapabilitiesCallback: " + e.getMessage(), e);
-                    return;
-
-                } catch (JoynrShutdownException e) {
-                    logger.warn("CapabilitiesCallback onError: " + e.getMessage(), e);
-
-                } catch (JoynrException e) {
-                    restartArbitrationIfNotExpired();
-                } catch (Throwable e) {
-                    logger.error("CapabilitiesCallback onError thowable: " + e.getMessage(), e);
-                }
-            }
-        };
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeout();
+    }
+
+    // TODO JOYN-911 make sure we are shutting down correctly onError
+    protected void onError(Throwable exception) {
+        try {
+            throw exception;
+        } catch (IllegalStateException e) {
+            logger.error("CapabilitiesCallback: " + e.getMessage(), e);
+            return;
+
+        } catch (JoynrShutdownException e) {
+            logger.warn("CapabilitiesCallback onError: " + e.getMessage(), e);
+
+        } catch (JoynrException e) {
+            restartArbitrationIfNotExpired();
+        } catch (Throwable e) {
+            logger.error("CapabilitiesCallback onError thowable: " + e.getMessage(), e);
+        }
     }
 
     /**
      * Called by the proxy builder to start the arbitration process.
      */
     public abstract void startArbitration();
-
-    /**
-     * Called by the CapabilitiesCallback when the request to the capabilities directory is completed.
-     * 
-     * @param capabilities
-     *            List of capability entries containing: endpointAddresses, participantId, domain, interfaceName and a
-     *            map of qos parameters
-     */
-    protected abstract void selectProvider(Collection<CapabilityEntry> capabilities);
 
     public ArbitrationResult getArbitrationResult() {
         synchronized (arbitrationResult) {

@@ -84,7 +84,7 @@ public:
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
 
-    void registerCapability(
+    void add(
             const QString& domain,
             const QString& interfaceName,
             const types::ProviderQos& qos,
@@ -98,19 +98,19 @@ public:
      * this method does not allow anyone to remove other capabilities from other cluster
      * controllers.
      */
-    void removeCapability(
+    void remove(
             const QString& domain,
             const QString& interfaceName,
             const types::ProviderQos& qos
     );
 
-    virtual void removeCapability(const QString& participantId);
+    virtual void remove(const QString& participantId);
 
     /*
      * Returns a list of capabilities matching the given domain and interfaceName, this is an asynchronous request,
      * must supply a callback.
      */
-    virtual void getCapabilities(
+    virtual void lookup(
             const QString& domain,
             const QString& interfaceName,
             QSharedPointer<ILocalCapabilitiesCallback> callback,
@@ -120,7 +120,7 @@ public:
     /*
      * Returns a capability entry for a given participant ID or an empty list if it cannot be found.
      */
-    virtual void getCapability(
+    virtual void lookup(
             const QString& participantId,
             QSharedPointer<ILocalCapabilitiesCallback> callback
     );
@@ -175,7 +175,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
 
-    QList<types::CapabilityInformation> createCapabilitiesInformationList(const QString& domain, const QString& interfaceName, const QString& channelId, const types::ProviderQos& qos, const QString& participantId);
     bool getLocalAndCachedCapabilities(
             const InterfaceAddress& interfaceAddress,
             const joynr::system::DiscoveryQos& discoveryQos,

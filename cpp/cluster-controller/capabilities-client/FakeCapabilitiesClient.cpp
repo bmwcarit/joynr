@@ -60,7 +60,7 @@ QString FakeCapabilitiesClient::getLocalChannelId(){
 }
 
 
-void FakeCapabilitiesClient::registerCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList){
+void FakeCapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInformationList){
     Q_UNUSED(capabilitiesInformationList)
     if (localChannelId.isEmpty()){
         throw JoynrException("Exception in CapabilitiesClient: Local channelId is empty. Tried to register capabilities before messaging was started(no queueing implemented yet)");
@@ -68,18 +68,18 @@ void FakeCapabilitiesClient::registerCapabilities(QList<types::CapabilityInforma
     }
 }
 
-void FakeCapabilitiesClient::removeCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList){
-    Q_UNUSED(capabilitiesInformationList);
+void FakeCapabilitiesClient::remove(QList<QString> participantIdList){
+    Q_UNUSED(participantIdList);
 }
 
-QList<types::CapabilityInformation> FakeCapabilitiesClient::getCapabilitiesForInterfaceAddress(const QString& domain,
+QList<types::CapabilityInformation> FakeCapabilitiesClient::lookup(const QString& domain,
                                                                                           const QString& interfaceName)
 {
     //return faked list to simulate incoming results
     return createFakedCapInfoList(domain, interfaceName);
 }
 
-void FakeCapabilitiesClient::getCapabilitiesForInterfaceAddress(const QString& domain,
+void FakeCapabilitiesClient::lookup(const QString& domain,
                                                                 const QString& interfaceName,
                                                                 QSharedPointer<IGlobalCapabilitiesCallback> callback)
 {
@@ -88,17 +88,7 @@ void FakeCapabilitiesClient::getCapabilitiesForInterfaceAddress(const QString& d
 }
 
 
-QList<types::CapabilityInformation> FakeCapabilitiesClient::getCapabilitiesForChannelId(const QString& channelId){
-    return createFakedCapInfoListForChannelId(channelId);
-}
-
-void FakeCapabilitiesClient::getCapabilitiesForChannelId(const QString& channelId,
-                                                         QSharedPointer<IGlobalCapabilitiesCallback> callback)
-{
-    callback->capabilitiesReceived(createFakedCapInfoListForChannelId(channelId));
-}
-
-void FakeCapabilitiesClient::getCapabilitiesForParticipantId(const QString& participantId,
+void FakeCapabilitiesClient::lookup(const QString& participantId,
                                                              QSharedPointer<IGlobalCapabilitiesCallback> callback)
 {
     callback->capabilitiesReceived(createFakedCapInfoListForParticipantId(participantId));

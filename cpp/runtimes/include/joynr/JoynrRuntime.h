@@ -66,7 +66,7 @@ public:
     QString registerCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
         assert(capabilitiesRegistrar);
         assert(domain!="");
-        return capabilitiesRegistrar->registerCapability<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken);
     }
 
     virtual void unregisterCapability(QString participantId) = 0;
@@ -75,7 +75,7 @@ public:
     QString unregisterCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
         assert(capabilitiesRegistrar);
         assert(domain!="");
-        return capabilitiesRegistrar->unregisterCapability<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->remove<T>(domain, provider, authenticationToken);
     }
 
     template <class T>

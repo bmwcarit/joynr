@@ -78,7 +78,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         RequestCaller requestCaller = requestCallerFactory.create(provider, providedInterface);
 
         dispatcher.addRequestCaller(participantId, requestCaller);
-        RegistrationFuture ret = localCapabilitiesDirectory.addCapability(capabilityEntry);
+        RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
         // TODO write a test for subscription restoration
         publicationManager.restoreQueuedSubscription(participantId, requestCaller, requestReplySender);
         return ret;
@@ -98,7 +98,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                               participantId,
                                                               // TODO use real scope for capability
                                                               CapabilityScope.LOCALGLOBAL);
-        localCapabilitiesDirectory.removeCapability(capabilityEntry);
+        localCapabilitiesDirectory.remove(capabilityEntry);
         dispatcher.removeRequestCaller(participantId);
         // TODO write a test for stop publications for providerId
         publicationManager.stopPublicationByProviderId(participantId);

@@ -132,10 +132,10 @@ public class ProxyTest {
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        }).when(capabilitiesClient).getCapabilities(Mockito.<String> any(),
-                                                    Mockito.<String> any(),
-                                                    Mockito.<DiscoveryQos> any(),
-                                                    Mockito.<CapabilitiesCallback> any());
+        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
+                                           Mockito.<String> any(),
+                                           Mockito.<DiscoveryQos> any(),
+                                           Mockito.<CapabilitiesCallback> any());
 
         domain = "TestDomain";
         proxyBuilder = new ProxyBuilderDefaultImpl<TestInterface>(capabilitiesClient,

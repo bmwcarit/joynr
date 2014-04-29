@@ -43,7 +43,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 
 }
 
-void CapabilitiesRegistrar::unregisterCapability(QString participantId) {
+void CapabilitiesRegistrar::remove(QString participantId) {
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }

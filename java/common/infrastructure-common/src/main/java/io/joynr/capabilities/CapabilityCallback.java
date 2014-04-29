@@ -19,8 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import java.util.Collection;
-
 import javax.annotation.CheckForNull;
 
 /**
@@ -29,8 +27,8 @@ import javax.annotation.CheckForNull;
  * 
  */
 
-public interface CapabilitiesCallback {
-    void processCapabilitiesReceived(@CheckForNull Collection<CapabilityEntry> capabilities);
+public interface CapabilityCallback {
+    void processCapabilityReceived(@CheckForNull CapabilityEntry capability);
 
     void onError(Throwable e);
 }

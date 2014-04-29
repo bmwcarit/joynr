@@ -194,7 +194,7 @@ void LibJoynrRuntime::initializeAllDependencies() {
 
 void LibJoynrRuntime::unregisterCapability(QString participantId){
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->unregisterCapability(participantId);
+    capabilitiesRegistrar->remove(participantId);
 }
 
 LibJoynrRuntime *LibJoynrRuntime::create(QSettings* settings) {

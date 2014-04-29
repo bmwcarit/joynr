@@ -71,24 +71,29 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void registerCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void removeCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void remove(QList<QString> participantIds);
+
+    /*
+      Remove previously created capability directroy entry
+     */
+    virtual void remove(const QString& participantId);
 
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual QList<types::CapabilityInformation> getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName);
+    virtual QList<types::CapabilityInformation> lookup(const QString& domain, const QString& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
       */
-    virtual void getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual void getCapabilitiesForParticipantId(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
     virtual ~CapabilitiesClient();
 

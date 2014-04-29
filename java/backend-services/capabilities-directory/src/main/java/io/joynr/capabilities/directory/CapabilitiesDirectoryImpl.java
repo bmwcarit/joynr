@@ -3,7 +3,7 @@ package io.joynr.capabilities.directory;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package io.joynr.capabilities.directory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.util.Collection;
 import java.util.List;
@@ -60,11 +59,11 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public void registerCapability(CapabilityInformation capabilityInformation) {
+    public void add(CapabilityInformation capabilityInformation) {
 
         CapabilityEntry capabilityEntry = capabilityInformation2Entry(capabilityInformation);
         logger.debug("registered capability: {}", capabilityEntry);
-        capabiltiesStore.registerCapability(capabilityEntry);
+        capabiltiesStore.add(capabilityEntry);
     }
 
     private CapabilityEntry capabilityInformation2Entry(CapabilityInformation capabilityInformation) {
@@ -72,7 +71,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public void registerCapabilities(List<CapabilityInformation> capabilitiesInformation) {
+    public void add(List<CapabilityInformation> capabilitiesInformation) {
         // TODO check interfaces before adding them
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
         for (CapabilityInformation capInfo : capabilitiesInformation) {
@@ -81,34 +80,30 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
         logger.debug("registered capabilities: interface {}", capabilityEntries.toString());
 
-        capabiltiesStore.registerCapabilities(capabilityEntries);
+        capabiltiesStore.add(capabilityEntries);
     }
 
     @Override
-    public void unregisterCapability(CapabilityInformation capability) {
-        CapabilityEntry capabilityEntry = capabilityInformation2Entry(capability);
-        logger.debug("removed capabilities: interface {}", capabilityEntry);
-        capabiltiesStore.removeCapability(capabilityEntry);
+    public void remove(String participantId) {
+        logger.debug("removed capability with participantId: {}", participantId);
+        capabiltiesStore.remove(participantId);
     }
 
     @Override
-    public void unregisterCapabilities(List<CapabilityInformation> capabilities) {
+    public void remove(List<String> capabilities) {
         // TODO who is allowed to remove capabilities
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
-        for (CapabilityInformation capInfo : capabilities) {
-            capabilityEntries.add(capabilityInformation2Entry(capInfo));
-        }
         logger.debug("Removing capabilities: Capabilities {}", capabilityEntries);
-        capabiltiesStore.removeCapabilities(capabilityEntries);
+        capabiltiesStore.remove(capabilities);
     }
 
     @Override
-    public List<CapabilityInformation> lookupCapabilities(final String domain, final String interfaceName) {
+    public List<CapabilityInformation> lookup(final String domain, final String interfaceName) {
         logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
         List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
-        Collection<CapabilityEntry> entryCollection = capabiltiesStore.findCapabilitiesForInterfaceAddress(domain,
-                                                                                                           interfaceName,
-                                                                                                           DiscoveryQos.NO_FILTER);
+        Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain,
+                                                                              interfaceName,
+                                                                              DiscoveryQos.NO_FILTER);
         for (CapabilityEntry entry : entryCollection) {
             capabilityInformationList.add(entry.toCapabilityInformation());
         }
@@ -116,27 +111,14 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public List<CapabilityInformation> getCapabilitiesForChannelId(String channelId) {
-        logger.debug("Searching capabilities for client id: {}", channelId);
-        List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
-        Collection<CapabilityEntry> entryCollection = capabiltiesStore.findCapabilitiesForEndpointAddress(new JoynrMessagingEndpointAddress(channelId),
-                                                                                                          DiscoveryQos.NO_FILTER);
-        for (CapabilityEntry entry : entryCollection) {
-            capabilityInformationList.add(entry.toCapabilityInformation());
-        }
-        return capabilityInformationList;
-    }
-
-    @Override
-    public List<CapabilityInformation> getCapabilitiesForParticipantId(String forParticipantId) {
+    public CapabilityInformation lookup(String forParticipantId) {
         logger.debug("Searching capabilities for participantId: {}", forParticipantId);
-        List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
-        Collection<CapabilityEntry> entryCollection = capabiltiesStore.findCapabilitiesForParticipantId(forParticipantId,
-                                                                                                        DiscoveryQos.NO_FILTER);
-        for (CapabilityEntry entry : entryCollection) {
-            capabilityInformationList.add(entry.toCapabilityInformation());
+        CapabilityEntry capEntry = capabiltiesStore.lookup(forParticipantId, DiscoveryQos.NO_FILTER);
+        if (capEntry == null) {
+            return null;
+        } else {
+            return capEntry.toCapabilityInformation();
         }
-        return capabilityInformationList;
     }
 
     @Override

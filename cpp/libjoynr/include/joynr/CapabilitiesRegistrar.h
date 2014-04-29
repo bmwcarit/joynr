@@ -49,7 +49,7 @@ public:
     );
 
     template <class T>
-    QString registerCapability(
+    QString add(
             const QString& domain,
             QSharedPointer<T> provider,
             QString authenticationToken
@@ -101,10 +101,10 @@ public:
         return participantId;
     }
 
-    void unregisterCapability(QString participantId);
+    void remove(QString participantId);
 
     template <class T>
-    QString unregisterCapability(
+    QString remove(
             const QString& domain,
             QSharedPointer<T> provider,
             QString authenticationToken

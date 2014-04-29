@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +57,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     // ConcurrentLinkedQueue<CapabilityEntry>();
     ConcurrentHashMap<String, Long> registeredCapabilitiesTime = new ConcurrentHashMap<String, Long>();
     ConcurrentHashMap<String, List<String>> interfaceAddressToCapabilityMapping = new ConcurrentHashMap<String, List<String>>();
-    ConcurrentHashMap<String, List<String>> participantIdToCapabilityMapping = new ConcurrentHashMap<String, List<String>>();
+    ConcurrentHashMap<String, String> participantIdToCapabilityMapping = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, CapabilityEntry> capabilityKeyToCapabilityMapping = new ConcurrentHashMap<String, CapabilityEntry>();
     ConcurrentHashMap<EndpointAddressBase, List<String>> endPointAddressToCapabilityMapping = new ConcurrentHashMap<EndpointAddressBase, List<String>>();
     ConcurrentHashMap<String, List<EndpointAddressBase>> capabilityKeyToEndPointAddressMapping = new ConcurrentHashMap<String, List<EndpointAddressBase>>();
@@ -71,17 +73,17 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Inject
     public CapabilitiesStoreImpl(CapabilitiesProvisioning staticProvisioning) {
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
-        registerCapabilities(staticProvisioning.getCapabilityEntries());
+        add(staticProvisioning.getCapabilityEntries());
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see io.joynr.capabilities.CapabilitiesStore#registerCapability(io.joynr.
+     * @see io.joynr.capabilities.CapabilitiesStore#add(io.joynr.
      * capabilities .CapabilityEntry)
      */
     @Override
-    public void registerCapability(CapabilityEntry capabilityEntry) {
+    public void add(CapabilityEntry capabilityEntry) {
         if (capabilityEntry.getDomain() == null || capabilityEntry.getInterfaceName() == null
                 || capabilityEntry.participantId == null || capabilityEntry.endpointAddresses == null
                 || capabilityEntry.endpointAddresses.isEmpty()) {
@@ -97,7 +99,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
             CapabilityEntry entry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
             // check if a capabilityEntry with the same ID already exists
             if (entry != null) {
-                removeCapability(capabilityEntry.domain, capabilityEntry.interfaceName, capabilityEntry.participantId);
+                remove(capabilityEntry.participantId);
             }
 
             // update participantId to capability mapping
@@ -130,16 +132,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
             // update participantId to capability mapping
             String participantId = capabilityEntry.participantId;
-            // fixes FindBugs error: Sequence of calls to concurrent abstraction
-            // may not be atomic
-            newMapping = new ArrayList<String>();
-            mapping = participantIdToCapabilityMapping.putIfAbsent(participantId, newMapping);
-            if (mapping == null) {
-                mapping = newMapping;
-            } // end fix for FindBugs error;
 
-            // checkListDoesNotContainId(mapping, capabilityEntryId, 4);
-            mapping.add(capabilityEntryId);
+            participantIdToCapabilityMapping.put(participantId, capabilityEntryId);
 
             // update endpointAddress to capability mapping
             // CA: at this point it is already ensured that the list of
@@ -196,14 +190,14 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * (non-Javadoc)
      * 
      * @see
-     * io.joynr.capabilities.CapabilitiesStore#registerCapabilities(java.util
+     * io.joynr.capabilities.CapabilitiesStore#add(java.util
      * .Collection)
      */
     @Override
-    public void registerCapabilities(Collection<? extends CapabilityEntry> entries) {
+    public void add(Collection<? extends CapabilityEntry> entries) {
         if (entries != null) {
             for (CapabilityEntry entry : entries) {
-                registerCapability(entry);
+                add(entry);
             }
         }
     }
@@ -211,26 +205,35 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     /*
      * (non-Javadoc)
      * 
-     * @see io.joynr.capabilities.CapabilitiesStore#removeCapability(io.joynr.
-     * capabilities .CapabilityEntry)
+     * @see io.joynr.capabilities.CapabilitiesStore#remove(String)
      */
     @Override
-    public boolean removeCapability(CapabilityEntry capEntry) {
+    public boolean remove(String participantId) {
         // removedValue = registeredCapabilities.remove(capEntry);
         boolean removedSuccessfully = false;
 
         synchronized (capsLock) {
-            removedSuccessfully = removeCapability(capEntry.domain, capEntry.interfaceName, capEntry.participantId);
+            removedSuccessfully = removeCapabilityFromStore(participantId);
         }
         if (!removedSuccessfully) {
-            logger.error("Could not find capability to remove: {}", capEntry.toString());
+            logger.error("Could not find capability to remove with Id: {}", participantId);
         }
         return removedSuccessfully;
     }
 
-    private boolean removeCapability(String domain, String interfaceName, String participantId) {
-        String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(domain, interfaceName, participantId);
-        String domainInterfaceId = getInterfaceAddressKeyForCapability(domain, interfaceName);
+    private boolean removeCapabilityFromStore(String participantId) {
+        String capabilityEntryId = participantIdToCapabilityMapping.get(participantId);
+        if (capabilityEntryId == null) {
+            return false;
+        }
+        CapabilityEntry capability = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
+
+        if (capability == null) {
+            return false;
+        }
+
+        String domainInterfaceId = getInterfaceAddressKeyForCapability(capability.getDomain(),
+                                                                       capability.getInterfaceName());
         CapabilityEntry entry = capabilityKeyToCapabilityMapping.remove(capabilityEntryId);
         // check if a capabilityEntry with the same ID already exists
         if (entry == null) {
@@ -262,16 +265,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         }
 
         // update participantId to capability mapping
-        mapping = participantIdToCapabilityMapping.get(participantId);
-        if (mapping != null) {
-            if (!mapping.remove(capabilityEntryId)) {
-                logger.error("Could not find capability to remove from participantIdToCapabilityMapping: {}",
-                             capabilityEntryId);
-            }
-            if (mapping.isEmpty()) {
-                participantIdToCapabilityMapping.remove(participantId);
-            }
-        } else {
+        if (participantIdToCapabilityMapping.remove(participantId) == null) {
             logger.error("Could not find capability to remove from participantIdToCapabilityMapping: {}",
                          capabilityEntryId);
         }
@@ -300,13 +294,12 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * (non-Javadoc)
      * 
      * @see
-     * io.joynr.capabilities.CapabilitiesStore#removeCapabilities(java.util.
-     * Collection)
+     * io.joynr.capabilities.CapabilitiesStore#remove(java.util.Collection)
      */
     @Override
-    public void removeCapabilities(Collection<? extends CapabilityEntry> interfaces) {
-        for (CapabilityEntry entry : interfaces) {
-            removeCapability(entry);
+    public void remove(Collection<String> participantIds) {
+        for (String participantId : participantIds) {
+            remove(participantId);
         }
     }
 
@@ -315,7 +308,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
-     * (io.joynr.capabilities.EndpointAddressBase, long)
+     * (io.joynr.capabilities.EndpointAddressBase, io.joynr.arbitration.DiscoveryQos)
      */
     @Override
     public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint,
@@ -354,14 +347,12 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * (non-Javadoc)
      * 
      * @see
-     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForInterfaceAddress
+     * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, java.lang.String,
-     * io.joynr.generated.types.ProviderQosRequirements, long)
+     * io.joynr.arbitration.DiscoveryQos)
      */
     @Override
-    public Collection<CapabilityEntry> findCapabilitiesForInterfaceAddress(final String domain,
-                                                                           final String interfaceName,
-                                                                           DiscoveryQos discoveryQos) {
+    public Collection<CapabilityEntry> lookup(final String domain, final String interfaceName, DiscoveryQos discoveryQos) {
 
         ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
 
@@ -390,31 +381,27 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * (non-Javadoc)
      * 
      * @see
-     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForParticipantId
-     * (java.lang.String, long)
+     * io.joynr.capabilities.CapabilitiesStore#lookup
+     * (java.lang.String, io.joynr.arbitration.DiscoveryQos)
      */
     @Override
-    public ArrayList<CapabilityEntry> findCapabilitiesForParticipantId(String participantId, DiscoveryQos discoveryQos) {
-
-        ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
+    @Nullable
+    public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
 
         synchronized (capsLock) {
-            List<String> map = participantIdToCapabilityMapping.get(participantId);
-            if (map != null) {
-                for (String capId : map) {
-                    CapabilityEntry ce = capabilityKeyToCapabilityMapping.get(capId);
-                    if (checkAge(registeredCapabilitiesTime.get(capId), discoveryQos.getCacheMaxAge())) {
-                        if (ce.getParticipantId().equals(participantId)) {
-                            capabilitiesList.add(ce);
-                        }
-                    }
-                }
+        	String capabilityEntryId = participantIdToCapabilityMapping.get(participantId);
+        	if (capabilityEntryId == null) {
+                return null;
             }
+        	
+            CapabilityEntry capabilityEntry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
+            logger.debug("Capability for participantId {} found: {}", participantId, capabilityEntry);
+            if (checkAge(registeredCapabilitiesTime.get(capabilityEntryId), discoveryQos.getCacheMaxAge())) {
+                return capabilityEntry;
+            }
+            
+            return null;
         }
-
-        logger.debug("Capabilities for participantId {} found: {}", participantId, capabilitiesList.toString());
-
-        return capabilitiesList;
     }
 
     /*

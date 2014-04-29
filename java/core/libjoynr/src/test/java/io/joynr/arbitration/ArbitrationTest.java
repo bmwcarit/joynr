@@ -81,10 +81,10 @@ public class ArbitrationTest {
                 ((CapabilitiesCallback) arguments[3]).processCapabilitiesReceived(capabilitiesList);
                 return null;
             }
-        }).when(capabilitiesSource).getCapabilities(Mockito.eq(domain),
-                                                    Mockito.eq(interfaceName),
-                                                    Mockito.<DiscoveryQos> any(),
-                                                    Mockito.<CapabilitiesCallback> any());
+        }).when(capabilitiesSource).lookup(Mockito.eq(domain),
+                                           Mockito.eq(interfaceName),
+                                           Mockito.<DiscoveryQos> any(),
+                                           Mockito.<CapabilitiesCallback> any());
 
     }
 

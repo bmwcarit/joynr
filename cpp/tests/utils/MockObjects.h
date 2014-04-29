@@ -105,13 +105,12 @@ using ::testing::Property;
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
-    MOCK_METHOD1(registerCapabilities, void(QList<joynr::types::CapabilityInformation> capabilitiesInformationList));
-    MOCK_METHOD1(removeCapabilities, void(QList<joynr::types::CapabilityInformation> capabilitiesInformationList));
-    MOCK_METHOD2(getCapabilitiesForInterfaceAddress, QList<joynr::types::CapabilityInformation>(const QString& domain, const QString& interfaceName));
-    MOCK_METHOD3(getCapabilitiesForInterfaceAddress, void(const QString& domain, const QString& interfaceName, QSharedPointer<joynr::IGlobalCapabilitiesCallback> callback));
-    MOCK_METHOD1(getCapabilitiesForChannelId, QList<joynr::types::CapabilityInformation>(const QString& channelId));
-    MOCK_METHOD2(getCapabilitiesForChannelId, void(const QString& channelId, QSharedPointer<joynr::IGlobalCapabilitiesCallback> callback));
-    MOCK_METHOD2(getCapabilitiesForParticipantId, void(const QString& participantId, QSharedPointer<joynr::IGlobalCapabilitiesCallback> callback));
+    MOCK_METHOD1(add, void(QList<joynr::types::CapabilityInformation> capabilitiesInformationList));
+    MOCK_METHOD1(remove, void(QList<QString> participantIdList));
+    MOCK_METHOD1(remove, void(const QString& participantId));
+    MOCK_METHOD2(lookup, QList<joynr::types::CapabilityInformation>(const QString& domain, const QString& interfaceName));
+    MOCK_METHOD3(lookup, void(const QString& domain, const QString& interfaceName, QSharedPointer<joynr::IGlobalCapabilitiesCallback> callback));
+    MOCK_METHOD2(lookup, void(const QString& participantId, QSharedPointer<joynr::IGlobalCapabilitiesCallback> callback));
     MOCK_METHOD0(getLocalChannelId, QString());
 
 };

@@ -3,7 +3,7 @@ package io.joynr.capabilities.directory;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,89 +30,75 @@ import joynr.types.CapabilityInformation;
 public class CapabilitiesClientDummy implements GlobalCapabilitiesDirectoryClient {
 
     @Override
-    public void registerCapabilities(Callback<Void> callback, List<CapabilityInformation> capabilities) {
+    public void add(Callback<Void> callback, List<CapabilityInformation> capabilities) {
         assert (false);
 
     }
 
     @Override
-    public void registerCapability(Callback<Void> callback, CapabilityInformation capability) {
+    public void add(Callback<Void> callback, CapabilityInformation capability) {
         assert (false);
 
     }
 
     @Override
-    public Future<List<CapabilityInformation>> lookupCapabilities(Callback<List<CapabilityInformation>> callback,
-                                                                  String domain,
-                                                                  String interfaceName) {
-        assert (false);
-        return null;
-    }
-
-    @Override
-    public Future<List<CapabilityInformation>> getCapabilitiesForChannelId(Callback<List<CapabilityInformation>> callback,
-                                                                           String channelId) {
+    public Future<List<CapabilityInformation>> lookup(Callback<List<CapabilityInformation>> callback,
+                                                      String domain,
+                                                      String interfaceName) {
         assert (false);
         return null;
     }
 
     @Override
-    public Future<List<CapabilityInformation>> getCapabilitiesForParticipantId(Callback<List<CapabilityInformation>> callback,
-                                                                               String participantId) {
+    public Future<CapabilityInformation> lookup(Callback<CapabilityInformation> callback, String participantId) {
         assert (false);
         return null;
     }
 
     @Override
-    public void unregisterCapabilities(Callback<Void> callback, List<CapabilityInformation> capabilities) {
+    public void remove(Callback<Void> callback, List<String> capabilities) {
         assert (false);
 
     }
 
     @Override
-    public void unregisterCapability(Callback<Void> callback, CapabilityInformation capability) {
+    public void remove(Callback<Void> callback, String capability) {
         assert (false);
 
     }
 
     @Override
-    public void registerCapabilities(List<CapabilityInformation> capabilities) {
+    public void add(List<CapabilityInformation> capabilities) {
         assert (false);
 
     }
 
     @Override
-    public void registerCapability(CapabilityInformation capability) {
+    public void add(CapabilityInformation capability) {
         assert (false);
 
     }
 
     @Override
-    public List<CapabilityInformation> lookupCapabilities(String domain, String interfaceName) {
-        assert (false);
-        return null;
-    }
-
-    @Override
-    public List<CapabilityInformation> getCapabilitiesForChannelId(String channelId) {
+    public List<CapabilityInformation> lookup(String domain, String interfaceName) {
         assert (false);
         return null;
     }
 
     @Override
-    public List<CapabilityInformation> getCapabilitiesForParticipantId(String participantId) {
+    public CapabilityInformation lookup(String participantId) {
         assert (false);
         return null;
     }
 
     @Override
-    public void unregisterCapabilities(List<CapabilityInformation> capabilities) {
+    public void remove(List<String> capabilities) {
         assert (false);
 
     }
 
     @Override
-    public void unregisterCapability(CapabilityInformation capability) {
+    public void remove(String capability) {
         assert (false);
 
     }
