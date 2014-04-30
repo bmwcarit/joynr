@@ -24,10 +24,10 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.TimestampProvider;
 

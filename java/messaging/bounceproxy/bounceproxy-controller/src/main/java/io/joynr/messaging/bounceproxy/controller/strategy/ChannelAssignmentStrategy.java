@@ -21,7 +21,7 @@ package io.joynr.messaging.bounceproxy.controller.strategy;
  */
 
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrChannelNotAssignableException;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 /**
  * Interface for strategies to assign channels to bounce proxy instances.

@@ -22,7 +22,7 @@ package io.joynr.messaging.bounceproxy.controller;
 
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.service.ChannelServiceConstants;
 
 import java.io.IOException;

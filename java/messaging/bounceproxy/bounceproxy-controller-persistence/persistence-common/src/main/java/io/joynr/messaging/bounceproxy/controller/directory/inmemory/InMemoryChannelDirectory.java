@@ -2,7 +2,6 @@ package io.joynr.messaging.bounceproxy.controller.directory.inmemory;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

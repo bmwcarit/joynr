@@ -20,10 +20,6 @@ package io.joynr.messaging.bounceproxy.controller;
  * #L%
  */
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryBounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.bounceproxy.controller.strategy.RoundRobinAssignmentStrategy;
 import io.joynr.messaging.service.ChannelService;
@@ -56,9 +52,6 @@ public class BounceProxyControllerModule extends AbstractModule {
 
         bind(ChannelService.class).to(ChannelServiceImpl.class);
         bind(MonitoringService.class).to(MonitoringServiceImpl.class);
-
-        bind(BounceProxyDirectory.class).to(InMemoryBounceProxyDirectory.class);
-        bind(ChannelDirectory.class).to(InMemoryChannelDirectory.class);
 
         bind(TimestampProvider.class).to(SystemTimeProvider.class);
 

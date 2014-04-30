@@ -24,9 +24,9 @@ import static org.junit.Assert.assertEquals;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;

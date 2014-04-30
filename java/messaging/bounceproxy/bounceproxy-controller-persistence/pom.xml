@@ -17,25 +17,19 @@
   #L%
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<groupId>io.joynr.java.messaging</groupId>
-	<artifactId>bounceproxy</artifactId>
+	<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+	<artifactId>bounceproxy-controller-persistence</artifactId>
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
-		<groupId>io.joynr.java</groupId>
-		<artifactId>messaging</artifactId>
+		<groupId>io.joynr.java.messaging</groupId>
+		<artifactId>bounceproxy</artifactId>
 		<version>0.7.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
-		<module>bounceproxy</module>
-		<module>bounceproxy-standalone</module>
-		<module>bounceproxy-controller</module>	
-		<module>controlled-bounceproxy</module>
-		<module>bounceproxy-ui</module>
-		<module>bounceproxy-common</module>
-		<module>bounceproxy-controller-persistence</module>
+		<module>persistence-common</module>
 	</modules>
 </project>

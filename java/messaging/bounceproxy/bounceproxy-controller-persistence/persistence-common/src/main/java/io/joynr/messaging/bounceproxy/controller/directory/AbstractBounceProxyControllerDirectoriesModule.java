@@ -1,9 +1,7 @@
-@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
-package io.joynr.messaging.bounceproxy.controller.info;
+package io.joynr.messaging.bounceproxy.controller.directory;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,3 +18,17 @@ package io.joynr.messaging.bounceproxy.controller.info;
  * limitations under the License.
  * #L%
  */
+
+import com.google.inject.AbstractModule;
+
+/**
+ * Abstract module which has to bind directory classes like
+ * {@link BounceProxyDirectory} and {@link ChannelDirectory} to their
+ * implementations.
+ * 
+ * @author christina.strobel
+ * 
+ */
+public abstract class AbstractBounceProxyControllerDirectoriesModule extends AbstractModule {
+
+}

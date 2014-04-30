@@ -24,6 +24,7 @@ import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.controller.BounceProxyControllerModule;
+import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryModule;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MonitoringServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
@@ -47,6 +48,7 @@ public class BounceProxyControllerServletConfig extends AbstractGuiceServletConf
         modules = new LinkedList<Module>();
         modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("bounceProxyController.properties")));
         modules.add(new BounceProxyControllerModule());
+        modules.add(new InMemoryModule());
     }
 
     @Override

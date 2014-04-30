@@ -20,6 +20,7 @@ package io.joynr.messaging.info;
  * #L%
  */
 
+import java.io.Serializable;
 import java.net.URI;
 
 /**
@@ -29,7 +30,8 @@ import java.net.URI;
  * @author christina.strobel
  * 
  */
-public class BounceProxyInformation {
+public class BounceProxyInformation implements Serializable {
+    private static final long serialVersionUID = 6615249371062916830L;
 
     /**
      * The location of the bounce proxy at which it is reachable for cluster

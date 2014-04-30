@@ -20,6 +20,8 @@ package io.joynr.messaging.bounceproxy.controller.info;
  * #L%
  */
 
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+
 import java.net.URI;
 
 import org.junit.Assert;

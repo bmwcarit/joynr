@@ -1,4 +1,4 @@
-package io.joynr.messaging.bounceproxy.controller.info;
+package io.joynr.messaging.info;
 
 /*
  * #%L
@@ -20,8 +20,6 @@ package io.joynr.messaging.bounceproxy.controller.info;
  * #L%
  */
 
-import io.joynr.messaging.info.BounceProxyInformation;
-
 import java.net.URI;
 
 /**
@@ -33,6 +31,7 @@ import java.net.URI;
  * 
  */
 public class ControlledBounceProxyInformation extends BounceProxyInformation {
+    private static final long serialVersionUID = 244924388532995344L;
 
     private String instanceId;
     private String clusterId;

@@ -25,9 +25,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryBounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.info.PerformanceMeasures.Key;
 

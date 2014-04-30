@@ -22,8 +22,8 @@ package io.joynr.messaging.bounceproxy.controller;
 
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.info.PerformanceMeasures.Key;
 import io.joynr.messaging.system.TimestampProvider;
