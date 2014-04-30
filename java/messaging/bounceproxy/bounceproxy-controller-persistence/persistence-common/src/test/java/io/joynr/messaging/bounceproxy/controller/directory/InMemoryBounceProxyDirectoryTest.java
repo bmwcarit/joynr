@@ -30,6 +30,7 @@ import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.info.PerformanceMeasures.Key;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
 import java.util.List;
@@ -42,16 +43,35 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InMemoryBounceProxyDirectoryTest {
 
     private BounceProxyDirectory directory;
 
+    @Mock
+    private TimestampProvider mockTimestampProvider;
+
     @Before
     public void setUp() throws Exception {
-        directory = new InMemoryBounceProxyDirectory();
+
+        Injector injector = Guice.createInjector(new AbstractModule() {
+
+            @Override
+            protected void configure() {
+                bind(TimestampProvider.class).toInstance(mockTimestampProvider);
+                bind(BounceProxyDirectory.class).to(InMemoryBounceProxyDirectory.class);
+            }
+        });
+
+        directory = injector.getInstance(BounceProxyDirectory.class);
     }
 
     @Test
@@ -63,9 +83,9 @@ public class InMemoryBounceProxyDirectoryTest {
     @Test
     public void testGetAssignableBounceProxies() {
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A1.B1", null), 100);
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A2.B2", null), 200);
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A3.B3", null), 300);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A1.B1", null));
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A2.B2", null));
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A3.B3", null));
 
         List<BounceProxyRecord> bounceProxies = directory.getAssignableBounceProxies();
 
@@ -79,14 +99,14 @@ public class InMemoryBounceProxyDirectoryTest {
     @Test
     public void testGetAssignableBounceProxiesForDirectoryWithUnassignableOnes() {
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A1.B1", null), 100);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A1.B1", null));
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A2.B2", null), 200);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A2.B2", null));
         BounceProxyRecord bounceProxyRecord = directory.getBounceProxy("A2.B2");
         bounceProxyRecord.setStatus(BounceProxyStatus.EXCLUDED);
-        directory.updateBounceProxy(bounceProxyRecord, 250);
+        directory.updateBounceProxy(bounceProxyRecord);
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A3.B3", null), 300);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A3.B3", null));
 
         List<BounceProxyRecord> bounceProxies = directory.getAssignableBounceProxies();
 
@@ -100,7 +120,7 @@ public class InMemoryBounceProxyDirectoryTest {
     public void testUpdateChannelAssignmentOnEmptyDirectory() {
 
         try {
-            directory.updateChannelAssignment("channel-123", new BounceProxyInformation("X.Y", null), 100);
+            directory.updateChannelAssignment("channel-123", new BounceProxyInformation("X.Y", null));
             Assert.fail();
         } catch (IllegalArgumentException e) {
         }
@@ -109,10 +129,10 @@ public class InMemoryBounceProxyDirectoryTest {
     @Test
     public void testUpdateChannelAssignmentOnNonExistingBounceProxy() {
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("A.B", null), 100);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("A.B", null));
 
         try {
-            directory.updateChannelAssignment("channel-123", new BounceProxyInformation("X.Y", null), 200);
+            directory.updateChannelAssignment("channel-123", new BounceProxyInformation("X.Y", null));
             Assert.fail();
         } catch (IllegalArgumentException e) {
         }
@@ -121,9 +141,11 @@ public class InMemoryBounceProxyDirectoryTest {
     @Test
     public void testUpdateChannelAssignment() {
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", null), 100);
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(100l);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", null));
 
-        directory.updateChannelAssignment("channel-123", new BounceProxyInformation("X.Y", null), 200);
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(200l);
+        directory.updateChannelAssignment("channel-123", new BounceProxyInformation("X.Y", null));
 
         BounceProxyRecord bounceProxy = directory.getBounceProxy("X.Y");
 
@@ -134,7 +156,7 @@ public class InMemoryBounceProxyDirectoryTest {
 
     @Test
     public void testContainsBounceProxy() {
-        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", null), 100);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", null));
         assertTrue(directory.containsBounceProxy("X.Y"));
     }
 
@@ -145,12 +167,16 @@ public class InMemoryBounceProxyDirectoryTest {
 
     @Test
     public void testUpdateBounceProxy() {
-        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", URI.create("http://www.location.de")), 100);
+
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(100l);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", URI.create("http://www.location.de")));
 
         BounceProxyRecord bounceProxyRecord = directory.getBounceProxy("X.Y");
         bounceProxyRecord.getInfo().setLocation(URI.create("http://www.location-updated.de"));
         bounceProxyRecord.getInfo().setLocationForBpc(URI.create("http://www.location-for-bpc-updated.de"));
-        directory.updateBounceProxy(bounceProxyRecord, 200);
+
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(200l);
+        directory.updateBounceProxy(bounceProxyRecord);
 
         BounceProxyRecord result = directory.getBounceProxy("X.Y");
         assertEquals("http://www.location-updated.de", result.getInfo().getLocation().toString());
@@ -160,14 +186,18 @@ public class InMemoryBounceProxyDirectoryTest {
 
     @Test
     public void testUpdateBounceProxyPerformance() {
-        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", URI.create("http://www.location.de")), 100);
+
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(100l);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", URI.create("http://www.location.de")));
 
         BounceProxyRecord bounceProxyRecord = directory.getBounceProxy("X.Y");
         PerformanceMeasures performanceMeasures = new PerformanceMeasures();
         performanceMeasures.addMeasure(Key.ACTIVE_LONGPOLL_COUNT, 5);
         performanceMeasures.addMeasure(Key.ASSIGNED_CHANNELS_COUNT, 13);
         bounceProxyRecord.setPerformanceMeasures(performanceMeasures);
-        directory.updateBounceProxy(bounceProxyRecord, 200);
+
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(200l);
+        directory.updateBounceProxy(bounceProxyRecord);
 
         PerformanceMeasures result = directory.getBounceProxy("X.Y").getPerformanceMeasures();
         assertEquals(5, result.getMeasure(Key.ACTIVE_LONGPOLL_COUNT));
@@ -178,7 +208,8 @@ public class InMemoryBounceProxyDirectoryTest {
     @Test
     public void testUpdateFreshness() {
 
-        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", URI.create("http://www.location.de")), 150);
+        Mockito.when(mockTimestampProvider.getCurrentTime()).thenReturn(150l);
+        directory.addBounceProxy(new ControlledBounceProxyInformation("X.Y", URI.create("http://www.location.de")));
         assertEquals(150, directory.getBounceProxy("X.Y").getFreshness().getTime());
     }
 

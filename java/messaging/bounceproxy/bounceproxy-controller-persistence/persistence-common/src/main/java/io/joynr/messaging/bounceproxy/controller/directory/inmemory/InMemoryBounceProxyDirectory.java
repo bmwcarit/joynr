@@ -24,6 +24,7 @@ import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
 import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.system.TimestampProvider;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
@@ -42,6 +44,9 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
+
+    @Inject
+    private TimestampProvider timestampProvider;
 
     /**
      * Hashmap of bounce proxies by bounce proxy IDs.
@@ -74,7 +79,7 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
     }
 
     @Override
-    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo, long timestamp) {
+    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) {
 
         if (!directory.containsKey(bpInfo.getId()))
             throw new IllegalArgumentException("No bounce proxy with ID '" + bpInfo.getId()
@@ -82,7 +87,7 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
 
         BounceProxyRecord record = directory.get(bpInfo.getId());
         record.increaseAssignedChannels();
-        record.setLastAssignedTimestamp(timestamp);
+        record.setLastAssignedTimestamp(timestampProvider.getCurrentTime());
     }
 
     @Override
@@ -95,14 +100,14 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
     }
 
     @Override
-    public void addBounceProxy(ControlledBounceProxyInformation bpInfo, long timestamp) {
+    public void addBounceProxy(ControlledBounceProxyInformation bpInfo) {
 
         if (directory.containsKey(bpInfo.getId()))
             throw new IllegalArgumentException("Bounce proxy with ID '" + bpInfo.getId()
                     + "' already added to the directory");
 
         BounceProxyRecord record = new BounceProxyRecord(bpInfo);
-        record.setFreshness(timestamp);
+        record.setFreshness(timestampProvider.getCurrentTime());
         directory.put(bpInfo.getId(), record);
     }
 
@@ -117,12 +122,12 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
     }
 
     @Override
-    public void updateBounceProxy(BounceProxyRecord bpRecord, long timestamp) throws IllegalArgumentException {
+    public void updateBounceProxy(BounceProxyRecord bpRecord) throws IllegalArgumentException {
         if (!directory.containsKey(bpRecord.getInfo().getId()))
             throw new IllegalArgumentException("No bounce proxy with ID '" + bpRecord.getInfo().getId()
                     + "' available in the directory");
 
-        bpRecord.setFreshness(timestamp);
+        bpRecord.setFreshness(timestampProvider.getCurrentTime());
         directory.put(bpRecord.getInfo().getId(), bpRecord);
     }
 

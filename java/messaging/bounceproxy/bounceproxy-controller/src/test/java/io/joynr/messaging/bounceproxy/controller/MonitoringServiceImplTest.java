@@ -26,7 +26,6 @@ import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 import io.joynr.messaging.info.PerformanceMeasures.Key;
-import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
 
@@ -51,9 +50,6 @@ public class MonitoringServiceImplTest {
     @Mock
     BounceProxyDirectory bpDirectoryMock;
 
-    @Mock
-    TimestampProvider timestampProviderMock;
-
     @Before
     public void setUp() {
 
@@ -62,7 +58,6 @@ public class MonitoringServiceImplTest {
             @Override
             protected void configure() {
                 bind(BounceProxyDirectory.class).toInstance(bpDirectoryMock);
-                bind(TimestampProvider.class).toInstance(timestampProviderMock);
             }
 
         });
@@ -74,15 +69,13 @@ public class MonitoringServiceImplTest {
     public void testRegisterBounceProxy() {
 
         Mockito.when(bpDirectoryMock.containsBounceProxy("X.Y")).thenReturn(false);
-        Mockito.when(timestampProviderMock.getCurrentTime()).thenReturn(100l);
 
         monitoringService.register("X.Y", "http://www.joynX.de/bp", "http://joyn.some-internal-server.de/bpX");
 
         Mockito.verify(bpDirectoryMock)
                .addBounceProxy(new ControlledBounceProxyInformation("X.Y",
                                                                     URI.create("http://www.joynX.de/bp"),
-                                                                    URI.create("http://joyn.some-internal-server.de/bpX")),
-                               100l);
+                                                                    URI.create("http://joyn.some-internal-server.de/bpX")));
     }
 
     @Test
@@ -91,12 +84,11 @@ public class MonitoringServiceImplTest {
         Mockito.when(bpDirectoryMock.containsBounceProxy("X.Y")).thenReturn(true);
         Mockito.when(bpDirectoryMock.getBounceProxy("X.Y"))
                .thenReturn(new BounceProxyRecord(new ControlledBounceProxyInformation("X.Y", null)));
-        Mockito.when(timestampProviderMock.getCurrentTime()).thenReturn(100l);
 
         monitoringService.updateStatus("X.Y", BounceProxyStatus.SHUTDOWN);
 
         ArgumentCaptor<BounceProxyRecord> argument = ArgumentCaptor.forClass(BounceProxyRecord.class);
-        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture(), Mockito.eq(100l));
+        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture());
         Assert.assertEquals("X.Y", argument.getValue().getBounceProxyId());
         Assert.assertEquals(BounceProxyStatus.SHUTDOWN, argument.getValue().getStatus());
     }
@@ -115,12 +107,11 @@ public class MonitoringServiceImplTest {
         Mockito.when(bpDirectoryMock.containsBounceProxy("X.Y")).thenReturn(true);
         Mockito.when(bpDirectoryMock.getBounceProxy("X.Y"))
                .thenReturn(new BounceProxyRecord(new ControlledBounceProxyInformation("X.Y", null)));
-        Mockito.when(timestampProviderMock.getCurrentTime()).thenReturn(100l);
 
         monitoringService.update("X.Y", "http://www.joynX.de/bp", "http://joyn.some-internal-server.de/bpX");
 
         ArgumentCaptor<BounceProxyRecord> argument = ArgumentCaptor.forClass(BounceProxyRecord.class);
-        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture(), Mockito.eq(100l));
+        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture());
         Assert.assertEquals("X.Y", argument.getValue().getBounceProxyId());
         Assert.assertEquals("http://www.joynX.de/bp", argument.getValue().getInfo().getLocation().toString());
         Assert.assertEquals("http://joyn.some-internal-server.de/bpX", argument.getValue()
@@ -136,14 +127,13 @@ public class MonitoringServiceImplTest {
         Mockito.when(bpDirectoryMock.containsBounceProxy("X.Y")).thenReturn(true);
         Mockito.when(bpDirectoryMock.getBounceProxy("X.Y"))
                .thenReturn(new BounceProxyRecord(new ControlledBounceProxyInformation("X.Y", null)));
-        Mockito.when(timestampProviderMock.getCurrentTime()).thenReturn(100l);
 
         PerformanceMeasures performanceMeasures = new PerformanceMeasures();
         performanceMeasures.addMeasure(Key.ACTIVE_LONGPOLL_COUNT, 5);
         monitoringService.updatePerformanceMeasures("X.Y", performanceMeasures);
 
         ArgumentCaptor<BounceProxyRecord> argument = ArgumentCaptor.forClass(BounceProxyRecord.class);
-        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture(), Mockito.eq(100l));
+        Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture());
         Assert.assertEquals("X.Y", argument.getValue().getBounceProxyId());
         Assert.assertEquals(5, argument.getValue().getPerformanceMeasures().getMeasure(Key.ACTIVE_LONGPOLL_COUNT));
         Assert.assertEquals(BounceProxyStatus.ACTIVE, argument.getValue().getStatus());

@@ -52,15 +52,12 @@ public interface BounceProxyDirectory {
      * 
      * @param ccid
      * @param bpInfo
-     * @param the
-     *            timestamp in ms when this channel assignment was done
      * 
      * @throws IllegalArgumentException
      *             if no bounce proxy with this ID is registered in the
      *             directory
      */
-    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo, long timestamp)
-                                                                                                   throws IllegalArgumentException;
+    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) throws IllegalArgumentException;
 
     /**
      * Gets a record of a bounce proxy. Before calling this method, it should be
@@ -94,12 +91,10 @@ public interface BounceProxyDirectory {
      * 
      * @param bpInfo
      *            information about the bounce proxy.
-     * @param timestamp
-     *            the timestamp in milliseconds
      * @throws IllegalArgumentException
      *             if the bounce proxy has already been registered before
      */
-    public void addBounceProxy(ControlledBounceProxyInformation bpInfo, long timestamp) throws IllegalArgumentException;
+    public void addBounceProxy(ControlledBounceProxyInformation bpInfo) throws IllegalArgumentException;
 
     /**
      * Updates the record about an existing bounce proxy. The bounce proxy
@@ -108,13 +103,11 @@ public interface BounceProxyDirectory {
      * 
      * @param bpRecord
      *            the updated record of a bounce proxy
-     * @param timestamp
-     *            the timestamp in milliseconds when this record was updated
      * @throws IllegalArgumentException
      *             if no bounce proxy with the same ID is registered in the
      *             directory
      */
-    public void updateBounceProxy(BounceProxyRecord bpRecord, long timestamp) throws IllegalArgumentException;
+    public void updateBounceProxy(BounceProxyRecord bpRecord) throws IllegalArgumentException;
 
     /**
      * Returns the list of registered bounce proxies including information such

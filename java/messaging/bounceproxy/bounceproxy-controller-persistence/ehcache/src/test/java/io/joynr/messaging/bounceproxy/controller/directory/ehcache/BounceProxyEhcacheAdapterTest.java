@@ -62,7 +62,7 @@ public class BounceProxyEhcacheAdapterTest {
 
         ControlledBounceProxyInformation bpInfo = new ControlledBounceProxyInformation("bp0.0",
                                                                                        URI.create("http://www.joynr1.de/bp0.0/"));
-        cache.addBounceProxy(bpInfo, 1000l);
+        cache.addBounceProxy(bpInfo);
 
         list = cache.getBounceProxyStatusInformation();
         assertEquals(1, list.size());

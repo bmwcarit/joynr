@@ -70,8 +70,7 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
     }
 
     @Override
-    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo, long timestamp)
-                                                                                                   throws IllegalArgumentException {
+    public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) throws IllegalArgumentException {
         // TODO Auto-generated method stub
 
     }
@@ -104,7 +103,7 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
     }
 
     @Override
-    public void addBounceProxy(ControlledBounceProxyInformation bpInfo, long timestamp) throws IllegalArgumentException {
+    public void addBounceProxy(ControlledBounceProxyInformation bpInfo) throws IllegalArgumentException {
 
         if (log.isTraceEnabled()) {
             log.trace("addBounceProxy {} to cache {}", bpInfo.getId(), cacheName);
@@ -117,7 +116,7 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
     }
 
     @Override
-    public void updateBounceProxy(BounceProxyRecord bpRecord, long timestamp) throws IllegalArgumentException {
+    public void updateBounceProxy(BounceProxyRecord bpRecord) throws IllegalArgumentException {
 
         if (log.isTraceEnabled()) {
             log.trace("updateBounceProxy {} in cache {}", bpRecord.getBounceProxyId(), cacheName);
