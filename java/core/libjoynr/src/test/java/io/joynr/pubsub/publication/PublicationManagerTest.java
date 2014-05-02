@@ -19,8 +19,15 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.PubSubState;
@@ -35,10 +42,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import joynr.PeriodicSubscriptionQos;
+import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.tests.TestProvider;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +98,8 @@ public class PublicationManagerTest {
 
     private SubscriptionQos subscriptionQos;
 
+    private PeriodicSubscriptionQos subscriptionQosWithoutExpiryDate;
+
     @Mock
     private JoynrProvider provider;
 
@@ -115,6 +126,7 @@ public class PublicationManagerTest {
                                                         attributePollInterpreter,
                                                         cleanupScheduler);
         subscriptionQos = new PeriodicSubscriptionQos(400, END_DATE_MS, 500, 1000);
+        subscriptionQosWithoutExpiryDate = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider, TestProvider.class);
     }
@@ -126,33 +138,62 @@ public class PublicationManagerTest {
 
     @Test
     public void addPublication() {
-        addPublicationMockBehaviour();
+        addPublicationMockBehaviour(subscriptionQos);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
                                                   PROVIDER_PARTICIPANT_ID,
                                                   subscriptionRequest,
                                                   requestCaller,
                                                   messageSender);
-        verifyPublicationIsAdded();
+        verifyPublicationIsAdded(true);
     }
 
-    private void verifyPublicationIsAdded() {
-        Mockito.verify(subscriptionRequest, Mockito.atLeast(1)).getSubscriptionId();
-        Mockito.verify(subscriptionId2SubscriptionRequest).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID),
-                                                                       Mockito.eq(publicationInformation));
-        Mockito.verify(publicationStates).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID), Mockito.any(PubSubState.class));
-        Mockito.verify(publicationTimers).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID), Mockito.any(PublicationTimer.class));
-        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                                  AdditionalMatchers.leq(DURATION_MS),
-                                                  Mockito.eq(TimeUnit.MILLISECONDS));
-        Mockito.verify(subscriptionEndFutures).putIfAbsent(Mockito.eq(SUBSCRIPTION_ID),
-                                                           Mockito.any(ScheduledFuture.class));
+    @Test
+    public void addPublicationWithoutExpiryDate() {
+        int n = 3;
+        addPublicationMockBehaviour(subscriptionQosWithoutExpiryDate);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller,
+                                                  messageSender);
+        verifyPublicationIsAdded(false);
+        try {
+            verify(messageSender, times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                        eq(PROXY_PARTICIPANT_ID),
+                                                                        any(SubscriptionPublication.class),
+                                                                        any(MessagingQos.class));
+            Thread.sleep(n * subscriptionQosWithoutExpiryDate.getPeriod());
+            verify(messageSender, times(1 + n)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                            eq(PROXY_PARTICIPANT_ID),
+                                                                            any(SubscriptionPublication.class),
+                                                                            any(MessagingQos.class));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
-    private void addPublicationMockBehaviour() {
-        Mockito.when(subscriptionRequest.getSubscriptionId()).thenReturn(SUBSCRIPTION_ID);
-        Mockito.when(subscriptionRequest.getQos()).thenReturn(subscriptionQos);
-        Mockito.when(subscriptionRequest.getAttributeName()).thenReturn("testAttribute");
+    private void verifyPublicationIsAdded(boolean expectCleanupTask) {
+        verify(subscriptionRequest, Mockito.atLeast(1)).getSubscriptionId();
+        verify(subscriptionId2SubscriptionRequest).putIfAbsent(eq(SUBSCRIPTION_ID), eq(publicationInformation));
+        verify(publicationStates).putIfAbsent(eq(SUBSCRIPTION_ID), any(PubSubState.class));
+        verify(publicationTimers).putIfAbsent(eq(SUBSCRIPTION_ID), any(PublicationTimer.class));
+        if (expectCleanupTask) {
+            verify(cleanupScheduler).schedule(any(Runnable.class),
+                                              AdditionalMatchers.leq(DURATION_MS),
+                                              eq(TimeUnit.MILLISECONDS));
+            verify(subscriptionEndFutures).putIfAbsent(eq(SUBSCRIPTION_ID), any(ScheduledFuture.class));
+        } else {
+            verify(subscriptionEndFutures, never()).putIfAbsent(Mockito.anyString(), any(ScheduledFuture.class));
+            verify(cleanupScheduler, never()).schedule(any(Runnable.class), Mockito.anyLong(), any(TimeUnit.class));
+        }
+    }
+
+    private void addPublicationMockBehaviour(SubscriptionQos subscriptionQos) {
+        when(subscriptionRequest.getSubscriptionId()).thenReturn(SUBSCRIPTION_ID);
+        when(subscriptionRequest.getQos()).thenReturn(subscriptionQos);
+        when(subscriptionRequest.getAttributeName()).thenReturn("testAttribute");
     }
 
     @Test
@@ -166,13 +207,13 @@ public class PublicationManagerTest {
     }
 
     private void verifyPublicationIsDeleted(String subscriptionId) {
-        Mockito.verify(queuedSubscriptionRequests, Mockito.atLeast(1)).containsKey(PROVIDER_PARTICIPANT_ID);
-        Mockito.verify(queuedSubscriptionRequests, Mockito.atLeast(1)).removeAll(Mockito.eq(PROVIDER_PARTICIPANT_ID));
-        Mockito.verify(subscriptionId2SubscriptionRequest).remove(Mockito.eq(subscriptionId));
-        Mockito.verify(publicationStates).remove(Mockito.eq(subscriptionId));
-        Mockito.verify(publicationTimers).remove(Mockito.eq(subscriptionId));
+        verify(queuedSubscriptionRequests, Mockito.atLeast(1)).containsKey(PROVIDER_PARTICIPANT_ID);
+        verify(queuedSubscriptionRequests, Mockito.atLeast(1)).removeAll(eq(PROVIDER_PARTICIPANT_ID));
+        verify(subscriptionId2SubscriptionRequest).remove(eq(subscriptionId));
+        verify(publicationStates).remove(eq(subscriptionId));
+        verify(publicationTimers).remove(eq(subscriptionId));
 
-        Mockito.verify(subscriptionEndFutures).remove(Mockito.eq(subscriptionId));
+        verify(subscriptionEndFutures).remove(eq(subscriptionId));
     }
 
     @SuppressWarnings("unchecked")
@@ -201,8 +242,8 @@ public class PublicationManagerTest {
         MockBehaviourOnStop("subscriptionId2");
         publicationManager.stopPublicationByProviderId(providerId);
 
-        Mockito.verify(subscriptionRequest1).getSubscriptionId();
-        Mockito.verify(subscriptionRequest2).getSubscriptionId();
+        verify(subscriptionRequest1).getSubscriptionId();
+        verify(subscriptionRequest2).getSubscriptionId();
 
         verifyPublicationIsDeleted("subscriptionId1");
         verifyPublicationIsDeleted("subscriptionId2");
@@ -218,11 +259,11 @@ public class PublicationManagerTest {
         Mockito.when(queuedSubscriptionRequests.get(providerId)).thenReturn(subscriptionRequests);
         Mockito.when(subscriptionRequest.getQos())
                .thenReturn(new PeriodicSubscriptionQos(1000, System.currentTimeMillis() + 30000, 1500, 1000));
-        addPublicationMockBehaviour();
+        addPublicationMockBehaviour(subscriptionQos);
 
         publicationManager.restoreQueuedSubscription(providerId, requestCaller, messageSender);
 
-        Mockito.verify(queuedSubscriptionRequests).remove(providerId, publicationInformation);
-        verifyPublicationIsAdded();
+        verify(queuedSubscriptionRequests).remove(providerId, publicationInformation);
+        verifyPublicationIsAdded(true);
     }
 }

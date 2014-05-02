@@ -96,7 +96,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDate();
-        logger.info("####################### expiryDate in: " + (expiryDate - System.currentTimeMillis()));
+        logger.info("####################### expiryDate in: "
+                + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate - System.currentTimeMillis()));
 
         if (qos instanceof HeartbeatSubscriptionInformation) {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
@@ -113,11 +114,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                        subState));
             }
         }
-        SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
-        ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
-                                                                             expiryDate,
-                                                                             TimeUnit.MILLISECONDS);
-        subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
+            SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
+                                                                                 expiryDate,
+                                                                                 TimeUnit.MILLISECONDS);
+            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        }
 
         return subscriptionId;
     }

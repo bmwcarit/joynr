@@ -72,11 +72,7 @@ public abstract class SubscriptionQos implements JoynrType {
      *            </ul>
      */
     public SubscriptionQos(long expiryDate, long publicationTtl) {
-        long now = System.currentTimeMillis();
-        if (expiryDate <= now) {
-            logger.error("Subscription ExpiryDate {} is in the past. Now: {}", expiryDate, now);
-        }
-        this.expiryDate = expiryDate;
+        setExpiryDate(expiryDate);
         publicationTtl = publicationTtl < MIN_PUBLICATION_TLL ? MIN_PUBLICATION_TLL : publicationTtl;
         publicationTtl = publicationTtl > MAX_PUBLICATION_TLL ? MAX_PUBLICATION_TLL : publicationTtl;
         this.publicationTtl = publicationTtl;
@@ -100,6 +96,10 @@ public abstract class SubscriptionQos implements JoynrType {
      * 
      */
     public void setExpiryDate(final long expiryDate_ms) {
+        long now = System.currentTimeMillis();
+        if (expiryDate_ms <= now && expiryDate_ms != NO_EXPIRY_DATE) {
+            logger.error("Subscription ExpiryDate {} is in the past. Now: {}", expiryDate_ms, now);
+        }
         this.expiryDate = expiryDate_ms;
     }
 

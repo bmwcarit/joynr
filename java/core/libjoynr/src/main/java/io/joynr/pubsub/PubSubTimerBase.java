@@ -44,7 +44,7 @@ public abstract class PubSubTimerBase {
 
     protected boolean isExpiredInMs(long delay_ms) {
 
-        return (System.currentTimeMillis() + delay_ms) > expiryDate;
+        return expiryDate != SubscriptionQos.NO_EXPIRY_DATE && (System.currentTimeMillis() + delay_ms) > expiryDate;
     }
 
     public void cancel() {
@@ -67,7 +67,8 @@ public abstract class PubSubTimerBase {
                         + (isExpiredNow ? "endDate is reached"
                                 : (isExpiredBeforeNextPublication ? "endDate will be reached before next publication"
                                         : "publication stopped")) + ".");
-                logger.debug("SubscriptionEndDate: " + expiryDate);
+                logger.debug("SubscriptionEndDate: "
+                        + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate));
                 logger.debug("CurrentSystemTime: " + System.currentTimeMillis());
                 logger.debug("Delay: ", delay);
             }

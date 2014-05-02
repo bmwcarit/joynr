@@ -161,7 +161,8 @@ public class PublicationManagerImpl implements PublicationManager {
 
         // Check that this is a valid subscription
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-        long subscriptionEndDelay = subscriptionQos.getExpiryDate() - System.currentTimeMillis();
+        long subscriptionEndDelay = subscriptionQos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
+                : subscriptionQos.getExpiryDate() - System.currentTimeMillis();
 
         if (subscriptionEndDelay < 0) {
             logger.error("Not adding subscription which ends in {} ms", subscriptionEndDelay);
@@ -220,17 +221,19 @@ public class PublicationManagerImpl implements PublicationManager {
                                                                                       attributeListener));
             }
 
-            // Create a runnable to remove the publication when the subscription expires
-            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
+            if (subscriptionQos.getExpiryDate() != SubscriptionQos.NO_EXPIRY_DATE) {
+                // Create a runnable to remove the publication when the subscription expires
+                ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
 
-                @Override
-                public void run() {
-                    logger.info("Publication expired...");
-                    removePublication(subscriptionId);
-                }
+                    @Override
+                    public void run() {
+                        logger.info("Publication expired...");
+                        removePublication(subscriptionId);
+                    }
 
-            }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
-            subscriptionEndFutures.putIfAbsent(subscriptionId, subscriptionEndFuture);
+                }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
+                subscriptionEndFutures.putIfAbsent(subscriptionId, subscriptionEndFuture);
+            }
             logger.info("publication added: " + subscriptionRequest.toString());
 
         } catch (NoSuchMethodException e) {

@@ -19,6 +19,7 @@ package io.joynr.dispatcher.rpc;
  * #L%
  */
 
+import static org.mockito.Mockito.times;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
@@ -29,13 +30,22 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.SubscriptionListener;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+
+import joynr.PeriodicSubscriptionQos;
+import joynr.SubscriptionRequest;
+import joynr.vehicle.LocalisationSubscriptionInterface;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -54,6 +64,7 @@ public class ConnectorTests {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
         channelId = "testChannelId";
@@ -77,16 +88,7 @@ public class ConnectorTests {
     @Test
     public void asyncMethodCallWithoutAnnotationThrowsException() throws JoynrIllegalStateException {
 
-        ArbitrationResult arbitrationResult = new ArbitrationResult();
-        ArrayList<EndpointAddressBase> endpointAddresses = new ArrayList<EndpointAddressBase>();
-        endpointAddresses.add(endpointAddress);
-        arbitrationResult.setEndpointAddress(endpointAddresses);
-        arbitrationResult.setParticipantId(toParticipantId);
-        ConnectorInvocationHandler connector = ConnectorFactory.create(dispatcher,
-                                                                       messageSender,
-                                                                       fromParticipantId,
-                                                                       arbitrationResult,
-                                                                       qosSettings);
+        ConnectorInvocationHandler connector = createConnector();
         Assert.assertNotNull(connector);
         try {
             Future<String> future = new Future<String>();
@@ -100,5 +102,46 @@ public class ConnectorTests {
             Assert.assertEquals(JsonMappingException.class, e.getClass());
         }
 
+    }
+
+    @Test
+    public void subscriptionMethodCallWithNoExpiryDate() throws JoynrIllegalStateException {
+
+        ConnectorInvocationHandler connector = createConnector();
+        Assert.assertNotNull(connector);
+        try {
+            Future<String> future = new Future<String>();
+            String subscriptionId = "subscriptionId";
+            PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(1000, 0, 1000);
+            Object[] args = new Object[]{ null, subscriptionQos };
+            Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
+                                                                                      SubscriptionListener.class,
+                                                                                      SubscriptionQos.class,
+                                                                                      String.class);
+            connector.executeSubscriptionMethod(method, args, future, subscriptionId);
+            Mockito.verify(messageSender, times(1)).sendSubscriptionRequest(Mockito.eq(fromParticipantId),
+                                                                            Mockito.eq(toParticipantId),
+                                                                            Mockito.eq(endpointAddress),
+                                                                            Mockito.any(SubscriptionRequest.class),
+                                                                            Mockito.any(MessagingQos.class));
+        } catch (Exception e) {
+            // This is what is supposed to happen -> no error handling
+            Assert.fail("Calling a subscription method with no expiry date throws an exception.");
+        }
+
+    }
+
+    private ConnectorInvocationHandler createConnector() {
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        ArrayList<EndpointAddressBase> endpointAddresses = new ArrayList<EndpointAddressBase>();
+        endpointAddresses.add(endpointAddress);
+        arbitrationResult.setEndpointAddress(endpointAddresses);
+        arbitrationResult.setParticipantId(toParticipantId);
+        ConnectorInvocationHandler connector = ConnectorFactory.create(dispatcher,
+                                                                       messageSender,
+                                                                       fromParticipantId,
+                                                                       arbitrationResult,
+                                                                       qosSettings);
+        return connector;
     }
 }
