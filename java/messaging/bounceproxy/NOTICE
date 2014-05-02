@@ -17,12 +17,15 @@ under the License.
 
 This project has dependencies to:
   AOP alliance under Public Domain
+  Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
+  Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpClient Mime under Apache License
   Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
   ASM Core under Apache License, Version 2.0
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-guice under Apache License 2.0
@@ -32,7 +35,9 @@ This project has dependencies to:
   CDI APIs under Apache License, Version 2.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
+  Commons Collections under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
@@ -41,6 +46,7 @@ This project has dependencies to:
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
+  Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   grizzly-comet under CDDL+GPL
   grizzly-compat under CDDL+GPL
@@ -61,6 +67,7 @@ This project has dependencies to:
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:ehcache under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:jdbc under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:persistence-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-common under The Apache Software License, Version 2.0
@@ -118,18 +125,26 @@ This project has dependencies to:
   Jetty :: Websocket under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty Orbit :: Servlet API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Mockito under The MIT License
   Objenesis under MIT License
+  OpenJPA JDBC under Apache Software License 2.0
+  OpenJPA Kernel under Apache Software License 2.0
+  OpenJPA Persistence under Apache Software License 2.0
+  OpenJPA Persistence JDBC under Apache Software License 2.0
+  OpenJPA Utilities Library under Apache Software License 2.0
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
+  Serp under BSD
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl

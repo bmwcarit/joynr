@@ -32,5 +32,6 @@
 	<modules>
 		<module>persistence-common</module>
 		<module>ehcache</module>
+		<module>jdbc</module>
 	</modules>
 </project>

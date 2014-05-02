@@ -55,7 +55,7 @@ public interface BounceProxyDirectory {
      * 
      * @throws IllegalArgumentException
      *             if no bounce proxy with this ID is registered in the
-     *             directory
+     *             directory or if no channel with ccid is registered in the {@link ChannelDirectory}.
      */
     public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) throws IllegalArgumentException;
 
