@@ -37,7 +37,10 @@ public abstract class SubscriptionQos implements JoynrType {
 
     protected static final long DEFAULT_PUBLICATION_TTL = 10000;
 
+    public static final long NO_EXPIRY_DATE = 0L;
+
     protected SubscriptionQos() {
+        this(NO_EXPIRY_DATE);
     }
 
     /**
@@ -127,5 +130,12 @@ public abstract class SubscriptionQos implements JoynrType {
      */
     public void setPublicationTtl(final long publicationTtl_ms) {
         this.publicationTtl = publicationTtl_ms;
+    }
+
+    /**
+     * Resets the expiry date to the default value
+     */
+    public void clearExpiryDate() {
+        this.expiryDate = NO_EXPIRY_DATE;
     }
 }

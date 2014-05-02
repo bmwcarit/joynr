@@ -389,17 +389,17 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
 
         synchronized (capsLock) {
-        	String capabilityEntryId = participantIdToCapabilityMapping.get(participantId);
-        	if (capabilityEntryId == null) {
+            String capabilityEntryId = participantIdToCapabilityMapping.get(participantId);
+            if (capabilityEntryId == null) {
                 return null;
             }
-        	
+
             CapabilityEntry capabilityEntry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
             logger.debug("Capability for participantId {} found: {}", participantId, capabilityEntry);
             if (checkAge(registeredCapabilitiesTime.get(capabilityEntryId), discoveryQos.getCacheMaxAge())) {
                 return capabilityEntry;
             }
-            
+
             return null;
         }
     }

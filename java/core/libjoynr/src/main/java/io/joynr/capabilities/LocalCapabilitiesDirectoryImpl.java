@@ -343,7 +343,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
                         @Override
                         public String apply(CapabilityInformation input) {
-                        	return input !=null ? input.getParticipantId() : null;
+                            return input != null ? input.getParticipantId() : null;
                         }
                     };
                     globalCapabilitiesClient.remove(Lists.newArrayList(Collections2.transform(capInfoList,
