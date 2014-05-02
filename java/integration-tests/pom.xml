@@ -133,7 +133,17 @@
 		-->
 		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-controller</artifactId>
+			<artifactId>bounceproxy-controller-nonclustered</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+		<!-- This dependency is needed to ensure the correct build order.
+			Some artifacts is needed by the maven-dependency-plugin, which
+			copies them to the currrent build directory.
+		-->
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+			<artifactId>bounceproxy-controller-clustered</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -146,6 +156,12 @@
 			<artifactId>controlled-bounceproxy</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>2.8.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 	        <groupId>org.slf4j</groupId>
@@ -196,11 +212,19 @@
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy-controller</artifactId>
+									<artifactId>bounceproxy-controller-nonclustered</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy-controller.war</destFileName>
+									<destFileName>bounceproxy-controller-nonclustered.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+									<artifactId>bounceproxy-controller-clustered</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>bounceproxy-controller-clustered.war</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>

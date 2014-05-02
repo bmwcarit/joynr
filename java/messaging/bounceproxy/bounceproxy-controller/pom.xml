@@ -21,7 +21,7 @@
 
 	<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 	<artifactId>bounceproxy-controller</artifactId>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	
@@ -135,37 +135,7 @@
 	    	<artifactId>persistence-common</artifactId>
 	    	<version>${project.version}</version>
 	    </dependency>
+	    
 	</dependencies>
-
-
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
-					<warName>${project.build.finalName}</warName>
-					<warSourceDirectory>src/main/resources</warSourceDirectory>
-					<attachClasses>true</attachClasses>
-		            <packagingExcludes>
-		            	**/jetty-logging.properties
-		            </packagingExcludes>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<configuration>
-					<webAppSourceDirectory>${basedir}/src/main/java</webAppSourceDirectory>
-				</configuration>
-			</plugin>
-
-		</plugins>
-
-	</build>
 
 </project>

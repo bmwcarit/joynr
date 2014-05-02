@@ -112,8 +112,16 @@ public class ServersUtil {
     }
 
     public static Server startBounceproxyController() throws Exception {
+        return startBounceproxyController("bounceproxy-controller-nonclustered");
+    }
+
+    public static Server startClusteredBounceproxyController() throws Exception {
+        return startBounceproxyController("bounceproxy-controller-clustered");
+    }
+
+    private static Server startBounceproxyController(String warFileName) throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createBounceproxyControllerWebApp() });
+        contexts.setHandlers(new Handler[]{ createBounceproxyControllerWebApp(warFileName) });
 
         Server server = startServer(contexts);
         String serverUrl = System.getProperties().getProperty("hostPath");
@@ -200,10 +208,10 @@ public class ServersUtil {
         return bounceproxyWebapp;
     }
 
-    private static WebAppContext createBounceproxyControllerWebApp() {
+    private static WebAppContext createBounceproxyControllerWebApp(String warFileName) {
         WebAppContext bounceproxyWebapp = new WebAppContext();
         bounceproxyWebapp.setContextPath(BOUNCEPROXYCONTROLLER_CONTEXT);
-        bounceproxyWebapp.setWar("target/bounceproxy-controller.war");
+        bounceproxyWebapp.setWar("target/" + warFileName + ".war");
 
         // Makes jetty load classes in the same order as JVM. Otherwise there's
         // a conflict loading loggers.

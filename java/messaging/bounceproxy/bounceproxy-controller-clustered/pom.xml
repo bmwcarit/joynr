@@ -1,0 +1,125 @@
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+	<artifactId>bounceproxy-controller-clustered</artifactId>
+	<packaging>war</packaging>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	
+	<description>Bounceproxy controller that works in a clustered environment.
+	</description>
+
+	<parent>
+		<groupId>io.joynr.java.messaging</groupId>
+		<artifactId>bounceproxy</artifactId>
+		<version>0.7.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<properties>
+
+	</properties>
+
+    <profiles>
+        <profile>
+            <!-- 
+            This is an extension of the deploy-artifacts-to-sonatype profile
+            in the root POM.
+            -->
+            <id>deploy-artifacts-to-sonatype</id>
+            <activation>
+                <!-- 
+                maven-jgitflow-plugin will set the performRelease property during
+                release and thus automatically activate this profile during release.
+                NOTE: You need to install GPG [1] and publish your public key to a key 
+                server.
+                The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
+                [2].
+                Follow instructions [3] to verify dependencies.
+                [1] https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With Maven
+                [2] http://maven.apache.org/plugins/maven-gpg-plugin/usage.html
+                [3] http://branchandbound.net/blog/security/2012/08/verify-dependencies-using-pgp/ 
+                -->
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!--
+                    Skipping the maven-deploy-plugin during deployment to Sonatype
+                    repositories. This will prevent deployment of this war inlcuding
+                    third-party software to the Sonatype repositories.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+			<artifactId>bounceproxy-controller</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+				
+	</dependencies>
+
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
+					<warName>${project.build.finalName}</warName>
+					<warSourceDirectory>src/main/resources</warSourceDirectory>
+					<attachClasses>true</attachClasses>
+		            <packagingExcludes>
+		            	**/jetty-logging.properties
+		            </packagingExcludes>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+</project>

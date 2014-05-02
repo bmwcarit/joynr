@@ -44,6 +44,7 @@ This project has dependencies to:
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
+  ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
@@ -91,6 +92,8 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.bounceproxy:bounceproxy-controller-clustered under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.bounceproxy:bounceproxy-controller-nonclustered under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-standalone under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-ui under The Apache Software License, Version 2.0

@@ -2,7 +2,6 @@ package io.joynr.messaging.bounceproxy.controller.runtime;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -24,7 +23,6 @@ import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.controller.BounceProxyControllerModule;
-import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryModule;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MonitoringServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
@@ -32,6 +30,7 @@ import io.joynr.runtime.PropertyLoader;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 
 /**
@@ -40,16 +39,24 @@ import com.google.inject.Module;
  * @author christina.strobel
  * 
  */
-public class BounceProxyControllerServletConfig extends AbstractGuiceServletConfig {
+public abstract class AbstractBounceProxyControllerServletConfig extends AbstractGuiceServletConfig {
 
     private final List<Module> modules;
 
-    public BounceProxyControllerServletConfig() {
+    public AbstractBounceProxyControllerServletConfig() {
         modules = new LinkedList<Module>();
         modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("bounceProxyController.properties")));
         modules.add(new BounceProxyControllerModule());
-        modules.add(new InMemoryModule());
+        modules.addAll(getPersistenceModules());
     }
+
+    /**
+     * Returns a list of modules that defines which classes are bound for
+     * persistence related task.
+     * 
+     * @return
+     */
+    protected abstract List<AbstractModule> getPersistenceModules();
 
     @Override
     protected AbstractJoynrServletModule getJoynrServletModule() {
