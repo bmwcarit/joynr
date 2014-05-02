@@ -23,6 +23,7 @@ This project has dependencies to:
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
+  ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
@@ -32,6 +33,7 @@ This project has dependencies to:
   Hamcrest library under New BSD License
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:ehcache under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:persistence-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy-controller-service under The Apache Software License, Version 2.0

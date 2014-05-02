@@ -96,7 +96,14 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-				
+
+		<dependency>
+			<groupId>
+				io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence
+			</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 

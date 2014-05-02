@@ -20,6 +20,7 @@ package io.joynr.messaging.info;
  * #L%
  */
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,7 +36,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author christina.strobel
  * 
  */
-public class PerformanceMeasures {
+public class PerformanceMeasures implements Serializable {
+    private static final long serialVersionUID = 2350423283798167427L;
 
     public enum Key {
 

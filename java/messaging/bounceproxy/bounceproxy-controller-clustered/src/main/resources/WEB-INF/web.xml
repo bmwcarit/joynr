@@ -35,6 +35,10 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
             	 - https://code.google.com/p/google-guice/issues/detail?id=618
             	 - https://code.google.com/p/google-guice/issues/detail?id=635 -->
 
+	<listener>
+		<listener-class>io.joynr.messaging.bounceproxy.controller.runtime.ClusteredBounceProxyControllerServletConfig</listener-class>
+	</listener>
+
 	<session-config>
 		<session-timeout>600</session-timeout>
 		<tracking-mode>URL</tracking-mode>

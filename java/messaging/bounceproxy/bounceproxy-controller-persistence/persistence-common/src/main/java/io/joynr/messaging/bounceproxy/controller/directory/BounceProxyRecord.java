@@ -24,6 +24,7 @@ import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -34,7 +35,7 @@ import java.util.Date;
  * @author christina.strobel
  * 
  */
-public class BounceProxyRecord implements BounceProxyStatusInformation {
+public class BounceProxyRecord implements BounceProxyStatusInformation, Serializable {
     private static final long serialVersionUID = 3882680863826856386L;
 
     public static final long ASSIGNMENT_TIMESTAMP_NEVER = -1;

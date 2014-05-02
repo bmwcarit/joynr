@@ -29,6 +29,7 @@ import io.joynr.runtime.PropertyLoader;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
@@ -40,6 +41,8 @@ import com.google.inject.Module;
  * 
  */
 public abstract class AbstractBounceProxyControllerServletConfig extends AbstractGuiceServletConfig {
+
+    public static final String PATTERN_STARTS_WITH_JOYNR_BOUNCEPROXY_CONTROLLER = "joynr\\.bounceproxy\\.controller\\.(.*)";
 
     private final List<Module> modules;
 
@@ -73,5 +76,17 @@ public abstract class AbstractBounceProxyControllerServletConfig extends Abstrac
     @Override
     protected List<Module> getJoynrModules() {
         return modules;
+    }
+
+    /**
+     * Returns all system properties returned by {@link System#getProperties()}
+     * that start with a joynr pattern
+     * {@link #PATTERN_STARTS_WITH_JOYNR_BOUNCEPROXY_CONTROLLER}.
+     * 
+     * @return
+     */
+    protected Properties getJoynrSystemProperties() {
+        return PropertyLoader.getPropertiesWithPattern(System.getProperties(),
+                                                       PATTERN_STARTS_WITH_JOYNR_BOUNCEPROXY_CONTROLLER);
     }
 }
