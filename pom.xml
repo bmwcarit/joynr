@@ -884,6 +884,9 @@
 						<instrumentation>
 							<excludes>
 								<exclude>io/joynr/generated/**/*.class</exclude>
+								<exclude>io/joynr/generator/**/*.class</exclude>
+								<exclude>io/joynr/**/*Test.class</exclude>
+								<exclude>joynr/**/*.class</exclude>
 							</excludes>
 						</instrumentation>
 					</configuration>
