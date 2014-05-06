@@ -88,9 +88,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // 1) Set them programmatically at compile time using the joynr configuration properties at the
         // JoynInjectorFactory. E.g. uncomment the following lines to set a certain joynr server
         // instance.
-//        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8080/bounceproxy/");
-//        joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/");
-//        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8080/bounceproxy/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "radioapp_consumer_local_domain");
 
         // 2) Or set them in the static persistence file (default: joynr.properties in working dir) at
@@ -104,12 +104,12 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
         // joynr.messaging.channelurldirectoryurl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
 
-         // 3) Or set them in Java System properties. 
+        // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
         // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
         // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
-                
-        // NOTE: 
+
+        // NOTE:
         // Programmatically set configuration properties override properties set in the static persistence file.
         // Java system properties override both
 
@@ -119,7 +119,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
         JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
-                                                                                                                             appConfig));
+                                                                                                                                 appConfig));
         myRadioConsumerApp.run();
 
         MyRadioHelper.pressQEnterToContinue();
@@ -268,6 +268,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             LOG.error("No provider found", e);
         } catch (JoynrCommunicationException e) {
             LOG.error("The message was not sent: ", e);
-        } 
+        }
     }
 }

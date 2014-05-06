@@ -33,8 +33,8 @@ public class MessagingQos {
         ttl_ms = 60000;
     }
 
-    public MessagingQos (MessagingQos src){
-       ttl_ms = src.getRoundTripTtl_ms();
+    public MessagingQos(MessagingQos src) {
+        ttl_ms = src.getRoundTripTtl_ms();
     }
 
     /**

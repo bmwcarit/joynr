@@ -189,11 +189,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
 
             MessagingQos clonedMessagingQos = new MessagingQos(qosSettings);
-            
-            if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE){
+
+            if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
                 clonedMessagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-            }
-            else{
+            } else {
                 clonedMessagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
             }
 
