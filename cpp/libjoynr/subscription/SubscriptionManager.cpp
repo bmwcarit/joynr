@@ -47,13 +47,20 @@ SubscriptionManager::SubscriptionManager():
 {
 }
 
+SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler):
+    attributeSubscriptionDirectory(QString("SubsriptionManager-AttributeSubscriptionDirectory")),
+    subscriptionStates(new ThreadSafeMap<QString, PubSubState*>()),
+    missedPublicationScheduler(scheduler)
+{
+}
+
 void SubscriptionManager::registerAttributeSubscription(
         const QString &attributeName,
         ISubscriptionCallback * attributeSubscriptionCaller, // SubMgr gets ownership of ptr
         QSharedPointer<SubscriptionQos> qos,
         SubscriptionRequest& subscriptionRequest
 ){
-    if(qos->getExpiryDate() < QDateTime::currentMSecsSinceEpoch()) {
+    if(qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() && qos->getExpiryDate() < QDateTime::currentMSecsSinceEpoch()) {
         LOG_DEBUG(logger, "Expiry date is in the past: no subscription created");
         return;
     }
@@ -66,16 +73,24 @@ void SubscriptionManager::registerAttributeSubscription(
     if(SubscriptionUtil::getAlertInterval(qos.data()) > 0) {
         LOG_DEBUG(logger, "Will notify if updates are missed.");
         qint64 alertAfterInterval = SubscriptionUtil::getAlertInterval(qos.data());
+        qint64 expiryDate = qos->getExpiryDate();
+
+        if (expiryDate == joynr::SubscriptionQos::NO_EXPIRY_DATE()){
+            expiryDate = joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL();
+        }
 
         // Owner: SubscriptionManager. Delete triggered by MissedPublicationRunnable
         PubSubState* subState = new PubSubState();
         subscriptionStates->insert(subscriptionId, subState);
         MissedPublicationRunnable* processor = new MissedPublicationRunnable(
-                    QDateTime::fromMSecsSinceEpoch(qos->getExpiryDate()),
+                    QDateTime::fromMSecsSinceEpoch(expiryDate),
                     subscriptionId,
                     *this,
                     alertAfterInterval);
         missedPublicationScheduler->schedule(processor, alertAfterInterval);
+    }
+    else if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
+        missedPublicationScheduler->schedule(new ExpiredSubscriptionRunnable(subscriptionId, *this), qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
     }
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setAttributeName(attributeName);
@@ -188,6 +203,24 @@ void SubscriptionManager::MissedPublicationRunnable::run(){
     }
 }
 
+Logger* SubscriptionManager::ExpiredSubscriptionRunnable::logger = Logging::getInstance()
+        ->getLogger("MSG", "ExpiredSubscriptionRunnable");
+
+SubscriptionManager::ExpiredSubscriptionRunnable::ExpiredSubscriptionRunnable(
+        const QString& subscriptionId,
+        SubscriptionManager& subscriptionManager) :
+    subscriptionId(subscriptionId),
+    subscriptionManager(subscriptionManager)
+{
+    setAutoDelete(true);
+}
+
+void SubscriptionManager::ExpiredSubscriptionRunnable::run(){
+    LOG_DEBUG(logger, "Running ExpiredSubscriptionRunnable for subscription id= " + subscriptionId);
+    LOG_DEBUG(logger, "Publication expired / interrupted. Expiring on subscription id="
+              + subscriptionId );
+    subscriptionManager.subscriptionEnded(subscriptionId);
+}
 
 
 

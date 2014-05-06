@@ -18,6 +18,7 @@
  */
 #include "joynr/SubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
+#include <limits>
 
 namespace joynr {
 
@@ -34,6 +35,11 @@ const qint64& SubscriptionQos::MIN_PUBLICATION_TTL() {
 const qint64& SubscriptionQos::MAX_PUBLICATION_TTL() {
     static const qint64 maxPublicationTtl = 2592000000UL;
     return maxPublicationTtl;
+}
+
+const qint64& SubscriptionQos::NO_EXPIRY_DATE_TTL() {
+    static const qint64 noExpiryDateTTL = std::numeric_limits<qint64>::max(); // 2^63-1
+    return noExpiryDateTTL;
 }
 
 const qint64& SubscriptionQos::NO_EXPIRY_DATE() {
@@ -95,8 +101,13 @@ void SubscriptionQos::clearExpiryDate() {
     this->expiryDate = NO_EXPIRY_DATE();
 }
 
-void SubscriptionQos::setValidity(const qint64 &validty) {
-    setExpiryDate(QDateTime::currentMSecsSinceEpoch() + validty);
+void SubscriptionQos::setValidity(const qint64 &validity) {
+    if (validity == -1){
+        setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
+    }
+    else {
+        setExpiryDate(QDateTime::currentMSecsSinceEpoch() + validity);
+    }
 }
 
 SubscriptionQos& SubscriptionQos::operator=(const SubscriptionQos& subscriptionQos) {

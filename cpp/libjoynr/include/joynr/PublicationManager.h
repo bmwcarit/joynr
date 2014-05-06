@@ -50,6 +50,7 @@ class RequestCaller;
 class JOYNR_EXPORT PublicationManager {
 public:
     explicit PublicationManager(int maxThreads = 2);
+    explicit PublicationManager(DelayedScheduler* scheduler, int maxThreads = 2);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.

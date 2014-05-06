@@ -30,6 +30,7 @@
 #include "QtCore"
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
+#include "joynr/DelayedScheduler.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/types/Trip.h"
@@ -128,6 +129,14 @@ class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
     MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const joynr::MessagingQos& qoS));
+};
+
+class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
+{
+public:
+    MockDelayedScheduler(QString name) : SingleThreadedDelayedScheduler(name){};
+    MOCK_METHOD1(executeRunnable, void(QRunnable* runnable));
+    MOCK_METHOD2(schedule, void(QRunnable* runnable, int delay_ms));
 };
 
 class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {

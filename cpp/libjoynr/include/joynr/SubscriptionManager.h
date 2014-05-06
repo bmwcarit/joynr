@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 #ifndef SUBSCRIPTIONMANAGER_H
 #define SUBSCRIPTIONMANAGER_H
 #include "joynr/PrivateCopyAssign.h"
@@ -34,26 +53,9 @@ class JOYNR_EXPORT SubscriptionManager {
 public:
     ~SubscriptionManager();
 
-/*
- * #%L
- * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
     SubscriptionManager();
 
+    SubscriptionManager(DelayedScheduler* scheduler);
     /**
      * @brief Subscribe to an attribute. Modifies the subscription request to include all
      * necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
@@ -126,6 +128,26 @@ private:
         qint64 alertAfterInterval;
         SubscriptionManager& subscriptionManager;
         PubSubState* state;
+        static joynr_logging::Logger* logger;
+    };
+    /**
+      * \class SubscriptionManager::ExpiredSubscriptionRunnable
+      * \brief
+      */
+    class ExpiredSubscriptionRunnable : public QRunnable {
+    public:
+        ExpiredSubscriptionRunnable(const QString& subscriptionId,
+                                  SubscriptionManager& subscriptionManager);
+
+        /**
+         * @brief removes subscription once running.
+         *
+         */
+        void run();
+    private:
+        DISALLOW_COPY_AND_ASSIGN(ExpiredSubscriptionRunnable);
+        QString subscriptionId;
+        SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
     };
 };
