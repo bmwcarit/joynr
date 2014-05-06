@@ -30,7 +30,7 @@ ParticipantIdStorage::ParticipantIdStorage(const QString& filename) :
 
 const QString &ParticipantIdStorage::STORAGE_FORMAT_STRING()
 {
-    static const QString value("joynr.participant/%1|%2|%3");
+    static const QString value("joynr.participant.%1.%2.%3");
     return value;
 }
 
@@ -89,11 +89,13 @@ QString ParticipantIdStorage::createProviderKey(
         const QString &interfaceName,
         const QString &authenticationToken
 ) {
-    return STORAGE_FORMAT_STRING()
+    QString key = STORAGE_FORMAT_STRING()
             .arg(domain)
             .arg(interfaceName)
             .arg(authenticationToken)
     ;
+    
+    return key.replace("/", ".");
 }
 
 } // namespace joynr
