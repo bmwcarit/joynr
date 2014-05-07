@@ -55,7 +55,7 @@ public class EhcacheModule extends AbstractModule {
                       cacheConfigFileName);
             return CacheManager.newInstance();
         } else {
-            return new CacheManager(cacheConfigFileUrl);
+            return CacheManager.newInstance(cacheConfigFileUrl);
         }
     }
 

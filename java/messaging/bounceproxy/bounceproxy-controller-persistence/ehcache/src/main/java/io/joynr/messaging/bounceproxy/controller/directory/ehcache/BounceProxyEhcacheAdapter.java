@@ -65,14 +65,49 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
 
     @Override
     public List<BounceProxyRecord> getAssignableBounceProxies() {
-        // TODO Auto-generated method stub
-        return null;
+
+        if (log.isTraceEnabled()) {
+            log.trace("Retrieving assignable bounce proxies from cache {}", cacheName);
+            tracePeers();
+        }
+
+        List<BounceProxyRecord> result = new LinkedList<BounceProxyRecord>();
+
+        Cache cache = manager.getCache(cacheName);
+
+        @SuppressWarnings("unchecked")
+        List keys = cache.getKeys();
+        Map<Object, Element> elements = cache.getAll(keys);
+
+        for (Element element : elements.values()) {
+            BounceProxyRecord bounceProxyRecord = getBounceProxyRecordFromElement(element);
+            if (bounceProxyRecord.getStatus().isAssignable()) {
+                result.add(bounceProxyRecord);
+            }
+        }
+
+        return result;
     }
 
     @Override
     public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) throws IllegalArgumentException {
-        // TODO Auto-generated method stub
 
+        if (log.isTraceEnabled()) {
+            log.trace("Update channel assignment for bounce proxy {} in cache {}", bpInfo.getId(), cacheName);
+            tracePeers();
+        }
+
+        Cache cache = manager.getCache(cacheName);
+        Element element = cache.get(bpInfo.getId());
+
+        if (element == null) {
+            throw new IllegalArgumentException("No bounce proxy with ID '" + bpInfo.getId() + "' exists");
+        }
+
+        BounceProxyRecord bpRecord = getBounceProxyRecordFromElement(element);
+        bpRecord.addAssignedChannel(ccid);
+        Element updatedElement = new Element(bpInfo.getId(), bpRecord);
+        cache.put(updatedElement);
     }
 
     @Override
@@ -88,7 +123,13 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
         if (element == null) {
             throw new IllegalArgumentException("No bounce proxy with ID '" + bpId + "' exists");
         }
-        return (BounceProxyRecord) element.getObjectValue();
+        return getBounceProxyRecordFromElement(element);
+    }
+
+    protected BounceProxyRecord getBounceProxyRecordFromElement(Element element) {
+        BounceProxyRecord bpRecord = (BounceProxyRecord) element.getObjectValue();
+        bpRecord.setFreshness(element.getLatestOfCreationAndUpdateTime());
+        return bpRecord;
     }
 
     @Override
@@ -144,7 +185,7 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
         Map<Object, Element> elements = cache.getAll(keys);
 
         for (Element element : elements.values()) {
-            result.add((BounceProxyStatusInformation) element.getObjectValue());
+            result.add(getBounceProxyRecordFromElement(element));
         }
 
         return result;
