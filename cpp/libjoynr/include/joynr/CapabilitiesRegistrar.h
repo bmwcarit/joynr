@@ -29,6 +29,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/system/DiscoveryEntry.h"
 
 #include <QString>
 #include <QList>
@@ -74,13 +75,14 @@ public:
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
         connections.append(joynr::system::CommunicationMiddleware::JOYNR);
         joynr::RequestStatus status;
+        joynr::system::DiscoveryEntry entry(domain,
+            T::getInterfaceName(),
+            participantId,
+            provider->getProviderQos(),
+            connections);
         discoveryProxy.add(
                     status,
-                    domain,
-                    T::getInterfaceName(),
-                    participantId,
-                    provider->getProviderQos(),
-                    connections
+                    entry
         );
         if(!status.successful()) {
             LOG_ERROR(

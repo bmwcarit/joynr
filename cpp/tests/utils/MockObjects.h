@@ -307,15 +307,11 @@ public:
 
 class MockDiscovery : public joynr::system::IDiscovery {
 public:
-    MOCK_METHOD6(
+    MOCK_METHOD2(
             add,
             void(
                 joynr::RequestStatus& joynrInternalStatus ,
-                QString domain,
-                QString interfaceName,
-                QString participantId,
-                joynr::types::ProviderQos qos,
-                QList<joynr::system::CommunicationMiddleware::Enum> connections
+                joynr::system::DiscoveryEntry entry
             )
     );
     MOCK_METHOD5(
@@ -343,38 +339,26 @@ public:
                 QString participantId
             )
     );
-    MOCK_METHOD6(
+    MOCK_METHOD2(
             add,
             void(
                 QSharedPointer<joynr::ICallback<void> > callback,
-                QString domain,
-                QString interfaceName,
-                QString participantId,
-                joynr::types::ProviderQos qos,
-                QList<joynr::system::CommunicationMiddleware::Enum> connections
+                joynr::system::DiscoveryEntry entry
             )
     );
-    MOCK_METHOD7(
+    MOCK_METHOD3(
             add,
             void(
                 QSharedPointer<joynr::Future<void> > future,
                 QSharedPointer<joynr::ICallback<void> > callback,
-                QString domain,
-                QString interfaceName,
-                QString participantId,
-                joynr::types::ProviderQos qos,
-                QList<joynr::system::CommunicationMiddleware::Enum> connections
+                joynr::system::DiscoveryEntry entry
             )
     );
-    MOCK_METHOD6(
+    MOCK_METHOD2(
             add,
             void(
                 QSharedPointer<joynr::Future<void> > future,
-                QString domain,
-                QString interfaceName,
-                QString participantId,
-                joynr::types::ProviderQos qos,
-                QList<joynr::system::CommunicationMiddleware::Enum> connections
+                joynr::system::DiscoveryEntry entry
             )
     );
     MOCK_METHOD4(

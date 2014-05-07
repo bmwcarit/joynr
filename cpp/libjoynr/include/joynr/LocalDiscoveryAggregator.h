@@ -64,11 +64,7 @@ public:
     // inherited from joynr::system::IDiscoverySync
     virtual void add(
             joynr::RequestStatus& joynrInternalStatus,
-            QString domain,
-            QString interfaceName,
-            QString participantId,
-            joynr::types::ProviderQos qos,
-            QList<joynr::system::CommunicationMiddleware::Enum> connections
+            joynr::system::DiscoveryEntry entry
     );
 
     // inherited from joynr::system::IDiscoverySync

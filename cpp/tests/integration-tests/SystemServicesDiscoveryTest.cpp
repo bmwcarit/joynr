@@ -158,20 +158,21 @@ TEST_F(SystemServicesDiscoveryTest, add)
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     QList<joynr::system::DiscoveryEntry> expectedResult;
-    expectedResult.append(joynr::system::DiscoveryEntry(
+    joynr::system::DiscoveryEntry discoveryEntry(
                 domain,
                 interfaceName,
                 participantId,
                 providerQos,
                 connections
-    ));
+    );
+    expectedResult.append(discoveryEntry);
 
 
     discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(result.isEmpty());
 
-    discoveryProxy->add(status, domain, interfaceName, participantId, providerQos, connections);
+    discoveryProxy->add(status, discoveryEntry);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
     discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
@@ -206,15 +207,16 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     QList<joynr::system::DiscoveryEntry> expectedResult;
-    expectedResult.append(joynr::system::DiscoveryEntry(
+    joynr::system::DiscoveryEntry discoveryEntry(
                 domain,
                 interfaceName,
                 participantId,
                 providerQos,
                 connections
-    ));
+    );
+    expectedResult.append(discoveryEntry);
 
-    discoveryProxy->add(status, domain, interfaceName, participantId, providerQos, connections);
+    discoveryProxy->add(status, discoveryEntry);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
     QList<joynr::system::DiscoveryEntry> result;

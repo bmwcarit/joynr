@@ -170,25 +170,27 @@ const int LocalCapabilitiesDirectoryTest::TIMEOUT(2000);
 
 TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient) {
     EXPECT_CALL(*capabilitiesClient, add(An<QList<types::CapabilityInformation> >())).Times(1);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                types::ProviderQos(),
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        types::ProviderQos(),
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
     EXPECT_CALL(*capabilitiesClient, lookup(dummyParticipantId1,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >())).Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                types::ProviderQos(),
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        types::ProviderQos(),
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
@@ -199,13 +201,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
@@ -215,13 +218,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
 TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlobal) {
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
     EXPECT_CALL(*capabilitiesClient, remove(dummyParticipantId1)).Times(1);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                types::ProviderQos(),
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        types::ProviderQos(),
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
 }
 
@@ -232,13 +236,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
 
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                types::ProviderQos(),
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        types::ProviderQos(),
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(0, callback->getResults(TIMEOUT).size());
@@ -250,13 +255,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByInterfaceAddressDo
 
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, providerQos);
 }
 
@@ -383,20 +389,22 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
     }
 
 
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                qos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        qos,
+        connections
     );
-    localCapabilitiesDirectory->add(
-                DOMAIN_2_NAME,
-                INTERFACE_1_NAME,
-                qos,
-                dummyParticipantId2,
-                connections
+    localCapabilitiesDirectory->add(entry);
+    joynr::system::DiscoveryEntry entry2(
+        DOMAIN_2_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId2,
+        qos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry2);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoesNotDuplicate) {
@@ -407,13 +415,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
 
     for (int i = 0; i<3; i++){
         try {
-            localCapabilitiesDirectory->add(
-                        DOMAIN_1_NAME,
-                        INTERFACE_1_NAME,
-                        qos,
-                        dummyParticipantId1,
-                        connections
+            joynr::system::DiscoveryEntry entry(
+                DOMAIN_1_NAME,
+                INTERFACE_1_NAME,
+                dummyParticipantId1,
+                qos,
+                connections
             );
+            localCapabilitiesDirectory->add(entry);
         } catch (JoynrException& e){
             exceptionCounter++;
         }
@@ -429,13 +438,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
     EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
             .Times(0);
 
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                qos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        qos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -460,13 +470,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
     discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_)).Times(0);
@@ -490,14 +501,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
-    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_)).Times(0);
@@ -532,13 +544,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::GLOBAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_))
             .Times(1)
@@ -580,13 +593,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
     discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_)).Times(0);
@@ -607,13 +621,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
     // get the local entry
@@ -653,13 +668,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
 
     //JoynrTimeOutException timeoutException;
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    localCapabilitiesDirectory->add(
-                DOMAIN_1_NAME,
-                INTERFACE_1_NAME,
-                providerQos,
-                dummyParticipantId1,
-                connections
+    joynr::system::DiscoveryEntry entry(
+        DOMAIN_1_NAME,
+        INTERFACE_1_NAME,
+        dummyParticipantId1,
+        providerQos,
+        connections
     );
+    localCapabilitiesDirectory->add(entry);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);

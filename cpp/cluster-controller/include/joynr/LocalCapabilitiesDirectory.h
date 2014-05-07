@@ -85,11 +85,7 @@ public:
     static const qint64& DONT_USE_CACHE();
 
     void add(
-            const QString& domain,
-            const QString& interfaceName,
-            const types::ProviderQos& qos,
-            const QString& participantId,
-            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
+            joynr::system::DiscoveryEntry& entry
     );
 
     /*
@@ -145,11 +141,7 @@ public:
     // inherited method from joynr::system::DiscoveryProvider
     virtual void add(
             joynr::RequestStatus& joynrInternalStatus,
-            QString domain,
-            QString interfaceName,
-            QString participantId,
-            joynr::types::ProviderQos qos,
-            QList<joynr::system::CommunicationMiddleware::Enum> connections
+            joynr::system::DiscoveryEntry entry
     );
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
@@ -194,11 +186,7 @@ private:
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
     void insertInCache(
-            const QString& domain,
-            const QString& interfaceName,
-            const types::ProviderQos& qos,
-            const QString& participantId,
-            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
+            const joynr::system::DiscoveryEntry& entry,
             bool isGlobal,
             bool localCache,
             bool globalCache
@@ -206,6 +194,10 @@ private:
     QList<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress, const qint64& maxCacheAge, bool localEntries);
     QList<CapabilityEntry> searchCache(const QString& participantId, const qint64& maxCacheAge, bool localEntries);
 
+    static void convertDiscoveryEntryIntoCapabilityEntry(
+        const joynr::system::DiscoveryEntry& discoveryEntry,
+        CapabilityEntry& capabilityEntry
+    );
     static void convertCapabilityEntryIntoDiscoveryEntry(
             const CapabilityEntry& capabilityEntry,
             joynr::system::DiscoveryEntry& discoveryEntry

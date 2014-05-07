@@ -81,11 +81,7 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::add(
         joynr::RequestStatus& joynrInternalStatus,
-        QString domain,
-        QString interfaceName,
-        QString participantId,
-        joynr::types::ProviderQos qos,
-        QList<joynr::system::CommunicationMiddleware::Enum> connections
+        joynr::system::DiscoveryEntry discoveryEntry
 ) {
     if(discoveryProxy == NULL) {
         joynrInternalStatus.setCode(RequestStatusCode::ERROR);
@@ -98,11 +94,7 @@ void LocalDiscoveryAggregator::add(
 
     discoveryProxy->add(
                 joynrInternalStatus,
-                domain,
-                interfaceName,
-                participantId,
-                qos,
-                connections
+                discoveryEntry
     );
 }
 

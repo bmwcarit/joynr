@@ -77,11 +77,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
     this->insertInCache(
-                messagingSettings.getDiscoveryDirectoriesDomain(),
+                joynr::system::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
                 infrastructure::IGlobalCapabilitiesDirectory::getInterfaceName(),
-                providerQos,
                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                middlewareConnections,
+                providerQos,
+                middlewareConnections),
                 false,
                 true,
                 false
@@ -92,11 +92,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
     this->insertInCache(
-                messagingSettings.getDiscoveryDirectoriesDomain(),
+                joynr::system::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
                 infrastructure::IChannelUrlDirectory::getInterfaceName(),
-                channelUrlDirProviderQos,
                 messagingSettings.getChannelUrlDirectoryParticipantId(),
-                middlewareConnections,
+                channelUrlDirProviderQos,
+                middlewareConnections),
                 false,
                 true,
                 false
@@ -114,21 +114,13 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory() {
 }
 
 void LocalCapabilitiesDirectory::add(
-        const QString &domain,
-        const QString &interfaceName,
-        const types::ProviderQos &qos,
-        const QString &participantId,
-        QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
+        joynr::system::DiscoveryEntry& discoveryEntry
 ) {
-    bool isGlobal = qos.getScope() == types::ProviderScope::GLOBAL;
+    bool isGlobal = discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
 
     // register locally
     this->insertInCache(
-                domain,
-                interfaceName,
-                qos,
-                participantId,
-                middlewareConnections,
+                discoveryEntry,
                 isGlobal,
                 true,
                 isGlobal
@@ -137,11 +129,11 @@ void LocalCapabilitiesDirectory::add(
     // register globally
     if(isGlobal) {
         types::CapabilityInformation capInfo(
-                    domain,
-                    interfaceName,
-                    qos,
+                    discoveryEntry.getDomain(),
+                    discoveryEntry.getInterfaceName(),
+                    discoveryEntry.getQos(),
                     capabilitiesClient->getLocalChannelId(),
-                    participantId
+                    discoveryEntry.getParticipantId()
         );
         if(!registeredGlobalCapabilities.contains(capInfo)){
             registeredGlobalCapabilities.append(capInfo);
@@ -326,13 +318,9 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::add(
         RequestStatus& joynrInternalStatus,
-        QString domain,
-        QString interfaceName,
-        QString participantId,
-        types::ProviderQos qos,
-        QList<system::CommunicationMiddleware::Enum> connections
+        joynr::system::DiscoveryEntry discoveryEntry
 ) {
-    add(domain, interfaceName, qos, participantId, connections);
+    add(discoveryEntry);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
@@ -397,16 +385,14 @@ void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry, boo
 }
 
 void LocalCapabilitiesDirectory::insertInCache(
-        const QString& domain,
-        const QString& interfaceName,
-        const types::ProviderQos& qos,
-        const QString& participantId,
-        QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
+        const joynr::system::DiscoveryEntry& discoveryEntry,
         bool isGlobal,
         bool localCache,
         bool globalCache
 ) {
-    CapabilityEntry entry(domain, interfaceName, qos, participantId, middlewareConnections, isGlobal);
+    CapabilityEntry entry;
+    convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, entry);
+    entry.setGlobal(isGlobal);
 
     // do not dublicate entries:
     // the combination participantId is unique for [domain, interfaceName, authtoken]
@@ -414,8 +400,10 @@ void LocalCapabilitiesDirectory::insertInCache(
     // update of the age and a refresh
     bool foundMatch = false;
     if(localCache) {
-        QList<CapabilityEntry> entryList = searchCache(participantId, -1, true);
-        CapabilityEntry newEntry(domain, interfaceName, qos, participantId, middlewareConnections, isGlobal);
+        QList<CapabilityEntry> entryList = searchCache(discoveryEntry.getParticipantId(), -1, true);
+        CapabilityEntry newEntry;
+        convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
+        entry.setGlobal(isGlobal);
         foreach (CapabilityEntry oldEntry, entryList) {
             if (oldEntry == newEntry){
                 foundMatch = true;
@@ -457,6 +445,17 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
     discoveryEntry.setConnections(capabilityEntry.getMiddlewareConnections());
+}
+
+void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
+        const joynr::system::DiscoveryEntry& discoveryEntry,
+        CapabilityEntry& capabilityEntry
+) {
+    capabilityEntry.setDomain(discoveryEntry.getDomain());
+    capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
+    capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());
+    capabilityEntry.setQos(discoveryEntry.getQos());
+    capabilityEntry.setMiddlewareConnections(discoveryEntry.getConnections());
 }
 
 void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(

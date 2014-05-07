@@ -75,11 +75,7 @@ interface Discovery {
 	 */
     method add {
         in {
-            String domain
-            String interfaceName
-            String participantId
-            ProviderQos qos
-            DiscoveryTypes.CommunicationMiddleware[] connections
+            DiscoveryTypes.DiscoveryEntry discoveryEntry
         }
     }
 
