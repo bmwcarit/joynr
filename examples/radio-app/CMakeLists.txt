@@ -80,6 +80,24 @@ set(radio-app_LIBRARIES
 # Put the generated code into a library and put the library in the bin directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    find_package(PkgConfig)
+    pkg_check_modules(DBUS1 REQUIRED dbus-1)
+    message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
+    message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
+    message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
+    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1)
+    message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
+    message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
+    message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
+    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1)
+    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
+    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
+    message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
+
+    link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
 add_library(radio-app STATIC
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
