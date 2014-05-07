@@ -20,17 +20,18 @@ package io.joynr.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.containsChannel;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.isChannelUrlwithJsessionId;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsMessage;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.isMessageUrlwithJsessionId;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.util.ServersUtil;
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.ControlledBounceProxyCluster;
+import io.joynr.integration.setup.SingleControlledBounceProxy;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
+import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.util.Utilities;
@@ -41,156 +42,33 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jetty.server.Server;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.runner.RunWith;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 
+import static io.joynr.integration.util.BounceProxyTestConstants.*;
+
+@RunWith(MultipleBounceProxySetupsTestRunner.class)
+@BounceProxyServerSetups(value = { ControlledBounceProxyCluster.class, SingleControlledBounceProxy.class })
 public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(ControlledBounceProxyServerTest.class);
-
-    private static final String SESSIONID_NAME = "jsessionid";
-
-    private static Server bounceProxyServerXY;
-    private static Server bounceProxyControllerServer;
-
-    private static int bounceProxyServerXyPort;
-    private static String bounceProxyServerXyUrl;
-
-    @BeforeClass
-    public static void startServer() throws Exception {
-
-        // start different servers to make sure that handling of different URLs
-        // works
-        logger.info("Starting Bounceproxy Controller");
-        bounceProxyControllerServer = ServersUtil.startBounceproxyController();
-
-        logger.info("Starting Controlled Bounceproxy X.Y");
-        bounceProxyServerXY = ServersUtil.startControlledBounceproxy("X.Y");
-
-        logger.info("All servers started");
-
-        bounceProxyServerXyPort = bounceProxyServerXY.getConnectors()[0].getPort();
-        bounceProxyServerXyUrl = "http://localhost:" + bounceProxyServerXyPort + "/bounceproxy/";
-    }
-
-    @AfterClass
-    public static void stopServer() throws Exception {
-        bounceProxyServerXY.stop();
-        bounceProxyControllerServer.stop();
-    }
+    @BounceProxyServerContext
+    public BounceProxyServerSetup configuration;
 
     @Override
     protected String getBounceProxyBaseUri() {
-        return bounceProxyServerXyUrl;
-    }
-
-    @Test(timeout = 20000)
-    public void testSimpleChannelSetupAndDeletionOnSingleBounceProxy() throws Exception {
-
-        // get bounce proxies list
-        JsonPath listBps = given().get("bounceproxies").body().jsonPath();
-        assertThat(listBps, anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")));
-
-        // create channel on bounce proxy
-        /* @formatter:off */
-        Response responseCreateChannel = //
-        given().header("X-Atmosphere-Tracking-Id", "test-trackingId").post("channels?ccid=test-channel");
-        /* @formatter:on */
-        assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
-        assertEquals("X.Y", responseCreateChannel.getHeader("bp"));
-        int bpPort = bounceProxyServerXY.getConnectors()[0].getPort();
-
-        String channelUrl = responseCreateChannel.getHeader("Location");
-        assertThat(channelUrl, isChannelUrlwithJsessionId(bounceProxyServerXyUrl, "test-channel", SESSIONID_NAME));
-        String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
-
-        // list channels
-        JsonPath listChannels = given().get("channels").getBody().jsonPath();
-        // TODO uncomment as soon as channel deletion is implemented
-        // assertThat(listChannels, is(numberOfChannels(1)));
-        assertThat(listChannels, containsChannel("test-channel"));
-
-        String bpUrl = "http://localhost:" + bpPort + "/bounceproxy/";
-        RestAssured.baseURI = bpUrl;
-
-        JsonPath listBpChannels = given().get("channels;jsessionid=" + sessionId).getBody().jsonPath();
-        // TODO uncomment as soon as channel deletion is implemented
-        // assertThat(listBpChannels, is(numberOfChannels(2)));
-        assertThat(listBpChannels, containsChannel("test-channel"));
-        assertThat(listBpChannels, containsChannel("/*"));
-
-        assertEquals(200 /* OK */, given().delete("channels/test-channel;jsessionid=" + sessionId + "/")
-                                           .thenReturn()
-                                           .statusCode());
-        JsonPath listBpChannelsAfterDelete = given().get("channels;jsessionid=" + sessionId).getBody().jsonPath();
-        // TODO uncomment as soon as channel deletion is implemented
-        // assertThat(listBpChannelsAfterDelete, is(numberOfChannels(1)));
-        assertThat(listBpChannelsAfterDelete, not(containsChannel("test-channel")));
+        return configuration.getAnyBounceProxyUrl();
     }
 
     @Test(timeout = 20000)
     public void testDeleteNonExistingChannel() throws Exception {
-
-        int bpPort = bounceProxyServerXY.getConnectors()[0].getPort();
-        RestAssured.baseURI = "http://localhost:" + bpPort + "/bounceproxy/";
-
+        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
         assertEquals(204 /* No Content */, given().delete("channels/non-existing-channel").thenReturn().statusCode());
-    }
-
-    @Test
-    @Ignore("need cleanup of other tests (i.e. implementation of delete channel")
-    public void testSimpleChannelSetupOnTwoBounceProxies() throws Exception {
-
-        // get bounce proxies list
-        /* @formatter:off */
-        JsonPath listBps = given().get("bounceproxies").getBody().jsonPath();
-        /* @formatter:on */
-        assertThat(listBps, allOf( //
-                                  anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
-                                  anyOf(containsBounceProxy("A.B", "ALIVE"), containsBounceProxy("A.B", "ACTIVE"))));
-
-        // create channel on bounce proxy
-        /* @formatter:off */
-        Response responseCreateFirstChannel = //
-        given().header("X-Atmosphere-Tracking-Id", "trackingId-123").post("channels?ccid=channel-123");
-        /* @formatter:on */
-        assertEquals(201 /* Created */, responseCreateFirstChannel.getStatusCode());
-        assertEquals("X.Y", responseCreateFirstChannel.getHeader("bp"));
-        assertEquals("http://www.joynX.de/bp/channels/channel-123;jsessionid=.Y",
-                     responseCreateFirstChannel.getHeader("Location"));
-
-        // create channel on different bounce proxy
-        /* @formatter:off */
-        Response responseCreateSecondChannel = //
-        given().header("X-Atmosphere-Tracking-Id", "trackingId-abc").post("channels?ccid=channel-abc");
-        /* @formatter:on */
-        assertEquals(201 /* Created */, responseCreateSecondChannel.getStatusCode());
-        assertEquals("A.B", responseCreateSecondChannel.getHeader("bp"));
-        assertEquals("http://www.joynA.de/bp/channels/channel-abc;jsessionid=.B",
-                     responseCreateSecondChannel.getHeader("Location"));
-
-        // list channels
-        /* @formatter:off */
-        JsonPath listChannels = given().get("channels").getBody().jsonPath();
-        /* @formatter:on */
-        // TODO remove until delete channel is implemented
-        // assertThat(listChannels, is(numberOfChannels(2)));
-        assertThat(listChannels, containsChannel("channel-123"));
-        assertThat(listChannels, containsChannel("channel-abc"));
     }
 
     // timeout has to be longer than the long poll duration!!!
@@ -202,14 +80,18 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header("X-Atmosphere-Tracking-Id", trackingId).post("channels?ccid="
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
                 + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
-        assertEquals("X.Y", responseCreateChannel.getHeader("bp"));
-        String channelUrl = responseCreateChannel.getHeader("Location");
-        assertThat(channelUrl, isChannelUrlwithJsessionId(bounceProxyServerXyUrl, channelId, SESSIONID_NAME));
+        assertNotNull(responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID));
+        String channelUrl = responseCreateChannel.getHeader(HEADER_LOCATION);
+
+        String bpId = responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID);
+        String bpUrl = configuration.getBounceProxyUrl(bpId);
+
+        assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
@@ -218,8 +100,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         /* @formatter:off */
         Response responseOpenChannel = given().when()
                                               .contentType(ContentType.JSON)
-                                              .header("X-Atmosphere-tracking-id", trackingId)
-                                              .get(";jsessionid=" + sessionId);
+                                              .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                              .get(SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
         assertEquals(200 /* OK */, responseOpenChannel.getStatusCode());
 
@@ -239,15 +121,19 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header("X-Atmosphere-Tracking-Id", trackingId).post("channels?ccid="
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
                 + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
-        assertEquals("X.Y", responseCreateChannel.getHeader("bp"));
+        assertNotNull(responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID));
 
-        String channelUrl = responseCreateChannel.getHeader("Location");
-        assertThat(channelUrl, isChannelUrlwithJsessionId(bounceProxyServerXyUrl, channelId, SESSIONID_NAME));
+        String channelUrl = responseCreateChannel.getHeader(HEADER_LOCATION);
+
+        String bpId = responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID);
+        String bpUrl = configuration.getBounceProxyUrl(bpId);
+
+        assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
         RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
@@ -259,21 +145,21 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         Response responsePostMessage = given().when()
                                               .contentType(ContentType.JSON)
                                               .body(serializedMessage)
-                                              .post("message;jsessionid=" + sessionId);
+                                              .post("message" + SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
         assertEquals(201 /* Created */, responsePostMessage.getStatusCode());
-        assertThat(responsePostMessage.getHeader("Location"), isMessageUrlwithJsessionId(bounceProxyServerXyUrl,
-                                                                                         "message-123",
-                                                                                         sessionId,
-                                                                                         SESSIONID_NAME));
-        assertEquals("message-123", responsePostMessage.getHeader("msgId"));
+        assertThat(responsePostMessage.getHeader(HEADER_LOCATION), isMessageUrlwithJsessionId(bpUrl,
+                                                                                              "message-123",
+                                                                                              sessionId,
+                                                                                              SESSIONID_NAME));
+        assertEquals("message-123", responsePostMessage.getHeader(HEADER_MSG_ID));
 
         // open long polling channel
         /* @formatter:off */
         Response responseOpenChannel = given().when()
                                               .contentType(ContentType.JSON)
                                               .header("X-Atmosphere-tracking-id", trackingId)
-                                              .get(";jsessionid=" + sessionId);
+                                              .get(SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
         assertEquals(200 /* OK */, responseOpenChannel.getStatusCode());
 
@@ -296,14 +182,17 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header("X-Atmosphere-Tracking-Id", trackingId).post("channels?ccid="
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
                 + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
-        assertEquals("X.Y", responseCreateChannel.getHeader("bp"));
-        String channelUrl = responseCreateChannel.getHeader("Location");
-        assertThat(channelUrl, isChannelUrlwithJsessionId(bounceProxyServerXyUrl, channelId, SESSIONID_NAME));
+        assertNotNull(responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID));
+        String channelUrl = responseCreateChannel.getHeader(HEADER_LOCATION);
+
+        String bpId = responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID);
+        String bpUrl = configuration.getBounceProxyUrl(bpId);
+        assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
         RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
@@ -319,22 +208,22 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
                                                   .all()
                                                   .contentType(ContentType.JSON)
                                                   .body(serializedMessage)
-                                                  .post("message/;jsessionid=" + sessionId);
+                                                  .post("message/" + SESSIONID_APPENDIX + sessionId);
             /* @formatter:on */
             assertEquals(201 /* Created */, responsePostMessage.getStatusCode());
-            assertThat(responsePostMessage.getHeader("Location"), isMessageUrlwithJsessionId(bounceProxyServerXyUrl,
-                                                                                             msgId,
-                                                                                             sessionId,
-                                                                                             SESSIONID_NAME));
-            assertEquals(msgId, responsePostMessage.getHeader("msgId"));
+            assertThat(responsePostMessage.getHeader(HEADER_LOCATION), isMessageUrlwithJsessionId(bpUrl,
+                                                                                                  msgId,
+                                                                                                  sessionId,
+                                                                                                  SESSIONID_NAME));
+            assertEquals(msgId, responsePostMessage.getHeader(HEADER_MSG_ID));
         }
 
         // open long polling channel
         /* @formatter:off */
         Response responseOpenChannel = given().when()
                                               .contentType(ContentType.JSON)
-                                              .header("X-Atmosphere-tracking-id", trackingId)
-                                              .get(";jsessionid=" + sessionId);
+                                              .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                              .get(SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
         assertEquals(200 /* OK */, responseOpenChannel.getStatusCode());
 
@@ -357,14 +246,17 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header("X-Atmosphere-Tracking-Id", trackingId).post("channels?ccid="
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
                 + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
-        assertEquals("X.Y", responseCreateChannel.getHeader("bp"));
-        final String channelUrl = responseCreateChannel.getHeader("Location");
-        assertThat(channelUrl, isChannelUrlwithJsessionId(bounceProxyServerXyUrl, channelId, SESSIONID_NAME));
+        assertNotNull(responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID));
+        final String channelUrl = responseCreateChannel.getHeader(HEADER_LOCATION);
+
+        String bpId = responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID);
+        String bpUrl = configuration.getBounceProxyUrl(bpId);
+        assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
         RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
@@ -378,7 +270,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
                 /* @formatter:off */
                 return given().when()
                               .contentType(ContentType.JSON)
-                              .header("X-Atmosphere-tracking-id", trackingId)
+                              .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
                               .get("");
                 /* @formatter:on */
             }
@@ -393,12 +285,12 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
             Response responsePostMessage = given().when()
                                                   .contentType(ContentType.JSON)
                                                   .body(serializedMessage)
-                                                  .post("message/;jsessionid=" + sessionId);
+                                                  .post("message/" + SESSIONID_APPENDIX + sessionId);
             /* @formatter:on */
             assertEquals(201 /* Created */, responsePostMessage.getStatusCode());
-            String messageUrl = responsePostMessage.getHeader("Location");
-            assertThat(messageUrl, isMessageUrlwithJsessionId(bounceProxyServerXyUrl, msgId, sessionId, SESSIONID_NAME));
-            assertEquals(msgId, responsePostMessage.getHeader("msgId"));
+            String messageUrl = responsePostMessage.getHeader(HEADER_LOCATION);
+            assertThat(messageUrl, isMessageUrlwithJsessionId(bpUrl, msgId, sessionId, SESSIONID_NAME));
+            assertEquals(msgId, responsePostMessage.getHeader(HEADER_MSG_ID));
         }
 
         Response responseOpenChannel = (Response) longPollingChannelFuture.get(10, TimeUnit.SECONDS);
@@ -418,7 +310,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
     @Test
     public void testPostMessageToNonExistingChannel() throws Exception {
-        RestAssured.baseURI = bounceProxyServerXyUrl;
+        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
         super.testPostMessageToNonExistingChannel();
     }
 
@@ -442,7 +334,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
     @Ignore("Feature not implemented yet")
     public void testCreateChannelWithSessionIdOnBounceProxy() throws Exception {
 
-        RestAssured.baseURI = bounceProxyServerXyUrl;
+        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
 
         final String channelId = "channel-testCreateChannelWithSessionId";
         final String trackingId = "trackingId-testCreateChannelWithSessionId";
@@ -451,8 +343,9 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         /* @formatter:off */
         Response responseCreateChannel = given().log()
                                                 .all()
-                                                .header("X-Atmosphere-Tracking-Id", trackingId)
-                                                .post("channels;jsessionid=sessionId12345?ccid=" + channelId);
+                                                .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                                .post("channels" + SESSIONID_APPENDIX + "sessionId12345?ccid="
+                                                        + channelId);
         /* @formatter:on */
 
         assertEquals(400 /* Bad Request */, responseCreateChannel.getStatusCode());
@@ -476,38 +369,6 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
     @Ignore("Feature not yet implemented")
     public void testRejectOpenChannelWithoutSessionId() {
         Assert.fail("Not yet implemented");
-    }
-
-    private Matcher<JsonPath> containsBounceProxy(final String id, final String status) {
-
-        return new BaseMatcher<JsonPath>() {
-
-            @Override
-            public boolean matches(Object item) {
-
-                JsonPath jsonPath = (JsonPath) item;
-
-                for (int i = 0; i < jsonPath.getList("").size(); i++) {
-
-                    if (jsonPath.get("[" + i + "].status").equals(status)
-                            && jsonPath.get("[" + i + "].bounceProxyId").equals(id)) {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("contains entry with status=" + status + " and bounceProxyId=" + id);
-            }
-
-            @Override
-            public void describeMismatch(final Object item, final Description description) {
-                description.appendText("was").appendValue(((JsonPath) item).get(""));
-            }
-        };
     }
 
 }

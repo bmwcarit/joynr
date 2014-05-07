@@ -2,7 +2,6 @@ package io.joynr.integration.matchers;
 
 /*
  * #%L
- * joynr::java::messaging::service-common
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
