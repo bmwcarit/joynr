@@ -21,7 +21,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-	<artifactId>bounceproxy</artifactId>
+	<artifactId>single-bounceproxy</artifactId>
 	<packaging>war</packaging>
 	
 	<name>${project.groupId}:${project.artifactId}</name>

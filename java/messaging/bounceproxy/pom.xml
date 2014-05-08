@@ -30,7 +30,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
-		<module>bounceproxy</module>
+		<module>single-bounceproxy</module>
 		<module>bounceproxy-standalone</module>
 		<module>bounceproxy-controller</module>	
 		<module>bounceproxy-controller-nonclustered</module>	

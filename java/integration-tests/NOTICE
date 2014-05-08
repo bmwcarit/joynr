@@ -46,10 +46,10 @@ This project has dependencies to:
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
-  io.joynr.java.messaging.bounceproxy:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-clustered under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-nonclustered under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
