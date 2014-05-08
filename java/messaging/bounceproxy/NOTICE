@@ -48,15 +48,6 @@ This project has dependencies to:
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
-  grizzly-comet under CDDL+GPL
-  grizzly-compat under CDDL+GPL
-  grizzly-framework under CDDL+GPL
-  grizzly-http under CDDL+GPL
-  grizzly-http-servlet under CDDL+GPL
-  grizzly-lzma under CDDL+GPL
-  grizzly-portunif under CDDL+GPL
-  grizzly-rcm under CDDL+GPL
-  grizzly-utils under CDDL+GPL
   Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
@@ -74,7 +65,6 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-clustered under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-nonclustered under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
-  io.joynr.java.messaging.bounceproxy:bounceproxy-standalone under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:bounceproxy-ui under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0

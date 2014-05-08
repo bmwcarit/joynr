@@ -20,6 +20,7 @@ package io.joynr.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
+import static io.joynr.integration.util.BounceProxyTestUtils.*;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.isChannelUrlwithJsessionId;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsMessage;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.isMessageUrlwithJsessionId;
@@ -139,7 +140,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
 
         // post messages to long polling channel before opening channel
-        String serializedMessage = createJoynrMessage(100000l, "message-123", "message-123");
+        String serializedMessage = createSerializedJoynrMessage(100000l, "message-123", "message-123");
 
         /* @formatter:off */
         Response responsePostMessage = given().when()
@@ -200,7 +201,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel before opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            String serializedMessage = createJoynrMessage(100000l, msgId, msgId);
+            String serializedMessage = createSerializedJoynrMessage(100000l, msgId, msgId);
 
             /* @formatter:off */
             Response responsePostMessage = given().when()
@@ -279,7 +280,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel after opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            String serializedMessage = createJoynrMessage(100000l, msgId, msgId);
+            String serializedMessage = createSerializedJoynrMessage(100000l, msgId, msgId);
 
             /* @formatter:off */
             Response responsePostMessage = given().when()

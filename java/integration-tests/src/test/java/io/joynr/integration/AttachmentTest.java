@@ -1,4 +1,4 @@
-package io.joynr.bounceproxy;
+package io.joynr.integration;
 
 /*
  * #%L
@@ -20,11 +20,19 @@ package io.joynr.bounceproxy;
  */
 
 import static com.jayway.restassured.RestAssured.given;
+import static io.joynr.integration.util.BounceProxyTestUtils.createChannel;
+import static io.joynr.integration.util.BounceProxyTestUtils.createSerializedJoynrMessage;
+import static io.joynr.integration.util.BounceProxyTestUtils.longPollInOwnThread;
+import static io.joynr.integration.util.BounceProxyTestUtils.objectMapper;
+import static io.joynr.integration.util.BounceProxyTestUtils.onrequest;
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.SingleBounceProxy;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
+import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.annotation.Nullable;
@@ -32,18 +40,33 @@ import javax.annotation.Nullable;
 import joynr.JoynrMessage;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
-public class AttachmentTest extends BounceProxyTest {
+@RunWith(MultipleBounceProxySetupsTestRunner.class)
+@BounceProxyServerSetups(value = { SingleBounceProxy.class })
+public class AttachmentTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(AttachmentTest.class);
+
+    @BounceProxyServerContext
+    public BounceProxyServerSetup configuration;
+
+    @Before
+    public void setUp() {
+        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
+    }
 
     @Test
     @Ignore
-    public void testSendAttachedByteArray() {
+    public void testSendAttachedByteArray() throws Exception {
         String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
         try {
             createChannel(channelId);
@@ -55,23 +78,15 @@ public class AttachmentTest extends BounceProxyTest {
     }
 
     @Nullable
-    private Response sendAttachmentMessage(String channelId) {
+    private Response sendAttachmentMessage(String channelId) throws Exception {
         long ttl_ms = 1000000;
         String payload = "attachmentTest";
-        JoynrMessage message = createJoynrMessage(payload, ttl_ms);
-
-        String serializedMessageWrapper = "";
-        try {
-            serializedMessageWrapper = objectMapper.writeValueAsString(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String serializedMessageWrapper = createSerializedJoynrMessage(ttl_ms, payload);
 
         String content = "This is a binary content";
         Response response = null;
         try {
-            response = given().port(server.getPort())
-                              .multiPart("wrapper", serializedMessageWrapper, "application/json")
+            response = given().multiPart("wrapper", serializedMessageWrapper, "application/json")
                               .multiPart("attachment", "attachment.txt", new ByteArrayInputStream(content.getBytes()))
                               .expect()
                               .response()
@@ -90,8 +105,7 @@ public class AttachmentTest extends BounceProxyTest {
 
     @Test
     @Ignore
-    public void testSendAndDownload() throws JsonParseException, JsonMappingException, IOException,
-                                     InterruptedException, ExecutionException {
+    public void testSendAndDownload() throws Exception {
         String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
 
         createChannel(channelId);
@@ -100,7 +114,7 @@ public class AttachmentTest extends BounceProxyTest {
 
         String msgId = senMsgResponse.getHeader("msgId");
 
-        Future<Response> response = longPoll(channelId, 1000000, 200);
+        Future<Response> response = longPollInOwnThread(channelId, 1000000, 200);
         Response longPoll = response.get();
 
         String json = longPoll.getBody().asString();

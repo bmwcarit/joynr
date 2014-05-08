@@ -1,4 +1,4 @@
-package io.joynr.bounceproxy;
+package io.joynr.integration;
 
 /*
  * #%L
@@ -19,10 +19,23 @@ package io.joynr.bounceproxy;
  * #L%
  */
 
+import static io.joynr.integration.util.BounceProxyTestUtils.createChannel;
+import static io.joynr.integration.util.BounceProxyTestUtils.deleteChannel;
+import static io.joynr.integration.util.BounceProxyTestUtils.longPollInOwnThread;
+import static io.joynr.integration.util.BounceProxyTestUtils.objectMapper;
+import static io.joynr.integration.util.BounceProxyTestUtils.onrequest;
+import static io.joynr.integration.util.BounceProxyTestUtils.postMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.SingleBounceProxy;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
+import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
+import io.joynr.integration.util.BounceProxyTestUtils;
+import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.util.Utilities;
 
 import java.net.SocketTimeoutException;
@@ -30,15 +43,45 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import joynr.JoynrMessage;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
-public class ChannelServicesTest extends BounceProxyTest {
+@RunWith(MultipleBounceProxySetupsTestRunner.class)
+@BounceProxyServerSetups(value = { SingleBounceProxy.class })
+public class ChannelServicesTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChannelServicesTest.class);
+
+    @BounceProxyServerContext
+    public BounceProxyServerSetup configuration;
+
+    private ScheduledThreadPoolExecutor asyncCallsExecutorService = new ScheduledThreadPoolExecutor(2);
+    private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+
+    @Before
+    public void setUp() {
+        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
+
+        BounceProxyTestUtils.scheduler = asyncCallsExecutorService;
+        BounceProxyTestUtils.receiverId = receiverId;
+
+        Injector injector = Guice.createInjector(new MessagingModule());
+        BounceProxyTestUtils.objectMapper = injector.getInstance(ObjectMapper.class);
+    }
 
     @Test
     public void testCreateChannel() throws Exception {
@@ -49,7 +92,7 @@ public class ChannelServicesTest extends BounceProxyTest {
 
     @Test
     public void testCreateChannelWithNoChannelId() throws Exception {
-        onrequest().with().queryParam("ccid", "").expect().statusCode(400).when().post("/bounceproxy/channels/");
+        onrequest().with().queryParam("ccid", "").expect().statusCode(400).when().post("channels/");
 
     }
 
@@ -62,7 +105,7 @@ public class ChannelServicesTest extends BounceProxyTest {
         long timeStart = System.currentTimeMillis();
         Future<Response> longPoll;
         try {
-            longPoll = longPoll(channelId, timeout_ms);
+            longPoll = longPollInOwnThread(channelId, timeout_ms);
             longPoll.get();
         } catch (ExecutionException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
@@ -92,7 +135,7 @@ public class ChannelServicesTest extends BounceProxyTest {
         int longpollTimeout_ms = 100000;
 
         long timeStart = System.currentTimeMillis();
-        Future<Response> responseFuture = longPoll(channelId, longpollTimeout_ms);
+        Future<Response> responseFuture = longPollInOwnThread(channelId, longpollTimeout_ms);
         Response response = responseFuture.get();
         String payloadReceived = response.getBody().asString();
         int timeTotal = (int) (System.currentTimeMillis() - timeStart);
@@ -115,9 +158,9 @@ public class ChannelServicesTest extends BounceProxyTest {
         createChannel(channelId);
 
         // start the long poll on the channel, then delete it.
-        Future<Response> longPoll = longPoll(channelId, longpollTimeout_ms);
+        Future<Response> longPoll = longPollInOwnThread(channelId, longpollTimeout_ms);
         Thread.sleep(100);
-        deleteChannel(channelId);
+        deleteChannel(channelId, 100, 200);
         // After delete, the long poll should not longer be active, should not have to wait long until it returns empty
         longPoll.get(100L, TimeUnit.MILLISECONDS);
 
@@ -136,7 +179,7 @@ public class ChannelServicesTest extends BounceProxyTest {
         Thread.sleep(2000);
 
         long timeStart = System.currentTimeMillis();
-        longPoll = longPoll(channelId, longpollTimeout_ms);
+        longPoll = longPollInOwnThread(channelId, longpollTimeout_ms);
         Response response = longPoll.get();
         String payloadReceived = response.getBody().asString();
         int timeTotal = (int) (System.currentTimeMillis() - timeStart);
@@ -158,7 +201,7 @@ public class ChannelServicesTest extends BounceProxyTest {
         int longpollTimeout_ms = 100000;
 
         long timeStart = System.currentTimeMillis();
-        longPoll(channelId, longpollTimeout_ms, 400);
+        longPollInOwnThread(channelId, longpollTimeout_ms, 400);
         long elapsedTimeInLongPoll = System.currentTimeMillis() - timeStart;
         assertThat("long poll did not abort immediately", elapsedTimeInLongPoll < 5000);
     }

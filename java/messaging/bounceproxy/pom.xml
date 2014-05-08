@@ -31,7 +31,6 @@
 	</parent>
 	<modules>
 		<module>single-bounceproxy</module>
-		<module>bounceproxy-standalone</module>
 		<module>bounceproxy-controller</module>	
 		<module>bounceproxy-controller-nonclustered</module>	
 		<module>bounceproxy-controller-clustered</module>	
