@@ -336,6 +336,51 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>no-checkstyle</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>none</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>no-java-formatter</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+						<artifactId>maven-java-formatter-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>none</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>no-tests</id>
+			<properties>
+				<maven.test.skip>true</maven.test.skip>
+			</properties>
+		</profile>
+		<profile>
+			<id>no-license-and-notice</id>
+			<properties>
+				<skip.unpack-license-info>true</skip.unpack-license-info>
+				<skip.copy-notice-file>true</skip.copy-notice-file>
+			</properties>
+		</profile>
 	</profiles>
 
 	<properties>
@@ -889,6 +934,10 @@
 								<exclude>joynr/**/*.class</exclude>
 							</excludes>
 						</instrumentation>
+						<aggregate>true</aggregate>
+						<formats>
+							<format>xml</format>
+						</formats>
 					</configuration>
 					<executions>
 						<execution>
