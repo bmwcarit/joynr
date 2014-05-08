@@ -54,21 +54,9 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-					<failOnError>false</failOnError>
-					<threshold>Normal</threshold>
-					<effort>Default</effort>
-					<xmlOutput>true</xmlOutput>
-					<findbugsXmlOutput>true</findbugsXmlOutput>
-					<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-				</configuration>
 				<executions>
 					<execution>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
+						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>
