@@ -435,6 +435,7 @@ public class ProviderProxyEnd2EndTest {
         // TODO write this test, once JOYN-1027 is solved
     }
 
+    @Ignore
     @Test(timeout = 3000)
     public void asyncMethodCallWithCallbackAndParameter() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                          InterruptedException {
