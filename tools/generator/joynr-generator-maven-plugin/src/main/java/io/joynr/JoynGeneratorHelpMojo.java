@@ -1,9 +1,9 @@
-package io.joynr.generator;
+package io.joynr;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,22 @@ package io.joynr.generator;
  * #L%
  */
 
-import io.joynr.generator.util.InvocationArguments;
+import io.joynr.generator.GeneratorTask;
 
-public class ExecutorDEV extends Executor {
+import java.io.IOException;
 
-    public ExecutorDEV(InvocationArguments arguments) {
-        super(arguments);
+/**
+ * Goal which generates the joynr interfaces and implementations.
+ *
+ * @goal help
+ * 
+ * @phase validate
+ */
+public class JoynGeneratorHelpMojo extends AbstractJoynGeneratorMojo {
+
+    @Override
+    protected void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
+                                                      InstantiationException, IllegalAccessException {
+        task.printHelp(getLog());
     }
 }

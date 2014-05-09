@@ -3,7 +3,8 @@ package io.joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,102 +20,100 @@ package io.joynr;
  * #L%
  */
 
-/*
- * Copyright 2001-2005 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import io.joynr.generator.GeneratorTask;
 import io.joynr.generator.util.InvocationArguments;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Goal which generates the joynr interfaces and implementations.
+ * Abstract class for the joynr generator mojos
  *
- * @goal generate
- * 
- * @phase process-sources
  */
-public class JoynGeneratorMojo extends AbstractMojo {
+public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     /**
      * The maven project.
      * 
      * @parameter expression="${project}"
      * @readonly
      */
-    private MavenProject project;
+    protected MavenProject project;
 
     /**
      * The model file.
      * @parameter expression="${joynr.generator.model}"
      * @required
      */
-    private String model;
+    protected String model;
 
     /**
      * Properties path to the generation templates.
      * @parameter expression="${joynr.generator.templatesDir}"
      */
-    private String templatesDir;
+    protected String templatesDir;
 
     /**
      * Properties encoding of the templates.
      * @parameter expression="${joynr.generator.templatesEncoding}"
      */
-    private String templatesEncoding;
+    protected String templatesEncoding;
 
     /**
      * Properties full name of the root generator.
      * @parameter expression="${joynr.generator.rootGenerator}"
      */
-    private String rootGenerator;
+    protected String rootGenerator;
 
     /**
      * Properties the generation language
      * @parameter expression="${joynr.generator.generationLanguage}"
      */
-    private String generationLanguage;
+    protected String generationLanguage;
 
     /**
      * Properties the generationId
      * @parameter expression="${joynr.generator.generationId}"
      */
-    private String generationId;
+    protected String generationId;
 
     /**
      * Properties path to the output directory.
      * @parameter expression="${joynr.generator.outputPath}"
      * @required
      */
-    private String outputPath;
+    protected String outputPath;
+
+    /**
+     * Properties map of additional parameters required by the custom generators
+     * @parameter expression="${joynr.generator.parameter}"
+     */
+    protected Map<String, String> parameter;
 
     /**
      * Properties output directory for header files
      * @parameter expression="${joynr.generator.outputHeaderPath}"
+     * @deprecated please use <parameter><outputHeaderPath>the output header path</outputHeaderPath></parameter> instead
      */
-    private String outputHeaderPath;
+    protected String outputHeaderPath;
+
+    /**
+     * Properties skips the generation, if set to true
+     * @parameter expression="${joynr.generator.skip}"
+     */
+    protected String skip;
 
     /**
      * Properties default resourceEncoding.
      * @parameter expression="${project.build.resourceEncoding}"
      */
-    private String defaultEncoding;
+    protected String defaultEncoding;
 
-    private int getParameterHashCode() {
+    protected int getParameterHashCode() {
         StringBuilder sb = new StringBuilder();
         sb.append(model);
         sb.append(templatesDir);
@@ -123,29 +122,31 @@ public class JoynGeneratorMojo extends AbstractMojo {
         sb.append(generationLanguage);
         sb.append(generationId);
         sb.append(outputPath);
-        sb.append(outputHeaderPath);
+        if (parameter != null) {
+            for (String paramKey : parameter.keySet()) {
+                sb.append(paramKey);
+                sb.append(parameter.get(paramKey));
+            }
+        }
+        sb.append(skip);
         return sb.toString().hashCode();
     }
 
     public void execute() throws MojoExecutionException {
         int executionHashCode = getParameterHashCode();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
-        String generationAlreadyDone = project.getProperties().getProperty(generationDonePropertyName);
-        if (new Boolean(generationAlreadyDone)) {
-            getLog().info("----------------------------------------------------------------------");
-            getLog().info("JOYNR GENERATOR for parameter hash \"" + executionHashCode + "\" already executed.");
-            getLog().info("Sources are up-to-date, skipping code generation...");
-            getLog().info("----------------------------------------------------------------------");
-            return;
-        }
 
         if (templatesEncoding == null) {
             templatesEncoding = defaultEncoding;
-            System.err.println(defaultEncoding);
         }
+
         getLog().info("----------------------------------------------------------------------");
         getLog().info("JOYNR GENERATOR execution for parameter hash \"" + executionHashCode + "\".");
         getLog().info("----------------------------------------------------------------------");
+        if (skip != null && skip.equalsIgnoreCase("true")) {
+            getLog().info("skip plugin execution due to maven plugin configuration");
+            return;
+        }
         getLog().info("model: " + (model == null ? "not specified" : model));
         getLog().info("templatesDir " + (templatesDir == null ? "not specified" : templatesDir));
         getLog().info("templatesEncoding " + (templatesEncoding == null ? "not specified" : templatesEncoding));
@@ -153,26 +154,45 @@ public class JoynGeneratorMojo extends AbstractMojo {
         getLog().info("rootGenerator " + (rootGenerator == null ? "not specified" : rootGenerator));
         getLog().info("generationId " + (generationId == null ? "not specified" : generationId));
         getLog().info("outputPath " + (outputPath == null ? "not specified" : outputPath));
-        getLog().info("outputHeaderPath " + (outputHeaderPath == null ? "not specified" : outputHeaderPath));
+        getLog().info("parameter " + (parameter == null ? "not specified" : ":"));
+        if (parameter != null) {
+            for (String key : parameter.keySet()) {
+                getLog().info("   " + key + ": " + parameter.get(key));
+            }
+        }
         getLog().info("----------------------------------------------------------------------");
 
         try {
-            InvocationArguments arguments = new InvocationArguments();
-            arguments.setModelpath(model);
-            arguments.setTemplatesDir(templatesDir);
-            arguments.setTemplatesEncoding(templatesEncoding);
-            arguments.setRootGenerator(rootGenerator);
-            arguments.setGenerationLanguage(generationLanguage);
-            arguments.setGenerationId(generationId);
-            arguments.setOutputPath(outputPath);
-            arguments.setOutputHeaderPath(outputHeaderPath);
+            InvocationArguments arguments = createInvocationArguments();
 
             GeneratorTask task = new GeneratorTask(arguments);
-            task.generate();
+            invokeGenerator(task);
+            project.getProperties().put(generationDonePropertyName, "true");
         } catch (Exception e) {
             getLog().info(e);
-            throw new MojoExecutionException("Failed to execute JOYNR Generator", e);
+            throw new MojoExecutionException("Failed to execute joynr generator plugin", e);
         }
-        project.getProperties().put(generationDonePropertyName, "true");
+    }
+
+    protected abstract void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
+                                                               InstantiationException, IllegalAccessException;
+
+    protected InvocationArguments createInvocationArguments() {
+        InvocationArguments arguments = new InvocationArguments();
+        arguments.setModelpath(model);
+        arguments.setTemplatesDir(templatesDir);
+        arguments.setTemplatesEncoding(templatesEncoding);
+        arguments.setRootGenerator(rootGenerator);
+        arguments.setGenerationLanguage(generationLanguage);
+        arguments.setGenerationId(generationId);
+        arguments.setOutputPath(outputPath);
+        arguments.setParameter(parameter);
+        if (parameter == null) {
+            parameter = new HashMap<String, String>();
+        }
+        if (parameter.get("outputHeaderPath") == null) {
+            parameter.put("outputHeaderPath", outputHeaderPath);
+        }
+        return arguments;
     }
 }

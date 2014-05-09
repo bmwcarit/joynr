@@ -20,6 +20,10 @@ package io.outofscope;
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import io.joynr.generator.IJoynrGenerator;
 
 import org.eclipse.emf.ecore.resource.Resource;
@@ -29,14 +33,22 @@ public class OutOfScopeJoynGenerator implements IJoynrGenerator {
 
     @Override
     public void doGenerate(Resource input, IFileSystemAccess fsa) {
-        // TODO Auto-generated method stub
-
+        //do nothing
     }
 
     @Override
     public String getLanguageId() {
-        // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void setParameters(Map<String, String> parameter) {
+        //do nothing
+    }
+
+    @Override
+    public Set<String> supportedParameters() {
+        return new HashSet<String>();
     }
 
 }

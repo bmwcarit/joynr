@@ -22,7 +22,6 @@ package io.joynr.generator.util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import io.joynr.generator.IGeneratorWithHeaders;
 import io.joynr.generator.IJoynrGenerator;
 import io.outofscope.OutOfScopeJoynGenerator;
 
@@ -43,12 +42,10 @@ public class ReflectionsTest {
         Reflections reflections = new Reflections("io.joynr.generator");
         Set<Class<? extends IJoynrGenerator>> subTypes = reflections.getSubTypesOf(IJoynrGenerator.class);
         assertTrue(subTypes.contains(TestJoynrGenerator.class));
-        assertTrue(subTypes.contains(IGeneratorWithHeaders.class));
         assertFalse(subTypes.contains(OutOfScopeJoynGenerator.class));
         Reflections reflections2 = new Reflections("");
         subTypes = reflections2.getSubTypesOf(IJoynrGenerator.class);
         assertTrue(subTypes.contains(TestJoynrGenerator.class));
-        assertTrue(subTypes.contains(IGeneratorWithHeaders.class));
         assertTrue(subTypes.contains(OutOfScopeJoynGenerator.class));
     }
 
