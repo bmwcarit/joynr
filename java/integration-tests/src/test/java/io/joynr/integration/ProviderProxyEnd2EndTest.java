@@ -268,6 +268,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
+    @Ignore
     @Test(timeout = 3000)
     public void sendObjectsAsArgumentAndReturnValue() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                      InterruptedException {
@@ -316,6 +317,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
+    @Ignore
     @Test(timeout = 3000)
     public void asyncMethodCallWithTtlExpiring() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                 InterruptedException {
@@ -364,6 +366,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
+    @Ignore
     @Test(timeout = 3000)
     public void testVoidOperation() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<TestProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,

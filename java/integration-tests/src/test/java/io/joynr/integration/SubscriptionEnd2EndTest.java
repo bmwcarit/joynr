@@ -61,6 +61,7 @@ import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -169,6 +170,7 @@ public class SubscriptionEnd2EndTest {
     }
 
     @Test
+    @Ignore
     @SuppressWarnings("unchecked")
     public void registerSubscriptionAndReceiveUpdates() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
@@ -290,6 +292,7 @@ public class SubscriptionEnd2EndTest {
     }
 
     @SuppressWarnings("unchecked")
+    @Ignore
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
