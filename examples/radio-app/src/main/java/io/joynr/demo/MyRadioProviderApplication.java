@@ -42,6 +42,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     private MyRadioProvider provider = null;
 
     public static void main(String[] args) {
+        // run application from cmd line using Maven:
+        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
         if (args.length != 1) {
             LOG.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",
@@ -73,9 +75,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
         // "http://localhost:8080/bounceproxy/");
         // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL,
-        // "http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/");
+        // "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
         // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL,
-        // "http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/");
+        // "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
 
         // Each joynr instance has a local domain. It identifies the execution
         // device/platform, e.g. the
@@ -96,13 +98,13 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // certain joynr server
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
-        // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
-        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
+        // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
-        // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
-        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/bounceproxy/channels/discoverydirectory_channelid/
+        // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // NOTE:
         // Programmatically set configuration properties override properties set
