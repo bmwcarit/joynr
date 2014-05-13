@@ -53,6 +53,8 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.tests.AnotherDerivedStruct;
+import joynr.tests.ComplexTestType;
+import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaultTestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
@@ -245,6 +247,17 @@ public class ProviderProxyEnd2EndTest {
         @Override
         public String overloadedOperation(AnotherDerivedStruct s) {
             return "AnotherDerivedStruct";
+        }
+
+        @Override
+        public ComplexTestType overloadedOperation(String input) {
+            int result = Integer.parseInt(input);
+            return new ComplexTestType(result, result);
+        }
+
+        @Override
+        public ComplexTestType2 overloadedOperation(String input1, String input2) {
+            return new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2));
         }
 
         @Override
@@ -521,9 +534,20 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    // @Test(timeout=3000)
-    // public void proxyUsesCorrectEndpointAddress() {
-    // TODO
-    // }
+    @Test(timeout = 3000)
+    public void overloadedMethodWithDifferentReturnTypes() throws JoynrArbitrationException,
+                                                          JoynrIllegalStateException, InterruptedException {
+        ProxyBuilder<TestProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     TestProxy.class);
+        TestProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
+        ComplexTestType expectedResult1 = new ComplexTestType(42, 42);
+        ComplexTestType2 expectedResult2 = new ComplexTestType2(43, 44);
+
+        ComplexTestType result1 = proxy.overloadedOperation("42");
+        ComplexTestType2 result2 = proxy.overloadedOperation("43", "44");
+
+        Assert.assertEquals(expectedResult1, result1);
+        Assert.assertEquals(expectedResult2, result2);
+    }
 }
