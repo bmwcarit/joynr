@@ -1,8 +1,7 @@
-package io.joynr.messaging.bounceproxy;
+package io.joynr.bounceproxy.service;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::controlled-bounceproxy
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,15 +19,17 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.bounceproxy.service.AbstractMessagingService;
 
 import com.google.inject.Inject;
 
 /**
- * Implementation of messaging service for controlled bounce proxies.
+ * Messaging service implementation for single bounceproxy which is responsible
+ * for all channels.
  * 
  * @author christina.strobel
- *
+ * 
  */
 public class MessagingServiceImpl extends AbstractMessagingService {
 
@@ -37,30 +38,18 @@ public class MessagingServiceImpl extends AbstractMessagingService {
         super(longPollingDelegate);
     }
 
-    /* (non-Javadoc)
-     * @see io.joynr.messaging.service.MessagingService#hasMessageReceiver(java.lang.String)
-     */
     @Override
     public boolean hasMessageReceiver(String ccid) {
-        // TODO query local resources if someone is registered
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see io.joynr.messaging.service.MessagingService#isAssignedForChannel(java.lang.String)
-     */
     @Override
     public boolean isAssignedForChannel(String ccid) {
-        // TODO query local resources if messaging service is responsible for channel
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see io.joynr.messaging.service.MessagingService#hasChannelAssignmentMoved(java.lang.String)
-     */
     @Override
     public boolean hasChannelAssignmentMoved(String ccid) {
-        // TODO query local resources if messaging service was responsible for channel
         return false;
     }
 

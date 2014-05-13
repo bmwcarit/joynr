@@ -25,6 +25,7 @@ import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.AtmosphereModule;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.bounceproxy.DefaultBounceProxyModule;
 import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
 import io.joynr.messaging.bounceproxy.filter.CorsFilter;
 import io.joynr.messaging.bounceproxy.filter.SessionFilter;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 /**
  * Servlet configuration for controlled bounceproxy servlet.
@@ -68,7 +70,7 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
         modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties"),
                                               BounceProxySystemPropertyLoader.loadProperties(),
                                               PropertyLoader.loadProperties("session.properties")));
-        modules.add(new ControlledBounceProxyModule());
+        modules.add(Modules.override(new DefaultBounceProxyModule()).with(new ControlledBounceProxyModule()));
         modules.add(atmosphereModule);
     }
 

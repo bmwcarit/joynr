@@ -50,12 +50,6 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<dependency>
 			<groupId>eu.infomas</groupId>
 			<artifactId>annotation-detector</artifactId>
 			<version>3.0.0</version>
@@ -89,7 +83,18 @@
 			<artifactId>bounceproxy-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

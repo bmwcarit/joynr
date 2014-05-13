@@ -1,8 +1,7 @@
-package io.joynr.messaging.bounceproxy;
+package io.joynr.messaging.bounceproxy.service;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::controlled-bounceproxy
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,11 +19,6 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ChannelInformation;
-import io.joynr.messaging.service.ChannelService;
-
 import java.net.URI;
 import java.util.List;
 
@@ -34,20 +28,20 @@ import org.atmosphere.jersey.Broadcastable;
 
 import com.google.inject.Inject;
 
-/**
- * Implementation of channel service for controlled bounce proxies.
- * 
- * @author christina.strobel
- * 
- */
-public class ChannelServiceImpl implements ChannelService {
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.service.ChannelService;
 
-    private LongPollingMessagingDelegate longPollingDelegate;
+public class DefaultBounceProxyChannelServiceImpl implements ChannelService {
 
+    private final LongPollingMessagingDelegate longPollingDelegate;
     private final BounceProxyInformation bpInfo;
 
     @Inject
-    public ChannelServiceImpl(LongPollingMessagingDelegate longPollingDelegate, BounceProxyInformation bpInfo) {
+    public DefaultBounceProxyChannelServiceImpl(LongPollingMessagingDelegate longPollingDelegate,
+                                                BounceProxyInformation bpInfo) {
         this.longPollingDelegate = longPollingDelegate;
         this.bpInfo = bpInfo;
     }

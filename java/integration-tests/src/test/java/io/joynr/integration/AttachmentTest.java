@@ -30,10 +30,13 @@ import io.joynr.integration.setup.SingleBounceProxy;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
 import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
+import io.joynr.integration.util.BounceProxyTestUtils;
+import io.joynr.messaging.MessagingModule;
 
 import java.io.ByteArrayInputStream;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.annotation.Nullable;
 
@@ -41,12 +44,14 @@ import joynr.JoynrMessage;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
@@ -59,13 +64,21 @@ public class AttachmentTest {
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;
 
+    private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2);
+    private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+
     @Before
     public void setUp() {
         RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
+
+        BounceProxyTestUtils.receiverId = receiverId;
+        BounceProxyTestUtils.scheduler = scheduler;
+
+        Injector injector = Guice.createInjector(new MessagingModule());
+        BounceProxyTestUtils.objectMapper = injector.getInstance(ObjectMapper.class);
     }
 
     @Test
-    @Ignore
     public void testSendAttachedByteArray() throws Exception {
         String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
         try {
@@ -84,27 +97,23 @@ public class AttachmentTest {
         String serializedMessageWrapper = createSerializedJoynrMessage(ttl_ms, payload);
 
         String content = "This is a binary content";
-        Response response = null;
-        try {
-            response = given().multiPart("wrapper", serializedMessageWrapper, "application/json")
-                              .multiPart("attachment", "attachment.txt", new ByteArrayInputStream(content.getBytes()))
-                              .expect()
-                              .response()
-                              .statusCode(201)
-                              .log()
-                              .all()
-                              .when()
-                              .post("/bounceproxy/channels/" + channelId + "/message/");
+        Response response = given().multiPart("wrapper", serializedMessageWrapper, "application/json")
+                                   .multiPart("attachment",
+                                              "attachment.txt",
+                                              new ByteArrayInputStream(content.getBytes()))
+                                   .expect()
+                                   .response()
+                                   .statusCode(201)
+                                   .log()
+                                   .all()
+                                   .when()
+                                   .post("/channels/" + channelId + "/messageWithAttachment");
 
-        } catch (Exception e) {
-            logger.error("Exception :", e);
-        }
         logger.debug("Response : " + response);
         return response;
     }
 
     @Test
-    @Ignore
     public void testSendAndDownload() throws Exception {
         String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
 
@@ -144,7 +153,7 @@ public class AttachmentTest {
                                              .log()
                                              .all()
                                              .when()
-                                             .get("/bounceproxy/channels/" + channelId + "/attachment/");
+                                             .get("/channels/" + channelId + "/attachment/");
 
         return response;
 

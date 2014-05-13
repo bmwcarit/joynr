@@ -89,9 +89,12 @@ public class BounceProxyTestUtils {
      * @param myChannelId
      */
     public static void createChannel(String myChannelId) {
-        onrequest().with().headers("X-Atmosphere-Tracking-Id", receiverId).with().queryParam("ccid", myChannelId)
-        // .expect()
-                   // .statusCode(201)
+        onrequest().with()
+                   .headers("X-Atmosphere-Tracking-Id", receiverId)
+                   .with()
+                   .queryParam("ccid", myChannelId)
+                   .expect()
+                   .statusCode(201)
                    .when()
                    .post("/channels/");
     }

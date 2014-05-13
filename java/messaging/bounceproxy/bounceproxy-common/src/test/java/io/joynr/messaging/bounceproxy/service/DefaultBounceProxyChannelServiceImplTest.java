@@ -1,4 +1,4 @@
-package io.joynr.messaging.bounceproxy;
+package io.joynr.messaging.bounceproxy.service;
 
 /*
  * #%L
@@ -20,6 +20,7 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.Channel;
 
@@ -38,9 +39,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ChannelServiceImplTest {
+public class DefaultBounceProxyChannelServiceImplTest {
 
-    private ChannelServiceImpl channelService;
+    private DefaultBounceProxyChannelServiceImpl channelService;
 
     @Mock
     private LongPollingMessagingDelegate longPollingDelegateMock;
@@ -60,7 +61,7 @@ public class ChannelServiceImplTest {
             }
         });
 
-        channelService = injector.getInstance(ChannelServiceImpl.class);
+        channelService = injector.getInstance(DefaultBounceProxyChannelServiceImpl.class);
     }
 
     @Test

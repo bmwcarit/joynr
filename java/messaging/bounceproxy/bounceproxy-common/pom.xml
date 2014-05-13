@@ -112,6 +112,25 @@
 			<artifactId>guice-servlet</artifactId>
 			<version>3.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<!-- Don't use mockito-all here. 
+		     It contains hamcrest classes in its jar, which conflict with JUnit -->		
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 		
 	</dependencies>
 

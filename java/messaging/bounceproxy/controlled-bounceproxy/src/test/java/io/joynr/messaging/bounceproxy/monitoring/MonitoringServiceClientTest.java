@@ -24,9 +24,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
-import io.joynr.messaging.bounceproxy.ChannelServiceImpl;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
 import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
+import io.joynr.messaging.bounceproxy.service.DefaultBounceProxyChannelServiceImpl;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.TimestampProvider;
@@ -104,7 +104,7 @@ public class MonitoringServiceClientTest {
                                                  new ControlledBounceProxyModule() {
                                                      @Override
                                                      protected void configure() {
-                                                         bind(ChannelService.class).to(ChannelServiceImpl.class);
+                                                         bind(ChannelService.class).to(DefaultBounceProxyChannelServiceImpl.class);
                                                          bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
                                                          bind(TimestampProvider.class).toInstance(mockTimestampProvider);
                                                          bind(BounceProxyInformation.class).toProvider(BounceProxyInformationProvider.class);

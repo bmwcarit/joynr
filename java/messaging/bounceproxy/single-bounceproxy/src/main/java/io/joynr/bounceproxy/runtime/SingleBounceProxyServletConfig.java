@@ -19,13 +19,19 @@ package io.joynr.bounceproxy.runtime;
  * #L%
  */
 
-import io.joynr.bounceproxy.service.ChannelService;
+import io.joynr.bounceproxy.SingleBounceProxyModule;
+import io.joynr.bounceproxy.service.AttachmentReceiverService;
+import io.joynr.bounceproxy.service.AttachmentSenderService;
+import io.joynr.bounceproxy.service.MessagingWithoutContentTypeService;
 import io.joynr.bounceproxy.service.TimeService;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.AtmosphereModule;
+import io.joynr.messaging.bounceproxy.DefaultBounceProxyModule;
 import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
 import io.joynr.messaging.bounceproxy.filter.CorsFilter;
+import io.joynr.messaging.service.ChannelServiceRestAdapter;
+import io.joynr.messaging.service.MessagingServiceRestAdapter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +39,7 @@ import java.util.List;
 import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
 
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 /**
  * Servlet configuration for single bounceproxy servlet.
@@ -51,6 +58,7 @@ public class SingleBounceProxyServletConfig extends AbstractGuiceServletConfig {
         atmosphereModule = new AtmosphereModule();
 
         modules = new LinkedList<Module>();
+        modules.add(Modules.override(new DefaultBounceProxyModule()).with(new SingleBounceProxyModule()));
         modules.add(atmosphereModule);
     }
 
@@ -60,9 +68,12 @@ public class SingleBounceProxyServletConfig extends AbstractGuiceServletConfig {
 
             @Override
             protected void configureJoynrServlets() {
-
-                bind(ChannelService.class);
+                bind(ChannelServiceRestAdapter.class);
+                bind(MessagingServiceRestAdapter.class);
                 bind(TimeService.class);
+                bind(AttachmentReceiverService.class);
+                bind(AttachmentSenderService.class);
+                bind(MessagingWithoutContentTypeService.class);
 
                 filter("/*").through(CharacterEncodingFilter.class);
                 filter("/*").through(CorsFilter.class);
