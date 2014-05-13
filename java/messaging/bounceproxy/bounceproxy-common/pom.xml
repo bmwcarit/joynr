@@ -93,6 +93,26 @@
 			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-guice</artifactId>
+			<!-- There's not a version for every atmosphere version. -->
+			<version>2.0.0</version>
+			<exclusions>
+				<exclusion>
+					<!-- prevent guice-servlet version 2.0 to overwrite version 3.0 -->
+					<groupId>com.google.inject.extensions</groupId>
+					<artifactId>guice-servlet</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-servlet</artifactId>
+			<version>3.0</version>
+		</dependency>
+		
 	</dependencies>
 
 </project>

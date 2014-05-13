@@ -1,4 +1,5 @@
-package io.joynr.bounceproxy;
+@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
+package io.joynr.bounceproxy.runtime;
 
 /*
  * #%L
@@ -18,23 +19,3 @@ package io.joynr.bounceproxy;
  * limitations under the License.
  * #L%
  */
-
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.atmosphere.cpr.AtmosphereServlet;
-
-public class BounceProxyServletContainer extends AtmosphereServlet {
-
-    private static final long serialVersionUID = 1010061220940017349L;
-
-    @Override
-    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
-        res.setCharacterEncoding("UTF-8");
-        super.doPost(req, res);
-    }
-
-}

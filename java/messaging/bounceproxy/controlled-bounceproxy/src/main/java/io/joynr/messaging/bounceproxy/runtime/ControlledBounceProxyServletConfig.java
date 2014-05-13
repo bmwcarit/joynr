@@ -23,32 +23,28 @@ package io.joynr.messaging.bounceproxy.runtime;
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
-import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
+import io.joynr.messaging.bounceproxy.AtmosphereModule;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
 import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
+import io.joynr.messaging.bounceproxy.filter.CorsFilter;
 import io.joynr.messaging.bounceproxy.filter.SessionFilter;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MessagingServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.SessionTrackingMode;
 
-import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
 
 /**
  * Servlet configuration for controlled bounceproxy servlet.
@@ -61,14 +57,19 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
     private static final Logger logger = LoggerFactory.getLogger(ControlledBounceProxyServletConfig.class);
 
     private final List<Module> modules;
-    Map<String, String> params = new HashMap<String, String>();
+
+    private final AtmosphereModule atmosphereModule;
 
     public ControlledBounceProxyServletConfig() {
+
+        atmosphereModule = new AtmosphereModule();
+
         modules = new LinkedList<Module>();
         modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties("controlledBounceProxy.properties"),
                                               BounceProxySystemPropertyLoader.loadProperties(),
                                               PropertyLoader.loadProperties("session.properties")));
         modules.add(new ControlledBounceProxyModule());
+        modules.add(atmosphereModule);
     }
 
     @Override
@@ -126,28 +127,12 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
                 filter("/*").through(BounceProxyInitializedFilter.class);
                 filter("/*").through(CharacterEncodingFilter.class);
                 filter("/*").through(SessionFilter.class);
-
-                // TODO put configuration somewhere else
-                // This will be done with refactoring of the bounceproxy,
-                // when bounceproxy is also configured with Guice.
-                params.put("suspend.seconds", "20");
-                params.put("com.sun.jersey.config.property.packages", "io.joynr.messaging.bounceproxy");
-                params.put("org.atmosphere.cpr.broadcasterClass", BounceProxyBroadcaster.class.getName());
-                params.put("org.atmosphere.cpr.broadcasterCacheClass", UUIDBroadcasterCache.class.getName());
-                params.put("org.atmosphere.useBlocking", "false");
-                params.put("org.atmosphere.cpr.broadcasterLifeCyclePolicy", "NEVER");
-                params.put("org.atmosphere.cpr.broadcaster.shareableThreadPool", "true");
-                params.put("com.sun.jersey.config.feature.DisableWADL", "true");
-                params.put("org.atmosphere.cpr.BroadcasterCache.strategy", "beforeFilter");
-
-                bind(new TypeLiteral<Map<String, String>>() {
-                }).annotatedWith(Names.named("org.atmosphere.guice.AtmosphereGuiceServlet.properties"))
-                  .toInstance(params);
+                filter("/*").through(CorsFilter.class);
             }
 
             @Override
             protected void bindJoynrServletClass() {
-                serve("/*").with(GuiceManagedAtmosphereServlet.class, params);
+                serve("/*").with(GuiceManagedAtmosphereServlet.class, atmosphereModule.getParameters());
             }
 
         };
