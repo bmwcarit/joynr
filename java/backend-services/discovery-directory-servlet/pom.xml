@@ -174,7 +174,7 @@
 							<contextPath>/bounceproxy</contextPath>
 						</contextHandler>
 						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/discovery.war</war>
+							<war>${project.build.directory}/discovery-directory-servlet.war</war>
 							<contextPath>/discovery</contextPath>
 						</contextHandler>
 					</contextHandlers>
