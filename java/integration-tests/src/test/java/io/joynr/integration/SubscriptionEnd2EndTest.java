@@ -252,6 +252,7 @@ public class SubscriptionEnd2EndTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Ignore
     public void testOnChangeWithKeepAliveSubscriptionSendsOnChange() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 

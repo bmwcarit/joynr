@@ -505,6 +505,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
+    @Ignore
     @Test(timeout = 3000)
     public void asyncMethodCallWithEnumListReturned() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                      InterruptedException {
@@ -517,6 +518,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
+    @Ignore
     @Test(timeout = 3000)
     public void overloadedMethodWithInheritance() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                  InterruptedException {
