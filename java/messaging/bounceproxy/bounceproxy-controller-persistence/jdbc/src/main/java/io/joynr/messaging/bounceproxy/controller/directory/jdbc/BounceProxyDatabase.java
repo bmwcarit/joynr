@@ -233,18 +233,18 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
     }
 
     private String getSqlWhereClauseForAssignableBounceProxies() {
-        String sqlWhereClause = "";
+        StringBuffer sqlWhereClause = new StringBuffer();
         for (BounceProxyStatus status : BounceProxyStatus.values()) {
             if (status.isAssignable()) {
 
-                if (!sqlWhereClause.isEmpty()) {
-                    sqlWhereClause += " OR ";
+                if (sqlWhereClause.length() != 0) {
+                    sqlWhereClause.append(" OR ");
                 }
 
-                sqlWhereClause += "x.status = '" + status.name() + "'";
+                sqlWhereClause.append("x.status = '").append(status.name()).append("'");
             }
         }
-        return sqlWhereClause;
+        return sqlWhereClause.toString();
     }
 
 }

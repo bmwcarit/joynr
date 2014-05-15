@@ -54,7 +54,7 @@ public class AttachmentReceiverService {
         // TODO return list of attachments instead of one attachment per message
         byte[] entity = attachmentStorage.get(attachmentId);
 
-        if (entity == null) {
+        if (entity.length == 0) {
             log.warn("No attachment found for ID {}", attachmentId);
             return Response.status(Status.BAD_REQUEST).build();
         }

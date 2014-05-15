@@ -77,10 +77,7 @@ public class ReflectionUtils {
 
     private static boolean checkParameterTypes(Method method, Class<?>[] parameterTypes) {
         Class<?>[] currentMethodParamTypes = method.getParameterTypes();
-        if (currentMethodParamTypes.length == 0) {
-            if (parameterTypes.length == 0) {
-                return true;
-            }
+        if (currentMethodParamTypes.length != parameterTypes.length) {
             return false;
         }
         for (int i = 0; i < parameterTypes.length; i++) {
