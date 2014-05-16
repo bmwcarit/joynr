@@ -81,7 +81,8 @@ public class MessageWithoutContentTypeTest {
         createChannel(channelId);
 
         String postPayload = "payload-" + UUID.randomUUID().toString();
-        String serializedMessage = createSerializedJoynrMessage(100000l, postPayload);
+        String msgId = "msgId-" + UUID.randomUUID().toString();
+        String serializedMessage = createSerializedJoynrMessage(100000l, postPayload, msgId);
 
         given().contentType(ContentType.TEXT)
                .content(serializedMessage)
@@ -90,6 +91,8 @@ public class MessageWithoutContentTypeTest {
                .expect()
                .response()
                .statusCode(201)
+               .header("Location", RestAssured.baseURI + "messages/" + msgId)
+               .header("msgId", msgId)
                .when()
                .post("/channels/" + channelId + "/messageWithoutContentType");
 
@@ -104,6 +107,59 @@ public class MessageWithoutContentTypeTest {
         String json = listOfJsonStrings.get(0);
         JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
         Assert.assertEquals(postPayload, message.getPayload());
+    }
+
+    @Test
+    public void testMixMessagesWithAndWithoutContentType() throws Exception {
+
+        String channelId = "MessageWithoutContentTypeTest_" + UUID.randomUUID().toString();
+
+        createChannel(channelId);
+
+        String postPayload1 = "payload-" + UUID.randomUUID().toString();
+        String msgId1 = "msgId-" + UUID.randomUUID().toString();
+        String serializedMessage1 = createSerializedJoynrMessage(100000l, postPayload1, msgId1);
+
+        given().contentType(ContentType.TEXT)
+               .content(serializedMessage1)
+               .log()
+               .all()
+               .expect()
+               .response()
+               .statusCode(201)
+               .header("Location", RestAssured.baseURI + "messages/" + msgId1)
+               .header("msgId", msgId1)
+               .when()
+               .post("/channels/" + channelId + "/messageWithoutContentType");
+
+        String postPayload2 = "payload-" + UUID.randomUUID().toString();
+        String msgId2 = "msgId-" + UUID.randomUUID().toString();
+        String serializedMessage2 = createSerializedJoynrMessage(100000l, postPayload2, msgId2);
+
+        given().contentType(ContentType.TEXT)
+               .content(serializedMessage2)
+               .contentType("application/json")
+               .log()
+               .all()
+               .expect()
+               .response()
+               .statusCode(201)
+               .header("Location", RestAssured.baseURI + "messages/" + msgId2)
+               .header("msgId", msgId2)
+               .when()
+               .post("/channels/" + channelId + "/message");
+
+        ScheduledFuture<Response> longPollConsumer = longPollInOwnThread(channelId, 30000);
+        Response responseLongPoll = longPollConsumer.get();
+
+        String responseBody = responseLongPoll.getBody().asString();
+        List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
+
+        Assert.assertEquals(2, listOfJsonStrings.size());
+
+        String json = listOfJsonStrings.get(0);
+        JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
+        Assert.assertEquals(postPayload1, message.getPayload());
     }
 
 }

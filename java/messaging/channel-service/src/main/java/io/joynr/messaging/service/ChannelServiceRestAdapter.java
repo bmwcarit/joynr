@@ -138,6 +138,7 @@ public class ChannelServiceRestAdapter {
             String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
 
             return Response.ok()
+                           .entity(ccid)
                            .header("Location", encodedChannelLocation)
                            .header("bp", channel.getBounceProxy().getId())
                            .build();
@@ -150,9 +151,9 @@ public class ChannelServiceRestAdapter {
         String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
         log.debug("encoded channel URL " + channel.getLocation() + " to " + encodedChannelLocation);
 
-        return Response.created(URI.create(encodedChannelLocation))
-                       .header("bp", channel.getBounceProxy().getId())
-                       .build();
+        return Response.created(URI.create(encodedChannelLocation)).entity(ccid).header("bp",
+                                                                                        channel.getBounceProxy()
+                                                                                               .getId()).build();
     }
 
     /**

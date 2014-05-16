@@ -29,6 +29,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.core.Is;
+
 import joynr.JoynrMessage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,6 +41,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.http.ContentType;
@@ -91,10 +95,11 @@ public class BounceProxyTestUtils {
     public static void createChannel(String myChannelId) {
         onrequest().with()
                    .headers("X-Atmosphere-Tracking-Id", receiverId)
-                   .with()
                    .queryParam("ccid", myChannelId)
                    .expect()
                    .statusCode(201)
+                   .header("Location", CoreMatchers.containsString(RestAssured.baseURI + "channels/" + myChannelId))
+                   .body(CoreMatchers.is(myChannelId))
                    .when()
                    .post("/channels/");
     }
