@@ -53,6 +53,12 @@
 			<scope>provided</scope>
 		</dependency>
 	
+		<!-- Dependency explicitely needed for war overlay -->
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 
@@ -71,6 +77,21 @@
 		            <packagingExcludes>
 		            	**/jetty-logging.properties
 		            </packagingExcludes>
+		            <overlays>
+						<overlay>
+							<groupId>io.joynr.java.messaging</groupId>
+							<artifactId>channel-service</artifactId>
+							<type>jar</type>
+							<includes>
+				                <include>css/**</include>
+				                <include>script/**</include>
+				                <include>channels.html</include>
+				                <include>NOTICE-javascript</include>
+								<include>MIT-LICENSE</include>
+								<include>LICENSE_INFO</include>
+				            </includes>
+						</overlay>
+					</overlays>
 				</configuration>
 			</plugin>
 
