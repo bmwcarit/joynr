@@ -1,4 +1,4 @@
-package io.joynr.messaging.bounceproxy;
+package io.joynr.messaging.bounceproxy.modules;
 
 /*
  * #%L
@@ -19,6 +19,7 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.bounceproxy.service.DefaultBounceProxyChannelServiceImpl;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.SystemTimeProvider;

@@ -1,4 +1,4 @@
-package io.joynr.messaging.bounceproxy;
+package io.joynr.messaging.bounceproxy.modules;
 
 /*
  * #%L
@@ -18,6 +18,8 @@ package io.joynr.messaging.bounceproxy;
  * limitations under the License.
  * #L%
  */
+
+import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 
 import java.util.HashMap;
 import java.util.Map;

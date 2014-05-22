@@ -23,15 +23,12 @@ package io.joynr.messaging.bounceproxy.runtime;
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
-import io.joynr.messaging.bounceproxy.AtmosphereModule;
 import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
-import io.joynr.messaging.bounceproxy.DefaultBounceProxyModule;
-import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
-import io.joynr.messaging.bounceproxy.filter.CorsFilter;
 import io.joynr.messaging.bounceproxy.filter.SessionFilter;
+import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
+import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
+import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
-import io.joynr.messaging.service.ChannelServiceRestAdapter;
-import io.joynr.messaging.service.MessagingServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
 
 import java.util.LinkedList;
@@ -41,7 +38,6 @@ import java.util.Set;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.SessionTrackingMode;
 
-import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,27 +112,25 @@ public class ControlledBounceProxyServletConfig extends AbstractGuiceServletConf
 
     @Override
     protected AbstractJoynrServletModule getJoynrServletModule() {
-        return new AbstractJoynrServletModule() {
+        return new AbstractBounceProxyJerseyModule() {
 
             @Override
-            protected void configureJoynrServlets() {
-                bind(ChannelServiceRestAdapter.class);
-                bind(MessagingServiceRestAdapter.class);
-
+            protected void setupFilters() {
                 // Filter to only let requests pass if the bounce proxy has been
                 // initialized correctly, e.g. if it has registered with the
                 // bounce proxy controller.
                 filter("/*").through(BounceProxyInitializedFilter.class);
-                filter("/*").through(CharacterEncodingFilter.class);
                 filter("/*").through(SessionFilter.class);
-                filter("/*").through(CorsFilter.class);
             }
 
             @Override
-            protected void bindJoynrServletClass() {
-                serve("/*").with(GuiceManagedAtmosphereServlet.class, atmosphereModule.getParameters());
+            protected AtmosphereModule getAtmosphereModule() {
+                return atmosphereModule;
             }
 
+            @Override
+            protected void bindServlets() {
+            }
         };
     }
 

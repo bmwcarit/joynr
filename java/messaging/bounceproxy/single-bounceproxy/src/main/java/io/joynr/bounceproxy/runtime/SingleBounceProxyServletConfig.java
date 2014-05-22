@@ -26,17 +26,12 @@ import io.joynr.bounceproxy.service.MessagingWithoutContentTypeService;
 import io.joynr.bounceproxy.service.TimeService;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
-import io.joynr.messaging.bounceproxy.AtmosphereModule;
-import io.joynr.messaging.bounceproxy.DefaultBounceProxyModule;
-import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
-import io.joynr.messaging.bounceproxy.filter.CorsFilter;
-import io.joynr.messaging.service.ChannelServiceRestAdapter;
-import io.joynr.messaging.service.MessagingServiceRestAdapter;
+import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
+import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
+import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
@@ -54,7 +49,6 @@ public class SingleBounceProxyServletConfig extends AbstractGuiceServletConfig {
     private final AtmosphereModule atmosphereModule;
 
     public SingleBounceProxyServletConfig() {
-
         atmosphereModule = new AtmosphereModule();
 
         modules = new LinkedList<Module>();
@@ -64,24 +58,22 @@ public class SingleBounceProxyServletConfig extends AbstractGuiceServletConfig {
 
     @Override
     protected AbstractJoynrServletModule getJoynrServletModule() {
-        return new AbstractJoynrServletModule() {
+        return new AbstractBounceProxyJerseyModule() {
 
             @Override
-            protected void configureJoynrServlets() {
-                bind(ChannelServiceRestAdapter.class);
-                bind(MessagingServiceRestAdapter.class);
+            protected void bindServlets() {
                 bind(TimeService.class);
                 bind(AttachmentReceiverService.class);
                 bind(AttachmentSenderService.class);
                 bind(MessagingWithoutContentTypeService.class);
-
-                filter("/*").through(CharacterEncodingFilter.class);
-                filter("/*").through(CorsFilter.class);
             }
 
             @Override
-            protected void bindJoynrServletClass() {
-                serve("/*").with(GuiceManagedAtmosphereServlet.class, atmosphereModule.getParameters());
+            protected void setupFilters() {
+            }
+
+            protected AtmosphereModule getAtmosphereModule() {
+                return atmosphereModule;
             }
 
         };
