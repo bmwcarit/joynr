@@ -19,6 +19,8 @@ package io.joynr.guice.servlet;
  * #L%
  */
 
+import io.joynr.servlet.DefaultServletWrapper;
+
 import com.google.inject.servlet.GuiceFilter;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
@@ -41,7 +43,17 @@ public abstract class AbstractJoynrServletModule extends JerseyServletModule {
         configureJoynrServlets();
 
         // Route all requests through GuiceContainer
+        bindStaticWebResources();
         bindJoynrServletClass();
+    }
+
+    /**
+     * Binds all static web resources such as html pages or images to {@link DefaultServletWrapper}.
+     */
+    protected void bindStaticWebResources() {
+        // Route html, js, jpg, png, css requests through GuiceContainer
+        bind(DefaultServletWrapper.class);
+        serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(DefaultServletWrapper.class);
     }
 
     /**
@@ -56,8 +68,8 @@ public abstract class AbstractJoynrServletModule extends JerseyServletModule {
     /**
      * Configures the joynr servlets. <br>
      * It is expected to register at least one Jersey resource by calling
-     * {@code bind} for Jersey resource classes. Filters
-     * can be applied by calling {@code filter}.
+     * {@code bind} for Jersey resource classes. Filters can be applied by
+     * calling {@code filter}.
      */
     protected abstract void configureJoynrServlets();
 
