@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello android-location-provider!</string>
-    <string name="app_name">android-location-provider</string>
+    <string name="app_name">joynr Location Provider</string>
+    <string name="hintDomain">Domain used to register provider.</string>
+    <string name="textDomain">android-domain</string>
+    <string name="textRegisterLocationProvider">Register Location Provider</string>
+    <string name="textStartJoynrRuntime">Start joynr Runtime</string>
+    <string name="textBackendHost">localhost:8080</string>
+    <string name="hintBackendHost">Enter host running Bounceproxy and Discovery.</string>
 </resources>

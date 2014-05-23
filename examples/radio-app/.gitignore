@@ -11,3 +11,4 @@ CMakeLists.txt.user
 /joynr_participantIds.properties
 /consumer-joynr.properties
 /joynr.properties
+/gps-consumer-joynr.properties

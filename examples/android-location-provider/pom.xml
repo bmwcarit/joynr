@@ -81,7 +81,6 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
 	</dependencies>
 	<build>
 		<plugins>
@@ -165,7 +164,7 @@
 						<groupId>io.joynr</groupId>
 						<artifactId>basemodel</artifactId>
 						<version>${project.version}</version>
-					</dependency>		
+					</dependency>
 				</dependencies>
 			</plugin>
 			<plugin>

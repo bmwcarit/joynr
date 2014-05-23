@@ -2,6 +2,7 @@ target/
 .classpath
 .project
 .settings/
+.externalToolBuilders/
 /gen
 src/main/generated/
 bounceproxy.build-.log

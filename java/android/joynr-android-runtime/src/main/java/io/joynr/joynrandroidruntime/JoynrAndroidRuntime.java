@@ -26,6 +26,7 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import android.content.Context;
@@ -38,6 +39,11 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     public JoynrAndroidRuntime(Context applicationContext) {
         runtimeInitTask = new InitRuntimeTask(applicationContext, uiLogger);
+        runtimeInitTask.execute();
+    }
+
+    public JoynrAndroidRuntime(Context applicationContext, Properties joynrConfig) {
+        runtimeInitTask = new InitRuntimeTask(joynrConfig, applicationContext, uiLogger);
         runtimeInitTask.execute();
     }
 
