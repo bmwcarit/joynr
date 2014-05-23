@@ -48,9 +48,25 @@
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 		</dependency>
+		<!--
+			Due to compatibility reasons of httpclient library provided within the
+			Android platform, we use an Android port httpclient-android. It is
+			compiled against official Android SDK, however we must use shaded
+			(org.apache.http.**.*HC4) classes.
+
+			See also: https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
+
+			The dependency to httpclient is needed here anyway, because httpclient-android
+			is not pulling in transitive dependencies. httpclient is then excluded in
+			Android projects to avoid duplicate file errors during apk build.
+		-->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-android</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

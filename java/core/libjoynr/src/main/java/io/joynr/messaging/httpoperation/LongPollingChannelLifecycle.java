@@ -48,9 +48,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpDeleteHC4;
+import org.apache.http.client.methods.HttpGetHC4;
+import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -174,7 +174,7 @@ public class LongPollingChannelLifecycle {
             long serverTime = 0L;
             long localTimeBeforeRequest = System.currentTimeMillis();
 
-            HttpGet getTime = new HttpGet(url);
+            HttpGetHC4 getTime = new HttpGetHC4(url);
             getTime.setConfig(defaultRequestConfig);
             response = httpclient.execute(getTime);
 
@@ -342,7 +342,7 @@ public class LongPollingChannelLifecycle {
 
         final String url = settings.getBounceProxyUrl().buildCreateChannelUrl(channelId);
 
-        HttpPost postCreateChannel = new HttpPost(url.trim());
+        HttpPostHC4 postCreateChannel = new HttpPostHC4(url.trim());
         postCreateChannel.setConfig(defaultRequestConfig);
         postCreateChannel.addHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);
         postCreateChannel.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON());
@@ -460,7 +460,7 @@ public class LongPollingChannelLifecycle {
                 try {
                     // TODO JOYN-1079 need to unregister deleted channel
                     // channelUrlClient.unregisterChannelUrls(channelId);
-                    HttpDelete httpDelete = new HttpDelete(channelUrl);
+                    HttpDeleteHC4 httpDelete = new HttpDeleteHC4(channelUrl);
                     response = httpclient.execute(httpDelete);
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == HttpURLConnection.HTTP_OK || statusCode == HttpURLConnection.HTTP_NO_CONTENT) {

@@ -48,7 +48,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
@@ -182,7 +182,7 @@ public class MessageScheduler {
                 return;
             }
 
-            HttpPost httppost = new HttpPost(sendUrl);
+            HttpPostHC4 httppost = new HttpPostHC4(sendUrl);
             httppost.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON()
                     + ";charset=UTF-8");
             httppost.setEntity(new StringEntity(serializedMessage, "UTF-8"));

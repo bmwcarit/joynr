@@ -38,6 +38,7 @@ This project has dependencies to:
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
+  HttpComponents Client for Android under Apache License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:channel-url-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0

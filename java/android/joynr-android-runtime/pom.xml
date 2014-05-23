@@ -61,6 +61,15 @@
 					<artifactId>xml-apis</artifactId>
 					<groupId>xml-apis</groupId>
 				</exclusion>
+				<!--
+					Must exclude httpclient here to avoid duplicate file errors when
+					building the apk, because we are using the android port
+					httpclient-android of httpclient.
+				 -->
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		

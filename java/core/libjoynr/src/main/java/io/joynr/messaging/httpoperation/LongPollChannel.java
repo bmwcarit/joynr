@@ -45,7 +45,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class LongPollChannel {
     private MessagingSettings settings;
     private HttpConstants httpConstants;
     private String receiverId;
-    private HttpGet httpget;
+    private HttpGetHC4 httpget;
     protected int statusCode;
     private String statusText;
     private RequestConfig defaultRequestConfig;
@@ -315,7 +315,7 @@ public class LongPollChannel {
     }
 
     public void setChannelUrl(String channelUrl) {
-        this.httpget = new HttpGet(channelUrl);
+        this.httpget = new HttpGetHC4(channelUrl);
         Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
         httpget.setConfig(requestConfigBuilder.build());
         httpget.setHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);
