@@ -251,8 +251,8 @@
 					</contextHandlers>
 					<systemProperties>
 						<systemProperty>
-							<name>log4j.configurationFile</name>
-							<value>src/main/resources/log4j.properties</value>
+							<name>log4j.configuration</name>
+							<value>file:${basedir}/src/main/resources/log4j.properties</value>
 						</systemProperty>
 						<systemProperty>
 							<name>joynr.servlet.hostPath</name>
