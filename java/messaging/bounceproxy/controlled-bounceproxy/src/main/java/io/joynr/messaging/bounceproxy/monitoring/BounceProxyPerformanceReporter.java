@@ -115,7 +115,7 @@ public class BounceProxyPerformanceReporter {
                     }
 
                 } catch (Exception e) {
-                    logger.error("Uncaught exception in notifyStartup.", e);
+                    logger.error("Uncaught exception in reportPerformance.", e);
                 }
             }
 
