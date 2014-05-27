@@ -127,33 +127,39 @@ public class ChannelServiceRestAdapter {
     public Response createChannel(@QueryParam("ccid") String ccid,
                                   @HeaderParam(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID) String atmosphereTrackingId) {
 
-        log.info("CREATE channel for channel ID: {}", ccid);
+        try {
+            log.info("CREATE channel for channel ID: {}", ccid);
 
-        if (ccid == null || ccid.isEmpty())
-            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
+            if (ccid == null || ccid.isEmpty())
+                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
 
-        Channel channel = channelService.getChannel(ccid);
+            Channel channel = channelService.getChannel(ccid);
 
-        if (channel != null) {
+            if (channel != null) {
+                String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
+
+                return Response.ok()
+                               .entity(ccid)
+                               .header("Location", encodedChannelLocation)
+                               .header("bp", channel.getBounceProxy().getId())
+                               .build();
+            }
+
+            // look for an existing bounce proxy handling the channel
+            channel = channelService.createChannel(ccid, atmosphereTrackingId);
+
+            // TODO error handling
             String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
+            log.debug("encoded channel URL " + channel.getLocation() + " to " + encodedChannelLocation);
 
-            return Response.ok()
-                           .entity(ccid)
-                           .header("Location", encodedChannelLocation)
-                           .header("bp", channel.getBounceProxy().getId())
-                           .build();
+            return Response.created(URI.create(encodedChannelLocation)).entity(ccid).header("bp",
+                                                                                            channel.getBounceProxy()
+                                                                                                   .getId()).build();
+        } catch (WebApplicationException ex) {
+            throw ex;
+        } catch (Throwable e) {
+            throw new WebApplicationException(e);
         }
-
-        // look for an existing bounce proxy handling the channel
-        channel = channelService.createChannel(ccid, atmosphereTrackingId);
-
-        // TODO error handling
-        String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
-        log.debug("encoded channel URL " + channel.getLocation() + " to " + encodedChannelLocation);
-
-        return Response.created(URI.create(encodedChannelLocation)).entity(ccid).header("bp",
-                                                                                        channel.getBounceProxy()
-                                                                                               .getId()).build();
     }
 
     /**
