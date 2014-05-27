@@ -19,12 +19,6 @@ package io.joynr.integration;
  * #L%
  */
 
-import static io.joynr.integration.util.BounceProxyTestUtils.createChannel;
-import static io.joynr.integration.util.BounceProxyTestUtils.deleteChannel;
-import static io.joynr.integration.util.BounceProxyTestUtils.longPollInOwnThread;
-import static io.joynr.integration.util.BounceProxyTestUtils.objectMapper;
-import static io.joynr.integration.util.BounceProxyTestUtils.onrequest;
-import static io.joynr.integration.util.BounceProxyTestUtils.postMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
@@ -34,16 +28,13 @@ import io.joynr.integration.setup.SingleBounceProxy;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
 import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import io.joynr.integration.util.BounceProxyTestUtils;
-import io.joynr.messaging.MessagingModule;
-import io.joynr.messaging.util.Utilities;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import joynr.JoynrMessage;
@@ -54,10 +45,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
@@ -69,43 +56,36 @@ public class ChannelServicesTest {
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;
 
-    private ScheduledThreadPoolExecutor asyncCallsExecutorService = new ScheduledThreadPoolExecutor(2);
     private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+
+    private BounceProxyCommunicationMock bpMock;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
-
-        BounceProxyTestUtils.scheduler = asyncCallsExecutorService;
-        BounceProxyTestUtils.receiverId = receiverId;
-
-        Injector injector = Guice.createInjector(new MessagingModule());
-        BounceProxyTestUtils.objectMapper = injector.getInstance(ObjectMapper.class);
+        bpMock = new BounceProxyCommunicationMock(configuration.getAnyBounceProxyUrl(), receiverId);
     }
 
     @Test
     public void testCreateChannel() throws Exception {
         String channelId = UUID.randomUUID().toString();
-        createChannel(channelId);
-
+        bpMock.createChannel(channelId);
     }
 
     @Test
     public void testCreateChannelWithNoChannelId() throws Exception {
-        onrequest().with().queryParam("ccid", "").expect().statusCode(400).when().post("channels/");
-
+        bpMock.onrequest().with().queryParam("ccid", "").expect().statusCode(400).when().post("channels/");
     }
 
     @Test
     public void testOpenChannelWithEmptyCache() throws Exception {
         String channelId = UUID.randomUUID().toString();
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
 
         int timeout_ms = 1000;
         long timeStart = System.currentTimeMillis();
         Future<Response> longPoll;
         try {
-            longPoll = longPollInOwnThread(channelId, timeout_ms);
+            longPoll = bpMock.longPollInOwnThread(channelId, timeout_ms);
             longPoll.get();
         } catch (ExecutionException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
@@ -125,27 +105,27 @@ public class ChannelServicesTest {
         // removed, was only used to view logfiles of a dependency. Not needed anymore.
         // java.util.logging.Logger.getLogger(ProviderServices.class.getName()).setLevel(Level.ALL);
         String channelId = UUID.randomUUID().toString();
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
         // generate a random payload
         String payload1 = "payload-" + UUID.randomUUID().toString();
         String payload2 = "payload-" + UUID.randomUUID().toString();
         long messageRelativeTtlMs = 1000000L;
-        postMessage(channelId, messageRelativeTtlMs, payload1);
-        postMessage(channelId, messageRelativeTtlMs, payload2);
+        bpMock.postMessage(channelId, messageRelativeTtlMs, payload1);
+        bpMock.postMessage(channelId, messageRelativeTtlMs, payload2);
         int longpollTimeout_ms = 100000;
 
         long timeStart = System.currentTimeMillis();
-        Future<Response> responseFuture = longPollInOwnThread(channelId, longpollTimeout_ms);
+        Future<Response> responseFuture = bpMock.longPollInOwnThread(channelId, longpollTimeout_ms);
         Response response = responseFuture.get();
-        String payloadReceived = response.getBody().asString();
         int timeTotal = (int) (System.currentTimeMillis() - timeStart);
 
         // make sure we did not wait the timeout
         assertThat(timeTotal, lessThan(longpollTimeout_ms));
-        List<String> splitJson = Utilities.splitJson(payloadReceived);
 
-        JoynrMessage receivedPayload1 = objectMapper.readValue(splitJson.get(0), JoynrMessage.class);
-        JoynrMessage receivedPayload2 = objectMapper.readValue(splitJson.get(1), JoynrMessage.class);
+        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
+
+        JoynrMessage receivedPayload1 = messagesFromResponse.get(0);
+        JoynrMessage receivedPayload2 = messagesFromResponse.get(1);
 
         assertThat("payload1: ", receivedPayload1.getPayload(), equalToIgnoringCase(payload1));
         assertThat("payload2: ", receivedPayload2.getPayload(), equalToIgnoringCase(payload2));
@@ -155,12 +135,12 @@ public class ChannelServicesTest {
     public void testCreateAndDeleteChannel() throws Exception {
         int longpollTimeout_ms = 5000;
         String channelId = UUID.randomUUID().toString();
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
 
         // start the long poll on the channel, then delete it.
-        Future<Response> longPoll = longPollInOwnThread(channelId, longpollTimeout_ms);
+        Future<Response> longPoll = bpMock.longPollInOwnThread(channelId, longpollTimeout_ms);
         Thread.sleep(100);
-        deleteChannel(channelId, 100, 200);
+        bpMock.deleteChannel(channelId, 100, 200);
         // After delete, the long poll should not longer be active, should not have to wait long until it returns empty
         longPoll.get(100L, TimeUnit.MILLISECONDS);
 
@@ -169,27 +149,27 @@ public class ChannelServicesTest {
         String payload2 = "payload-" + UUID.randomUUID().toString();
         long messageRelativeTtlMs = 1000000L;
         // expect the messages not to be postable since the channel does not exist (get 400 back from server)
-        postMessage(channelId, messageRelativeTtlMs, payload1, 400);
-        postMessage(channelId, messageRelativeTtlMs, payload2, 400);
+        bpMock.postMessage(channelId, messageRelativeTtlMs, payload1, 400);
+        bpMock.postMessage(channelId, messageRelativeTtlMs, payload2, 400);
 
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
         // now the posts should work
-        postMessage(channelId, messageRelativeTtlMs, payload1);
-        postMessage(channelId, messageRelativeTtlMs, payload2);
+        bpMock.postMessage(channelId, messageRelativeTtlMs, payload1);
+        bpMock.postMessage(channelId, messageRelativeTtlMs, payload2);
         Thread.sleep(2000);
 
         long timeStart = System.currentTimeMillis();
-        longPoll = longPollInOwnThread(channelId, longpollTimeout_ms);
+        longPoll = bpMock.longPollInOwnThread(channelId, longpollTimeout_ms);
         Response response = longPoll.get();
-        String payloadReceived = response.getBody().asString();
         int timeTotal = (int) (System.currentTimeMillis() - timeStart);
 
         // make sure we did not wait the timeout
         assertThat(timeTotal, lessThan(longpollTimeout_ms));
-        List<String> splitJson = Utilities.splitJson(payloadReceived);
 
-        JoynrMessage receivedPayload1 = objectMapper.readValue(splitJson.get(0), JoynrMessage.class);
-        JoynrMessage receivedPayload2 = objectMapper.readValue(splitJson.get(1), JoynrMessage.class);
+        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
+
+        JoynrMessage receivedPayload1 = messagesFromResponse.get(0);
+        JoynrMessage receivedPayload2 = messagesFromResponse.get(1);
 
         assertThat("payload1: ", receivedPayload1.getPayload(), equalToIgnoringCase(payload1));
         assertThat("payload2: ", receivedPayload2.getPayload(), equalToIgnoringCase(payload2));
@@ -201,7 +181,7 @@ public class ChannelServicesTest {
         int longpollTimeout_ms = 100000;
 
         long timeStart = System.currentTimeMillis();
-        longPollInOwnThread(channelId, longpollTimeout_ms, 400);
+        bpMock.longPollInOwnThread(channelId, longpollTimeout_ms, 400);
         long elapsedTimeInLongPoll = System.currentTimeMillis() - timeStart;
         assertThat("long poll did not abort immediately", elapsedTimeInLongPoll < 5000);
     }

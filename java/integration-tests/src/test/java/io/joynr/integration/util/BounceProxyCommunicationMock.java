@@ -21,16 +21,19 @@ package io.joynr.integration.util;
 
 import static com.jayway.restassured.RestAssured.given;
 import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.MessagingModule;
+import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.Is;
 
 import joynr.JoynrMessage;
 
@@ -38,9 +41,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -50,23 +56,40 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 /**
  * Contains methods that can be used by different test classes that test
- * bounceproxy functionality.
+ * bounceproxy functionality. This is an object because it is configured for one
+ * communication partner, e.g. receiver ID and object mapper are set.
  * 
  * @author christina.strobel
  * 
  */
-public class BounceProxyTestUtils {
+public class BounceProxyCommunicationMock {
 
-    public static String receiverId;
-    public static ScheduledThreadPoolExecutor scheduler;
-    public static ObjectMapper objectMapper;
+    private final String receiverId;
+    private ObjectMapper objectMapper;
+
+    private final ScheduledThreadPoolExecutor scheduler;
+
+    public BounceProxyCommunicationMock(String bounceProxyUrl, String receiverId) {
+        this(bounceProxyUrl, receiverId, null);
+
+        Injector injector = Guice.createInjector(new MessagingModule());
+        this.objectMapper = injector.getInstance(ObjectMapper.class);
+    }
+
+    public BounceProxyCommunicationMock(String bounceProxyUrl, String receiverId, ObjectMapper objectMapper) {
+        RestAssured.baseURI = bounceProxyUrl;
+        this.receiverId = receiverId;
+        this.objectMapper = objectMapper;
+
+        this.scheduler = new ScheduledThreadPoolExecutor(2);
+    }
 
     /**
      * initialize a RequestSpecification with no timeout
      * 
      * @return a rest-assured RequestSpecification
      */
-    public static RequestSpecification onrequest() {
+    public RequestSpecification onrequest() {
         return onrequest(0);
     }
 
@@ -78,7 +101,7 @@ public class BounceProxyTestUtils {
      *            received in this many milliseconds
      * @return
      */
-    public static RequestSpecification onrequest(int timeout_ms) {
+    public RequestSpecification onrequest(int timeout_ms) {
         return given().contentType(ContentType.JSON)
                       .log()
                       .everything()
@@ -88,20 +111,23 @@ public class BounceProxyTestUtils {
     }
 
     /**
-     * Create a channel with the given channelId
+     * Create a channel with the given channelId. The {@link #receiverId} is
+     * used as tracking ID.
+     * A status code 201 Created is expected as response code.
      * 
      * @param myChannelId
      */
-    public static void createChannel(String myChannelId) {
-        onrequest().with()
-                   .headers("X-Atmosphere-Tracking-Id", receiverId)
-                   .queryParam("ccid", myChannelId)
-                   .expect()
-                   .statusCode(201)
-                   .header("Location", CoreMatchers.containsString(RestAssured.baseURI + "channels/" + myChannelId))
-                   .body(CoreMatchers.is(myChannelId))
-                   .when()
-                   .post("/channels/");
+    public Response createChannel(String myChannelId) {
+        return onrequest().with()
+                          .headers("X-Atmosphere-Tracking-Id", receiverId)
+                          .queryParam("ccid", myChannelId)
+                          .expect()
+                          .statusCode(201)
+                          .header("Location",
+                                  CoreMatchers.containsString(RestAssured.baseURI + "channels/" + myChannelId))
+                          .body(CoreMatchers.is(myChannelId))
+                          .when()
+                          .post("/channels/");
     }
 
     /**
@@ -115,12 +141,10 @@ public class BounceProxyTestUtils {
      * @throws JsonMappingException
      * @throws IOException
      */
-    public static ScheduledFuture<Response> postMessageInOwnThread(final String myChannelId,
-                                                                   final long relativeTtlMs,
-                                                                   final String postPayload)
-                                                                                            throws JsonGenerationException,
-                                                                                            JsonMappingException,
-                                                                                            IOException {
+    public ScheduledFuture<Response> postMessageInOwnThread(final String myChannelId,
+                                                            final long relativeTtlMs,
+                                                            final String postPayload) throws JsonGenerationException,
+                                                                                     JsonMappingException, IOException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
 
             public Response call() throws JsonGenerationException, JsonMappingException, IOException {
@@ -140,8 +164,8 @@ public class BounceProxyTestUtils {
      * @return
      * @throws JsonProcessingException
      */
-    public static Response postMessage(final String myChannelId, final long relativeTtlMs, final String postPayload)
-                                                                                                                    throws JsonProcessingException {
+    public Response postMessage(final String myChannelId, final long relativeTtlMs, final String postPayload)
+                                                                                                             throws JsonProcessingException {
 
         return postMessage(myChannelId, relativeTtlMs, postPayload, 201);
     }
@@ -156,10 +180,10 @@ public class BounceProxyTestUtils {
      * @return
      * @throws JsonProcessingException
      */
-    public static Response postMessage(final String myChannelId,
-                                       final long relativeTtlMs,
-                                       final String postPayload,
-                                       int expectedStatusCode) throws JsonProcessingException {
+    public Response postMessage(final String myChannelId,
+                                final long relativeTtlMs,
+                                final String postPayload,
+                                int expectedStatusCode) throws JsonProcessingException {
 
         String serializedMessage = createSerializedJoynrMessage(relativeTtlMs, postPayload);
         /* @formatter:off */
@@ -183,8 +207,8 @@ public class BounceProxyTestUtils {
      * @return
      * @throws SocketTimeoutException
      */
-    public static ScheduledFuture<Response> longPollInOwnThread(String myChannelId, int timeout_ms)
-                                                                                                   throws SocketTimeoutException {
+    public ScheduledFuture<Response> longPollInOwnThread(String myChannelId, int timeout_ms)
+                                                                                            throws SocketTimeoutException {
         return longPollInOwnThread(myChannelId, timeout_ms, 200);
     }
 
@@ -197,9 +221,9 @@ public class BounceProxyTestUtils {
      * @return
      * @throws SocketTimeoutException
      */
-    public static ScheduledFuture<Response> longPollInOwnThread(final String myChannelId,
-                                                                final int timeout_ms,
-                                                                final int statusCode) throws SocketTimeoutException {
+    public ScheduledFuture<Response> longPollInOwnThread(final String myChannelId,
+                                                         final int timeout_ms,
+                                                         final int statusCode) throws SocketTimeoutException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
             public Response call() throws SocketTimeoutException {
                 return longPoll(myChannelId, timeout_ms, statusCode);
@@ -208,8 +232,8 @@ public class BounceProxyTestUtils {
         return scheduledFuture;
     }
 
-    public static Response longPoll(final String myChannelId, final int timeout_ms, final int statusCode)
-                                                                                                         throws SocketTimeoutException {
+    public Response longPoll(final String myChannelId, final int timeout_ms, final int statusCode)
+                                                                                                  throws SocketTimeoutException {
         return onrequest(timeout_ms).with()
                                     .header("X-Atmosphere-tracking-id", receiverId)
                                     .expect()
@@ -220,7 +244,7 @@ public class BounceProxyTestUtils {
                                     .get("/channels/" + myChannelId + "/");
     }
 
-    public static void deleteChannel(final String myChannelId, final int timeout_ms, final int statusCode) {
+    public void deleteChannel(final String myChannelId, final int timeout_ms, final int statusCode) {
         onrequest(timeout_ms)// .expect()
                              // .statusCode(statusCode)
                              .log()
@@ -238,8 +262,8 @@ public class BounceProxyTestUtils {
      * @return
      * @throws JsonProcessingException
      */
-    public static String createSerializedJoynrMessage(final long relativeTtlMs, final String postPayload)
-                                                                                                         throws JsonProcessingException {
+    public String createSerializedJoynrMessage(final long relativeTtlMs, final String postPayload)
+                                                                                                  throws JsonProcessingException {
         return createSerializedJoynrMessage(relativeTtlMs, postPayload, null);
     }
 
@@ -253,9 +277,8 @@ public class BounceProxyTestUtils {
      * @return
      * @throws JsonProcessingException
      */
-    public static String createSerializedJoynrMessage(final long relativeTtlMs,
-                                                      final String postPayload,
-                                                      final String msgId) throws JsonProcessingException {
+    public String createSerializedJoynrMessage(final long relativeTtlMs, final String postPayload, final String msgId)
+                                                                                                                      throws JsonProcessingException {
         JoynrMessage message = new JoynrMessage();
         if (msgId != null) {
             message.setHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID, msgId);
@@ -437,5 +460,25 @@ public class BounceProxyTestUtils {
             return getExpiryDate() < System.currentTimeMillis();
         }
 
+    }
+
+    public List<JoynrMessage> getJoynrMessagesFromResponse(Response longPoll) throws JsonParseException,
+                                                                             JsonMappingException, IOException {
+
+        String combinedJsonString = longPoll.getBody().asString();
+
+        List<String> splittedJsonString = Utilities.splitJson(combinedJsonString);
+        List<JoynrMessage> messages = new LinkedList<JoynrMessage>();
+
+        for (String jsonString : splittedJsonString) {
+            JoynrMessage message = objectMapper.readValue(jsonString, JoynrMessage.class);
+            messages.add(message);
+        }
+
+        return messages;
+    }
+
+    public String getReceiverId() {
+        return receiverId;
     }
 }

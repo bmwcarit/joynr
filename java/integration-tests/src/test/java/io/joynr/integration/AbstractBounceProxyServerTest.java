@@ -19,19 +19,13 @@ package io.joynr.integration;
  * #L%
  */
 
-import static io.joynr.integration.util.BounceProxyTestUtils.createChannel;
-import static io.joynr.integration.util.BounceProxyTestUtils.createSerializedJoynrMessage;
-import static io.joynr.integration.util.BounceProxyTestUtils.deleteChannel;
-import static io.joynr.integration.util.BounceProxyTestUtils.longPollInOwnThread;
-import static io.joynr.integration.util.BounceProxyTestUtils.onrequest;
-import static io.joynr.integration.util.BounceProxyTestUtils.postMessageInOwnThread;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.util.BounceProxyTestUtils;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
@@ -93,28 +87,28 @@ public abstract class AbstractBounceProxyServerTest {
     protected ObjectMapper objectMapper;
     private String receiverId = "bounceproxytest-" + UUID.randomUUID().toString();
 
+    protected BounceProxyCommunicationMock bpMock;
+
     @Before
     public void setUp() throws Exception {
 
         channelId = "testSendAndReceiveMessagesOnServer_" + System.currentTimeMillis();
 
-        String serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
+        objectMapper = getObjectMapper();
 
-        RestAssured.baseURI = serverUrl != null ? serverUrl : DEFAULT_SERVER;
+        String serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
+        bpMock = new BounceProxyCommunicationMock(serverUrl != null ? serverUrl : DEFAULT_SERVER,
+                                                  receiverId,
+                                                  objectMapper);
 
         log.info("server: " + RestAssured.baseURI + " (default was: " + DEFAULT_SERVER + ")");
         log.info("port: " + RestAssured.port + " (default was: " + DEFAULT_PORT + ")");
         log.info("basePath: " + RestAssured.baseURI + " (default was: " + DEFAULT_PATH + ")");
-        objectMapper = getObjectMapper();
-
-        BounceProxyTestUtils.receiverId = receiverId;
-        BounceProxyTestUtils.objectMapper = objectMapper;
-        BounceProxyTestUtils.scheduler = scheduler;
     }
 
     @After
     public void tearDown() throws Exception {
-        deleteChannel(channelId, 30000, 200);
+        bpMock.deleteChannel(channelId, 30000, 200);
     }
 
     @Test(timeout = 20000)
@@ -125,7 +119,7 @@ public abstract class AbstractBounceProxyServerTest {
         final long maxTimePerRun = 5000;
         final int maxRuns = 100;
 
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
         // createChannel(channelIdProvider);
 
         RestAssured.baseURI = getBounceProxyBaseUri();
@@ -137,15 +131,15 @@ public abstract class AbstractBounceProxyServerTest {
             expectedPayloads.clear();
 
             long startTime_ms = System.currentTimeMillis();
-            ScheduledFuture<Response> longPollConsumer = longPollInOwnThread(channelId, 30000);
+            ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
 
             String postPayload = payload + index++ + "-" + UUID.randomUUID().toString();
             expectedPayloads.add(postPayload);
-            ScheduledFuture<Response> postMessage = postMessageInOwnThread(channelId, 5000, postPayload);
+            ScheduledFuture<Response> postMessage = bpMock.postMessageInOwnThread(channelId, 5000, postPayload);
 
             String postPayload2 = payload + index++ + "-" + UUID.randomUUID().toString();
             expectedPayloads.add(postPayload2);
-            ScheduledFuture<Response> postMessage2 = postMessageInOwnThread(channelId, 5000, postPayload2);
+            ScheduledFuture<Response> postMessage2 = bpMock.postMessageInOwnThread(channelId, 5000, postPayload2);
 
             // wait until the long poll returns
             Response responseLongPoll = longPollConsumer.get();
@@ -160,7 +154,7 @@ public abstract class AbstractBounceProxyServerTest {
 
             if (listOfJsonStrings.size() < 2 && elapsedTime_ms < maxTimePerRun) {
                 // Thread.sleep(100);
-                Response responseLongPoll2 = longPollInOwnThread(channelId, 30000).get();
+                Response responseLongPoll2 = bpMock.longPollInOwnThread(channelId, 30000).get();
                 String responseBody2 = responseLongPoll2.getBody().asString();
                 List<String> listOfJsonStrings2 = Utilities.splitJson(responseBody2);
                 listOfJsonStrings.addAll(listOfJsonStrings2);
@@ -192,7 +186,7 @@ public abstract class AbstractBounceProxyServerTest {
 
         final int maxRuns = 1000;
 
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
         // createChannel(channelIdProvider);
 
         RestAssured.baseURI = getBounceProxyBaseUri();
@@ -203,11 +197,11 @@ public abstract class AbstractBounceProxyServerTest {
 
             expectedPayloads.clear();
 
-            ScheduledFuture<Response> longPollConsumer = longPollInOwnThread(channelId, 30000);
+            ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
 
             String postPayload = payload + i + "-" + UUID.randomUUID().toString();
             expectedPayloads.add(postPayload);
-            ScheduledFuture<Response> postMessage = postMessageInOwnThread(channelId, 5000, postPayload);
+            ScheduledFuture<Response> postMessage = bpMock.postMessageInOwnThread(channelId, 5000, postPayload);
 
             // wait until the long poll returns
             Response responseLongPoll = longPollConsumer.get();
@@ -239,20 +233,20 @@ public abstract class AbstractBounceProxyServerTest {
         for (int i = 0; i < maxTries; i++) {
             String newChannelId = "JavaTest-Bounceproxy-testOpenAndCloseChannels-" + i;
             channels.add(newChannelId);
-            createChannel(newChannelId);
+            bpMock.createChannel(newChannelId);
             Thread.sleep(50);
         }
 
         Thread.sleep(5000);
 
         for (String channel : channels) {
-            postMessageInOwnThread(channel, 10000, "payload-" + UUID.randomUUID().toString());
+            bpMock.postMessageInOwnThread(channel, 10000, "payload-" + UUID.randomUUID().toString());
             Thread.sleep(50);
 
         }
 
         for (String channel : channels) {
-            deleteChannel(channel, 1000, 200);
+            bpMock.deleteChannel(channel, 1000, 200);
             Thread.sleep(50);
 
         }
@@ -262,12 +256,13 @@ public abstract class AbstractBounceProxyServerTest {
     @Test
     public void testPostMessageToNonExistingChannel() throws Exception {
 
-        String serializedMessage = createSerializedJoynrMessage(100000l, "some-payload");
+        String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, "some-payload");
         /* @formatter:off */
-        Response postMessageResponse = onrequest().with()
-                                                  .body(serializedMessage)
-                                                  .when()
-                                                  .post("/channels/non-existing-channel/message/");
+        Response postMessageResponse = bpMock.onrequest()
+                                             .with()
+                                             .body(serializedMessage)
+                                             .when()
+                                             .post("/channels/non-existing-channel/message/");
         /* @formatter:on */
 
         assertEquals(400 /* Bad Request */, postMessageResponse.getStatusCode());

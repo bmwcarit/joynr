@@ -20,23 +20,16 @@ package io.joynr.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import static io.joynr.integration.util.BounceProxyTestUtils.createChannel;
-import static io.joynr.integration.util.BounceProxyTestUtils.createSerializedJoynrMessage;
-import static io.joynr.integration.util.BounceProxyTestUtils.longPollInOwnThread;
-import static io.joynr.integration.util.BounceProxyTestUtils.objectMapper;
 import io.joynr.integration.setup.BounceProxyServerSetup;
 import io.joynr.integration.setup.SingleBounceProxy;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
 import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import io.joynr.integration.util.BounceProxyTestUtils;
-import io.joynr.messaging.MessagingModule;
-import io.joynr.messaging.util.Utilities;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import joynr.JoynrMessage;
 
@@ -45,9 +38,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -59,18 +49,13 @@ public class MessageWithoutContentTypeTest {
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;
 
-    private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2);
     private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+
+    private BounceProxyCommunicationMock bpMock;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
-
-        BounceProxyTestUtils.receiverId = receiverId;
-        BounceProxyTestUtils.scheduler = scheduler;
-
-        Injector injector = Guice.createInjector(new MessagingModule());
-        BounceProxyTestUtils.objectMapper = injector.getInstance(ObjectMapper.class);
+        bpMock = new BounceProxyCommunicationMock(configuration.getAnyBounceProxyUrl(), receiverId);
     }
 
     @Test
@@ -78,11 +63,11 @@ public class MessageWithoutContentTypeTest {
 
         String channelId = "MessageWithoutContentTypeTest_" + UUID.randomUUID().toString();
 
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
 
         String postPayload = "payload-" + UUID.randomUUID().toString();
         String msgId = "msgId-" + UUID.randomUUID().toString();
-        String serializedMessage = createSerializedJoynrMessage(100000l, postPayload, msgId);
+        String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, postPayload, msgId);
 
         given().contentType(ContentType.TEXT)
                .content(serializedMessage)
@@ -96,16 +81,13 @@ public class MessageWithoutContentTypeTest {
                .when()
                .post("/channels/" + channelId + "/messageWithoutContentType");
 
-        ScheduledFuture<Response> longPollConsumer = longPollInOwnThread(channelId, 30000);
+        ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
         Response responseLongPoll = longPollConsumer.get();
 
-        String responseBody = responseLongPoll.getBody().asString();
-        List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
+        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(responseLongPoll);
+        Assert.assertEquals(1, messagesFromResponse.size());
 
-        Assert.assertEquals(1, listOfJsonStrings.size());
-
-        String json = listOfJsonStrings.get(0);
-        JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
+        JoynrMessage message = messagesFromResponse.get(0);
         Assert.assertEquals(postPayload, message.getPayload());
     }
 
@@ -114,11 +96,11 @@ public class MessageWithoutContentTypeTest {
 
         String channelId = "MessageWithoutContentTypeTest_" + UUID.randomUUID().toString();
 
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
 
         String postPayload1 = "payload-" + UUID.randomUUID().toString();
         String msgId1 = "msgId-" + UUID.randomUUID().toString();
-        String serializedMessage1 = createSerializedJoynrMessage(100000l, postPayload1, msgId1);
+        String serializedMessage1 = bpMock.createSerializedJoynrMessage(100000l, postPayload1, msgId1);
 
         given().contentType(ContentType.TEXT)
                .content(serializedMessage1)
@@ -134,7 +116,7 @@ public class MessageWithoutContentTypeTest {
 
         String postPayload2 = "payload-" + UUID.randomUUID().toString();
         String msgId2 = "msgId-" + UUID.randomUUID().toString();
-        String serializedMessage2 = createSerializedJoynrMessage(100000l, postPayload2, msgId2);
+        String serializedMessage2 = bpMock.createSerializedJoynrMessage(100000l, postPayload2, msgId2);
 
         given().contentType(ContentType.TEXT)
                .content(serializedMessage2)
@@ -149,16 +131,14 @@ public class MessageWithoutContentTypeTest {
                .when()
                .post("/channels/" + channelId + "/message");
 
-        ScheduledFuture<Response> longPollConsumer = longPollInOwnThread(channelId, 30000);
+        ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
         Response responseLongPoll = longPollConsumer.get();
 
-        String responseBody = responseLongPoll.getBody().asString();
-        List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
+        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(responseLongPoll);
 
-        Assert.assertEquals(2, listOfJsonStrings.size());
+        Assert.assertEquals(2, messagesFromResponse.size());
 
-        String json = listOfJsonStrings.get(0);
-        JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
+        JoynrMessage message = messagesFromResponse.get(0);
         Assert.assertEquals(postPayload1, message.getPayload());
     }
 

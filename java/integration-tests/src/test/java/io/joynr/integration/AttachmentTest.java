@@ -20,23 +20,17 @@ package io.joynr.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import static io.joynr.integration.util.BounceProxyTestUtils.createChannel;
-import static io.joynr.integration.util.BounceProxyTestUtils.createSerializedJoynrMessage;
-import static io.joynr.integration.util.BounceProxyTestUtils.longPollInOwnThread;
-import static io.joynr.integration.util.BounceProxyTestUtils.objectMapper;
-import static io.joynr.integration.util.BounceProxyTestUtils.onrequest;
 import io.joynr.integration.setup.BounceProxyServerSetup;
 import io.joynr.integration.setup.SingleBounceProxy;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
 import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import io.joynr.integration.util.BounceProxyTestUtils;
-import io.joynr.messaging.MessagingModule;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.annotation.Nullable;
 
@@ -49,9 +43,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
@@ -64,25 +55,22 @@ public class AttachmentTest {
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;
 
-    private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2);
     private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+
+    private BounceProxyCommunicationMock bpMock;
 
     @Before
     public void setUp() {
         RestAssured.baseURI = configuration.getAnyBounceProxyUrl();
 
-        BounceProxyTestUtils.receiverId = receiverId;
-        BounceProxyTestUtils.scheduler = scheduler;
-
-        Injector injector = Guice.createInjector(new MessagingModule());
-        BounceProxyTestUtils.objectMapper = injector.getInstance(ObjectMapper.class);
+        bpMock = new BounceProxyCommunicationMock(configuration.getAnyBounceProxyUrl(), receiverId);
     }
 
     @Test
     public void testSendAttachedByteArray() throws Exception {
         String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
         try {
-            createChannel(channelId);
+            bpMock.createChannel(channelId);
         } catch (Exception e) {
             logger.error("Exception :", e);
         }
@@ -94,7 +82,7 @@ public class AttachmentTest {
     private Response sendAttachmentMessage(String channelId) throws Exception {
         long ttl_ms = 1000000;
         String payload = "attachmentTest";
-        String serializedMessageWrapper = createSerializedJoynrMessage(ttl_ms, payload);
+        String serializedMessageWrapper = bpMock.createSerializedJoynrMessage(ttl_ms, payload);
 
         String content = "This is a binary content";
         Response response = given().multiPart("wrapper", serializedMessageWrapper, "application/json")
@@ -117,19 +105,20 @@ public class AttachmentTest {
     public void testSendAndDownload() throws Exception {
         String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
 
-        createChannel(channelId);
+        bpMock.createChannel(channelId);
 
         Response senMsgResponse = sendAttachmentMessage(channelId);
 
         String msgId = senMsgResponse.getHeader("msgId");
 
-        Future<Response> response = longPollInOwnThread(channelId, 1000000, 200);
+        Future<Response> response = bpMock.longPollInOwnThread(channelId, 1000000, 200);
         Response longPoll = response.get();
 
-        String json = longPoll.getBody().asString();
+        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(longPoll);
 
-        JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
+        Assert.assertEquals(1, messages.size());
 
+        JoynrMessage message = messages.get(0);
         Assert.assertTrue(message.getPayload() != null);
 
         Response attachment = getAttachment(channelId, msgId);
@@ -146,14 +135,15 @@ public class AttachmentTest {
     }
 
     private Response getAttachment(String channelId, String messageId) {
-        Response response = onrequest(100000).with()
-                                             .queryParam("attachmentId", String.valueOf(messageId))
-                                             .expect()
-                                             .statusCode(200)
-                                             .log()
-                                             .all()
-                                             .when()
-                                             .get("/channels/" + channelId + "/attachment/");
+        Response response = bpMock.onrequest(100000)
+                                  .with()
+                                  .queryParam("attachmentId", String.valueOf(messageId))
+                                  .expect()
+                                  .statusCode(200)
+                                  .log()
+                                  .all()
+                                  .when()
+                                  .get("/channels/" + channelId + "/attachment/");
 
         return response;
 

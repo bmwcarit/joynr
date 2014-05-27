@@ -20,7 +20,6 @@ package io.joynr.integration;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import static io.joynr.integration.util.BounceProxyTestUtils.*;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.isChannelUrlwithJsessionId;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsMessage;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.isMessageUrlwithJsessionId;
@@ -42,6 +41,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import joynr.JoynrMessage;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -140,7 +141,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
 
         // post messages to long polling channel before opening channel
-        String serializedMessage = createSerializedJoynrMessage(100000l, "message-123", "message-123");
+        String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, "message-123", "message-123");
 
         /* @formatter:off */
         Response responsePostMessage = given().when()
@@ -166,8 +167,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // body doesn't actually contain proper json, but each message
         // serialized as json attached. We have to split them first.
-        String body = responseOpenChannel.getBody().asString();
-        List<String> messages = Utilities.splitJson(body);
+        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
         assertEquals(1, messages.size());
 
         // we cut the brackets of some of the messages when we split the
@@ -201,7 +201,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel before opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            String serializedMessage = createSerializedJoynrMessage(100000l, msgId, msgId);
+            String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, msgId, msgId);
 
             /* @formatter:off */
             Response responsePostMessage = given().when()
@@ -230,8 +230,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // body doesn't actually contain proper json, but each message
         // serialized as json attached. We have to split them first.
-        String body = responseOpenChannel.getBody().asString();
-        List<String> messages = Utilities.splitJson(body);
+        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
         assertEquals(3, messages.size());
 
         assertThat(messages, containsMessage("message-123"));
@@ -280,7 +279,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel after opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            String serializedMessage = createSerializedJoynrMessage(100000l, msgId, msgId);
+            String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, msgId, msgId);
 
             /* @formatter:off */
             Response responsePostMessage = given().when()
@@ -297,11 +296,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         Response responseOpenChannel = (Response) longPollingChannelFuture.get(10, TimeUnit.SECONDS);
         assertEquals(200 /* OK */, responseOpenChannel.getStatusCode());
 
-        // body doesn't actually contain proper json, but each message
-        // serialized as json attached. We have to split them first.
-        // Long poll will return after first message sent.
-        String body = responseOpenChannel.getBody().asString();
-        List<String> messages = Utilities.splitJson(body);
+        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
         assertEquals(1, messages.size());
 
         // we cut the brackets of some of the messages when we split the
