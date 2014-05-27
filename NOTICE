@@ -17,6 +17,7 @@ under the License.
 
 This project has dependencies to:
   AOP alliance under Public Domain
+  Apache Commons Lang under The Apache Software License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
@@ -39,10 +40,12 @@ This project has dependencies to:
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
+  Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   core under Mozilla Public License Version 2.0
+  CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   dbus under Mozilla Public License Version 2.0
   dom4j under BSD License
@@ -69,6 +72,8 @@ This project has dependencies to:
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
+  HtmlUnit under Apache License, Version 2.0
+  HtmlUnit Core JS under Mozilla Public License version 2.0
   HttpComponents Client for Android under Apache License, Version 2.0
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
@@ -199,6 +204,7 @@ This project has dependencies to:
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Mockito under The MIT License
   MXP1: Xml Pull Parser 3rd Edition (XPP3) under Indiana University Extreme! Lab Software License, vesion 1.1.1 or Public Domain or Apache Software License, version 1.1
+  Neko HTML under The Apache Software License, Version 2.0
   Objenesis under MIT License
   OpenJPA JDBC under Apache Software License 2.0
   OpenJPA Kernel under Apache Software License 2.0
@@ -231,6 +237,7 @@ This project has dependencies to:
   rest-assured-common under Apache 2.0
   RoboGuice under Apache 2
   Serp under BSD
+  Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
@@ -238,6 +245,9 @@ This project has dependencies to:
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  Xalan Java under The Apache Software License, Version 2.0
+  Xalan Java Serializer under The Apache Software License, Version 2.0
+  Xerces2-j under The Apache Software License, Version 2.0
+  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
 

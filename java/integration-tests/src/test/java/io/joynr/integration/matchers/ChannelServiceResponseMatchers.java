@@ -52,6 +52,12 @@ public class ChannelServiceResponseMatchers {
             }
 
             @Override
+            public void describeMismatch(Object item, Description description) {
+                JsonPath jsonPath = (JsonPath) item;
+                description.appendText(jsonPath.prettyPrint());
+            }
+
+            @Override
             public void describeTo(Description description) {
                 description.appendText("contains channel ID '" + channelId + "'");
             }
