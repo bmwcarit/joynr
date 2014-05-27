@@ -67,8 +67,12 @@ public class SessionFilter implements Filter {
     @Named(PROPERTY_ROUTE_ID_NAME)
     private String routeIdName;
 
+    private String routeId;
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        routeId = System.getProperty(routeIdName);
+        logger.debug("Using routeId {}", routeId);
     }
 
     @Override
@@ -165,7 +169,6 @@ public class SessionFilter implements Filter {
 
             // encode the URL
             String sessionId = session.getId();
-            String routeId = System.getProperty(routeIdName);
 
             // append jsessionid
             url = url + ";" + sessionIdName + "=" + sessionId;
