@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-	var url = "http://" + document.location.host + "/bounceproxy/channels/";
+	var url = "http://" + document.location.host + document.location.pathname.replace(".html", "/");
 
 function init() {
     aaData = [];
