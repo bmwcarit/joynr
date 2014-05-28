@@ -19,10 +19,15 @@ package io.joynr.integration.util;
  * #L%
  */
 
+import static io.joynr.integration.matchers.MonitoringServiceResponseMatchers.containsBounceProxy;
+import io.joynr.integration.setup.SystemPropertyServletConfiguration;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.servlet.ServletUtil;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Connector;
@@ -32,9 +37,18 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.webapp.WebInfConfiguration;
+import org.eclipse.jetty.webapp.WebXmlConfiguration;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.response.Response;
 
 public class ServersUtil {
     public static final String BOUNCEPROXY_CONTEXT = "/bounceproxy";
@@ -100,7 +114,7 @@ public class ServersUtil {
         System.setProperty("joynr.bounceproxy.url4bpc", bpUrl);
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createControlledBounceproxyWebApp() });
+        contexts.setHandlers(new Handler[]{ createControlledBounceproxyWebApp("", null) });
         Server server = startServer(contexts, port);
 
         System.clearProperty("joynr.bounceproxy.id");
@@ -121,7 +135,7 @@ public class ServersUtil {
 
     private static Server startBounceproxyController(String warFileName) throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createBounceproxyControllerWebApp(warFileName) });
+        contexts.setHandlers(new Handler[]{ createBounceproxyControllerWebApp(warFileName, "", null) });
 
         Server server = startServer(contexts);
         String serverUrl = System.getProperties().getProperty("hostPath");
@@ -196,10 +210,15 @@ public class ServersUtil {
         return bounceproxyWebapp;
     }
 
-    private static WebAppContext createControlledBounceproxyWebApp() {
+    public static WebAppContext createControlledBounceproxyWebApp(String parentContext, Properties props) {
         WebAppContext bounceproxyWebapp = new WebAppContext();
-        bounceproxyWebapp.setContextPath(BOUNCEPROXY_CONTEXT);
+        bounceproxyWebapp.setContextPath(createContextPath(parentContext, BOUNCEPROXY_CONTEXT));
         bounceproxyWebapp.setWar("target/controlled-bounceproxy.war");
+
+        if (props != null) {
+            bounceproxyWebapp.setConfigurations(new Configuration[]{ new WebInfConfiguration(),
+                    new WebXmlConfiguration(), new SystemPropertyServletConfiguration(props) });
+        }
 
         // Makes jetty load classes in the same order as JVM. Otherwise there's
         // a conflict loading loggers.
@@ -208,16 +227,54 @@ public class ServersUtil {
         return bounceproxyWebapp;
     }
 
-    private static WebAppContext createBounceproxyControllerWebApp(String warFileName) {
+    public static WebAppContext createBounceproxyControllerWebApp(String warFileName,
+                                                                  String parentContext,
+                                                                  Properties props) {
         WebAppContext bounceproxyWebapp = new WebAppContext();
-        bounceproxyWebapp.setContextPath(BOUNCEPROXYCONTROLLER_CONTEXT);
+        bounceproxyWebapp.setContextPath(createContextPath(parentContext, BOUNCEPROXYCONTROLLER_CONTEXT));
         bounceproxyWebapp.setWar("target/" + warFileName + ".war");
 
+        if (props != null) {
+            bounceproxyWebapp.setConfigurations(new Configuration[]{ new WebInfConfiguration(),
+                    new WebXmlConfiguration(), new SystemPropertyServletConfiguration(props) });
+        }
         // Makes jetty load classes in the same order as JVM. Otherwise there's
         // a conflict loading loggers.
         bounceproxyWebapp.setParentLoaderPriority(true);
 
         return bounceproxyWebapp;
+    }
+
+    /**
+     * Creates a context path with slashes set at the right positions, i.e. a
+     * leading slash, a single slash between each context and no slash at the
+     * end.
+     * 
+     * @param contexts
+     *            the contexts to add to the path. The contexts are added in the
+     *            same order as given as parameters.
+     * @return
+     */
+    private static String createContextPath(String... contexts) {
+
+        StringBuffer resultContext = new StringBuffer();
+
+        for (String context : contexts) {
+
+            if (!(context == null || context.isEmpty())) {
+                if (!context.startsWith("/")) {
+                    resultContext.append("/");
+                }
+
+                if (context.endsWith("/")) {
+                    resultContext.append(context.substring(0, context.length() - 2));
+                } else {
+                    resultContext.append(context);
+                }
+            }
+        }
+
+        return resultContext.toString();
     }
 
     private static WebAppContext discoveryWebApp() {
@@ -225,6 +282,76 @@ public class ServersUtil {
         discoveryWebapp.setContextPath(DISCOVERY_CONTEXT);
         discoveryWebapp.setWar("target/discovery.war");
         return discoveryWebapp;
+    }
+
+    /**
+     * Waits until all bounce proxies are registered with a single bounce proxy
+     * controller or until the timeout is reached.
+     * 
+     * @param timeout_ms
+     *            the timeout in milliseconds
+     * @param wait_time_ms
+     *            the time to wait between two requests to the bounceproxy
+     *            controller to get a list of registered bounceproxies (in
+     *            milliseconds)
+     * @param bpControllerUrl
+     *            the bounceproxy controller base url to retrieve the list of
+     *            registered bounceproxies from
+     * @param bpIds
+     *            the list of bounce proxy IDs to check for their registration
+     * @return <code>true</code> if all bounceproxies are registered at the
+     *         bounceproxy controller and the timeout hasn't expired yet,
+     *         <code>false</code> if timeout has expired before all
+     *         bounceproxies were registered.
+     * @throws InterruptedException
+     *             if {@link Thread#sleep(long)} between two calls to the
+     *             bounceproxy controller was interrupted
+     */
+    public static boolean waitForBounceProxyRegistration(long timeout_ms,
+                                                         long wait_time_ms,
+                                                         String bpControllerUrl,
+                                                         String... bpIds) throws InterruptedException {
+
+        logger.debug("Wait for registration of bounceproxies at controller URL {} for {} ms",
+                     bpControllerUrl,
+                     timeout_ms);
+
+        long start = System.currentTimeMillis();
+
+        while (!areBounceProxiesRegisteredWithController(bpControllerUrl, bpIds)) {
+
+            if (System.currentTimeMillis() - start > timeout_ms) {
+                return false;
+            }
+
+            Thread.sleep(1000l);
+        }
+        return true;
+    }
+
+    private static boolean areBounceProxiesRegisteredWithController(String bpControllerUrl, String... bpIds) {
+
+        List<Matcher<? super JsonPath>> containsBounceProxyMatcher = new LinkedList<Matcher<? super JsonPath>>();
+
+        for (String bpId : bpIds) {
+            Matcher<? super JsonPath> matcher = CoreMatchers.anyOf(containsBounceProxy(bpId, "ALIVE"),
+                                                                   containsBounceProxy(bpId, "ACTIVE"));
+            containsBounceProxyMatcher.add(matcher);
+        }
+
+        Matcher<JsonPath> matcher = CoreMatchers.allOf(containsBounceProxyMatcher);
+
+        Response bounceProxiesResponse = getBounceProxies(bpControllerUrl);
+        return matcher.matches(bounceProxiesResponse.jsonPath());
+    }
+
+    private static Response getBounceProxies(String bpControllerUrl) {
+
+        String previousBaseUri = RestAssured.baseURI;
+        RestAssured.baseURI = bpControllerUrl;
+        Response bounceProxiesResponse = RestAssured.given().get("bounceproxies");
+        RestAssured.baseURI = previousBaseUri;
+        return bounceProxiesResponse;
     }
 
 }
