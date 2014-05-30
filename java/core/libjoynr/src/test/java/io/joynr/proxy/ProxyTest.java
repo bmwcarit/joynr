@@ -27,7 +27,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityScope;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
@@ -127,8 +126,7 @@ public class ProxyTest {
                                                                TestInterface.class,
                                                                new ProviderQos(),
                                                                new JoynrMessagingEndpointAddress("testChannelId"),
-                                                               "TestParticipantId",
-                                                               CapabilityScope.LOCALONLY));
+                                                               "TestParticipantId"));
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }

@@ -38,6 +38,14 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 // used as super-type token to present type erasure from generics
 class EndpointList extends ArrayList<EndpointAddressBase> {
+    public EndpointList() {
+        super();
+    }
+
+    public EndpointList(EndpointAddressBase initialEntry) {
+        this();
+        this.add(initialEntry);
+    }
 }
 
 public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializable {
@@ -54,9 +62,6 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
     protected String domain;
     protected String interfaceName;
 
-    // Indicates if the capability entry refers to a local provider
-    protected CapabilityScope scope = CapabilityScope.NOTSET;
-
     public CapabilityEntry() {
 
     }
@@ -65,39 +70,38 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
                            String interfaceName,
                            ProviderQos providerQos,
                            EndpointAddressBase endpointAddress,
-                           String participantId,
-                           CapabilityScope scope) {
+                           String participantId) {
         this.interfaceName = interfaceName;
 
         this.providerQos = providerQos;
         this.endpointAddresses.add(endpointAddress);
         this.participantId = participantId;
         this.domain = domain;
-        this.scope = scope;
     }
 
     public CapabilityEntry(String domain,
                            String interfaceName,
                            ProviderQos providerQos,
                            List<EndpointAddressBase> endpointAddresses,
-                           String participantId,
-                           CapabilityScope scope) {
+                           String participantId) {
         this.interfaceName = interfaceName;
 
         this.providerQos = providerQos;
         this.endpointAddresses.addAll(endpointAddresses);
         this.participantId = participantId;
         this.domain = domain;
-        this.scope = scope;
+    }
+
+    public CapabilityEntry(String domain, String interfaceName, ProviderQos providerQos, String participantId) {
+        this(domain, interfaceName, providerQos, new EndpointList(), participantId);
     }
 
     public <T extends JoynrInterface> CapabilityEntry(String domain,
                                                       Class<T> providedInterface,
                                                       ProviderQos providerQos,
                                                       List<EndpointAddressBase> endpointAddressList,
-                                                      String participantId,
-                                                      CapabilityScope scope) {
-        this(domain, "", providerQos, endpointAddressList, participantId, scope);
+                                                      String participantId) {
+        this(domain, "", providerQos, endpointAddressList, participantId);
         String name = null;
         String reason = "shadow field INTERFACE_NAME in your interface";
         try {
@@ -117,26 +121,16 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
                                                       Class<T> providedInterface,
                                                       ProviderQos providerQos,
                                                       EndpointAddressBase endpointAddress,
-                                                      String participantId,
-                                                      CapabilityScope scope) {
-        this(domain, providedInterface, providerQos, new EndpointList(), participantId, scope);
-        endpointAddresses.add(endpointAddress);
+                                                      String participantId) {
+        this(domain, providedInterface, providerQos, new EndpointList(endpointAddress), participantId);
     }
 
     public <T extends JoynrInterface> CapabilityEntry(String domain,
                                                       Class<T> providedInterface,
                                                       ProviderQos providerQos,
-                                                      String participantId,
-                                                      CapabilityScope scope) {
-        this(domain, providedInterface, providerQos, new EndpointList(), participantId, scope);
+                                                      String participantId) {
+        this(domain, providedInterface, providerQos, new EndpointList(), participantId);
 
-    }
-
-    public <T extends JoynrInterface> CapabilityEntry(String domain,
-                                                      Class<T> providedInterface,
-                                                      String participantId,
-                                                      CapabilityScope scope) {
-        this(domain, providedInterface, new ProviderQos(), participantId, scope);
     }
 
     public static CapabilityEntry fromCapabilityInformation(CapabilityInformation capInfo) {
@@ -144,8 +138,7 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
                                    capInfo.getInterfaceName(),
                                    capInfo.getProviderQos(),
                                    new JoynrMessagingEndpointAddress(capInfo.getChannelId()),
-                                   capInfo.getParticipantId(),
-                                   CapabilityScope.REMOTE); // Assume the Capability entry is not local because it has been serialized
+                                   capInfo.getParticipantId()); // Assume the Capability entry is not local because it has been serialized
     }
 
     @CheckForNull
@@ -187,22 +180,6 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         return interfaceName;
     }
 
-    public boolean isLocal() {
-        return !scope.equals(CapabilityScope.REMOTE);
-    }
-
-    public boolean isLocalRegisteredGlobally() {
-        return scope.equals(CapabilityScope.LOCALGLOBAL);
-    }
-
-    /**
-     * includes all locally registered and remote capabilities that are also present in the remote directories
-     * @return
-     */
-    public boolean isRegisteredInGlobalDirectories() {
-        return scope == CapabilityScope.LOCALGLOBAL || scope == CapabilityScope.REMOTE;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -212,7 +189,6 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         result = prime * result + ((providerQos == null) ? 0 : providerQos.hashCode());
-        result = prime * result + ((scope == null) ? 0 : scope.hashCode());
         return result;
     }
 
@@ -230,9 +206,6 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         stringBuilder.append("\r\n");
         stringBuilder.append("endpoint: ");
         stringBuilder.append(endpointAddresses);
-        stringBuilder.append("\r\n");
-        stringBuilder.append("isLocal: ");
-        stringBuilder.append(scope);
         stringBuilder.append("\r\n");
         return stringBuilder.toString();
 
@@ -284,8 +257,6 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
                 return false;
             }
         } else if (!providerQos.equals(other.providerQos)) {
-            return false;
-        } else if (!scope.equals(other.scope)) {
             return false;
         }
         return true;

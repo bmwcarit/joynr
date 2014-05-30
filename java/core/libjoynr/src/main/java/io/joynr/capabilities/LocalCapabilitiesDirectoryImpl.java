@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.CheckForNull;
 
@@ -60,7 +59,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
-    @Inject
     CapabilitiesStore localCapabilitiesStore;
 
     @Inject
@@ -73,29 +71,35 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     @Named(MessagingPropertyKeys.CHANNELID)
     String localChannelId;
 
+    private CapabilitiesStore globalCapabilitiesCache;
+
+    public LocalCapabilitiesDirectoryImpl(CapabilitiesStore localCapabilitiesStore,
+                                          CapabilitiesStore globalCapabilitiesCache) {
+        this.localCapabilitiesStore = localCapabilitiesStore;
+        this.globalCapabilitiesCache = globalCapabilitiesCache;
+    }
+
     @Inject
-    public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryirectoriesDomain,
+    public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId,
-                                          @Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
-                                          CapabilitiesStore localCapabilitiesStore) {
+                                          CapabilitiesStore localCapabilitiesStore,
+                                          CapabilitiesStore globalCapabilitiesCache) {
 
-        this.localCapabilitiesStore = localCapabilitiesStore;
-        this.localCapabilitiesStore.add(new CapabilityEntry(discoveryirectoriesDomain,
-                                                            GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                            new ProviderQos(),
-                                                            new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId),
-                                                            capabilitiesDirectoryParticipantId,
-                                                            CapabilityScope.REMOTE));
+        this(localCapabilitiesStore, globalCapabilitiesCache);
+        this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
+                                                             GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                             new ProviderQos(),
+                                                             new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId),
+                                                             capabilitiesDirectoryParticipantId));
 
-        this.localCapabilitiesStore.add(new CapabilityEntry(discoveryirectoriesDomain,
-                                                            ChannelUrlDirectory.INTERFACE_NAME,
-                                                            new ProviderQos(),
-                                                            new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId),
-                                                            channelUrlDirectoryParticipantId,
-                                                            CapabilityScope.REMOTE));
+        this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
+                                                             ChannelUrlDirectory.INTERFACE_NAME,
+                                                             new ProviderQos(),
+                                                             new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId),
+                                                             channelUrlDirectoryParticipantId));
     }
 
     /**
@@ -147,6 +151,8 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                     }
                 }, capabilityInformation);
             }
+        } else {
+            ret.setStatus(RegistrationStatus.DONE);
         }
         return ret;
     }
@@ -184,9 +190,8 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                        final DiscoveryQos discoveryQos,
                        final CapabilitiesCallback capabilitiesCallback) {
 
-        Collection<CapabilityEntry> localCapabilities = localCapabilitiesStore.lookup(domain,
-                                                                                      interfaceName,
-                                                                                      discoveryQos);
+        Collection<CapabilityEntry> localCapabilities = localCapabilitiesStore.lookup(domain, interfaceName);
+        Collection<CapabilityEntry> globalCapabilities = null;
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
         case LOCAL_ONLY:
@@ -196,14 +201,34 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             if (localCapabilities.size() > 0) {
                 capabilitiesCallback.processCapabilitiesReceived(localCapabilities);
             } else {
-                asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
+                globalCapabilities = globalCapabilitiesCache.lookup(domain,
+                                                                    interfaceName,
+                                                                    discoveryQos.getCacheMaxAge());
+                if (globalCapabilities.size() > 0) {
+                    capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
+                } else {
+                    asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
+                }
             }
             break;
         case GLOBAL_ONLY:
-            asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
+            globalCapabilities = globalCapabilitiesCache.lookup(domain, interfaceName, discoveryQos.getCacheMaxAge());
+            if (globalCapabilities.size() > 0) {
+                capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
+            } else {
+                // in this case, no global only caps are included in the cache --> call glob cap dir
+                asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
+            }
             break;
         case LOCAL_AND_GLOBAL:
-            asyncGetGlobalCapabilitities(domain, interfaceName, localCapabilities, capabilitiesCallback);
+            globalCapabilities = globalCapabilitiesCache.lookup(domain, interfaceName, discoveryQos.getCacheMaxAge());
+            if (globalCapabilities.size() > 0) {
+                globalCapabilities.addAll(localCapabilities);
+                capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
+            } else {
+                // in this case, no global only caps are included in the cache --> call glob cap dir
+                asyncGetGlobalCapabilitities(domain, interfaceName, localCapabilities, capabilitiesCallback);
+            }
             break;
         default:
             break;
@@ -265,6 +290,8 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             public void onSuccess(CapabilityInformation capInfo) {
                 CapabilityEntry capEntry = CapabilityEntry.fromCapabilityInformation(capInfo);
                 registerIncomingEndpoints(Lists.newArrayList(capEntry));
+                localCapabilitiesStore.add(capEntry);
+
                 capabilitiesCallback.processCapabilityReceived(capEntry);
             }
 
@@ -298,6 +325,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 Collection<CapabilityEntry> caps = capabilityInformationList2Entries(capInfo);
 
                 registerIncomingEndpoints(caps);
+                globalCapabilitiesCache.add(caps);
 
                 caps.addAll(localCapabilities);
                 capabilitiesCallback.processCapabilitiesReceived(caps);
@@ -331,7 +359,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             List<CapabilityInformation> capInfoList = new ArrayList<CapabilityInformation>(allCapabilities.size());
 
             for (CapabilityEntry capabilityEntry : allCapabilities) {
-                if (capabilityEntry.isLocalRegisteredGlobally()) {
+                if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
                     CapabilityInformation capabilityInformation = capabilityEntry2Information(capabilityEntry);
                     capInfoList.add(capabilityInformation);
                 }

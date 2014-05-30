@@ -20,7 +20,6 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.exceptions.JoynrCommunicationException;
 
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
@@ -48,10 +46,11 @@ import com.google.inject.Singleton;
  * Capability informations are stored in a concurrentHashMap. Using a in memory
  * database could be possible optimization.
  */
-@Singleton
 public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesStoreImpl.class);
+    private static final int NO_MAX_AGE = -1;
+
     // private ConcurrentLinkedQueue<CapabilityEntry> registeredCapabilities =
     // new
     // ConcurrentLinkedQueue<CapabilityEntry>();
@@ -308,11 +307,22 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
-     * (io.joynr.capabilities.EndpointAddressBase, io.joynr.arbitration.DiscoveryQos)
+     * (io.joynr.capabilities.EndpointAddressBase)
      */
     @Override
-    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint,
-                                                                         DiscoveryQos discoveryQos) {
+    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint) {
+        return findCapabilitiesForEndpointAddress(endpoint, NO_MAX_AGE);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
+     * (io.joynr.capabilities.EndpointAddressBase, long)
+     */
+    @Override
+    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint, long cacheMaxAge) {
         ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
 
         synchronized (capsLock) {
@@ -324,7 +334,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
                         logger.warn("no mapping found for {}", capId);
                         continue;
                     }
-                    if (checkAge(registeredCapabilitiesTime.get(capId), discoveryQos.getCacheMaxAge())) {
+                    if (checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge)) {
                         for (EndpointAddressBase ep : ce.endpointAddresses) {
                             if (ep.equals(endpoint)) {
                                 capabilitiesList.add(ce);
@@ -340,7 +350,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     }
 
     private boolean checkAge(Long timeStamp, long maxAcceptedAge) {
-        return (timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge));
+        return maxAcceptedAge == NO_MAX_AGE
+                || ((timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge)));
     }
 
     /*
@@ -348,11 +359,22 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
-     * (java.lang.String, java.lang.String,
-     * io.joynr.arbitration.DiscoveryQos)
+     * (java.lang.String, java.lang.String)
      */
     @Override
-    public Collection<CapabilityEntry> lookup(final String domain, final String interfaceName, DiscoveryQos discoveryQos) {
+    public Collection<CapabilityEntry> lookup(final String domain, final String interfaceName) {
+        return lookup(domain, interfaceName, NO_MAX_AGE);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * io.joynr.capabilities.CapabilitiesStore#lookup
+     * (java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public Collection<CapabilityEntry> lookup(final String domain, final String interfaceName, long cacheMaxAge) {
 
         ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
 
@@ -364,7 +386,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
                     CapabilityEntry ce = capabilityKeyToCapabilityMapping.get(capId);
 
                     if (ce != null && ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
-                        if (checkQoSMatches(capId, ce, discoveryQos)) {
+                        if (checkQoSMatches(capId, ce, cacheMaxAge)) {
                             capabilitiesList.add(ce);
                         }
                     }
@@ -426,7 +448,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         }
     }
 
-    private boolean checkQoSMatches(String capId, CapabilityEntry capInfo, DiscoveryQos discoveryQos) {
+    private boolean checkQoSMatches(String capId, CapabilityEntry capInfo, long cacheMaxAge) {
         // TODO accept QoS parameters which are higher than/include the
         // requested ones
         // ProviderQos providerQos = capInfo.getProviderQos();
@@ -440,23 +462,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
          * (requestedValue.compareTo(qosEntry.getValue()) != 0) { return false;
          * } }
          */
-        boolean matches = true;
         // If capability is local ignore age, otherwise check cache age.
-        if (!capInfo.isLocal() && !checkAge(registeredCapabilitiesTime.get(capId), discoveryQos.getCacheMaxAge())) {
-            matches = false;
-        }
-        // If Arbitration asks only for local providers ignore all non-local
-        // entries.
-        if (discoveryQos.isLocalOnly() && !capInfo.isLocal()) {
-            matches = false;
-        }
-
-        if (discoveryQos.getDiscoveryScope() == DiscoveryScope.GLOBAL_ONLY
-                && !capInfo.isRegisteredInGlobalDirectories()) {
-            matches = false;
-        }
-
-        return matches;
+        return checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge);
     }
 
     /*

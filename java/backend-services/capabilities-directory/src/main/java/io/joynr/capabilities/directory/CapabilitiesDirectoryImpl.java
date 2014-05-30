@@ -101,9 +101,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public List<CapabilityInformation> lookup(final String domain, final String interfaceName) {
         logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
         List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
-        Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain,
-                                                                              interfaceName,
-                                                                              DiscoveryQos.NO_FILTER);
+        Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain, interfaceName);
         for (CapabilityEntry entry : entryCollection) {
             capabilityInformationList.add(entry.toCapabilityInformation());
         }

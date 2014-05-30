@@ -72,9 +72,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
                                                               provider.getProviderQos(),
-                                                              participantId,
-                                                              // TODO use real scope for capability
-                                                              CapabilityScope.LOCALGLOBAL);
+                                                              participantId);
         RequestCaller requestCaller = requestCallerFactory.create(provider, providedInterface);
 
         dispatcher.addRequestCaller(participantId, requestCaller);
@@ -95,9 +93,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
                                                               provider.getProviderQos(),
-                                                              participantId,
-                                                              // TODO use real scope for capability
-                                                              CapabilityScope.LOCALGLOBAL);
+                                                              participantId);
         localCapabilitiesDirectory.remove(capabilityEntry);
         dispatcher.removeRequestCaller(participantId);
         // TODO write a test for stop publications for providerId

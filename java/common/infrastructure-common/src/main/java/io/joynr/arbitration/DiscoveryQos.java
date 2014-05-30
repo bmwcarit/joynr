@@ -104,9 +104,13 @@ public class DiscoveryQos {
                         ArbitrationStrategy arbitrationStrategy,
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
-        this();
+        this(discoveryScope, cacheMaxAge);
         this.discoveryTimeout = discoveryTimeout;
         this.arbitrationStrategy = arbitrationStrategy;
+    }
+
+    public DiscoveryQos(DiscoveryScope discoveryScope, long cacheMaxAge) {
+        this();
         setCacheMaxAge(cacheMaxAge);
         this.discoveryScope = discoveryScope;
     }
