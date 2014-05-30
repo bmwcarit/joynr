@@ -23,5 +23,6 @@ public class ArbitrationConstants {
 
     public static final String PRIORITY_PARAMETER = "priority";
     public static final String KEYWORD_PARAMETER = "keyword";
+    public static final String FIXEDPARTICIPANT_KEYWORD = "fixedParticipantId";
 
 }
