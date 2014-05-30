@@ -223,15 +223,15 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(
 
     // return local and global capabilities
     if(scope == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
-        // remove doublicates
-        QList<CapabilityEntry> result;
-        foreach (CapabilityEntry entry, localCapabilities + globalCapabilities) {
-            if(!result.contains(entry)) {
-                result += entry;
+        // return if global entries
+        if(!globalCapabilities.isEmpty()) {
+            // remove duplicates
+            QList<CapabilityEntry> result;
+            foreach (CapabilityEntry entry, localCapabilities + globalCapabilities) {
+                if(!result.contains(entry)) {
+                    result += entry;
+                }
             }
-        }
-        // return if entries found
-        if(!result.isEmpty()) {
             callback->capabilitiesReceived(result);
             return true;
         }
@@ -252,7 +252,7 @@ void LocalCapabilitiesDirectory::lookup(
         QSharedPointer<ILocalCapabilitiesCallback> callback
 ) {
     joynr::system::DiscoveryQos discoveryQos;
-    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL);
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
     // get the local and cached entries
     bool recieverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
 
