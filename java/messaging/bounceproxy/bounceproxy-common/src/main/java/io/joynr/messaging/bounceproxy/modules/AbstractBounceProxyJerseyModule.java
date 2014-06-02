@@ -70,7 +70,8 @@ public abstract class AbstractBounceProxyJerseyModule extends AbstractJoynrServl
     protected abstract void setupFilters();
 
     /**
-     * Within this call, all servlets specific to the bounceproxy implementation have to be setup.
+     * Within this call, all servlets specific to the bounceproxy implementation
+     * have to be setup.
      */
     protected abstract void bindServlets();
 
