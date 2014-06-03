@@ -199,6 +199,7 @@ public class MessageScheduler {
             String statusText = statusLine.getReasonPhrase();
 
             switch (statusCode) {
+            case HttpURLConnection.HTTP_OK:
             case HttpURLConnection.HTTP_CREATED:
                 logger.debug("SEND to ChannelId: {} messageId: {} completed successfully", channelId, messageId);
                 break;
