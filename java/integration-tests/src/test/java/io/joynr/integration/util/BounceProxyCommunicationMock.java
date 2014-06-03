@@ -125,7 +125,7 @@ public class BounceProxyCommunicationMock {
                           .statusCode(201)
                           .header("Location",
                                   CoreMatchers.containsString(RestAssured.baseURI + "channels/" + myChannelId))
-                          .body(CoreMatchers.is(myChannelId))
+                          .body(CoreMatchers.containsString(RestAssured.baseURI + "channels/" + myChannelId))
                           .when()
                           .post("/channels/");
     }

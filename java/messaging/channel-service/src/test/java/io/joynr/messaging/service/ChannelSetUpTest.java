@@ -68,7 +68,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
     public void testCreateChannelThatIsAlreadyKnown() {
 
         Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("X.Y",
-                                                                              "http://joyn-bpX.muc/bp",
+                                                                              "http://joyn-bpX.de/bp",
                                                                               "channel-123"));
 
         Response response = //
@@ -77,7 +77,8 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(200 /* OK */, response.getStatusCode());
-        assertEquals("http://joyn-bpX.muc/bp/channels/channel-123", response.getHeader("Location"));
+        assertEquals("http://joyn-bpX.de/bp/channels/channel-123", response.getHeader("Location"));
+        assertEquals("http://joyn-bpX.de/bp/channels/channel-123", response.getBody().asString());
         assertEquals("X.Y", response.getHeader("bp"));
         Mockito.verify(mock).getChannel("channel-123");
         Mockito.verifyNoMoreInteractions(mock);
@@ -88,7 +89,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
 
         Mockito.when(mock.getChannel("channel-123")).thenReturn(null);
         Mockito.when(mock.createChannel("channel-123", null)).thenReturn(createChannel("0.0",
-                                                                                       "http://joyn-bp0.muc/bp",
+                                                                                       "http://joyn-bp0.de/bp",
                                                                                        "channel-123"));
 
         Response response = //
@@ -97,7 +98,8 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());
-        assertEquals("http://joyn-bp0.muc/bp/channels/channel-123", response.getHeader("Location"));
+        assertEquals("http://joyn-bp0.de/bp/channels/channel-123", response.getHeader("Location"));
+        assertEquals("http://joyn-bp0.de/bp/channels/channel-123", response.getBody().asString());
         assertEquals("0.0", response.getHeader("bp"));
         Mockito.verify(mock).getChannel("channel-123");
         Mockito.verify(mock).createChannel("channel-123", null);
