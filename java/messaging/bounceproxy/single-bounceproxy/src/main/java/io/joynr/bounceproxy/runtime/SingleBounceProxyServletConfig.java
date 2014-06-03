@@ -20,18 +20,22 @@ package io.joynr.bounceproxy.runtime;
  */
 
 import io.joynr.bounceproxy.SingleBounceProxyModule;
+import io.joynr.bounceproxy.info.SingleBounceProxyInformationProvider;
 import io.joynr.bounceproxy.service.AttachmentReceiverService;
 import io.joynr.bounceproxy.service.AttachmentSenderService;
 import io.joynr.bounceproxy.service.MessagingWithoutContentTypeService;
 import io.joynr.bounceproxy.service.TimeService;
+import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
 import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
 import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
+import io.joynr.runtime.PropertyLoader;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
@@ -44,14 +48,26 @@ import com.google.inject.util.Modules;
  */
 public class SingleBounceProxyServletConfig extends AbstractGuiceServletConfig {
 
+    private static final String BOUNCEPROXY_PROPERTIES = "bounceProxy.properties";
+
     private final List<Module> modules;
 
     private final AtmosphereModule atmosphereModule;
 
     public SingleBounceProxyServletConfig() {
+
+        Properties bounceProxySystemProperties = new Properties();
+        String hostPath = System.getProperty(SingleBounceProxyInformationProvider.PROPERTY_SERVLET_HOST_PATH);
+        if (hostPath != null) {
+            bounceProxySystemProperties.setProperty(SingleBounceProxyInformationProvider.PROPERTY_SERVLET_HOST_PATH,
+                                                    hostPath);
+        }
+
         atmosphereModule = new AtmosphereModule();
 
         modules = new LinkedList<Module>();
+        modules.add(new PropertyLoadingModule(PropertyLoader.loadProperties(BOUNCEPROXY_PROPERTIES),
+                                              bounceProxySystemProperties));
         modules.add(Modules.override(new DefaultBounceProxyModule()).with(new SingleBounceProxyModule()));
         modules.add(atmosphereModule);
     }

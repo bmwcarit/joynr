@@ -31,38 +31,65 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.name.Named;
 
+/**
+ * Builds a {@link BounceProxyInformation} object from either a hostpath set as
+ * property or from the host path given in the servlet request.
+ * 
+ * @author christina.strobel
+ * 
+ */
 public class SingleBounceProxyInformationProvider implements Provider<BounceProxyInformation> {
 
     private static final Logger log = LoggerFactory.getLogger(SingleBounceProxyInformationProvider.class);
 
-    private final BounceProxyInformation bpInfo;
+    public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
+
+    private BounceProxyInformation bpInfo;
+
+    private String hostPath = null;
+    private URI hostPathFromRequest = null;
+
+    @Inject(optional = true)
+    public void setHostPath(@Named(PROPERTY_SERVLET_HOST_PATH) String hostPath) {
+        this.hostPath = hostPath;
+
+        if (this.hostPath != null) {
+            log.info("Using bounceproxy URL {} from property {}", hostPath, PROPERTY_SERVLET_HOST_PATH);
+            bpInfo = new BounceProxyInformation(hostPath, URI.create(hostPath));
+        }
+    }
 
     @Inject
     public SingleBounceProxyInformationProvider(HttpServletRequest request) {
+
         String bounceProxyServerName = request.getServerName();
 
         String scheme = request.getScheme();
         int port = request.getServerPort();
         String servletContext = request.getServletContext().getContextPath();
-        URI bounceProxyUrl;
         try {
-            bounceProxyUrl = new URI(scheme, null, bounceProxyServerName, port, servletContext, null, null);
+            hostPathFromRequest = new URI(scheme, null, bounceProxyServerName, port, servletContext, null, null);
         } catch (URISyntaxException e) {
             log.error("Error retrieving bounceproxy URL: error: {}. Trying simplified version.", e.getMessage());
-            bounceProxyUrl = URI.create(String.format("%s://%s:%d/%s",
-                                                      scheme,
-                                                      bounceProxyServerName,
-                                                      port,
-                                                      servletContext));
+            hostPathFromRequest = URI.create(String.format("%s://%s:%d/%s",
+                                                           scheme,
+                                                           bounceProxyServerName,
+                                                           port,
+                                                           servletContext));
         }
-        log.info("Using bounceproxy URL {}", bounceProxyUrl);
-
-        bpInfo = new BounceProxyInformation(bounceProxyServerName, URI.create(bounceProxyUrl.toString()));
     }
 
     @Override
     public BounceProxyInformation get() {
+
+        if (bpInfo == null) {
+            log.info("No bounceproxy URL set from properties. Using bounceproxy URL {} created from request",
+                     hostPathFromRequest);
+            bpInfo = new BounceProxyInformation(hostPathFromRequest.getHost(), hostPathFromRequest);
+        }
+
         return bpInfo;
     }
 
