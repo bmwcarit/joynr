@@ -358,6 +358,7 @@ public class LongPollingChannelLifecycle {
             String reasonPhrase = statusLine.getReasonPhrase();
 
             switch (statusCode) {
+            case HttpURLConnection.HTTP_OK:
             case HttpURLConnection.HTTP_CREATED:
                 try {
                     Header locationHeader = response.getFirstHeader(httpConstants.getHEADER_LOCATION());
