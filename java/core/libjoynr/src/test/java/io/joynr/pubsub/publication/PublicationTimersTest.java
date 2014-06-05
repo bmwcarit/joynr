@@ -37,12 +37,15 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.tests.testProxy;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationTimersTest {
+
     private static final Logger LOG = LoggerFactory.getLogger(PublicationTimersTest.class);
 
     private SubscriptionRequest subscriptionRequest;
@@ -77,7 +81,7 @@ public class PublicationTimersTest {
     // @Mock
     private SubscriptionPublication publication = new SubscriptionPublication(null, "subscriptionId");
 
-    private int period = 500;
+    private static final int period = 100;
     private int numberOfPublications = 5;
     private int missedPublicationAlertDelay = 10;
     private long alertAfterInterval;
@@ -88,12 +92,7 @@ public class PublicationTimersTest {
     public void setUp() {
         alertAfterInterval = period + missedPublicationAlertDelay;
 
-        expiryDate = System.currentTimeMillis() // the publication should start now
-                // time needed to publish numberOfMissedPublications publications
-                + period * numberOfPublications
-                // add enough time to the subscription to prevent minor timing gliches from failing the test, but not so
-                // much as to cause a further publication
-                + (period / 2);
+        expiryDate = getExpiryDate();
         qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
 
         subscriptionId = "subscriptionId";
@@ -108,64 +107,73 @@ public class PublicationTimersTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter, cleanupScheduler);
     }
 
-    @Test
-    public void timerPollsAndSendsPublication() throws InterruptedException, JoynrSendBufferFullException,
-                                               JoynrMessageNotSentException, JsonGenerationException,
-                                               JsonMappingException, IOException {
-        LOG.debug("Starting PublicationTimersTest.timerPollsAndSendsPublication test");
-
-        publicationManager.addSubscriptionRequest(proxyId,
-                                                  providerId,
-                                                  subscriptionRequest,
-                                                  requestCaller,
-                                                  messageSender);
-
-        Thread.sleep(expiryDate - System.currentTimeMillis());
-
-        // the publication timer will send one publ ication at t=0, and then 5 further publications within the time
-        // alloted
-        Mockito.verify(attributePollInterpreter, Mockito.times(numberOfPublications + 1))
-               .execute(Mockito.any(RequestCaller.class), Mockito.any(Method.class));
-
-        // the publication will be sent at t=0, and then 5 further publications within the time alloted
-        Mockito.verify(messageSender, Mockito.times(numberOfPublications + 1))
-               .sendSubscriptionPublication(Mockito.eq(providerId),
-                                            Mockito.eq(proxyId),
-                                            Mockito.eq(publication),
-                                            Mockito.any(MessagingQos.class));
+    private long getExpiryDate() {
+        return System.currentTimeMillis() // the publication should start now
+                // time needed to publish numberOfMissedPublications publications
+                + period * numberOfPublications
+                // add enough time to the subscription to prevent minor timing gliches from failing the test, but not so
+                // much as to cause a further publication
+                + (period / 2);
     }
 
-    @Test
+    final class DummyAnswer implements Answer<Void> {
+
+        int count = 0;
+
+        @Override
+        public Void answer(InvocationOnMock invocation) throws Throwable {
+            count++;
+            return null;
+        }
+    }
+
+    @Test(timeout = 3000)
     public void timerIsStoppedWhenEnddateIsReached() throws InterruptedException, JoynrSendBufferFullException,
                                                     JoynrMessageNotSentException, JsonGenerationException,
                                                     JsonMappingException, IOException {
         LOG.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
 
+        DummyAnswer attributePollInterpreterAnswer = new DummyAnswer();
+        DummyAnswer messageSenderAnswer = new DummyAnswer();
+        Mockito.doAnswer(attributePollInterpreterAnswer)
+               .when(attributePollInterpreter)
+               .execute(Mockito.any(RequestCaller.class), Mockito.any(Method.class));
+        Mockito.doAnswer(messageSenderAnswer)
+               .when(messageSender)
+               .sendSubscriptionPublication(Mockito.eq(providerId),
+                                            Mockito.eq(proxyId),
+                                            Mockito.eq(publication),
+                                            Mockito.any(MessagingQos.class));
+
+        qos.setExpiryDate(getExpiryDate());
         publicationManager.addSubscriptionRequest(proxyId,
                                                   providerId,
                                                   subscriptionRequest,
                                                   requestCaller,
                                                   messageSender);
 
-        Thread.sleep(expiryDate - System.currentTimeMillis() + 100);
-
-        // the publication timer will send one publication at t=0, and then 5 further publications within the time
+        // the publication timer will send one publ ication at t=0, and then 5 further publications within the time
         // alloted
-        Mockito.verify(attributePollInterpreter, Mockito.times(numberOfPublications + 1))
-               .execute(Mockito.any(RequestCaller.class), Mockito.any(Method.class));
-
         // the publication will be sent at t=0, and then 5 further publications within the time alloted
-        Mockito.verify(messageSender, Mockito.times(numberOfPublications + 1))
+        while ((attributePollInterpreterAnswer.count != (numberOfPublications + 1) && messageSenderAnswer.count != (numberOfPublications + 1))
+                || (qos.getExpiryDate() + period < System.currentTimeMillis())) {
+            Thread.sleep(50);
+        }
+
+        LOG.debug("Number of attributePollInterpreter calls counted: " + attributePollInterpreterAnswer.count);
+        int oldAttributePollInterpreterCallCount = attributePollInterpreterAnswer.count;
+        int oldMessageSenderCallCount = messageSenderAnswer.count;
+        Thread.sleep(2 * period);
+        Assert.assertEquals(oldAttributePollInterpreterCallCount, attributePollInterpreterAnswer.count);
+        Assert.assertEquals(oldMessageSenderCallCount, messageSenderAnswer.count);
+        Mockito.verify(attributePollInterpreter, Mockito.times(oldAttributePollInterpreterCallCount))
+               .execute(Mockito.any(RequestCaller.class), Mockito.any(Method.class));
+        Mockito.verify(messageSender, Mockito.times(oldMessageSenderCallCount))
                .sendSubscriptionPublication(Mockito.eq(providerId),
                                             Mockito.eq(proxyId),
                                             Mockito.eq(publication),
                                             Mockito.any(MessagingQos.class));
-
-        // wait some additional time to see whether there are unwanted publications
-        Thread.sleep(2 * period);
-
         Mockito.verifyNoMoreInteractions(attributePollInterpreter);
-
     }
 
 }

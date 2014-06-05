@@ -251,6 +251,8 @@ public class MessageScheduler {
 
                 }
             default:
+                logger.error("SEND to ChannelId: {} messageId: {} - unexpected response code: {} reason: {}",
+                             new Object[]{ channelId, messageId, statusCode, statusText });
                 break;
             }
         } catch (Exception e) {

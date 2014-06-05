@@ -77,6 +77,8 @@ public class SubscriptionEnd2EndTest {
 
     private static final long expected_latency_ms = 50;
 
+    private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
+
     @Rule
     public TestName name = new TestName();
 
@@ -117,7 +119,7 @@ public class SubscriptionEnd2EndTest {
         server.stop();
     }
 
-    private static void setupProvidingApplication() {
+    private static void setupProvidingApplication() throws InterruptedException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
@@ -131,10 +133,9 @@ public class SubscriptionEnd2EndTest {
         providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
 
         provider = new PubSubTestProviderImpl();
-        providingApplication.getRuntime().registerCapability(domain,
-                                                             provider,
-                                                             joynr.tests.testSync.class,
-                                                             "SubscriptionEnd2End");
+        providingApplication.getRuntime()
+                            .registerCapability(domain, provider, joynr.tests.testSync.class, "SubscriptionEnd2End")
+                            .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private static void setupConsumingApplication() throws JoynrArbitrationException, JoynrIllegalStateException,

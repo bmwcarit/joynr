@@ -37,7 +37,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +66,7 @@ public class SubscriptionTimersTest {
     private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
     private String subscriptionId;
 
-    private int period = 400;
+    private int period = 100;
     private int numberOfPublications = 5;
     private int missedPublicationAlertDelay = 100;
     private long alertAfterInterval;
@@ -90,9 +93,21 @@ public class SubscriptionTimersTest {
         alertAfterInterval = period + missedPublicationAlertDelay;
     }
 
-    @Test
+    @Test(timeout = 3000)
     public void missedPublicationRunnableIsStopped() throws InterruptedException {
         LOG.debug("Starting missedPublicationRunnableIsStopped test");
+
+        final int[] count = new int[]{ 0 };
+        Answer<Void> answer = new Answer<Void>() {
+
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                count[0]++;
+                return null;
+            }
+        };
+
+        Mockito.doAnswer(answer).when(attributeSubscriptionCallback).publicationMissed();
 
         long expiryDate = System.currentTimeMillis() // the publication should start now 
                 + alertAfterInterval * numberOfPublications; // time needed to raise numberOfPublications missed publication alerts
@@ -106,8 +121,11 @@ public class SubscriptionTimersTest {
                                                                            IntegerReference.class,
                                                                            attributeSubscriptionCallback,
                                                                            qos);
-        // wait until endDate
-        Thread.sleep(expiryDate - System.currentTimeMillis());
+
+        while (count[0] != numberOfPublications - 1) {
+            Thread.sleep(50);
+        }
+        verify(attributeSubscriptionCallback, times(numberOfPublications - 1)).publicationMissed();
 
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
@@ -115,11 +133,10 @@ public class SubscriptionTimersTest {
         // verify callback is not called
         // Note: we will receive numberOfPublications-1 missed publication alerts, since it needs also some time
         // to execute an alert and thus the last alert will be expired (due to endDate) before execution
-        verify(attributeSubscriptionCallback, times(numberOfPublications - 1)).publicationMissed();
         verifyNoMoreInteractions(attributeSubscriptionCallback);
     }
 
-    @Test
+    @Test(timeout = 3000)
     public void noMissedPublicationWarningWhenPublicationIsReceived() throws InterruptedException {
         LOG.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
 
@@ -148,15 +165,15 @@ public class SubscriptionTimersTest {
 
         boolean lastPublicationIsMissedPublication = false;
         int missedPublicationsCounter = 0;
-        int successfulPublicationsCoutner = 0;
+        int successfulPublicationsCounter = 0;
         for (int i = 0; i < numberOfPublications; i++) {
             // choose randomly whether the current publication is successful or missed
-            if ((Math.random() < 0.5 && successfulPublicationsCoutner < numberOfSuccessfulPublications)
+            if ((Math.random() < 0.5 && successfulPublicationsCounter < numberOfSuccessfulPublications)
                     || missedPublicationsCounter == numberOfMissedPublications) {
                 Thread.sleep(period);
                 // publication successfully received
                 subscriptionManager.touchSubscriptionState(subscriptionId);
-                successfulPublicationsCoutner++;
+                successfulPublicationsCounter++;
                 LOG.trace("\nSUCCESSFUL publication");
             } else {
                 Thread.sleep(alertAfterInterval);

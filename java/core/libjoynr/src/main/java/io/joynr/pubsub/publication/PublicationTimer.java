@@ -25,6 +25,7 @@ import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.PubSubTimerBase;
 import io.joynr.pubsub.SubscriptionQos;
@@ -34,7 +35,6 @@ import java.lang.reflect.Method;
 import java.util.TimerTask;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 
@@ -87,16 +87,11 @@ public class PublicationTimer extends PubSubTimerBase {
 
         this.publicationTtl = qos.getPublicationTtl();
 
-        if (qos instanceof PeriodicSubscriptionQos) {
-            this.period = ((PeriodicSubscriptionQos) qos).getPeriod();
-            this.minInterval = 0;
-        } else if (qos instanceof OnChangeWithKeepAliveSubscriptionQos) {
-            this.period = ((OnChangeWithKeepAliveSubscriptionQos) qos).getMaxInterval();
-            this.minInterval = ((OnChangeWithKeepAliveSubscriptionQos) qos).getMinInterval();
-        } else {
-            period = 0;
-            minInterval = 0;
-        }
+        boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
+        boolean isKeepAliveSubscription = qos instanceof OnChangeWithKeepAliveSubscriptionQos;
+
+        this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getHeartbeat() : 0;
+        this.minInterval = isKeepAliveSubscription ? ((OnChangeWithKeepAliveSubscriptionQos) qos).getMinInterval() : 0;
 
         this.proxyParticipantId = proxyParticipantId;
         this.providerParticipantId = providerParticipantId;
@@ -201,6 +196,14 @@ public class PublicationTimer extends PubSubTimerBase {
 
     public void sendInitialPublication() {
         sendPublication();
+    }
+
+    @Override
+    public void startTimer() {
+        sendInitialPublication();
+        if (period > 0) {
+            super.startTimer(period);
+        }
     }
 
     public void sendPublicationNow(Object value) {

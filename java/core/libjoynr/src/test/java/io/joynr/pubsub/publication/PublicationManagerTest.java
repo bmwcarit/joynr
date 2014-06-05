@@ -21,9 +21,7 @@ package io.joynr.pubsub.publication;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
@@ -55,7 +53,9 @@ import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Multimap;
 
@@ -154,23 +154,42 @@ public class PublicationManagerTest {
         int n = 3;
         addPublicationMockBehaviour(subscriptionQosWithoutExpiryDate);
 
-        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
-                                                  PROVIDER_PARTICIPANT_ID,
-                                                  subscriptionRequest,
-                                                  requestCaller,
-                                                  messageSender);
-        verifyPublicationIsAdded(false);
+        final int[] count = new int[]{ 0 };
+        Answer<Void> answer = new Answer<Void>() {
+
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                count[0]++;
+                return null;
+            }
+        };
         try {
-            verify(messageSender, times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                        eq(PROXY_PARTICIPANT_ID),
-                                                                        any(SubscriptionPublication.class),
-                                                                        any(MessagingQos.class));
-            Thread.sleep(n * subscriptionQosWithoutExpiryDate.getPeriod());
-            //verify(messageSender, times(1+n)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-            verify(messageSender, atLeast(n)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                          eq(PROXY_PARTICIPANT_ID),
-                                                                          any(SubscriptionPublication.class),
-                                                                          any(MessagingQos.class));
+            Mockito.doAnswer(answer)
+                   .when(messageSender)
+                   .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                eq(PROXY_PARTICIPANT_ID),
+                                                any(SubscriptionPublication.class),
+                                                any(MessagingQos.class));
+            publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                      PROVIDER_PARTICIPANT_ID,
+                                                      subscriptionRequest,
+                                                      requestCaller,
+                                                      messageSender);
+            verifyPublicationIsAdded(false);
+            Assert.assertEquals(1, count[0]);
+
+            boolean correctUpdate = false;
+            //the publication is done completely asynchronously in an own thread. Thus, we cannot give any timing guarantees
+            for (int i = 0; i < 5; i++) {
+                count[0] = 0;
+                Thread.sleep(n * subscriptionQosWithoutExpiryDate.getPeriod());
+                if (n >= count[0]) {
+                    correctUpdate = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(n + " instead of " + count[0] + " publications are expected within time interval of "
+                    + (n * subscriptionQosWithoutExpiryDate.getPeriod()) + "ms", correctUpdate);
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -218,7 +237,6 @@ public class PublicationManagerTest {
         verify(subscriptionEndFutures).remove(eq(subscriptionId));
     }
 
-    @SuppressWarnings("unchecked")
     private void MockBehaviourOnStop(String subscriptionId) {
         Mockito.when(publicationTimers.containsKey(subscriptionId)).thenReturn(true);
         Mockito.when(publicationTimers.get(subscriptionId)).thenReturn(publicationTimer);

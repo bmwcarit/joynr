@@ -91,6 +91,7 @@ import org.slf4j.LoggerFactory;
 public class ProviderProxyEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(ProviderProxyEnd2EndTest.class);
 
+    private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
     TestProvider provider;
     String domain;
     String domainAsync;
@@ -168,17 +169,15 @@ public class ProviderProxyEnd2EndTest {
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
-        dummyProviderApplication.getRuntime().registerCapability(domain,
-                                                                 provider,
-                                                                 joynr.tests.testProvider.class,
-                                                                 "authToken").waitForFullRegistration(3000);
+        dummyProviderApplication.getRuntime()
+                                .registerCapability(domain, provider, joynr.tests.testProvider.class, "authToken")
+                                .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
-        dummyProviderApplication.getRuntime().registerCapability(domainAsync,
-                                                                 providerAsync,
-                                                                 testProviderAsync.class,
-                                                                 "authToken").waitForFullRegistration(3000);
+        dummyProviderApplication.getRuntime()
+                                .registerCapability(domainAsync, providerAsync, testProviderAsync.class, "authToken")
+                                .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
 
         messagingQos = new MessagingQos(5000);
         discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
@@ -599,7 +598,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     @Ignore
     public void registerProviderCreateProxyAndCallMethod() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
@@ -614,7 +613,7 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void sendObjectsAsArgumentAndReturnValue() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                      InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -633,7 +632,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallback() throws JoynrArbitrationException, JoynrIllegalStateException,
                                              InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -663,7 +662,7 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithTtlExpiring() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                 InterruptedException {
 
@@ -697,7 +696,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMethodWithEnumInputReturnsResult() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                       InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -712,7 +711,7 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testVoidOperation() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
                                                                                                      testProxy.class);
@@ -748,7 +747,7 @@ public class ProviderProxyEnd2EndTest {
 
     // Currently causes an NPE, see bug 1029
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMethodWithNullEnumInputReturnsSomethingSensible() throws JoynrArbitrationException,
                                                                      JoynrIllegalStateException, InterruptedException {
         TestEnum input = null;
@@ -759,7 +758,7 @@ public class ProviderProxyEnd2EndTest {
         assertEquals(42, result);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void sendingANullValueOnceDoesntCrashProvider() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -771,7 +770,7 @@ public class ProviderProxyEnd2EndTest {
         assertEquals(2, result);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testEnumAttribute() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
                                                                                                      testProxy.class);
@@ -783,13 +782,13 @@ public class ProviderProxyEnd2EndTest {
 
     @Ignore
     // methods that return enums are not working at the moment - see JOYN-1027
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMethodWithEnumOutput() {
         // TODO write this test, once JOYN-1027 is solved
     }
 
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallbackAndParameter() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                          InterruptedException {
 
@@ -809,7 +808,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithIntegerParametersAndFuture() throws JoynrArbitrationException,
                                                                JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -827,7 +826,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithEnumParametersAndFuture() throws JoynrArbitrationException,
                                                             JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -846,7 +845,7 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithEnumListReturned() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                      InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -859,7 +858,7 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Ignore
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void overloadedMethodWithInheritance() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                  InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -876,7 +875,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void overloadedMethodWithDifferentReturnTypes() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,

@@ -21,7 +21,6 @@ package io.joynr.pubsub.publication;
 
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -203,11 +202,7 @@ public class PublicationManagerImpl implements PublicationManager {
                                                                 requestReplySender,
                                                                 attributePollInterpreter);
 
-            if (subscriptionQos instanceof HeartbeatSubscriptionInformation) {
-                timer.startTimer();
-            } else {
-                timer.sendInitialPublication();
-            }
+            timer.startTimer();
 
             publicationTimers.putIfAbsent(subscriptionId, timer);
 

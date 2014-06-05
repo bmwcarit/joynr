@@ -182,7 +182,7 @@ public class LongPollingChannelLifecycle {
             StatusLine statusLine = response.getStatusLine();
             int statusCode = statusLine.getStatusCode();
             if (statusCode != 200) {
-                logger.error("CheckServerTime: Bounce Proxy not reached: " + statusCode + " "
+                logger.error("CheckServerTime: Bounce Proxy not reached: " + url + " Status " + statusCode + " Reason "
                         + statusLine.getReasonPhrase());
                 return;
             }
