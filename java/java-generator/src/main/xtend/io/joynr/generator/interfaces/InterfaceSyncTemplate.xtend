@@ -18,9 +18,9 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class InterfaceSyncTemplate {
   @Inject extension JoynrJavaGeneratorExtensions
@@ -30,27 +30,31 @@ class InterfaceSyncTemplate {
 		val interfaceName =  serviceInterface.joynrName
 		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-			
+		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
+		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
+		val hasMethodWithReturnValue = hasMethodWithReturnValue(serviceInterface);
 '''
 «warning()»
-		
-package «packagePath»; 
-         
+
+package «packagePath»;
+
+«IF needsListImport(serviceInterface)»
 import java.util.List;
-		
-import com.fasterxml.jackson.core.type.TypeReference;
+«ENDIF»
 
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;		
+«IF hasReadAttribute(serviceInterface) || hasMethodWithReturnValue»
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
+«ENDIF»
+«IF hasWriteAttribute || hasMethodWithArguments»
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+«ENDIF»
 
 import io.joynr.exceptions.JoynrArbitrationException;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 	import «datatype»;
 «ENDFOR»
-//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the fibex. 
-@SuppressWarnings("unused")
 
 public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
 
@@ -59,32 +63,37 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 	«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
-
 		«IF isReadable(attribute)»
+
 		@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class)
 		public «attributeType» «getAttribute»() throws JoynrArbitrationException;
-		«ENDIF»		
-		«IF isWritable(attribute)»			
-			void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;		
-		«ENDIF»			
-«ENDFOR»
+		«ENDIF»
+		«IF isWritable(attribute)»
 
+			void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
+		«ENDIF»
+«ENDFOR»
 
 «FOR method: getMethods(serviceInterface)»
 	«var methodName = method.joynrName»
-	«var params = getTypedParameterListJavaRpc(method)»
+
 		/*
 		* «methodName»
 		*/
 		«IF getMappedOutputParameter(method).iterator.next=="void"»
-		public void «methodName»(«params») throws JoynrArbitrationException;
+		public void «methodName»(
+				«getTypedParameterListJavaRpc(method)»
+		) throws JoynrArbitrationException;
 		«ELSE»
 		@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(getMappedOutputParameter(method).iterator.next)»Token.class)
-		public «getObjectDataTypeForPlainType(getMappedOutputParameter(method).iterator.next)» «methodName»(«params») throws JoynrArbitrationException;
+		public «getObjectDataTypeForPlainType(getMappedOutputParameter(method).iterator.next)» «methodName»(
+				«getTypedParameterListJavaRpc(method)»
+		) throws JoynrArbitrationException;
 	«ENDIF»
 «ENDFOR»
 }
 
 '''
-	}	
+	}
+
 }

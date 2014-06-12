@@ -27,8 +27,8 @@ class InterfaceGenerator {
 	
 	@Inject
 	extension JoynrJavaGeneratorExtensions	
-	
-	
+
+
 	@Inject
 	InterfacesTemplate interfaces
 
@@ -37,20 +37,21 @@ class InterfaceGenerator {
 
 	@Inject
 	InterfaceAsyncTemplate interfaceAsync
-	
+
 	@Inject
 	InterfaceSubscriptionTemplate interfaceSubscription
 
 	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa){
 
-		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
+		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 
 		var serviceName =  serviceInterface.joynrName
-					
+
 		fsa.generateFile(
 			path + serviceName + ".java",
 			interfaces.generate(serviceInterface).toString
-		);			
+		);
+
 		fsa.generateFile(
 			path + serviceName + "Sync.java",
 			interfaceSync.generate(serviceInterface).toString
@@ -59,10 +60,13 @@ class InterfaceGenerator {
 		fsa.generateFile(
 			path + serviceName + "Async.java",
 			interfaceAsync.generate(serviceInterface).toString
-		);	
-		fsa.generateFile(
-			path + serviceName + "SubscriptionInterface.java",
-			interfaceSubscription.generate(serviceInterface).toString
 		);
+
+		if (serviceInterface.attributes.size>0){
+			fsa.generateFile(
+				path + serviceName + "SubscriptionInterface.java",
+				interfaceSubscription.generate(serviceInterface).toString
+			);
+		}
 	}
 }

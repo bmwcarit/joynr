@@ -35,14 +35,13 @@ class InterfaceProxyTemplate {
 		val packagePath = getPackagePathWithJoynrPrefix(fInterface, ".")
 		'''
 
-		«warning()»   
-		package «packagePath»;  	
-			
-		public interface «className» extends «asyncClassName», «syncClassName», «subscriptionClassName» {
+		«warning()»
+		package «packagePath»;
+
+		public interface «className» extends «asyncClassName», «syncClassName»«IF fInterface.attributes.size>0», «subscriptionClassName»«ENDIF» {
 		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(fInterface, "/")»/«interfaceName.toLowerCase»";
 		}
-		'''	
-	}	
-	
-			
+		'''
+	}
+
 }

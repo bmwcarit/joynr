@@ -18,45 +18,51 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class ProviderGenerator {
-	
+
 	@Inject
-	extension JoynrJavaGeneratorExtensions	
-	
+	extension JoynrJavaGeneratorExtensions
+
 	@Inject
 	InterfaceProviderTemplate interfaceProvider
-	
+
+	@Inject
+	InterfaceProviderAsyncTemplate interfaceProviderAsync
+
 	@Inject
 	InterfaceProviderImplTemplate interfaceProviderImpl
-	
+
 	@Inject
 	InterfaceAbstractProviderTemplate interfaceAbstractProvider
 
-
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
-		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
+		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 
 		var serviceName =  fInterface.joynrName
-					
-		
+
 		fsa.generateFile(
 			path + serviceName + "Provider.java",
 			interfaceProvider.generate(fInterface).toString
 		);			
-		
+
+		fsa.generateFile(
+			path + serviceName + "ProviderAsync.java",
+			interfaceProviderAsync.generate(fInterface).toString
+		);
+
 		fsa.generateFile(
 		    path + "Default" + serviceName + "Provider.java",
 			interfaceProviderImpl.generate(fInterface).toString
-		);		
-		
+		);
+
 		fsa.generateFile(
 			path + serviceName + "AbstractProvider.java",
-			interfaceAbstractProvider.generate(fInterface).toString	
+			interfaceAbstractProvider.generate(fInterface).toString
 		);
 	}
 }
