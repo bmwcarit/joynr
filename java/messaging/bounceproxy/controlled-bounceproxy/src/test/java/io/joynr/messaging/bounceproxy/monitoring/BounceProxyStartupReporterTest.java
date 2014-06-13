@@ -32,6 +32,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -69,6 +70,7 @@ public class BounceProxyStartupReporterTest {
     }
 
     @Test
+    @Ignore
     public void testCancellationForUnreachableServer() throws Exception {
 
         // start reporting without server, so that reporting fails
