@@ -20,6 +20,8 @@ package io.joynr.provider;
  */
 
 import io.joynr.dispatcher.RequestCaller;
+import io.joynr.dispatcher.RequestCallerAsync;
+import io.joynr.dispatcher.RequestCallerSync;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -28,8 +30,9 @@ import java.lang.reflect.Proxy;
 
 public class RequestCallerFactory {
     public RequestCaller create(final JoynrProvider provider, Class<?> providedInterface) {
+        Class<? extends RequestCaller> callerInterface = getRequestCallerType(provider);
         return (RequestCaller) Proxy.newProxyInstance(provider.getClass().getClassLoader(), new Class<?>[]{
-                providedInterface, RequestCaller.class }, new InvocationHandler() {
+                providedInterface, callerInterface }, new InvocationHandler() {
 
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -41,5 +44,11 @@ public class RequestCallerFactory {
             }
 
         });
+    }
+
+    private Class<? extends RequestCaller> getRequestCallerType(final JoynrProvider provider) {
+        Class<? extends RequestCaller> callerInterface = provider instanceof JoynrProviderAsync ? RequestCallerAsync.class
+                : RequestCallerSync.class;
+        return callerInterface;
     }
 }

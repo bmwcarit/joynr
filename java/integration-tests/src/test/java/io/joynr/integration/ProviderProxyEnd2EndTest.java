@@ -30,6 +30,8 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -42,6 +44,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -53,15 +56,19 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.tests.AnotherDerivedStruct;
+import joynr.tests.BaseStruct;
 import joynr.tests.ComplexTestType;
 import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaultTestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
+import joynr.tests.TestProviderAsync;
 import joynr.tests.TestProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
+import joynr.types.ProviderQos;
 import joynr.types.Trip;
+import joynr.types.Vowel;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
@@ -86,6 +93,7 @@ public class ProviderProxyEnd2EndTest {
 
     TestProvider provider;
     String domain;
+    String domainAsync;
 
     long timeTookToRegisterProvider;
 
@@ -105,6 +113,8 @@ public class ProviderProxyEnd2EndTest {
 
     @Mock
     Callback<Integer> callbackInteger;
+
+    private TestAsyncProviderImpl providerAsync;
 
     private static Server jettyServer;
 
@@ -153,14 +163,22 @@ public class ProviderProxyEnd2EndTest {
         provider = new TestProvider();
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
 
+        providerAsync = new TestAsyncProviderImpl();
+        domainAsync = domain + "Async";
+
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
         dummyProviderApplication.getRuntime().registerCapability(domain,
                                                                  provider,
-                                                                 joynr.tests.TestSync.class,
-                                                                 "authToken");
+                                                                 joynr.tests.TestProvider.class,
+                                                                 "authToken").waitForFullRegistration(3000);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
+
+        dummyProviderApplication.getRuntime().registerCapability(domainAsync,
+                                                                 providerAsync,
+                                                                 TestProviderAsync.class,
+                                                                 "authToken").waitForFullRegistration(3000);
 
         messagingQos = new MessagingQos(5000);
         discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
@@ -266,6 +284,319 @@ public class ProviderProxyEnd2EndTest {
             // TODO Auto-generated method stub
             super.voidOperation();
         }
+    }
+
+    protected static class TestAsyncProviderImpl implements TestProviderAsync {
+
+        private ProviderQos providerQos = new ProviderQos();
+        private TestEnum enumAttribute;
+        private GpsLocation location = new GpsLocation();
+        private Trip myTrip = new Trip();
+        private List<String> listOfStrings;
+        private Integer testAttribute;
+        private GpsLocation complexTestAttribute;
+
+        @Override
+        public ProviderQos getProviderQos() {
+            return providerQos;
+        }
+
+        @Override
+        public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
+        }
+
+        @Override
+        public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
+        }
+
+        @Override
+        public void getEnumAttribute(@JoynrRpcCallback(deserialisationType = TestEnumToken.class) Callback<TestEnum> callback) {
+            callback.onSuccess(enumAttribute);
+        }
+
+        @Override
+        public void setEnumAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                     @JoynrRpcParam(value = "enumAttribute", deserialisationType = TestEnumToken.class) TestEnum enumAttribute) {
+            this.enumAttribute = enumAttribute;
+            callback.onSuccess(null);
+        }
+
+        @Override
+        public void getLocation(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
+            callback.onSuccess(location);
+        }
+
+        @Override
+        public void getMytrip(@JoynrRpcCallback(deserialisationType = TripToken.class) Callback<Trip> callback) {
+            callback.onSuccess(myTrip);
+        }
+
+        @Override
+        public void getYourLocation(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
+            callback.onSuccess(new GpsLocation());
+        }
+
+        @Override
+        public void getFirstPrime(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+            callback.onSuccess(10);
+        }
+
+        @Override
+        public void getListOfInts(@JoynrRpcCallback(deserialisationType = ListIntegerToken.class) Callback<List<Integer>> callback) {
+            callback.onSuccess(new ArrayList<Integer>());
+        }
+
+        @Override
+        public void getListOfLocations(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback) {
+            callback.onSuccess(new ArrayList<GpsLocation>());
+        }
+
+        @Override
+        public void getListOfStrings(@JoynrRpcCallback(deserialisationType = ListStringToken.class) Callback<List<String>> callback) {
+            callback.onSuccess(listOfStrings);
+        }
+
+        @Override
+        public void setListOfStrings(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                     @JoynrRpcParam(value = "listOfStrings", deserialisationType = ListStringToken.class) List<String> listOfStrings) {
+            this.listOfStrings = listOfStrings;
+            callback.onSuccess(null);
+        }
+
+        @Override
+        public void getTestAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+            callback.onSuccess(testAttribute);
+        }
+
+        @Override
+        public void setTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                     @JoynrRpcParam(value = "testAttribute", deserialisationType = IntegerToken.class) Integer testAttribute) {
+            this.testAttribute = testAttribute;
+            callback.onSuccess(null);
+        }
+
+        @Override
+        public void getComplexTestAttribute(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
+            callback.onSuccess(complexTestAttribute);
+        }
+
+        @Override
+        public void setComplexTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                            @JoynrRpcParam(value = "complexTestAttribute", deserialisationType = GpsLocationToken.class) GpsLocation complexTestAttribute) {
+            this.complexTestAttribute = complexTestAttribute;
+            callback.onSuccess(null);
+        }
+
+        @Override
+        public void getReadWriteAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void setReadWriteAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                          @JoynrRpcParam(value = "readWriteAttribute", deserialisationType = IntegerToken.class) Integer readWriteAttribute) {
+        }
+
+        @Override
+        public void getReadOnlyAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void getWriteOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void setWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                 @JoynrRpcParam(value = "writeOnly", deserialisationType = IntegerToken.class) Integer writeOnly) {
+        }
+
+        @Override
+        public void getNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void setNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                       @JoynrRpcParam(value = "notifyWriteOnly", deserialisationType = IntegerToken.class) Integer notifyWriteOnly) {
+        }
+
+        @Override
+        public void getNotifyReadOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void getNotifyReadWrite(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void setNotifyReadWrite(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                       @JoynrRpcParam(value = "notifyReadWrite", deserialisationType = IntegerToken.class) Integer notifyReadWrite) {
+        }
+
+        @Override
+        public void getNotify(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void setNotify(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                              @JoynrRpcParam(value = "notify", deserialisationType = IntegerToken.class) Integer notify) {
+        }
+
+        @Override
+        public void getATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void setATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                   @JoynrRpcParam(value = "aTTRIBUTEWITHCAPITALLETTERS", deserialisationType = IntegerToken.class) Integer aTTRIBUTEWITHCAPITALLETTERS) {
+        }
+
+        @Override
+        public void addNumbers(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
+                               @JoynrRpcParam("first") Integer first,
+                               @JoynrRpcParam("second") Integer second,
+                               @JoynrRpcParam("third") Integer third) {
+        }
+
+        @Override
+        public void sumInts(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
+                            @JoynrRpcParam(value = "ints", deserialisationType = ListIntegerToken.class) List<Integer> ints) {
+        }
+
+        @Override
+        public void methodWithNoInputParameters(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        }
+
+        @Override
+        public void methodWithEnumParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
+                                            @JoynrRpcParam("input") TestEnum input) {
+        }
+
+        @Override
+        public void methodWithEnumListParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
+                                                @JoynrRpcParam(value = "input", deserialisationType = ListTestEnumToken.class) List<TestEnum> input) {
+        }
+
+        @Override
+        public void methodWithEnumReturn(@JoynrRpcCallback(deserialisationType = TestEnumToken.class) Callback<TestEnum> callback,
+                                         @JoynrRpcParam("input") Integer input) {
+        }
+
+        @Override
+        public void methodWithEnumListReturn(@JoynrRpcCallback(deserialisationType = ListTestEnumToken.class) Callback<List<TestEnum>> callback,
+                                             @JoynrRpcParam("input") Integer input) {
+        }
+
+        @Override
+        public void methodWithByteArray(@JoynrRpcCallback(deserialisationType = ListByteToken.class) Callback<List<Byte>> callback,
+                                        @JoynrRpcParam(value = "input", deserialisationType = ListByteToken.class) List<Byte> input) {
+        }
+
+        @Override
+        public void methodEnumDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                               @JoynrRpcParam("enumParam") TestEnum enumParam,
+                                               @JoynrRpcParam("doubleParam") Double doubleParam) {
+        }
+
+        @Override
+        public void methodStringDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                 @JoynrRpcParam("stringParam") String stringParam,
+                                                 @JoynrRpcParam("doubleParam") Double doubleParam) {
+            callback.onSuccess(null);
+        }
+
+        @Override
+        public void methodCustomCustomParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                 @JoynrRpcParam("customParam1") ComplexTestType customParam1,
+                                                 @JoynrRpcParam("customParam2") ComplexTestType2 customParam2) {
+        }
+
+        @Override
+        public void methodStringDoubleListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                     @JoynrRpcParam("stringParam") String stringParam,
+                                                     @JoynrRpcParam(value = "doubleListParam", deserialisationType = ListDoubleToken.class) List<Double> doubleListParam) {
+        }
+
+        @Override
+        public void methodCustomCustomListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                     @JoynrRpcParam("customParam") ComplexTestType customParam,
+                                                     @JoynrRpcParam(value = "customListParam", deserialisationType = ListComplexTestType2Token.class) List<ComplexTestType2> customListParam) {
+        }
+
+        @Override
+        public void customTypeAndListParameter(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                               @JoynrRpcParam("complexTestType") ComplexTestType complexTestType,
+                                               @JoynrRpcParam(value = "complexArray", deserialisationType = ListBaseStructToken.class) List<BaseStruct> complexArray) {
+        }
+
+        @Override
+        public void voidOperation(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback) {
+        }
+
+        @Override
+        public void stringAndBoolParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                            @JoynrRpcParam("stringParam") String stringParam,
+                                            @JoynrRpcParam("boolParam") Boolean boolParam) {
+        }
+
+        @Override
+        public void returnPrimeNumbers(@JoynrRpcCallback(deserialisationType = ListIntegerToken.class) Callback<List<Integer>> callback,
+                                       @JoynrRpcParam("upperBound") Integer upperBound) {
+        }
+
+        @Override
+        public void optimizeTrip(@JoynrRpcCallback(deserialisationType = TripToken.class) Callback<Trip> callback,
+                                 @JoynrRpcParam("input") Trip input) {
+        }
+
+        @Override
+        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
+                                        @JoynrRpcParam("input") DerivedStruct input) {
+        }
+
+        @Override
+        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
+                                        @JoynrRpcParam("input") AnotherDerivedStruct input) {
+        }
+
+        @Override
+        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = ComplexTestTypeToken.class) Callback<ComplexTestType> callback,
+                                        @JoynrRpcParam("input") String input) {
+        }
+
+        @Override
+        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = ComplexTestType2Token.class) Callback<ComplexTestType2> callback,
+                                        @JoynrRpcParam("input1") String input1,
+                                        @JoynrRpcParam("input2") String input2) {
+        }
+
+        @Override
+        public void optimizeLocations(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
+                                      @JoynrRpcParam(value = "input", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> input) {
+        }
+
+        @Override
+        public void toLowerCase(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
+                                @JoynrRpcParam("inputString") String inputString) {
+        }
+
+        @Override
+        public void waitTooLong(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
+                                @JoynrRpcParam("ttl_ms") Long ttl_ms) {
+        }
+
+        @Override
+        public void sayHello(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback) {
+        }
+
+        @Override
+        public void checkVowel(@JoynrRpcCallback(deserialisationType = BooleanToken.class) Callback<Boolean> callback,
+                               @JoynrRpcParam("inputVowel") Vowel inputVowel) {
+        }
+
+        @Override
+        public void optimizeLocationList(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
+                                         @JoynrRpcParam(value = "inputList", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> inputList) {
+        }
+
     }
 
     @Test(timeout = 3000)
@@ -404,7 +735,15 @@ public class ProviderProxyEnd2EndTest {
         Boolean reply = future.getReply(8000);
 
         assertTrue(reply);
+    }
 
+    @Test
+    public void testAsyncProviderCall() {
+        ProxyBuilder<TestProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domainAsync,
+                                                                                                     TestProxy.class);
+        TestProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        proxy.methodStringDoubleParameters("text", 42d);
     }
 
     // Currently causes an NPE, see bug 1029

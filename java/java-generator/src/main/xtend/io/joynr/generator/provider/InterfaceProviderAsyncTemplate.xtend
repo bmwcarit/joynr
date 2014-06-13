@@ -50,12 +50,12 @@ class InterfaceProviderAsyncTemplate {
 		import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 		«ENDIF»
 
-		import io.joynr.provider.JoynrProvider;
+		import io.joynr.provider.JoynrProviderAsync;
 
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
-		public interface «className» extends «interfaceName», JoynrProvider, JoynrAsyncInterface {
+		public interface «className» extends «interfaceName», JoynrProviderAsync, JoynrAsyncInterface {
 			public static class VoidToken extends TypeReference<Void> {
 			}
 			«FOR attribute: getAttributes(serviceInterface)»

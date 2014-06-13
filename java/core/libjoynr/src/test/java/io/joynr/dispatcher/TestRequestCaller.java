@@ -34,7 +34,7 @@ import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestRequestCaller extends WaitTillCondition implements RequestCaller {
+public class TestRequestCaller extends WaitTillCondition implements RequestCallerSync {
 
     // maps from request payload to response
     private Map<Object, Object> sentPayloads = new HashMap<Object, Object>();

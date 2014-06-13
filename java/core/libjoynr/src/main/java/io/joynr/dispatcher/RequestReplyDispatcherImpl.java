@@ -20,9 +20,11 @@ package io.joynr.dispatcher;
  */
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JsonRequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -51,6 +53,7 @@ import joynr.SubscriptionStop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -159,7 +162,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         if (messageList != null) {
             for (ContentWithExpiryDate<JoynrMessage> messageItem : messageList) {
                 if (!messageItem.isExpired()) {
-                    executeRequestAndRespond(requestCaller, messageItem.getContent());
+                    executeRequestAndReply(requestCaller, messageItem.getContent());
                 }
             }
         }
@@ -406,7 +409,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         // set, otherwise log an error
 
         if (requestCallerDirectory.containsKey(toParticipantId)) {
-            executeRequestAndRespond(requestCallerDirectory.get(toParticipantId), message);
+            executeRequestAndReply(requestCallerDirectory.get(toParticipantId), message);
 
         } else {
             putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
@@ -414,54 +417,88 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
-    private void executeRequestAndRespond(final RequestCaller requestCaller, final JoynrMessage message) {
+    private void executeRequestAndReply(final RequestCaller requestCaller, final JoynrMessage message) {
         try {
             // TODO shall be moved to request manager and not handled by dispatcher
             Request request = objectMapper.readValue(message.getPayload(), Request.class);
             logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
-            Reply reply = jsonRequestInterpreter.execute(requestCaller, request);
-            // String replyMcid =
-            // message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_TO);
-            String originalReceiverParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
-            String originalSenderParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
-            long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
-            if (expiryDate > System.currentTimeMillis()) {
-                try {
-                    messageSender.sendReply(originalReceiverParticipantId,
-                                            originalSenderParticipantId,
-                                            reply,
-                                            ExpiryDate.fromAbsolute(expiryDate));
-                } catch (JoynrSendBufferFullException e) {
-                    // TODO React on exception thrown by sendReply
-                    logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);
-                } catch (JoynrMessageNotSentException e) {
-                    // TODO React on JoynrMessageNotSentException
-                    // thrown by sendReply
-                    logger.error("Responder could not reply due to a JoynrMessageNotSentException: ", e);
-                } catch (JoynrCommunicationException e) {
-                    // TODO React on JoynCommunicationException
-                    // thrown by sendReply
-                    logger.error("Responder could not reply due to a JoynCommunicationException: ", e);
-                }
+            if (requestCaller instanceof RequestCallerAsync) {
+                jsonRequestInterpreter.execute(new Callback<Reply>() {
 
+                    @Override
+                    public void onSuccess(Reply reply) {
+                        try {
+                            if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
+                                sendReply(message, reply);
+                            } else {
+                                logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message has been reached.",
+                                             reply);
+                            }
+                        } catch (Exception e) {
+                            logger.error("Error processing message: \r\n {} : error : {}", message, e);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(JoynrException error) {
+                        logger.error("Error processing message: \r\n {} ; error: {}", message, error);
+                    }
+                },
+                                               (RequestCallerAsync) requestCaller,
+                                               request);
+            } else if (requestCaller instanceof RequestCallerSync) {
+                Reply reply = jsonRequestInterpreter.execute((RequestCallerSync) requestCaller, request);
+                sendReply(message, reply);
             } else {
-                logger.error("Expiry Date exceeded. Reply discarded: messageId: {} requestReplyId: {}",
-                             message.getId(),
-                             reply.getRequestReplyId());
+                logger.error("Error processing message: \r\n {}. RequestCaller type {} unknown.",
+                             message,
+                             requestCaller.getClass().getName());
             }
-            // } catch (IOException e) {
-            // logger.error("Error processing message: \r\n {}",
-            // message, e);
-            // } catch (ClassNotFoundException e) {
-            // e.printStackTrace();
-            // TODO: how can the exception be passed on, outside of
-            // the runnable, and to whom?
         } catch (Throwable e) {
             logger.error("Error processing message: \r\n {}", message, e);
-
         }
 
+    }
+
+    private void sendReply(final JoynrMessage message, Reply reply) throws JsonGenerationException,
+                                                                   JsonMappingException, IOException {
+        // String replyMcid =
+        // message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_TO);
+        String originalReceiverParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
+        String originalSenderParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
+        long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
+        if (expiryDate > System.currentTimeMillis()) {
+            try {
+                messageSender.sendReply(originalReceiverParticipantId,
+                                        originalSenderParticipantId,
+                                        reply,
+                                        ExpiryDate.fromAbsolute(expiryDate));
+            } catch (JoynrSendBufferFullException e) {
+                // TODO React on exception thrown by sendReply
+                logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);
+            } catch (JoynrMessageNotSentException e) {
+                // TODO React on JoynrMessageNotSentException
+                // thrown by sendReply
+                logger.error("Responder could not reply due to a JoynrMessageNotSentException: ", e);
+            } catch (JoynrCommunicationException e) {
+                // TODO React on JoynCommunicationException
+                // thrown by sendReply
+                logger.error("Responder could not reply due to a JoynCommunicationException: ", e);
+            }
+
+        } else {
+            logger.error("Expiry Date exceeded. Reply discarded: messageId: {} requestReplyId: {}",
+                         message.getId(),
+                         reply.getRequestReplyId());
+        }
+        // } catch (IOException e) {
+        // logger.error("Error processing message: \r\n {}",
+        // message, e);
+        // } catch (ClassNotFoundException e) {
+        // e.printStackTrace();
+        // TODO: how can the exception be passed on, outside of
+        // the runnable, and to whom?
     }
 
     private void handleReplyMessageReceived(final JoynrMessage message) {

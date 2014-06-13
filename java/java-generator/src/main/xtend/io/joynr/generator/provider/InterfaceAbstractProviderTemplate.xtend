@@ -54,8 +54,7 @@ class InterfaceAbstractProviderTemplate {
 		@SuppressWarnings("unused")
 
 		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
-			    protected ProviderQos providerQos = new ProviderQos();
-			    
+			protected ProviderQos providerQos = new ProviderQos();
 
 		«IF getAttributes(serviceInterface).size() > 0»
 			//attributes
@@ -72,13 +71,12 @@ class InterfaceAbstractProviderTemplate {
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
-	
 
 			«IF isReadable(attribute)»
 				@Override
 				public abstract «attributeType» get«attributeName.toFirstUpper»();
 			«ENDIF»
-		
+
 			«IF isNotifiable(attribute)»
 				@Override
 				public final void «attributeName.toFirstLower»Changed(«attributeType» «attributeName») {
@@ -95,7 +93,7 @@ class InterfaceAbstractProviderTemplate {
 		
 			@Override
 			public ProviderQos getProviderQos() {
-			return providerQos;
+				return providerQos;
 			}
 		
 			}

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.DispatcherTestModule;
-import io.joynr.dispatcher.RequestCaller;
+import io.joynr.dispatcher.RequestCallerSync;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
@@ -161,7 +161,8 @@ public class RpcStubbingTest {
                                            any(SynchronizedReplyCaller.class),
                                            eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
 
-            private RequestCaller requestCaller = requestCallerFactory.create(testMock, TestSyncInterface.class);
+            private RequestCallerSync requestCaller = (RequestCallerSync) requestCallerFactory.create(testMock,
+                                                                                                      TestSyncInterface.class);
 
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
