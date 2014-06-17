@@ -55,7 +55,7 @@ For test purposes you can run the bounceproxy directly within Maven. Just go int
     JOYNR>/java/messaging/bounceproxy/bounceproxy$ mvn jetty:run  
 ```
 
-The bounceproxy is also tested with glassfish 3.1.2.2. See [[Glassfish settings]] for configuration details.
+The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings](Glassfish-settings.md) for configuration details.
 
 ### Discovery Directories
 Centralised directory to discover providers for a given domain and interface. 
@@ -78,14 +78,14 @@ You can also deploy one or more joynr applications to a servlet engine without r
 1. include messaging-servlet as a dependency in the pom.xml. 
 1. create the war file (mvn package)
 1. The war created should contain JARs for each of your applications plus the messaging-servlet (and other transitive dependencies). 
-1. Set the JVM properties etc for your servlet engine as described on [[Glassfish settings]].
+1. Set the JVM properties etc for your servlet engine as described on [Glassfish settings](Glassfish-settings.md).
 1. deploy this war to your servlet engine.
 
 All applications deployed should then register themselves with the discovery directory. Messages will be sent directly to the url registered in hostPath.
 
 ## Tutorials
-**[A tour through a simple radio application](Tutorial)**
+**[A tour through a simple radio application](Tutorial.md)**
 This tutorial guides you through a simple joynr application, explaining essential concepts such as communication interfaces, consumers, providers and how they communicate.
 
 ## Releases
-joynr is currently at released version 0.6.0. See the [release notes](History).
+joynr is currently at released version 0.6.0. See the [release notes](History.md).
