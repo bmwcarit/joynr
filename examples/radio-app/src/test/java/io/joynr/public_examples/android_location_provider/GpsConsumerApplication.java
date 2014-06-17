@@ -94,6 +94,12 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "test_consumer_local_domain");
 
+        // NOTE: When running this application to test the android-location-provider, you must use
+        //       the concrete hostname (and _not_ localhost) in the bounceproxy URL, since this URL
+        //       is registered in the channel URL directory and must be resolvable by the Android
+        //       device.
+        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://<concrete host>:8080/bounceproxy/");
+
         // 2) Or set them in the static persistence file (default: joynr.properties in working dir) at
         // runtime. If not available in the working dir, it will be created during the first launch
         // of the application. Copy the following lines to the custom persistence file to set a

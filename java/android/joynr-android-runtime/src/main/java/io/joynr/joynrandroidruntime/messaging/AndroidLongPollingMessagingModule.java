@@ -1,9 +1,9 @@
-package io.joynr.messaging;
+package io.joynr.joynrandroidruntime.messaging;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,20 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.messaging.httpoperation.ApacheHttpRequestFactory;
+import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessageSender;
+import io.joynr.messaging.MessageSenderImpl;
+import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.httpoperation.HttpRequestFactory;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
 
-public class LongPollingMessagingModule extends MessagingModule {
+public class AndroidLongPollingMessagingModule extends MessagingModule {
 
     @Override
     protected void configure() {
         super.configure();
         bind(MessageSender.class).to(MessageSenderImpl.class);
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();
-        bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
+        bind(HttpRequestFactory.class).to(ApacheAndroidHttpRequestFactory.class);
     }
 }

@@ -30,6 +30,7 @@ import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
@@ -45,7 +46,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -79,10 +79,11 @@ public class LongPollChannel {
     private MessagingSettings settings;
     private HttpConstants httpConstants;
     private String receiverId;
-    private HttpGetHC4 httpget;
+    private HttpGet httpget;
     protected int statusCode;
     private String statusText;
     private RequestConfig defaultRequestConfig;
+    private HttpRequestFactory httpRequestFactory;
 
     // CHECKSTYLE:OFF
     public LongPollChannel(CloseableHttpClient httpclient,
@@ -93,7 +94,8 @@ public class LongPollChannel {
                            MessagingSettings settings,
                            HttpConstants httpConstants,
                            String channelId,
-                           String receiverId) {
+                           String receiverId,
+                           HttpRequestFactory httpRequestFactory) {
         // CHECKSTYLE:ON
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
@@ -103,6 +105,7 @@ public class LongPollChannel {
         this.settings = settings;
         this.httpConstants = httpConstants;
         this.receiverId = receiverId;
+        this.httpRequestFactory = httpRequestFactory;
     }
 
     /**
@@ -315,7 +318,7 @@ public class LongPollChannel {
     }
 
     public void setChannelUrl(String channelUrl) {
-        this.httpget = new HttpGetHC4(channelUrl);
+        this.httpget = httpRequestFactory.createHttpGet(URI.create(channelUrl));
         Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
         httpget.setConfig(requestConfigBuilder.build());
         httpget.setHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);

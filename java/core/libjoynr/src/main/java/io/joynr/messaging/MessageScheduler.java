@@ -29,10 +29,13 @@ import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.httpoperation.FailureAction;
 import io.joynr.messaging.httpoperation.HttpConstants;
+import io.joynr.messaging.httpoperation.HttpPost;
+import io.joynr.messaging.httpoperation.HttpRequestFactory;
 import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -48,9 +51,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -80,6 +83,7 @@ public class MessageScheduler {
     private RequestConfig defaultRequestConfig;
     private ObjectMapper objectMapper;
     private final LocalChannelUrlDirectoryClient channelUrlClient;
+    private HttpRequestFactory httpRequestFactory;
 
     @Inject
     public MessageScheduler(CloseableHttpClient httpclient,
@@ -87,12 +91,14 @@ public class MessageScheduler {
                             LocalChannelUrlDirectoryClient localChannelUrlClient,
                             RequestConfig defaultRequestConfig,
                             HttpConstants httpConstants,
-                            ObjectMapper objectMapper) {
+                            ObjectMapper objectMapper,
+                            HttpRequestFactory httpRequestFactory) {
         this.httpclient = httpclient;
         channelUrlClient = localChannelUrlClient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.httpConstants = httpConstants;
         this.objectMapper = objectMapper;
+        this.httpRequestFactory = httpRequestFactory;
 
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
                                                                               .build();
@@ -182,17 +188,17 @@ public class MessageScheduler {
                 return;
             }
 
-            HttpPostHC4 httppost = new HttpPostHC4(sendUrl);
-            httppost.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON()
-                    + ";charset=UTF-8");
-            httppost.setEntity(new StringEntity(serializedMessage, "UTF-8"));
+            HttpPost httpPost = httpRequestFactory.createHttpPost(URI.create(sendUrl));
+            httpPost.addHeader(new BasicHeader(httpConstants.getHEADER_CONTENT_TYPE(),
+                                               httpConstants.getAPPLICATION_JSON() + ";charset=UTF-8"));
+            httpPost.setEntity(new StringEntity(serializedMessage, "UTF-8"));
 
             // Clone the default config
             Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
             requestConfigBuilder.setConnectionRequestTimeout(httpConstants.getSEND_MESSAGE_REQUEST_TIMEOUT());
-            httppost.setConfig(requestConfigBuilder.build());
+            httpPost.setConfig(requestConfigBuilder.build());
 
-            response = httpclient.execute(httppost, context);
+            response = httpclient.execute(httpPost, context);
 
             StatusLine statusLine = response.getStatusLine();
             int statusCode = statusLine.getStatusCode();
