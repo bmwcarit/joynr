@@ -96,4 +96,4 @@ All applications deployed should then register themselves with the discovery dir
 This tutorial guides you through a simple joynr application, explaining essential concepts such as communication interfaces, consumers, providers and how they communicate.
 
 ## Releases
-joynr is currently at released version 0.6.0. See the [release notes](ReleaseNotes.md).
+joynr is currently at released version 0.7.0. See the [release notes](ReleaseNotes.md).

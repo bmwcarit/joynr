@@ -1,3 +1,19 @@
+## joynr 0.7.0
+
+### API relevant changes
+* Java	The hostPath property can now be set as joynr.servlet.hostPath.
+* SSL support for C++ and Java
+
+### Other changes
+* C++	libjoynr and cluster-controller now communicate over a single DBus interface
+* C++	introduce MessageRouter on libjoynr and cluster-controller side to resolve next hop for messages
+* C++	remove EndpointAddress term and use simply Address
+* Java	use URL rewriting to implement load balancing on bounce proxy cluster
+* Java	enable bounce proxy controller to run in clustered mode
+* Java	refactor bounce proxy modules:
+	* use Guice injection to configure servlets
+	* use RESTful service adapters for messaging related components
+
 ## joynr 0.6.0
 
 ### API relevant changes
