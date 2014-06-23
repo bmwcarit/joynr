@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>common</artifactId>
-		<version>0.6.0-SNAPSHOT</version>
+		<version>0.7.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -123,6 +123,15 @@
 						<exclude>**/package-info*</exclude> <!-- to prevent package-info files from different projects to collide -->
 						<exclude>**/CheckForNull*</exclude> <!-- to prevent check-for-null annotations from package-info to be pulled 
 							into jar-files -->
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>**/*.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

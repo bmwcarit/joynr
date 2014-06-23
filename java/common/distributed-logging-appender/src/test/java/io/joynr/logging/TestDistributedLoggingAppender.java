@@ -71,6 +71,7 @@ public class TestDistributedLoggingAppender {
     @Before
     public void setUp() throws Exception {
         final JoynrRuntime runtime = mock(JoynrRuntime.class);
+        @SuppressWarnings("unchecked")
         ProxyBuilder<LoggingProxy> proxyBuilder = (ProxyBuilder<LoggingProxy>) mock(ProxyBuilder.class);
         loggingProxy = mock(LoggingProxy.class);
         when(runtime.getProxyBuilder(isA(String.class), eq(LoggingProxy.class))).thenReturn(proxyBuilder);
@@ -79,7 +80,6 @@ public class TestDistributedLoggingAppender {
         when(proxyBuilder.build()).thenReturn(loggingProxy);
 
         // NOTE: Each test has a corresponding log4j .json properties file.
-        String methodName = name.getMethodName();
         Guice.createInjector(new AbstractModule() {
 
             @Override
