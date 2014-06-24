@@ -1,4 +1,4 @@
-@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
+@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
 package io.joynr.messaging.bounceproxy.info;
 
 /*
