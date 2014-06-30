@@ -164,6 +164,9 @@ public class TestDistributedLoggingAppender {
         logger.setAdditive(false);
         logger.setLevel(Level.DEBUG);
 
+        // wait for the initial flush
+        Thread.sleep(100);
+
         logger.debug("test1");
         logger.debug("test2");
         logger.debug("test3");
