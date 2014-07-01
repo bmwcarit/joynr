@@ -21,29 +21,28 @@ package io.joynr.integration;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.containsChannel;
+import static io.joynr.integration.matchers.MonitoringServiceResponseMatchers.containsBounceProxy;
+import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_BOUNCEPROXY_ID;
+import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_LOCATION;
+import static io.joynr.integration.util.BounceProxyTestConstants.SESSIONID_APPENDIX;
+import static io.joynr.integration.util.BounceProxyTestConstants.X_ATMOSPHERE_TRACKING_ID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.ControlledBounceProxyCluster;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
-import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import static io.joynr.integration.matchers.MonitoringServiceResponseMatchers.containsBounceProxy;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static io.joynr.integration.util.BounceProxyTestConstants.*;
 
-@RunWith(MultipleBounceProxySetupsTestRunner.class)
-@BounceProxyServerSetups(value = { ControlledBounceProxyCluster.class })
+//@RunWith(MultipleBounceProxySetupsTestRunner.class)
+//@BounceProxyServerSetups(value = { ControlledBounceProxyCluster.class })
 public class MultipleControlledBounceProxiesTest {
 
     @BounceProxyServerContext

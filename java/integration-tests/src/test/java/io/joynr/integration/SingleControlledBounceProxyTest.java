@@ -23,6 +23,11 @@ import static com.jayway.restassured.RestAssured.given;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.containsChannel;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.isChannelUrlwithJsessionId;
 import static io.joynr.integration.matchers.MonitoringServiceResponseMatchers.containsBounceProxy;
+import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_BOUNCEPROXY_ID;
+import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_LOCATION;
+import static io.joynr.integration.util.BounceProxyTestConstants.SESSIONID_APPENDIX;
+import static io.joynr.integration.util.BounceProxyTestConstants.SESSIONID_NAME;
+import static io.joynr.integration.util.BounceProxyTestConstants.X_ATMOSPHERE_TRACKING_ID;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -30,21 +35,18 @@ import static org.junit.Assert.assertThat;
 import io.joynr.integration.setup.BounceProxyServerSetup;
 import io.joynr.integration.setup.SingleControlledBounceProxy;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
-import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
 import io.joynr.messaging.util.Utilities;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static io.joynr.integration.util.BounceProxyTestConstants.*;
 
-@RunWith(MultipleBounceProxySetupsTestRunner.class)
-@BounceProxyServerSetups(value = { SingleControlledBounceProxy.class })
+//@RunWith(MultipleBounceProxySetupsTestRunner.class)
+//@BounceProxyServerSetups(value = { SingleControlledBounceProxy.class })
 public class SingleControlledBounceProxyTest {
 
     @BounceProxyServerContext
@@ -56,6 +58,7 @@ public class SingleControlledBounceProxyTest {
     }
 
     @Test(timeout = 20000)
+    @Ignore("Ignore until servers are started in a separate JVM. Guice static problem")
     public void testSimpleChannelSetupAndDeletion() throws Exception {
 
         String bpUrl = configuration.getBounceProxyUrl(SingleControlledBounceProxy.ID);
