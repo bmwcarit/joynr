@@ -46,7 +46,8 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.jayway.restassured.RestAssured;
 
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
-@BounceProxyServerSetups(value = { SingleControlledBounceProxy.class, SingleBounceProxy.class })
+// NOTE: for some reason the order of these classes in the array matters. 
+@BounceProxyServerSetups(value = { SingleBounceProxy.class, SingleControlledBounceProxy.class })
 public class ChannelsHtmlPageTest {
 
     @BounceProxyServerContext

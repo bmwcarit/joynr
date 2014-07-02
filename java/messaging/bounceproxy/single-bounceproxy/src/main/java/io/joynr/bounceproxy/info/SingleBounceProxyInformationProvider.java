@@ -19,6 +19,7 @@ package io.joynr.bounceproxy.info;
  * #L%
  */
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.info.BounceProxyInformation;
 
 import java.net.URI;
@@ -44,19 +45,19 @@ public class SingleBounceProxyInformationProvider implements Provider<BounceProx
 
     private static final Logger log = LoggerFactory.getLogger(SingleBounceProxyInformationProvider.class);
 
-    public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
-
     private BounceProxyInformation bpInfo;
 
     private String hostPath = null;
     private URI hostPathFromRequest = null;
 
     @Inject(optional = true)
-    public void setHostPath(@Named(PROPERTY_SERVLET_HOST_PATH) String hostPath) {
+    public void setHostPath(@Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath) {
         this.hostPath = hostPath;
 
         if (this.hostPath != null) {
-            log.info("Using bounceproxy URL {} from property {}", hostPath, PROPERTY_SERVLET_HOST_PATH);
+            log.info("Using bounceproxy URL {} from property {}",
+                     hostPath,
+                     MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
             bpInfo = new BounceProxyInformation(hostPath, URI.create(hostPath));
         }
     }

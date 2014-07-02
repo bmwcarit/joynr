@@ -23,6 +23,7 @@ import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceivers;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
@@ -72,11 +73,6 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
 public class MessagingServletConfig extends GuiceServletContextListener {
     public static final String INIT_PARAM_SERVLET_MODULE_CLASSNAME = "servletmodule";
-
-    //NOTE: all property identifiers must be lower-case only.
-    public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
-    public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
-    public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
 
     private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
     private static final String DEFAULT_SERVLET_MODULE_NAME = "io.joynr.servlet.ServletModule";
@@ -197,14 +193,14 @@ public class MessagingServletConfig extends GuiceServletContextListener {
             servletModule = new EmptyModule();
         }
 
-        properties.put(PROPERTY_SERVLET_CONTEXT_ROOT, servletContext.getContextPath());
+        properties.put(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, servletContext.getContextPath());
 
-        String hostPath = properties.getProperty(PROPERTY_SERVLET_HOST_PATH);
+        String hostPath = properties.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         if (hostPath == null) {
             hostPath = properties.getProperty("hostpath");
         }
         if (hostPath != null) {
-            properties.setProperty(PROPERTY_SERVLET_HOST_PATH, hostPath);
+            properties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, hostPath);
         }
 
         // find all plugin application classes implementing the JoynApplication interface

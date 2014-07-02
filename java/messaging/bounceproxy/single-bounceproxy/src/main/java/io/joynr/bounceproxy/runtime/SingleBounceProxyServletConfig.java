@@ -20,7 +20,6 @@ package io.joynr.bounceproxy.runtime;
  */
 
 import io.joynr.bounceproxy.SingleBounceProxyModule;
-import io.joynr.bounceproxy.info.SingleBounceProxyInformationProvider;
 import io.joynr.bounceproxy.service.AttachmentReceiverService;
 import io.joynr.bounceproxy.service.AttachmentSenderService;
 import io.joynr.bounceproxy.service.MessagingWithoutContentTypeService;
@@ -28,6 +27,7 @@ import io.joynr.bounceproxy.service.TimeService;
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
 import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
 import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
@@ -57,10 +57,9 @@ public class SingleBounceProxyServletConfig extends AbstractGuiceServletConfig {
     public SingleBounceProxyServletConfig() {
 
         Properties bounceProxySystemProperties = new Properties();
-        String hostPath = System.getProperty(SingleBounceProxyInformationProvider.PROPERTY_SERVLET_HOST_PATH);
+        String hostPath = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         if (hostPath != null) {
-            bounceProxySystemProperties.setProperty(SingleBounceProxyInformationProvider.PROPERTY_SERVLET_HOST_PATH,
-                                                    hostPath);
+            bounceProxySystemProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, hostPath);
         }
 
         atmosphereModule = new AtmosphereModule();
