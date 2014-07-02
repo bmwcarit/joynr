@@ -103,7 +103,7 @@ public class DistributedLoggingManager extends AbstractManager {
                 }
             };
 
-            timer.schedule(timerTask, 0, flushPeriodSeconds * 1000);
+            timer.schedule(timerTask, flushPeriodSeconds * 1000, flushPeriodSeconds * 1000);
         }
 
     }
