@@ -46,6 +46,7 @@ import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.Resources;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -76,6 +77,8 @@ public class ServersUtil {
     public static Server startServers() throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+
+        System.setProperty("log4j.configuration", Resources.getResource("log4j_backend.properties").toString());
 
         Server server = startServer(contexts);
         setBounceProxyUrl();
