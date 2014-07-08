@@ -488,6 +488,17 @@
 				<artifactId>org.eclipse.core.resources</artifactId>
 				<version>3.6.0.v20100526-0737</version>
 			</dependency>
+			<!--
+			This dependecy is needed to avoid conflicts with Java 5 code (generics)
+			when pulling in transitive dependency org.apache.felix:org.osgi.foundation:1.2.0
+			that defines java.util collection classes without generics.
+			https://bugs.eclipse.org/bugs/show_bug.cgi?id=343069
+			 -->
+			<dependency>
+				<groupId>org.eclipse.equinox</groupId>
+				<artifactId>org.eclipse.equinox.app</artifactId>
+				<version>[1.3.1,2.0.0)</version>
+			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>org.eclipse.xtend.standalone</artifactId>
