@@ -844,7 +844,7 @@
 				<plugin>
 					<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.9.0-rc.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
@@ -1088,8 +1088,8 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>[3.0,3.1)</version>
-									<message>Wrong Maven version. You must use Maven 3.0.x to build joynr.</message>
+									<version>[3.0,3.3)</version>
+									<message>Wrong Maven version. You must use Maven 3.0.x, 3.1.x or 3.2.x to build joynr.</message>
 								</requireMavenVersion>
 							</rules>
 						</configuration>
