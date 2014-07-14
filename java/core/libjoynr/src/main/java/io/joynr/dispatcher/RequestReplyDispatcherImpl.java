@@ -37,6 +37,7 @@ import io.joynr.pubsub.subscription.SubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -432,8 +433,9 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                             if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
                                 sendReply(message, reply);
                             } else {
-                                logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message has been reached.",
-                                             reply);
+                                logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message {} has been reached.",
+                                             reply,
+                                             new Date(message.getExpiryDate()));
                             }
                         } catch (Exception e) {
                             logger.error("Error processing message: \r\n {} : error : {}", message, e);

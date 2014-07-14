@@ -753,7 +753,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     infrastructure::ChannelUrlDirectoryProxy* channelUrlDirectoryProxy
             = channelUrlDirectoryProxyBuilder
-                ->setRuntimeQos(MessagingQos(10000))
+                ->setRuntimeQos(MessagingQos(1000))
                 ->setCached(true)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -762,8 +762,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     types::ChannelUrlInformation result;
     QString channelId("test");
     channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
-    EXPECT_TRUE(status.successful());
-    EXPECT_EQ(result.getUrls().size(), 0);
+    EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
 }
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {

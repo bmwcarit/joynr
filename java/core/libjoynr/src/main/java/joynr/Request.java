@@ -172,7 +172,7 @@ public class Request implements JoynrMessageType {
 
     @Override
     public String toString() {
-        return "JsonRequest: " + this.methodName + ", requestReplyId: " + requestReplyId + ", params: "
+        return "Request: " + this.methodName + ", requestReplyId: " + requestReplyId + ", params: "
                 + Arrays.toString(this.params);
     }
 

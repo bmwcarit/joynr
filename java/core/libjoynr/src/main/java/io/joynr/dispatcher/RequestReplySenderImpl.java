@@ -265,7 +265,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                                    JsonMappingException, IOException {
 
         if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
-            logger.info("SEND  messageId: {} type: {} from: {} to: {} header: {}",
+            logger.info("SEND messageId: {} type: {} from: {} to: {} header: {}",
                         new String[]{ message.getId(), message.getType(),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),

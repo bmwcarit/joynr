@@ -189,6 +189,10 @@
 							<name>joynr.servlet.hostPath</name>
 							<value>http://localhost:8080</value>
 						</systemProperty>
+                        <systemProperty>
+                            <name>log4j.configuration</name>
+                            <value>file:${basedir}/resources/log4j.properties</value>
+                        </systemProperty>
 					</systemProperties>
 				</configuration>
 			</plugin>
