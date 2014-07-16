@@ -21,6 +21,7 @@ package io.joynr.runtime;
 
 import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
+import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -136,11 +137,11 @@ public class MessagingServletConfig extends GuiceServletContextListener {
 
         // The jerseyServletModule injects the servicing classes using guice,
         // instead of letting jersey do it natively
-        jerseyServletModule = new JerseyServletModule() {
+        jerseyServletModule = new AbstractJoynrServletModule() {
 
             @SuppressWarnings("unchecked")
             @Override
-            protected void configureServlets() {
+            protected void configureJoynrServlets() {
                 bind(GuiceContainer.class);
                 bind(JacksonJsonProvider.class).asEagerSingleton();
 
@@ -158,16 +159,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
                         continue;
                     }
                     serve(webServletAnnotation.value()).with((Class<? extends HttpServlet>) webServletClass);
-
                 }
-
-                // Route html, js, jpg, png, css requests through GuiceContainer
-                bind(DefaultServletWrapper.class);
-                serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(DefaultServletWrapper.class);
-
-                // Route all other requests through GuiceContainer
-                serve("/*").with(GuiceContainer.class);
-
             }
 
             // this @SuppressWarnings is needed for the build on jenkins

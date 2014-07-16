@@ -49,7 +49,7 @@ public abstract class AbstractJoynrServletModule extends JerseyServletModule {
     private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
 
     @Override
-    protected void configureServlets() {
+    final protected void configureServlets() {
 
         // GuiceFilter is instantiated here instead of configured in
         // web.xml to allow for more than one servlet per servlet
