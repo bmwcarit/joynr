@@ -32,11 +32,14 @@ import io.joynr.messaging.httpoperation.HttpConstants;
 import io.joynr.messaging.httpoperation.HttpPost;
 import io.joynr.messaging.httpoperation.HttpRequestFactory;
 import io.joynr.messaging.util.Utilities;
+import io.joynr.runtime.PropertyLoader;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -84,10 +87,12 @@ public class MessageScheduler {
     private ObjectMapper objectMapper;
     private final LocalChannelUrlDirectoryClient channelUrlClient;
     private HttpRequestFactory httpRequestFactory;
+    private Properties hosts;
 
     @Inject
     public MessageScheduler(CloseableHttpClient httpclient,
                             @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_HOSTS_FILENAME) String hostsFileName,
                             LocalChannelUrlDirectoryClient localChannelUrlClient,
                             RequestConfig defaultRequestConfig,
                             HttpConstants httpConstants,
@@ -105,6 +110,9 @@ public class MessageScheduler {
         scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends, schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(SCHEDULER_KEEP_ALIVE_TIME, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
+
+        hosts = PropertyLoader.loadProperties(hostsFileName);
+
     }
 
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
@@ -229,11 +237,15 @@ public class MessageScheduler {
                                 + statusCode + " error: " + error.getCode() + "reason:" + error.getReason()));
                         break;
                     default:
+                        logger.error("SEND error channelId: {}, messageId: {} error: {} code: {} reason: {} ",
+                                     new Object[]{ channelId, messageId, statusText, error.getCode(), error.getReason() });
                         failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
                                 + statusText + body + " error: " + error.getCode() + "reason:" + error.getReason()));
                         break;
                     }
                 } catch (Exception e) {
+                    logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId,
+                            messageId, e.getMessage() });
                     failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
                             + statusText));
 
@@ -242,7 +254,7 @@ public class MessageScheduler {
                 break;
             }
         } catch (Exception e) {
-            logger.trace("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
+            logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
                     e.getMessage() });
         } finally {
             if (response != null) {
@@ -262,10 +274,51 @@ public class MessageScheduler {
 
         List<String> urls = channelUrlInfo.getUrls();
         if (!urls.isEmpty()) {
-            // in case sessions are used and the session is encoded in the URL, 
+            // in case sessions are used and the session is encoded in the URL,
             // we need to strip that from the URL and append session ID at the end
             String encodedChannelUrl = urls.get(0); // TODO handle trying multiple channelUrls
             url = encodeSendUrl(encodedChannelUrl);
+
+            try {
+                url = mapHost(url);
+            } catch (Exception e) {
+                logger.error("error in URL mapping while sending to channnelId: {} reason: {}",
+                             channelId,
+                             e.getMessage());
+            }
+
+        }
+
+        return url;
+    }
+
+    protected String mapHost(String url) throws Exception {
+        URL originalUrl = new URL(url);
+        String host = originalUrl.getHost();
+
+        if (hosts.containsKey(host)) {
+
+            String[] mappedHostInfo = hosts.getProperty(host).split(":");
+            String mappedHost = mappedHostInfo[0];
+
+            int port = originalUrl.getPort();
+            if (mappedHostInfo.length >= 2) {
+                port = Integer.valueOf(mappedHostInfo[1]);
+            }
+
+            String path = originalUrl.getFile();
+            if (mappedHostInfo.length >= 3) {
+                String mappedPathFind = mappedHostInfo[2];
+
+                String pathReplace = "";
+                if (mappedHostInfo.length >= 4) {
+                    pathReplace = mappedHostInfo[3];
+                }
+                path = path.replaceFirst(mappedPathFind, pathReplace);
+            }
+
+            URL newURL = new URL(originalUrl.getProtocol(), mappedHost, port, path);
+            url = newURL.toExternalForm();
         }
 
         return url;
