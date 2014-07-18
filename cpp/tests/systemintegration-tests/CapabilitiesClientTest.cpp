@@ -22,7 +22,7 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/types/Trip.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/CapabilitiesRegistrar.h"

@@ -54,7 +54,7 @@ import java.util.UUID;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
-import joynr.tests.TestProxy;
+import joynr.tests.testProxy;
 import joynr.types.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
@@ -82,7 +82,7 @@ public class SubscriptionEnd2EndTest {
 
     private static PubSubTestProviderImpl provider;
     private static String domain;
-    private static TestProxy proxy;
+    private static testProxy proxy;
 
     // private SubscriptionQos subscriptionQos;
     private static DummyJoynrApplication providingApplication;
@@ -133,7 +133,7 @@ public class SubscriptionEnd2EndTest {
         provider = new PubSubTestProviderImpl();
         providingApplication.getRuntime().registerCapability(domain,
                                                              provider,
-                                                             joynr.tests.TestSync.class,
+                                                             joynr.tests.testSync.class,
                                                              "SubscriptionEnd2End");
     }
 
@@ -153,8 +153,8 @@ public class SubscriptionEnd2EndTest {
         MessagingQos messagingQos = new MessagingQos(5000);
         DiscoveryQos discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
-        ProxyBuilder<TestProxy> proxyBuilder = consumingApplication.getRuntime()
-                                                                   .getProxyBuilder(domain, joynr.tests.TestProxy.class);
+        ProxyBuilder<testProxy> proxyBuilder = consumingApplication.getRuntime()
+                                                                   .getProxyBuilder(domain, joynr.tests.testProxy.class);
         proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         // Wait until all the registrations and lookups are finished, to make
         // sure the timings are correct once the tests start by sending a sync
@@ -440,14 +440,14 @@ public class SubscriptionEnd2EndTest {
     @Test
     public void testSubscribeToNonExistentDomain() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
-        TestProxy proxyToNonexistentDomain = null;
+        testProxy proxyToNonexistentDomain = null;
         try {
-            ProxyBuilder<TestProxy> proxyBuilder;
+            ProxyBuilder<testProxy> proxyBuilder;
             String nonExistentDomain = UUID.randomUUID().toString() + "-domaindoesnotexist-end2end";
             MessagingQos messagingQos = new MessagingQos(20000);
             DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
             proxyBuilder = consumingApplication.getRuntime().getProxyBuilder(nonExistentDomain,
-                                                                             joynr.tests.TestProxy.class);
+                                                                             joynr.tests.testProxy.class);
             proxyToNonexistentDomain = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();

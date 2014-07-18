@@ -35,7 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import joynr.tests.TestProxy;
+import joynr.tests.testProxy;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public class PublicationTimersTest {
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         requestCallerFactory = new RequestCallerFactory();
 
-        requestCaller = requestCallerFactory.create(provider, TestProxy.class);
+        requestCaller = requestCallerFactory.create(provider, testProxy.class);
         publicationManager = new PublicationManagerImpl(attributePollInterpreter, cleanupScheduler);
     }
 

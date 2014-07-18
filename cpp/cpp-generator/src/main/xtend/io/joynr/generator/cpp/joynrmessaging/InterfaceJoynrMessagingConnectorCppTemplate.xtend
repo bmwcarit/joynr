@@ -247,8 +247,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
-		    «val outputParameter = getMappedOutputParameter(method)»
-		    «val methodName = method.joynrName»
+			«val outputParameter = getMappedOutputParameter(method)»
+			«val methodName = method.joynrName»
 			«IF outputParameter.head == "void"»
 			    void «interfaceName»JoynrMessagingConnector::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
 			        «produceParameterSetters(method)»
@@ -270,26 +270,26 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 			    }
 			«ENDIF»
 
-		    void «interfaceName»JoynrMessagingConnector::«methodName»(QSharedPointer<joynr::Future<«outputParameter.head»> > future, QSharedPointer< joynr::ICallback<«outputParameter.head»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»){
-		        «produceParameterSetters(method)»
-		        assert(!future.isNull());
-		        future->setCallback(callback);
-		        QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«outputParameter.head»>(future));
-		        operationRequest(future->getStatus(), replyCaller, internalRequestObject);
-		    }
+			void «interfaceName»JoynrMessagingConnector::«methodName»(QSharedPointer<joynr::Future<«outputParameter.head»> > future, QSharedPointer< joynr::ICallback<«outputParameter.head»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»){
+			    «produceParameterSetters(method)»
+			    assert(!future.isNull());
+			    future->setCallback(callback);
+			    QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«outputParameter.head»>(future));
+			    operationRequest(future->getStatus(), replyCaller, internalRequestObject);
+			}
 
-		    void «interfaceName»JoynrMessagingConnector::«methodName»(QSharedPointer<joynr::Future<«outputParameter.head»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
-		        «produceParameterSetters(method)»
-		        QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«outputParameter.head»>(future));
-		        operationRequest(future->getStatus(), replyCaller, internalRequestObject);
-		    }
+			void «interfaceName»JoynrMessagingConnector::«methodName»(QSharedPointer<joynr::Future<«outputParameter.head»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
+			    «produceParameterSetters(method)»
+			    QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«outputParameter.head»>(future));
+			    operationRequest(future->getStatus(), replyCaller, internalRequestObject);
+			}
 
-		    void «interfaceName»JoynrMessagingConnector::«methodName»(QSharedPointer< joynr::ICallback<«outputParameter.head»> > callback«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
-		        «produceParameterSetters(method)»
-		        QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«outputParameter.head»>(callback));
-		        joynr::RequestStatus status(joynr::RequestStatusCode::NOT_STARTED);
-		        operationRequest(status, replyCaller, internalRequestObject);
-		    }
+			void «interfaceName»JoynrMessagingConnector::«methodName»(QSharedPointer< joynr::ICallback<«outputParameter.head»> > callback«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
+			    «produceParameterSetters(method)»
+			    QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«outputParameter.head»>(callback));
+			    joynr::RequestStatus status(joynr::RequestStatusCode::NOT_STARTED);
+			    operationRequest(status, replyCaller, internalRequestObject);
+			}
 
 		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»

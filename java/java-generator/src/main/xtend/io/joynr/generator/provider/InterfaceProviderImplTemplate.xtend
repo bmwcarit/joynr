@@ -65,13 +65,6 @@ import java.util.TreeSet;
 				providerQos.setPriority(System.currentTimeMillis());
 			}	
 
-«««     The members are already defined in AbstractProvider, and should not be defined again here.
-«««		«FOR attribute: getAttributes(serviceInterface)»
-«««		«val attributeName = attribute.SHORTNAME.toFirstLower»
-«««		«val attributeType = getMappedDatatypeOrList(attribute)»
-«««			private «attributeType» «attributeName»;	
-«««		«ENDFOR»
-		
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
@@ -87,7 +80,7 @@ import java.util.TreeSet;
 				@Override
 				public void set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
 					«IF isNotifiable(attribute)»
-						super.«attributeName.toFirstLower»Changed(«attributeName»);
+						super.«attributeName»Changed(«attributeName»);
 					«ENDIF»
 					this.«attributeName» = «attributeName»;
 				}

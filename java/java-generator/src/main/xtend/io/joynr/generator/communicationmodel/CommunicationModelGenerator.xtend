@@ -43,7 +43,7 @@ class CommunicationModelGenerator {
 				val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 				
 				fsa.generateFile(
-					path + type.name.toFirstUpper + ".java",
+					path + type.joynrName + ".java",
 					complexTypeTemplate.generate(type as FCompoundType).toString
 				)
 	
@@ -54,7 +54,7 @@ class CommunicationModelGenerator {
 			val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator 
 			
 			fsa.generateFile(
-				path + type.name.toFirstUpper + ".java",
+				path + type.joynrName + ".java",
 				enumTemplate.generate(type as FEnumerationType).toString
 			)
 		}

@@ -32,7 +32,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/tests/TestRequestInterpreter.h"
+#include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
@@ -79,7 +79,7 @@ public:
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::getInterfaceName());
     }
 
     void TearDown(){

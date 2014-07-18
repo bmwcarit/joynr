@@ -22,11 +22,11 @@ package io.joynr.pubsub;
 import java.util.ArrayList;
 import java.util.List;
 
-import joynr.tests.DefaultTestProvider;
+import joynr.tests.DefaulttestProvider;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 
-public class PubSubTestProviderImpl extends DefaultTestProvider {
+public class PubSubTestProviderImpl extends DefaulttestProvider {
 
     List<Integer> list = new ArrayList<Integer>();
 
@@ -37,7 +37,7 @@ public class PubSubTestProviderImpl extends DefaultTestProvider {
         complexTestAttribute.setLongitude(11.536564);
         complexTestAttribute.setAltitude(6.0);
         complexTestAttribute.setGpsFix(GpsFixEnum.MODE3D);
-        aTTRIBUTEWITHCAPITALLETTERS = 42;
+        ATTRIBUTEWITHCAPITALLETTERS = 42;
     }
 
     @Override

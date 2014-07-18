@@ -21,7 +21,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/vehicle/GpsRequestInterpreter.h"
-#include "joynr/tests/TestRequestInterpreter.h"
+#include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/IAttributeListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
@@ -64,7 +64,7 @@ TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnab
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>("tests/Test");
 
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
@@ -112,7 +112,7 @@ TEST(PublicationManagerTest, stop_publications) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(mockPublicationSender,
                 sendSubscriptionPublication(_,_,_,_))
@@ -164,7 +164,7 @@ TEST(PublicationManagerTest, remove_all_publications) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(mockPublicationSender,
                 sendSubscriptionPublication(_,_,_,_))
@@ -209,7 +209,7 @@ TEST(PublicationManagerTest, restore_publications) {
     QSharedPointer<MockTestRequestCaller> requestCaller(new MockTestRequestCaller());
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(*requestCaller,
                 getLocation(_,_))
@@ -261,7 +261,7 @@ TEST(PublicationManagerTest, add_onChangeSubscription) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
@@ -330,7 +330,7 @@ TEST(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
@@ -400,7 +400,7 @@ TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
@@ -470,7 +470,7 @@ TEST(PublicationManagerTest, remove_onChangeSubscription) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();

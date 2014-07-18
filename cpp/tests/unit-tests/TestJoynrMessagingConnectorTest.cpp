@@ -17,7 +17,7 @@
  * #L%
  */
 #include "AbstractSyncAsyncTest.cpp"
-#include "joynr/tests/TestJoynrMessagingConnector.h"
+#include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
 
 using ::testing::A;
@@ -62,9 +62,9 @@ public:
         );
     }
 
-    tests::ITest* createFixture(bool cacheEnabled) {
+    tests::Itest* createFixture(bool cacheEnabled) {
 
-        tests::TestJoynrMessagingConnector* connector = new tests::TestJoynrMessagingConnector(
+        tests::testJoynrMessagingConnector* connector = new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
                     (SubscriptionManager*) NULL,
                     "myDomain",
@@ -75,7 +75,7 @@ public:
                     cacheEnabled,
                     0);
 
-        return dynamic_cast<tests::ITest*>(connector);
+        return dynamic_cast<tests::Itest*>(connector);
     }
 
 };

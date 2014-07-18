@@ -35,9 +35,9 @@ import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.util.Properties;
 
-import joynr.tests.DefaultTestProvider;
-import joynr.tests.TestProvider;
-import joynr.tests.TestProxy;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProvider;
+import joynr.tests.testProxy;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -77,7 +77,7 @@ public class ShutdownTest {
                                                                                 }
                                                                             }).createApplication(DummyJoynrApplication.class);
 
-        provider = new DefaultTestProvider();
+        provider = new DefaulttestProvider();
     }
 
     @Test(expected = JoynrShutdownException.class)
@@ -85,7 +85,7 @@ public class ShutdownTest {
         dummyApplication.shutdown();
         dummyApplication.getRuntime().registerCapability("ShutdownTestdomain",
                                                          provider,
-                                                         TestProvider.class,
+                                                         testProvider.class,
                                                          "ShutdownTestauthenticationToken");
     }
 
@@ -97,11 +97,11 @@ public class ShutdownTest {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
         dummyApplication.getRuntime().registerCapability("ShutdownTestdomain",
                                                          provider,
-                                                         TestProvider.class,
+                                                         testProvider.class,
                                                          "ShutdownTestauthenticationToken");
-        ProxyBuilder<TestProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
-                                                                                             TestProxy.class);
-        TestProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))
+        ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
+                                                                                             testProxy.class);
+        testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))
                                       .build();
         dummyApplication.shutdown();
 
@@ -114,9 +114,9 @@ public class ShutdownTest {
                                                 InterruptedException {
         // TODO
         // Arbitration does not check if the runtime is already shutting down. A test like this would fail.
-        ProxyBuilder<TestProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
-                                                                                             TestProxy.class);
-        TestProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))
+        ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
+                                                                                             testProxy.class);
+        testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))
                                       .build();
         dummyApplication.shutdown();
 

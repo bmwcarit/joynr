@@ -385,7 +385,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
                 for (String capId : map) {
                     CapabilityEntry ce = capabilityKeyToCapabilityMapping.get(capId);
 
-                    if (ce != null && ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
+                    if (ce != null && ce.getDomain().equals(domain)
+                            && ce.getInterfaceName().equalsIgnoreCase(interfaceName)) {
                         if (checkQoSMatches(capId, ce, cacheMaxAge)) {
                             capabilitiesList.add(ce);
                         }

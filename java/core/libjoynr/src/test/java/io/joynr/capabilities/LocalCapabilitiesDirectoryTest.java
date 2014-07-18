@@ -206,7 +206,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void lookupWithScopeGlobalOnly() {
+    public void lookupWithScopeGlobalOnly() throws InterruptedException {
         List<CapabilityInformation> caps = new ArrayList<CapabilityInformation>();
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
@@ -286,7 +286,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         //and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
         discoveryQos.setCacheMaxAge(0);
-        //now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir (as long as the cache is not expired)
+        Thread.sleep(1);
+
+        //now, another lookup call shall call the globalCapabilitiesClient, as the global cap dir is expired
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(5)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
@@ -301,7 +303,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void lookupWithScopeLocalThenGlobal() {
+    public void lookupWithScopeLocalThenGlobal() throws InterruptedException {
         List<CapabilityInformation> caps = new ArrayList<CapabilityInformation>();
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
@@ -365,6 +367,8 @@ public class LocalCapabilitiesDirectoryTest {
 
         //and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
         discoveryQos.setCacheMaxAge(0);
+        Thread.sleep(1);
+
         //now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir (as long as the cache is not expired)
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
@@ -376,7 +380,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void lookupWithScopeLocalAndGlobal() {
+    public void lookupWithScopeLocalAndGlobal() throws InterruptedException {
         List<CapabilityInformation> caps = new ArrayList<CapabilityInformation>();
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
@@ -432,6 +436,8 @@ public class LocalCapabilitiesDirectoryTest {
 
         //and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
         discoveryQos.setCacheMaxAge(0);
+        Thread.sleep(1);
+
         //now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir (as long as the cache is not expired)
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),

@@ -24,8 +24,8 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/tests/TestProvider.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatus.h"
@@ -125,17 +125,17 @@ TEST_F(End2EndRPCTest, call_void_operation)
 
     QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
 
-    runtime->registerCapability<tests::TestProvider>(domain, mockProvider, QString());
+    runtime->registerCapability<tests::testProvider>(domain, mockProvider, QString());
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    tests::TestProxy* testProxy = testProxyBuilder
+    tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
             ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
@@ -156,19 +156,19 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
-    runtime->registerCapability<tests::TestProvider>(domain, mockProvider, QString());
+    runtime->registerCapability<tests::testProvider>(domain, mockProvider, QString());
 
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
     qlonglong qosCacheDataFreshnessMs = 400000;
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
             ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)

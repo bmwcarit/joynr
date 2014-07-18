@@ -259,7 +259,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 				«ELSE»
 			    logger->log(DEBUG, "Subscribing to «attributeName».");
 			    assert(subscriptionManager != NULL);
-			    QString attributeName = "«attributeName.toFirstUpper»";
+			    QString attributeName = "«attributeName»";
 			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
 			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
 			    subscriptionManager->registerSubscription(

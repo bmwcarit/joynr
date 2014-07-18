@@ -79,7 +79,7 @@ class InterfaceAbstractProviderTemplate {
 
 			«IF isNotifiable(attribute)»
 				@Override
-				public final void «attributeName.toFirstLower»Changed(«attributeType» «attributeName») {
+				public final void «attributeName»Changed(«attributeType» «attributeName») {
 					this.«attributeName» = «attributeName»;
 					onAttributeValueChanged("«attributeName»", this.«attributeName»);
 				}

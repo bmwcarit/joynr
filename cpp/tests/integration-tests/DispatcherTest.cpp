@@ -34,8 +34,8 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/joynrlogging.h"
 
-#include "joynr/tests/ITest.h"
-#include "joynr/tests/TestRequestInterpreter.h"
+#include "joynr/tests/Itest.h"
+#include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/GpsLocation.h"
 
 using namespace ::testing;
@@ -60,7 +60,7 @@ public:
         messageSender(mockMessageRouter),
         dispatcher(&messageSender)
     {
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::getInterfaceName());
     }
 
 

@@ -23,9 +23,9 @@
 #include <gmock/gmock.h>
 #include "PrettyPrint.h"
 
-#include "joynr/tests/DefaultTestProvider.h"
-#include "joynr/tests/TestProvider.h"
-#include "joynr/tests/TestRequestCaller.h"
+#include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "QtCore"
 #include "utils/TestQString.h"
@@ -577,15 +577,15 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     }
 };
 
-class MockTestProvider : public joynr::tests::DefaultTestProvider
+class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
     MockTestProvider() :
-        joynr::tests::DefaultTestProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
+        joynr::tests::DefaulttestProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
     {
     };
     MockTestProvider(joynr::types::ProviderQos qos) :
-        DefaultTestProvider(qos)
+        DefaulttestProvider(qos)
     {
     };
     ~MockTestProvider()
@@ -634,10 +634,10 @@ public:
     }
 };
 
-class MockTestRequestCaller : public joynr::tests::TestRequestCaller {
+class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
 //    MockTestRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
-    MockTestRequestCaller() : joynr::tests::TestRequestCaller(QSharedPointer<joynr::tests::TestProvider>(new MockTestProvider()) ) {}
+    MockTestRequestCaller() : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {}
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
     MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));

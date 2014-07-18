@@ -772,31 +772,31 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def joynrName(FType type){
-		type.name.toFirstUpper
+		type.name
 	}
 
 	def joynrName(FField member) {
-		member.name.toFirstLower
+		member.name
 	}
 
 	def joynrName(FInterface iFace){
-		iFace.name.toFirstUpper
+		iFace.name
 	}
 
 	def joynrName(FMethod method) {
-		method.name.toFirstLower
+		method.name
 	}
 
 	def joynrName(FAttribute attribute) {
-		attribute.name.toFirstLower
+		attribute.name
 	}
 
 	def joynrName(FBroadcast event) {
-		event.name.toFirstLower
+		event.name
 	}
 
 	def joynrName(FArgument argument){
-		argument.name.toFirstLower
+		argument.name
 	}
 
 }

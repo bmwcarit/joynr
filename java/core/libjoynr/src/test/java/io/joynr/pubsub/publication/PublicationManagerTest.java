@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import joynr.tests.TestProvider;
+import joynr.tests.testProvider;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -129,7 +129,7 @@ public class PublicationManagerTest {
         subscriptionQos = new PeriodicSubscriptionQos(400, END_DATE_MS, 500, 1000);
         subscriptionQosWithoutExpiryDate = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
-        requestCaller = requestCallerFactory.create(provider, TestProvider.class);
+        requestCaller = requestCallerFactory.create(provider, testProvider.class);
     }
 
     @After

@@ -23,8 +23,8 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
-#include "joynr/tests/DefaultTestProvider.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testProxy.h"
 
 #include "joynr/RequestStatus.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -46,7 +46,7 @@ public:
     LibJoynrDbusRuntime* runtime1;
     LibJoynrDbusRuntime* runtime2;
 
-    tests::TestProxy* testProxy;
+    tests::testProxy* testProxy;
 
     QString domain;
     QSemaphore semaphore;
@@ -100,7 +100,7 @@ public:
         types::ProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-        QSharedPointer<tests::TestProvider> provider(new MockTestProvider(providerQos));
+        QSharedPointer<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
         QString participantId = runtime1->registerCapability(domain, provider, authenticationToken);
@@ -108,7 +108,7 @@ public:
     }
 
     void connectProxy() {
-        auto proxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domain);
+        auto proxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
         ASSERT_TRUE(proxyBuilder != NULL);
 
         // start arbitration

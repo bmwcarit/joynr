@@ -60,7 +60,7 @@ typeCollection testTypes {
 }
 
 
-
+//this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
 interface test{
 	
 	version {major 0 minor 1}
@@ -89,6 +89,7 @@ interface test{
 	attribute Int32 notifyReadWrite
 	
 	attribute Int32 notify
+	//this attributes starts with capital letter (in contrary to our modelling guidelines) for testing purposes
 	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
 	method addNumbers {

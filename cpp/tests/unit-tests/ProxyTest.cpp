@@ -80,9 +80,9 @@ public:
         );
     }
 
-    tests::ITest* createFixture(bool cacheEnabled) {
+    tests::Itest* createFixture(bool cacheEnabled) {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-        tests::TestProxy* proxy = new tests::TestProxy(
+        tests::testProxy* proxy = new tests::testProxy(
                     endPointAddress,
                     mockConnectorFactory,
                     &mockClientCache,
@@ -92,7 +92,7 @@ public:
                     cacheEnabled
                     );
         proxy->handleArbitrationFinished(providerParticipantId, joynr::system::CommunicationMiddleware::JOYNR);
-        return dynamic_cast<tests::ITest*>(proxy);
+        return dynamic_cast<tests::Itest*>(proxy);
     }
 
 protected:
