@@ -21,7 +21,6 @@ package io.joynr.messaging.httpoperation;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
-import io.joynr.bounceproxy.LocalGrizzlyBounceProxy;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.messaging.MessageSender;
@@ -31,14 +30,17 @@ import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 
 import joynr.JoynrMessage;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -62,11 +64,27 @@ public class HttpCommunicationManagerTest {
     LongPollingMessageReceiver longpollingMessageReceiver;
     MessageSender messageSender;
     private String testChannelId = "HttpCommunicationManagerTest-" + UUID.randomUUID().toString();
-    private int port;
 
-    public HttpCommunicationManagerTest() throws IOException {
-        LocalGrizzlyBounceProxy server = new LocalGrizzlyBounceProxy();
-        port = server.start();
+    private static Server server;
+    private static int port;
+
+    @BeforeClass
+    public static void startBounceProxy() throws Exception {
+
+        WebAppContext bounceproxyWebapp = new WebAppContext();
+        bounceproxyWebapp.setContextPath("/bounceproxy");
+        bounceproxyWebapp.setWar("target/bounceproxy.war");
+
+        server = new Server(0);
+        server.setHandler(bounceproxyWebapp);
+        server.start();
+
+        port = server.getConnectors()[0].getLocalPort();
+    }
+
+    @AfterClass
+    public static void stopBounceProxy() throws Exception {
+        server.stop();
     }
 
     @Mock
@@ -128,7 +146,7 @@ public class HttpCommunicationManagerTest {
 
         // post to the channel to see if it exists
 
-        onrequest(1000).with().body(message).expect().statusCode(201).when().post("/channels/" + testChannelId
+        onrequest(1000).with().body(message).expect().statusCode(201).when().post("channels/" + testChannelId
                 + "/message/");
 
         longpollingMessageReceiver.shutdown(true);
@@ -140,7 +158,7 @@ public class HttpCommunicationManagerTest {
                        .statusCode(400)
                        .body(containsString("Channel not found"))
                        .when()
-                       .post("/channels/" + testChannelId + "/message/");
+                       .post("channels/" + testChannelId + "/message/");
 
     }
 

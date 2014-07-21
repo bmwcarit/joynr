@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 ######## Project settings ########
-project(joynr-0.6.0)
+project(joynr-0.7.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 6)
+set(JOYNR_MINOR_VERSION 7)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -299,6 +299,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     pkg_check_modules(DBUS1 REQUIRED dbus-1)
     message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
     message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
+    message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
     pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1)
     message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
@@ -315,12 +316,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${COMMONAPI_DBUS_INCLUDE_DIRS}
     )
 
-    find_library(
-        PATCHED_DBUS1_LIBRARIES
-        NAMES dbus-1
-        PATHS /usr/local/lib
-        NO_DEFAULT_PATH
-    )
+    link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
 
     add_subdirectory(common-api)
 

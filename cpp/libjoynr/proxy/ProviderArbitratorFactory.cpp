@@ -18,26 +18,32 @@
  */
 #include "joynr/ProviderArbitratorFactory.h"
 #include "joynr/exceptions.h"
+#include "joynr/system/IDiscovery.h"
 
 namespace joynr {
 
-ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(const QString& domain,const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub, const DiscoveryQos &discoveryQos){
+ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
+        const QString& domain,
+        const QString& interfaceName,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos &discoveryQos
+){
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
     switch (strategy){
     case DiscoveryQos::ArbitrationStrategy::NOT_SET:
-        return new DefaultArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos);
+        return new DefaultArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
         break;
     case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
-        return new FixedParticipantArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos);
+        return new FixedParticipantArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::LOCAL_ONLY:
         throw JoynrException("Arbitration: Local-only not implemented yet.");
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
-        return new QosArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos);
+        return new QosArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
         if(!discoveryQos.getCustomParameters().contains("keyword")){
             throw JoynrArbitrationException("KeywordArbitrator creation failed: keyword not set");
         }
-        return new KeywordArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos);
+        return new KeywordArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     default:
         throw JoynrArbitrationException("Arbitrator creation failed: Invalid strategy!");
     }

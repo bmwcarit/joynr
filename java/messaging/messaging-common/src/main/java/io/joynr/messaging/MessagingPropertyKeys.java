@@ -31,6 +31,11 @@ public final class MessagingPropertyKeys {
 
     public static final String JOYNR_PROPERTIES = "joynr.properties";
 
+    //NOTE: all property identifiers must be lower-case only.
+    public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
+    public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
+    public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
+
     private MessagingPropertyKeys() {
         throw new AssertionError();
     }

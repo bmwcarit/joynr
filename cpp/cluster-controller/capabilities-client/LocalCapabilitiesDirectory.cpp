@@ -22,14 +22,13 @@
 #include "cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h"
 #include "joynr/ProxyQos.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/exceptions.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/system/Address.h"
-#include "joynr/types/ProviderQosRequirements.h"
-#include "joynr/DiscoveryQos.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 
 #include <QMutexLocker>
 
@@ -52,51 +51,56 @@ const qint64& LocalCapabilitiesDirectory::DONT_USE_CACHE(){
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         MessagingSettings& messagingSettings,
         ICapabilitiesClient *capabilitiesClientPtr,
-        IMessagingEndpointDirectory *endpointDirectory
+        MessageRouter& messageRouter
 ) :
-        messagingSettings(messagingSettings),
-        capabilitiesClient(capabilitiesClientPtr),
-        cacheLock(new QMutex),
-        interfaceAddress2GlobalCapabilities(),
-        participantId2GlobalCapabilities(),
-        interfaceAddress2LocalCapabilities(),
-        participantId2LocalCapability(),
-        registeredGlobalCapabilities(),
-        endpointDirectory(endpointDirectory)
+    joynr::system::DiscoveryProvider(joynr::types::ProviderQos(
+            QList<joynr::types::CustomParameter>(), // custom provider parameters
+            1,                                      // provider version
+            1,                                      // provider priority
+            joynr::types::ProviderScope::LOCAL,     // provider discovery scope
+            false                                   // supports on change subscriptions
+    )),
+    messagingSettings(messagingSettings),
+    capabilitiesClient(capabilitiesClientPtr),
+    cacheLock(new QMutex),
+    interfaceAddress2GlobalCapabilities(),
+    participantId2GlobalCapabilities(),
+    interfaceAddress2LocalCapabilities(),
+    participantId2LocalCapability(),
+    registeredGlobalCapabilities(),
+    messageRouter(messageRouter)
 {
-
     //setting up the provisioned values for GlobalCapabilitiesClient
     //The GlobalCapabilitiesServer is also provisioned in MessageRouter
-    QList<QSharedPointer<joynr::system::Address> > endpointAddress;
-    endpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(new JoynrMessagingViaCCEndpointAddress()));
+    QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections;
+    middlewareConnections.append(joynr::system::CommunicationMiddleware::JOYNR);
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
-    this->insertInCache(messagingSettings.getDiscoveryDirectoriesDomain(),
-                     infrastructure::IGlobalCapabilitiesDirectory::getInterfaceName(),
-                     providerQos,
-                     messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                     endpointAddress,
-                     false,
-                     true,
-                     false
-                     );
+    this->insertInCache(
+                joynr::system::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
+                infrastructure::IGlobalCapabilitiesDirectory::getInterfaceName(),
+                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                providerQos,
+                middlewareConnections),
+                false,
+                true,
+                false
+    );
 
     //setting up the provisioned values for the ChannelUrlDirectory (domain, interface, participantId...)
     //The ChannelUrlDirectory is also provisioned in MessageRouter  (participantId -> channelId)
-    QList<QSharedPointer<joynr::system::Address> > channelUrlDirEndpointAddress;
-    channelUrlDirEndpointAddress.append(QSharedPointer<JoynrMessagingViaCCEndpointAddress>(
-                                            new JoynrMessagingViaCCEndpointAddress()));
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
-    this->insertInCache(messagingSettings.getDiscoveryDirectoriesDomain(),
-                     infrastructure::IChannelUrlDirectory::getInterfaceName(),
-                     channelUrlDirProviderQos,
-                     messagingSettings.getChannelUrlDirectoryParticipantId(),
-                     channelUrlDirEndpointAddress,
-                     false,
-                     true,
-                     false
-                     );
+    this->insertInCache(
+                joynr::system::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
+                infrastructure::IChannelUrlDirectory::getInterfaceName(),
+                messagingSettings.getChannelUrlDirectoryParticipantId(),
+                channelUrlDirProviderQos,
+                middlewareConnections),
+                false,
+                true,
+                false
+    );
 }
 
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory() {
@@ -109,36 +113,44 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory() {
     participantId2LocalCapability.cleanup(0);
 }
 
-void LocalCapabilitiesDirectory::registerCapability(const QString &domain, const QString &interfaceName, const types::ProviderQos &qos, const QString &participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses) {
-    bool isGlobal = qos.getScope() == types::ProviderScope::GLOBAL;
+void LocalCapabilitiesDirectory::add(
+        joynr::system::DiscoveryEntry& discoveryEntry
+) {
+    bool isGlobal = discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
 
     // register locally
-    this->insertInCache(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal, true, isGlobal);
+    this->insertInCache(
+                discoveryEntry,
+                isGlobal,
+                true,
+                isGlobal
+    );
 
     // register globally
     if(isGlobal) {
-        types::CapabilityInformation capInfo(domain, interfaceName, qos, capabilitiesClient->getLocalChannelId(), participantId);
+        types::CapabilityInformation capInfo(
+                    discoveryEntry.getDomain(),
+                    discoveryEntry.getInterfaceName(),
+                    discoveryEntry.getQos(),
+                    capabilitiesClient->getLocalChannelId(),
+                    discoveryEntry.getParticipantId()
+        );
         if(!registeredGlobalCapabilities.contains(capInfo)){
             registeredGlobalCapabilities.append(capInfo);
         }
-        this->capabilitiesClient->registerCapabilities(registeredGlobalCapabilities);
+        this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
 }
 
-void LocalCapabilitiesDirectory::registerCapability(const QString &domain, const QString &interfaceName, const types::ProviderQos &qos, const QString &participantId) {
-    registerCapability(domain,interfaceName,qos,participantId,QList<QSharedPointer<joynr::system::Address> >());
-}
-
-void LocalCapabilitiesDirectory::removeCapability(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
+void LocalCapabilitiesDirectory::remove(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
     //TODO does it make sense to remove any capability for a domain/interfaceName without knowing which provider registered the capability
     QMutexLocker locker(cacheLock);
     QList<CapabilityEntry> entries = interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
     for (int i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            QList<types::CapabilityInformation> capInfoList = createCapabilitiesInformationList(domain, interfaceName, capabilitiesClient->getLocalChannelId(), qos, entry.getParticipantId());
             registeredGlobalCapabilities.removeAll(types::CapabilityInformation(domain, interfaceName,qos, capabilitiesClient->getLocalChannelId(), entry.getParticipantId()));
-            capabilitiesClient->removeCapabilities(capInfoList);
+            capabilitiesClient->remove(entry.getParticipantId());
             participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
             interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
         }
@@ -147,58 +159,70 @@ void LocalCapabilitiesDirectory::removeCapability(const QString& domain, const Q
     }
 }
 
-void LocalCapabilitiesDirectory::removeCapability(const QString& participantId) {
+void LocalCapabilitiesDirectory::remove(const QString& participantId) {
     QMutexLocker lock(cacheLock);
     CapabilityEntry entry = participantId2LocalCapability.take(participantId);
     interfaceAddress2LocalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()),entry);
     if(entry.isGlobal()) {
         participantId2GlobalCapabilities.remove(participantId, entry);
         interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
-
-        QList<types::CapabilityInformation> capInfoList = createCapabilitiesInformationList(entry.getDomain(), entry.getInterfaceName(), capabilitiesClient->getLocalChannelId(), entry.getQos(), entry.getParticipantId());
-        capabilitiesClient->removeCapabilities(capInfoList);
     }
+
+    capabilitiesClient->remove(participantId);
 }
 
-bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress, const DiscoveryQos& discoveryQos,  QSharedPointer<ILocalCapabilitiesCallback> callBack) {
-    DiscoveryQos::DiscoveryScope scope = discoveryQos.getDiscoveryScope();
+bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
+        const InterfaceAddress& interfaceAddress,
+        const joynr::system::DiscoveryQos& discoveryQos,
+        QSharedPointer<ILocalCapabilitiesCallback> callback
+) {
+    joynr::system::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
     QList<CapabilityEntry> localCapabilities = searchCache(interfaceAddress, -1, true);
     QList<CapabilityEntry> globalCapabilities = searchCache(interfaceAddress, discoveryQos.getCacheMaxAge(), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callBack);
+    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
-bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(const QString& participantId, const DiscoveryQos& discoveryQos, QSharedPointer<ILocalCapabilitiesCallback> callBack) {
-    DiscoveryQos::DiscoveryScope scope = discoveryQos.getDiscoveryScope();
+bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
+        const QString& participantId,
+        const joynr::system::DiscoveryQos& discoveryQos,
+        QSharedPointer<ILocalCapabilitiesCallback> callback
+) {
+    joynr::system::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
     QList<CapabilityEntry> localCapabilities = searchCache(participantId, -1, true);
     QList<CapabilityEntry> globalCapabilities = searchCache(participantId, discoveryQos.getCacheMaxAge(), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callBack);
+    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
-bool LocalCapabilitiesDirectory::callRecieverIfPossible(DiscoveryQos::DiscoveryScope& scope, QList<CapabilityEntry>& localCapabilities, QList<CapabilityEntry>& globalCapabilities, QSharedPointer<ILocalCapabilitiesCallback> callBack) {
+bool LocalCapabilitiesDirectory::callRecieverIfPossible(
+        joynr::system::DiscoveryScope::Enum& scope,
+        QList<CapabilityEntry>& localCapabilities,
+        QList<CapabilityEntry>& globalCapabilities,
+        QSharedPointer<ILocalCapabilitiesCallback> callback
+) {
     // return only local capabilities
-    if(scope == DiscoveryQos::DiscoveryScope::LOCAL_ONLY) {
-        callBack->capabilitiesReceived(localCapabilities);
+    if(scope == joynr::system::DiscoveryScope::LOCAL_ONLY) {
+        callback->capabilitiesReceived(localCapabilities);
         return true;
     }
 
     // return local then global capabilities
-    if(scope == DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL) {
+    if(scope == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL) {
         if(!localCapabilities.isEmpty()) {
-            callBack->capabilitiesReceived(localCapabilities);
+            callback->capabilitiesReceived(localCapabilities);
             return true;
         }
         if(!globalCapabilities.isEmpty()) {
-            callBack->capabilitiesReceived(globalCapabilities);
+            callback->capabilitiesReceived(globalCapabilities);
             return true;
         }
     }
 
     // return local and global capabilities
-    if(scope == DiscoveryQos::DiscoveryScope::LOCAL_AND_GLOBAL) {
+    if(scope == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // remove doublicates
         QList<CapabilityEntry> result;
         foreach (CapabilityEntry entry, localCapabilities + globalCapabilities) {
@@ -208,55 +232,54 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(DiscoveryQos::DiscoveryS
         }
         // return if entries found
         if(!result.isEmpty()) {
-            callBack->capabilitiesReceived(result);
+            callback->capabilitiesReceived(result);
             return true;
         }
     }
 
     // return the global cached entries
-    if(scope == DiscoveryQos::DiscoveryScope::GLOBAL_ONLY) {
+    if(scope == joynr::system::DiscoveryScope::GLOBAL_ONLY) {
         if(!globalCapabilities.isEmpty()) {
-            callBack->capabilitiesReceived(globalCapabilities);
+            callback->capabilitiesReceived(globalCapabilities);
             return true;
         }
     }
     return false;
 }
 
-void LocalCapabilitiesDirectory::getCapabilities(
+void LocalCapabilitiesDirectory::lookup(
         const QString& participantId,
-        QSharedPointer<ILocalCapabilitiesCallback> callBack,
-        const DiscoveryQos& discoveryQos
+        QSharedPointer<ILocalCapabilitiesCallback> callback
 ) {
+    joynr::system::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL);
     // get the local and cached entries
-    bool recieverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callBack);
+    bool recieverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
 
     // if no reciever is called, use the global capabilities directory
     if (!recieverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callBack, participantId, discoveryQos));
-        this->capabilitiesClient->getCapabilitiesForParticipantId(participantId, wrappedCallBack);
+        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallback(new LocalCapabilitiesCallbackWrapper(this, callback, participantId, discoveryQos));
+        this->capabilitiesClient->lookup(participantId, wrappedCallback);
     }
 }
 
-void LocalCapabilitiesDirectory::getCapabilities(
+void LocalCapabilitiesDirectory::lookup(
         const QString& domain,
         const QString& interfaceName,
-        QSharedPointer<ILocalCapabilitiesCallback> callBack,
-        const DiscoveryQos& discoveryQos,
-        const types::ProviderQosRequirements& qos
+        QSharedPointer<ILocalCapabilitiesCallback> callback,
+        const joynr::system::DiscoveryQos& discoveryQos
 ) {
-    Q_UNUSED(qos); //provider Requirements are currently not supported.
     InterfaceAddress interfaceAddress(domain, interfaceName);
 
     // get the local and cached entries
-    bool recieverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callBack);
+    bool recieverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
 
     // if no reciever is called, use the global capabilities directory
     if(!recieverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callBack, interfaceAddress, discoveryQos));
-        this->capabilitiesClient->getCapabilitiesForInterfaceAddress(domain, interfaceName, wrappedCallBack);
+        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callback, interfaceAddress, discoveryQos));
+        this->capabilitiesClient->lookup(domain, interfaceName, wrappedCallBack);
     }
 }
 
@@ -279,15 +302,66 @@ void LocalCapabilitiesDirectory::cleanCache(qint64 maxAge_ms) {
 }
 
 
-void LocalCapabilitiesDirectory::registerReceivedCapabilities(QMap<QString, CapabilityEntry> capabilityEntries) {
+void LocalCapabilitiesDirectory::registerReceivedCapabilities(
+        QMap<QString, CapabilityEntry> capabilityEntries
+) {
     QMapIterator<QString, CapabilityEntry> entryIterator(capabilityEntries);
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        QSharedPointer<joynr::system::Address> joynrAddress(new JoynrMessagingEndpointAddress(entryIterator.key()));
-        endpointDirectory->add(currentEntry.getParticipantId(), joynrAddress);
+        QSharedPointer<joynr::system::Address> joynrAddress(new system::ChannelAddress(entryIterator.key()));
+        messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::add(
+        RequestStatus& joynrInternalStatus,
+        joynr::system::DiscoveryEntry discoveryEntry
+) {
+    add(discoveryEntry);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::lookup(
+        joynr::RequestStatus& joynrInternalStatus,
+        QList<joynr::system::DiscoveryEntry> & result,
+        QString domain,
+        QString interfaceName,
+        joynr::system::DiscoveryQos discoveryQos
+) {
+    QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
+    lookup(domain, interfaceName, future, discoveryQos);
+    QList<CapabilityEntry> capabilities = future->get();
+    convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::lookup(
+        joynr::RequestStatus& joynrInternalStatus,
+        joynr::system::DiscoveryEntry& result,
+        QString participantId
+) {
+    QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
+    lookup(participantId, future);
+    QList<CapabilityEntry> capabilities = future->get();
+    assert(capabilities.size() <= 1);
+    if(capabilities.size() <= 1) {
+        convertCapabilityEntryIntoDiscoveryEntry(capabilities.first(), result);
+    }
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::remove(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId
+) {
+    remove(participantId);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
  /**
@@ -310,8 +384,15 @@ void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry, boo
     }
 }
 
-void LocalCapabilitiesDirectory::insertInCache(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, bool localCache, bool globalCache) {
-    CapabilityEntry entry(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal);
+void LocalCapabilitiesDirectory::insertInCache(
+        const joynr::system::DiscoveryEntry& discoveryEntry,
+        bool isGlobal,
+        bool localCache,
+        bool globalCache
+) {
+    CapabilityEntry entry;
+    convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, entry);
+    entry.setGlobal(isGlobal);
 
     // do not dublicate entries:
     // the combination participantId is unique for [domain, interfaceName, authtoken]
@@ -319,8 +400,10 @@ void LocalCapabilitiesDirectory::insertInCache(const QString& domain, const QStr
     // update of the age and a refresh
     bool foundMatch = false;
     if(localCache) {
-        QList<CapabilityEntry> entryList = searchCache(participantId, -1, true);
-        CapabilityEntry newEntry = CapabilityEntry(domain, interfaceName, qos, participantId, endpointAddresses, isGlobal);
+        QList<CapabilityEntry> entryList = searchCache(discoveryEntry.getParticipantId(), -1, true);
+        CapabilityEntry newEntry;
+        convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
+        entry.setGlobal(isGlobal);
         foreach (CapabilityEntry oldEntry, entryList) {
             if (oldEntry == newEntry){
                 foundMatch = true;
@@ -353,9 +436,69 @@ QList<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(const QString& pa
     }
 }
 
-QList<types::CapabilityInformation> LocalCapabilitiesDirectory::createCapabilitiesInformationList(const QString& domain, const QString& interfaceName, const QString& channelId, const types::ProviderQos& qos, const QString& participantId) {
-    QList<types::CapabilityInformation> capInfoList;
-    capInfoList.push_back(types::CapabilityInformation(domain, interfaceName, qos, channelId, participantId));
-    return capInfoList;
+void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
+        const CapabilityEntry& capabilityEntry,
+        joynr::system::DiscoveryEntry& discoveryEntry
+) {
+    discoveryEntry.setDomain(capabilityEntry.getDomain());
+    discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
+    discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
+    discoveryEntry.setQos(capabilityEntry.getQos());
+    discoveryEntry.setConnections(capabilityEntry.getMiddlewareConnections());
 }
+
+void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
+        const joynr::system::DiscoveryEntry& discoveryEntry,
+        CapabilityEntry& capabilityEntry
+) {
+    capabilityEntry.setDomain(discoveryEntry.getDomain());
+    capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
+    capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());
+    capabilityEntry.setQos(discoveryEntry.getQos());
+    capabilityEntry.setMiddlewareConnections(discoveryEntry.getConnections());
+}
+
+void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
+        const QList<CapabilityEntry>& capabilityEntries,
+        QList<system::DiscoveryEntry>& discoveryEntries
+) {
+    foreach(const CapabilityEntry& capabilityEntry, capabilityEntries) {
+        joynr::system::DiscoveryEntry discoveryEntry;
+        convertCapabilityEntryIntoDiscoveryEntry(capabilityEntry, discoveryEntry);
+        discoveryEntries.append(discoveryEntry);
+    }
+}
+
+LocalCapabilitiesFuture::LocalCapabilitiesFuture() :
+        futureSemaphore(0),
+        capabilities()
+{
+}
+
+void LocalCapabilitiesFuture::capabilitiesReceived(QList<CapabilityEntry> capabilities){
+    this->capabilities = capabilities;
+    futureSemaphore.release(1);
+}
+
+QList<CapabilityEntry> LocalCapabilitiesFuture::get(){
+    futureSemaphore.acquire(1);
+    futureSemaphore.release(1);
+    return capabilities;
+}
+
+QList<CapabilityEntry> LocalCapabilitiesFuture::get(const qint64& timeout){
+
+    int timeout_int (timeout);
+    //prevent overflow during conversion from qint64 to int
+    int maxint = std::numeric_limits< int >::max();
+    if (timeout>maxint) {
+        timeout_int = maxint;
+    }
+
+    if (futureSemaphore.tryAcquire(1, timeout_int)){
+        futureSemaphore.release(1);
+    }
+    return capabilities;
+}
+
 } // namespace joynr

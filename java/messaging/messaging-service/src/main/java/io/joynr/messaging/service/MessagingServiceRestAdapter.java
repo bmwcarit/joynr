@@ -29,6 +29,7 @@ import io.joynr.messaging.system.TimestampProvider;
 import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -72,6 +73,9 @@ public class MessagingServiceRestAdapter {
 
     @Context
     HttpServletRequest request;
+
+    @Context
+    HttpServletResponse response;
 
     /**
      * Send a message.
@@ -139,8 +143,11 @@ public class MessagingServiceRestAdapter {
             // TODO REST URL for message status?
             URI location = ui.getBaseUriBuilder().path("messages/" + message.getId()).build();
 
+            // encode URL in case we use sessions
+            String encodeURL = response.encodeURL(location.toString());
+
             // return the message status location to the sender.
-            return Response.created(location).header("msgId", message.getId()).build();
+            return Response.created(URI.create(encodeURL)).header("msgId", message.getId()).build();
 
         } catch (WebApplicationException e) {
             throw e;

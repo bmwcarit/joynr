@@ -26,6 +26,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/system/CommunicationMiddleware.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -40,25 +41,26 @@ public:
     ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory, JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
     ~ConnectorFactory();
     template <class T>
-    T* create(const QString &domain,
-              const QString proxyParticipantId,
-              const QString& providerParticipantId,
-              const MessagingQos &qosSettings,
-              IClientCache *cache,
-              bool cached,
-              qint64 reqCacheDataFreshness_ms,
-              QSharedPointer<joynr::system::Address> endpointAddress){
+    T* create(
+            const QString &domain,
+            const QString proxyParticipantId,
+            const QString& providerParticipantId,
+            const MessagingQos &qosSettings,
+            IClientCache *cache,
+            bool cached,
+            qint64 reqCacheDataFreshness_ms,
+            const joynr::system::CommunicationMiddleware::Enum& connection
+    ) {
 
-        if (inProcessConnectorFactory->canBeCreated(endpointAddress)){
-            return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId, endpointAddress.dynamicCast<InProcessEndpointAddress>());
+        if (inProcessConnectorFactory->canBeCreated(connection)){
+            return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId);
         }
 
-        if (joynrMessagingConnectorFactory->canBeCreated(endpointAddress)){
+        if (joynrMessagingConnectorFactory->canBeCreated(connection)){
             return joynrMessagingConnectorFactory->create<T>(domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached, reqCacheDataFreshness_ms);
         }
 
-        //else if (endpointClassName == Lipci/SomeIp...)
-        LOG_ERROR(logger, "Can not create Connector: Unknown endpointAddress type.");
+        LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
         return NULL;
     }
 private:

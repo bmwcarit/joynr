@@ -21,7 +21,6 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/TestProxy.h"
 #include "joynr/types/Trip.h"
@@ -41,7 +40,7 @@ using namespace joynr_logging;
 
 /*
   * This test tries to create two combined Runtimes and will test communication
-  * between the two Runtimes via HttpCommunicationManager
+  * between the two Runtimes via HttpReceiver
   *
   */
 
@@ -51,8 +50,6 @@ public:
     JoynrClusterControllerRuntime* runtime2;
     QSettings settings1;
     QSettings settings2;
-    MessagingSettings messagingSettings1;
-    MessagingSettings messagingSettings2;
     QString baseUuid;
     QString uuid;
     QString domain;
@@ -62,8 +59,6 @@ public:
         runtime2(NULL),
         settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
         settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
-        messagingSettings1(settings1),
-        messagingSettings2(settings2),
         baseUuid(QUuid::createUuid().toString()),
         uuid( "_" + baseUuid.mid(1,baseUuid.length()-2 )),
         domain(QString("cppEnd2EndPerformancesTestDomain") + "_" + uuid)
@@ -71,10 +66,10 @@ public:
     {
         QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1, new HttpCommunicationManager(messagingSettings1));
+        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
         QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2, new HttpCommunicationManager(messagingSettings2));
+        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
     }
 
     void SetUp() {

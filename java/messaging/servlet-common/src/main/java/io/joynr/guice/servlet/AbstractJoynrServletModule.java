@@ -19,9 +19,24 @@ package io.joynr.guice.servlet;
  * #L%
  */
 
+import java.util.Arrays;
+import java.util.Properties;
+
+import javax.servlet.Filter;
+import javax.servlet.annotation.WebFilter;
+
+import io.joynr.runtime.PropertyLoader;
+import io.joynr.servlet.DefaultServletWrapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Singleton;
 import com.google.inject.servlet.GuiceFilter;
+import com.sun.jersey.core.spi.scanning.PackageNamesScanner;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import com.sun.jersey.spi.scanning.AnnotationScannerListener;
 
 /**
  * Common base class for all joynr servlet modules.
@@ -29,8 +44,12 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  */
 public abstract class AbstractJoynrServletModule extends JerseyServletModule {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractJoynrServletModule.class);
+
+    private static final String IO_JOYNR_APPS_PACKAGES = "io.joynr.apps.packages";
+
     @Override
-    protected void configureServlets() {
+    final protected void configureServlets() {
 
         // GuiceFilter is instantiated here instead of configured in
         // web.xml to allow for more than one servlet per servlet
@@ -41,7 +60,19 @@ public abstract class AbstractJoynrServletModule extends JerseyServletModule {
         configureJoynrServlets();
 
         // Route all requests through GuiceContainer
+        bindStaticWebResources();
         bindJoynrServletClass();
+
+        bindAnnotatedFilters();
+    }
+
+    /**
+     * Binds all static web resources such as html pages or images to {@link DefaultServletWrapper}.
+     */
+    protected void bindStaticWebResources() {
+        // Route html, js, jpg, png, css requests through GuiceContainer
+        bind(DefaultServletWrapper.class);
+        serve("*.html", "*.htm", "*.js", "*.jpg", "*.png", "*.css").with(DefaultServletWrapper.class);
     }
 
     /**
@@ -56,9 +87,47 @@ public abstract class AbstractJoynrServletModule extends JerseyServletModule {
     /**
      * Configures the joynr servlets. <br>
      * It is expected to register at least one Jersey resource by calling
-     * {@code bind} for Jersey resource classes. Filters
-     * can be applied by calling {@code filter}.
+     * {@code bind} for Jersey resource classes. Filters can be applied by
+     * calling {@code filter}.
      */
     protected abstract void configureJoynrServlets();
+
+    /**
+     * Sets up filters that are annotated with the {@link WebFilter} annotation.
+     * Every class in the classpath is searched for the annotation.
+     */
+    @SuppressWarnings("unchecked")
+    private void bindAnnotatedFilters() {
+
+        String appsPackages = null;
+        if (System.getProperties().containsKey(IO_JOYNR_APPS_PACKAGES)) {
+            logger.info("Using property {} from system properties", IO_JOYNR_APPS_PACKAGES);
+            appsPackages = System.getProperty(IO_JOYNR_APPS_PACKAGES);
+        } else {
+            Properties servletProperties = PropertyLoader.loadProperties("servlet.properties");
+            if (servletProperties.containsKey(IO_JOYNR_APPS_PACKAGES)) {
+                appsPackages = servletProperties.getProperty(IO_JOYNR_APPS_PACKAGES);
+            }
+        }
+
+        if (appsPackages != null) {
+            String[] packageNames = appsPackages.split(";");
+            logger.info("Searching packages for @WebFilter annotation: {}", Arrays.toString(packageNames));
+
+            PackageNamesScanner scanner = new PackageNamesScanner(packageNames);
+            AnnotationScannerListener sl = new AnnotationScannerListener(WebFilter.class);
+            scanner.scan(sl);
+
+            for (Class<?> webFilterAnnotatedClass : sl.getAnnotatedClasses()) {
+
+                if (Filter.class.isAssignableFrom(webFilterAnnotatedClass)) {
+                    bind(webFilterAnnotatedClass).in(Singleton.class);
+                    filter("/*").through((Class<? extends Filter>) webFilterAnnotatedClass);
+                    logger.info("Adding filter {} for '/*'", webFilterAnnotatedClass.getName());
+                }
+
+            }
+        }
+    }
 
 }

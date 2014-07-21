@@ -48,7 +48,6 @@ class InterfaceSyncProxyHTemplate {
 		class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
 		public:
 		    «syncClassName»(
-		            joynr::ICapabilities* capabilitiesStub,
 		            QSharedPointer<joynr::system::Address> messagingAddress,
 		            joynr::ConnectorFactory* connectorFactory,
 		            joynr::IClientCache* cache,

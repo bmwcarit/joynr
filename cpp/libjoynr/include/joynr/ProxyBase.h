@@ -25,6 +25,7 @@
 #include "joynr/ProxyQos.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/system/Address.h"
+#include "joynr/system/CommunicationMiddleware.h"
 
 namespace joynr {
 
@@ -34,11 +35,23 @@ class ConnectorFactory;
 class JOYNR_EXPORT ProxyBase{
 
 public:
-    ProxyBase(ConnectorFactory* connectorFactory, IClientCache* cache, const QString& domain, const QString& interfaceName,
-                  const ProxyQos& proxyQos, const MessagingQos& qosSettings, bool cached);
+    ProxyBase(
+            ConnectorFactory* connectorFactory,
+            IClientCache* cache,
+            const QString& domain,
+            const QString& interfaceName,
+            const ProxyQos& proxyQos,
+            const MessagingQos& qosSettings,
+            bool cached
+    );
     virtual ~ProxyBase();
 
-
+    /**
+     * Returns the participantId of the proxy object.
+     * Not shure if this should be part of the public api, but is needed in proxy builder to
+     * register the next hop on message router.
+     */
+    QString getProxyParticipantId();
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(ProxyBase);
@@ -47,7 +60,10 @@ protected:
      *  handleArbitrationFinished has to be implemented by the concrete provider proxy.
      *  It is called as soon as the arbitration result is available.
      */
-    virtual void handleArbitrationFinished(const QString& participantId, QSharedPointer<joynr::system::Address> providerAddress);
+    virtual void handleArbitrationFinished(
+            const QString& participantId,
+            const joynr::system::CommunicationMiddleware::Enum& connection
+    );
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
@@ -58,9 +74,7 @@ protected:
     bool cached;
     QString providerParticipantId;
     QString proxyParticipantId;
-    QSharedPointer<joynr::system::Address> providerAddress;
-    //TODO remove channelId when refactoring is finished and participantId & endpointAddresses are used
-    QString destinationChannelId;
+    joynr::system::CommunicationMiddleware::Enum* connection;
     static joynr_logging::Logger* logger;
 };
 

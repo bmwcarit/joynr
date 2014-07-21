@@ -52,9 +52,12 @@ public class JoynrErrorCodeMapper {
         if (codeToErrorCode.containsKey(errorCode.getCode())) {
             JoynrErrorCode conflictingErrorCode = codeToErrorCode.get(errorCode.getCode());
 
-            throw new IllegalArgumentException("Error code '" + errorCode.getCode() + ":" + errorCode.toString() + " ("
-                    + errorCode.getDescription() + ")' conflicts with error code for '"
-                    + conflictingErrorCode.toString() + " (" + errorCode.getDescription() + ")'");
+            if (errorCode != conflictingErrorCode) {
+
+                throw new IllegalArgumentException("Error code '" + errorCode.getCode() + ":" + errorCode.toString()
+                        + " (" + errorCode.getDescription() + ")' conflicts with error code for '"
+                        + conflictingErrorCode.toString() + " (" + errorCode.getDescription() + ")'");
+            }
         }
 
         codeToErrorCode.put(errorCode.getCode(), errorCode);

@@ -96,11 +96,11 @@ public class CapabilitiesRegistrarTests {
         when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
 
         registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
-        verify(localCapabilitiesDirectory).addCapability(eq(new CapabilityEntry(domain,
-                                                                                TestInterface.class,
-                                                                                providerQos,
-                                                                                participantId,
-                                                                                CapabilityScope.LOCALGLOBAL)));
+        verify(localCapabilitiesDirectory).add(eq(new CapabilityEntry(domain,
+                                                                      TestInterface.class,
+                                                                      providerQos,
+                                                                      participantId,
+                                                                      CapabilityScope.LOCALGLOBAL)));
         verify(requestCallerFactory).create(provider, ProvidedInterface.class);
 
         verify(dispatcher).addRequestCaller(participantId, requestCaller);
@@ -112,11 +112,11 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
         registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
 
-        verify(localCapabilitiesDirectory).removeCapability(eq(new CapabilityEntry(domain,
-                                                                                   TestInterface.class,
-                                                                                   providerQos,
-                                                                                   participantId,
-                                                                                   CapabilityScope.LOCALGLOBAL)));
+        verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntry(domain,
+                                                                         TestInterface.class,
+                                                                         providerQos,
+                                                                         participantId,
+                                                                         CapabilityScope.LOCALGLOBAL)));
         verify(dispatcher).removeRequestCaller(eq(participantId));
     }
 

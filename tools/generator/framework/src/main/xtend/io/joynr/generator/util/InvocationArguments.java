@@ -30,6 +30,8 @@ import org.reflections.Reflections;
 
 public class InvocationArguments {
 
+    public static final String OUTPUT_PATH = "outputPath";
+
     // A lookup of language to root generator
     protected static Map<String, String> languages = new HashMap<String, String>();
     static {
@@ -54,9 +56,9 @@ public class InvocationArguments {
 
     private String outputPath = null;
 
-    private String outputHeaderPath = null;
-
     private String generationId = null;
+
+    private Map<String, String> parameter;
 
     public InvocationArguments() {
     }
@@ -132,13 +134,22 @@ public class InvocationArguments {
                 setGenerationId(args[i + 1].replace("\"", ""));
                 i++;
             } else if (args[i].equals("-outputHeaderPath")) {
-                setOutputHeaderPath(args[i + 1].replace("\"", ""));
+                setParameterElement("outputHeaderPath", args[i + 1].replace("\"", ""));
                 i++;
             }
         }
         if (!isValid()) {
             System.out.println(getErrorMessage());
         }
+    }
+
+    private void setParameterElement(String key, String value) {
+        if (parameter == null) {
+            parameter = new HashMap<String, String>();
+        }
+
+        parameter.put(key, value);
+
     }
 
     public boolean isValid() {
@@ -155,7 +166,7 @@ public class InvocationArguments {
         if (modelpath == null) {
             message.append("modelpath\n");
         }
-        if (outputPath == null) {
+        if (rootGenerator == null) {
             message.append("rootGenerator or generationLanguage\n");
         }
         return message.toString();
@@ -214,15 +225,18 @@ public class InvocationArguments {
         this.outputPath = outputPath;
     }
 
-    public String getOutputHeaderPath() {
-        if (outputHeaderPath == null) {
-            return outputPath + File.separator + "include";
+    public Map<String, String> getParameter() {
+        if (parameter == null) {
+            parameter = new HashMap<String, String>();
         }
-        return outputHeaderPath;
+        if (!parameter.containsKey(OUTPUT_PATH)) {
+            parameter.put(OUTPUT_PATH, getOutputPath());
+        }
+        return parameter;
     }
 
-    public void setOutputHeaderPath(String outputHeaderPath) {
-        this.outputHeaderPath = outputHeaderPath;
+    public void setParameter(Map<String, String> parameter) {
+        this.parameter = parameter;
     }
 
     public String getGenerationId() {

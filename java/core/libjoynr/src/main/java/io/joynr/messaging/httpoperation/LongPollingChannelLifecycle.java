@@ -30,6 +30,7 @@ import io.joynr.messaging.ReceiverStatusListener;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -48,9 +49,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -83,9 +81,9 @@ public class LongPollingChannelLifecycle {
     @Inject
     private LocalChannelUrlDirectoryClient channelUrlClient;
 
-    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("ChannelMonitor-%d").build();
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.LongPoll-%d").build();
     private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(1, namedThreadFactory);
-    private LongPollChannel longPollingCallable;
+    private LongPollChannel longPolling;
     private final ObjectMapper objectMapper;
     private boolean longPollingDisabled;
     private boolean started = false;
@@ -95,6 +93,7 @@ public class LongPollingChannelLifecycle {
     private CloseableHttpClient httpclient;
     private RequestConfig defaultRequestConfig;
     private Future<Void> longPollingFuture;
+    private HttpRequestFactory httpRequestFactory;
 
     @Inject
     @Nullable
@@ -103,13 +102,15 @@ public class LongPollingChannelLifecycle {
                                        @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                        @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
                                        ObjectMapper objectMapper,
-                                       HttpConstants httpConstants) {
+                                       HttpConstants httpConstants,
+                                       HttpRequestFactory httpRequestFactory) {
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.channelId = channelId;
         this.receiverId = receiverId;
         this.objectMapper = objectMapper;
         this.httpConstants = httpConstants;
+        this.httpRequestFactory = httpRequestFactory;
     }
 
     public synchronized void startLongPolling(final MessageReceiver messageReceiver,
@@ -174,7 +175,8 @@ public class LongPollingChannelLifecycle {
             long serverTime = 0L;
             long localTimeBeforeRequest = System.currentTimeMillis();
 
-            HttpGet getTime = new HttpGet(url);
+            HttpGet getTime = httpRequestFactory.createHttpGet(URI.create(url));
+            getTime.setConfig(defaultRequestConfig);
             response = httpclient.execute(getTime);
 
             StatusLine statusLine = response.getStatusLine();
@@ -235,19 +237,20 @@ public class LongPollingChannelLifecycle {
 
                 // String id = getPrintableId(channelUrl);
                 synchronized (this) {
-                    this.longPollingCallable = new LongPollChannel(httpclient,
-                                                                   defaultRequestConfig,
-                                                                   longPollingDisabled,
-                                                                   messageReceiver,
-                                                                   objectMapper,
-                                                                   settings,
-                                                                   httpConstants,
-                                                                   channelId,
-                                                                   receiverId);
+                    this.longPolling = new LongPollChannel(httpclient,
+                                                           defaultRequestConfig,
+                                                           longPollingDisabled,
+                                                           messageReceiver,
+                                                           objectMapper,
+                                                           settings,
+                                                           httpConstants,
+                                                           channelId,
+                                                           receiverId,
+                                                           httpRequestFactory);
                 }
-                longPollingCallable.setChannelUrl(channelUrl);
+                longPolling.setChannelUrl(channelUrl);
 
-                longPollingCallable.longPollLoop();
+                longPolling.longPollLoop();
 
                 // register is here because the registration response needs an open channel to be received.
                 // Otherwise register fails.
@@ -292,9 +295,9 @@ public class LongPollingChannelLifecycle {
 
     public synchronized void suspend() {
         this.longPollingDisabled = true;
-        if (longPollingCallable != null) {
+        if (longPolling != null) {
             logger.debug("Suspending longPollingCallable.");
-            longPollingCallable.suspend();
+            longPolling.suspend();
         } else {
             logger.debug("Called suspend before longPollingCallable was created.");
         }
@@ -302,8 +305,8 @@ public class LongPollingChannelLifecycle {
 
     public synchronized void resume() {
         this.longPollingDisabled = false;
-        if (longPollingCallable != null) {
-            longPollingCallable.resume();
+        if (longPolling != null) {
+            longPolling.resume();
         }
     }
 
@@ -318,8 +321,8 @@ public class LongPollingChannelLifecycle {
             channelMonitorExecutorService = null;
         }
 
-        if (longPollingCallable != null) {
-            longPollingCallable.shutdown();
+        if (longPolling != null) {
+            longPolling.shutdown();
         }
 
         if (longPollingFuture != null) {
@@ -341,10 +344,8 @@ public class LongPollingChannelLifecycle {
 
         final String url = settings.getBounceProxyUrl().buildCreateChannelUrl(channelId);
 
-        HttpPost postCreateChannel = new HttpPost(url.trim());
+        HttpPost postCreateChannel = httpRequestFactory.createHttpPost(URI.create(url.trim()));
         postCreateChannel.setConfig(defaultRequestConfig);
-        postCreateChannel.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON()
-                + ";charset=UTF-8");
         postCreateChannel.addHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);
         postCreateChannel.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON());
 
@@ -359,6 +360,7 @@ public class LongPollingChannelLifecycle {
             String reasonPhrase = statusLine.getReasonPhrase();
 
             switch (statusCode) {
+            case HttpURLConnection.HTTP_OK:
             case HttpURLConnection.HTTP_CREATED:
                 try {
                     Header locationHeader = response.getFirstHeader(httpConstants.getHEADER_LOCATION());
@@ -461,7 +463,7 @@ public class LongPollingChannelLifecycle {
                 try {
                     // TODO JOYN-1079 need to unregister deleted channel
                     // channelUrlClient.unregisterChannelUrls(channelId);
-                    HttpDelete httpDelete = new HttpDelete(channelUrl);
+                    HttpDelete httpDelete = httpRequestFactory.createHttpDelete(URI.create(channelUrl));
                     response = httpclient.execute(httpDelete);
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == HttpURLConnection.HTTP_OK || statusCode == HttpURLConnection.HTTP_NO_CONTENT) {

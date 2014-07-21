@@ -97,7 +97,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     set(
         JoynrClusterController_TARGET_LIBRARIES
-        ${PATCHED_DBUS1_LIBRARIES}
+        ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
         ${JoynrClusterController_TARGET_LIBRARIES}

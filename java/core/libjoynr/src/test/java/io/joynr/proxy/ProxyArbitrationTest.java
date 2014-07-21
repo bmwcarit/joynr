@@ -153,8 +153,8 @@ public class ProxyArbitrationTest {
     @Test
     public void proxyUsesCorrectEndpointToSendRequest() throws IllegalArgumentException, SecurityException,
                                                        InterruptedException, NoSuchMethodException, Throwable {
-        proxyHandler.sendSyncMethod(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}),
-                                    new Object[]{});
+        proxyHandler.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}),
+                                       new Object[]{});
         Mockito.verify(messageSender).sendMessage(Mockito.eq(CORRECT_CHANNELID), Mockito.<JoynrMessage> any());
     }
 

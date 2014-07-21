@@ -55,7 +55,7 @@ import com.google.inject.Inject;
  * @author christina.strobel
  * 
  */
-@Path("/controller/bounceproxies")
+@Path("/bounceproxies")
 public class MonitoringServiceRestAdapter {
 
     @Inject

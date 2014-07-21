@@ -76,7 +76,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
     @Override
     @JoynrRpcReturn(deserialisationType = BooleanToken.class)
     public Boolean addFavouriteStation(@JoynrRpcParam("radioStation") String radioStation)
-                                                                                         throws JoynrArbitrationException {
+                                                                                          throws JoynrArbitrationException {
         LOG.debug(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
         stationsList.add(radioStation);
         numberOfStationsChanged(stationsList.size());
@@ -86,20 +86,20 @@ public class MyRadioProvider extends RadioAbstractProvider {
     @Override
     @JoynrRpcReturn(deserialisationType = BooleanToken.class)
     public Boolean addFavouriteStationList(@JoynrRpcParam("radioStationList") List<String> radioStationList)
-                                                                                                           throws JoynrArbitrationException {
+                                                                                                            throws JoynrArbitrationException {
         LOG.debug(PRINT_BORDER + "addFavouriteStationList(" + radioStationList + ")" + PRINT_BORDER);
         stationsList.addAll(radioStationList);
         numberOfStationsChanged(stationsList.size());
         return true;
     }
 
-	@Override
-	public Integer getNumberOfStations() {
-		return numberOfStations;
-	}
+    @Override
+    public Integer getNumberOfStations() {
+        return numberOfStations;
+    }
 
-	@Override
-	public void setNumberOfStations(Integer numberOfStations) {
-		numberOfStationsChanged(numberOfStations);
-	}
+    @Override
+    public void setNumberOfStations(Integer numberOfStations) {
+        numberOfStationsChanged(numberOfStations);
+    }
 }

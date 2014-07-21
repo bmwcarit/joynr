@@ -27,10 +27,10 @@
 #include "joynr/exceptions.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ParticipantIdStorage.h"
-#include "joynr/CapabilitiesAggregator.h"
-#include "joynr/ICapabilities.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/LocalDiscoveryAggregator.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -38,29 +38,35 @@
 
 namespace joynr {
 
-class SystemServicesSettings;
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime {
 
 public:
 
+    // NOTE: The implementation of the constructor and destructor must be inside this
+    // header file because there are multiple implementations (cpp files) in folder
+    // cluster-controller-runtime and libjoynr-runtime.
     JoynrRuntime(QSettings &settings) :
             proxyFactory(NULL),
-            joynrCapabilitiesSendStub(NULL),
             participantIdStorage(NULL),
             capabilitiesRegistrar(NULL),
-            capabilitiesAggregator(NULL),
-            systemServicesSettings(settings)
+            systemServicesSettings(settings),
+            dispatcherAddress(NULL),
+            messageRouter(NULL),
+            discoveryProxy(NULL)
     {
+        systemServicesSettings.printSettings();
     }
 
-    virtual ~JoynrRuntime() {}
+    virtual ~JoynrRuntime() {
+        delete discoveryProxy;
+    }
 
     template <class T>
     QString registerCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
         assert(capabilitiesRegistrar);
         assert(domain!="");
-        return capabilitiesRegistrar->registerCapability<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken);
     }
 
     virtual void unregisterCapability(QString participantId) = 0;
@@ -69,15 +75,21 @@ public:
     QString unregisterCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
         assert(capabilitiesRegistrar);
         assert(domain!="");
-        return capabilitiesRegistrar->unregisterCapability<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->remove<T>(domain, provider, authenticationToken);
     }
 
     template <class T>
     ProxyBuilder<T>* getProxyBuilder(const QString& domain) {
-        if(!proxyFactory || !joynrCapabilitiesSendStub){
+        if(!proxyFactory){
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<T>* builder = new ProxyBuilder<T>(proxyFactory, capabilitiesAggregator, domain);
+        ProxyBuilder<T>* builder = new ProxyBuilder<T>(
+                    proxyFactory,
+                    *discoveryProxy,
+                    domain,
+                    dispatcherAddress,
+                    messageRouter
+        );
         return builder;
     }
 
@@ -85,14 +97,13 @@ public:
                                       const QString& pathToMessagingSettings = "");
 
 protected:
-
     ProxyFactory* proxyFactory;
-    ICapabilities* joynrCapabilitiesSendStub;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
-    QSharedPointer<CapabilitiesAggregator> capabilitiesAggregator;
     SystemServicesSettings systemServicesSettings;
-
+    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<MessageRouter> messageRouter;
+    LocalDiscoveryAggregator* discoveryProxy;
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
 };

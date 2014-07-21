@@ -42,6 +42,7 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
 	<session-config>
 		<session-timeout>600</session-timeout>
+		<tracking-mode>URL</tracking-mode>
 	</session-config>
 
 </web-app>

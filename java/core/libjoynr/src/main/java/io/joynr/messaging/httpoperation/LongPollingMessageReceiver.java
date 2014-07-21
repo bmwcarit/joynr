@@ -25,7 +25,10 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 import joynr.JoynrMessage;
 
@@ -36,6 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ObjectArrays;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -48,6 +52,8 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     public static final String MESSAGE_RECEIVER_THREADNAME_PREFIX = "MessageReceiverThread";
 
     private static final Logger logger = LoggerFactory.getLogger(LongPollingMessageReceiver.class);
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageReceiver-%d").build();
+    private ExecutorService messageReceiverExecutor = Executors.newCachedThreadPool(namedThreadFactory);
 
     protected final MessagingSettings settings;
     protected MessageArrivedListener messageListener = null;
@@ -103,7 +109,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             public void receiverStarted() {
                 if (channelMonitor.isChannelCreated()) {
                     channelMonitor.registerChannelUrl();
-                    //Signal that the channel is now created for anyone blocking on the future
+                    // Signal that the channel is now created for anyone blocking on the future
                     channelCreatedFuture.set(null);
                 }
             }
@@ -136,6 +142,8 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             channelMonitor.shutdown();
         }
 
+        messageReceiverExecutor.shutdown();
+
         this.messageListener = null;
 
     }
@@ -167,19 +175,25 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void receive(JoynrMessage message) {
+    public void receive(final JoynrMessage message) {
         if (message == null) {
             logger.info("ARRIVED on channelId: {} NULL message", channelId);
             return;
         }
 
-        logger.info("ARRIVED on channelId: {} messageId: {} type: {} from: {} to: {} header: {}", new String[]{
-                channelId, message.getId(), message.getType(),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID), message.getHeader().toString() });
-        logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
+        messageReceiverExecutor.execute(new Runnable() {
 
-        messageListener.messageArrived(message);
+            @Override
+            public void run() {
+                logger.info("ARRIVED on channelId: {} messageId: {} type: {} from: {} to: {} header: {}", new String[]{
+                        channelId, message.getId(), message.getType(),
+                        message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                        message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                        message.getHeader().toString() });
+                logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
+                messageListener.messageArrived(message);
+            }
+        });
 
     }
 

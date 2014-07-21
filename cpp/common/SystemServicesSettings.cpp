@@ -62,6 +62,18 @@ const QString &SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(
     return value;
 }
 
+const QString &SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()
+{
+    static const QString value("system.services/cc-discoveryprovider-authenticationtoken");
+    return value;
+}
+
+const QString &SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()
+{
+    static const QString value("system.services/cc-discoveryprovider-participantid");
+    return value;
+}
+
 const QString& SystemServicesSettings::DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME() {
     static const QString value("resources/default-system-services.settings");
     return value;
@@ -97,6 +109,26 @@ void SystemServicesSettings::setCcRoutingProviderParticipantId(const QString &pa
     settings.setValue(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(), participantId);
 }
 
+QString SystemServicesSettings::getCcDiscoveryProviderAuthenticationToken() const
+{
+    return settings.value(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()).toString();
+}
+
+void SystemServicesSettings::setCcDiscoveryProviderAuthenticationToken(const QString &authenticationToken)
+{
+    settings.setValue(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
+}
+
+QString SystemServicesSettings::getCcDiscoveryProviderParticipantId() const
+{
+    return settings.value(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()).toString();
+}
+
+void SystemServicesSettings::setCcDiscoveryProviderParticipantId(const QString &participantId)
+{
+    settings.setValue(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
+}
+
 bool SystemServicesSettings::contains(const QString& key) const {
     return settings.contains(key);
 }
@@ -110,6 +142,8 @@ void SystemServicesSettings::checkSettings() const {
     assert(settings.contains(SETTING_DOMAIN()));
     assert(settings.contains(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()));
     assert(settings.contains(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
+    assert(settings.contains(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()));
+    assert(settings.contains(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
 }
 
 
@@ -117,6 +151,8 @@ void SystemServicesSettings::printSettings() const {
     LOG_DEBUG(logger, "SETTING: " + SETTING_DOMAIN() + " = " + settings.value(SETTING_DOMAIN()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN() + " = " + settings.value(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()).toString());
     LOG_DEBUG(logger, "SETTING: " + SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID() + " = " + settings.value(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN() + " = " + settings.value(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()).toString());
+    LOG_DEBUG(logger, "SETTING: " + SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID() + " = " + settings.value(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()).toString());
 }
 
 

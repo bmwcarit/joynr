@@ -19,18 +19,13 @@ package io.joynr.guice.servlet;
  * #L%
  */
 
-import java.util.EnumSet;
 import java.util.List;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.GuiceServletContextListener;
 
 /**
@@ -59,7 +54,7 @@ public abstract class AbstractGuiceServletConfig extends GuiceServletContextList
 
         injector = Guice.createInjector(joynrModules);
 
-        registerGuiceFilter(servletContextEvent);
+        //registerGuiceFilter(servletContextEvent);
 
         super.contextInitialized(servletContextEvent);
     }
@@ -70,16 +65,17 @@ public abstract class AbstractGuiceServletConfig extends GuiceServletContextList
      * 
      * @param servletContextEvent
      */
-    private void registerGuiceFilter(ServletContextEvent servletContextEvent) {
-
-        final String filterName = "guiceFilter";
-        GuiceFilter filter = injector.getInstance(GuiceFilter.class);
-
-        ServletContext context = servletContextEvent.getServletContext();
-        context.addFilter(filterName, filter);
-        FilterRegistration filterRegistration = context.getFilterRegistrations().get(filterName);
-        filterRegistration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
-    }
+    //    private void registerGuiceFilter(ServletContextEvent servletContextEvent) {
+    //
+    //        final String filterName = "guiceFilter";
+    //        GuiceFilter filter = injector.getInstance(GuiceFilter.class);
+    //
+    //        ServletContext context = servletContextEvent.getServletContext();
+    //        context.addFilter(filterName, filter);
+    //        FilterRegistration filterRegistration = context.getFilterRegistrations().get(filterName);
+    //        filterRegistration.setInitParameter("async-supported", "true");
+    //        filterRegistration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+    //    }
 
     /*
      * (non-Javadoc)

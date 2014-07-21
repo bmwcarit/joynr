@@ -27,6 +27,7 @@
 namespace joynr {
 
 class IMessaging;
+class MessageRouter;
 
 
 /**
@@ -57,7 +58,7 @@ class IMessaging;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender {
 public:
 
-    JoynrMessageSender(QSharedPointer<IMessaging> messagingStub);
+    JoynrMessageSender(QSharedPointer<MessageRouter> messagingRouter);
 
     virtual ~JoynrMessageSender();
 
@@ -113,7 +114,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
     IDispatcher* dispatcher;
-    QSharedPointer<IMessaging> messagingStub; // use DummySendStub at first!
+    QSharedPointer<MessageRouter> messageRouter;
     JoynrMessageFactory messageFactory;
     static joynr_logging::Logger* logger;
 };

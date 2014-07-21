@@ -17,29 +17,37 @@
  * #L%
  */
 #include "cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
-#include "joynr/JoynrMessagingViaCCEndpointAddress.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/CapabilityEntry.h"
 
 namespace joynr {
 
-LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory *localCapabilitiesDirectory, QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback, const QString &participantId, const DiscoveryQos& discoveryQos)
-    : localCapabilitiesDirectory(localCapabilitiesDirectory),
-      wrappedCallback(wrappedCallback),
-      participantId(participantId),
-      interfaceAddress(),
-      discoveryQos(discoveryQos)
+LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
+        LocalCapabilitiesDirectory *localCapabilitiesDirectory,
+        QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
+        const QString &participantId,
+        const joynr::system::DiscoveryQos& discoveryQos
+) :
+        localCapabilitiesDirectory(localCapabilitiesDirectory),
+        wrappedCallback(wrappedCallback),
+        participantId(participantId),
+        interfaceAddress(),
+        discoveryQos(discoveryQos)
 {
 }
 
-LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory *localCapabilitiesDirectory, QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback, const InterfaceAddress &interfaceAddress, const DiscoveryQos& discoveryQos)
-    : localCapabilitiesDirectory(localCapabilitiesDirectory),
-      wrappedCallback(wrappedCallback),
-      participantId(""),
-      interfaceAddress(interfaceAddress),
-      discoveryQos(discoveryQos)
+LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
+        LocalCapabilitiesDirectory *localCapabilitiesDirectory,
+        QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
+        const InterfaceAddress &interfaceAddress,
+        const joynr::system::DiscoveryQos& discoveryQos
+) :
+        localCapabilitiesDirectory(localCapabilitiesDirectory),
+        wrappedCallback(wrappedCallback),
+        participantId(""),
+        interfaceAddress(interfaceAddress),
+        discoveryQos(discoveryQos)
 {
 }
 
@@ -48,23 +56,23 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(QList<types::Capabil
     QList<CapabilityEntry> mergedEntries;
 
     foreach (types::CapabilityInformation capInfo, results){
-        //each CapabilityEntry matches to a remote Joynr CC, so we use a JoynrMessagingViaCCEndpointAddress, which is essentiall empty
-        //but tells the LibJoynr to simply use the MessageRouter of the Clustercontroller.
-        QList<QSharedPointer<joynr::system::Address> > epaList;
-        epaList.append(QSharedPointer<joynr::system::Address>(new JoynrMessagingViaCCEndpointAddress()));
-        CapabilityEntry capEntry(capInfo.getDomain(),
-                                 capInfo.getInterfaceName(),
-                                 capInfo.getProviderQos(),
-                                 capInfo.getParticipantId(),
-                                 epaList,
-                                 true);
+        QList<joynr::system::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        CapabilityEntry capEntry(
+                    capInfo.getDomain(),
+                    capInfo.getInterfaceName(),
+                    capInfo.getProviderQos(),
+                    capInfo.getParticipantId(),
+                    connections,
+                    true
+        );
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
         mergedEntries.append(capEntry);
     }
     localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
 
-    if(discoveryQos.getDiscoveryScope() == DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL ||
-       discoveryQos.getDiscoveryScope() == DiscoveryQos::DiscoveryScope::LOCAL_AND_GLOBAL) {
+    if(discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL ||
+       discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // look if in the meantime there are some local providers registered
         //lookup in the local directory to get local providers which were registered in the meantime.
         if (participantId.isEmpty()){

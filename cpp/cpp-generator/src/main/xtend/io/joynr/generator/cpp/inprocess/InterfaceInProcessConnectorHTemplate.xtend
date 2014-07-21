@@ -57,7 +57,7 @@ class InterfaceInProcessConnectorHTemplate {
 
 		namespace joynr {
 			class RequestStatus;
-			class InProcessEndpointAddress;
+			class InProcessAddress;
 			class SubscriptionManager;
 			class PublicationManager;
 		}
@@ -73,7 +73,7 @@ class InterfaceInProcessConnectorHTemplate {
 		    			joynr::InProcessPublicationSender* inProcessPublicationSender,
 		    			const QString& proxyParticipantId,
 		    			const QString& providerParticipantId,
-		    			QSharedPointer<joynr::InProcessEndpointAddress> endpointAddress
+		                QSharedPointer<joynr::InProcessAddress> address
 		    );
 		
 			virtual bool usesClusterController() const;
@@ -94,7 +94,7 @@ class InterfaceInProcessConnectorHTemplate {
 		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
 		    QString proxyParticipantId;
 		    QString providerParticipantId;
-		    QSharedPointer<joynr::InProcessEndpointAddress> endpointAddress;
+		    QSharedPointer<joynr::InProcessAddress> address;
 		    joynr::SubscriptionManager* subscriptionManager;
 		    joynr::PublicationManager* publicationManager;
 		    joynr::InProcessPublicationSender* inProcessPublicationSender;
@@ -116,7 +116,7 @@ class InterfaceInProcessConnectorHTemplate {
 		    		InProcessPublicationSender* inProcessPublicationSender,
 		    		const QString& proxyParticipantId,
 		    		const QString& providerParticipantId,
-		    		QSharedPointer<InProcessEndpointAddress> endpointAddress
+		            QSharedPointer<InProcessAddress> address
 			   	) {
 		        return new «packagePrefix»::«interfaceName»InProcessConnector(
 		        		subscriptionManager,
@@ -124,7 +124,7 @@ class InterfaceInProcessConnectorHTemplate {
 		        		inProcessPublicationSender,
 		        		proxyParticipantId,
 		        		providerParticipantId,
-		        		endpointAddress
+		                address
 		        );
 		    }
 		};

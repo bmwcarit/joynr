@@ -19,7 +19,6 @@
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/exceptions.h"
-#include "joynr/ICapabilities.h"
 
 namespace joynr {
 
@@ -42,8 +41,8 @@ qint64& DiscoveryQos::DEFAULT_CACHEMAXAGE(){
     return DO_NOT_USE_CACHE();
 }
 
-DiscoveryQos::DiscoveryScope& DiscoveryQos::DEFAULT_DISCOVERYSCOPE() {
-    static DiscoveryQos::DiscoveryScope default_scope = DiscoveryQos::DiscoveryScope::LOCAL_THEN_GLOBAL;
+joynr::system::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE() {
+    static joynr::system::DiscoveryScope::Enum default_scope = joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL;
     return default_scope;
 }
 
@@ -130,11 +129,11 @@ const QString DiscoveryQos::KEYWORD_PARAMETER() {
     return keyword;
 }
 
-DiscoveryQos::DiscoveryScope DiscoveryQos::getDiscoveryScope() const {
+joynr::system::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const {
     return discoveryScope;
 }
 
-void DiscoveryQos::setDiscoveryScope(DiscoveryScope discoveryScope) {
+void DiscoveryQos::setDiscoveryScope(joynr::system::DiscoveryScope::Enum discoveryScope) {
     this->discoveryScope = discoveryScope;
 }
 

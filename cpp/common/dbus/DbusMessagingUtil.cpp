@@ -21,6 +21,8 @@
 #include <QVariant>
 #include <QVariantMap>
 
+#include "joynr/JoynrMessage.h"
+
 namespace joynr {
 
 void DbusMessagingUtil::copyDbusMsgToJoynrMsg(const joynr::messaging::IMessaging::JoynrMessage& dbusMsg, JoynrMessage& joynrMsg) {

@@ -77,10 +77,7 @@ public class ReflectionUtils {
 
     private static boolean checkParameterTypes(Method method, Class<?>[] parameterTypes) {
         Class<?>[] currentMethodParamTypes = method.getParameterTypes();
-        if (currentMethodParamTypes.length == 0) {
-            if (parameterTypes.length == 0) {
-                return true;
-            }
+        if (currentMethodParamTypes.length != parameterTypes.length) {
             return false;
         }
         for (int i = 0; i < parameterTypes.length; i++) {
@@ -172,16 +169,16 @@ public class ReflectionUtils {
         for (int i = 0; i < method.getParameterTypes().length; i++) {
             res.add(new LinkedList<Annotation>());
         }
-        findAndMergeAnnotations(method.getDeclaringClass(), method.getName(), res);
+        findAndMergeAnnotations(method.getDeclaringClass(), method, res);
         return res;
     }
 
-    private static void findAndMergeAnnotations(Class<?> clazz, String methodName, List<List<Annotation>> res) {
+    private static void findAndMergeAnnotations(Class<?> clazz, Method method, List<List<Annotation>> res) {
         Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            if (method.getName().equals(methodName)) {
-                for (int i = 0; i < method.getParameterAnnotations().length; i++) {
-                    for (Annotation annotation : method.getParameterAnnotations()[i]) {
+        for (Method currentMethod : methods) {
+            if (areMethodNameAndParameterTypesEqual(currentMethod, method)) {
+                for (int i = 0; i < currentMethod.getParameterAnnotations().length; i++) {
+                    for (Annotation annotation : currentMethod.getParameterAnnotations()[i]) {
                         res.get(i).add(annotation);
                     }
                 }
@@ -189,12 +186,32 @@ public class ReflectionUtils {
         }
 
         for (Class<?> interfaceClass : clazz.getInterfaces()) {
-            findAndMergeAnnotations(interfaceClass, methodName, res);
+            findAndMergeAnnotations(interfaceClass, method, res);
         }
 
         if (clazz.getSuperclass() != null) {
-            findAndMergeAnnotations(clazz.getSuperclass(), methodName, res);
+            findAndMergeAnnotations(clazz.getSuperclass(), method, res);
         }
     }
 
+    /**
+     * Compares to methods for equality based on name and parameter types.
+     */
+    private static boolean areMethodNameAndParameterTypesEqual(Method methodA, Method methodB) {
+        if (!methodA.getName().equals(methodB.getName())) {
+            return false;
+        }
+        Class<?>[] methodAParameterTypes = methodA.getParameterTypes();
+        Class<?>[] methodBParameterTypes = methodB.getParameterTypes();
+        if (methodAParameterTypes.length != methodBParameterTypes.length) {
+            return false;
+        }
+        for (int i = 0; i < methodAParameterTypes.length; i++) {
+            if (!methodAParameterTypes[i].equals(methodBParameterTypes[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

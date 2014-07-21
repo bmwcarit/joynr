@@ -3,7 +3,7 @@ package io.joynr.capabilities.directory;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +46,6 @@ public class CapabilitiesDirectoryTest {
     String participantId1 = "testParticipantId1";
     String participantId2 = "testParticipantId2";
     ProviderQos providerQos = new ProviderQos();
-    ProviderQosRequirements providerQosRequirements = new ProviderQosRequirements();
     CapabilityInformation capInfo1;
     CapabilityInformation capInfo2;
     String postFix = "" + System.currentTimeMillis();
@@ -70,47 +68,21 @@ public class CapabilitiesDirectoryTest {
     @Test
     public void registerMultipleCapabilities() {
 
-        capabilitiesDirectory.registerCapabilities(singleInterface);
-        capabilitiesDirectory.registerCapabilities(multipleInterfaces);
+        capabilitiesDirectory.add(singleInterface);
+        capabilitiesDirectory.add(multipleInterfaces);
 
-        assertEquals(multipleInterfaces.get(0), capabilitiesDirectory.lookupCapabilities(domain,
-                                                                                         thisInterface,
-                                                                                         providerQosRequirements)
-                                                                     .get(0));
-        assertTrue(capabilitiesDirectory.lookupCapabilities(domain, thisInterface, providerQosRequirements)
-                                        .contains(multipleInterfaces.get(0)));
-        assertEquals(multipleInterfaces.get(1), capabilitiesDirectory.lookupCapabilities(domain,
-                                                                                         anotherInterface,
-                                                                                         providerQosRequirements)
-                                                                     .get(0));
-        assertTrue(capabilitiesDirectory.lookupCapabilities(domain, anotherInterface, providerQosRequirements)
-                                        .contains(multipleInterfaces.get(1)));
+        assertEquals(multipleInterfaces.get(0), capabilitiesDirectory.lookup(domain, thisInterface).get(0));
+        assertTrue(capabilitiesDirectory.lookup(domain, thisInterface).contains(multipleInterfaces.get(0)));
+        assertEquals(multipleInterfaces.get(1), capabilitiesDirectory.lookup(domain, anotherInterface).get(0));
+        assertTrue(capabilitiesDirectory.lookup(domain, anotherInterface).contains(multipleInterfaces.get(1)));
     }
 
     @Test
     public void registerCapabilityAndRequestChannels() throws Exception {
-        capabilitiesDirectory.registerCapabilities(singleInterface);
-        assertEquals(singleInterface.get(0), capabilitiesDirectory.lookupCapabilities(domain,
-                                                                                      thisInterface,
-                                                                                      providerQosRequirements).get(0));
-        assertEquals(true, capabilitiesDirectory.lookupCapabilities(domain, thisInterface, providerQosRequirements)
-                                                .contains(singleInterface.get(0)));
+        capabilitiesDirectory.add(singleInterface);
+        assertEquals(singleInterface.get(0), capabilitiesDirectory.lookup(domain, thisInterface).get(0));
+        assertEquals(true, capabilitiesDirectory.lookup(domain, thisInterface).contains(singleInterface.get(0)));
 
-    }
-
-    @Test
-    public void registerCapabilityAndRequestCapabilites() throws Exception {
-        capabilitiesDirectory.registerCapabilities(singleInterface);
-        assertEquals(true, capabilitiesDirectory.getCapabilitiesForChannelId(mcId).contains(singleInterface.get(0)));
-    }
-
-    @Test
-    public void registerDeleteAndRequestCapability() {
-
-        capabilitiesDirectory.registerCapabilities(singleInterface);
-        assertEquals(true, capabilitiesDirectory.getCapabilitiesForChannelId(mcId).contains(singleInterface.get(0)));
-        capabilitiesDirectory.unregisterCapabilities(singleInterface);
-        assertEquals(false, capabilitiesDirectory.getCapabilitiesForChannelId(mcId).contains(capInfo1));
     }
 
     String getRandomParticipantId() {

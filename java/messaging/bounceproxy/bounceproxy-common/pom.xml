@@ -30,12 +30,12 @@
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
 	<properties>
-		<atmosphere-version>2.0.1</atmosphere-version>
+		<atmosphere-version>2.0.8</atmosphere-version>
 	</properties>
 
 	<dependencies>	
@@ -93,6 +93,45 @@
 			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-guice</artifactId>
+			<!-- There's not a version for every atmosphere version. -->
+			<version>2.0.0</version>
+			<exclusions>
+				<exclusion>
+					<!-- prevent guice-servlet version 2.0 to overwrite version 3.0 -->
+					<groupId>com.google.inject.extensions</groupId>
+					<artifactId>guice-servlet</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-servlet</artifactId>
+			<version>3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<!-- Don't use mockito-all here. 
+		     It contains hamcrest classes in its jar, which conflict with JUnit -->		
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 </project>

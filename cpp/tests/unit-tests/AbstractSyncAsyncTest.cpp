@@ -124,7 +124,7 @@ public:
     virtual ~AbstractSyncAsyncTest(){}
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress("endPointAddress"));
+        endPointAddress = QSharedPointer<system::Address>(new system::ChannelAddress("endPointAddress"));
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockJoynrMessageSender = new MockJoynrMessageSender();
@@ -282,7 +282,7 @@ protected:
     QString proxyParticipantId;
     QString providerParticipantId;
     MockClientCache mockClientCache;
-    QSharedPointer<JoynrMessagingEndpointAddress> endPointAddress;
+    QSharedPointer<system::Address> endPointAddress;
     tests::ITest* asyncTestFixture;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);

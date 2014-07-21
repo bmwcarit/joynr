@@ -19,9 +19,11 @@ package io.joynr.generator;
  * #L%
  */
 
+import org.eclipse.xtext.generator.IGenerator;
+
 import io.joynr.generator.util.InvocationArguments;
 
-public class ExecutorCL extends Executor {
+public class ExecutorCL {
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException,
                                           IllegalAccessException {
@@ -32,13 +34,9 @@ public class ExecutorCL extends Executor {
             return;
         }
 
-        ExecutorCL executor = new ExecutorCL(invocationArguments);
-        executor.setup();
-        executor.execute();
-    }
-
-    public ExecutorCL(InvocationArguments arguments) {
-        super(arguments);
+        Executor executor = new Executor(invocationArguments);
+        IGenerator generator = executor.setup();
+        executor.execute(generator);
     }
 
 }

@@ -19,10 +19,9 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/DispatcherUtils.h"
 
-
+#include <QDateTime>
 #include "qjson/parser.h"
 #include "qjson/serializer.h"
-#include "joynr/JoynrMessage.h"
 #include <limits>
 #include <cassert>
 

@@ -24,7 +24,6 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
-import io.joynr.runtime.MessagingServletConfig;
 
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -65,6 +64,8 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     private int servletShutdownTimeout_ms;
 
+    private String hostPath;
+
     private void setRegistered(boolean registered) {
         this.registered = registered;
     }
@@ -73,12 +74,14 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public ServletMessageReceiverImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       LocalChannelUrlDirectoryClient channelUrlDirectory,
                                       LongPollingMessageReceiver longPollingReceiver,
-                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
-                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
+                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
+                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
+                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
         this.channelId = channelId;
         this.channelUrlDirectory = channelUrlDirectory;
         this.longPollingReceiver = longPollingReceiver;
         this.contextRoot = contextRoot;
+        this.hostPath = hostPath;
         this.servletShutdownTimeout_ms = servletShutdownTimeout_ms;
         this.started = false;
     }
@@ -90,9 +93,6 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     public void registerChannelUrl() {
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        // TODO any better way to pass this in? It is coming from MessagingJettyLauncher. How could we inject?
-        String hostPath = System.getProperty("hostPath");
-
         if (hostPath == null) {
             String message = "the system property hostPath must be set with name:port eg. http://localhost:8080";
             IllegalArgumentException illegalArgumentException = new IllegalArgumentException(message);

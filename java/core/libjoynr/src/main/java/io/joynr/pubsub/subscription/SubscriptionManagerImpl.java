@@ -25,10 +25,8 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -36,9 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager {
@@ -51,20 +49,19 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     // subscription
     // should be updated with a new end time
 
-    private ScheduledExecutorService subscriptionEndScheduler;
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionManagerImpl.class);
+    private ScheduledExecutorService cleanupScheduler;
 
     @Inject
-    public SubscriptionManagerImpl() {
+    public SubscriptionManagerImpl(@Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
         super();
+        this.cleanupScheduler = cleanupScheduler;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
         this.subscriptionStates = Maps.newConcurrentMap();
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.subscriptionAttributeTypes = Maps.newConcurrentMap();
 
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("SubscriptionEnd-%d").build();
-        this.subscriptionEndScheduler = Executors.newScheduledThreadPool(5, namedThreadFactory);
     }
 
     public SubscriptionManagerImpl(ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory,
@@ -72,14 +69,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                                    ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes,
-                                   ScheduledExecutorService missedPublicationScheduler) {
+                                   ScheduledExecutorService cleanupScheduler) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
         this.subscriptionStates = subscriptionStates;
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
-        this.subscriptionEndScheduler = missedPublicationScheduler;
         this.subscriptionAttributeTypes = subscriptionAttributeTypes;
+        this.cleanupScheduler = cleanupScheduler;
     }
 
     @Override
@@ -99,7 +96,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDate();
-        logger.info("####################### expiryDate in: " + (expiryDate - System.currentTimeMillis()));
+        logger.info("####################### expiryDate in: "
+                + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate - System.currentTimeMillis()));
 
         if (qos instanceof HeartbeatSubscriptionInformation) {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
@@ -116,11 +114,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                        subState));
             }
         }
-        SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
-        ScheduledFuture<?> subscriptionEndFuture = subscriptionEndScheduler.schedule(endRunnable,
-                                                                                     expiryDate,
-                                                                                     TimeUnit.MILLISECONDS);
-        subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
+            SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
+                                                                                 expiryDate,
+                                                                                 TimeUnit.MILLISECONDS);
+            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        }
 
         return subscriptionId;
     }
@@ -195,7 +195,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void shutdown() {
-        subscriptionEndScheduler.shutdownNow();
 
     }
 }

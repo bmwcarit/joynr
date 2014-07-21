@@ -695,6 +695,17 @@ abstract class JoynrGeneratorExtensions {
         return type == FBasicTypeId::UINT8;
     }
     
+    def boolean isByteBuffer(FBasicTypeId type) {
+        return type == FBasicTypeId::BYTE_BUFFER;
+    }
+
+    def boolean isByteBuffer(FTypeRef typeRef) {
+        if (typeRef == null){
+            return false;
+        }
+        return isByteBuffer(getPrimitive(typeRef))
+    }
+
     def getMethodNames(FInterface fInterface) {
 		var names = new HashSet<String>();
 		for (method : fInterface.getMethods()){

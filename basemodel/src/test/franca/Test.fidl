@@ -89,6 +89,7 @@ interface test{
 	attribute Int32 notifyReadWrite
 	
 	attribute Int32 notify
+	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
 	method addNumbers {
 		in {
@@ -255,6 +256,25 @@ interface test{
 		}
 	}
 	
+    method overloadedOperation {
+        in {
+            String input
+        }
+        out {
+            testTypes.ComplexTestType result
+        }
+    }
+
+    method overloadedOperation {
+        in {
+            String input1
+            String input2
+        }
+        out {
+            testTypes.ComplexTestType2 result
+        }
+    }
+
 	method optimizeLocations {
 		in {
 			GpsLocation[] input

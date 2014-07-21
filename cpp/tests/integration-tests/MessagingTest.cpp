@@ -24,20 +24,20 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/ICommunicationManager.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include <QString>
 #include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
-#include "libjoynr/in-process/InProcessMessagingEndpointAddress.h"
-#include "cluster-controller/messaging/in-process/InProcessClusterControllerMessagingSkeleton.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "cluster-controller/http-communication-manager/MessageSender.h"
+#include "cluster-controller/http-communication-manager/HttpSender.h"
+#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
 
 using namespace ::testing;
@@ -61,8 +61,9 @@ public:
     QSharedPointer<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
 
     JoynrMessageFactory messageFactory;
-    MockCommunicationManager mockCommunicationManager;
-    MessagingEndpointDirectory* messagingEndpointDirectory;
+    QSharedPointer<MockMessageReceiver> mockMessageReceiver;
+    QSharedPointer<MockMessageSender> mockMessageSender;
+    MessagingStubFactory* messagingStubFactory;
     QSharedPointer<MessageRouter> messageRouter;
     MessagingTest() :
         settingsFileName("MessagingTest.settings"),
@@ -77,18 +78,28 @@ public:
         requestId("requestId"),
         qos(),
         inProcessMessagingSkeleton(new MockInProcessMessagingSkeleton()),
-
         messageFactory(),
-        mockCommunicationManager(),
-        messagingEndpointDirectory(new MessagingEndpointDirectory(QString("MessagingEndpointDirectory"))),
-        messageRouter(new MessageRouter(messagingSettings, messagingEndpointDirectory))
+        mockMessageReceiver(new MockMessageReceiver()),
+        mockMessageSender(new MockMessageSender()),
+        messagingStubFactory(new MessagingStubFactory()),
+        messageRouter(new MessageRouter(messagingStubFactory))
     {
-        messageRouter->init(mockCommunicationManager);
+        // provision global capabilities directory
+        QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
+            new system::ChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        );
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
+        // provision channel url directory
+        QSharedPointer<joynr::system::Address> addressChannelUrlDirectory(
+            new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        );
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
+        messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
+        messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
         qos.setTtl(10000);
     }
     ~MessagingTest(){
-        delete messagingEndpointDirectory;
         QFile::remove(settingsFileName);
     }
 private:
@@ -105,8 +116,7 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     // - MessageRouter.route
     // - MessageRunnable.run
     // - JoynrMessagingStub.transmit (IMessaging)
-    //   -> adds reply-to header to Joynr message (ICommunicationManager.getReceiveChannelId)
-    // - MockCommunicationManager.sendMessage (ICommunicationManager)
+    // - MessageSender.send
 
 
     MockDispatcher mockDispatcher;
@@ -114,30 +124,22 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,Eq(qos)))
             .Times(0);
 
-    // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(_,_,_))
+    // MessageSender should receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(1);
-
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
-            .WillOnce(ReturnRefOfCopy(senderChannelId));
 
     EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
             .Times(1);
 
-    QSharedPointer<InProcessClusterControllerMessagingSkeleton> messagingSkeleton(
-                new InProcessClusterControllerMessagingSkeleton(messageRouter));
-    QSharedPointer<InProcessMessagingStub> messagingStub(
-                new InProcessMessagingStub(messagingSkeleton));
-
-    JoynrMessageSender messageSender(messagingStub);
+    JoynrMessageSender messageSender(messageRouter);
     QSharedPointer<IReplyCaller> replyCaller;
     messageSender.registerDispatcher(&mockDispatcher);
 
-    QSharedPointer<JoynrMessagingEndpointAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress());
+    QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    messagingEndpointDirectory->add(receiverId, joynrMessagingEndpointAddr);
+    messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller);
 }
@@ -169,19 +171,19 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
             .Times(1);
 
-    // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(_,_,_))
+    // MessageSender should not receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
+    EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
             .Times(0);
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
 //            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-    QSharedPointer<InProcessMessagingEndpointAddress> messagingSkeletonEndpointAddr =
-            QSharedPointer<InProcessMessagingEndpointAddress>(new InProcessMessagingEndpointAddress(inProcessMessagingSkeleton));
+    QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr =
+            QSharedPointer<InProcessMessagingAddress>(new InProcessMessagingAddress(inProcessMessagingSkeleton));
 
-    messagingEndpointDirectory->add(receiverId, messagingSkeletonEndpointAddr);
+    messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr);
 
     messageRouter->route(message, qos);
 }
@@ -207,15 +209,15 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
             .Times(0);
 
-    // HttpCommunicationManager should not receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(_,_,_))
+    // MessageSender should not receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
 // NOTE: LipciMessaging doesn't exists (2012-05-08)
 //    QSharedPointer<LipciEndpointAddress> messagingSkeletonEndpointAddr =
 //            QSharedPointer<LipciEndpointAddress>(new LipciEndpointAddress(messagingSkeleton));
 
-//    messagingEndpointDirectory->add(receiverId, messagingSkeletonEndpointAddr);
+//    messageRouter->add(receiverId, messagingSkeletonEndpointAddr);
     messageRouter->route(message, qos);
 }
 
@@ -234,18 +236,14 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
             .Times(0);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),_,Eq(message)))
             .Times(1);
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
-            .WillOnce(ReturnRefOfCopy(senderChannelId));
 
-
-
-    QSharedPointer<JoynrMessagingEndpointAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress());
+    QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    messagingEndpointDirectory->add(receiverId, joynrMessagingEndpointAddr);
+    messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageRouter->route(message, qos);
 }
@@ -272,23 +270,25 @@ TEST_F(MessagingTest, routeMultipleMessages)
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),Eq(qos)))
             .Times(2);
 
-    // HttpCommunicationManager should receive the message
-    EXPECT_CALL(mockCommunicationManager, sendMessage(Eq(receiverChannelId), Eq(qos.getTtl()),Eq(message)))
+    // MessageSender should receive the message
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), _ , Eq(message)))
             .Times(1);
-    EXPECT_CALL(mockCommunicationManager, getReceiveChannelId())
+
+    EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
             .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-    QSharedPointer<InProcessMessagingEndpointAddress> messagingSkeletonEndpointAddr =
-            QSharedPointer<InProcessMessagingEndpointAddress>(new InProcessMessagingEndpointAddress(inProcessMessagingSkeleton));
+    QSharedPointer<InProcessMessagingAddress> messagingSkeletonEndpointAddr(
+                new InProcessMessagingAddress(inProcessMessagingSkeleton)
+    );
 
-    messagingEndpointDirectory->add(receiverId2, messagingSkeletonEndpointAddr);
+    messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
 
-    QSharedPointer<JoynrMessagingEndpointAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress());
+    QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    messagingEndpointDirectory->add(receiverId, joynrMessagingEndpointAddr);
+    messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageRouter->route(message, qos);
     messageRouter->route(message2, qos);
@@ -338,19 +338,3 @@ TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChanne
 
 //    delete settings;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -30,20 +30,21 @@
 #include <QSharedPointer>
 #include <QSettings>
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/SystemServicesSettings.h"
 #include "joynr/ProxyBuilder.h"
-#include "joynr/CapabilitiesAggregator.h"
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "libjoynr/dbus/DBusDispatcherAdapter.h"
 #include "common/dbus/DbusSettings.h"
 
 namespace joynr {
 
-class DBusDispatcherAdapter;
+class DBusMessageRouterAdapter;
 class IMessaging;
 class JoynrMessageSender;
 class DbusSettings;
+class MessageRouter;
+class InProcessMessagingSkeleton;
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT LibJoynrRuntime: public JoynrRuntime {
 public:
@@ -71,13 +72,15 @@ protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 
-    DBusDispatcherAdapter* joynrDispatcherAdapter;
+    DBusMessageRouterAdapter* dbusMessageRouterAdapter;
 
     // take ownership, so a pointer is used
     QSettings* settings;
     // use pointer for settings object to check the configuration before initialization
     LibjoynrSettings* libjoynrSettings;
     DbusSettings* dbusSettings;
+
+    QSharedPointer<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
     void initializeAllDependencies();
 };

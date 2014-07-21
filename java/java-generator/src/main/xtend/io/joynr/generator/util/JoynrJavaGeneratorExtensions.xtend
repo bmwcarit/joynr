@@ -106,6 +106,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		bMap.put(FBasicTypeId::FLOAT, "0d");
 		bMap.put(FBasicTypeId::DOUBLE, "0d");
 		bMap.put(FBasicTypeId::STRING, "\"\"");
+		bMap.put(FBasicTypeId::BYTE_BUFFER, "new byte[0]");
 		bMap.put(FBasicTypeId::UNDEFINED,"");
 		
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
@@ -357,7 +358,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			case FBasicTypeId::FLOAT: "Double"
 			case FBasicTypeId::DOUBLE: "Double"
 			case FBasicTypeId::STRING: "String"
-			case FBasicTypeId::BYTE_BUFFER: "Byte[]"
+			case FBasicTypeId::BYTE_BUFFER: "byte[]"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.joynrName)
         }
 		// francaExtensions.getPrimitiveTypeName(basicType)
@@ -379,7 +380,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			case FBasicTypeId::FLOAT.name: type = "Double"
 			case FBasicTypeId::DOUBLE.name: type = "Double"
 			case FBasicTypeId::STRING.name: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.name: type = "Byte[]"
+			case FBasicTypeId::BYTE_BUFFER.name: type = "byte[]"
 			case "void": type = "Void"
 			default :  type = plainType
 

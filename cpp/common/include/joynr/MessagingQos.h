@@ -33,7 +33,7 @@ namespace joynr {
 /**
   * Data Class that stores QoS Settings like Ttl
   */
-class JOYNRCOMMON_EXPORT MessagingQos : QObject
+class JOYNRCOMMON_EXPORT MessagingQos : public QObject
 {
 Q_OBJECT
 
@@ -52,6 +52,9 @@ public:
 private:
     qint64 ttl;
 };
+
+// printing MessagingQos with google-test and google-mock
+void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
 
 } // namespace joynr
 

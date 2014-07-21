@@ -35,9 +35,6 @@ public:
     static const QString& SETTING_CC_MESSAGING_DOMAIN();
     static const QString& SETTING_CC_MESSAGING_SERVICENAME();
     static const QString& SETTING_CC_MESSAGING_PARTICIPANTID();
-    static const QString& SETTING_CC_CAPABILITIES_DOMAIN();
-    static const QString& SETTING_CC_CAPABILITIES_SERVICENAME();
-    static const QString& SETTING_CC_CAPABILITIES_PARTICIPANTID();
 
     static const QString& DEFAULT_DBUS_SETTINGS_FILENAME();
 
@@ -53,14 +50,6 @@ public:
     QString getClusterControllerMessagingParticipantId() const;
     void setClusterControllerMessagingParticipantId(const QString& participantId);
     QString createClusterControllerMessagingAddressString() const;
-
-    QString getClusterControllerCapabilitiesDomain() const;
-    void setClusterControllerCapabilitiesDomain(const QString& domain);
-    QString getClusterControllerCapabilitiesServiceName() const;
-    void setClusterControllerCapabilitiesServiceName(const QString& serviceName);
-    QString getClusterControllerCapabilitiesParticipantId() const;
-    void setClusterControllerCapabilitiesParticipantId(const QString& participantId);
-    QString createClusterControllerCapabilitiesAddressString() const;
 
     void printSettings() const;
 

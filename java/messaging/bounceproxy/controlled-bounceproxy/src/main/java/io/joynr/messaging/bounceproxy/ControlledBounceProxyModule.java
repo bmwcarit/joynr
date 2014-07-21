@@ -25,10 +25,7 @@ import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
 import io.joynr.messaging.bounceproxy.monitoring.BounceProxyPerformanceMonitor;
 import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
 import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.service.MessagingService;
-import io.joynr.messaging.system.SystemTimeProvider;
-import io.joynr.messaging.system.TimestampProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,14 +49,10 @@ public class ControlledBounceProxyModule extends AbstractModule {
      */
     @Override
     protected void configure() {
-        bind(ChannelService.class).to(ChannelServiceImpl.class);
         bind(MessagingService.class).to(MessagingServiceImpl.class);
 
         bind(BounceProxyLifecycleMonitor.class).to(MonitoringServiceClient.class);
-        bind(TimestampProvider.class).to(SystemTimeProvider.class);
         bind(BounceProxyInformation.class).toProvider(BounceProxyInformationProvider.class);
-
-        bind(LongPollingMessagingDelegate.class).asEagerSingleton();
     }
 
     @Provides

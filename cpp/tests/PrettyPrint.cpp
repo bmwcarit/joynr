@@ -16,15 +16,16 @@
  * limitations under the License.
  * #L%
  */
+#include <gtest/gtest.h>
+#include "PrettyPrint.h"
 #include <QtDebug>
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/types/Trip.h"
 #include "joynr/JoynrMessage.h"
-#include <gtest/gtest.h>
-#include "PrettyPrint.h"
 #include "joynr/types/TStruct.h"
+#include "joynr/system/DiscoveryEntry.h"
 
 using namespace joynr;
 
@@ -42,18 +43,20 @@ namespace types {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }
+namespace system {
+    void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os) {
+        *os << JsonSerializer::serialize(value).constData() << std::endl;
+    }
 }
-
-
-
- void PrintTo(const JoynrMessage& value, ::std::ostream* os) {
-  *os << JsonSerializer::serialize(value).constData() << std::endl;
 }
 
 void PrintTo(const QString& value, ::std::ostream* os) {
      *os << value.toStdString();
 }
 
+void PrintTo(const QChar& value, ::std::ostream* os) {
+     *os << value.toLatin1();
+}
 
 void PrintTo(const QByteArray& value, std::ostream* os)
 {

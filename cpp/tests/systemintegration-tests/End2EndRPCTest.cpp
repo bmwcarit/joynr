@@ -23,8 +23,6 @@
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/SettingsMerger.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/TestProvider.h"
 #include "joynr/tests/TestProxy.h"
@@ -49,9 +47,10 @@ public:
         domain(),
         runtime(NULL)
     {
-        QSettings* settings = SettingsMerger::mergeSettings(QString("test-resources/integrationtest.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrintegrationtest.settings"), settings);
-        runtime = new JoynrClusterControllerRuntime(NULL, settings);
+        runtime = new JoynrClusterControllerRuntime(
+                    NULL,
+                    new QSettings(QString("test-resources/integrationtest.settings"), QSettings::IniFormat)
+        );
         //This is a workaround to register the Metatypes for providerQos.
         //Normally a new datatype is registered in all datatypes that use the new datatype.
         //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before

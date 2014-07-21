@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -109,28 +109,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		<!-- as long as other modules that are not Guice configured depend
-		     on bounceproxy-common, don't put atmosphere-guice in bounceproxy-common. 
-		     It will configure the Atmosphere framework in a wrong way. -->
-		<dependency>
-			<groupId>org.atmosphere</groupId>
-			<artifactId>atmosphere-guice</artifactId>
-			<!-- There's not a version for every atmosphere version. -->
-			<version>2.0.0</version>
-			<exclusions>
-				<exclusion>
-					<!-- prevent guice-servlet version 2.0 to overwrite version 3.0 -->
-					<groupId>com.google.inject.extensions</groupId>
-					<artifactId>guice-servlet</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.google.inject.extensions</groupId>
-			<artifactId>guice-servlet</artifactId>
-			<version>3.0</version>
-		</dependency>
-		
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
@@ -152,6 +130,10 @@
 	        <artifactId>jetty-util</artifactId>
 	        <version>${jetty.version}</version>
 	    </dependency>
+	    <dependency>
+	        <groupId>org.slf4j</groupId>
+	        <artifactId>slf4j-log4j12</artifactId>
+	    </dependency>
 	    
 	</dependencies>
 
@@ -168,6 +150,21 @@
 					<warName>${project.build.finalName}</warName>
 					<warSourceDirectory>src/main/resources</warSourceDirectory>
 					<attachClasses>true</attachClasses>
+					<overlays>
+						<overlay>
+							<groupId>io.joynr.java.messaging</groupId>
+							<artifactId>channel-service</artifactId>
+							<type>jar</type>
+							<includes>
+				                <include>css/**</include>
+				                <include>script/**</include>
+				                <include>channels.html</include>
+				                <include>NOTICE-javascript</include>
+								<include>MIT-LICENSE</include>
+								<include>LICENSE_INFO</include>
+				            </includes>
+						</overlay>
+					</overlays>
 				</configuration>
 			</plugin>
 			

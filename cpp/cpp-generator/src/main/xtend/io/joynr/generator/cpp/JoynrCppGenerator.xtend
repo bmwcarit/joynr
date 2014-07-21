@@ -8,7 +8,7 @@ package io.joynr.generator.cpp
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +17,16 @@ package io.joynr.generator.cpp
  * limitations under the License.
  */
 
+import com.google.common.collect.Sets
+import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
-
 import io.joynr.generator.cpp.defaultProvider.DefaultProviderGenerator
 import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
 import io.joynr.generator.cpp.provider.ProviderGenerator
 import io.joynr.generator.cpp.proxy.ProxyGenerator
+import java.io.File
+import java.util.Map
 import javax.inject.Inject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -31,20 +34,20 @@ import org.franca.core.dsl.FrancaPersistenceManager
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
-import io.joynr.generator.IGeneratorWithHeaders
-import java.io.File
+import io.joynr.generator.util.FileSystemAccessUtil
+import io.joynr.generator.util.InvocationArguments
 
-class JoynrCppGenerator implements IGeneratorWithHeaders {
-    
+class JoynrCppGenerator implements IJoynrGenerator{
+
 	@Inject 
 	private FrancaPersistenceManager francaPersistenceManager
 
 	@Inject 
 	CommunicationModelGenerator communicationModelGenerator
-	
+
 	@Inject
 	ProxyGenerator proxyGenerator	
-	
+
 	@Inject
 	ProviderGenerator providerGenerator
 
@@ -53,24 +56,36 @@ class JoynrCppGenerator implements IGeneratorWithHeaders {
 
 	@Inject
 	JoynrMessagingGenerator joynrMessagingGenerator
-	
+
 	@Inject
 	DefaultProviderGenerator defaultProviderGenerator
+
+	@Inject
+	IFileSystemAccess outputHeaderFileSystem;
+
+	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
+	private Map<String, String> parameters;
+
+	override doGenerate(Resource input, IFileSystemAccess fsa) {
+		var headerFSA = fsa;
+		if (outputHeaderPath != null){
+			FileSystemAccessUtil::createFileSystemAccess(outputHeaderFileSystem, outputHeaderPath);
+			headerFSA = outputHeaderFileSystem;
+		}
+		
+		doGenerate(input, fsa, headerFSA);
+	}
 	
-    override doGenerate(Resource input, IFileSystemAccess fsa) {
-    	doGenerate(input, fsa, fsa);
-    }
-    
 	override getLanguageId() {
 		return "cpp"
 	}
-    
-	override doGenerate(Resource input, IFileSystemAccess sourceFileSystem, IFileSystemAccess headerFileSystem) {
-        val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
-        checkArgument(isFrancaIDLResource, "Unknown input: " + input)	
+	
+	def doGenerate(Resource input, IFileSystemAccess sourceFileSystem, IFileSystemAccess headerFileSystem) {
+		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
+		checkArgument(isFrancaIDLResource, "Unknown input: " + input)	
 
-        val fModel = input.contents.get(0) as FModel; 
-        
+		val fModel = input.contents.get(0) as FModel; 
+		
 		proxyGenerator.doGenerate(fModel, sourceFileSystem, headerFileSystem, 
 			getSourceContainerPath(sourceFileSystem, "proxy"), 
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "proxy")
@@ -114,5 +129,25 @@ class JoynrCppGenerator implements IGeneratorWithHeaders {
 		}
 	}
 	
+	override setParameters(Map<String,String> parameter) {
+		parameters = parameter;
+	}
+	
+	override supportedParameters() {
+		Sets::newHashSet(OUTPUT_HEADER_PATH);
+	}
+	
+	def getOutputHeaderPath(){
+		var String result = null;
+		if (parameters != null) {
+			if (parameters.get(OUTPUT_HEADER_PATH) != null) {
+				result = parameters.get(OUTPUT_HEADER_PATH);
+			}
+			else if (parameters.get(InvocationArguments::OUTPUT_PATH) != null){
+				result = parameters.get(InvocationArguments::OUTPUT_PATH) + File::separator + "include"
+			}
+		}
+		return result
+	}
 
 }

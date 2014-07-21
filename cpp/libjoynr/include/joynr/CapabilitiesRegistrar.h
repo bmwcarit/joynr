@@ -23,10 +23,13 @@
 #include "joynr/JoynrExport.h"
 
 #include "joynr/Provider.h"
-#include "joynr/ICapabilities.h"
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/joynrlogging.h"
+#include "joynr/system/DiscoveryEntry.h"
 
 #include <QString>
 #include <QList>
@@ -37,21 +40,30 @@ namespace joynr {
 
 class JOYNR_EXPORT CapabilitiesRegistrar {
 public:
-    CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
-                          QSharedPointer<ICapabilities> capabilitiesAggregator,
-                          QSharedPointer<joynr::system::Address> messagingStubAddress,
-                          QSharedPointer<ParticipantIdStorage> participantIdStorage);
+    CapabilitiesRegistrar(
+            QList<IDispatcher*> dispatcherList,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            QSharedPointer<joynr::system::Address> messagingStubAddress,
+            QSharedPointer<ParticipantIdStorage> participantIdStorage,
+            QSharedPointer<joynr::system::Address> dispatcherAddress,
+            QSharedPointer<MessageRouter> messageRouter
+    );
 
     template <class T>
-    QString registerCapability(const QString& domain, QSharedPointer<T> provider, QString authenticationToken){
+    QString add(
+            const QString& domain,
+            QSharedPointer<T> provider,
+            QString authenticationToken
+    ) {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
-        QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId =
-                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
-                                                               authenticationToken);
+        QString participantId = participantIdStorage->getProviderParticipantId(
+                    domain,
+                    T::getInterfaceName(),
+                    authenticationToken
+        );
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             //TODO will the provider be registered at all dispatchers or
@@ -60,27 +72,53 @@ public:
             currentDispatcher->addRequestCaller(participantId,caller);
         }
 
-        // Get the provider participant id
-        capabilitiesAggregator->add(domain, T::getInterfaceName(),
-                                    participantId,
-                                    provider->getProviderQos(),
-                                    endpointAddresses,
-                                    messagingStubAddress,
-                                    ICapabilities::NO_TIMEOUT());
+        QList<joynr::system::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        joynr::RequestStatus status;
+        joynr::system::DiscoveryEntry entry(domain,
+            T::getInterfaceName(),
+            participantId,
+            provider->getProviderQos(),
+            connections);
+        discoveryProxy.add(
+                    status,
+                    entry
+        );
+        if(!status.successful()) {
+            LOG_ERROR(
+                        logger,
+                        QString("Unable to add provider (participant ID: %1, domain: %2, interface: %3) "
+                                "to discovery. Status code: %4."
+                        )
+                        .arg(participantId)
+                        .arg(domain)
+                        .arg(T::getInterfaceName())
+                        .arg(status.getCode().toString())
+            );
+        }
+
+        // add next hop to dispatcher
+        messageRouter->addNextHop(participantId, dispatcherAddress);
+
         return participantId;
     }
 
-    void unregisterCapability(QString participantId);
+    void remove(QString participantId);
 
     template <class T>
-    QString unregisterCapability(const QString& domain, QSharedPointer<T> provider, QString authenticationToken){
-        Q_UNUSED(domain)
+    QString remove(
+            const QString& domain,
+            QSharedPointer<T> provider,
+            QString authenticationToken
+    ) {
         Q_UNUSED(provider)
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId =
-                participantIdStorage->getProviderParticipantId(domain, T::getInterfaceName(),
-                                                               authenticationToken);
+        QString participantId = participantIdStorage->getProviderParticipantId(
+                    domain,
+                    T::getInterfaceName(),
+                    authenticationToken
+         );
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             //TODO will the provider be registered at all dispatchers or
@@ -89,7 +127,29 @@ public:
             currentDispatcher->removeRequestCaller(participantId);
         }
 
-        capabilitiesAggregator->remove(participantId, ICapabilities::NO_TIMEOUT());
+        joynr::RequestStatus status;
+        discoveryProxy.remove(status, participantId);
+        if(!status.successful()) {
+            LOG_ERROR(
+                        logger,
+                        QString("Unable to remove provider (participant ID: %1, domain: %2, interface: %3) "
+                                "to discovery. Status code: %4."
+                        )
+                        .arg(participantId)
+                        .arg(domain)
+                        .arg(T::getInterfaceName())
+                        .arg(status.getCode().toString())
+            );
+        }
+
+        messageRouter->removeNextHop(status, participantId);
+        if(!status.successful()) {
+            LOG_ERROR(
+                        logger,
+                        QString("Unable to remove next hop (participant ID: %1) from message router.")
+                        .arg(participantId)
+            );
+        }
         return participantId;
     }
 
@@ -99,9 +159,12 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
-    QSharedPointer<ICapabilities> capabilitiesAggregator;
+    joynr::system::IDiscoverySync& discoveryProxy;
     QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
+    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<MessageRouter> messageRouter;
+    static joynr_logging::Logger* logger;
 };
 
 

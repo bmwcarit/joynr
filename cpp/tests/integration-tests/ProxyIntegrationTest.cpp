@@ -22,7 +22,6 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/ProxyBuilder.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/InProcessConnectorFactory.h"
@@ -30,7 +29,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 
@@ -60,10 +59,10 @@ public:
         domain("cppProxyIntegrationTestDomain"),
         proxyQos(),
         messagingQos(),
-        endPointAddress(new JoynrMessagingEndpointAddress("endPointAddress"))
+        endPointAddress(new system::ChannelAddress("endPointAddress"))
     {
         //moved to initializationlist
-        //endPointAddress = QSharedPointer<JoynrMessagingEndpointAddress>(new JoynrMessagingEndpointAddress("endPointAddress"));
+        //endPointAddress = QSharedPointer<system::ChannelAddress>(new system::ChannelAddress("endPointAddress"));
     }
 
     // Sets up the test fixture.
@@ -89,7 +88,7 @@ protected:
     QString domain;
     ProxyQos proxyQos;
     MessagingQos messagingQos;
-    QSharedPointer<JoynrMessagingEndpointAddress> endPointAddress;
+    QSharedPointer<system::ChannelAddress> endPointAddress;
 
 
 private:
@@ -104,6 +103,6 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, NULL);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy((ICapabilities*)NULL, endPointAddress, connectorFactory, mockClientCache, domain, proxyQos, messagingQos, false);
+    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, proxyQos, messagingQos, false);
     ASSERT_TRUE(proxy != NULL);
 }

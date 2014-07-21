@@ -33,15 +33,16 @@ const QString authToken("test_authtoken");
 
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
-    CapabilitiesRegistrarTest()
-        : mockDispatcher(NULL),
-          mockCapabilitiesStub(new MockCapabilitiesStub()),
-          messagingStubAddress(),
-          mockParticipantIdStorage(new MockParticipantIdStorage()),
-          capabilitiesRegistrar(NULL),
-          mockProvider(new MockProvider()),
-          domain("testDomain"),
-          expectedParticipantId("testParticipantId")
+    CapabilitiesRegistrarTest() :
+            mockDispatcher(NULL),
+            messagingStubAddress(),
+            mockParticipantIdStorage(new MockParticipantIdStorage()),
+            mockDiscovery(),
+            capabilitiesRegistrar(NULL),
+            mockProvider(new MockProvider()),
+            domain("testDomain"),
+            expectedParticipantId("testParticipantId"),
+            mockMessageRouter(new MockMessageRouter())
     {
 
     }
@@ -52,9 +53,11 @@ public:
 
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
-                    mockCapabilitiesStub.dynamicCast<ICapabilities>(),
+                    mockDiscovery,
                     messagingStubAddress,
-                    mockParticipantIdStorage
+                    mockParticipantIdStorage,
+                    messagingStubAddress,
+                    mockMessageRouter
         );
     }
     void TearDown(){
@@ -65,16 +68,17 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    QSharedPointer<MockCapabilitiesStub> mockCapabilitiesStub;
     QSharedPointer<joynr::system::Address> messagingStubAddress;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
+    MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     QSharedPointer<MockProvider> mockProvider;
     QString domain;
     QString expectedParticipantId;
+    QSharedPointer<MockMessageRouter> mockMessageRouter;
 };
 
-TEST_F(CapabilitiesRegistrarTest, registerCapability){
+TEST_F(CapabilitiesRegistrarTest, add){
 
     types::ProviderQos testQos;
     testQos.setPriority(100);
@@ -87,24 +91,30 @@ TEST_F(CapabilitiesRegistrarTest, registerCapability){
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockProvider, getProviderQos())
             .Times(1)
-            .WillOnce(Return(testQos));
+            .WillOnce(Return(testQos))
+    ;
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
-    EXPECT_CALL(*mockCapabilitiesStub, add(
-                    domain,
-                    IMockProviderInterface::getInterfaceName(),
-                    expectedParticipantId,
-                    testQos,
-                    _,
-                    _,
-                    _
-    ));
+    joynr::RequestStatus status;
+    status.setCode(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(
+                mockDiscovery,
+                add(
+                    A<joynr::RequestStatus&>(),
+                    AllOf(
+                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(domain)),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::getInterfaceName())),
+                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
+                    )
+                )
+    ).WillOnce(SetArgReferee<0>(status));
 
-    QString participantId = capabilitiesRegistrar->registerCapability(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->add(domain, mockProvider, authToken);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 }
 
-TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithDomainAndProviderObject){
+TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
                     IMockProviderInterface::getInterfaceName(),
@@ -114,18 +124,32 @@ TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithDomainAndProviderObjec
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    EXPECT_CALL(*mockCapabilitiesStub, remove(expectedParticipantId, ICapabilities::NO_TIMEOUT()))
-            .Times(1);
-    QString participantId = capabilitiesRegistrar->unregisterCapability(domain, mockProvider, authToken);
+    joynr::RequestStatus status;
+    status.setCode(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(mockDiscovery, remove(
+                    A<joynr::RequestStatus&>(),
+                    expectedParticipantId
+    ))
+            .Times(1)
+            .WillOnce(SetArgReferee<0>(status))
+    ;
+    QString participantId = capabilitiesRegistrar->remove(domain, mockProvider, authToken);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 }
 
-TEST_F(CapabilitiesRegistrarTest, unregisterCapabilityWithParticipantId){
+TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    EXPECT_CALL(*mockCapabilitiesStub, remove(expectedParticipantId, ICapabilities::NO_TIMEOUT()))
-            .Times(1);
-    capabilitiesRegistrar->unregisterCapability(expectedParticipantId);
+    joynr::RequestStatus status;
+    status.setCode(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(mockDiscovery, remove(
+                    A<joynr::RequestStatus&>(),
+                    expectedParticipantId
+    ))
+            .Times(1)
+            .WillOnce(SetArgReferee<0>(status))
+    ;
+    capabilitiesRegistrar->remove(expectedParticipantId);
 }
 
 TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability){
@@ -143,15 +167,23 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockProvider, getProviderQos())
             .Times(1)
-            .WillOnce(Return(testQos));
+            .WillRepeatedly(Return(testQos));
 
-    EXPECT_CALL(*mockCapabilitiesStub, add(domain,
-                                          IMockProviderInterface::getInterfaceName(),
-                                          expectedParticipantId,
-                                          testQos,
-                                          _,
-                                          _,
-                                          ICapabilities::NO_TIMEOUT()));
+    joynr::RequestStatus status;
+    status.setCode(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(
+                mockDiscovery,
+                add(
+                    A<joynr::RequestStatus&>(),
+                    AllOf(
+                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(domain)),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::getInterfaceName())),
+                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
+                    )
+                )
+    ).Times(1).WillOnce(SetArgReferee<0>(status))
+    ;
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
@@ -163,7 +195,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
     capabilitiesRegistrar->addDispatcher(mockDispatcher2);
 
-    QString participantId = capabilitiesRegistrar->registerCapability(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->add(domain, mockProvider, authToken);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
@@ -190,15 +222,23 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockProvider, getProviderQos())
             .Times(1)
-            .WillOnce(Return(testQos));
+            .WillRepeatedly(Return(testQos));
 
-    EXPECT_CALL(*mockCapabilitiesStub, add(domain,
-                                          IMockProviderInterface::getInterfaceName(),
-                                          expectedParticipantId,
-                                          testQos,
-                                          _,
-                                          _,
-                                          ICapabilities::NO_TIMEOUT()));
+    joynr::RequestStatus status;
+    status.setCode(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(
+                mockDiscovery,
+                add(
+                    A<joynr::RequestStatus&>(),
+                    AllOf(
+                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(domain)),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::getInterfaceName())),
+                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
+                    )
+                )
+    ).Times(1).WillOnce(SetArgReferee<0>(status))
+    ;
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
@@ -208,7 +248,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
             .Times(1);
 
-    QString participantId = capabilitiesRegistrar->registerCapability(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->add(domain, mockProvider, authToken);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;

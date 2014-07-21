@@ -31,8 +31,8 @@
 #include <QString>
 #include <QDateTime>
 #include <QDataStream>
-#include "joynr/system/Address.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/system/CommunicationMiddleware.h"
 
 
 namespace joynr {
@@ -44,7 +44,7 @@ class JOYNR_EXPORT CapabilityEntry : QObject
     Q_PROPERTY(QString domain READ getDomain WRITE setDomain)
     Q_PROPERTY(joynr__types__ProviderQos qos READ getQos WRITE setQos)
     Q_PROPERTY(QString participantId READ getParticipantId WRITE setParticipantId)
-    Q_PROPERTY(QList<QSharedPointer<joynr::system::Address> > endpointAddresses READ getEndpointAddresses WRITE setEndpointAddresses)
+    Q_PROPERTY(QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections READ getMiddlewareConnections WRITE setMiddlewareConnections)
     Q_PROPERTY(bool global READ isGlobal)
 
 public:
@@ -58,7 +58,7 @@ public:
             const QString& interfaceName,
             joynr::types::ProviderQos qos,
             const QString& participantId,
-            QList<QSharedPointer<joynr::system::Address> > endpointAddresses,
+            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
             bool isGlobal,
             QObject* parent = 0
     );
@@ -79,10 +79,14 @@ public:
     void setParticipantId(QString participantId);
 
 
-    void setEndpointAddresses(QList<QSharedPointer<joynr::system::Address> > endpointAddresses);
-    QList<QSharedPointer<joynr::system::Address> > getEndpointAddresses() const;
+    void setMiddlewareConnections(
+            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
+    );
+    QList<joynr::system::CommunicationMiddleware::Enum> getMiddlewareConnections() const;
 
-    void prependEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress);
+    void prependMiddlewareConnection(
+            joynr::system::CommunicationMiddleware::Enum middlewareConnection
+    );
 
     bool isGlobal() const;
     void setGlobal(bool global);
@@ -94,7 +98,7 @@ public:
     QString interfaceName;
     types::ProviderQos qos;
     QString participantId;
-    QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
+    QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections;
     bool global;
 };
 

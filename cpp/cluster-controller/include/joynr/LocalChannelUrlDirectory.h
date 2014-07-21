@@ -31,7 +31,7 @@ namespace joynr {
 
 /**
  * @brief The LocalChannelUrlDirectory is used within the cluster controller (message routing)
- * to map a logical messaging endpoint address (channelId) to one ore more Url's. It queries the
+ * to map a logical channel address (channelId) to one ore more Url's. It queries the
  * ChannelUrlDirectory and stores the resulting ChannelInformation.
  *
  */

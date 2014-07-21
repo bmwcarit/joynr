@@ -18,31 +18,58 @@
  */
 #include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/ArbitrationStatus.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
-#include "joynr/ICapabilities.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/system/ChannelAddress.h"
+#include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
 
 #include <cassert>
 
 namespace joynr {
 
-FixedParticipantArbitrator::FixedParticipantArbitrator(const QString& domain,const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub,const DiscoveryQos &discoveryQos) :
-    ProviderArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos),
+joynr_logging::Logger* FixedParticipantArbitrator::logger = joynr_logging::Logging::getInstance()->getLogger("Arb", "FixedParticipantArbitrator");
+
+FixedParticipantArbitrator::FixedParticipantArbitrator(
+        const QString& domain,
+        const QString& interfaceName,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos &discoveryQos
+) :
+    ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
     participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
     reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
 {
 }
 
-void FixedParticipantArbitrator::attemptArbitration()
-{
-    QList<CapabilityEntry> result = capabilitiesStub->lookup(participantId, discoveryQos);
-
-    if (result.isEmpty()) return;
-    assert(result.first().getEndpointAddresses().size() > 0);
-
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
-                                                   participantId,
-                                                   result.first().getEndpointAddresses().first());
+void FixedParticipantArbitrator::attemptArbitration() {
+    joynr::RequestStatus status;
+    joynr::system::DiscoveryEntry result;
+    discoveryProxy.lookup(
+                status,
+                result,
+                participantId
+    );
+    if(status.successful()) {
+        joynr::system::CommunicationMiddleware::Enum preferredConnection(
+                selectPreferredCommunicationMiddleware(result.getConnections())
+        );
+        updateArbitrationStatusParticipantIdAndAddress(
+                    ArbitrationStatus::ArbitrationSuccessful,
+                    participantId,
+                    preferredConnection
+        );
+    } else {
+        LOG_ERROR(
+                    logger,
+                    QString("Unable to lookup provider (domain: %1, interface: %2) "
+                            "from discovery. Status code: %3."
+                    )
+                    .arg(domain)
+                    .arg(interfaceName)
+                    .arg(status.getCode().toString())
+        );
+    }
 }
 
 

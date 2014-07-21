@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -140,7 +140,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy</artifactId>
+									<artifactId>single-bounceproxy</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
@@ -174,17 +174,17 @@
 							<contextPath>/bounceproxy</contextPath>
 						</contextHandler>
 						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/discovery.war</war>
+							<war>${project.build.directory}/discovery-directory-servlet.war</war>
 							<contextPath>/discovery</contextPath>
 						</contextHandler>
 					</contextHandlers>
 					<systemProperties>
 						<systemProperty>
-							<name>log4j.configurationFile</name>
-							<value>src/main/resources/log4j.properties</value>
+							<name>log4j.configuration</name>
+							<value>file:${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
 						</systemProperty>
 						<systemProperty>
-							<name>hostPath</name>
+							<name>joynr.servlet.hostPath</name>
 							<value>http://localhost:8080</value>
 						</systemProperty>
 					</systemProperties>

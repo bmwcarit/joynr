@@ -38,8 +38,8 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
-#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/CommonApiDbusAddress.h"
 #include "joynr/tests/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
@@ -832,28 +832,28 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-    qRegisterMetaType<joynr::JoynrMessagingEndpointAddress>("joynr::JoynrMessagingEndpointAddress");
-    qRegisterMetaType<joynr::SomeIpEndpointAddress>("joynr::SomeIpEndpointAddress");
+    qRegisterMetaType<joynr::system::ChannelAddress>("joynr::system::ChannelAddress");
+    qRegisterMetaType<joynr::system::CommonApiDbusAddress>("joynr::system::CommonApiDbusAddress");
 
-    JoynrMessagingEndpointAddress joynr("TEST_channelId");
-    SomeIpEndpointAddress someip("TEST_ipAddress", 42);
+    joynr::system::ChannelAddress joynr("TEST_channelId");
+    joynr::system::CommonApiDbusAddress dbus("domain", "interfacename", "id");
 
     // serialize
     QByteArray joynrSerialized = JsonSerializer::serialize(joynr);
-    QByteArray someipSerialized = JsonSerializer::serialize(someip);
+    QByteArray dbusSerialized = JsonSerializer::serialize(dbus);
     
-    LOG_DEBUG(logger, "serialized Joynr endpoint address: "+ QString::fromUtf8(joynrSerialized));
-    LOG_DEBUG(logger, "serialized SomeIP endpoint address: "+ QString::fromUtf8(someipSerialized));
+    LOG_DEBUG(logger, "serialized Joynr address: "+ QString::fromUtf8(joynrSerialized));
+    LOG_DEBUG(logger, "serialized Dbus address: "+ QString::fromUtf8(dbusSerialized));
 
     // deserialize
-    JoynrMessagingEndpointAddress* joynrDeserialized = JsonSerializer::deserialize<JoynrMessagingEndpointAddress>(joynrSerialized);
-    SomeIpEndpointAddress* someipDeserialized = JsonSerializer::deserialize<SomeIpEndpointAddress>(someipSerialized);
+    joynr::system::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::ChannelAddress>(joynrSerialized);
+    joynr::system::CommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserialize<joynr::system::CommonApiDbusAddress>(dbusSerialized);
 
     EXPECT_EQ(joynr, *joynrDeserialized);
-    EXPECT_EQ(someip, *someipDeserialized);
+    EXPECT_EQ(dbus, *dbusDeserialized);
 
     delete joynrDeserialized;
-    delete someipDeserialized;
+    delete dbusDeserialized;
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {

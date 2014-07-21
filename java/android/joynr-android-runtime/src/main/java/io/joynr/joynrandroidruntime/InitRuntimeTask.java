@@ -19,6 +19,7 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
+import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -40,8 +41,14 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
     public static final long INIT_TIMEOUT = 30000;
     private UILogger uiLogger;
     private Context applicationContext;
+    private Properties joynrConfig;
 
     public InitRuntimeTask(Context applicationContext, UILogger uiLogger) {
+        this(PropertyLoader.loadProperties("res/raw/demo.properties"), applicationContext, uiLogger);
+    }
+
+    public InitRuntimeTask(Properties joynrConfig, Context applicationContext, UILogger uiLogger) {
+        this.joynrConfig = joynrConfig;
         this.applicationContext = applicationContext;
         this.uiLogger = uiLogger;
     }
@@ -49,41 +56,38 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
     @Override
     protected JoynrRuntime doInBackground(Object... params) {
         try {
-            Log.d("JAS", "starting Joyn Runtime");
-            publishProgress("Starting Joyn Runtime...\n");
-
-            // TODO get properties path from params
-            Properties properties = PropertyLoader.loadProperties("res/raw/demo.properties");
+            Log.d("JAS", "starting joynr runtime");
+            publishProgress("Starting joynr runtime...\n");
 
             // create/make persistence file absolute
             File appWorkingDir = applicationContext.getFilesDir();
             String persistenceFileName = appWorkingDir.getPath()
                     + File.separator
-                    + properties.getProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
-                                             MessagingPropertyKeys.DEFAULT_PERSISTENCE_FILE);
-            properties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, persistenceFileName);
+                    + joynrConfig.getProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
+                                              MessagingPropertyKeys.DEFAULT_PERSISTENCE_FILE);
+            joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, persistenceFileName);
 
             // create/make participant ID persistence file absolute
             String participantIdPersistenceFileName = appWorkingDir.getPath()
                     + File.separator
-                    + properties.getProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
-                                             ConfigurableMessagingSettings.DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE);
-            properties.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
-                                   participantIdPersistenceFileName);
+                    + joynrConfig.getProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
+                                              ConfigurableMessagingSettings.DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE);
+            joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
+                                    participantIdPersistenceFileName);
 
             publishProgress("Properties loaded\n");
 
-            properties.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
+            joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
 
-            Injector injectorA = new JoynrInjectorFactory(properties).createChildInjector();
+            Injector injectorA = new JoynrInjectorFactory(joynrConfig, new AndroidLongPollingMessagingModule()).createChildInjector();
 
             JoynrRuntimeImpl runtime = injectorA.getInstance(JoynrRuntimeImpl.class);
             if (runtime != null) {
-                Log.d("JAS", "Joyn Runtime started");
+                Log.d("JAS", "joynr runtime started");
             } else {
-                Log.e("JAS", "Joyn runtime not started");
+                Log.e("JAS", "joynr runtime not started");
             }
-            publishProgress("Joyn Runtime started.\n");
+            publishProgress("joynr runtime started.\n");
 
             return runtime;
 

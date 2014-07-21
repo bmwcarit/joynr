@@ -21,8 +21,9 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/ContentWithDecayTime.h"
-#include "cluster-controller/http-communication-manager/BounceProxyUrl.h"
+#include "joynr/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/Directory.h"
 
 #include <QThread>
 #include <QSemaphore>
@@ -33,6 +34,11 @@ namespace joynr {
 class ILocalChannelUrlDirectory;
 
 class IMessageReceiver;
+class MessageRouter;
+
+namespace system {
+    class Address;
+}
 
 /**
  * Structure used for configuring the long poll message receiver
@@ -54,10 +60,10 @@ public:
     LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
                                const QString& channelId,
                                const QString& receiverId,
-                               IMessageReceiver* messageReceiver,
                                const LongPollingMessageReceiverSettings& settings,
                                QSemaphore* channelCreatedSemaphore,
-                               QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
+                               QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+                               QSharedPointer<MessageRouter> messageRouter);
     void run();
     void interrupt();
     bool isInterrupted();
@@ -76,11 +82,11 @@ private:
 
     QMutex interruptedMutex;
     bool interrupted;
-    IMessageReceiver* messageReceiver;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;
     QSemaphore* channelCreatedSemaphore;
+    QSharedPointer<MessageRouter> messageRouter;
 };
 
 

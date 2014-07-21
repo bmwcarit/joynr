@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -37,7 +37,7 @@
 		-->
 		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy</artifactId>
+			<artifactId>single-bounceproxy</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -131,7 +131,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy</artifactId>
+									<artifactId>single-bounceproxy</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
@@ -156,6 +156,19 @@
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
+					<connectors>
+						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+							<port>8080</port>
+						</connector>
+						<connector implementation="org.eclipse.jetty.server.ssl.SslSocketConnector">
+							<port>8443</port>
+							<keystore>${basedir}/resources/localhost.jks</keystore>
+							<truststore>${basedir}/resources/truststore.jks</truststore>
+							<password>changeit</password>
+							<keyPassword>changeit</keyPassword>
+							<needClientAuth>true</needClientAuth>
+						</connector>
+					</connectors>
 					<webApp>
 						<contextPath>/</contextPath>
 					</webApp>
@@ -173,7 +186,7 @@
 					</contextHandlers>
 					<systemProperties>
 						<systemProperty>
-							<name>hostPath</name>
+							<name>joynr.servlet.hostPath</name>
 							<value>http://localhost:8080</value>
 						</systemProperty>
 					</systemProperties>

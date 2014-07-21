@@ -124,8 +124,8 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
             }
         } catch (Exception e) {
         }
-        String token = "joynr.participant:" + domain + "|" + interfaceName + "|" + authenticationToken;
-        return token;
+        String token = "joynr.participant." + domain + "." + interfaceName + "." + authenticationToken;
+        return token.replace('/', '.');
     }
 
     @Override

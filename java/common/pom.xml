@@ -26,11 +26,12 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
 		<module>guice-integration</module>
 		<module>infrastructure-common</module>
+		<module>distributed-logging-appender</module>
 	</modules>
 </project>

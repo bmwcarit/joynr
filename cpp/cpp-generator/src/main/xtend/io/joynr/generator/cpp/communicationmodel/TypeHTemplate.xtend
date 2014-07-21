@@ -45,6 +45,7 @@ class TypeHTemplate {
 		#include <QObject>
 		#include <QVariantMap>
 		#include <QList>
+		#include <QByteArray>
 
 
 		//include complex Datatype headers. 		
@@ -62,11 +63,13 @@ class TypeHTemplate {
 				«val membername = member.joynrName»
 				«IF isArray(member)»
 					Q_PROPERTY(QList<QVariant> «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
+				«ELSEIF isByteBuffer(member.type)»
+					Q_PROPERTY(QByteArray «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
 				«ELSE»
 					«IF isEnum(member.type)»
 						Q_PROPERTY(QString «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
 					«ELSE»
-«««						https://bugreports.qt-project.org/browse/QTBUG-2151 for why this replace is necessary
+						// https://bugreports.qt-project.org/browse/QTBUG-2151 for why this replace is necessary
 						Q_PROPERTY(«getMappedDatatypeOrList(member).replace("::","__")» «membername» READ get«membername.toFirstUpper» WRITE set«membername.toFirstUpper»)
 					«ENDIF»
 				«ENDIF»
@@ -96,7 +99,9 @@ class TypeHTemplate {
 			«FOR member: getMembers(complexType)»
 				«val joynrName = member.joynrName»
 				«IF isArray(member)»
-				 	QList<QVariant> get«joynrName.toFirstUpper»Internal() const;
+					QList<QVariant> get«joynrName.toFirstUpper»Internal() const;
+				«ELSEIF isByteBuffer(member.type)»
+					QByteArray get«joynrName.toFirstUpper»Internal() const;
 				«ELSE»
 					«IF isEnum(member.type)»
 						QString get«joynrName.toFirstUpper»Internal() const;
@@ -110,6 +115,8 @@ class TypeHTemplate {
 				«val joynrName = member.joynrName»
 				«IF isArray(member)»
 					void set«joynrName.toFirstUpper»Internal(const QList<QVariant>& «joynrName») ;
+				«ELSEIF isByteBuffer(member.type)»
+					void set«joynrName.toFirstUpper»Internal(const QByteArray& «joynrName») ;
 			 	«ELSE»
 					«IF isEnum(member.type)»
 						void set«joynrName.toFirstUpper»Internal(const QString& «joynrName») ;

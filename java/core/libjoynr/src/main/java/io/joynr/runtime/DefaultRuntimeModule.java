@@ -35,11 +35,17 @@ import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.httpoperation.HttpClientProvider;
 import io.joynr.messaging.httpoperation.HttpDefaultRequestConfigProvider;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.name.Names;
 
 public class DefaultRuntimeModule extends AbstractModule {
 
@@ -59,6 +65,11 @@ public class DefaultRuntimeModule extends AbstractModule {
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
 
         requestStaticInjection(RpcUtils.class, JoynrAppenderManagerFactory.class);
+
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+        ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named("joynr.scheduler.cleanup"))
+                                            .toInstance(cleanupExecutor);
     }
 
 }

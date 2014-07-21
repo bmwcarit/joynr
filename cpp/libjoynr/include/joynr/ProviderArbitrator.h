@@ -26,7 +26,7 @@
 #include "joynr/system/Address.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/ICapabilities.h"
+#include "joynr/system/DiscoveryQos.h"
 
 #include <QSharedPointer>
 #include <QString>
@@ -35,13 +35,17 @@
 
 namespace joynr {
 
+namespace system {
+    class IDiscoverySync;
+}
+
 /*
  *  Base class for different arbitration strategies.
  */
 class JOYNR_EXPORT ProviderArbitrator {
 
 public:
-    virtual ~ProviderArbitrator(){ }
+    virtual ~ProviderArbitrator();
 
     /*
      *  Arbitrate until successful or until a timeout occurs
@@ -60,7 +64,7 @@ public:
      */
     QString getParticipantId();
 
-    QSharedPointer<joynr::system::Address> getEndpointAddress();
+    joynr::system::CommunicationMiddleware::Enum getConnection();
 
     /*
      *  setArbitrationCallback expects a callback to a JoynrProviderProxy object which
@@ -76,13 +80,33 @@ protected:
      *  This blocking is need for example for the fixed channel arbitrator which
      *  sets the channelId instantly.
      */
-    ProviderArbitrator(const QString& domain,const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub,const DiscoveryQos& discoveryQos);
+    ProviderArbitrator(
+            const QString& domain,
+            const QString& interfaceName,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            const DiscoveryQos& discoveryQos
+    );
     /*
      *  setArbitrationStatus uses the callback to notify the ProviderProxy about the arbitration results.
      */
-    void updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationStatusType arbitrationStatus, QString participantId, QSharedPointer<joynr::system::Address> endpointAddress);
-    QSharedPointer<ICapabilities> capabilitiesStub;
+    void updateArbitrationStatusParticipantIdAndAddress(
+            ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
+            QString participantId,
+            const joynr::system::CommunicationMiddleware::Enum& connection
+    );
+    /**
+     * @brief selectPreferredCommunicationMiddleware Selects the preferred communication middleware
+     * from a list of available connections.
+     *
+     * @param connections List of available connections.
+     * @return The preferred connection.
+     */
+    virtual joynr::system::CommunicationMiddleware::Enum selectPreferredCommunicationMiddleware(
+            const QList<joynr::system::CommunicationMiddleware::Enum>& connections
+    );
+    joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
+    joynr::system::DiscoveryQos systemDiscoveryQos;
     QString domain;
     QString interfaceName;
 
@@ -91,9 +115,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(QString participantId);
-    void setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress);
+    void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection);
     QString participantId;
-    QSharedPointer<joynr::system::Address> endpointAddress;
+    joynr::system::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     QSemaphore listenerSemaphore;

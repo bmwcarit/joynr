@@ -23,7 +23,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
-#include "joynr/InProcessEndpointAddress.h"
+#include "joynr/InProcessAddress.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/joynrlogging.h"
 

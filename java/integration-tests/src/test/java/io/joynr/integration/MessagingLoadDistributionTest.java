@@ -1,0 +1,183 @@
+package io.joynr.integration;
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsMessage;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
+import io.joynr.messaging.util.Utilities;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
+import joynr.JoynrMessage;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.response.Response;
+
+//@RunWith(MultipleBounceProxySetupsTestRunner.class)
+//@BounceProxyServerSetups(value = { /*ControlledBounceProxyCluster.class, */ClusteredBounceProxyWithDispatcher.class })
+public class MessagingLoadDistributionTest {
+
+    @BounceProxyServerContext
+    public BounceProxyServerSetup configuration;
+
+    private BounceProxyCommunicationMock bpMock1;
+    private BounceProxyCommunicationMock bpMock2;
+
+    @Before
+    public void setUp() throws Exception {
+
+        String trackingId1 = "trackingId-" + UUID.randomUUID().toString();
+        bpMock1 = new BounceProxyCommunicationMock(configuration.getBounceProxyControllerUrl(), trackingId1);
+
+        String trackingId2 = "trackingId-" + UUID.randomUUID().toString();
+        bpMock2 = new BounceProxyCommunicationMock(configuration.getBounceProxyControllerUrl(), trackingId2);
+    }
+
+    @Test
+    @Ignore("Ignore until servers are started in a separate JVM. Guice static problem")
+    public void testMessagePostsToCorrectInstances() throws Exception {
+
+        String uuid1 = UUID.randomUUID().toString();
+        String channelId1 = "channel-" + uuid1;
+
+        String uuid2 = UUID.randomUUID().toString();
+        String channelId2 = "channel-" + uuid2;
+
+        // create channels; use extra method as we don't know which location to expect
+        Response responseCreateChannel1 = createChannel(bpMock1, channelId1);
+        Response responseCreateChannel2 = createChannel(bpMock2, channelId2);
+
+        Assert.assertNotSame("Channels created on two different Bounce Proxies",
+                             responseCreateChannel1.getHeader("bp"),
+                             responseCreateChannel2.getHeader("bp"));
+
+        String channelUrl1 = responseCreateChannel1.getHeader("Location");
+        String channelUrl2 = responseCreateChannel2.getHeader("Location");
+
+        // post messages to long polling channel before opening channel
+        String msgIds1[] = { "message-1_1", "message-1_2", "message-1_3" };
+        for (String msgId : msgIds1) {
+            postMessageToBounceProxy(bpMock1, channelUrl1, channelId1, 30000l, msgId);
+        }
+
+        String msgIds2[] = { "message-2_1", "message-2_2", "message-2_3" };
+        for (String msgId : msgIds2) {
+            postMessageToBounceProxy(bpMock2, channelUrl2, channelId2, 30000l, msgId);
+        }
+
+        // open long polling channel
+        List<JoynrMessage> messages1 = getMessagesFromBounceProxy(bpMock1, channelUrl1, channelId1);
+
+        assertEquals(3, messages1.size());
+        assertThat(messages1, allOf(containsMessage("message-1_1"),
+                                    containsMessage("message-1_2"),
+                                    containsMessage("message-1_3")));
+
+        List<JoynrMessage> messages2 = getMessagesFromBounceProxy(bpMock2, channelUrl2, channelId2);
+        assertEquals(3, messages2.size());
+        assertThat(messages2, allOf(containsMessage("message-2_1"),
+                                    containsMessage("message-2_2"),
+                                    containsMessage("message-2_3")));
+    }
+
+    @Test
+    @Ignore("Ignore until failover scenarios are implemented")
+    public void testMessagePostsToWrongInstance() {
+        // right now it will fail as messaging failover is not implemented yet
+        Assert.fail("Not yet implemented");
+    }
+
+    @Test
+    @Ignore("Ignore until failover scenarios are implemented")
+    public void testMessagePostsWithServerUnavailable() {
+        Assert.fail("Not yet implemented");
+    }
+
+    private Response createChannel(BounceProxyCommunicationMock bpMock, String myChannelId) {
+        return bpMock.onrequest()
+                     .with()
+                     .headers("X-Atmosphere-Tracking-Id", bpMock.getReceiverId())
+                     .queryParam("ccid", myChannelId)
+                     .expect()
+                     .statusCode(201)
+                     .when()
+                     .post("/channels/");
+    }
+
+    private void postMessageToBounceProxy(BounceProxyCommunicationMock bpMock,
+                                          String channelUrl,
+                                          String channelId,
+                                          long relativeTtlMs,
+                                          String msgId) throws JsonProcessingException {
+
+        String previousBaseUri = RestAssured.baseURI;
+        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, "jsessionid");
+        String sessionId = Utilities.getSessionId(channelUrl, "jsessionid");
+
+        String serializedMessage = bpMock.createSerializedJoynrMessage(relativeTtlMs, msgId, msgId);
+        /* @formatter:off */
+        bpMock.onrequest().with().body(serializedMessage).expect().statusCode(201).when().post("message;jsessionid="
+                + sessionId);
+        /* @formatter:on */
+        RestAssured.baseURI = previousBaseUri;
+    }
+
+    private List<JoynrMessage> getMessagesFromBounceProxy(BounceProxyCommunicationMock bpMock,
+                                                          String channelUrl,
+                                                          String channelId) throws JsonParseException,
+                                                                           JsonMappingException, IOException {
+
+        String previousBaseUri = RestAssured.baseURI;
+        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, "jsessionid");
+        String sessionId = Utilities.getSessionId(channelUrl, "jsessionid");
+
+        /* @formatter:off */
+        Response response = bpMock.onrequest()
+                                  .with()
+                                  .header("X-Atmosphere-tracking-id", bpMock.getReceiverId())
+                                  .expect()
+                                  .statusCode(200)
+                                  .when()
+                                  .get(";jsessionid=" + sessionId);
+        /* @formatter:on */
+
+        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
+
+        RestAssured.baseURI = previousBaseUri;
+
+        return messagesFromResponse;
+    }
+
+}

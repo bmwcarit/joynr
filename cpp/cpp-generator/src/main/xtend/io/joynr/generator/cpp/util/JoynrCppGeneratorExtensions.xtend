@@ -42,6 +42,14 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 
 	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
 
+	// Convert ByteBuffers into QByteArrays
+	override getPrimitiveTypeName(FBasicTypeId basicType) {
+		if (basicType == FBasicTypeId::BYTE_BUFFER) {
+			return "QByteArray"
+		}
+		super.getPrimitiveTypeName(basicType)
+	}
+
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
 	}
@@ -111,6 +119,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		bMap.put(FBasicTypeId::FLOAT, "-1");
 		bMap.put(FBasicTypeId::DOUBLE, "-1");
 		bMap.put(FBasicTypeId::STRING, "\"\"");
+		bMap.put(FBasicTypeId::BYTE_BUFFER, "\"\"");
 		bMap.put(FBasicTypeId::UNDEFINED,"");
 		
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);

@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller.util;
  * #L%
  */
 
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 import java.net.URI;
 

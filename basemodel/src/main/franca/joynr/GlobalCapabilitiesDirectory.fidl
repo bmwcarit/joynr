@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ interface GlobalCapabilitiesDirectory{
 	 * Registers a list of capability information with the directory.
 	 * @param capabilities the list of capabilities to register
 	 */
-	method registerCapabilities {
+	method add {
 		in { 
 			CapabilityInformation[] capabilities
 		}
@@ -45,7 +45,7 @@ interface GlobalCapabilitiesDirectory{
 	 * Registers capability information with the directory.
 	 * @param capability the capability to register
 	 */
-	method registerCapability {
+	method add {
 		in {
 			CapabilityInformation capability
 		} 
@@ -58,64 +58,48 @@ interface GlobalCapabilitiesDirectory{
 	 * @param qos the required minimal provider QoS
 	 * @return a list of matching capabilities
 	 */
-	method lookupCapabilities {
+	method lookup {
 		in {
 			String domain
 			String interfaceName
-			ProviderQosRequirements qos
 		}
 		
 		out {
 			CapabilityInformation[] result
 		}
 	}
+
 	/**
-	 * Looks up a list of capabilities for a given channel ID. Note that a channel ID is unique
-	 * ID for a Cluster Controller. Therefore, this method is used to retrieve capabilities of 
-	 * a specific Cluster Controller.
-	 * @param channelId the channel ID identifying the Cluster Controller
-	 * @return a list of matching capabilities
-	 */
-	method  getCapabilitiesForChannelId {
-		in {
-			String channelId
-		}
-		
-		out {
-			CapabilityInformation[] result
-		}
-	}
-	/**
-	 * Looks up a list of capabilities for a given participant ID.
+	 * Looks up the capability information for a given participant ID.
 	 * @param participantId the participant ID identifying the provider
-	 * @return a list of matching capabilities
+	 * @return the matching capability
 	 */
-	method getCapabilitiesForParticipantId {
+	method lookup {
 		in {
 			String participantId
 		}
 		
 		out{
-			CapabilityInformation[]  result
+			CapabilityInformation result
 		}
 	}
 	/**
 	 * Unregisters a list of capabilities from the directory.
-	 * @param capabilities the list of capability information to remove
+	 * @param participantIds the list of participant IDs, for which the capability has to be removed
 	 */
-	method unregisterCapabilities {
+	method remove {
 		in {
-			CapabilityInformation[] capabilities
+			String[] participantIds
 		}
 	}
 
 	/**
 	 * Unregisters a capability from the directory.
-	 * @param capability the capability information to remove 
+	 * @param participantId the participant ID for which the capability has to be removed 
 	 */
-	method unregisterCapability {
+	method remove {
 		in {
-			CapabilityInformation capability
+			String participantId
 		}
 	}	
 }

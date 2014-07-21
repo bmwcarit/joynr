@@ -34,6 +34,8 @@ typeCollection DiscoveryTypes {
         BROWSER
         WEBSOCKET
         SOME_IP
+        IN_PROCESS
+        NONE
     }
 
     struct DiscoveryQos {
@@ -43,12 +45,11 @@ typeCollection DiscoveryTypes {
     }
 
     struct DiscoveryEntry {
-        String interfaceName
         String domain
-        ProviderQos qos
+        String interfaceName
         String participantId
+        ProviderQos qos
         CommunicationMiddleware[] connections
-        Boolean global
     }
 }
 
@@ -74,11 +75,7 @@ interface Discovery {
 	 */
     method add {
         in {
-            String domain
-            String interfaceName
-            String participantId
-            ProviderQos qos
-            DiscoveryTypes.CommunicationMiddleware[] connections
+            DiscoveryTypes.DiscoveryEntry discoveryEntry
         }
     }
 
@@ -96,7 +93,6 @@ interface Discovery {
         in {
             String domain
             String interfaceName
-            ProviderQosRequirements qos
             DiscoveryTypes.DiscoveryQos discoveryQos
         }
         out {

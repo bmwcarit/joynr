@@ -20,12 +20,12 @@
 #define PRETTYPRINT_H_
 
 #include <gtest/gtest.h>
-#include <QtCore/QString>
-#include <QtCore/QByteArray>
+#include <QString>
+#include <QChar>
+#include <QByteArray>
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 
@@ -35,6 +35,17 @@
 //void initPretty(void);
 
 namespace joynr {
+// NOTE: Choosing the right PrintTo method is done by template magic by
+//       the compiler. Therefore, the point in time when the PrintTo method
+//       is defined is crucial. So consider defining the method in the same
+//       file where your type is defined.
+//
+// The following PrintTo's are defined directly in the file where the type is
+// defined:
+//    class JoynrMessage;
+//    void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+//    class MessagingQos;
+//    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
 namespace types {
     class TStruct;
     void PrintTo(const joynr::types::TStruct& value, ::std::ostream* os);
@@ -43,9 +54,13 @@ namespace types {
     class Trip;
     void PrintTo(const joynr::types::Trip& value, ::std::ostream* os);
 }
+namespace system {
+    class DiscoveryEntry;
+    void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os);
 }
-void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+}
 void PrintTo(const QString& value, ::std::ostream* os);
+void PrintTo(const QChar& value, ::std::ostream* os);
 void PrintTo(const QByteArray& value, ::std::ostream* os);
 //void PrintTo(const QObject& value, ::std::ostream* os);
 //void PrintTo(const QVariant& value, ::std::ostream* os);

@@ -22,22 +22,53 @@ package io.joynr.generator;
 import io.joynr.generator.util.InvocationArguments;
 
 import java.io.IOException;
+import java.util.Set;
+
+import org.apache.maven.plugin.logging.Log;
+import org.eclipse.xtext.generator.IGenerator;
 
 public class GeneratorTask {
 
     InvocationArguments arguments;
+    private Executor executor;
 
     public GeneratorTask(InvocationArguments arguments) {
         this.arguments = arguments;
+        this.executor = new Executor(arguments);
     }
 
-    public void generate() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        ExecutorDEV executor = new ExecutorDEV(arguments);
+    public void generate(Log log) throws IOException, ClassNotFoundException, InstantiationException,
+                                 IllegalAccessException {
+        executor.execute(prepareGenerator());
+    }
+
+    public void printHelp(Log log) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        IGenerator generator = prepareGenerator();
+        if (generator instanceof IJoynrGenerator) {
+            IJoynrGenerator joynrGenerator = (IJoynrGenerator) generator;
+            Set<String> parameters = joynrGenerator.supportedParameters();
+            StringBuffer sb = new StringBuffer();
+            sb.append("Supported configuration parameters by the generator: ");
+            if (parameters != null && parameters.size() > 0) {
+                for (String parameter : parameters) {
+                    sb.append(parameter + ",");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+            } else {
+                sb.append("none");
+            }
+            log.info(sb.toString());
+        } else {
+            log.info("no additional information available for the provider generator");
+        }
+    }
+
+    public IGenerator prepareGenerator() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         if (arguments.isValid()) {
-            executor.setup();
-            executor.execute();
+            return executor.setup();
         } else {
             throw new IllegalArgumentException(arguments.getErrorMessage());
         }
+
     }
 }

@@ -23,7 +23,7 @@ package io.joynr.messaging.bounceproxy.controller.strategy;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrChannelNotAssignableException;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 import java.util.Collections;
 import java.util.Comparator;

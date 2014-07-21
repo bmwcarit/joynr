@@ -33,6 +33,10 @@ public class MessagingQos {
         ttl_ms = 60000;
     }
 
+    public MessagingQos(MessagingQos src) {
+        ttl_ms = src.getRoundTripTtl_ms();
+    }
+
     /**
      * @param ttl_ms
      *            Roundtrip timeout for rpc requests.
@@ -53,4 +57,5 @@ public class MessagingQos {
     public void setTtl_ms(final long ttl_ms) {
         this.ttl_ms = ttl_ms;
     }
+
 }

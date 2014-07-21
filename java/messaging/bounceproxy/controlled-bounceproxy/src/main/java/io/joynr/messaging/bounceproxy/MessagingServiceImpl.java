@@ -20,8 +20,7 @@ package io.joynr.messaging.bounceproxy;
  * #L%
  */
 
-import io.joynr.messaging.service.MessagingService;
-import joynr.JoynrMessage;
+import io.joynr.messaging.bounceproxy.service.AbstractMessagingService;
 
 import com.google.inject.Inject;
 
@@ -31,13 +30,11 @@ import com.google.inject.Inject;
  * @author christina.strobel
  *
  */
-public class MessagingServiceImpl implements MessagingService {
-
-    private LongPollingMessagingDelegate longPollingDelegate;
+public class MessagingServiceImpl extends AbstractMessagingService {
 
     @Inject
     public MessagingServiceImpl(LongPollingMessagingDelegate longPollingDelegate) {
-        this.longPollingDelegate = longPollingDelegate;
+        super(longPollingDelegate);
     }
 
     /* (non-Javadoc)
@@ -47,14 +44,6 @@ public class MessagingServiceImpl implements MessagingService {
     public boolean hasMessageReceiver(String ccid) {
         // TODO query local resources if someone is registered
         return true;
-    }
-
-    /* (non-Javadoc)
-     * @see io.joynr.messaging.service.MessagingService#passMessageToReceiver(java.lang.String, joynr.JoynrMessage)
-     */
-    @Override
-    public void passMessageToReceiver(String ccid, JoynrMessage message) {
-        longPollingDelegate.postMessage(ccid, message);
     }
 
     /* (non-Javadoc)

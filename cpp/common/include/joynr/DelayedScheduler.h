@@ -52,7 +52,7 @@ public:
       * Schedules a runnable to be executed after delay_ms has passed.
       * If no delay is supplied the default delay specified in the constructor is used.
       */
-    void schedule(QRunnable* runnable, int delay_ms = -1);
+    virtual void schedule(QRunnable* runnable, int delay_ms = -1);
 
 protected:
     virtual void executeRunnable(QRunnable* runnable) = 0;

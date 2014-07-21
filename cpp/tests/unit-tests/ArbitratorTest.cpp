@@ -23,7 +23,7 @@
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
-#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
+#include "joynr/system/ChannelAddress.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -34,43 +34,56 @@ static const QString interfaceName("unittest-interface");
 
 class ArbitratorTest : public ::testing::Test {
 public:
-    ArbitratorTest()  {}
+    ArbitratorTest() :
+        mockDiscovery()
+    {}
 
     void SetUp(){
     }
     void TearDown(){
     }
 protected:
+    MockDiscovery mockDiscovery;
 };
 
 // Test that the QosArbitrator selects the provider with the highest priority
 TEST_F(ArbitratorTest, getHighestPriority) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    QosArbitrator qosArbitrator(domain, interfaceName, QSharedPointer<ICapabilities>() , discoveryQos);
+    QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
     QList<types::ProviderQos> qosEntries;
     QList<QString> participantId;
     for (int priority = 0; priority < 8; priority++) {
-        qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, joynr::types::ProviderScope::GLOBAL, false);
+        qosEntries << types::ProviderQos(
+                          QList<types::CustomParameter>(),     // custom provider parameters
+                          1,                                   // version
+                          priority,                            // priority
+                          joynr::types::ProviderScope::GLOBAL, // discovery scope
+                          false                                // supports on change notifications
+        );
         participantId << QString::number(priority);
     }
 
-    // Create a list of fake endpoint addresses
-    QSharedPointer<joynr::system::Address> endpointAddress(new SomeIpEndpointAddress("1.1.1.1", 80));
-    QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
-    endpointAddresses << endpointAddress;
+    // Create a list of fake connections
+    QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
 
-    // Create a list of capability entries
-    QList<CapabilityEntry> capabilityEntries;
+    // Create a list of discovery entries
+    QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        capabilityEntries << CapabilityEntry(domain, interfaceName, qosEntries[i], participantId[i],
-                                             endpointAddresses, true);
+        discoveryEntries << joynr::system::DiscoveryEntry(
+                                 domain,
+                                 interfaceName,
+                                 participantId[i],
+                                 qosEntries[i],
+                                 connections
+        );
     }
 
     // Check that the correct participant was selected
-    qosArbitrator.receiveCapabilitiesLookupResults(capabilityEntries);
+    qosArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
     EXPECT_EQ(participantId.last(), qosArbitrator.getParticipantId());
 }
 
@@ -80,7 +93,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
-    QosArbitrator qosArbitrator(domain, interfaceName, QSharedPointer<ICapabilities>() , discoveryQos);
+    QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
     QList<types::ProviderQos> qosEntries;
@@ -94,21 +107,24 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
         participantId << QString("onChange_%1").arg(priority);
     }
 
+    // Create a list of fake connections
+    QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
 
-    // Create a list of fake endpoint addresses
-    QSharedPointer<joynr::system::Address> endpointAddress(new SomeIpEndpointAddress("1.1.1.1", 80));
-    QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
-    endpointAddresses << endpointAddress;
-
-    // Create a list of capability entries
-    QList<CapabilityEntry> capabilityEntries;
+    // Create a list of discovery entries
+    QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        capabilityEntries << CapabilityEntry(domain, interfaceName, qosEntries[i], participantId[i],
-                                             endpointAddresses, true);
+        discoveryEntries << joynr::system::DiscoveryEntry(
+                                 domain,
+                                 interfaceName,
+                                 participantId[i],
+                                 qosEntries[i],
+                                 connections
+        );
     }
 
     // Check that the correct participant was selected
-    qosArbitrator.receiveCapabilitiesLookupResults(capabilityEntries);
+    qosArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
     EXPECT_EQ(participantId.last(), qosArbitrator.getParticipantId());
 }
 
@@ -120,7 +136,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, QSharedPointer<ICapabilities>() , discoveryQos);
+    KeywordArbitrator keywordArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
     QList<types::ProviderQos> qosEntries;
@@ -147,35 +163,52 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
     participantId << QString("correct_keyword");
 
-    // Create a list of fake endpoint addresses
-    QSharedPointer<joynr::system::Address> endpointAddress(new SomeIpEndpointAddress("1.1.1.1", 80));
-    QList<QSharedPointer<joynr::system::Address> > endpointAddresses;
-    endpointAddresses << endpointAddress;
+    // Create a list of fake connections
+    QList<joynr::system::CommunicationMiddleware::Enum> connections;
+    connections << joynr::system::CommunicationMiddleware::JOYNR;
 
-    // Create a list of capability entries
-    QList<CapabilityEntry> capabilityEntries;
+    // Create a list of discovery entries
+    QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        capabilityEntries << CapabilityEntry(domain, interfaceName, qosEntries[i], participantId[i],
-                                             endpointAddresses, true);
+        discoveryEntries << joynr::system::DiscoveryEntry(
+                                 domain,
+                                 interfaceName,
+                                 participantId[i],
+                                 qosEntries[i],
+                                 connections
+        );
     }
 
     // Check that the correct participant was selected
-    keywordArbitrator.receiveCapabilitiesLookupResults(capabilityEntries);
+    keywordArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
     EXPECT_EQ(participantId.last(), keywordArbitrator.getParticipantId());
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
-    QList<CapabilityEntry>* result = new QList<CapabilityEntry>();
-    QSharedPointer<MockCapabilitiesStub> capaMock(new MockCapabilitiesStub());
-    EXPECT_CALL(*capaMock.data(), lookup(A<const QString&>(),
-                                  A<const QString&>(),
-                                  A<const types::ProviderQosRequirements&>(),
-                                  A<const DiscoveryQos&>())).Times(5).WillRepeatedly(testing::Return(*result));
+    QList<joynr::system::DiscoveryEntry> result;
+    joynr::RequestStatus status(joynr::RequestStatusCode::OK);
+    EXPECT_CALL(
+                mockDiscovery,
+                lookup(
+                    A<joynr::RequestStatus&>(),
+                    A<QList<joynr::system::DiscoveryEntry>&>(),
+                    A<QString>(),
+                    A<QString>(),
+                    A<joynr::system::DiscoveryQos>()
+                )
+    )
+            .Times(5)
+            .WillRepeatedly(
+                testing::DoAll(
+                    testing::SetArgReferee<0>(status),
+                    testing::SetArgReferee<1>(result)
+                )
+            );
 
     DiscoveryQos discoveryQos;
     discoveryQos.setRetryInterval(100);
     discoveryQos.setDiscoveryTimeout(450);
-    DefaultArbitrator arbitrator(domain, interfaceName, capaMock, discoveryQos);
+    DefaultArbitrator arbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     arbitrator.startArbitration();
 }

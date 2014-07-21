@@ -22,7 +22,6 @@
 #include <QtConcurrent/QtConcurrent>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/HttpCommunicationManager.h"
 #include "joynr/tests/TestProxy.h"
 #include "joynr/tests/DerivedStruct.h"
 #include "joynr/tests/AnotherDerivedStruct.h"
@@ -57,7 +56,7 @@ static const QString messagingPropertiesPersistenceFileName2("CombinedEnd2EndTes
 
 /*
   * This test tries to create two combined Runtimes and will test communication
-  * between the two Runtimes via HttpCommunicationManager
+  * between the two Runtimes via HttpReceiver
   *
   */
 
@@ -107,10 +106,10 @@ public:
 
         QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1, new HttpCommunicationManager(messagingSettings1));
+        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
         QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2, new HttpCommunicationManager(messagingSettings2));
+        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
     }
 
     void SetUp() {
@@ -140,7 +139,7 @@ private:
 
 };
 
-TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveReply) {
+TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     // Provider: (runtime1)
     //This is a workaround to register the Metatypes for providerQos.
@@ -386,7 +385,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpCommunicationManagerAndReceiveRe
 }
 
 
-TEST_F(CombinedEnd2EndTest, subscribeViaHttpCommunicationManagerAndReceiveReply) {
+TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     //This is a workaround to register the Metatypes for providerQos.
     //Normally a new datatype is registered in all datatypes that use the new datatype.
@@ -645,7 +644,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 }
 
 
-TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpCommunicationManager) {
+TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -701,7 +700,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpCommunicationManager) {
     delete testProxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, deleteChannelViaCommunicationManager) {
+TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     // Provider: (runtime1)
 

@@ -21,8 +21,6 @@
 #include <gmock/gmock.h>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/ICommunicationManager.h"
-#include "joynr/HttpCommunicationManager.h"
 
 #include "joynr/system/RoutingProxy.h"
 
@@ -35,7 +33,8 @@ public:
     QString routingDomain;
     QString routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    ICommunicationManager* mockCommunicationManager;
+    IMessageReceiver* mockMessageReceiver;
+    MockMessageSender* mockMessageSender;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
@@ -46,7 +45,8 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(NULL),
-            mockCommunicationManager(new MockCommunicationManager()),
+            mockMessageReceiver(new MockMessageReceiver()),
+            mockMessageSender(new MockMessageSender()),
             discoveryQos(),
             routingProxyBuilder(NULL),
             routingProxy(NULL)
@@ -62,12 +62,12 @@ public:
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockCommunicationManager*>(mockCommunicationManager)), getReceiveChannelId())
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
-        //runtime can only be created, after MockCommunicationManager has been told to return
+        //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockCommunicationManager);
+        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver, mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerRoutingProvider();
     }
@@ -86,7 +86,7 @@ public:
     }
 
     void TearDown(){
-        QFile::remove("SubscriptionRequests.persist");
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
         delete routingProxy;
         delete routingProxyBuilder;

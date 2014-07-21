@@ -24,6 +24,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,6 +56,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
@@ -61,6 +64,7 @@ import com.google.inject.Guice;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestDistributedLoggingAppender {
+
     @Rule
     public TestName name = new TestName();
     private LoggingProxy loggingProxy;
@@ -71,6 +75,7 @@ public class TestDistributedLoggingAppender {
     @Before
     public void setUp() throws Exception {
         final JoynrRuntime runtime = mock(JoynrRuntime.class);
+        @SuppressWarnings("unchecked")
         ProxyBuilder<LoggingProxy> proxyBuilder = (ProxyBuilder<LoggingProxy>) mock(ProxyBuilder.class);
         loggingProxy = mock(LoggingProxy.class);
         when(runtime.getProxyBuilder(isA(String.class), eq(LoggingProxy.class))).thenReturn(proxyBuilder);
@@ -79,7 +84,6 @@ public class TestDistributedLoggingAppender {
         when(proxyBuilder.build()).thenReturn(loggingProxy);
 
         // NOTE: Each test has a corresponding log4j .json properties file.
-        String methodName = name.getMethodName();
         Guice.createInjector(new AbstractModule() {
 
             @Override
@@ -142,8 +146,10 @@ public class TestDistributedLoggingAppender {
     }
 
     @Test
-    public void testAppenderWritesAllEventsToProxy() throws InterruptedException {
+    public void testAppenderFlushesMultipleEventsAsSingleCallToProxy() throws InterruptedException {
         Layout<? extends Serializable> layout = null;
+        final double MAX_LOG_EVENTS = 100;
+
         String domain = "domain";
         String flushPeriodSecondsAttribute = "1";
         String messageTtlMsAttribute = "1000";
@@ -164,18 +170,22 @@ public class TestDistributedLoggingAppender {
         logger.setAdditive(false);
         logger.setLevel(Level.DEBUG);
 
-        logger.debug("test1");
-        logger.debug("test2");
-        logger.debug("test3");
+        int numberOfLogEvents = (int) (Math.random() * MAX_LOG_EVENTS);
+        for (int i = 0; i < numberOfLogEvents; i++) {
+            logger.debug("test" + i);
+        }
 
         Thread.sleep(1010);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<JoynrLogEvent>> argument = ArgumentCaptor.forClass((Class) List.class);
-        verify(loggingProxy, times(1)).log(argument.capture());
-        assertThat(argument.getValue().get(0).getMessage(), containsString("test1"));
-        assertThat(argument.getValue().get(1).getMessage(), containsString("test2"));
-        assertThat(argument.getValue().get(2).getMessage(), containsString("test3"));
+        verify(loggingProxy, atMost(2)).log(argument.capture());
+        verify(loggingProxy, atLeast(1)).log(Matchers.<List<JoynrLogEvent>> any());
+
+        for (int i = 0; i < numberOfLogEvents; i++) {
+            assertThat(argument.getValue().get(i).getMessage(), containsString("test" + i));
+        }
+
     }
 
     @Test

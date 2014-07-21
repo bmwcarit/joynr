@@ -48,6 +48,8 @@ TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_DOMAIN()));
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()));
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
+    EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
 }
 
 TEST_F(SystemServicesSettingsTest, overrideDefaultSettings) {

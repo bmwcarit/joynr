@@ -25,28 +25,21 @@
 	</Match>
 	<!-- Removes all Null-Pointer warnings from demo applications code: -->
 	<Match>
-  	        <Package name="~.*\.demoApplications.*" />
-	    	<Bug code="NP"/>
-    </Match>
-	
+		<Package name="~.*\.demoApplications.*" />
+		<Bug code="NP"/>
+	</Match>
+	<!-- Nm: Class is not derived from an Exception, even though it is named as such -->
 	<Match>
-  	        <Package name="~.*\.generated.*" />
-	    	<Bug code="UrF"/>
-    </Match>
-
+		<Class name="joynr.system.JoynrLoggedException" />
+		<Bug pattern="NM_CLASS_NOT_EXCEPTION"/>
+	</Match>
+	<!-- remove all null pointer warnings from tests -->
 	<Match>
-  	        <Package name="~.*\.generated.*" />
-	    	<Bug code="UwF"/>
-    </Match>
-	
- 	<Match>
 		<Class name="~.*\.*Tests" />
-	  	<Bug code="NP" /> 
+		<Bug code="NP" /> 
 	</Match>
-		
- 	<Match>
+	<Match>
 		<Class name="~.*\.*Test" />
-	  	<Bug code="NP" />
+		<Bug code="NP" />
 	</Match>
- 	
 </FindBugsFilter>

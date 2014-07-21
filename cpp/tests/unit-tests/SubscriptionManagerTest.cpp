@@ -80,7 +80,48 @@ TEST(SubscriptionManagerTest, registerAttributeSubscription_missedPublicationRun
     QThreadSleep::msleep(1200);
 }
 
+TEST(SubscriptionManagerTest, registerAttributeSubscription_withoutExpiryDate) {
+    QSharedPointer<MockGpsSubscriptionListener> mockGpsSubscriptionListener(
+                new MockGpsSubscriptionListener());
+    SubscriptionCallback<types::GpsLocation>* gpslocationCallback =
+            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
+    EXPECT_CALL(*mockDelayedScheduler,
+                schedule(_,_))
+            .Times(0);
+    SubscriptionManager subscriptionManager(mockDelayedScheduler);
+    auto qos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeSubscriptionQos(-1, 100));
+    SubscriptionRequest subscriptionRequest;
+    subscriptionManager.registerAttributeSubscription(
+                "methodName",
+                gpslocationCallback,
+                qos,
+                subscriptionRequest
+    );
+}
+
+TEST(SubscriptionManagerTest, registerAttributeSubscription_withExpiryDate) {
+    QSharedPointer<MockGpsSubscriptionListener> mockGpsSubscriptionListener(
+                new MockGpsSubscriptionListener());
+    SubscriptionCallback<types::GpsLocation>* gpslocationCallback =
+            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
+    EXPECT_CALL(*mockDelayedScheduler,
+                schedule(A<QRunnable*>(),_))
+            .Times(1);
+    SubscriptionManager subscriptionManager(mockDelayedScheduler);
+    auto qos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeSubscriptionQos(QDateTime::currentMSecsSinceEpoch() + 1000, 100));
+    SubscriptionRequest subscriptionRequest;
+    subscriptionManager.registerAttributeSubscription(
+                "methodName",
+                gpslocationCallback,
+                qos,
+                subscriptionRequest
+    );
+}
+
 TEST(SubscriptionManagerTest, unregisterAttributeSubscription_unregisterLeadsToStoppingMissedPublicationRunnables) {
+
     QSharedPointer<MockGpsSubscriptionListener> mockGpsSubscriptionListener(new MockGpsSubscriptionListener());
     EXPECT_CALL(*mockGpsSubscriptionListener,
                 publicationMissed())

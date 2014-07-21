@@ -19,9 +19,9 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import static org.mockito.Mockito.never;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionManagerImpl.SubscriptionEndRunnable;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,6 +46,7 @@ public class SubscriptionManagerTest {
     private SubscriptionListener<?> attributeSubscriptionCallback;
 
     private SubscriptionQos qos;
+    private SubscriptionQos qosWithoutExpiryDate;
 
     @Mock
     private ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory;
@@ -60,9 +61,6 @@ public class SubscriptionManagerTest {
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
 
     @Mock
-    private ScheduledExecutorService subscriptionEndScheduler;
-
-    @Mock
     private PubSubState subscriptionState;
 
     private SubscriptionManager subscriptionManager;
@@ -71,6 +69,8 @@ public class SubscriptionManagerTest {
 
     @Mock
     private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
+    @Mock
+    private ScheduledExecutorService cleanupScheduler;
 
     @Before
     public void setUp() {
@@ -79,7 +79,7 @@ public class SubscriptionManagerTest {
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
-                                                          subscriptionEndScheduler);
+                                                          cleanupScheduler);
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";
@@ -100,6 +100,10 @@ public class SubscriptionManagerTest {
         long alertInterval_ms = 6000;
         long publicationTtl_ms = 1000;
         qos = new PeriodicSubscriptionQos(maxInterval_ms, endDate_ms, alertInterval_ms, publicationTtl_ms);
+        qosWithoutExpiryDate = new PeriodicSubscriptionQos(maxInterval_ms,
+                                                           SubscriptionQos.NO_EXPIRY_DATE,
+                                                           alertInterval_ms,
+                                                           publicationTtl_ms);
         missedPublicationTimer = new MissedPublicationTimer(endDate_ms,
                                                             alertInterval_ms,
                                                             attributeSubscriptionCallback,
@@ -120,9 +124,31 @@ public class SubscriptionManagerTest {
                                                            Mockito.eq(attributeSubscriptionCallback));
         Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
-        Mockito.verify(subscriptionEndScheduler).schedule(Mockito.any(SubscriptionEndRunnable.class),
-                                                          Mockito.eq(qos.getExpiryDate()),
-                                                          Mockito.eq(TimeUnit.MILLISECONDS));
+        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
+                                                  Mockito.eq(qos.getExpiryDate()),
+                                                  Mockito.eq(TimeUnit.MILLISECONDS));
+        Mockito.verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
+                                                                     Mockito.any(ScheduledFuture.class));
+    }
+
+    @Test
+    public void registerSubscriptionWithoutExpiryDate() {
+        class IntegerReference extends TypeReference<Integer> {
+        }
+
+        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
+                                                                           IntegerReference.class,
+                                                                           attributeSubscriptionCallback,
+                                                                           qosWithoutExpiryDate);
+
+        Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
+                                                           Mockito.eq(attributeSubscriptionCallback));
+        Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+
+        Mockito.verify(cleanupScheduler, never()).schedule(Mockito.any(Runnable.class),
+                                                           Mockito.anyLong(),
+                                                           Mockito.any(TimeUnit.class));
+        Mockito.verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
     }
 
     @Test

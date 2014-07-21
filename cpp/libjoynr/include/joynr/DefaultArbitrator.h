@@ -20,20 +20,34 @@
 #define DEFAULTARBITRATOR_H
 #include "joynr/PrivateCopyAssign.h"
 
+#include "joynr/joynrlogging.h"
 #include "joynr/ProviderArbitrator.h"
 #include <QString>
 #include <QSharedPointer>
 
 namespace joynr {
 
+namespace system {
+    class IDiscoverySync;
+    class DiscoveryEntry;
+}
+
 class DefaultArbitrator : public ProviderArbitrator {
 public:
-    DefaultArbitrator(const QString& domain,const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub,const DiscoveryQos &discoveryQos);
+    DefaultArbitrator(
+            const QString& domain,
+            const QString& interfaceName,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            const DiscoveryQos &discoveryQos
+    );
     virtual void attemptArbitration();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
-    virtual void receiveCapabilitiesLookupResults(const QList<CapabilityEntry> capabilityEntries);
+    virtual void receiveCapabilitiesLookupResults(
+            const QList<joynr::system::DiscoveryEntry>& discoveryEntries
+    );
+    static joynr_logging::Logger* logger;
 };
 
 

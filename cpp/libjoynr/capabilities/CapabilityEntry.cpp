@@ -18,8 +18,6 @@
  */
 #include "joynr/CapabilityEntry.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
-#include "libjoynr/some-ip/SomeIpEndpointAddress.h"
 
 namespace joynr {
 
@@ -28,65 +26,58 @@ CapabilityEntry::CapabilityEntry() :
     interfaceName(),
     qos(),
     participantId(),
-    endpointAddresses(),
+    middlewareConnections(),
     global(true)
 {
 }
 
-CapabilityEntry::CapabilityEntry(const CapabilityEntry &other)
-    : QObject(),
-      domain(other.domain),
-      interfaceName(other.interfaceName),
-      qos(other.qos),
-      participantId(other.participantId),
-      endpointAddresses(other.endpointAddresses),
-      global(other.global)
+CapabilityEntry::CapabilityEntry(const CapabilityEntry &other) :
+    QObject(),
+    domain(other.domain),
+    interfaceName(other.interfaceName),
+    qos(other.qos),
+    participantId(other.participantId),
+    middlewareConnections(other.middlewareConnections),
+    global(other.global)
 {
 }
 
-CapabilityEntry::CapabilityEntry(const QString& domain, const QString& interfaceName, joynr::types::ProviderQos qos, const QString& participantId, QList<QSharedPointer<joynr::system::Address> > endpointAddresses, bool isGlobal, QObject *parent)
-    : QObject(parent),
-      domain(domain),
-      interfaceName(interfaceName),
-      qos(qos),
-      participantId(participantId),
-      endpointAddresses(endpointAddresses),
-      global(isGlobal)
+CapabilityEntry::CapabilityEntry(
+        const QString& domain,
+        const QString& interfaceName,
+        joynr::types::ProviderQos qos,
+        const QString& participantId,
+        QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
+        bool isGlobal,
+        QObject *parent
+) :
+    QObject(parent),
+    domain(domain),
+    interfaceName(interfaceName),
+    qos(qos),
+    participantId(participantId),
+    middlewareConnections(middlewareConnections),
+    global(isGlobal)
 {
 }
 
-CapabilityEntry& CapabilityEntry::operator =(const CapabilityEntry & other) {
+CapabilityEntry& CapabilityEntry::operator=(const CapabilityEntry & other) {
     this->interfaceName = other.interfaceName;
     this->domain = other.domain;
     this->qos = other.qos;
     this->participantId = other.participantId;
-    this->endpointAddresses = endpointAddresses;
+    this->middlewareConnections = middlewareConnections;
     this->global = other.global;
     return *this;
 }
 
-bool CapabilityEntry::operator ==(const CapabilityEntry& other) const  {
-    bool result = this->interfaceName == other.interfaceName
+bool CapabilityEntry::operator==(const CapabilityEntry& other) const {
+    return
+            this->interfaceName == other.interfaceName
             && this->domain == other.domain
             && this->participantId == other.participantId
-            && this->endpointAddresses.size() == other.endpointAddresses.size()
+            && this->middlewareConnections == other.middlewareConnections
             && this->global == other.global;
-
-    if(!result) {
-        return false;
-    }
-
-    // check endpoint addresses
-    for(int index = 0; index < this->endpointAddresses.size(); index++) {
-        joynr::system::Address myAddr = *this->endpointAddresses.at(index).data();
-        joynr::system::Address otherAddr = *other.endpointAddresses.at(index).data();
-
-        if(!(myAddr == otherAddr)) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 
@@ -122,16 +113,20 @@ QString CapabilityEntry::getParticipantId() const{
     return participantId;
 }
 
-void CapabilityEntry::setEndpointAddresses(QList<QSharedPointer<joynr::system::Address> > endpointAddresses){
-    this->endpointAddresses = endpointAddresses;
+void CapabilityEntry::setMiddlewareConnections(
+        QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
+) {
+    this->middlewareConnections = middlewareConnections;
 }
 
-QList<QSharedPointer<joynr::system::Address> > CapabilityEntry::getEndpointAddresses() const{
-    return endpointAddresses;
+QList<joynr::system::CommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections() const {
+    return middlewareConnections;
 }
 
-void CapabilityEntry::prependEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress){
-    endpointAddresses.prepend(endpointAddress);
+void CapabilityEntry::prependMiddlewareConnection(
+        joynr::system::CommunicationMiddleware::Enum middlewareConnection
+) {
+    middlewareConnections.prepend(middlewareConnection);
 }
 
 

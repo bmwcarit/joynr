@@ -24,10 +24,9 @@ import static org.junit.Assert.assertEquals;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
-import io.joynr.messaging.bounceproxy.controller.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
 import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.system.TimestampProvider;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 import java.net.URI;
 
@@ -59,9 +58,6 @@ public class ChannelServiceImplTest {
     @Mock
     RemoteBounceProxyFacade bpMock;
 
-    @Mock
-    TimestampProvider timestampProviderMock;
-
     @Before
     public void setUp() {
 
@@ -73,7 +69,6 @@ public class ChannelServiceImplTest {
                 bind(ChannelAssignmentStrategy.class).toInstance(channelAssignmentStrategyMock);
                 bind(BounceProxyDirectory.class).toInstance(bpDirectoryMock);
                 bind(RemoteBounceProxyFacade.class).toInstance(bpMock);
-                bind(TimestampProvider.class).toInstance(timestampProviderMock);
             }
 
         });
@@ -89,7 +84,6 @@ public class ChannelServiceImplTest {
         Mockito.when(channelAssignmentStrategyMock.calculateBounceProxy("channel-123")).thenReturn(bpInfo);
         Mockito.when(bpMock.createChannel(bpInfo, "channel-123", "trackingId-xyz"))
                .thenReturn(URI.create("http://bpX.de/channels/channel-123"));
-        Mockito.when(timestampProviderMock.getCurrentTime()).thenReturn(100l);
 
         Channel channel = channelService.createChannel("channel-123", "trackingId-xyz");
 
@@ -98,7 +92,7 @@ public class ChannelServiceImplTest {
         assertEquals("http://bpX.de", channel.getBounceProxy().getLocation().toString());
         assertEquals("http://bpX.de/channels/channel-123", channel.getLocation().toString());
         Mockito.verify(channelDirectoryMock, Mockito.times(1)).addChannel(channel);
-        Mockito.verify(bpDirectoryMock).updateChannelAssignment("channel-123", bpInfo, 100l);
+        Mockito.verify(bpDirectoryMock).updateChannelAssignment("channel-123", bpInfo);
     }
 
 }

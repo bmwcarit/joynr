@@ -32,13 +32,12 @@ class IGlobalCapabilitiesCallback;
 class ICapabilitiesClient {
 public:
     virtual ~ICapabilitiesClient(){ }
-    virtual void registerCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList) =0;
-    virtual void removeCapabilities(QList<types::CapabilityInformation> capabilitiesInformationList) =0;
-    virtual QList<types::CapabilityInformation> getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName) =0;
-    virtual void getCapabilitiesForInterfaceAddress(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
-    virtual QList<types::CapabilityInformation> getCapabilitiesForChannelId(const QString& channelId) =0;
-    virtual void getCapabilitiesForChannelId(const QString& channelId, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
-    virtual void getCapabilitiesForParticipantId(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
+    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList) =0;
+    virtual void remove(const QString& participantId) = 0;
+    virtual void remove(QList<QString> capabilitiesInformationList) =0;
+    virtual QList<types::CapabilityInformation> lookup(const QString& domain, const QString& interfaceName) =0;
+    virtual void lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
+    virtual void lookup(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback) =0;
     virtual QString getLocalChannelId() =0;
 
 };

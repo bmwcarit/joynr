@@ -50,7 +50,6 @@ file(
     "provider/*.h"
     "proxy/*.h"
     "subscription/*.h"
-    "dbus/DbusMessagingEndpointAddress.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
 )
@@ -75,7 +74,6 @@ file(
     "provider/*.cpp"
     "proxy/*.cpp"
     "subscription/*.cpp"
-    "dbus/DbusMessagingEndpointAddress.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
 )
@@ -84,22 +82,19 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrLib_HEADERS
         ${JoynrLib_HEADERS}
-        "dbus/DbusCapabilitiesStubAdapter.h"
-        "dbus/DBusDispatcherAdapter.h"
-        "dbus/DbusCapabilitiesUtil.h"
+        "dbus/DbusMessagingStubFactory.h"
     )
 
     set(
         JoynrLib_SOURCES
         ${JoynrLib_SOURCES}
-        "dbus/DbusCapabilitiesStubAdapter.cpp"
-        "dbus/DBusDispatcherAdapter.cpp"
-        "dbus/DbusCapabilitiesUtil.cpp"
+        "dbus/DBusMessageRouterAdapter.cpp"
+        "dbus/DbusMessagingStubFactory.cpp"
     )
 
     set(
         JoynrLib_TARGET_LIBRARIES
-        ${PATCHED_DBUS1_LIBRARIES}
+        ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
         ${JoynrLib_TARGET_LIBRARIES}

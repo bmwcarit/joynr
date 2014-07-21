@@ -25,10 +25,8 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.CheckForNull;
@@ -36,8 +34,9 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 /**
  * Queue to store replyCallers and remove them if the round-trip TTL of the corresponding request expires.
@@ -47,14 +46,14 @@ import com.google.inject.Singleton;
 public class ReplyCallerDirectory {
     private ConcurrentHashMap<String, ContentWithExpiryDate<ReplyCaller>> outstandingReplyCallers = new ConcurrentHashMap<String, ContentWithExpiryDate<ReplyCaller>>();
 
-    private final ScheduledExecutorService scheduler;
-
     private boolean shutdown = false;
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
 
-    public ReplyCallerDirectory() {
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("ReplyCallerDirectory-%d").build();
-        scheduler = Executors.newScheduledThreadPool(1, namedThreadFactory);
+    private ScheduledExecutorService cleanupScheduler;
+
+    @Inject
+    public ReplyCallerDirectory(@Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+        this.cleanupScheduler = cleanupScheduler;
     }
 
     public void putReplyCaller(final String requestReplyId,
@@ -65,7 +64,7 @@ public class ReplyCallerDirectory {
                                             new ContentWithExpiryDate<ReplyCaller>(replyCaller,
                                                                                    roundTripTtlExpirationDate));
         try {
-            scheduler.schedule(new Runnable() {
+            cleanupScheduler.schedule(new Runnable() {
                 public void run() {
                     removeExpiredReplyCaller(requestReplyId);
                 }
@@ -97,7 +96,7 @@ public class ReplyCallerDirectory {
     private void removeExpiredReplyCaller(String requestReplyId) {
         ContentWithExpiryDate<ReplyCaller> remove = outstandingReplyCallers.remove(requestReplyId);
         if (remove == null) {
-            //this happens, when a reply was already received and the replyCaller has been removed.
+            // this happens, when a reply was already received and the replyCaller has been removed.
             return;
         }
         ReplyCaller outstandingReplyCaller = remove.getContent();
@@ -119,7 +118,6 @@ public class ReplyCallerDirectory {
         //
         // }
         shutdown = true;
-        scheduler.shutdownNow();
     }
 
     public boolean isEmpty() {

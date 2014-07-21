@@ -117,6 +117,7 @@ public:
     static const qint64& DEFAULT_PUBLICATION_TTL();
     static const qint64& MIN_PUBLICATION_TTL();
     static const qint64& MAX_PUBLICATION_TTL();
+    static const qint64& NO_EXPIRY_DATE_TTL();
 
     static const qint64& NO_EXPIRY_DATE();
 

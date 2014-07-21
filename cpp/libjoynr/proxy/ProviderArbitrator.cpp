@@ -16,10 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <QTime>
+
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/exceptions.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/ICapabilities.h"
+#include "joynr/system/IDiscovery.h"
 
 #include <cassert>
 
@@ -27,17 +29,30 @@ namespace joynr {
 
 joynr_logging::Logger* ProviderArbitrator::logger = joynr_logging::Logging::getInstance()->getLogger("Arb", "ProviderArbitrator");
 
-ProviderArbitrator::ProviderArbitrator(const QString& domain, const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub, const DiscoveryQos& discoveryQos)
-    : capabilitiesStub(capabilitiesStub),
-      discoveryQos(discoveryQos),
-      domain(domain),
-      interfaceName(interfaceName),
-      participantId(""),
-      endpointAddress(NULL),
-      arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-      listener(NULL),
-      listenerSemaphore(0)
+ProviderArbitrator::ProviderArbitrator(
+        const QString& domain,
+        const QString& interfaceName,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos& discoveryQos
+) :
+    discoveryProxy(discoveryProxy),
+    discoveryQos(discoveryQos),
+    systemDiscoveryQos(
+        discoveryQos.getCacheMaxAge(),
+        discoveryQos.getDiscoveryScope(),
+        discoveryQos.getProviderMustSupportOnChange()
+    ),
+    domain(domain),
+    interfaceName(interfaceName),
+    participantId(""),
+    connection(joynr::system::CommunicationMiddleware::NONE),
+    arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
+    listener(NULL),
+    listenerSemaphore(0)
 {
+}
+
+ProviderArbitrator::~ProviderArbitrator() {
 }
 
 
@@ -69,8 +84,34 @@ void ProviderArbitrator::startArbitration(){
     }
 
     // If this point is reached the arbitration timed out
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationCanceledForever, "", QSharedPointer<joynr::system::Address>());
+    updateArbitrationStatusParticipantIdAndAddress(
+                ArbitrationStatus::ArbitrationCanceledForever,
+                "",
+                joynr::system::CommunicationMiddleware::NONE
+    );
 }
+
+joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::selectPreferredCommunicationMiddleware(
+        const QList<joynr::system::CommunicationMiddleware::Enum>& connections
+) {
+    if(connections.contains(joynr::system::CommunicationMiddleware::IN_PROCESS)) {
+        return joynr::system::CommunicationMiddleware::IN_PROCESS;
+    }
+    if(connections.contains(joynr::system::CommunicationMiddleware::COMMONAPI_DBUS)) {
+        return joynr::system::CommunicationMiddleware::COMMONAPI_DBUS;
+    }
+    if(connections.contains(joynr::system::CommunicationMiddleware::WEBSOCKET)) {
+        return joynr::system::CommunicationMiddleware::WEBSOCKET;
+    }
+    if(connections.contains(joynr::system::CommunicationMiddleware::SOME_IP)) {
+        return joynr::system::CommunicationMiddleware::SOME_IP;
+    }
+    if(connections.contains(joynr::system::CommunicationMiddleware::JOYNR)) {
+        return joynr::system::CommunicationMiddleware::JOYNR;
+    }
+    return joynr::system::CommunicationMiddleware::NONE;
+}
+
 
 QString ProviderArbitrator::getParticipantId(){
     if(participantId.isEmpty()){
@@ -88,25 +129,29 @@ void ProviderArbitrator::setParticipantId(QString participantId){
     }
 }
 
-QSharedPointer<joynr::system::Address> ProviderArbitrator::getEndpointAddress(){
-    if(endpointAddress.isNull()){
-        throw JoynrArbitrationException("EndpointAddress is NULL: Called getEndpointAddress() before arbitration has finished / Arbitrator did not set endpointAddress.");
+joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::getConnection(){
+    if(connection == joynr::system::CommunicationMiddleware::NONE) {
+        throw JoynrArbitrationException("Connection is NULL: Called getConnection() before arbitration has finished / Arbitrator did not set connection.");
     }
-    return endpointAddress;
+    return connection;
 }
 
-void ProviderArbitrator::setEndpointAddress(QSharedPointer<joynr::system::Address> endpointAddress){
-    this->endpointAddress = endpointAddress;
+void ProviderArbitrator::setConnection(const joynr::system::CommunicationMiddleware::Enum& connection){
+    this->connection = connection;
     if(listenerSemaphore.tryAcquire(1)){
         assert(listener!=NULL);
-        listener->setEndpointAddress(endpointAddress);
+        listener->setConnection(connection);
         listenerSemaphore.release(1);
     }
 }
 
-void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationStatusType arbitrationStatus, QString participantId, QSharedPointer<joynr::system::Address> endpointAddress){
+void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(
+        ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
+        QString participantId,
+        const joynr::system::CommunicationMiddleware::Enum& connection
+) {
     setParticipantId(participantId);
-    setEndpointAddress(endpointAddress);
+    setConnection(connection);
     setArbitrationStatus(arbitrationStatus);
 }
 
@@ -138,7 +183,7 @@ void ProviderArbitrator::setArbitrationListener(IArbitrationListener *listener){
     listenerSemaphore.release(1);
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful){
         listener->setParticipantId(participantId);
-        listener->setEndpointAddress(endpointAddress);
+        listener->setConnection(connection);
         listener->setArbitrationStatus(arbitrationStatus);
     }
 }

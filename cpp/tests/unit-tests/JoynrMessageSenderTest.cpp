@@ -92,7 +92,7 @@ typedef JoynrMessageSenderTest JoynrMessageSenderDeathTest;
 TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     MockDispatcher mockDispatcher;
-    QSharedPointer<MockMessaging> messagingStubQsp(new MockMessaging());
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
     Request request;
     request.setMethodName("methodName");
@@ -112,7 +112,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
                 request
     );
 
-    EXPECT_CALL( *(messagingStubQsp.data()), transmit(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
+    EXPECT_CALL( *(messagingStubQsp.data()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),
                                             qosSettings));
 
@@ -124,8 +124,8 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death){
 
     MockDispatcher mockDispatcher;
-    QSharedPointer<MockMessaging> messagingStubQsp(new MockMessaging());
-    EXPECT_CALL(*(messagingStubQsp.data()), transmit(_,_)).Times(0);
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
+    EXPECT_CALL(*(messagingStubQsp.data()), route(_,_)).Times(0);
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -138,7 +138,7 @@ TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death)
 TEST_F(JoynrMessageSenderTest, sendReply_normal){
 
     MockDispatcher mockDispatcher;
-    QSharedPointer<MockMessaging> messagingStubQsp(new MockMessaging());
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -149,7 +149,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     JoynrMessage message = messageFactory.createReply(senderID,receiverID, qosSettings, reply);
 
 
-    EXPECT_CALL(*(messagingStubQsp.data()), transmit(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
+    EXPECT_CALL(*(messagingStubQsp.data()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),
                                             qosSettings));
 
@@ -159,7 +159,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
 TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 
     MockDispatcher mockDispatcher;
-    QSharedPointer<MockMessaging> messagingStubQsp(new MockMessaging());
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
     qint64 period = 2000;
     qint64 validity = 100000;
@@ -174,7 +174,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     JoynrMessage message = messageFactory.createSubscriptionRequest(senderID,receiverID, qosSettings, subscriptionRequest);
 
 
-    EXPECT_CALL(*messagingStubQsp, transmit(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
+    EXPECT_CALL(*messagingStubQsp, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
                                                   Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),
                                             qosSettings));
 
@@ -189,9 +189,9 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 
     MockDispatcher mockDispatcher;
-    QSharedPointer<MockMessaging> messagingStubQsp(new MockMessaging());
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
     QVariant payload = QVariant("subscriptionReply");
-    EXPECT_CALL(*(messagingStubQsp.data()), transmit(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
+    EXPECT_CALL(*(messagingStubQsp.data()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(payload))),
                                             qosSettings));
 
@@ -206,7 +206,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 TEST_F(JoynrMessageSenderTest, sendPublication_normal){
 
     MockDispatcher mockDispatcher;
-    QSharedPointer<MockMessaging> messagingStubQsp(new MockMessaging());
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -215,7 +215,7 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     publication.setResponse("publication");
     JoynrMessage message = messageFactory.createSubscriptionPublication(senderID,receiverID, qosSettings, publication);
 
-    EXPECT_CALL(*(messagingStubQsp.data()), transmit(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
+    EXPECT_CALL(*(messagingStubQsp.data()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
                                                       Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),
                                                 qosSettings));
 

@@ -38,6 +38,8 @@ import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
 import static org.eclipse.xtext.util.Files.*
+import java.util.Map
+import com.google.common.collect.Sets
 
 class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
@@ -130,5 +132,13 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 
         return file.location.toString
     }
+    
+	override setParameters(Map<String,String> parameter) {
+		// do nothing
+	}
+	
+	override supportedParameters() {
+		Sets::newHashSet();
+	}
 	
 }

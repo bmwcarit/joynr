@@ -44,15 +44,15 @@ public abstract class JoynrInvocationHandler implements InvocationHandler {
                                                                                      JsonMappingException, IOException,
                                                                                      IllegalAccessException, Throwable;
 
-    protected abstract Object sendSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
-                                                                          JoynrSendBufferFullException,
-                                                                          JoynrMessageNotSentException,
-                                                                          JsonGenerationException,
-                                                                          JsonMappingException, IOException,
-                                                                          InstantiationException,
-                                                                          IllegalAccessException,
-                                                                          IllegalArgumentException,
-                                                                          InterruptedException, Throwable;
+    protected abstract Object executeSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
+                                                                             JoynrSendBufferFullException,
+                                                                             JoynrMessageNotSentException,
+                                                                             JsonGenerationException,
+                                                                             JsonMappingException, IOException,
+                                                                             InstantiationException,
+                                                                             IllegalAccessException,
+                                                                             IllegalArgumentException,
+                                                                             InterruptedException, Throwable;
 
     protected abstract <T> Object executeAsyncMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
                                                                                   JoynrMessageNotSentException,
@@ -68,7 +68,7 @@ public abstract class JoynrInvocationHandler implements InvocationHandler {
         if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeSubscriptionMethod(method, args);
         } else if (JoynrSyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
-            return sendSyncMethod(method, args);
+            return executeSyncMethod(method, args);
         } else if (JoynrAsyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeAsyncMethod(method, args);
         } else {

@@ -28,8 +28,6 @@ namespace joynr {
 namespace system { class Address; }
 class IMessaging;
 
-    typedef Directory<QString, joynr::system::Address > MessagingEndpointDirectory;
-    typedef IDirectory<QString, joynr::system::Address > IMessagingEndpointDirectory;
     typedef Directory<QString, IMessaging > MessageStubDirectory;
 
 

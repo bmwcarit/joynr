@@ -159,8 +159,12 @@ void Directory<Key, T>::add(const Key &keyId, T* value, qint64 ttl_ms){
 
 template <typename Key, typename T>
 void Directory<Key, T>::add(const Key &keyId, QSharedPointer < T > value, qint64 ttl_ms){
-    QMutexLocker locker(&mutex);
-    callbackMap.insert(keyId,value);
+    // Insert the value
+    {
+        QMutexLocker locker(&mutex);
+        callbackMap.insert(keyId,value);
+    }
+
     // make a removerRunnable and shedule it to remove the entry after ttl!
     RemoverRunnable<Key, T>* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
     callBackRemoverScheduler.schedule(removerRunnable, ttl_ms);
@@ -211,10 +215,11 @@ public:
 
 template <typename Key>
 void RemoverRunnable<Key, IReplyCaller>::run() {
-//    LOG_TRACE(logger, "Calling Directory<Key,IReplyCaller>" );
     QSharedPointer<IReplyCaller> value = directory->lookup(keyId);
-    value->timeOut();
-    directory->remove(keyId);
+    if (!value.isNull()) {
+         value->timeOut();
+         directory->remove(keyId);
+    }
 }
 
 template <typename Key>

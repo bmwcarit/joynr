@@ -61,6 +61,7 @@ import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -70,6 +71,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class SubscriptionEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionEnd2EndTest.class);
 
@@ -169,6 +171,7 @@ public class SubscriptionEnd2EndTest {
     }
 
     @Test
+    @Ignore
     @SuppressWarnings("unchecked")
     public void registerSubscriptionAndReceiveUpdates() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
@@ -250,6 +253,7 @@ public class SubscriptionEnd2EndTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Ignore
     public void testOnChangeWithKeepAliveSubscriptionSendsOnChange() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
 
@@ -290,6 +294,7 @@ public class SubscriptionEnd2EndTest {
     }
 
     @SuppressWarnings("unchecked")
+    @Ignore
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
@@ -400,6 +405,7 @@ public class SubscriptionEnd2EndTest {
     }
 
     @SuppressWarnings("unchecked")
+    @Ignore
     @Test
     public void testExpiredOnChangeSubscription() throws InterruptedException {
         SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);

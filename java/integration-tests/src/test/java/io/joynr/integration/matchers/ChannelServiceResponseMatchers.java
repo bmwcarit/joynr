@@ -19,6 +19,8 @@ package io.joynr.integration.matchers;
  * #L%
  */
 
+import io.joynr.messaging.util.Utilities;
+
 import java.util.List;
 
 import org.hamcrest.BaseMatcher;
@@ -47,6 +49,12 @@ public class ChannelServiceResponseMatchers {
                 }
 
                 return false;
+            }
+
+            @Override
+            public void describeMismatch(Object item, Description description) {
+                JsonPath jsonPath = (JsonPath) item;
+                description.appendText(jsonPath.prettyPrint());
             }
 
             @Override
@@ -80,6 +88,38 @@ public class ChannelServiceResponseMatchers {
                 JsonPath jsonPath = (JsonPath) item;
                 List<String> channelIds = jsonPath.getList("name");
                 description.appendText("contains " + channelIds.size() + " channels");
+            }
+
+        };
+    }
+
+    public static Matcher<String> isChannelUrlwithJsessionId(final String baseUrl,
+                                                             final String channelId,
+                                                             final String sessionIdName) {
+
+        return new BaseMatcher<String>() {
+
+            @Override
+            public boolean matches(Object item) {
+
+                String url = (String) item;
+
+                if (!Utilities.isSessionEncodedInUrl(url, sessionIdName)) {
+                    return false;
+                }
+
+                String urlWithoutJsessionid = Utilities.getUrlWithoutJsessionId(url, sessionIdName);
+                if (!urlWithoutJsessionid.equals(baseUrl + "channels/" + channelId + "/")) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("starts with '" + baseUrl + "channels/" + channelId + "/;jsessionid=<sessionid>"
+                        + "'");
             }
 
         };

@@ -75,7 +75,7 @@ public class JoynrAndroidExampleActivity extends Activity {
         new Thread(new Runnable() {
             public void run() {
                 ((JoynrAndroidExampleApplication) getApplication()).getJoynAndroidExampleLauncher()
-                                                                  .createProxyAndGetLocation();
+                                                                   .createProxyAndGetLocation();
             }
         }).start();
 

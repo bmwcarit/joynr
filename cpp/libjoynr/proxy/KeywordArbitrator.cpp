@@ -17,46 +17,68 @@
  * #L%
  */
 #include "joynr/KeywordArbitrator.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
-#include "joynr/ICapabilities.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/ProviderQosRequirements.h"
 #include "joynr/types/CustomParameter.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/RequestStatus.h"
 
 #include <cassert>
 
 namespace joynr {
 
-KeywordArbitrator::KeywordArbitrator(const QString& domain, const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub, const DiscoveryQos &discoveryQos)
-    :     ProviderArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos),
-      keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue()),
+KeywordArbitrator::KeywordArbitrator(
+        const QString& domain,
+        const QString& interfaceName,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos &discoveryQos
+) :
+    ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+    keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue()),
     logger(joynr_logging::Logging::getInstance()->getLogger("KArb", "KeywordArbitrator"))
 {
 }
 
 
-void KeywordArbitrator::attemptArbitration()
-{
-    receiveCapabilitiesLookupResults(
-                capabilitiesStub->lookup(domain,
-                                         interfaceName,
-                                         types::ProviderQosRequirements(),
-                                         discoveryQos));
-
+void KeywordArbitrator::attemptArbitration() {
+    joynr::RequestStatus status;
+    QList<joynr::system::DiscoveryEntry> result;
+    discoveryProxy.lookup(
+                status,
+                result,
+                domain,
+                interfaceName,
+                systemDiscoveryQos
+    );
+    if(status.successful()) {
+        receiveCapabilitiesLookupResults(result);
+    } else {
+        LOG_ERROR(
+                    logger,
+                    QString("Unable to lookup provider (domain: %1, interface: %2) "
+                            "from discovery. Status code: %3."
+                    )
+                    .arg(domain)
+                    .arg(interfaceName)
+                    .arg(status.getCode().toString())
+        );
+    }
 }
 
-void KeywordArbitrator::receiveCapabilitiesLookupResults(const QList<CapabilityEntry> capabilityEntries){
+void KeywordArbitrator::receiveCapabilitiesLookupResults(
+        const QList<joynr::system::DiscoveryEntry>& discoveryEntries
+) {
     // Check for an empty list of results
-    if (capabilityEntries.size() == 0) {
+    if (discoveryEntries.size() == 0) {
         return;
     }
 
     // Loop through the result list
-    QListIterator<CapabilityEntry> capabilitiesIterator(capabilityEntries);
-    while (capabilitiesIterator.hasNext()) {
-        CapabilityEntry capEntry = capabilitiesIterator.next();
-        types::ProviderQos providerQos = capEntry.getQos();
-        LOG_TRACE(logger,"Looping over capabilitiesEntry: " + capEntry.toString());
+    QListIterator<joynr::system::DiscoveryEntry> discoveryEntriesIterator(discoveryEntries);
+    while (discoveryEntriesIterator.hasNext()) {
+        joynr::system::DiscoveryEntry discoveryEntry = discoveryEntriesIterator.next();
+        types::ProviderQos providerQos = discoveryEntry.getQos();
+        LOG_TRACE(logger,"Looping over capabilitiesEntry: " + discoveryEntry.toString());
 
         // Check that the provider supports onChange subscriptions if this was requested
         if ( discoveryQos.getProviderMustSupportOnChange() &&  !providerQos.getSupportsOnChangeSubscriptions()) {
@@ -70,12 +92,16 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(const QList<CapabilityE
             types::CustomParameter parameter = parameterIterator.next();
             QString name = parameter.getName();
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
-                QString res = capEntry.getParticipantId();
+                QString res = discoveryEntry.getParticipantId();
                 LOG_TRACE(logger,"setting res to " + res);
-                //TODO decide which endpointAddress to choose
-                assert(capEntry.getEndpointAddresses().size()>0);
-                QSharedPointer<joynr::system::Address> endpointAddressResult = capEntry.getEndpointAddresses().first();
-                updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res, endpointAddressResult);
+                joynr::system::CommunicationMiddleware::Enum preferredConnection(
+                        selectPreferredCommunicationMiddleware(discoveryEntry.getConnections())
+                );
+                updateArbitrationStatusParticipantIdAndAddress(
+                            ArbitrationStatus::ArbitrationSuccessful,
+                            res,
+                            preferredConnection
+                );
                 return;
             }
         }

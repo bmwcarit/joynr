@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>android</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
@@ -61,11 +61,21 @@
 					<artifactId>xml-apis</artifactId>
 					<groupId>xml-apis</groupId>
 				</exclusion>
+				<!--
+					Must exclude httpclient here to avoid duplicate file errors when
+					building the apk, because we are using the android port
+					httpclient-android of httpclient.
+				 -->
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-		
-
-
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-android</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.google.android</groupId>
 			<artifactId>android</artifactId>

@@ -33,7 +33,6 @@ import java.util.List;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,15 +77,14 @@ public class ArbitrationTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                assert (arguments[4] instanceof CapabilitiesCallback);
-                ((CapabilitiesCallback) arguments[4]).processCapabilitiesReceived(capabilitiesList);
+                assert (arguments[3] instanceof CapabilitiesCallback);
+                ((CapabilitiesCallback) arguments[3]).processCapabilitiesReceived(capabilitiesList);
                 return null;
             }
-        }).when(capabilitiesSource).getCapabilities(Mockito.eq(domain),
-                                                    Mockito.eq(interfaceName),
-                                                    Mockito.<ProviderQosRequirements> any(),
-                                                    Mockito.<DiscoveryQos> any(),
-                                                    Mockito.<CapabilitiesCallback> any());
+        }).when(capabilitiesSource).lookup(Mockito.eq(domain),
+                                           Mockito.eq(interfaceName),
+                                           Mockito.<DiscoveryQos> any(),
+                                           Mockito.<CapabilitiesCallback> any());
 
     }
 

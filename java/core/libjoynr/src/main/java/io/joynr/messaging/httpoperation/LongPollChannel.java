@@ -30,6 +30,7 @@ import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
@@ -45,7 +46,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -83,6 +83,7 @@ public class LongPollChannel {
     protected int statusCode;
     private String statusText;
     private RequestConfig defaultRequestConfig;
+    private HttpRequestFactory httpRequestFactory;
 
     // CHECKSTYLE:OFF
     public LongPollChannel(CloseableHttpClient httpclient,
@@ -93,7 +94,8 @@ public class LongPollChannel {
                            MessagingSettings settings,
                            HttpConstants httpConstants,
                            String channelId,
-                           String receiverId) {
+                           String receiverId,
+                           HttpRequestFactory httpRequestFactory) {
         // CHECKSTYLE:ON
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
@@ -103,6 +105,7 @@ public class LongPollChannel {
         this.settings = settings;
         this.httpConstants = httpConstants;
         this.receiverId = receiverId;
+        this.httpRequestFactory = httpRequestFactory;
     }
 
     /**
@@ -110,9 +113,8 @@ public class LongPollChannel {
      * order to reconnect channel
      */
     public Void longPollLoop() throws JoynrShutdownException {
-        logger.debug("LongPollingCallable OPENING CHANNEL: {} ", id);
+        logger.debug("LongPollingChannel OPENING CHANNEL: {} ", id);
         try {
-            // Long Polling Loop
             while (true) {
                 // start long poll if it has not been disabled.
                 // Checking the disable switch and request creation has
@@ -147,7 +149,7 @@ public class LongPollChannel {
             }
         } finally {
             // shutdown();
-            logger.info("LongPollingCallable CHANNEL: " + id + " long poll loop exited");
+            logger.info("LongPollingChannel CHANNEL: " + id + " long poll loop exited");
         }
     }
 
@@ -239,7 +241,7 @@ public class LongPollChannel {
 
         // the response body could contain multiple json objects
         List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
-        logger.info("LongPollingCallable CHANNEL: {} messages received: {}", listOfJsonStrings.size());
+        logger.info("LongPollingChannel CHANNEL: {} messages received: {}", listOfJsonStrings.size());
 
         // Tries to parse each message as a JoynrMessage or MessageWrapper
         for (String json : listOfJsonStrings) {
@@ -250,7 +252,7 @@ public class LongPollChannel {
                     messageReceiver.receive(message);
 
                 } else {
-                    logger.warn("LongPollingCallable CHANNEL: {} message was null", id);
+                    logger.warn("LongPollingChannel CHANNEL: {} message was null", id);
                 }
                 continue;
             } catch (JsonParseException e) {
@@ -274,7 +276,7 @@ public class LongPollChannel {
             } catch (IOException e) {
             }
         }
-        logger.debug("LongPollingCallable CHANNEL: {} SHUT DOWN", id);
+        logger.debug("LongPollingChannel CHANNEL: {} SHUT DOWN", id);
     }
 
     public void resume() {
@@ -316,7 +318,7 @@ public class LongPollChannel {
     }
 
     public void setChannelUrl(String channelUrl) {
-        this.httpget = new HttpGet(channelUrl);
+        this.httpget = httpRequestFactory.createHttpGet(URI.create(channelUrl));
         Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
         httpget.setConfig(requestConfigBuilder.build());
         httpget.setHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);

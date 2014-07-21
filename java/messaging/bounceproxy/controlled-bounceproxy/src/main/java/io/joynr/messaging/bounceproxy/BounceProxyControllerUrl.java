@@ -52,9 +52,9 @@ public class BounceProxyControllerUrl {
     public BounceProxyControllerUrl(@Named(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_CONTROLLER_BASE_URL) final String baseUrl,
                                     @Named(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_ID) final String bounceProxyId) {
         if (!baseUrl.endsWith(URL_PATH_SEPARATOR)) {
-            this.baseUrl = baseUrl + URL_PATH_SEPARATOR;
+            this.baseUrl = baseUrl + URL_PATH_SEPARATOR + "bounceproxies/";
         } else {
-            this.baseUrl = baseUrl;
+            this.baseUrl = baseUrl + "bounceproxies/";
         }
 
         this.bounceProxyId = bounceProxyId;

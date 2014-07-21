@@ -30,6 +30,7 @@
 #include "joynr/Util.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/SubscriptionUtil.h"
 
@@ -112,6 +113,27 @@ PublicationManager::~PublicationManager() {
     }
 }
 
+PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThreads)
+    : publications(),
+      subscriptionId2SubscriptionRequest(),
+      subscriptionLock(),
+      publishingThreadPool(),
+      delayedScheduler(scheduler),
+      shutDownMutex(),
+      shuttingDown(false),
+      subscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()),
+      queuedSubscriptionRequests(),
+      queuedSubscriptionRequestsMutex(),
+      currentScheduledPublications(),
+      currentScheduledPublicationsMutex()
+{
+
+    publishingThreadPool.setMaxThreadCount(maxThreads);
+    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
+    qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
+    loadSavedSubscriptionRequestsMap();
+}
+
 PublicationManager::PublicationManager(int maxThreads)
     : publications(),
       subscriptionId2SubscriptionRequest(),
@@ -120,7 +142,7 @@ PublicationManager::PublicationManager(int maxThreads)
       delayedScheduler(NULL),
       shutDownMutex(),
       shuttingDown(false),
-      subscriptionRequestStorageFileName("SubscriptionRequests.persist"),
+      subscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()),
       queuedSubscriptionRequests(),
       queuedSubscriptionRequestsMutex(),
       currentScheduledPublications(),
@@ -132,6 +154,10 @@ PublicationManager::PublicationManager(int maxThreads)
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
     loadSavedSubscriptionRequestsMap();
+}
+
+bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0){
+    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() && qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
 }
 
 void PublicationManager::add(
@@ -173,10 +199,13 @@ void PublicationManager::add(
         QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
+
         // check for a valid publication end date
-        if(publicationEndDelay > 0) {
-            delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
-            LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+        if(!isSubscriptionExpired(qos)) {
+            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
+                delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
+                LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+            }
             {
                 QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
                 currentScheduledPublications.append(subscriptionId);
@@ -285,7 +314,7 @@ void PublicationManager::restore(const QString& providerId,
     QList<SubscriptionRequestInformation*> subscriptions = queuedSubscriptionRequests.values(providerId);
 
     foreach (SubscriptionRequestInformation* requestInfo, subscriptions) {
-        if (requestInfo->getQos()->getExpiryDate() > QDateTime::currentMSecsSinceEpoch()){
+        if (!isSubscriptionExpired(requestInfo->getQos())){
             LOG_DEBUG(logger,
                       QString("Restoring subscription for provider: %1 %2")
                         .arg(providerId)
@@ -321,7 +350,7 @@ void PublicationManager::saveSubscriptionRequestsMap() {
         QReadLocker locker(&subscriptionLock);
 
         foreach (SubscriptionRequestInformation* requestInfo, subscriptionId2SubscriptionRequest) {
-            if(requestInfo->getQos()->getExpiryDate() > now.toMSecsSinceEpoch()) {
+            if(!isSubscriptionExpired(requestInfo->getQos())) {
                 subscriptionList.append( QVariant::fromValue(*requestInfo) );
             }
         }
@@ -354,7 +383,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(){
         SubscriptionRequestInformation* requestInfo = subscriptionList.takeFirst();
 
         // Add the subscription if it is still valid
-        if (requestInfo->getQos()->getExpiryDate() > now.toMSecsSinceEpoch()){
+        if (!isSubscriptionExpired(requestInfo->getQos())){
             QString providerId = requestInfo->getProviderId();
             queuedSubscriptionRequests.insertMulti(providerId, requestInfo);
             LOG_DEBUG(logger, QString("Queuing subscription Request: %1 : %2")
@@ -508,7 +537,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     sendPublication(subscriptionId, subscriptionRequest, response);
 
     // Reschedule the next poll
-    if (publicationInterval > 0 && qos->getExpiryDate() - now > publicationInterval ) {
+    if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
         LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(publicationInterval));
         delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
                                    publicationInterval);

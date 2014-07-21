@@ -2,7 +2,6 @@ package io.joynr.integration.matchers;
 
 /*
  * #%L
- * joynr::java::messaging::service-common
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
@@ -20,29 +19,30 @@ package io.joynr.integration.matchers;
  * #L%
  */
 
+import io.joynr.messaging.util.Utilities;
+
 import java.util.List;
+
+import joynr.JoynrMessage;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import com.jayway.restassured.path.json.JsonPath;
-
 public class MessagingServiceResponseMatchers {
 
-    public static Matcher<List<String>> containsMessage(final String msgId) {
+    public static Matcher<List<JoynrMessage>> containsMessage(final String msgId) {
 
-        return new BaseMatcher<List<String>>() {
+        return new BaseMatcher<List<JoynrMessage>>() {
 
             @Override
             public boolean matches(Object item) {
 
                 @SuppressWarnings("unchecked")
-                List<String> messages = (List<String>) item;
+                List<JoynrMessage> messages = (List<JoynrMessage>) item;
 
-                for (String message : messages) {
-                    JsonPath jsonMessage = new JsonPath(message);
-                    String msgIdInJson = jsonMessage.getString("header.msgId");
+                for (JoynrMessage message : messages) {
+                    String msgIdInJson = message.getId();
 
                     if (msgIdInJson != null && msgIdInJson.equals(msgId)) {
                         return true;
@@ -56,6 +56,31 @@ public class MessagingServiceResponseMatchers {
             @Override
             public void describeTo(Description description) {
                 description.appendText("contains message ID '" + msgId + "'");
+            }
+
+        };
+    }
+
+    public static Matcher<String> isMessageUrlwithJsessionId(final String baseUrl,
+                                                             final String msgId,
+                                                             final String jsessionId,
+                                                             final String sessionIdName) {
+
+        return new BaseMatcher<String>() {
+
+            @Override
+            public boolean matches(Object item) {
+                String url = (String) item;
+                return url.equals(getExpectedUrl());
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("equals '" + getExpectedUrl() + "'");
+            }
+
+            private String getExpectedUrl() {
+                return Utilities.getSessionEncodedUrl(baseUrl + "messages/" + msgId, sessionIdName, jsessionId);
             }
 
         };

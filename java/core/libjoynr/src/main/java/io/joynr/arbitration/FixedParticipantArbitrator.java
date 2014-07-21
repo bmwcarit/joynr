@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package io.joynr.arbitration;
  * #L%
  */
 
+import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.endpoints.EndpointAddressBase;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
@@ -46,13 +46,24 @@ public class FixedParticipantArbitrator extends Arbitrator {
     public void startArbitration() {
         participantId = discoveryQos.getCustomParameter("fixedParticipantId").toString();
         arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
-        localCapabilitiesDirectory.getCapabilities(participantId, discoveryQos, callback);
+        localCapabilitiesDirectory.lookup(participantId, discoveryQos, new CapabilityCallback() {
+
+            @Override
+            public void processCapabilityReceived(@CheckForNull CapabilityEntry capability) {
+                selectProvider(capability);
+            }
+
+            @Override
+            public void onError(Throwable exception) {
+                FixedParticipantArbitrator.this.onError(exception);
+            }
+        });
     }
 
-    protected void selectProvider(@CheckForNull final Collection<CapabilityEntry> capabilities) {
+    protected void selectProvider(@CheckForNull final CapabilityEntry capability) {
 
-        if (capabilities != null && capabilities.size() == 1) {
-            List<EndpointAddressBase> endpointAddress = capabilities.iterator().next().getEndpointAddresses();
+        if (capability != null) {
+            List<EndpointAddressBase> endpointAddress = capability.getEndpointAddresses();
             ;
             arbitrationResult.setEndpointAddress(endpointAddress);
             arbitrationResult.setParticipantId(participantId);

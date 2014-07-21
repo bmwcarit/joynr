@@ -152,8 +152,11 @@ void DelayedScheduler::run() {
         QTimer* timer = reinterpret_cast<QTimer*>(sender());
         runnable = runnables.take(timer);
         timer->deleteLater();
-        executeRunnable(runnable);
     }
+
+    // executeRunnable does not require a mutex lock
+    executeRunnable(runnable);
+
     // LOG_TRACE(logger, "run: leaving...");
 }
 

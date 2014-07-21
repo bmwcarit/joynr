@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ package io.joynr.arbitration;
  * #L%
  */
 
+import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 
 import java.util.Collection;
 
+import javax.annotation.CheckForNull;
+
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,12 +62,21 @@ public class HighestPriorityArbitrator extends Arbitrator {
         arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
         notifyArbitrationStatusChanged();
 
-        ProviderQosRequirements providerQosRequirements = new ProviderQosRequirements();
-        localCapabilitiesDirectory.getCapabilities(domain,
-                                                   interfaceName,
-                                                   providerQosRequirements,
-                                                   discoveryQos,
-                                                   callback);
+        localCapabilitiesDirectory.lookup(domain, interfaceName, discoveryQos, new CapabilitiesCallback() {
+
+            @Override
+            public void processCapabilitiesReceived(@CheckForNull Collection<CapabilityEntry> capabilities) {
+                // when using javax.annotations.NonNull annotation on capablities parameter it will
+                // cause a NoSuchMethodError
+                assert (capabilities != null);
+                selectProvider(capabilities);
+            }
+
+            @Override
+            public void onError(Throwable exception) {
+                HighestPriorityArbitrator.this.onError(exception);
+            }
+        });
 
     }
 

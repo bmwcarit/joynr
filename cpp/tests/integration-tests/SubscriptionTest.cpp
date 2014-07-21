@@ -23,14 +23,12 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/ICommunicationManager.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -38,6 +36,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/types/GpsLocation.h"
 
@@ -56,7 +55,7 @@ ACTION_P(ReleaseSemaphore,semaphore)
 class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
-        mockMessaging(new MockMessaging()),
+        mockMessageRouter(new MockMessageRouter()),
         mockCallback(new MockCallback<types::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
@@ -67,7 +66,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(mockMessaging),
+        messageSender(mockMessageRouter),
         dispatcher(&messageSender),
         subscriptionManager(NULL),
         publicationManager(NULL)
@@ -75,7 +74,7 @@ public:
     }
 
     void SetUp(){
-        QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager();
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
@@ -88,7 +87,7 @@ public:
     }
 
 protected:
-    QSharedPointer<MockMessaging> mockMessaging;
+    QSharedPointer<MockMessageRouter> mockMessageRouter;
     QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;

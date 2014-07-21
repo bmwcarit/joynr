@@ -350,8 +350,8 @@ public class DispatcherTest {
     }
 
     @Test
-    public void requestReplyTtl() throws JoynrMessageNotSentException, JoynrSendBufferFullException,
-                                 JsonGenerationException, JsonMappingException, IOException {
+    public void requestReplyRoundtrip() throws JoynrMessageNotSentException, JoynrSendBufferFullException,
+                                       JsonGenerationException, JsonMappingException, IOException {
         TestRequestCaller testResponder = new TestRequestCaller(1);
         dispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
         ReplyCaller replyCaller = mock(ReplyCaller.class);
@@ -363,8 +363,8 @@ public class DispatcherTest {
                                        jsonRequest1,
                                        TIME_TO_LIVE);
 
-        assertEquals(1, messageSenderReceiverMock.getSentMessages().size());
-        testResponder.assertAllPayloadsReceived(TIME_OUT_MS);
+        testResponder.assertAllPayloadsReceived(20);
+        assertEquals(2, messageSenderReceiverMock.getSentMessages().size());
 
     }
 }

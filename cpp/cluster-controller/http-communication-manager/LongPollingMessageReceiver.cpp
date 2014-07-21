@@ -21,11 +21,14 @@
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
-#include "cluster-controller/http-communication-manager/IMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
 #include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/system/ChannelAddress.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/JoynrMessage.h"
 
 #include <algorithm>
 
@@ -39,19 +42,19 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const BounceProxyUrl& bounceProxyUrl,
         const QString& channelId,
         const QString& receiverId,
-        IMessageReceiver* messageReceiver,
         const LongPollingMessageReceiverSettings &settings,
         QSemaphore *channelCreatedSemaphore,
-        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory)
+        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+        QSharedPointer<MessageRouter> messageRouter)
     : bounceProxyUrl(bounceProxyUrl),
       channelId(channelId),
       receiverId(receiverId),
       settings(settings),
       interruptedMutex(),
       interrupted(false),
-      messageReceiver(messageReceiver),
       channelUrlDirectory(channelUrlDirectory),
-      channelCreatedSemaphore(channelCreatedSemaphore)
+      channelCreatedSemaphore(channelCreatedSemaphore),
+      messageRouter(messageRouter)
 {
 }
 
@@ -161,7 +164,33 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 }
 
 void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& jsonObject){
-    messageReceiver->serializedMessageReceived(jsonObject);
+    JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
+    if (msg->getType().isEmpty()) {
+        LOG_ERROR(logger, "received empty message - dropping Messages");
+        return;
+    }
+    if(!msg->containsHeaderExpiryDate()) {
+        LOG_ERROR(logger, QString("received message [msgId=%1] without decay time - dropping message")
+                  .arg(msg->getHeaderMessageId())
+        );
+    }
+
+    if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST || msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST){
+        //TODO ca: check if replyTo header info is available?
+        QString replyChannelId = msg->getHeaderReplyChannelId();
+        QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress(replyChannelId));
+        messageRouter->addNextHop(msg->getHeaderFrom(), address);
+    }
+
+    QDateTime expiryDate = msg->getHeaderExpiryDate();
+    // Set the Qos for the reply message
+    qint64 ttl = DispatcherUtils::convertAbsoluteTimeToTtl(expiryDate);
+    MessagingQos qos(ttl);
+
+    // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
+    //TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable, and runnable should delete it.
+    messageRouter->route(*msg, qos);
+    delete msg;
 }
 
 void LongPollingMessageReceiver::checkServerTime()

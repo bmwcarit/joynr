@@ -19,10 +19,15 @@
 #include "joynr/MessagingQos.h"
 #include "QDateTime"
 //#include <JoynrMessaging/messagingqos.h>
-
+#include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
 
 namespace joynr {
+
+// printing MessagingQos with google-test and google-mock
+void PrintTo(const MessagingQos& value, ::std::ostream* os) {
+    *os << joynr::JsonSerializer::serialize(value).constData();
+}
 
 MessagingQos::MessagingQos(const MessagingQos& other)
     : QObject(),
@@ -33,6 +38,7 @@ MessagingQos::MessagingQos(const MessagingQos& other)
 MessagingQos::MessagingQos(qint64 ttl)
     : ttl(ttl)
 {
+    qRegisterMetaType<joynr::MessagingQos>("joynr::MessagingQos");
 }
 
 qint64 MessagingQos::getTtl() const {

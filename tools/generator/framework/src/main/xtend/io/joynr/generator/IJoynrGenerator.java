@@ -20,9 +20,16 @@ package io.joynr.generator;
  * #L%
  */
 
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.xtext.generator.IGenerator;
 
 public interface IJoynrGenerator extends IGenerator {
 
     public String getLanguageId();
+
+    public void setParameters(Map<String, String> parameter);
+
+    public Set<String> supportedParameters();
 }

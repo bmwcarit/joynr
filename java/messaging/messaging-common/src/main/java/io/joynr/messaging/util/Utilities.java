@@ -27,7 +27,7 @@ public class Utilities {
 
     /**
      * return an array of the params, useful for logging in slf4j
-     *
+     * 
      * @param args
      * @return
      */
@@ -36,25 +36,26 @@ public class Utilities {
     }
 
     /**
-     * This method splits the input string into several json objects.
-     * This is needed because Atmosphere sends more than one json in a single response.
+     * This method splits the input string into several json objects. This is
+     * needed because Atmosphere sends more than one json in a single response.
      * <p/>
-     * For example for the input {{test}{test2}}{test3} it would produce the following list:
-     * [{{test}{test2}}, {test3}]
+     * For example for the input {{test}{test2}}{test3} it would produce the
+     * following list: [{{test}{test2}}, {test3}]
      */
     public static List<String> splitJson(String combinedJsonString) {
         List<String> result = Lists.newArrayList();
 
         int numberOfOpeningBraces = 0;
         boolean isInsideString = false;
-        /*A string starts with an unescaped " and ends with an unescaped "
-         *} or { within a string must be ignored.
+        /*
+         * A string starts with an unescaped " and ends with an unescaped "} or
+         * { within a string must be ignored.
          */
         StringBuilder jsonBuffer = new StringBuilder();
         for (int i = 0; i < combinedJsonString.length(); i++) {
             char c = combinedJsonString.charAt(i);
             if (c == '"' && i > 0 && combinedJsonString.charAt(i - 1) != '\\') {
-                //only switch insideString if " is not escaped
+                // only switch insideString if " is not escaped
                 isInsideString = !isInsideString;
             }
             if (c == '{' && !isInsideString) {
@@ -66,7 +67,8 @@ public class Utilities {
             jsonBuffer.append(c);
 
             if (numberOfOpeningBraces == 0 && jsonBuffer.length() != 0) {
-                //Prevent empty strings to be added to the result list in case there are spaces between JSON objects
+                // Prevent empty strings to be added to the result list in case
+                // there are spaces between JSON objects
                 if (jsonBuffer.toString().charAt(0) == '{') {
                     result.add(jsonBuffer.toString());
                 }
@@ -77,4 +79,73 @@ public class Utilities {
         return result;
     }
 
+    /**
+     * Returns whether the session ID is encoded into the URL.
+     * 
+     * @param encodedUrl
+     *            the url to check
+     * @param sessionIdName
+     *            the name of the session ID, e.g. jsessionid
+     * @return
+     */
+    public static boolean isSessionEncodedInUrl(String encodedUrl, String sessionIdName) {
+        int sessionIdIndex = encodedUrl.indexOf(getSessionIdSubstring(sessionIdName));
+        return sessionIdIndex >= 0;
+    }
+
+    /**
+     * Returns the URL without the session encoded into the URL.
+     * 
+     * @param url
+     *            the url to de-code
+     * @param sessionIdName
+     *            the name of the session ID, e.g. jsessionid
+     * @return url without session id information or url, if no session was
+     *         encoded into the URL
+     */
+    public static String getUrlWithoutJsessionId(String url, String sessionIdName) {
+
+        if (isSessionEncodedInUrl(url, sessionIdName)) {
+            return url.substring(0, url.indexOf(getSessionIdSubstring(sessionIdName)));
+        }
+        return url;
+    }
+
+    /**
+     * Returns the session id from a URL. It is expected that the URL contains a
+     * session, which can be checked by calling
+     * {@link Utilities#isSessionEncodedInUrl(String, String)}
+     * 
+     * @param url
+     *            the url to get the session ID from
+     * @param sessionIdName
+     *            the name of the session ID, e.g. jsessionid
+     * @return
+     */
+    public static String getSessionId(String url, String sessionIdName) {
+        String sessionIdSubstring = getSessionIdSubstring(sessionIdName);
+        String sessionId = url.substring(url.indexOf(sessionIdSubstring) + sessionIdSubstring.length());
+
+        if (sessionId.endsWith("/")) {
+            sessionId = sessionId.substring(0, sessionId.length() - 1);
+        }
+
+        return sessionId;
+    }
+
+    private static String getSessionIdSubstring(String sessionIdName) {
+        return ";" + sessionIdName + "=";
+    }
+
+    /**
+     * Returns a url with the session encoded into the URL
+     * 
+     * @param url the URL to encode
+     * @param sessionIdName the name of the session ID, e.g. jsessionid
+     * @param sessionId the session ID
+     * @return
+     */
+    public static String getSessionEncodedUrl(String url, String sessionIdName, String sessionId) {
+        return url + getSessionIdSubstring(sessionIdName) + sessionId;
+    }
 }

@@ -46,7 +46,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 		«ENDIF»
 		«ENDFOR»
 		
-		#include "joynr/InProcessEndpointAddress.h"
+		#include "joynr/InProcessAddress.h"
 		#include "joynr/SubscriptionManager.h"
 		#include "joynr/PublicationManager.h"
 		#include "joynr/SubscriptionCallback.h"
@@ -64,11 +64,11 @@ class InterfaceInProcessConnectorCPPTemplate {
 					joynr::InProcessPublicationSender* inProcessPublicationSender,
 					const QString& proxyParticipantId,
 					const QString& providerParticipantId,
-					QSharedPointer<joynr::InProcessEndpointAddress> endpointAddress
+					QSharedPointer<joynr::InProcessAddress> address
 		) :
 			proxyParticipantId(proxyParticipantId),
 			providerParticipantId(providerParticipantId),
-		    endpointAddress(endpointAddress),
+		    address(address),
 		    subscriptionManager(subscriptionManager),
 		    publicationManager(publicationManager),
 		    inProcessPublicationSender(inProcessPublicationSender)
@@ -88,8 +88,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					joynr::RequestStatus& status,
 					«returnType»& result
 			) {
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -103,8 +103,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					QSharedPointer< joynr::ICallback<«returnType»> > callBack
 			) {
 			    assert(!future.isNull());
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -126,8 +126,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					QSharedPointer<joynr::Future<«returnType»> > future
 			) {
 			    assert(!future.isNull());
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -146,8 +146,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			void «interfaceName»InProcessConnector::«getAttributeName»(
 					QSharedPointer< joynr::ICallback<«returnType»> > callBack
 			) {
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -168,8 +168,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					QSharedPointer< joynr::ICallback<void> > callBack,
 					«returnType» input
 			) {
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -191,8 +191,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					«returnType» input
 			) {
 			    assert(!future.isNull());
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -214,8 +214,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					«returnType» input
 			) {
 			    assert(!future.isNull());
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -234,8 +234,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					joynr::RequestStatus& status,
 					const «returnType»& input
 			) {
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
@@ -268,8 +268,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    			subscriptionQos,
 			    			*subscriptionRequest);
 			    logger->log(DEBUG, "Registered subscription: " + subscriptionRequest->toQString());
-			    assert(!endpointAddress.isNull());
-			    QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    QString subscriptionId = subscriptionRequest->getSubscriptionId();
@@ -323,8 +323,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 				void «interfaceName»InProcessConnector::«methodname»(
 						joynr::RequestStatus& status«parameterList»
 				) {
-					assert(!endpointAddress.isNull());
-					QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+					assert(!address.isNull());
+					QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 					assert(!caller.isNull());
 					QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 					assert(!«serviceInterface.interfaceCaller».isNull());
@@ -334,8 +334,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 				void «interfaceName»InProcessConnector::«methodname»(
 						joynr::RequestStatus& status«outputTypedParamList»«parameterList»
 				) {
-					assert(!endpointAddress.isNull());
-					QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+					assert(!address.isNull());
+					QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 					assert(!caller.isNull());
 					QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 					assert(!«serviceInterface.interfaceCaller».isNull());
@@ -350,8 +350,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					QSharedPointer<joynr::Future<«outputParameter.head»> > future,
 					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
 			) {
-				assert(!endpointAddress.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+				assert(!address.isNull());
+				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(!caller.isNull());
 				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 				assert(!«serviceInterface.interfaceCaller».isNull());
@@ -372,8 +372,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 					QSharedPointer<joynr::Future<«outputParameter.head»> > future,
 					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
 			) {
-				assert(!endpointAddress.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+				assert(!address.isNull());
+				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(!caller.isNull());
 				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 				assert(!«serviceInterface.interfaceCaller».isNull());
@@ -396,8 +396,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
 			) {
-				assert(!endpointAddress.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+				assert(!address.isNull());
+				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(!caller.isNull());
 				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 				assert(!«serviceInterface.interfaceCaller».isNull());
@@ -415,8 +415,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
 			) {
-				assert(!endpointAddress.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+				assert(!address.isNull());
+				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(!caller.isNull());
 				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 				assert(!«serviceInterface.interfaceCaller».isNull());
@@ -438,8 +438,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
 			) {
-				assert(!endpointAddress.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+				assert(!address.isNull());
+				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(!caller.isNull());
 				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 				assert(!«serviceInterface.interfaceCaller».isNull());
@@ -457,8 +457,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
 			) {
-				assert(!endpointAddress.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = endpointAddress->getRequestCaller();
+				assert(!address.isNull());
+				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(!caller.isNull());
 				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 				assert(!«serviceInterface.interfaceCaller».isNull());

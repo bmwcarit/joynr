@@ -25,9 +25,11 @@ import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.info.Channel;
 import io.joynr.messaging.info.ChannelInformation;
 
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -37,6 +39,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -65,6 +68,9 @@ public class ChannelServiceRestAdapter {
 
     @Inject
     private ChannelService channelService;
+
+    @Context
+    HttpServletResponse response;
 
     /**
      * A simple HTML list view of channels. A JSP is used for rendering.
@@ -121,24 +127,40 @@ public class ChannelServiceRestAdapter {
     public Response createChannel(@QueryParam("ccid") String ccid,
                                   @HeaderParam(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID) String atmosphereTrackingId) {
 
-        log.info("CREATE channel for channel ID: {}", ccid);
+        try {
+            log.info("CREATE channel for channel ID: {}", ccid);
 
-        if (ccid == null || ccid.isEmpty())
-            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
+            if (ccid == null || ccid.isEmpty())
+                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
 
-        Channel channel = channelService.getChannel(ccid);
+            Channel channel = channelService.getChannel(ccid);
 
-        if (channel != null) {
-            return Response.ok().header("Location", channel.getLocation().toString()).header("bp",
-                                                                                             channel.getBounceProxy()
-                                                                                                    .getId()).build();
+            if (channel != null) {
+                String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
+
+                return Response.ok()
+                               .entity(encodedChannelLocation)
+                               .header("Location", encodedChannelLocation)
+                               .header("bp", channel.getBounceProxy().getId())
+                               .build();
+            }
+
+            // look for an existing bounce proxy handling the channel
+            channel = channelService.createChannel(ccid, atmosphereTrackingId);
+
+            // TODO error handling
+            String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
+            log.debug("encoded channel URL " + channel.getLocation() + " to " + encodedChannelLocation);
+
+            return Response.created(URI.create(encodedChannelLocation))
+                           .entity(encodedChannelLocation)
+                           .header("bp", channel.getBounceProxy().getId())
+                           .build();
+        } catch (WebApplicationException ex) {
+            throw ex;
+        } catch (Throwable e) {
+            throw new WebApplicationException(e);
         }
-
-        // look for an existing bounce proxy handling the channel
-        channel = channelService.createChannel(ccid, atmosphereTrackingId);
-
-        // TODO error handling
-        return Response.created(channel.getLocation()).header("bp", channel.getBounceProxy().getId()).build();
     }
 
     /**

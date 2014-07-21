@@ -20,14 +20,20 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
-#include "libjoynr/dbus/DbusCapabilitiesStubAdapter.h"
-#include "libjoynr/dbus/DbusMessagingEndpointAddress.h"
-#include "libjoynr/dbus/DBusDispatcherAdapter.h"
+#include "joynr/system/CommonApiDbusAddress.h"
+#include "joynr/DBusMessageRouterAdapter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
 #include "common/dbus/DbusSettings.h"
+#include "joynr/MessageRouter.h"
+#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "joynr/InProcessMessagingAddress.h"
+#include "joynr/MessagingStubFactory.h"
+#include "libjoynr/dbus/DbusMessagingStubFactory.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include "joynr/system/DiscoveryProxy.h"
 
 #include "joynr/Util.h"
 
@@ -45,22 +51,22 @@ LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
     joynrMessageSender(NULL),
     joynrDispatcher(NULL),
     inProcessDispatcher(NULL),
-    joynrDispatcherAdapter(NULL),
+    dbusMessageRouterAdapter(NULL),
     settings(settings),
     libjoynrSettings(NULL),
-    dbusSettings(NULL)
+    dbusSettings(NULL),
+    dispatcherMessagingSkeleton(NULL)
 {
     initializeAllDependencies();
 }
 
 LibJoynrRuntime::~LibJoynrRuntime() {
     delete proxyFactory;
-    delete joynrCapabilitiesSendStub;
     delete inProcessDispatcher;
     delete capabilitiesRegistrar;
     delete joynrMessageSender;
     delete joynrDispatcher;
-    delete joynrDispatcherAdapter;
+    delete dbusMessageRouterAdapter;
     delete libjoynrSettings;
     delete dbusSettings;
     settings->clear();
@@ -74,36 +80,50 @@ void LibJoynrRuntime::initializeAllDependencies() {
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
 
+    QString messagingUuid = Util::createUuid().replace("-", "");
+    QString libjoynrMessagingDomain("local");
+    QString libjoynrMessagingServiceName("io.joynr.libjoynr.Messaging");
+    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
+    QString libjoynrMessagingServiceUrl(libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName + ":" + libjoynrMessagingId);
+    QSharedPointer<joynr::system::Address> libjoynrMessagingAddress(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
+
+    // create messaging stub factory
+    MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
+    messagingStubFactory->registerStubFactory(new DbusMessagingStubFactory());
+    messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
+
+    // create message router
+    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory, libjoynrMessagingAddress));
+
+    // create messaging skeleton using uuid
+    dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingServiceUrl);
+
+    joynrMessageSender = new JoynrMessageSender(messageRouter);
+    joynrDispatcher = new Dispatcher(joynrMessageSender);
+    joynrMessageSender->registerDispatcher(joynrDispatcher);
+
+    // create the inprocess skeleton for the dispatcher
+    dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton> (new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
+    dispatcherAddress = QSharedPointer<joynr::system::Address>(new InProcessMessagingAddress(dispatcherMessagingSkeleton));
+
+
+
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessDispatcher = new InProcessDispatcher();
 
-    // create messaging send stub
-    QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
-    joynrMessagingSendStub = QSharedPointer<IMessaging>(new DbusMessagingStubAdapter(ccMessagingAddress));
-    joynrMessageSender = new JoynrMessageSender(joynrMessagingSendStub);
-    joynrDispatcher = new Dispatcher(joynrMessageSender);
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
-
-    // create capabilities send stub
-    QString ccCapabilitiesAddress(dbusSettings->createClusterControllerCapabilitiesAddressString());
-    joynrCapabilitiesSendStub = new DbusCapabilitiesStubAdapter(ccCapabilitiesAddress);
-
-    // register messaging skeleton using uuid
-    QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingAddress("local:io.joynr.libjoynr.Messaging:libjoynr.messaging.participantid_" + messagingUuid);
-    QSharedPointer<joynr::system::Address> libjoynrMessagingEndpoint(new DbusMessagingEndpointAddress(libjoynrMessagingAddress));
-    joynrDispatcherAdapter = new DBusDispatcherAdapter(*joynrDispatcher, libjoynrMessagingAddress);
-
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    inProcessConnectorFactory = new InProcessConnectorFactory(subscriptionManager, publicationManager, inProcessPublicationSender);
+    inProcessConnectorFactory = new InProcessConnectorFactory(
+                subscriptionManager,
+                publicationManager,
+                inProcessPublicationSender,
+                dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
+    );
     joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
     connectorFactory = new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
-    proxyFactory = new ProxyFactory(joynrCapabilitiesSendStub, libjoynrMessagingEndpoint, connectorFactory, NULL);
-
-    capabilitiesAggregator = QSharedPointer<CapabilitiesAggregator>(new CapabilitiesAggregator(joynrCapabilitiesSendStub, dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)));
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, NULL);
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
@@ -114,15 +134,67 @@ void LibJoynrRuntime::initializeAllDependencies() {
     dispatcherList.append(inProcessDispatcher);
     dispatcherList.append(joynrDispatcher);
 
-    capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList, capabilitiesAggregator, libjoynrMessagingEndpoint, participantIdStorage);
-
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
+
+    discoveryProxy = new LocalDiscoveryAggregator(
+                *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher),
+                systemServicesSettings
+    );
+    QString systemServicesDomain = systemServicesSettings.getDomain();
+    // create connection to parent routing service
+    QSharedPointer<joynr::system::Address> ccMessagingAddress(
+                new system::CommonApiDbusAddress(dbusSettings->getClusterControllerMessagingDomain(),
+                                                 dbusSettings->getClusterControllerMessagingServiceName(),
+                                                 dbusSettings->getClusterControllerMessagingParticipantId())
+    );
+    QString routingProviderParticipantId = systemServicesSettings.getCcRoutingProviderParticipantId();
+
+    DiscoveryQos routingProviderDiscoveryQos;
+    routingProviderDiscoveryQos.setCacheMaxAge(1000);
+    routingProviderDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    routingProviderDiscoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
+    routingProviderDiscoveryQos.setDiscoveryTimeout(50);
+
+    auto routingProxyBuilder = getProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
+    auto routingProxy = routingProxyBuilder
+            ->setRuntimeQos(MessagingQos(5000))
+            ->setCached(false)
+            ->setDiscoveryQos(routingProviderDiscoveryQos)
+            ->build();
+    messageRouter->setParentRouter(routingProxy, ccMessagingAddress, routingProviderParticipantId);
+    delete routingProxyBuilder;
+
+    // setup discovery
+    QString discoveryProviderParticipantId = systemServicesSettings.getCcDiscoveryProviderParticipantId();
+    DiscoveryQos discoveryProviderDiscoveryQos;
+    discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
+    discoveryProviderDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryProviderDiscoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
+    discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
+
+    ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
+            getProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+    discoveryProxy->setDiscoveryProxy(
+                discoveryProxyBuilder
+                ->setRuntimeQos(MessagingQos(5000))
+                ->setCached(false)
+                ->setDiscoveryQos(discoveryProviderDiscoveryQos)
+                ->build()
+    );
+    capabilitiesRegistrar = new CapabilitiesRegistrar(
+                dispatcherList,
+                *discoveryProxy,
+                libjoynrMessagingAddress,
+                participantIdStorage,
+                dispatcherAddress,
+                messageRouter
+    );
 }
 
 void LibJoynrRuntime::unregisterCapability(QString participantId){
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->unregisterCapability(participantId);
+    capabilitiesRegistrar->remove(participantId);
 }
 
 LibJoynrRuntime *LibJoynrRuntime::create(QSettings* settings) {

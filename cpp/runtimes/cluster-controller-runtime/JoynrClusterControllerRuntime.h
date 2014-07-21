@@ -31,31 +31,26 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrRuntime.h"
 
-//needs to be included, so that capabilitiesAggregator can be passed as an ICapabilities to ProxyBuilder
-#include "joynr/CapabilitiesAggregator.h"
-
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
-#include "joynr/DbusCapabilitiesAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 class QCoreApplication;
 class QString;
-class CombinedRunTimeTest;
+class JoynrClusterControllerRuntimeTest;
 
 namespace joynr {
 
 class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
-class InProcessMessagingStub;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
-class ICommunicationManager;
+class IMessageReceiver;
+class IMessageSender;
 class CapabilitiesClient;
 class ICapabilitiesClient;
-class LongPollMessageSerializer;
 class PublicationManager;
 class SubscriptionManager;
 class InProcessDispatcher;
@@ -74,9 +69,11 @@ template<typename Key, typename T> class Directory;
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime {
 public:
 
-    JoynrClusterControllerRuntime(QCoreApplication* app,
-                        QSettings* settings,
-                        ICommunicationManager* communicationManager = NULL
+    JoynrClusterControllerRuntime(
+            QCoreApplication* app,
+            QSettings* settings,
+            IMessageReceiver* messageReceiver = NULL,
+            IMessageSender* = NULL
     );
 
     static JoynrClusterControllerRuntime* create(QSettings* settings);
@@ -91,6 +88,7 @@ public:
     void waitForChannelCreation();
     void deleteChannel();
     void registerRoutingProvider();
+    void registerDiscoveryProvider();
 
 protected:
     void initializeAllDependencies();
@@ -103,15 +101,12 @@ protected:
     IDispatcher* ccDispatcher;
     PublicationManager* publicationManager;
     SubscriptionManager* subscriptionManager;
-    QSharedPointer<IMessaging> joynrMessagingSendStub;
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
-    Directory<QString, joynr::system::Address >* messagingEndpointDirectory;
-    LocalCapabilitiesDirectory* localCapabilitiesDirectory;
+    QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
-    ICapabilities* capabilitiesSkeleton;
     //Reason why CapabilitiesAggregator (CA) has to be a QSP:
     //CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()
     //CA has to be a pointer instead of a reference, because it has to be initialised to NULL (because other members are needed for its constructor)
@@ -120,14 +115,13 @@ protected:
     ClientQCache cache;
     // messageRouter must be shared pointer since it is also registered as
     // joynr::system::Routing provider and register capability expects shared pointer
-    QSharedPointer<MessageRouter> messageRouter;
     QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
-    QSharedPointer<InProcessMessagingSkeleton> ccMessagingSkeleton;
     QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    ICommunicationManager* communicationManager;
-    LongPollMessageSerializer* longpollMessageSerializer;
+    QSharedPointer<IMessageReceiver> messageReceiver;
+    QSharedPointer<IMessageSender> messageSender;
+
     QList<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
@@ -142,14 +136,13 @@ protected:
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
-    DbusCapabilitiesAdapter* ccDbusCapabilitiesAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
     static joynr_logging::Logger* logger;
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
-friend class ::CombinedRunTimeTest;
+friend class ::JoynrClusterControllerRuntimeTest;
 };
 
 

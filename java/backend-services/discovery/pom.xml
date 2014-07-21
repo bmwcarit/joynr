@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>0.6.0</version>
+		<version>0.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -49,12 +49,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-standalone</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

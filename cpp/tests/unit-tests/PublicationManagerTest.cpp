@@ -26,6 +26,7 @@
 #include "joynr/IAttributeListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/LibjoynrSettings.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -60,7 +61,7 @@ inline Matcher<const SubscriptionPublication&> GpsAttributeMatcher() {
 
 TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnables) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::TestRequestInterpreter>("tests/Test");
@@ -106,7 +107,7 @@ TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnab
 
 
 TEST(PublicationManagerTest, stop_publications) {
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
@@ -158,7 +159,7 @@ TEST(PublicationManagerTest, stop_publications) {
 }
 
 TEST(PublicationManagerTest, remove_all_publications) {
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
@@ -200,7 +201,7 @@ TEST(PublicationManagerTest, remove_all_publications) {
 }
 
 TEST(PublicationManagerTest, restore_publications) {
-    QFile::remove("SubscriptionRequests.persist");
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
     qRegisterMetaType<PeriodicSubscriptionQos>("PeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
 
@@ -257,7 +258,7 @@ TEST(PublicationManagerTest, restore_publications) {
 
 TEST(PublicationManagerTest, add_onChangeSubscription) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
@@ -324,10 +325,79 @@ TEST(PublicationManagerTest, add_onChangeSubscription) {
     QThreadSleep::msleep(500);
 }
 
+TEST(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
+    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+
+    // Register the request interpreter that calls the request caller
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
+
+    MockPublicationSender mockPublicationSender;
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+
+    // The attribute will change to this value
+    joynr::types::GpsLocation gpsLocation;
+    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+
+    // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
+    EXPECT_CALL(
+                mockPublicationSender,
+                sendSubscriptionPublication(
+                    _, // sender participant ID
+                    _, // receiver participant ID
+                    _, // messaging QoS
+                    GpsAttributeMatcher() // subscription publication
+                )
+    )
+            .Times(2);
+
+    // Expect calls to register an unregister an attribute listener
+    QString attributeName = "Location";
+    IAttributeListener* attributeListener;
+
+    EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
+            .Times(1)
+            .WillRepeatedly(testing::SaveArg<1>(&attributeListener));
+
+    EXPECT_CALL(*mockTestRequestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
+
+    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    PublicationManager publicationManager;
+
+    //SubscriptionRequest
+    QString senderId = "SenderId";
+    QString receiverId = "ReceiverId";
+    //SubscriptionQos
+    qint64 minInterval_ms = 500;
+    qint64 validity_ms = -1; //no expiry date -> infinite subscription
+    auto qos = QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos(
+                        validity_ms,
+                        minInterval_ms));
+
+    // will be deleted by the publication manager
+    SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
+    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setQos(qos);
+    LOG_DEBUG(logger, "adding request");
+    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+
+    // Sleep so that the first publication is sent
+    QThreadSleep::msleep(50);
+
+    // Fake many attribute changes - but expect only one publication to be sent by this loop
+    for (int i = 0; i < 10; i++) {
+        attributeListener->attributeValueChanged(attributeValue);
+    }
+
+    // Wait for the subscription to finish
+    QThreadSleep::msleep(700);
+
+}
+
 
 TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");
@@ -397,7 +467,7 @@ TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
 
 TEST(PublicationManagerTest, remove_onChangeSubscription) {
     joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
-    QFile::remove("SubscriptionRequests.persist"); //remove stored subscriptions
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>("tests/Test");

@@ -17,12 +17,12 @@
  * #L%
  */
 #include "joynr/QosArbitrator.h"
-#include "joynr/JoynrMessagingEndpointAddress.h"
 
-#include "joynr/ICapabilities.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/system/DiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/RequestStatus.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/types/ProviderQosRequirements.h"
 
 #include <cassert>
 
@@ -33,47 +33,68 @@ using namespace joynr_logging;
 Logger* QosArbitrator::logger = joynr_logging::Logging::getInstance()->getLogger("Arbi", "QosArbitrator");
 
 
-QosArbitrator::QosArbitrator(const QString& domain, const QString& interfaceName, QSharedPointer<ICapabilities> capabilitiesStub, const DiscoveryQos &discoveryQos)
-    : ProviderArbitrator(domain, interfaceName, capabilitiesStub, discoveryQos),
-      keyword( discoveryQos.getCustomParameter("keyword").getValue())
+QosArbitrator::QosArbitrator(
+        const QString& domain,
+        const QString& interfaceName,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const DiscoveryQos &discoveryQos
+) :
+    ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+    keyword(discoveryQos.getCustomParameter("keyword").getValue())
 {
 }
 
 
 void QosArbitrator::attemptArbitration()
 {
-   receiveCapabilitiesLookupResults(
-        capabilitiesStub->lookup(domain,
-                                 interfaceName,
-                                 types::ProviderQosRequirements(),
-                                 discoveryQos
-                                 ));
+    joynr::RequestStatus status;
+    QList<joynr::system::DiscoveryEntry> result;
+    discoveryProxy.lookup(
+                status,
+                result,
+                domain,
+                interfaceName,
+                systemDiscoveryQos
+    );
+    if(status.successful()) {
+        receiveCapabilitiesLookupResults(result);
+    } else {
+        LOG_ERROR(
+                    logger,
+                    QString("Unable to lookup provider (domain: %1, interface: %2) "
+                            "from discovery. Status code: %3."
+                    )
+                    .arg(domain)
+                    .arg(interfaceName)
+                    .arg(status.getCode().toString())
+        );
+    }
 }
 
 
 // Returns true if arbitration was successful, false otherwise
-void QosArbitrator::receiveCapabilitiesLookupResults(const QList<CapabilityEntry> capabilityEntries){
+void QosArbitrator::receiveCapabilitiesLookupResults(
+        const QList<joynr::system::DiscoveryEntry>& discoveryEntries
+) {
     QString res = "";
-    QSharedPointer<joynr::system::Address> endpointAddressResult;
+    joynr::system::CommunicationMiddleware::Enum preferredConnection(joynr::system::CommunicationMiddleware::NONE);
 
     // Check for empty results
-    if (capabilityEntries.size() == 0) return;
+    if (discoveryEntries.size() == 0) return;
 
     qint64 highestPriority = -1;
-    QListIterator<CapabilityEntry> capabilitiesIterator(capabilityEntries);
-    while (capabilitiesIterator.hasNext()) {
-        CapabilityEntry capEntry = capabilitiesIterator.next();
-        types::ProviderQos providerQos = capEntry.getQos();
-        LOG_TRACE(logger,"Looping over capabilitiesEntry: " + capEntry.toString());
+    QListIterator<joynr::system::DiscoveryEntry> discoveryEntriesIterator(discoveryEntries);
+    while (discoveryEntriesIterator.hasNext()) {
+        joynr::system::DiscoveryEntry discoveryEntry = discoveryEntriesIterator.next();
+        types::ProviderQos providerQos = discoveryEntry.getQos();
+        LOG_TRACE(logger,"Looping over capabilitiesEntry: " + discoveryEntry.toString());
         if ( discoveryQos.getProviderMustSupportOnChange() &&  !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
         if ( providerQos.getPriority() > highestPriority) {
-            res = capEntry.getParticipantId();
+            res = discoveryEntry.getParticipantId();
             LOG_TRACE(logger,"setting res to " + res);
-            //TODO decide which endpointAddress to choose
-            assert(capEntry.getEndpointAddresses().size()>0);
-            endpointAddressResult = capEntry.getEndpointAddresses().first();
+            preferredConnection = selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
         }
     }
@@ -82,7 +103,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(const QList<CapabilityEntry
         return;
     }
 
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res, endpointAddressResult);
+    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
 }
 
 

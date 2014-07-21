@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.HashSet;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
-import joynr.types.ProviderQosRequirements;
 import joynr.types.ProviderScope;
 import joynr.vehicle.Gps;
 import joynr.vehicle.GpsAsync;
@@ -65,35 +64,12 @@ public class CapabilitiesStoreTest {
         boolean thrown = false;
         DiscoveryQos discoveryQos = new DiscoveryQos(1000, ArbitrationStrategy.NotSet, 1000);
         try {
-            store.registerCapability(capabilityEntry);
-            store.findCapabilitiesForInterfaceAddress("hello",
-                                                      GpsAsync.INTERFACE_NAME,
-                                                      new ProviderQosRequirements(),
-                                                      discoveryQos);
+            store.add(capabilityEntry);
+            store.lookup("hello", GpsAsync.INTERFACE_NAME, discoveryQos);
         } catch (Exception e) {
             thrown = true;
         }
         Assert.assertTrue(thrown);
-
-    }
-
-    @Test
-    public void testRemoveEntryWithReconstructedInfo() {
-        CapabilitiesStore store = new CapabilitiesStoreImpl();
-        String domain = "testDomain";
-        String participantId = "testparticipantId";
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              GpsAsync.class,
-                                                              participantId,
-                                                              CapabilityScope.LOCALONLY);
-        capabilityEntry.addEndpoint(new JoynrMessagingEndpointAddress("testChannel"));
-        store.registerCapability(capabilityEntry);
-
-        CapabilityEntry capEntryReconstr = new CapabilityEntry(domain,
-                                                               GpsAsync.class,
-                                                               participantId,
-                                                               CapabilityScope.LOCALONLY);
-        Assert.assertTrue(store.removeCapability(capEntryReconstr));
 
     }
 
@@ -119,7 +95,7 @@ public class CapabilitiesStoreTest {
                                                                endpointAddress,
                                                                participantId,
                                                                scope);
-        store.registerCapabilities(Lists.newArrayList(capabilityEntry1, capabilityEntry2));
+        store.add(Lists.newArrayList(capabilityEntry1, capabilityEntry2));
         Assert.assertEquals(2, store.getAllCapabilities().size());
 
     }
@@ -144,9 +120,9 @@ public class CapabilitiesStoreTest {
                                                                GpsAsync.class,
                                                                providerQos,
                                                                endpointAddress,
-                                                               participantId,
+                                                               participantId + "1",
                                                                scope);
-        store.registerCapability(capabilityEntry1);
+        store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
@@ -161,7 +137,7 @@ public class CapabilitiesStoreTest {
 
         CapabilityEntry capEntryFake = new CapabilityEntry(domain, GpsAsync.class, participantId + "Fake", scope);
         capEntryFake.addEndpoint(new JoynrMessagingEndpointAddress("testChannelFake"));
-        store.registerCapability(capEntryFake);
+        store.add(capEntryFake);
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
@@ -171,7 +147,7 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        store.removeCapability(capEntryFake);
+        store.remove(capEntryFake.getParticipantId());
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
@@ -180,9 +156,9 @@ public class CapabilitiesStoreTest {
                                                                NavigationAsync.class,
                                                                providerQos,
                                                                endpointAddress,
-                                                               participantId,
+                                                               participantId + "2",
                                                                scope);
-        store.registerCapability(capabilityEntry2);
+        store.add(capabilityEntry2);
 
         // check if newly created Entry overrides old one
         capabilities = store.getAllCapabilities();
@@ -193,7 +169,7 @@ public class CapabilitiesStoreTest {
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry1));
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry2));
 
-        store.removeCapabilities(Lists.newArrayList(capabilityEntry1, capabilityEntry2));
+        store.remove(Lists.newArrayList(capabilityEntry1.getParticipantId(), capabilityEntry2.getParticipantId()));
         Assert.assertEquals(0, store.getAllCapabilities().size());
         Assert.assertEquals(0, store.findCapabilitiesForEndpointAddress(endpointAddress, discoveryQos).size());
     }
@@ -221,7 +197,7 @@ public class CapabilitiesStoreTest {
                                                                endpointAddress,
                                                                participantId,
                                                                CapabilityScope.LOCALONLY);
-        store.registerCapability(capabilityEntry1);
+        store.add(capabilityEntry1);
         String key1 = store.getInterfaceAddressParticipantKeyForCapability(domain,
                                                                            GpsAsync.INTERFACE_NAME,
                                                                            participantId);
@@ -243,12 +219,12 @@ public class CapabilitiesStoreTest {
         Assert.assertTrue(store.interfaceAddressToCapabilityMapping.get(key2).contains(key1));
         Assert.assertEquals(1, store.participantIdToCapabilityMapping.size());
         Assert.assertTrue(store.participantIdToCapabilityMapping.containsKey(participantId));
-        Assert.assertEquals(1, store.participantIdToCapabilityMapping.get(participantId).size());
-        Assert.assertTrue(store.participantIdToCapabilityMapping.get(participantId).contains(key1));
+        Assert.assertNotNull(store.participantIdToCapabilityMapping.get(participantId));
+        Assert.assertEquals(key1, store.participantIdToCapabilityMapping.get(participantId));
         Assert.assertTrue(store.registeredCapabilitiesTime.containsKey(key1));
         Assert.assertEquals(1, store.registeredCapabilitiesTime.size());
 
-        store.removeCapability(capabilityEntry1);
+        store.remove(capabilityEntry1.getParticipantId());
         Assert.assertTrue(store.capabilityKeyToCapabilityMapping.isEmpty());
         Assert.assertTrue(store.capabilityKeyToEndPointAddressMapping.isEmpty());
         Assert.assertTrue(store.endPointAddressToCapabilityMapping.isEmpty());
@@ -270,20 +246,16 @@ public class CapabilitiesStoreTest {
                                                                GpsAsync.class,
                                                                providerQos,
                                                                endpointAddress,
-                                                               participantId,
+                                                               participantId + "1",
                                                                scope);
-        store.registerCapability(capabilityEntry1);
+        store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        ProviderQosRequirements requestedQos = new ProviderQosRequirements();
         DiscoveryQos discoveryQos = DiscoveryQos.NO_FILTER;
 
-        Collection<CapabilityEntry> newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                                                 GpsAsync.INTERFACE_NAME,
-                                                                                                 requestedQos,
-                                                                                                 discoveryQos);
+        Collection<CapabilityEntry> newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos);
 
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
@@ -295,20 +267,17 @@ public class CapabilitiesStoreTest {
                                                            participantId,
                                                            scope);
 
-        store.registerCapability(capEntryFake);
+        store.add(capEntryFake);
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                     GpsAsync.INTERFACE_NAME,
-                                                                     requestedQos,
-                                                                     discoveryQos);
+        newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos);
 
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        store.removeCapability(capEntryFake);
+        store.remove(capEntryFake.getParticipantId());
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
@@ -316,21 +285,18 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain, GpsAsync.class, participantId + "2", scope);
         capabilityEntry2.addEndpoint(new JoynrMessagingEndpointAddress("testChannel2"));
 
-        store.registerCapability(capabilityEntry2);
+        store.add(capabilityEntry2);
 
         // check if newly created Entry overrides old one
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                     GpsAsync.INTERFACE_NAME,
-                                                                     requestedQos,
-                                                                     discoveryQos);
+        newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos);
         Assert.assertEquals(2, newlyEnteredCaps.size());
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry1));
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry2));
 
-        store.removeCapabilities(Lists.newArrayList(capabilityEntry1, capabilityEntry2));
+        store.remove(Lists.newArrayList(capabilityEntry1.getParticipantId(), capabilityEntry2.getParticipantId()));
         Assert.assertEquals(0, store.getAllCapabilities().size());
         Assert.assertEquals(0, store.findCapabilitiesForEndpointAddress(endpointAddress, discoveryQos).size());
     }
@@ -357,33 +323,28 @@ public class CapabilitiesStoreTest {
                                                                endpointAddress,
                                                                participantId,
                                                                scope);
-        store.registerCapability(capabilityEntry1);
+        store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        ProviderQosRequirements requestedQos = new ProviderQosRequirements();
         DiscoveryQos discoveryQos = DiscoveryQos.NO_FILTER;
 
-        Collection<CapabilityEntry> newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                                                 Gps.INTERFACE_NAME,
-                                                                                                 requestedQos,
-                                                                                                 discoveryQos);
+        Collection<CapabilityEntry> newlyEnteredCaps = store.lookup(domain, Gps.INTERFACE_NAME, discoveryQos);
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        newlyEnteredCaps = store.findCapabilitiesForParticipantId(participantId, discoveryQos);
-        Assert.assertEquals(1, newlyEnteredCaps.size());
-        Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
+        CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos);
+        Assert.assertEquals(capabilityEntry1, newEnteredCapability);
 
         CapabilityEntry capEntryFake = new CapabilityEntry(domain, GpsAsync.class, participantId + "Fake", scope);
         capEntryFake.addEndpoint(new JoynrMessagingEndpointAddress("testChannelFake"));
-        store.registerCapability(capEntryFake);
+        store.add(capEntryFake);
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        store.removeCapability(capEntryFake);
+        store.remove(capEntryFake.getParticipantId());
 
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
@@ -395,21 +356,17 @@ public class CapabilitiesStoreTest {
                                                                endpointAddress2,
                                                                participantId,
                                                                scope);
-        store.registerCapability(capabilityEntry2);
+        store.add(capabilityEntry2);
 
         // check if newly created Entry overrides old one
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        newlyEnteredCaps = store.findCapabilitiesForInterfaceAddress(domain,
-                                                                     Gps.INTERFACE_NAME,
-                                                                     requestedQos,
-                                                                     discoveryQos);
+        newlyEnteredCaps = store.lookup(domain, Gps.INTERFACE_NAME, discoveryQos);
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry2, newlyEnteredCaps.iterator().next());
 
-        newlyEnteredCaps = store.findCapabilitiesForParticipantId(participantId, discoveryQos);
-        Assert.assertEquals(1, newlyEnteredCaps.size());
-        Assert.assertEquals(capabilityEntry2, newlyEnteredCaps.iterator().next());
+        CapabilityEntry newlyEnteredCapability = store.lookup(participantId, discoveryQos);
+        Assert.assertEquals(capabilityEntry2, newlyEnteredCapability);
     }
 }

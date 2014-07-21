@@ -31,7 +31,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -63,14 +62,13 @@ public class HttpClientProvider implements Provider<CloseableHttpClient> {
 
     public CloseableHttpClient createHttpClient(MessagingSettings mySettings, Properties withProperties) {
 
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-
-        connectionManager.setDefaultMaxPerRoute(httpConstants.getHTTP_MAXIMUM_CONNECTIONS_TO_HOST());
-        connectionManager.setMaxTotal(httpConstants.getHTTP_MAXIMUM_CONNECTIONS_TOTAL());
-
+        // Create a HTTP client that uses the default pooling connection manager 
+        // and is configured by system properties
         HttpClientBuilder httpClientBuilder = HttpClients.custom()
                                                          .setDefaultCredentialsProvider(null)
-                                                         .setConnectionManager(connectionManager);
+                                                         .setMaxConnTotal(httpConstants.getHTTP_MAXIMUM_CONNECTIONS_TOTAL())
+                                                         .setMaxConnPerRoute(httpConstants.getHTTP_MAXIMUM_CONNECTIONS_TO_HOST())
+                                                         .useSystemProperties();
 
         String proxyHost = withProperties.getProperty("http.proxyhost");
         if (proxyHost != null) {

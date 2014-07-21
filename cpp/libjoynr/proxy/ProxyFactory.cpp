@@ -21,8 +21,11 @@
 
 namespace joynr {
 
-ProxyFactory::ProxyFactory(ICapabilities* capabilitiesStub, QSharedPointer<joynr::system::Address> messagingEndpointAddress, ConnectorFactory* connectorFactory, IClientCache* cache) :
-    capabilitiesStub(capabilitiesStub),
+ProxyFactory::ProxyFactory(
+        QSharedPointer<joynr::system::Address> messagingEndpointAddress,
+        ConnectorFactory* connectorFactory,
+        IClientCache* cache
+) :
     messagingEndpointAddress(messagingEndpointAddress),
     connectorFactory(connectorFactory),
     cache(cache)

@@ -187,7 +187,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     qt5_use_modules(cluster-controller Core)
 
     target_link_libraries(cluster-controller
-        ${PATCHED_DBUS1_LIBRARIES}
+        ${DBUS1_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         JoynrClusterControllerRuntime
