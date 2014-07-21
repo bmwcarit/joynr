@@ -30,6 +30,7 @@ import io.joynr.messaging.ReceiverStatusListener;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -48,9 +49,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDeleteHC4;
-import org.apache.http.client.methods.HttpGetHC4;
-import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -95,6 +93,7 @@ public class LongPollingChannelLifecycle {
     private CloseableHttpClient httpclient;
     private RequestConfig defaultRequestConfig;
     private Future<Void> longPollingFuture;
+    private HttpRequestFactory httpRequestFactory;
 
     @Inject
     @Nullable
@@ -103,13 +102,15 @@ public class LongPollingChannelLifecycle {
                                        @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                        @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
                                        ObjectMapper objectMapper,
-                                       HttpConstants httpConstants) {
+                                       HttpConstants httpConstants,
+                                       HttpRequestFactory httpRequestFactory) {
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.channelId = channelId;
         this.receiverId = receiverId;
         this.objectMapper = objectMapper;
         this.httpConstants = httpConstants;
+        this.httpRequestFactory = httpRequestFactory;
     }
 
     public synchronized void startLongPolling(final MessageReceiver messageReceiver,
@@ -174,7 +175,7 @@ public class LongPollingChannelLifecycle {
             long serverTime = 0L;
             long localTimeBeforeRequest = System.currentTimeMillis();
 
-            HttpGetHC4 getTime = new HttpGetHC4(url);
+            HttpGet getTime = httpRequestFactory.createHttpGet(URI.create(url));
             getTime.setConfig(defaultRequestConfig);
             response = httpclient.execute(getTime);
 
@@ -244,7 +245,8 @@ public class LongPollingChannelLifecycle {
                                                            settings,
                                                            httpConstants,
                                                            channelId,
-                                                           receiverId);
+                                                           receiverId,
+                                                           httpRequestFactory);
                 }
                 longPolling.setChannelUrl(channelUrl);
 
@@ -342,7 +344,7 @@ public class LongPollingChannelLifecycle {
 
         final String url = settings.getBounceProxyUrl().buildCreateChannelUrl(channelId);
 
-        HttpPostHC4 postCreateChannel = new HttpPostHC4(url.trim());
+        HttpPost postCreateChannel = httpRequestFactory.createHttpPost(URI.create(url.trim()));
         postCreateChannel.setConfig(defaultRequestConfig);
         postCreateChannel.addHeader(httpConstants.getHEADER_X_ATMOSPHERE_TRACKING_ID(), receiverId);
         postCreateChannel.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON());
@@ -461,7 +463,7 @@ public class LongPollingChannelLifecycle {
                 try {
                     // TODO JOYN-1079 need to unregister deleted channel
                     // channelUrlClient.unregisterChannelUrls(channelId);
-                    HttpDeleteHC4 httpDelete = new HttpDeleteHC4(channelUrl);
+                    HttpDelete httpDelete = httpRequestFactory.createHttpDelete(URI.create(channelUrl));
                     response = httpclient.execute(httpDelete);
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == HttpURLConnection.HTTP_OK || statusCode == HttpURLConnection.HTTP_NO_CONTENT) {

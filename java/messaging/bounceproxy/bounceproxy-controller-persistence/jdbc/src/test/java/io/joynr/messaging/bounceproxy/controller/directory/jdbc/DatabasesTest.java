@@ -21,8 +21,6 @@ package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
  */
 
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.bounceproxy.controller.directory.jdbc.BounceProxyDatabase;
-import io.joynr.messaging.bounceproxy.controller.directory.jdbc.ChannelDatabase;
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.Channel;

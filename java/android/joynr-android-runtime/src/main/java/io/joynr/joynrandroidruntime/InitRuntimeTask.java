@@ -19,6 +19,7 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
+import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -78,7 +79,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
             joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
 
-            Injector injectorA = new JoynrInjectorFactory(joynrConfig).createChildInjector();
+            Injector injectorA = new JoynrInjectorFactory(joynrConfig, new AndroidLongPollingMessagingModule()).createChildInjector();
 
             JoynrRuntimeImpl runtime = injectorA.getInstance(JoynrRuntimeImpl.class);
             if (runtime != null) {

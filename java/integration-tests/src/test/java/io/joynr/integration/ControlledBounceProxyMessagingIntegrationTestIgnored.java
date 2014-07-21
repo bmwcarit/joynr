@@ -26,7 +26,7 @@ import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-public class ControlledBounceProxyMessagingIntegrationTest extends AbstractMessagingIntegrationTest {
+public class ControlledBounceProxyMessagingIntegrationTestIgnored extends AbstractMessagingIntegrationTest {
 
     private static Server bounceProxyServerXY;
     private static Server bounceProxyControllerServer;

@@ -24,7 +24,6 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
-import io.joynr.runtime.MessagingServletConfig;
 
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -75,9 +74,9 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public ServletMessageReceiverImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       LocalChannelUrlDirectoryClient channelUrlDirectory,
                                       LongPollingMessageReceiver longPollingReceiver,
-                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
-                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_HOST_PATH) String hostPath,
-                                      @Named(MessagingServletConfig.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
+                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
+                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
+                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
         this.channelId = channelId;
         this.channelUrlDirectory = channelUrlDirectory;
         this.longPollingReceiver = longPollingReceiver;

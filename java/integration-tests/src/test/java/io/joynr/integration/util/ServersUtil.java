@@ -61,12 +61,21 @@ public class ServersUtil {
     private static final Logger logger = LoggerFactory.getLogger(ServersUtil.class);
 
     private static void setBounceProxyUrl() {
+        if (System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL) != null) {
+            // use existing bounceproxy
+            return;
+        }
         String serverUrl = System.getProperties().getProperty("hostPath");
         String bounceProxyUrl = serverUrl + BOUNCEPROXY_CONTEXT + "/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
     }
 
     private static void setDirectoriesUrl() {
+        if (System.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) != null
+                && System.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) != null) {
+            // use existing discovery
+            return;
+        }
         String serverUrl = System.getProperties().getProperty("hostPath");
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
 

@@ -19,6 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
+import io.joynr.messaging.httpoperation.ApacheHttpRequestFactory;
+import io.joynr.messaging.httpoperation.HttpRequestFactory;
 import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
 
 public class LongPollingMessagingModule extends MessagingModule {
@@ -28,5 +30,6 @@ public class LongPollingMessagingModule extends MessagingModule {
         super.configure();
         bind(MessageSender.class).to(MessageSenderImpl.class);
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();
+        bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
     }
 }

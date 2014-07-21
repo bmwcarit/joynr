@@ -9,6 +9,6 @@ joynr makes writing distributed applications easy, as it:
 ... allowing you to focus solely on your application.</b>
 
 
-Have a peek at our [tutorials](wiki/Home) for more information!
+Have a peek at our [tutorials](wiki/Tutorial.md) for more information!
 
 <img src="graphics/joynr-logo.png" alt="joynr" style="width: 100px;"/>

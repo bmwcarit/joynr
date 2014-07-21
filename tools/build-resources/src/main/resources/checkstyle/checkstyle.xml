@@ -24,57 +24,65 @@
 
 
 <module name="Checker">
-
-    <property name="severity"  value="info"/>
-    <module name="SuppressionFilter">
-    	<property name="file" value="${checkstyle.suppressions.file}" />
+	<property name="severity" value="info" />
+	<module name="SuppressionFilter">
+		<property name="file" value="${checkstyle.suppressions.file}" />
 	</module>
-    
-    
-    <module name="FileLength"/>
 
-    <module name="TreeWalker">
-    	<module name="LineLength">
-    	    <property name="max" value="300"/> <!-- 300 is absurd, but we should reduce this to 150 later -->
-    	</module>
-    	<module name="MethodLength"/> 
-        <module name="LocalFinalVariableName"/>
-        <module name="PackageName"/>
-        <!-- <module name="ConstantName"/>  Deactivated, lots of constants are named in a wrong way at the moment.--> 
-        <module name="TypeName"/>
-        <module name="ParameterNumber"/>
 
-        <module name="StaticVariableName"/>
-        <module name="LocalFinalVariableName"/>
-        <module name="LocalVariableName">  <property name="format" value="^[a-z][A-Za-z0-9]*(_absolute)?(_ms)?$"/> </module>
+	<module name="FileLength" />
+
+	<module name="TreeWalker">
+		<module name="LineLength">
+			<property name="max" value="300" /> <!-- 300 is absurd, but we should reduce this to 150 later -->
+		</module>
+		<module name="MethodLength" />
+		<module name="LocalFinalVariableName" />
+		<module name="PackageName" />
+        <!-- <module name="ConstantName"/>  Deactivated, lots of constants are named in a wrong way at the moment.-->
+		<module name="TypeName" />
+		<module name="ParameterNumber" />
+
+		<module name="StaticVariableName" />
+		<module name="LocalFinalVariableName" />
+		<module name="LocalVariableName">
+			<property name="format" value="^[a-z][A-Za-z0-9]*(_absolute)?(_ms)?$" />
+		</module>
         <!-- <module name="MemberName">  <property name="format" value="^[a-z][A-Za-z0-9]*(_ms)?$"/> </module> // Deactivated, because some guice-injected constants are member-fields, but are written like constants -->
         <!--  <module name="MethodName">  <property name="format" value="^[a-z][A-Za-z0-9]*(_ms)?$"/> </module> //deactivated, because getHTTP_CONSTANTS is uses for guice-injected methods, signaling that we are actually retrieving a constant)-->
-        <module name="PackageName"/>
-        <module name="ParameterName">  <property name="format" value="^[a-z][A-Za-z0-9_]*$"/> </module>
-        <module name="StaticVariableName"/>
-        <module name="TypeName"/>
-        
-        
-        <module name="AvoidStarImport"/>
-        <module name="IllegalImport"/> 
-        <module name="RedundantImport"/>
-        <module name="UnusedImports"/>
-      
-        
-        <module name="EmptyForIteratorPad"/>
-        <module name="MethodParamPad"/>
+		<module name="PackageName" />
+		<module name="ParameterName">
+			<property name="format" value="^[a-z][A-Za-z0-9_]*$" />
+		</module>
+		<module name="StaticVariableName" />
+		<module name="TypeName" />
+
+
+		<module name="AvoidStarImport" />
+		<module name="IllegalImport" />
+		<module name="RedundantImport" />
+		<module name="UnusedImports" />
+
+
+		<module name="EmptyForIteratorPad" />
+		<module name="MethodParamPad" />
         <!-- <module name="NoWhitespaceAfter"/> For inline-{} we actually want whitespaces there-->
-        <module name="NoWhitespaceBefore"/>
-        <module name="OperatorWrap"/>
-        <module name="ParenPad"/>
-        <module name="TypecastParenPad"/>
+		<module name="NoWhitespaceBefore" />
+		<module name="OperatorWrap" />
+		<module name="ParenPad" />
+		<module name="TypecastParenPad" />
         <!-- <module name="TabCharacter"/> //could not initialize thise module -->
-        <module name="WhitespaceAfter"/>
-		<module name="WhitespaceAround"/>
-        <module name="FileContentsHolder"/>
-    </module>
- 
-    <module name="SuppressionCommentFilter"/>
+		<module name="WhitespaceAfter" />
+		<module name="WhitespaceAround" />
+		<module name="FileContentsHolder" />
+	</module>
+	<module name="SuppressionCommentFilter" />
+	<module name="SuppressWithNearbyCommentFilter">
+		<property name="commentFormat" value="CHECKSTYLE IGNORE (\w+) FOR NEXT (\d+) LINES"/>
+		<property name="checkFormat" value="$1"/>
+		<property name="influenceFormat" value="$2"/>
+	</module>
+
 </module>  
 
 

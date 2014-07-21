@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.7.0-SNAPSHOT</version>
+	<version>0.7.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -206,7 +206,7 @@
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.4-SNAPSHOT</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.4</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
@@ -272,7 +272,7 @@
 		<profile>
 			<id>carit-license</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.4-SNAPSHOT</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.4</licenseConfigurationVersion>
 				<!-- 
 					For unknown reasons useLicensesConfigFile and licensesConfigFile 
 					configuration properties must be set as global properties. It is
@@ -901,7 +901,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>2.9.1</version>
+					<version>2.12.1</version>
 					<configuration>
 						<!-- configLocation is resolved from classpath -->
 						<configLocation>checkstyle/checkstyle.xml</configLocation>

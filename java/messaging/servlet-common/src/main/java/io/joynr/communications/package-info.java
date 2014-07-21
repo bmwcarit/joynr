@@ -1,5 +1,4 @@
-@io.joynr.findbugsHelpers.ReturnValuesAreNonnullByDefault
-//@javax.annotation.ParametersAreNonnullByDefault
+@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
 package io.joynr.communications;
 
 /*

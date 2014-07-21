@@ -29,11 +29,17 @@ import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.httpoperation.FailureAction;
 import io.joynr.messaging.httpoperation.HttpConstants;
+import io.joynr.messaging.httpoperation.HttpPost;
+import io.joynr.messaging.httpoperation.HttpRequestFactory;
 import io.joynr.messaging.util.Utilities;
+import io.joynr.runtime.PropertyLoader;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -48,9 +54,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -80,25 +86,33 @@ public class MessageScheduler {
     private RequestConfig defaultRequestConfig;
     private ObjectMapper objectMapper;
     private final LocalChannelUrlDirectoryClient channelUrlClient;
+    private HttpRequestFactory httpRequestFactory;
+    private Properties hosts;
 
     @Inject
     public MessageScheduler(CloseableHttpClient httpclient,
                             @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_HOSTS_FILENAME) String hostsFileName,
                             LocalChannelUrlDirectoryClient localChannelUrlClient,
                             RequestConfig defaultRequestConfig,
                             HttpConstants httpConstants,
-                            ObjectMapper objectMapper) {
+                            ObjectMapper objectMapper,
+                            HttpRequestFactory httpRequestFactory) {
         this.httpclient = httpclient;
         channelUrlClient = localChannelUrlClient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.httpConstants = httpConstants;
         this.objectMapper = objectMapper;
+        this.httpRequestFactory = httpRequestFactory;
 
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
                                                                               .build();
         scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends, schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(SCHEDULER_KEEP_ALIVE_TIME, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
+
+        hosts = PropertyLoader.loadProperties(hostsFileName);
+
     }
 
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
@@ -182,17 +196,17 @@ public class MessageScheduler {
                 return;
             }
 
-            HttpPostHC4 httppost = new HttpPostHC4(sendUrl);
-            httppost.addHeader(httpConstants.getHEADER_CONTENT_TYPE(), httpConstants.getAPPLICATION_JSON()
-                    + ";charset=UTF-8");
-            httppost.setEntity(new StringEntity(serializedMessage, "UTF-8"));
+            HttpPost httpPost = httpRequestFactory.createHttpPost(URI.create(sendUrl));
+            httpPost.addHeader(new BasicHeader(httpConstants.getHEADER_CONTENT_TYPE(),
+                                               httpConstants.getAPPLICATION_JSON() + ";charset=UTF-8"));
+            httpPost.setEntity(new StringEntity(serializedMessage, "UTF-8"));
 
             // Clone the default config
             Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
             requestConfigBuilder.setConnectionRequestTimeout(httpConstants.getSEND_MESSAGE_REQUEST_TIMEOUT());
-            httppost.setConfig(requestConfigBuilder.build());
+            httpPost.setConfig(requestConfigBuilder.build());
 
-            response = httpclient.execute(httppost, context);
+            response = httpclient.execute(httpPost, context);
 
             StatusLine statusLine = response.getStatusLine();
             int statusCode = statusLine.getStatusCode();
@@ -223,11 +237,15 @@ public class MessageScheduler {
                                 + statusCode + " error: " + error.getCode() + "reason:" + error.getReason()));
                         break;
                     default:
+                        logger.error("SEND error channelId: {}, messageId: {} error: {} code: {} reason: {} ",
+                                     new Object[]{ channelId, messageId, statusText, error.getCode(), error.getReason() });
                         failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
                                 + statusText + body + " error: " + error.getCode() + "reason:" + error.getReason()));
                         break;
                     }
                 } catch (Exception e) {
+                    logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId,
+                            messageId, e.getMessage() });
                     failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
                             + statusText));
 
@@ -236,7 +254,7 @@ public class MessageScheduler {
                 break;
             }
         } catch (Exception e) {
-            logger.trace("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
+            logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
                     e.getMessage() });
         } finally {
             if (response != null) {
@@ -256,10 +274,51 @@ public class MessageScheduler {
 
         List<String> urls = channelUrlInfo.getUrls();
         if (!urls.isEmpty()) {
-            // in case sessions are used and the session is encoded in the URL, 
+            // in case sessions are used and the session is encoded in the URL,
             // we need to strip that from the URL and append session ID at the end
             String encodedChannelUrl = urls.get(0); // TODO handle trying multiple channelUrls
             url = encodeSendUrl(encodedChannelUrl);
+
+            try {
+                url = mapHost(url);
+            } catch (Exception e) {
+                logger.error("error in URL mapping while sending to channnelId: {} reason: {}",
+                             channelId,
+                             e.getMessage());
+            }
+
+        }
+
+        return url;
+    }
+
+    protected String mapHost(String url) throws Exception {
+        URL originalUrl = new URL(url);
+        String host = originalUrl.getHost();
+
+        if (hosts.containsKey(host)) {
+
+            String[] mappedHostInfo = hosts.getProperty(host).split(":");
+            String mappedHost = mappedHostInfo[0];
+
+            int port = originalUrl.getPort();
+            if (mappedHostInfo.length >= 2) {
+                port = Integer.valueOf(mappedHostInfo[1]);
+            }
+
+            String path = originalUrl.getFile();
+            if (mappedHostInfo.length >= 3) {
+                String mappedPathFind = mappedHostInfo[2];
+
+                String pathReplace = "";
+                if (mappedHostInfo.length >= 4) {
+                    pathReplace = mappedHostInfo[3];
+                }
+                path = path.replaceFirst(mappedPathFind, pathReplace);
+            }
+
+            URL newURL = new URL(originalUrl.getProtocol(), mappedHost, port, path);
+            url = newURL.toExternalForm();
         }
 
         return url;

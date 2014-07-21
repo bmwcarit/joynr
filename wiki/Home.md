@@ -48,14 +48,14 @@ Tip: If using Eclipse, use the Maven importer to import your project from the PO
 ## Runtime Environment
 joynr requires the following components to run:
 ### Bounceproxy
-responsible for message store and forward using Comet (currently long poll), based on the Atmosphere Framework. 
+Responsible for message store and forward using Comet (currently long poll), based on the Atmosphere Framework. 
 
 For test purposes you can run the bounceproxy directly within Maven. Just go into the bounceproxy project and run
-```
-    JOYNR>/java/messaging/bounceproxy/bounceproxy$ mvn jetty:run  
+```bash
+<JOYNR>/java/messaging/bounceproxy/single-bounceproxy$ mvn jetty:run  
 ```
 
-The bounceproxy is also tested with glassfish 3.1.2.2. See [[Glassfish settings]] for configuration details.
+The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings](Glassfish-settings.md) for configuration details.
 
 ### Discovery Directories
 Centralised directory to discover providers for a given domain and interface. 
@@ -65,11 +65,19 @@ Run the discovery directories locally along with the bounceproxy:
 1. Use maven to build and install the whole joynr project from the root directory
 1. start directories and bounceproxy on default jetty port 8080
 
-```
+```bash
 <JOYNR>$ mvn clean install -DskipTests
 <JOYNR>$ cd java/backend-services/discovery-directory-servlet
 <JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
 ```
+
+Use the following links to check whether all components are running:
+
+| Service Link | Description |
+| ------------ | ----------- |
+| <http://localhost:8080/bounceproxy/time/> | Returns the current time in current milliseconds since Unix Epoch. This can be used to test whether the bounceproxy is up and running. |
+| <http://localhost:8080/bounceproxy/channels.html> | Lists all channels (message queues) that are currently registered on the bounceproxy instance |
+| <http://localhost:8080/discovery/capabilities.html> | Lists all capabilities (providers) currently registered with joynr. Note: After starting the discovery directories and the bounceproxy only, there must be two capabilities registered (channel URL directory and global capabilities directory). |
 
 You can also deploy one or more joynr applications to a servlet engine without reconfiguring the applications themselves:
 
@@ -78,11 +86,14 @@ You can also deploy one or more joynr applications to a servlet engine without r
 1. include messaging-servlet as a dependency in the pom.xml. 
 1. create the war file (mvn package)
 1. The war created should contain JARs for each of your applications plus the messaging-servlet (and other transitive dependencies). 
-1. Set the JVM properties etc for your servlet engine as described on [[Glassfish settings]].
+1. Set the JVM properties etc for your servlet engine as described on [Glassfish settings](Glassfish-settings.md).
 1. deploy this war to your servlet engine.
 
 All applications deployed should then register themselves with the discovery directory. Messages will be sent directly to the url registered in hostPath.
 
 ## Tutorials
-**[A tour through a simple radio application](Tutorial)**
+**[A tour through a simple radio application](Tutorial.md)**
 This tutorial guides you through a simple joynr application, explaining essential concepts such as communication interfaces, consumers, providers and how they communicate.
+
+## Releases
+joynr is currently at released version 0.7.0. See the [release notes](ReleaseNotes.md).

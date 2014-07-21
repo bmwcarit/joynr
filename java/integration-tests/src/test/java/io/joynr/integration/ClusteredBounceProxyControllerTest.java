@@ -37,6 +37,7 @@ import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.jayway.restassured.RestAssured;
@@ -99,6 +100,7 @@ public class ClusteredBounceProxyControllerTest {
     }
 
     @Test
+    @Ignore("Ignore until servers are started in a separate JVM. Guice static problem")
     public void testBounceProxyRegistrationAtBpc1() throws Exception {
 
         RestAssured.baseURI = bpcUrl1;
@@ -121,6 +123,7 @@ public class ClusteredBounceProxyControllerTest {
     }
 
     @Test
+    @Ignore("Ignore until servers are started in a separate JVM. Guice static problem")
     public void testBounceProxyRegistrationAtBpc2() throws InterruptedException {
 
         RestAssured.baseURI = bpcUrl2;
