@@ -55,4 +55,28 @@ MessageQueueItem* MessageQueue::getNextMessageForParticipant(const QString desti
     return NULL;
 }
 
+qint64 MessageQueue::removeOutdatedMessages(){
+    qint64 counter = 0;
+    if(queue->isEmpty()) {
+        return counter;
+    }
+
+    QMap<QString, MessageQueueItem*>::iterator i;
+    QDateTime now = QDateTime::currentDateTime();
+    {
+        QMutexLocker locker(&queueMutex);
+        for(i = queue->begin(); i != queue->end();) {
+            MessageQueueItem* value = i.value();
+            if(value->getDecayTime() < now) {
+                i = queue->erase(i);
+                delete value;
+                counter ++;
+            } else {
+                ++i;
+            }
+        }
+    }
+    return counter;
+}
+
 }

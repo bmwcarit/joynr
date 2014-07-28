@@ -21,6 +21,7 @@
 #include <QFile>
 #include "gmock/gmock.h"
 #include "joynr/MessageQueue.h"
+#include "QThread"
 
 
 using namespace joynr;
@@ -96,4 +97,12 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
 
 TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
     EXPECT_FALSE(messageQueue->getNextMessageForParticipant("TEST"));
+}
+
+TEST_F(MessageQueueTest, removeOutdatedMessage) {
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(10)), 1);
+    QThread::msleep(5);
+    EXPECT_EQ(messageQueue->removeOutdatedMessages(), 0);
+    QThread::msleep(6);
+    EXPECT_EQ(messageQueue->removeOutdatedMessages(), 1);
 }

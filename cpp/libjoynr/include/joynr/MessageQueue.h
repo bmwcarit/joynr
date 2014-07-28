@@ -44,6 +44,8 @@ public:
                       const MessagingQos& qos);
 
     MessageQueueItem* getNextMessageForParticipant(const QString destinationPartId);
+
+    qint64 removeOutdatedMessages();
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
