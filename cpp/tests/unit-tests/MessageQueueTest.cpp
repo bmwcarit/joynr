@@ -54,3 +54,46 @@ TEST_F(MessageQueueTest, addMultipleMessages) {
     EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos()), 3);
     EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos()), 4);
 }
+
+TEST_F(MessageQueueTest, queueDequeueMessages) {
+    // add messages to the queue
+    JoynrMessage msg1;
+    msg1.setHeaderTo("TEST1");
+    messageQueue->queueMessage(msg1, MessagingQos());
+
+    JoynrMessage msg2;
+    msg2.setHeaderTo("TEST2");
+    messageQueue->queueMessage(msg2, MessagingQos());
+    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+
+    // get messages from queue
+    MessageQueueItem* item = messageQueue->getNextMessageForParticipant("TEST1");
+    EXPECT_EQ(item->getContent().first, msg1);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    item = messageQueue->getNextMessageForParticipant("TEST2");
+    EXPECT_EQ(item->getContent().first, msg2);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+}
+
+TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
+    // add messages to the queue
+    JoynrMessage msg;
+    msg.setHeaderTo("TEST");
+    messageQueue->queueMessage(msg, MessagingQos());
+    messageQueue->queueMessage(msg, MessagingQos());
+    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+
+    // get messages from queue
+    MessageQueueItem* item = messageQueue->getNextMessageForParticipant("TEST");
+    EXPECT_EQ(item->getContent().first, msg);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    item = messageQueue->getNextMessageForParticipant("TEST");
+    EXPECT_EQ(item->getContent().first, msg);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+}
+
+TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
+    EXPECT_FALSE(messageQueue->getNextMessageForParticipant("TEST"));
+}

@@ -30,6 +30,7 @@
 
 namespace joynr {
 
+typedef ContentWithDecayTime<QPair<JoynrMessage, MessagingQos>> MessageQueueItem;
 
 class JOYNR_EXPORT MessageQueue {
 public:
@@ -41,10 +42,11 @@ public:
 
     qint64 queueMessage(const JoynrMessage& message,
                       const MessagingQos& qos);
+
+    MessageQueueItem* getNextMessageForParticipant(const QString destinationPartId);
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    typedef ContentWithDecayTime<QPair<JoynrMessage, MessagingQos>> MessageQueueItem;
 
     QMap<QString, MessageQueueItem*>* queue;
     mutable QMutex queueMutex;

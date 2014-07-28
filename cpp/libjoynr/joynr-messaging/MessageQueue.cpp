@@ -47,4 +47,12 @@ qint64 MessageQueue::queueMessage(const JoynrMessage &message,
     return queue->size();
 }
 
+MessageQueueItem* MessageQueue::getNextMessageForParticipant(const QString destinationPartId) {
+    QMutexLocker locker(&queueMutex);
+    if(queue->contains(destinationPartId)) {
+        return queue->take(destinationPartId);
+    }
+    return NULL;
+}
+
 }
