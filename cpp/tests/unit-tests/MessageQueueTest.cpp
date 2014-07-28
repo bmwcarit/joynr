@@ -22,6 +22,7 @@
 #include "gmock/gmock.h"
 #include "joynr/MessageQueue.h"
 #include "QThread"
+#include <QThreadPool>
 
 
 using namespace joynr;
@@ -29,17 +30,24 @@ using namespace joynr;
 class MessageQueueTest : public ::testing::Test {
 public:
     MessageQueueTest():
-        messageQueue(new MessageQueue())
+        messageQueue(new MessageQueue()),
+        threadPool(),
+        cleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue, 50))
     {
-
+        threadPool.setMaxThreadCount(1);
+        threadPool.start(cleanerRunnable);
     }
 
     ~MessageQueueTest(){
+        cleanerRunnable->stop();
+        threadPool.waitForDone();
         delete messageQueue;
     }
 
 protected:
     MessageQueue* messageQueue;
+    QThreadPool threadPool;
+    MessageQueueCleanerRunnable* cleanerRunnable;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
@@ -105,4 +113,18 @@ TEST_F(MessageQueueTest, removeOutdatedMessage) {
     EXPECT_EQ(messageQueue->removeOutdatedMessages(), 0);
     QThread::msleep(6);
     EXPECT_EQ(messageQueue->removeOutdatedMessages(), 1);
+}
+
+TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(25)), 1);
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(250)), 2);
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(250)), 3);
+
+    // wait to remove the first message
+    QThread::msleep(100);
+    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+
+    // wait to remove all messages
+    QThread::msleep(500);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

@@ -27,6 +27,7 @@
 #include "joynr/ContentWithDecayTime.h"
 
 #include <QMutex>
+#include <QRunnable>
 
 namespace joynr {
 
@@ -53,6 +54,22 @@ private:
     QMap<QString, MessageQueueItem*>* queue;
     mutable QMutex queueMutex;
 
+};
+
+/**
+ * Runnable to remove outdated message from message queue
+ */
+class JOYNR_EXPORT MessageQueueCleanerRunnable: public QRunnable {
+public:
+    MessageQueueCleanerRunnable(MessageQueue& messageQueue,
+                                qint64 sleepInterval = 1000);
+    void run();
+    void stop();
+
+private:
+    MessageQueue& messageQueue;
+    bool stopped;
+    qint64 sleepInterval;
 };
 
 }
