@@ -31,4 +31,8 @@ MessageQueue::~MessageQueue() {
     delete queue;
 }
 
+qint64 MessageQueue::getQueueLength(){
+    return queue->size();
+}
+
 }

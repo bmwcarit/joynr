@@ -37,6 +37,8 @@ public:
 
     ~MessageQueue();
 
+    qint64 getQueueLength();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
