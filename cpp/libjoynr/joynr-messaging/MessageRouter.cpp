@@ -50,7 +50,8 @@ MessageRouter::~MessageRouter() {
 MessageRouter::MessageRouter(
         IMessagingStubFactory* messagingStubFactory,
         int messageSendRetryInterval,
-        int maxThreads
+        int maxThreads,
+        MessageQueue* messageQueue
 ) :
         joynr::system::RoutingProvider(joynr::types::ProviderQos(
                 QList<joynr::types::CustomParameter>(), // custom provider parameters
@@ -67,8 +68,7 @@ MessageRouter::MessageRouter(
         parentRouter(NULL),
         parentAddress(NULL),
         incomingAddress(),
-        messageQueue(new QMap<QString, QPair<JoynrMessage, MessagingQos>>()),
-        messageQueueMutex(),
+        messageQueue(messageQueue),
         runningParentResolves(new QSet<QString>()),
         parentResolveMutex()
 {
@@ -79,7 +79,8 @@ MessageRouter::MessageRouter(
         IMessagingStubFactory* messagingStubFactory,
         QSharedPointer<joynr::system::Address> incomingAddress,
         int messageSendRetryInterval,
-        int maxThreads
+        int maxThreads,
+        MessageQueue* messageQueue
 ) :
     joynr::system::RoutingProvider(joynr::types::ProviderQos(
             QList<joynr::types::CustomParameter>(), // custom provider parameters
@@ -96,8 +97,7 @@ MessageRouter::MessageRouter(
     parentRouter(NULL),
     parentAddress(NULL),
     incomingAddress(incomingAddress),
-    messageQueue(new QMap<QString, QPair<JoynrMessage, MessagingQos>>()),
-    messageQueueMutex(),
+    messageQueue(messageQueue),
     runningParentResolves(new QSet<QString>()),
     parentResolveMutex()
 {
@@ -166,21 +166,16 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
         return;
     }
 
-    // try to resolve via parent message router
-    if(isChildMessageRouter()){
-        auto pair = QPair<JoynrMessage, MessagingQos>(message, qos);
-        {
-            QMutexLocker locker(&messageQueueMutex);
-            messageQueue->insertMulti(destinationPartId, pair);
-        }
+    // save message for later delivery
+    messageQueue->queueMessage(message, qos);
 
-        {
-            QMutexLocker locker(&parentResolveMutex);
-            if(!runningParentResolves->contains(destinationPartId)) {
-                runningParentResolves->insert(destinationPartId);
-                auto callBack = QSharedPointer<ICallback<bool>>(new ResolveCallBack(*this, destinationPartId));
-                parentRouter->resolveNextHop(callBack, destinationPartId);
-            }
+    // try to resolve destination address via parent message router
+    if(isChildMessageRouter()){
+        QMutexLocker locker(&parentResolveMutex);
+        if(!runningParentResolves->contains(destinationPartId)) {
+            runningParentResolves->insert(destinationPartId);
+            auto callBack = QSharedPointer<ICallback<bool>>(new ResolveCallBack(*this, destinationPartId));
+            parentRouter->resolveNextHop(callBack, destinationPartId);
         }
     }
 }
@@ -191,16 +186,12 @@ void MessageRouter::sendMessageToParticipant(QString& destinationPartId) {
         runningParentResolves->remove(destinationPartId);
     }
     while(true) {
-        QPair<JoynrMessage, MessagingQos> pair;
-        {
-            QMutexLocker locker(&messageQueueMutex);
-            if(messageQueue->contains(destinationPartId)) {
-                pair = messageQueue->take(destinationPartId);
-            } else {
-                break;
-            }
+        MessageQueueItem* item = messageQueue->getNextMessageForParticipant(destinationPartId);
+        if(!item) {
+            break;
         }
-        sendMessage(pair.first, pair.second, parentAddress);
+        sendMessage(item->getContent().first, item->getContent().second, parentAddress);
+        delete item;
     }
 }
 

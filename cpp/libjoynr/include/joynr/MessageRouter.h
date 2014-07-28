@@ -31,6 +31,7 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/ICallback.h"
 #include "joynr/Directory.h"
+#include "joynr/MessageQueue.h"
 
 #include <QSharedPointer>
 #include <QDateTime>
@@ -49,6 +50,7 @@ class JoynrMessagingEndpointAddress;
 namespace joynr_logging { class Logger; }
 class DelayedScheduler;
 class ThreadPoolDelayedScheduler;
+
 namespace system { class Address; }
 
 /**
@@ -67,14 +69,16 @@ public:
     MessageRouter(
             IMessagingStubFactory* messagingStubFactory,
             int messageSendRetryInterval = 500,
-            int maxThreads = 6
+            int maxThreads = 6,
+            MessageQueue* messageQueue = new MessageQueue()
     );
 
     MessageRouter(
             IMessagingStubFactory* messagingStubFactory,
             QSharedPointer<joynr::system::Address> incomingAddress,
             int messageSendRetryInterval = 500,
-            int maxThreads = 6
+            int maxThreads = 6,
+            MessageQueue* messageQueue = new MessageQueue()
     );
 
     virtual ~MessageRouter();
@@ -148,8 +152,7 @@ private:
     QSharedPointer<joynr::system::Address> incomingAddress;
     static joynr_logging::Logger* logger;
 
-    QMap<QString, QPair<JoynrMessage, MessagingQos>>* messageQueue;
-    mutable QMutex messageQueueMutex;
+    MessageQueue* messageQueue;
     QSet<QString>* runningParentResolves;
     mutable QMutex parentResolveMutex;
 

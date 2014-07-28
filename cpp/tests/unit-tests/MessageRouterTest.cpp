@@ -24,6 +24,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
+#include "joynr/MessageQueue.h"
 
 
 using namespace joynr;
@@ -35,7 +36,8 @@ public:
         settings(settingsFileName, QSettings::IniFormat),
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
-        messageRouter(new MessageRouter(new MessagingStubFactory())),
+        messageQueue(new MessageQueue()),
+        messageRouter(new MessageRouter(new MessagingStubFactory(), 500, 6, messageQueue)),
         joynrMessage(),
         qos()
     {
@@ -65,6 +67,7 @@ protected:
     QSettings settings;
     MessagingSettings messagingSettings;
     MockMessagingStubFactory* messagingStubFactory;
+    MessageQueue* messageQueue;
     MessageRouter* messageRouter;
     JoynrMessage joynrMessage;
     MessagingQos qos;
@@ -80,4 +83,23 @@ TEST_F(MessageRouterTest, DISABLED_routeDelegatesToStubFactory){
 
     messageRouter->route(joynrMessage, qos);
 
+}
+
+TEST_F(MessageRouterTest, addMessageToQueue){
+    messageRouter->route(joynrMessage, qos);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    messageRouter->route(joynrMessage, qos);
+    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+}
+
+TEST_F(MessageRouterTest, doNotAddMessageToQueue){
+    // this message should be added because no destination header set
+    messageRouter->route(joynrMessage, qos);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    // the message now has a known destination and should be directly routed
+    joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId());
+    messageRouter->route(joynrMessage, qos);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
 }
