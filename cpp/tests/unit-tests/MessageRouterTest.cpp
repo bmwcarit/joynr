@@ -25,7 +25,7 @@
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
-
+#include "joynr/system/ChannelAddress.h"
 
 using namespace joynr;
 
@@ -102,4 +102,16 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId());
     messageRouter->route(joynrMessage, qos);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
+}
+
+TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
+    // this message should be added because no destination header set
+    joynrMessage.setHeaderTo("TEST");
+    messageRouter->route(joynrMessage, qos);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    // add destination address -> message should be routed
+    QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress("TEST"));
+    messageRouter->addNextHop("TEST", address);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

@@ -213,6 +213,8 @@ void MessageRouter::addNextHop(
 
     joynr::RequestStatus status;
     addNextHopToParent(status, participantId);
+
+    sendMessages(participantId, inprocessAddress);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -228,6 +230,8 @@ void MessageRouter::addNextHop(
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
+
+    sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -243,6 +247,8 @@ void MessageRouter::addNextHop(
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
+
+    sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -258,6 +264,8 @@ void MessageRouter::addNextHop(
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
+
+    sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -273,6 +281,8 @@ void MessageRouter::addNextHop(
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
     addNextHopToParent(joynrInternalStatus, participantId);
+
+    sendMessages(participantId, address);
 }
 
 void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId) {
