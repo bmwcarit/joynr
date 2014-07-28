@@ -163,11 +163,13 @@ private:
                      const MessagingQos& qos,
                      QSharedPointer<joynr::system::Address> destAddress);
 
-    void sendMessageToParticipant(QString& destinationPartId);
+    void sendMessages(QString& destinationPartId, QSharedPointer<joynr::system::Address> address);
 
     bool isChildMessageRouter();
 
     void addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address);
+
+    void removeRunningParentResolvers(QString& destinationPartId);
 };
 
 /**

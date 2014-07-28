@@ -180,17 +180,18 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
     }
 }
 
-void MessageRouter::sendMessageToParticipant(QString& destinationPartId) {
-    {
-        QMutexLocker locker(&parentResolveMutex);
-        runningParentResolves->remove(destinationPartId);
-    }
+void MessageRouter::removeRunningParentResolvers(QString& destinationPartId) {
+    QMutexLocker locker(&parentResolveMutex);
+    runningParentResolves->remove(destinationPartId);
+}
+
+void MessageRouter::sendMessages(QString& destinationPartId, QSharedPointer<joynr::system::Address> address) {
     while(true) {
         MessageQueueItem* item = messageQueue->getNextMessageForParticipant(destinationPartId);
         if(!item) {
             break;
         }
-        sendMessage(item->getContent().first, item->getContent().second, parentAddress);
+        sendMessage(item->getContent().first, item->getContent().second, address);
         delete item;
     }
 }
@@ -349,7 +350,8 @@ void ResolveCallBack::onSuccess(const RequestStatus status, bool resolved) {
         LOG_INFO(logger, "Got destination address for participant " + destinationPartId);
         // save next hop in the routing table
         messageRouter.addProvisionedNextHop(destinationPartId, messageRouter.parentAddress);
-        messageRouter.sendMessageToParticipant(destinationPartId);
+        messageRouter.removeRunningParentResolvers(destinationPartId);
+        messageRouter.sendMessages(destinationPartId, messageRouter.parentAddress);
     }
 }
 
