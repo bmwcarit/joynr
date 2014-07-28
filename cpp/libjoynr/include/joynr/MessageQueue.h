@@ -39,6 +39,8 @@ public:
 
     qint64 getQueueLength();
 
+    qint64 queueMessage(const JoynrMessage& message,
+                      const MessagingQos& qos);
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
