@@ -37,6 +37,7 @@ using namespace joynr_logging;
 Logger* MessageRouter::logger = Logging::getInstance()->getLogger("MSG", "MessageRouter");
 
 MessageRouter::~MessageRouter() {
+    messageQueueCleanerRunnable->stop();
     threadPool.waitForDone();
     if(parentRouter != NULL) {
         delete parentRouter;
@@ -69,6 +70,7 @@ MessageRouter::MessageRouter(
         parentAddress(NULL),
         incomingAddress(),
         messageQueue(messageQueue),
+        messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
         runningParentResolves(new QSet<QString>()),
         parentResolveMutex()
 {
@@ -98,6 +100,7 @@ MessageRouter::MessageRouter(
     parentAddress(NULL),
     incomingAddress(incomingAddress),
     messageQueue(messageQueue),
+    messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
     runningParentResolves(new QSet<QString>()),
     parentResolveMutex()
 {
@@ -112,6 +115,7 @@ void MessageRouter::init(int messageSendRetryInterval, int maxThreads)
                 QString("MessageRouter-DelayedScheduler"),
                 messageSendRetryInterval
     );
+    threadPool.start(messageQueueCleanerRunnable);
 }
 
 void MessageRouter::addProvisionedNextHop(QString participantId, QSharedPointer<joynr::system::Address> address) {

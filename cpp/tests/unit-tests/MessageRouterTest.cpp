@@ -39,7 +39,7 @@ public:
         messageQueue(new MessageQueue()),
         messageRouter(new MessageRouter(new MessagingStubFactory(), 500, 6, messageQueue)),
         joynrMessage(),
-        qos()
+        qos(500)
     {
         // provision global capabilities directory
         QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
@@ -113,5 +113,14 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     // add destination address -> message should be routed
     QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress("TEST"));
     messageRouter->addNextHop("TEST", address);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+}
+
+TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
+    messageRouter->route(joynrMessage, qos);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    // we wait for the time out (500ms) and the thread sleep (1000ms)
+    QThread::msleep(1200);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

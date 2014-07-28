@@ -50,7 +50,7 @@ class JoynrMessagingEndpointAddress;
 namespace joynr_logging { class Logger; }
 class DelayedScheduler;
 class ThreadPoolDelayedScheduler;
-
+class MessageQueueCleanerRunnable;
 namespace system { class Address; }
 
 /**
@@ -153,6 +153,7 @@ private:
     static joynr_logging::Logger* logger;
 
     MessageQueue* messageQueue;
+    MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
     QSet<QString>* runningParentResolves;
     mutable QMutex parentResolveMutex;
 
