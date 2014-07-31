@@ -30,7 +30,6 @@
 		<version>0.8.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.franca</groupId>
@@ -93,10 +92,6 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>

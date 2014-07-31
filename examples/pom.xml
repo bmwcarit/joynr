@@ -33,6 +33,36 @@
 		<module>android-example</module>
 		<module>android-location-provider</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>java-checks</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>findbugs-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>java-formatter</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+						<artifactId>maven-java-formatter-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
@@ -50,14 +80,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-				<artifactId>maven-java-formatter-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

@@ -27,6 +27,31 @@
 	<artifactId>license-check</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
 
+	<profiles>
+		<profile>
+			<id>java-checks</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>java-formatter</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+						<artifactId>maven-java-formatter-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -42,16 +67,6 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-				<artifactId>maven-java-formatter-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-			</plugin>
-		</plugins>
 	</build>
 
 </project>
