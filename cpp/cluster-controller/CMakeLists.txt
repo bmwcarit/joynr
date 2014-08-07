@@ -120,7 +120,7 @@ add_library(
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
 )
-qt5_use_modules(JoynrClusterController Core)
+qt5_use_modules(JoynrClusterController Core WebSockets)
 
 set_target_properties(
     JoynrClusterController
