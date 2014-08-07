@@ -36,16 +36,11 @@
 		<module>tests</module>
 		<module>libs</module>
 	</modules>
-
 	<profiles>
 		<profile>
-			<id>java-checks</id>
+			<id>findbugs</id>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-checkstyle-plugin</artifactId>
-					</plugin>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>findbugs-maven-plugin</artifactId>
@@ -53,19 +48,7 @@
 				</plugins>
 			</build>
 		</profile>
-		<profile>
-			<id>java-formatter</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-						<artifactId>maven-java-formatter-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 	</profiles>
-
 	<build>
 		<pluginManagement>
 			<plugins>

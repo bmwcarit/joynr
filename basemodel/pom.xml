@@ -28,7 +28,19 @@
 		<version>0.8.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
+	<profiles>
+		<profile>
+			<id>findbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>findbugs-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<build>
  		<testSourceDirectory>src/test/franca</testSourceDirectory>
  		<sourceDirectory>src/main/franca</sourceDirectory>
