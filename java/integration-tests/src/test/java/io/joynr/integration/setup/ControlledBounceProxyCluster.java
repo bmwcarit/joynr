@@ -23,6 +23,7 @@ import io.joynr.integration.ControlledBounceProxyServerTest;
 import io.joynr.integration.util.ServersUtil;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public class ControlledBounceProxyCluster implements BounceProxyServerSetup {
         // works
         logger.info("Starting Bounceproxy Controller");
         bounceProxyControllerServer = ServersUtil.startBounceproxyController();
-        int bounceProxyControllerPort = bounceProxyControllerServer.getConnectors()[0].getPort();
+        int bounceProxyControllerPort = ((ServerConnector) bounceProxyControllerServer.getConnectors()[0]).getPort();
         bounceProxyControllerUrl = "http://localhost:" + bounceProxyControllerPort + "/controller/";
 
         logger.info("Starting Controlled Bounceproxy X.Y");
@@ -62,10 +63,10 @@ public class ControlledBounceProxyCluster implements BounceProxyServerSetup {
 
         logger.info("All servers started");
 
-        int bounceProxyServerXyPort = bounceProxyServerXY.getConnectors()[0].getPort();
+        int bounceProxyServerXyPort = ((ServerConnector) bounceProxyServerXY.getConnectors()[0]).getPort();
         bounceProxyServerXyUrl = "http://localhost:" + bounceProxyServerXyPort + "/bounceproxy/";
 
-        int bounceProxyServerAbPort = bounceProxyServerAB.getConnectors()[0].getPort();
+        int bounceProxyServerAbPort = ((ServerConnector) bounceProxyServerAB.getConnectors()[0]).getPort();
         bounceProxyServerAbUrl = "http://localhost:" + bounceProxyServerAbPort + "/bounceproxy/";
     }
 

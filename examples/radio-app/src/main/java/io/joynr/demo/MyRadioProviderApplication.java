@@ -43,7 +43,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     public static void main(String[] args) {
         // run application from cmd line using Maven:
-        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MadioProviderApplication" -Dexec.args="<local-domain>"
+        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
         if (args.length != 1) {
             LOG.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",

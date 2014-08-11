@@ -36,6 +36,7 @@ import java.util.UUID;
 import joynr.JoynrMessage;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -79,7 +80,7 @@ public class HttpCommunicationManagerTest {
         server.setHandler(bounceproxyWebapp);
         server.start();
 
-        port = server.getConnectors()[0].getLocalPort();
+        port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
     }
 
     @AfterClass

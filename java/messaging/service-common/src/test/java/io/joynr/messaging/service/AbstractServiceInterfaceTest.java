@@ -23,6 +23,7 @@ package io.joynr.messaging.service;
 import javax.servlet.ServletContextEvent;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.Before;
@@ -76,7 +77,7 @@ public abstract class AbstractServiceInterfaceTest {
 
         jettyServer.start();
 
-        int port = jettyServer.getConnectors()[0].getLocalPort();
+        int port = ((ServerConnector) jettyServer.getConnectors()[0]).getLocalPort();
         serverUrl = String.format("http://localhost:%d", port);
     }
 

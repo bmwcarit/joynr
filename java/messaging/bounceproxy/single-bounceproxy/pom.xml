@@ -43,12 +43,10 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.sun.jersey.contribs</groupId>
 			<artifactId>jersey-multipart</artifactId>
 		</dependency>
-		
 		<dependency>
 			<groupId>eu.infomas</groupId>
 			<artifactId>annotation-detector</artifactId>
@@ -71,20 +69,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-service</artifactId>
@@ -130,7 +124,7 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
+				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<dependencies>
 					<dependency>
@@ -193,13 +187,13 @@
 							<artifactId>channel-service</artifactId>
 							<type>jar</type>
 							<includes>
-				                <include>css/**</include>
-				                <include>script/**</include>
-				                <include>channels.html</include>
-				                <include>NOTICE-javascript</include>
+								<include>css/**</include>
+								<include>script/**</include>
+								<include>channels.html</include>
+								<include>NOTICE-javascript</include>
 								<include>MIT-LICENSE</include>
 								<include>LICENSE_INFO</include>
-				            </includes>
+							</includes>
 						</overlay>
 					</overlays>
 				</configuration>
@@ -217,16 +211,16 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.mortbay.jetty</groupId>
+									<groupId>org.eclipse.jetty</groupId>
 									<artifactId>jetty-runner</artifactId>
 									<version>${jetty.version}</version>
 									<destFileName>jetty-runner.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.eclipse.jetty</groupId>
-									<artifactId>jetty-websocket</artifactId>
+									<groupId>org.eclipse.jetty.websocket</groupId>
+									<artifactId>websocket-server</artifactId>
 									<version>${jetty.version}</version>
-									<destFileName>jetty-websocket.jar</destFileName>
+									<destFileName>websocket-server.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -256,19 +250,11 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											properties-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.0-alpha-2,)
-										</versionRange>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>properties-maven-plugin</artifactId>
+										<versionRange>[1.0-alpha-2,)</versionRange>
 										<goals>
-											<goal>
-												set-system-properties
-											</goal>
+											<goal>set-system-properties</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -282,7 +268,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
-
-
 </project>
