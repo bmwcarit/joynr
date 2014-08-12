@@ -162,7 +162,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/jetty-config-files</outputDirectory>
+							<outputDirectory>${project.build.directory}/jetty-config-files</outputDirectory>
 							<resources>
 								<resource>
 									<directory>resources</directory>
@@ -185,28 +185,33 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<property>
+									<name>log4j.configuration</name>
+									<value>file:${basedir}/resources/log4j.properties</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
+					<!--
+					Don't define system properties here, because it will override system
+					properties defined in plugin management in super POM.
+					-->
 					<jettyXml>${project.build.directory}/jetty-config-files/jetty.xml,${project.build.directory}/jetty-config-files/jetty-http.xml,${project.build.directory}/jetty-config-files/jetty-ssl.xml,${project.build.directory}/jetty-config-files/jetty-https.xml</jettyXml>
-					<contextHandlers>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/bounceproxy.war</war>
-							<contextPath>/bounceproxy</contextPath>
-						</contextHandler>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/discovery.war</war>
-							<contextPath>/discovery</contextPath>
-						</contextHandler>
-					</contextHandlers>
-					<stopPort>9966</stopPort>
-					<stopKey>joynr</stopKey>
-					<systemProperties>
-						<systemProperty>
-							<name>log4j.configuration</name>
-							<value>file:${basedir}/resources/log4j.properties</value>
-						</systemProperty>
-					</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>

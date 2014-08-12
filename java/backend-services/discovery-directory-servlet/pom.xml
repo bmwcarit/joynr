@@ -152,23 +152,35 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
-			
-			
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<property>
+									<name>log4j.configuration</name>
+									<value>file:${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j12</artifactId>
-						<version>1.6.6</version>
-					</dependency>
-				</dependencies>
 				<configuration>
-					<stopPort>9966</stopPort>
-					<stopKey>joynr</stopKey>
-					<contextHandlers>
+					<!--
+					Don't define system properties here, because it will override system
+					properties defined in plugin management in super POM.
+					-->
+					<contextHandlers combine.self="override">
 						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
 							<war>${project.build.directory}/bounceproxy.war</war>
 							<contextPath>/bounceproxy</contextPath>
@@ -178,16 +190,6 @@
 							<contextPath>/discovery</contextPath>
 						</contextHandler>
 					</contextHandlers>
-					<systemProperties>
-						<systemProperty>
-							<name>log4j.configuration</name>
-							<value>file:${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
-						</systemProperty>
-						<systemProperty>
-							<name>joynr.servlet.hostPath</name>
-							<value>http://localhost:8080</value>
-						</systemProperty>
-					</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>

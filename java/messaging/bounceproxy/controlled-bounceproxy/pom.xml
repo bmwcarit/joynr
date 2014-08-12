@@ -171,10 +171,18 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
+					<!--
+					Don't define system properties here, because it will override system
+					properties defined in plugin management in super POM.
+					-->
 					<webAppSourceDirectory>${basedir}/src/main/java</webAppSourceDirectory>
 					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
-					<stopKey>quit</stopKey>
-					<stopPort>12345</stopPort>
+					<!--
+					This "override" is needed to disable contextHandlers defined in plugin
+					management in super POM.
+					-->
+					<contextHandlers combine.self="override"></contextHandlers>
+					<webApp combine.self="override"></webApp>
 				</configuration>
 			</plugin>
 			

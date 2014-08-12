@@ -720,6 +720,11 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>properties-maven-plugin</artifactId>
+					<version>1.0-alpha-2</version>
+				</plugin>
+				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
 					<version>1.0.0</version>
@@ -884,6 +889,44 @@
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
 					<version>${jetty.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-log4j12</artifactId>
+							<version>1.6.6</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+						<webApp>
+							<contextPath>/</contextPath>
+						</webApp>
+						<stopPort>9966</stopPort>
+						<stopKey>joynr</stopKey>
+						<contextHandlers>
+							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+								<war>${project.build.directory}/bounceproxy.war</war>
+								<contextPath>/bounceproxy</contextPath>
+							</contextHandler>
+							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+								<war>${project.build.directory}/discovery.war</war>
+								<contextPath>/discovery</contextPath>
+							</contextHandler>
+						</contextHandlers>
+						<systemProperties>
+							<systemProperty>
+								<name>log4j.configuration</name>
+								<value>file:${basedir}/src/main/resources/log4j.properties</value>
+							</systemProperty>
+							<systemProperty>
+								<name>joynr.servlet.hostPath</name>
+								<value>http://localhost:8080</value>
+							</systemProperty>
+							<systemProperty>
+								<name>org.atmosphere.useNative</name>
+								<value>true</value>
+							</systemProperty>
+						</systemProperties>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>

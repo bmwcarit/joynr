@@ -105,7 +105,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
-				<version>1.0-alpha-2</version>
 				<executions>
 					<execution>
 						<goals>
@@ -115,7 +114,7 @@
 							<properties>
 								<property>
 									<name>log4j.configuration</name>
-									<value>file:///${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
+									<value>file:${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
 								</property>
 							</properties>
 						</configuration>
@@ -134,10 +133,19 @@
 					</dependency>
 				</dependencies>
 				<configuration>
+					<!--
+					Don't define system properties here, because it will override system
+					properties defined in plugin management in super POM.
+					-->
 					<webApp>
 						<contextPath>/bounceproxy</contextPath>
 						<descriptor>src/main/resources/WEB-INF/web.xml</descriptor>
 					</webApp>
+					<!--
+					This "override" is needed to disable contextHandlers defined in plugin
+					management in super POM.
+					-->
+					<contextHandlers combine.self="override"></contextHandlers>
 				</configuration>
 			</plugin>
 			<plugin>
