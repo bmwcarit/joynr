@@ -50,6 +50,7 @@ file(
     "provider/*.h"
     "proxy/*.h"
     "subscription/*.h"
+    "websocket/*.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
 )
@@ -74,6 +75,7 @@ file(
     "provider/*.cpp"
     "proxy/*.cpp"
     "subscription/*.cpp"
+    "websocket/*.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
 )
