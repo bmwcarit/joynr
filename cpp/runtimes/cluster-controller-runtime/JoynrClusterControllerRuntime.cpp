@@ -48,6 +48,8 @@
 #include "joynr/system/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "joynr/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 
 #include <QCoreApplication>
@@ -94,12 +96,12 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         connectorFactory(NULL),
         settings(settings),
         messagingSettings(NULL),
-        libjoynrSettings(NULL)
+        libjoynrSettings(NULL),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-        , dbusSettings(NULL)
-        , ccDbusMessageRouterAdapter(NULL)
+        dbusSettings(NULL),
+        ccDbusMessageRouterAdapter(NULL),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-
+        wsCcMessagingSkeleton(NULL)
 {
     /*
       * WARNING - metatypes are not registered yet here.
@@ -154,6 +156,16 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     messageRouter->addProvisionedNextHop(
                 messagingSettings->getChannelUrlDirectoryParticipantId(),
                 globalChannelUrlDirectoryAddress
+    );
+
+    // setup CC WebSocket interface
+    WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
+    messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
+    unsigned short wsServerPort = 4242;
+    wsCcMessagingSkeleton = new WebSocketCcMessagingSkeleton(
+                *messageRouter,
+                *wsMessagingStubFactory,
+                wsServerPort
     );
 
     /* LibJoynr */

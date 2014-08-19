@@ -60,6 +60,7 @@ class JoynrMessagingConnectorFactory;
 class MessagingSettings;
 class Dispatcher;
 class InProcessPublicationSender;
+class WebSocketCcMessagingSkeleton;
 
 namespace infrastructure {
     class ChannelUrlDirectoryProxy;
@@ -137,6 +138,7 @@ protected:
     DbusSettings* dbusSettings;
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
+    WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
 
     static joynr_logging::Logger* logger;
 private:

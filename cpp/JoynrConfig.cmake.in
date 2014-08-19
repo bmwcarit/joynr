@@ -71,9 +71,9 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         "${Qt5Core_LIBRARIES}"
         "${Qt5WebSockets_LIBRARIES}"
     )
-
-    list(
-        APPEND JOYNR_EXECUTABLES
-        @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
-    )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
+list(
+    APPEND JOYNR_EXECUTABLES
+    @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
+)

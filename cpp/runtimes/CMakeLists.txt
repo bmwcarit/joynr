@@ -147,6 +147,8 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrRuntime_SOURCES}
     )
 
+    qt5_use_modules(JoynrRuntime Core)
+
     target_link_libraries(
         JoynrRuntime
         JoynrCommon
@@ -180,16 +182,21 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         DESTINATION "${INSTALL_INCLUDE_DIR}"
         FILES_MATCHING PATTERN "*.h"
     )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     # executable to start the cluster controller
     add_executable(cluster-controller StartClusterController.cpp)
 
     qt5_use_modules(cluster-controller Core)
 
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     target_link_libraries(cluster-controller
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    target_link_libraries(cluster-controller
         JoynrClusterControllerRuntime
     )
 
@@ -198,7 +205,3 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
     )
-
-    qt5_use_modules(JoynrRuntime Core)
-
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
