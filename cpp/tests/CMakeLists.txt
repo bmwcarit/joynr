@@ -219,6 +219,7 @@ set(
 file(
     GLOB g_UnitTests_SOURCES
     "unit-tests/*.cpp"
+    "unit-tests/websocket/*.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -234,7 +235,7 @@ add_executable(
     ${test_SOURCES}
     ${g_UnitTests_SOURCES}
 )
-qt5_use_modules(g_UnitTests Core)
+qt5_use_modules(g_UnitTests Core Test)
 add_dependencies(g_UnitTests googletest)
 add_dependencies(g_UnitTests googlemock)
 

@@ -69,6 +69,7 @@ file(
     "*.h"
     "in-process/*.h"
     "joynr-messaging/*.h"
+    "websocket/*.h"
     "cache/*.h"
     "logging/*.h"
     "capabilities/*.h"
@@ -88,6 +89,7 @@ file(
     "*.cpp"
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
+    "websocket/*.cpp"
     "cache/*.cpp"
     "logging/joynrlogging_log4qt.cpp"
     "capabilities/*.cpp"
@@ -128,7 +130,7 @@ add_library(
     ${JoynrCommon_HEADERS}
     ${JoynrCommon_SOURCES}
 )
-qt5_use_modules(JoynrCommon Core)
+qt5_use_modules(JoynrCommon Core WebSockets)
 
 set_target_properties(
     JoynrCommon
