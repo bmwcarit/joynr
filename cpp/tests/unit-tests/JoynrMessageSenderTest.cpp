@@ -168,7 +168,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setAttributeName(QString("attributeName"));
+    subscriptionRequest.setSubscribeToName(QString("attributeName"));
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createSubscriptionRequest(senderID,receiverID, qosSettings, subscriptionRequest);

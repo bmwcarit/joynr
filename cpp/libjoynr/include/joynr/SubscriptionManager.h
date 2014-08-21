@@ -61,16 +61,14 @@ public:
      * necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
      * deletes the callback when no longer required.
      *
-     * @param proxyId
-     * @param providerId
      * @param attributeName
      * @param attributeSubscriptionCaller
      * @param qos
      * @param subscriptionRequest
      */
-    void registerAttributeSubscription(
-            const QString &attributeName,
-            ISubscriptionCallback * attributeSubscriptionCaller, // SubMgr gets ownership of ptr
+    void registerSubscription(
+            const QString &subscribeToName,
+            ISubscriptionCallback * subscriptionCaller, // SubMgr gets ownership of ptr
             QSharedPointer<SubscriptionQos> qos,
             SubscriptionRequest& subscriptionRequest);
 
@@ -80,7 +78,7 @@ public:
      *
      * @param subscriptionId
      */
-    void unregisterAttributeSubscription(const QString& subscriptionId);
+    void unregisterSubscription(const QString& subscriptionId);
 
     /**
      * @brief Sets the time of last received publication (incoming attribute value) to the current system time.
@@ -101,7 +99,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
     void subscriptionEnded(const QString& subscriptionId);
 
-    Directory<QString, ISubscriptionCallback> attributeSubscriptionDirectory;
+    Directory<QString, ISubscriptionCallback> subscriptionDirectory;
     ThreadSafeMap<QString, PubSubState*>* subscriptionStates;
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;

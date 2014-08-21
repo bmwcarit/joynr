@@ -232,7 +232,7 @@ void PublicationManager::addOnChangePublication(const QString& subscriptionId,
 
         // Register the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->registerAttributeListener(request->getAttributeName(), attributeListener);
+        requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
@@ -432,7 +432,7 @@ void PublicationManager::removeOnChangePublication(const QString& subscriptionId
 
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->unregisterAttributeListener(request->getAttributeName(), publication->attributeListener);
+        requestCaller->unregisterAttributeListener(request->getSubscribeToName(), publication->attributeListener);
         publication->attributeListener = NULL;
     }
 }
@@ -522,7 +522,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     }
 
     // Get the value of the attribute
-    QString attributeGetter = Util::attributeGetterFromName(subscriptionRequest->getAttributeName());
+    QString attributeGetter = Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName());
     QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
     QSharedPointer<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(requestCaller->getInterfaceName());

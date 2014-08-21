@@ -136,7 +136,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     QString subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
-    subscriptionRequest.setAttributeName(attributeName);
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
@@ -193,7 +193,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
 
     // subscriptionRequest is an out param
-    subscriptionManager->registerAttributeSubscription(
+    subscriptionManager->registerSubscription(
                 attributeName,
                 subscriptionCallback,
                 subscriptionQos,
@@ -242,7 +242,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
-    subscriptionRequest.setAttributeName(attributeName);
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
@@ -285,7 +285,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     QString subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
-    subscriptionRequest.setAttributeName(attributeName);
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
@@ -329,7 +329,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     QString subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
-    subscriptionRequest.setAttributeName(attributeName);
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
