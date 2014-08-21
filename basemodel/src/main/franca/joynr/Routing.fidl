@@ -35,9 +35,20 @@ typeCollection RoutingTypes {
 		String windowId
 	}
 
+	enumeration WebSocketProtocol  {
+        WS
+        WSS
+    }
+
 	struct WebSocketAddress extends Address {
+		WebSocketProtocol protocol
 		String host
 		Int32 port
+		String path
+	}
+	
+	struct WebSocketClientAddress extends Address {
+		String id
 	}
 }
 
