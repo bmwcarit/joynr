@@ -1,0 +1,65 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+#ifndef BROADCASTSUBSCRIPTIONREQUEST_H
+#define BROADCASTSUBSCRIPTIONREQUEST_H
+
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastFilterParameters.h"
+
+#include <QString>
+#include <QSharedPointer>
+
+namespace joynr {
+
+/** \class BroadcastSubscriptionRequest
+  * \brief SubscriptionRequest stores the information that is necessary to store a broadcast
+  * subscription-Request on subscriber side, while Aribtration is handled.
+  */
+
+class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest{
+    Q_OBJECT
+
+    Q_PROPERTY(QVariant filterParameters READ getFilterParametersData WRITE setFilterParametersData)
+
+public:
+    BroadcastSubscriptionRequest();
+    BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest& subscriptionRequest);
+    BroadcastSubscriptionRequest& operator=(const BroadcastSubscriptionRequest& subscriptionRequest);
+    bool operator==(const BroadcastSubscriptionRequest& subscriptionRequest) const;
+
+    QString toQString() const;
+
+    BroadcastFilterParameters getFilterParameters() const;
+    void setFilterParameters(const BroadcastFilterParameters &filterParameters);
+
+protected:
+    void setFilterParametersData(QVariant filterParameters);
+    QVariant getFilterParametersData() const;
+
+private:
+    BroadcastFilterParameters filterParameters;
+
+    static joynr_logging::Logger* logger;
+
+};
+
+} // namespace joynr
+
+Q_DECLARE_METATYPE(joynr::BroadcastSubscriptionRequest)
+#endif // BROADCASTSUBSCRIPTIONREQUEST_H

@@ -42,6 +42,7 @@
 #include "joynr/system/CommonApiDbusAddress.h"
 #include "joynr/tests/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
@@ -110,6 +111,20 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     QByteArray result = JsonSerializer::serialize(request);
     LOG_DEBUG(logger, QString(result));
     SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
+    EXPECT_TRUE(request == *desRequest);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
+    qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
+    BroadcastSubscriptionRequest request;
+    QSharedPointer<SubscriptionQos> x(new SubscriptionQos(5000));
+    request.setQos(x);
+    BroadcastFilterParameters filter;
+    filter.setFilterParameter("MyFilter", "MyFilterValue");
+    request.setFilterParameters(filter);
+    QByteArray result = JsonSerializer::serialize(request);
+    LOG_DEBUG(logger, QString(result));
+    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(result);
     EXPECT_TRUE(request == *desRequest);
 }
 

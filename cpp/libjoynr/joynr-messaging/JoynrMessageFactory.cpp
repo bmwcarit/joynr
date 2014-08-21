@@ -19,6 +19,7 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -35,6 +36,7 @@ JoynrMessageFactory::JoynrMessageFactory() :
     qRegisterMetaType<Reply>();
     qRegisterMetaType<Request>();
     qRegisterMetaType<SubscriptionRequest>();
+    qRegisterMetaType<BroadcastSubscriptionRequest>();
     qRegisterMetaType<SubscriptionReply>();
     qRegisterMetaType<SubscriptionStop>();
     qRegisterMetaType<SubscriptionPublication>();
