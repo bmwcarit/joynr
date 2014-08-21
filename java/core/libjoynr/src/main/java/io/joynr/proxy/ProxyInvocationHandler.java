@@ -152,7 +152,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
      * 
      * @return true if a connector was successfully set.
      */
-    public boolean checkConnectorStatus() {
+    public boolean isConnectorReady() {
         connectorStatusLock.lock();
         try {
             if (connectorStatus == ConnectorStatus.ConnectorSuccesful) {
@@ -243,9 +243,9 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
      *            from the previously invoked arbitration
      */
     public void createConnector(ArbitrationResult result) {
+        connector = ConnectorFactory.create(dispatcher, messageSender, proxyParticipantId, result, qosSettings);
         connectorStatusLock.lock();
         try {
-            connector = ConnectorFactory.create(dispatcher, messageSender, proxyParticipantId, result, qosSettings);
             connectorStatus = ConnectorStatus.ConnectorSuccesful;
             connectorSuccessfullyFinished.signal();
 
@@ -253,9 +253,6 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
                 sendQueuedRequests();
                 sendQueuedSubscriptionRequests();
             }
-
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
         } finally {
             connectorStatusLock.unlock();
         }
@@ -305,43 +302,54 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
 
     private Future<String> sendSubscriptionMethod(Method method, Object[] args, String subscriptionId) {
         Future<String> future = new Future<String>();
-        if (checkConnectorStatus()) {
-            try {
-                connector.executeSubscriptionMethod(method, args, future, subscriptionId);
-            } catch (JoynrSendBufferFullException e) {
-                e.printStackTrace();
-                setFutureErrorState(future, e);
-            } catch (JoynrMessageNotSentException e) {
-                setFutureErrorState(future, e);
-                e.printStackTrace();
-            } catch (JsonGenerationException e) {
-                setFutureErrorState(future, new JoynrException(e));
-                e.printStackTrace();
-            } catch (JsonMappingException e) {
-                setFutureErrorState(future, new JoynrException(e));
-                e.printStackTrace();
-            } catch (IOException e) {
-                setFutureErrorState(future, new JoynrException(e));
-                e.printStackTrace();
+        connectorStatusLock.lock();
+        try {
+            if (!isConnectorReady()) {
+                // waiting for arbitration -> queue request
+                queuedSubscriptionsList.offer(new QueuedSubscription(method, args, future, subscriptionId));
+                return future;
             }
-        } else {
-            // waiting for arbitration -> queue request
-            queuedSubscriptionsList.offer(new QueuedSubscription(method, args, future, subscriptionId));
+        } finally {
+            connectorStatusLock.unlock();
         }
+
+        try {
+            connector.executeSubscriptionMethod(method, args, future, subscriptionId);
+        } catch (JoynrSendBufferFullException e) {
+            e.printStackTrace();
+            setFutureErrorState(future, e);
+        } catch (JoynrMessageNotSentException e) {
+            setFutureErrorState(future, e);
+            e.printStackTrace();
+        } catch (JsonGenerationException e) {
+            setFutureErrorState(future, new JoynrException(e));
+            e.printStackTrace();
+        } catch (JsonMappingException e) {
+            setFutureErrorState(future, new JoynrException(e));
+            e.printStackTrace();
+        } catch (IOException e) {
+            setFutureErrorState(future, new JoynrException(e));
+            e.printStackTrace();
+        }
+
         return future;
     }
 
     @Override
     protected <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Throwable {
         Future<T> future = new Future<T>();
-        if (checkConnectorStatus()) {
-            // arbitration already successfully finished -> send request
-            return connector.executeAsyncMethod(method, args, future);
+        connectorStatusLock.lock();
+        try {
+            if (!isConnectorReady()) {
+                // waiting for arbitration -> queue request
+                queuedRpcList.offer(new QueuedRPC(method, args, future));
+                return future;
+            }
+        } finally {
+            connectorStatusLock.unlock();
         }
 
-        // waiting for arbitration -> queue request
-        queuedRpcList.offer(new QueuedRPC(method, args, future));
-        return future;
-
+        // arbitration already successfully finished -> send request
+        return connector.executeAsyncMethod(method, args, future);
     }
 }

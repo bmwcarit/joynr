@@ -60,7 +60,7 @@ public final class ConnectorFactory {
                                                     final RequestReplySender messageSender,
                                                     final String fromParticipantId,
                                                     final ArbitrationResult arbitrationResult,
-                                                    final MessagingQos qosSettings) throws JoynrIllegalStateException {
+                                                    final MessagingQos qosSettings) {
 
         for (EndpointAddressBase endpointAddress : arbitrationResult.getEndpointAddress()) {
             if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
