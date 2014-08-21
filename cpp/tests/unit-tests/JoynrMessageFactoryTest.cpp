@@ -204,7 +204,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos());
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setAttributeName(QString("attributeName"));
+    subscriptionRequest.setSubscribeToName(QString("attributeName"));
     subscriptionRequest.setQos(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
                 senderID,

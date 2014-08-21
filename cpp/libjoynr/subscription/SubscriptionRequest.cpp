@@ -33,7 +33,7 @@ Logger* SubscriptionRequest::logger = Logging::getInstance()->getLogger("MSG", "
 SubscriptionRequest::SubscriptionRequest():
     QObject(),
     subscriptionId(),
-    attributeName(),
+    subscribedToName(),
     qos(QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos()))
 {
     subscriptionId = Util::createUuid();
@@ -53,7 +53,7 @@ SubscriptionRequest::SubscriptionRequest():
 SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest) :
     QObject(),
     subscriptionId(subscriptionRequest.getSubscriptionId()),
-    attributeName(subscriptionRequest.getAttributeName()),
+    subscribedToName(subscriptionRequest.getSubscribeToName()),
     qos(subscriptionRequest.getQos())
 {
 
@@ -63,8 +63,8 @@ QString SubscriptionRequest::getSubscriptionId() const {
     return subscriptionId;
 }
 
-QString SubscriptionRequest::getAttributeName() const {
-    return attributeName;
+QString SubscriptionRequest::getSubscribeToName() const {
+    return subscribedToName;
 }
 
 QSharedPointer<SubscriptionQos> SubscriptionRequest::getQos() const {
@@ -78,7 +78,7 @@ QVariant SubscriptionRequest::getQosData() const {
 
 SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest) {
     subscriptionId = subscriptionRequest.getSubscriptionId();
-    attributeName = subscriptionRequest.getAttributeName();
+    subscribedToName = subscriptionRequest.getSubscribeToName();
     qos = subscriptionRequest.getQos();
     return *this;
 }
@@ -87,7 +87,7 @@ bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequ
     bool equal = getQos()->equals(*subscriptionRequest.getQos());
     return
             subscriptionId == subscriptionRequest.getSubscriptionId()
-            && attributeName == subscriptionRequest.getAttributeName()
+            && subscribedToName == subscriptionRequest.getSubscribeToName()
             && equal;
 }
 
@@ -95,8 +95,8 @@ void SubscriptionRequest::setSubscriptionId(const QString &id) {
     this->subscriptionId = id;
 }
 
-void SubscriptionRequest::setAttributeName(const QString &attributeName) {
-    this->attributeName = attributeName;
+void SubscriptionRequest::setSubscribeToName(const QString &attributeName) {
+    this->subscribedToName = attributeName;
 }
 
 void SubscriptionRequest::setQos(QSharedPointer<SubscriptionQos> qos) {

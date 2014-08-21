@@ -39,7 +39,7 @@ class JOYNR_EXPORT SubscriptionRequest : public QObject{
     Q_OBJECT
 
     Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
-    Q_PROPERTY(QString attributeName READ getAttributeName WRITE setAttributeName)
+    Q_PROPERTY(QString subscribedToName READ getSubscribeToName WRITE setSubscribeToName)
     Q_PROPERTY(QVariant qos READ getQosData WRITE setQosData)
 
 public:
@@ -52,8 +52,8 @@ public:
     QString getSubscriptionId() const;
     void setSubscriptionId(const QString& id);
 
-    QString getAttributeName() const;
-    void setAttributeName(const QString& attributeName);
+    QString getSubscribeToName() const;
+    void setSubscribeToName(const QString& subscribedToName);
 
     void setQos(QSharedPointer<SubscriptionQos> qos);
     QSharedPointer<SubscriptionQos> getQos() const;
@@ -71,7 +71,7 @@ private:
       the subscription, and thus must be stored while waiting for arbitrations.
       */
     QString subscriptionId;
-    QString attributeName;
+    QString subscribedToName;
     QSharedPointer<SubscriptionQos> qos;
 
     static joynr_logging::Logger* logger;

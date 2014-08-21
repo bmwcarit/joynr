@@ -41,22 +41,22 @@ SubscriptionManager::~SubscriptionManager() {
 }
 
 SubscriptionManager::SubscriptionManager():
-    attributeSubscriptionDirectory(QString("SubsriptionManager-AttributeSubscriptionDirectory")),
+    subscriptionDirectory(QString("SubsriptionManager-SubscriptionDirectory")),
     subscriptionStates(new ThreadSafeMap<QString, PubSubState*>()),
     missedPublicationScheduler(new SingleThreadedDelayedScheduler(QString("SubscriptionManager-MissedPublicationScheduler")))
 {
 }
 
 SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler):
-    attributeSubscriptionDirectory(QString("SubsriptionManager-AttributeSubscriptionDirectory")),
+    subscriptionDirectory(QString("SubsriptionManager-SubscriptionDirectory")),
     subscriptionStates(new ThreadSafeMap<QString, PubSubState*>()),
     missedPublicationScheduler(scheduler)
 {
 }
 
-void SubscriptionManager::registerAttributeSubscription(
-        const QString &attributeName,
-        ISubscriptionCallback * attributeSubscriptionCaller, // SubMgr gets ownership of ptr
+void SubscriptionManager::registerSubscription(
+        const QString &subscribeToName,
+        ISubscriptionCallback * subscriptionCaller, // SubMgr gets ownership of ptr
         QSharedPointer<SubscriptionQos> qos,
         SubscriptionRequest& subscriptionRequest
 ){
@@ -67,8 +67,8 @@ void SubscriptionManager::registerAttributeSubscription(
 
     // Register the subscription
     QString subscriptionId = subscriptionRequest.getSubscriptionId();
-    LOG_DEBUG(logger, "Attribute subscription registered. ID=" + subscriptionId);
-    attributeSubscriptionDirectory.add(subscriptionId, attributeSubscriptionCaller);// Owner: directory
+    LOG_DEBUG(logger, "Subscription registered. ID=" + subscriptionId);
+    subscriptionDirectory.add(subscriptionId, subscriptionCaller);// Owner: directory
 
     if(SubscriptionUtil::getAlertInterval(qos.data()) > 0) {
         LOG_DEBUG(logger, "Will notify if updates are missed.");
@@ -93,11 +93,11 @@ void SubscriptionManager::registerAttributeSubscription(
         missedPublicationScheduler->schedule(new ExpiredSubscriptionRunnable(subscriptionId, *this), qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
     }
     subscriptionRequest.setSubscriptionId(subscriptionId);
-    subscriptionRequest.setAttributeName(attributeName);
+    subscriptionRequest.setSubscribeToName(subscribeToName);
     subscriptionRequest.setQos(qos);
 }
 
-void SubscriptionManager::unregisterAttributeSubscription(const QString &subscriptionId) {
+void SubscriptionManager::unregisterSubscription(const QString &subscriptionId) {
     PubSubState* subscriptionState = subscriptionStates->value(subscriptionId);
     if(subscriptionState != NULL) {
         logger->log(DEBUG, "Called unregister / unsubscribe on subscription id= " +subscriptionId);
@@ -126,11 +126,11 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId) 
 QSharedPointer<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
         const QString& subscriptionId) {
     LOG_DEBUG(logger, "Getting subscription callback for subscription id=" + subscriptionId );
-    if(!subscriptionStates->contains(subscriptionId) || !attributeSubscriptionDirectory.contains(subscriptionId) ) {
+    if(!subscriptionStates->contains(subscriptionId) || !subscriptionDirectory.contains(subscriptionId) ) {
         LOG_DEBUG(logger, "Trying to acces a non existing subscription callback for id=" + subscriptionId);
     }
     QSharedPointer<ISubscriptionCallback> callback =
-            attributeSubscriptionDirectory.lookup(subscriptionId);
+            subscriptionDirectory.lookup(subscriptionId);
     return callback;
 }
 
@@ -141,7 +141,7 @@ void SubscriptionManager::subscriptionEnded(const QString& subscriptionId) {
     PubSubState* state = subscriptionStates->value(subscriptionId);
     subscriptionStates->remove(subscriptionId);
     delete state;
-    attributeSubscriptionDirectory.remove(subscriptionId);
+    subscriptionDirectory.remove(subscriptionId);
 }
 
 
