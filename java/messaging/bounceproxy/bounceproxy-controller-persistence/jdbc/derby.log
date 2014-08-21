@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Wed Aug 20 13:54:52 CEST 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.1.1 - (1458268): instance a816c00e-0147-f345-0342-000005a38fc0 
+on database directory memory:/home/christian/joynr/joynr/java/messaging/bounceproxy/bounceproxy-controller-persistence/jdbc/memdatabase with class loader sun.misc.Launcher$AppClassLoader@16309ee1 
+Loaded from file:/home/christian/.m2/repository/org/apache/derby/derby/10.10.1.1/derby-10.10.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.7.0_60-b19
+user.dir=/home/christian/joynr/joynr/java/messaging/bounceproxy/bounceproxy-controller-persistence/jdbc
+os.name=Linux
+os.arch=amd64
+os.version=3.13.0-30-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
