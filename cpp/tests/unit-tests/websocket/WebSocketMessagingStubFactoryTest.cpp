@@ -35,7 +35,7 @@ class SignalSlotTest : public testing::Test {
 public:
     SignalSlotTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketMessagingStubFactoryTest")),
-        webSocketAddress("localhost", 42),
+        webSocketAddress(joynr::system::WebSocketProtocol::WS, "localhost", 42, "path"),
         channelAddress("channelId"),
         commonApiDbusAddress("domain", "serviceName", "participantId"),
         browserAddress("windowId")
