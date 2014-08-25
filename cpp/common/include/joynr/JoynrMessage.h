@@ -93,6 +93,7 @@ public:
     static const QString VALUE_MESSAGE_TYPE_REQUEST;
     static const QString VALUE_MESSAGE_TYPE_REPLY;
     static const QString VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+    static const QString VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
     static const QString VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY; //reply that the subscription was registered successfully
     static const QString VALUE_MESSAGE_TYPE_PUBLICATION;
     static const QString VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP;

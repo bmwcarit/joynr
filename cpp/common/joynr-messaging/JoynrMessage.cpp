@@ -66,6 +66,7 @@ const QString JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST = "request";
 const QString JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
 const QString JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
 const QString JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
+const QString JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "broadcastSubscriptionRequest";
 const QString JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
 
 

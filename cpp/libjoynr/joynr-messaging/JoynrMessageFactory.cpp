@@ -104,6 +104,18 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
     return msg;
 }
 
+JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
+        const QString& senderId,
+        const QString& receiverId,
+        const MessagingQos& qos,
+        const BroadcastSubscriptionRequest& payload
+) {
+    JoynrMessage msg;
+    msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    return msg;
+}
+
 JoynrMessage JoynrMessageFactory::createSubscriptionReply(
         const QString& senderId,
         const QString& receiverId,

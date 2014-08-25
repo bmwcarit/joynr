@@ -30,6 +30,7 @@ class IReplyCaller;
 class Reply;
 class Request;
 class SubscriptionRequest;
+class BroadcastSubscriptionRequest;
 class SubscriptionReply;
 class SubscriptionStop;
 class SubscriptionPublication;
@@ -94,6 +95,13 @@ public:
             const QString &receiverParticipantId,
             const MessagingQos& qos,
             const SubscriptionRequest& subscriptionRequest
+    ) = 0;
+
+    virtual void sendBroadcastSubscriptionRequest(
+            const QString &senderParticipantId,
+            const QString &receiverParticipantId,
+            const MessagingQos& qos,
+            const BroadcastSubscriptionRequest& subscriptionRequest
     ) = 0;
 
     virtual void sendSubscriptionReply(

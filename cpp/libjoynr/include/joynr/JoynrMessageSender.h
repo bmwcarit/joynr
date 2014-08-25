@@ -91,6 +91,13 @@ public:
             const SubscriptionRequest& subscriptionRequest
     );
 
+    virtual void sendBroadcastSubscriptionRequest(
+            const QString &senderParticipantId,
+            const QString &receiverParticipantId,
+            const MessagingQos& qos,
+            const BroadcastSubscriptionRequest& subscriptionRequest
+    );
+
     virtual void sendSubscriptionReply(
             const QString &senderParticipantId,
             const QString &receiverParticipantId,

@@ -52,6 +52,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/vehicle/GpsProvider.h"
@@ -221,6 +222,16 @@ public:
                 const QString &receiverParticipantId,
                 const joynr::MessagingQos& qos,
                 const joynr::SubscriptionRequest& subscriptionRequest
+            )
+    );
+
+    MOCK_METHOD4(
+            sendBroadcastSubscriptionRequest,
+            void(
+                const QString &senderParticipantId,
+                const QString &receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::BroadcastSubscriptionRequest& subscriptionRequest
             )
     );
 

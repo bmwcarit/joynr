@@ -33,6 +33,7 @@ class SubscriptionPublication;
 class SubscriptionStop;
 class SubscriptionReply;
 class SubscriptionRequest;
+class BroadcastSubscriptionRequest;
 
 /**
   * The JoynrMessageFactory creates JoynrMessages. It sets the headers and
@@ -72,6 +73,12 @@ public:
             const QString& receiverId,
             const MessagingQos &qos,
             const SubscriptionRequest& payload);
+
+    JoynrMessage createBroadcastSubscriptionRequest(
+            const QString& senderId,
+            const QString& receiverId,
+            const MessagingQos &qos,
+            const BroadcastSubscriptionRequest& payload);
 
     JoynrMessage createSubscriptionReply(
             const QString& senderId,

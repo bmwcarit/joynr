@@ -184,6 +184,37 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     joynrMessageSender.sendSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest);
 }
 
+TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
+
+    MockDispatcher mockDispatcher;
+    QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
+
+    qint64 period = 2000;
+    qint64 validity = 100000;
+    qint64 alert = 4000;
+    auto qos = QSharedPointer<SubscriptionQos>(new PeriodicSubscriptionQos(validity, period, alert));
+
+    BroadcastSubscriptionRequest subscriptionRequest;
+    BroadcastFilterParameters filter;
+    filter.setFilterParameter("MyParameter", "MyValue");
+    subscriptionRequest.setFilterParameters(filter);
+    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
+    subscriptionRequest.setSubscribeToName(QString("broadcastName"));
+    subscriptionRequest.setQos(qos);
+
+    JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(senderID,receiverID, qosSettings, subscriptionRequest);
+
+
+    EXPECT_CALL(*messagingStubQsp, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
+                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),
+                                            qosSettings));
+
+    JoynrMessageSender joynrMessageSender(messagingStubQsp);
+    joynrMessageSender.registerDispatcher(&mockDispatcher);
+
+    joynrMessageSender.sendBroadcastSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest);
+}
+
 
 //TODO implement sending a reply to a subscription request!
 TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){

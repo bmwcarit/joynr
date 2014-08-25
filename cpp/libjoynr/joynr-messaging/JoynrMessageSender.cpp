@@ -103,6 +103,22 @@ void JoynrMessageSender::sendSubscriptionRequest(
     messageRouter->route(message, qos);
 }
 
+void JoynrMessageSender::sendBroadcastSubscriptionRequest(
+        const QString& senderParticipantId,
+        const QString& receiverParticipantId,
+        const MessagingQos& qos,
+        const BroadcastSubscriptionRequest& subscriptionRequest
+) {
+    JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
+                senderParticipantId,
+                receiverParticipantId,
+                qos,
+                subscriptionRequest
+    );
+    assert(!messageRouter.isNull());
+    messageRouter->route(message, qos);
+}
+
 void JoynrMessageSender::sendSubscriptionReply(
         const QString& senderParticipantId,
         const QString& receiverParticipantId,
