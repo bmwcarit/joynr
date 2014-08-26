@@ -136,6 +136,7 @@ private:
 
     // Subscription persistence
     QString subscriptionRequestStorageFileName;
+    QString broadcastSubscriptionRequestStorageFileName;
 
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before

@@ -63,6 +63,11 @@ const QString& LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME() 
     return value;
 }
 
+const QString& LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME() {
+    static const QString value("BroadcastSubscriptionRequests.persist");
+    return value;
+}
+
 QString LibjoynrSettings::getParticipantIdsPersistenceFilename() const {
     return settings.value(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()).toString();
 }
