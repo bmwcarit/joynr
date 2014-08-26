@@ -58,7 +58,7 @@ const QString& LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME() 
     return value;
 }
 
-const QString& LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME() {
+const QString& LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME() {
     static const QString value("SubscriptionRequests.persist");
     return value;
 }

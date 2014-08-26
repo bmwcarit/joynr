@@ -81,7 +81,7 @@ void SetUp(){
 }
 
 void TearDown(){
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
 }
 
@@ -205,7 +205,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
@@ -274,7 +274,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());

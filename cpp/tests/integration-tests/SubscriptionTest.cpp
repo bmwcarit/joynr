@@ -74,7 +74,7 @@ public:
     }
 
     void SetUp(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager();
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);

@@ -160,7 +160,7 @@ public:
         delete discoveryProxy;
         delete runtime;
         QFile::remove(temporarylibjoynrSettingsFilename);
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
     }
 };
