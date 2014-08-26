@@ -36,6 +36,7 @@ namespace joynr {
 
 class DelayedScheduler;
 class SubscriptionRequest;
+class BroadcastSubscriptionRequestInformation;
 class SubscriptionRequestInformation;
 class IPublicationSender;
 class RequestCaller;
@@ -122,6 +123,7 @@ private:
     // Information for each publication is keyed by subcriptionId
     QMap<QString, Publication*> publications;
     QMap<QString, SubscriptionRequestInformation*> subscriptionId2SubscriptionRequest;
+    QMap<QString, BroadcastSubscriptionRequestInformation*> subscriptionId2BroadcastSubscriptionRequest;
 
     // .. and protected with a read/write lock
     mutable QReadWriteLock subscriptionLock;
@@ -144,6 +146,12 @@ private:
     QMultiMap<QString, SubscriptionRequestInformation*> queuedSubscriptionRequests;
     QMutex queuedSubscriptionRequestsMutex;
 
+    // Queues all broadcast subscription requests that are either received by the
+    // dispatcher or restored from the subscription storage file before
+    // the corresponding provider is added
+    QMultiMap<QString, BroadcastSubscriptionRequestInformation*> queuedBroadcastSubscriptionRequests;
+    QMutex queuedBroadcastSubscriptionRequestsMutex;
+
     // Logging
     static joynr_logging::Logger* logger;
 
@@ -164,8 +172,19 @@ private:
     // Helper functions
     bool publicationExists(const QString& subscriptionId) const;
     void createPublishRunnable(const QString& subscriptionId);
-    void saveSubscriptionRequestsMap();
-    void loadSavedSubscriptionRequestsMap();
+    void saveAttributeSubscriptionRequestsMap();
+    void loadSavedAttributeSubscriptionRequestsMap();
+    void saveBroadcastSubscriptionRequestsMap();
+    void loadSavedBroadcastSubscriptionRequestsMap();
+
+    template <class RequestInformationType>
+    void saveSubscriptionRequestsMap(const QMap<QString, RequestInformationType*>& map, const QString& storageFilename);
+
+    template <class RequestInformationType>
+    void loadSavedSubscriptionRequestsMap(const QString& storageFilename,
+                                          QMutex &mutex,
+                                          QMultiMap<QString, RequestInformationType*> &queuedSubscriptions);
+
     bool isShuttingDown();
     qint64 getPublicationTtl(SubscriptionRequestInformation* subscriptionRequest) const;
     void sendPublication(const QString& subscriptionId,

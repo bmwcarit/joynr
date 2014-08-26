@@ -27,8 +27,10 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Util.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
+#include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
 #include "joynr/LibjoynrSettings.h"
 
@@ -91,7 +93,8 @@ Logger* PublicationManager::logger = Logging::getInstance()->getLogger("MSG", "P
 
 PublicationManager::~PublicationManager() {
     LOG_DEBUG(logger, "Destructor, saving subscriptionsMap...");
-    saveSubscriptionRequestsMap();
+    saveAttributeSubscriptionRequestsMap();
+    saveBroadcastSubscriptionRequestsMap();
 
     // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we call it first
     //then set shuttingDown to true
@@ -116,6 +119,7 @@ PublicationManager::~PublicationManager() {
 PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThreads)
     : publications(),
       subscriptionId2SubscriptionRequest(),
+      subscriptionId2BroadcastSubscriptionRequest(),
       subscriptionLock(),
       publishingThreadPool(),
       delayedScheduler(scheduler),
@@ -125,6 +129,8 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThrea
       broadcastSubscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
       queuedSubscriptionRequests(),
       queuedSubscriptionRequestsMutex(),
+      queuedBroadcastSubscriptionRequests(),
+      queuedBroadcastSubscriptionRequestsMutex(),
       currentScheduledPublications(),
       currentScheduledPublicationsMutex()
 {
@@ -132,12 +138,14 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThrea
     publishingThreadPool.setMaxThreadCount(maxThreads);
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
-    loadSavedSubscriptionRequestsMap();
+    loadSavedAttributeSubscriptionRequestsMap();
+    loadSavedBroadcastSubscriptionRequestsMap();
 }
 
 PublicationManager::PublicationManager(int maxThreads)
     : publications(),
       subscriptionId2SubscriptionRequest(),
+      subscriptionId2BroadcastSubscriptionRequest(),
       subscriptionLock(),
       publishingThreadPool(),
       delayedScheduler(NULL),
@@ -147,6 +155,8 @@ PublicationManager::PublicationManager(int maxThreads)
       broadcastSubscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
       queuedSubscriptionRequests(),
       queuedSubscriptionRequestsMutex(),
+      queuedBroadcastSubscriptionRequests(),
+      queuedBroadcastSubscriptionRequestsMutex(),
       currentScheduledPublications(),
       currentScheduledPublicationsMutex()
 {
@@ -155,7 +165,8 @@ PublicationManager::PublicationManager(int maxThreads)
     delayedScheduler = new ThreadPoolDelayedScheduler(publishingThreadPool, QString("PublicationManager-PublishingThreadPool"));
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
-    loadSavedSubscriptionRequestsMap();
+    loadSavedAttributeSubscriptionRequestsMap();
+    loadSavedBroadcastSubscriptionRequestsMap();
 }
 
 bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0){
@@ -219,7 +230,7 @@ void PublicationManager::add(
         }
 
     }
-    saveSubscriptionRequestsMap();
+    saveAttributeSubscriptionRequestsMap();
 }
 
 void PublicationManager::addOnChangePublication(const QString& subscriptionId,
@@ -265,7 +276,7 @@ void PublicationManager::add(
                 requestInfo->getSubscriptionId(),
                 requestInfo);
     }
-    saveSubscriptionRequestsMap();
+    saveAttributeSubscriptionRequestsMap();
 }
 
 
@@ -327,15 +338,51 @@ void PublicationManager::restore(const QString& providerId,
 }
 
 // This function assumes that no lock is held
-void PublicationManager::saveSubscriptionRequestsMap() {
-    LOG_DEBUG(logger, "Saving active subscriptionRequests to file.");
+void PublicationManager::saveAttributeSubscriptionRequestsMap() {
+    LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
+
+    saveSubscriptionRequestsMap<SubscriptionRequestInformation>(subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
+}
+
+void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(){
+
+    loadSavedSubscriptionRequestsMap<SubscriptionRequestInformation>(
+                subscriptionRequestStorageFileName,
+                queuedSubscriptionRequestsMutex,
+                queuedSubscriptionRequests);
+}
+
+void PublicationManager::saveBroadcastSubscriptionRequestsMap() {
+    LOG_DEBUG(logger, "Saving active broadcastSubscriptionRequests to file.");
+
+    saveSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
+                subscriptionId2BroadcastSubscriptionRequest,
+                broadcastSubscriptionRequestStorageFileName);
+
+}
+
+void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
+{
+    LOG_DEBUG(logger, "Loading stored BroadcastSubscriptionrequests.");
+
+    loadSavedSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
+                broadcastSubscriptionRequestStorageFileName,
+                queuedBroadcastSubscriptionRequestsMutex,
+                queuedBroadcastSubscriptionRequests);
+}
+
+template <class RequestInformationType>
+void PublicationManager::saveSubscriptionRequestsMap(const QMap<QString, RequestInformationType*>& map, const QString &storageFilename) {
+
+    static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
+                  "saveSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
 
     if (isShuttingDown()){
         LOG_DEBUG(logger, "Abort saving, because we are already shutting down.");
         return;
     }
 
-    QFile file(subscriptionRequestStorageFileName);
+    QFile file(storageFilename);
     if (!file.open(QIODevice::WriteOnly)) {
         LOG_ERROR(logger, QString("Could not open subscription request storage file: %1")
                                  .arg(file.errorString()));
@@ -351,7 +398,7 @@ void PublicationManager::saveSubscriptionRequestsMap() {
     {
         QReadLocker locker(&subscriptionLock);
 
-        foreach (SubscriptionRequestInformation* requestInfo, subscriptionId2SubscriptionRequest) {
+        foreach (RequestInformationType* requestInfo, map) {
             if(!isSubscriptionExpired(requestInfo->getQos())) {
                 subscriptionList.append( QVariant::fromValue(*requestInfo) );
             }
@@ -361,10 +408,15 @@ void PublicationManager::saveSubscriptionRequestsMap() {
     file.write( json.toUtf8().constData() );
 }
 
-void PublicationManager::loadSavedSubscriptionRequestsMap(){
-    LOG_DEBUG(logger, "Loading stored Subscriptionrequests.");
+template <class RequestInformationType>
+void PublicationManager::loadSavedSubscriptionRequestsMap(const QString &storageFilename,
+                                                          QMutex &mutex,
+                                                          QMultiMap<QString, RequestInformationType*> &queuedSubscriptions) {
 
-    QFile file(subscriptionRequestStorageFileName);
+    static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
+                  "loadSavedSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
+
+    QFile file(storageFilename);
     if (!file.open(QIODevice::ReadOnly)){
         LOG_ERROR(logger, QString("Unable to read file: %1").arg(file.errorString()));
         return;
@@ -374,20 +426,20 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(){
     QByteArray jsonBytes = file.readAll();
 
     // Deserialize the JSON into a list of subscription requests
-    QList<SubscriptionRequestInformation*> subscriptionList =
-            JsonSerializer::deserializeList<SubscriptionRequestInformation>(jsonBytes);
+    QList<RequestInformationType*> subscriptionList =
+            JsonSerializer::deserializeList<RequestInformationType>(jsonBytes);
 
     // Loop through the saved subscriptions
     QDateTime now = QDateTime::currentDateTime();
-    QMutexLocker locker(&queuedSubscriptionRequestsMutex);
+    QMutexLocker locker(&mutex);
 
     while(!subscriptionList.isEmpty()) {
-        SubscriptionRequestInformation* requestInfo = subscriptionList.takeFirst();
+        RequestInformationType* requestInfo = subscriptionList.takeFirst();
 
         // Add the subscription if it is still valid
         if (!isSubscriptionExpired(requestInfo->getQos())){
             QString providerId = requestInfo->getProviderId();
-            queuedSubscriptionRequests.insertMulti(providerId, requestInfo);
+            queuedSubscriptions.insertMulti(providerId, requestInfo);
             LOG_DEBUG(logger, QString("Queuing subscription Request: %1 : %2")
                       .arg(providerId)
                       .arg(requestInfo->toQString()));
@@ -397,7 +449,6 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(){
         }
     }
 }
-
 
 void PublicationManager::removePublication(const QString& subscriptionId) {
     LOG_DEBUG(logger, QString("removePublication: %1").arg(subscriptionId));
@@ -421,7 +472,7 @@ void PublicationManager::removePublication(const QString& subscriptionId) {
         delete request;
         delete publication;
     }
-    saveSubscriptionRequestsMap();
+    saveAttributeSubscriptionRequestsMap();
 }
 
 // This function assumes that a write lock is already held
