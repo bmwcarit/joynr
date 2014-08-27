@@ -189,10 +189,9 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     MockDispatcher mockDispatcher;
     QSharedPointer<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
-    qint64 period = 2000;
+    qint64 minInterval = 2000;
     qint64 validity = 100000;
-    qint64 alert = 4000;
-    auto qos = QSharedPointer<SubscriptionQos>(new PeriodicSubscriptionQos(validity, period, alert));
+    auto qos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeSubscriptionQos(validity, minInterval));
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filter;

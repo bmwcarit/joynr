@@ -21,6 +21,8 @@
 
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastFilterParameters.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+
 
 #include <QString>
 #include <QSharedPointer>
@@ -45,6 +47,10 @@ public:
 
     QString toQString() const;
 
+    // Make sure that broadcast subscriptions are only used with on change qos.
+    // Method from base class is hidden. See below in private section.
+    void setQos(QSharedPointer<OnChangeSubscriptionQos> qos);
+
     BroadcastFilterParameters getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters &filterParameters);
 
@@ -53,6 +59,10 @@ protected:
     QVariant getFilterParametersData() const;
 
 private:
+
+    // Hide method for setting all kinds of QOS derived from base class
+    void setQos(QSharedPointer<SubscriptionQos> qos);
+
     BroadcastFilterParameters filterParameters;
 
     static joynr_logging::Logger* logger;

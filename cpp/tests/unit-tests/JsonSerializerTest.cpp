@@ -106,8 +106,8 @@ protected:
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     qRegisterMetaType<joynr::SubscriptionRequest>();
     SubscriptionRequest request;
-    QSharedPointer<SubscriptionQos> x(new SubscriptionQos(5000));
-    request.setQos(x);
+    QSharedPointer<SubscriptionQos> subscriptionQos(new SubscriptionQos(5000));
+    request.setQos(subscriptionQos);
     QByteArray result = JsonSerializer::serialize(request);
     LOG_DEBUG(logger, QString(result));
     SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
@@ -117,8 +117,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
     BroadcastSubscriptionRequest request;
-    QSharedPointer<SubscriptionQos> x(new SubscriptionQos(5000));
-    request.setQos(x);
+    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(5000, 2000));
+    request.setQos(subscriptionQos);
     BroadcastFilterParameters filter;
     filter.setFilterParameter("MyFilter", "MyFilterValue");
     request.setFilterParameters(filter);

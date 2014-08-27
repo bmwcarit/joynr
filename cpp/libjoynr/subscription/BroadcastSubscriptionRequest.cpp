@@ -63,6 +63,10 @@ QString BroadcastSubscriptionRequest::toQString() const {
     return JsonSerializer::serialize(*this);
 }
 
+void BroadcastSubscriptionRequest::setQos(QSharedPointer<OnChangeSubscriptionQos> qos){
+    SubscriptionRequest::setQos(qos);
+}
+
 QVariant BroadcastSubscriptionRequest::getFilterParametersData() const {
     return QVariant::fromValue(filterParameters);
 }
