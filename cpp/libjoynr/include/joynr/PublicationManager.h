@@ -202,6 +202,9 @@ private:
     void addOnChangePublication(const QString& subscriptionId,
                                 SubscriptionRequestInformation* request,
                                 Publication* publication);
+    void addBroadcastPublication(const QString& subscriptionId,
+                                BroadcastSubscriptionRequestInformation* request,
+                                Publication* publication);
     void removeOnChangePublication(const QString& subscriptionId,
                                    SubscriptionRequestInformation* request,
                                    Publication* publication);

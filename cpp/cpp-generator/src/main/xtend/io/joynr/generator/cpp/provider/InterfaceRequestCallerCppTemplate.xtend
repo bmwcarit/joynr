@@ -84,6 +84,16 @@ class InterfaceRequestCallerCppTemplate {
 		{
 			provider->unregisterAttributeListener(attributeName, attributeListener);
 		}
+
+		void «interfaceName»RequestCaller::registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
+		{
+			provider->registerBroadcastListener(broadcastName, broadcastListener);
+		}
+
+		void «interfaceName»RequestCaller::unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
+		{
+			provider->unregisterBroadcastListener(broadcastName, broadcastListener);
+		}
 		
 		«getNamespaceEnder(serviceInterface)»
 	'''

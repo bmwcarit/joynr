@@ -73,6 +73,9 @@ class InterfaceRequestCallerHTemplate {
 
 			void registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener);
 			void unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener);
+
+			void registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener);
+			void unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener);
 			
 		private:
 		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);

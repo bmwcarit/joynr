@@ -32,6 +32,7 @@
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 #include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
+#include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/SubscriptionUtil.h"
@@ -53,6 +54,7 @@ public:
     IPublicationSender* sender;
     QSharedPointer<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
+    SubscriptionBroadcastListener* broadcastListener;
 private:
     DISALLOW_COPY_AND_ASSIGN(Publication);
 };
@@ -250,6 +252,23 @@ void PublicationManager::addOnChangePublication(const QString& subscriptionId,
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
     }
+}
+
+void PublicationManager::addBroadcastPublication(const QString &subscriptionId,
+                                                 BroadcastSubscriptionRequestInformation *request,
+                                                 PublicationManager::Publication *publication) {
+    LOG_TRACE(logger, QString("adding broadcast subscription: %1").arg(subscriptionId));
+
+    // Create a broadcast listener to listen for broadcast events
+    SubscriptionBroadcastListener* broadcastListener = new SubscriptionBroadcastListener(subscriptionId, *this);
+
+    // Register the broadcast listener
+    QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
+    requestCaller->registerBroadcastListener(request->getSubscribeToName(), broadcastListener);
+
+    // Make note of the attribute listener so that it can be unregistered
+    publication->broadcastListener = broadcastListener;
+
 }
 
 void PublicationManager::add(
@@ -669,7 +688,8 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
     timeOfLastPublication(0),
     sender(publicationSender),
     requestCaller(requestCaller),
-    attributeListener(NULL)
+    attributeListener(NULL),
+    broadcastListener(NULL)
 {
 }
 

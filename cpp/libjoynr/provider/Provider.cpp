@@ -19,6 +19,7 @@
 
 #include "joynr/Provider.h"
 #include "joynr/IAttributeListener.h"
+#include "joynr/IBroadcastListener.h"
 
 #include <QVariant>
 #include <QWriteLocker>
@@ -28,7 +29,8 @@ namespace joynr {
 
 Provider::Provider()
     : lock(),
-      attributeListeners()
+      attributeListeners(),
+      broadcastListeners()
 {
 }
 
@@ -74,6 +76,33 @@ void Provider::onAttributeValueChanged(const QString& attributeName, const QVari
     // Inform all the attribute listeners for this attribute
     foreach (IAttributeListener* listener, listeners) {
         listener->attributeValueChanged(value);
+    }
+}
+
+void Provider::registerBroadcastListener(const QString &broadcastName, IBroadcastListener *broadcastListener)
+{
+    QWriteLocker locker(&lock);
+    broadcastListeners[broadcastName].append(broadcastListener);
+}
+
+void Provider::unregisterBroadcastListener(const QString &broadcastName, IBroadcastListener *broadcastListener)
+{
+    QWriteLocker locker(&lock);
+    QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+
+    int listenerIndex = listeners.indexOf(broadcastListener);
+    delete listeners.takeAt(listenerIndex);
+}
+
+void Provider::onEventOccured(const QString &broadcastName, const QVariant &values)
+{
+    QReadLocker locker(&lock);
+
+    const QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+
+    // Inform all the broadcast listeners for this attribute
+    foreach (IBroadcastListener* listener, listeners) {
+        listener->eventOccured(values);
     }
 }
 
