@@ -114,6 +114,15 @@ public:
       */
     virtual void attributeValueChanged(const QString& subscriptionId, const QVariant& value);
 
+    /**
+      * @brief Publishes an event publication message when an event occurs
+      *
+      * This method is virtual so that it can be overridden by a mock object.
+      * @param subscriptionId A subscription that was listening on the event
+      * @param values The new event values
+      */
+    virtual void eventOccured(const QString& subscriptionId, const QVariant& values);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 

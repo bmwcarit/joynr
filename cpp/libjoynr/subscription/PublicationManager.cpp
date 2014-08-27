@@ -650,6 +650,12 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     sendPublication(subscriptionId, subscriptionRequest, value);
 }
 
+void PublicationManager::eventOccured(const QString &subscriptionId, const QVariant &values){
+    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Values: %2").arg(subscriptionId).arg(values.toString()));
+
+    // TODO: Implement
+}
+
 //------ PublicationManager::Publication ---------------------------------------
 
 PublicationManager::Publication::~Publication()
