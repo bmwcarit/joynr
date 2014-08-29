@@ -486,7 +486,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
 
     // null response with type invalid
-    QVariant response;
+    QVariant response(QVariant::Invalid);
     Reply reply;
     reply.setRequestReplyId(QString("TEST-requestReplyId"));
     reply.setResponse(response);
