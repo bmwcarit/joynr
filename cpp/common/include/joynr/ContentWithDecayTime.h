@@ -34,12 +34,6 @@ public:
     {
     }
 
-    ContentWithDecayTime():
-            ObjectWithDecayTime(),
-            content(NULL)
-    {
-    }
-
     T getContent() const {
         return content;
     }

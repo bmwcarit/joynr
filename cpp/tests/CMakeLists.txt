@@ -12,12 +12,12 @@ if(${WIN32})
 else()
 endif(${WIN32})
 
-
 ### Add google test ###########################################################
 ExternalProject_Add(
     googletest
     SVN_REPOSITORY http://googletest.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
+    PATCH_COMMAND svn patch ${CMAKE_SOURCE_DIR}/CMake/gtest-1.6.0-Clang.patch ${CMAKE_BINARY_DIR}/ThirdParty/src/googletest
     # Force separate output paths for debug and release builds to allow easy
     # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
@@ -50,6 +50,7 @@ ExternalProject_Add(
     googlemock
     SVN_REPOSITORY http://googlemock.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
+    PATCH_COMMAND svn patch ${CMAKE_SOURCE_DIR}/CMake/gmock-1.6.0-Clang.patch ${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock
     # Force separate output paths for debug and release builds to allow easy
     # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
