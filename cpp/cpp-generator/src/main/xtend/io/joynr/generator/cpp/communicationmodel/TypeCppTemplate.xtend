@@ -27,15 +27,15 @@ class TypeCppTemplate {
 
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-	
+
 	def generate(FType type) {
 		val typeName = type.joynrName
 		'''
-		«warning»		
-		
+		«warning»
+
 		#include "«getPackagePathWithJoynrPrefix(type, "/")»/«typeName».h"
 		#include "joynr/Reply.h"
 		#include "joynr/DeclareMetatypeUtil.h"
@@ -43,10 +43,9 @@ class TypeCppTemplate {
 		#include <QMetaEnum>
 		#include <QDateTime>
 
-		
 		«getNamespaceStarter(type)»
-		
-		void «typeName»::registerMetatypes(){ 
+
+		void «typeName»::registerMetatypes() {
 			qRegisterMetaType<«getMappedDatatype(type)»>("«getMappedDatatype(type)»");
 			«FOR complexMember: getComplexMembers(type as FCompoundType)»
 				qRegisterMetaType<«getMappedDatatype(complexMember)»>("«getMappedDatatype(complexMember)»");
@@ -67,19 +66,19 @@ class TypeCppTemplate {
 			«ELSE»
 				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','» 
+			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
 				m_«member.joynrName»(«getDefaultValue(member)»)
 			«ENDFOR»
 		{
 			registerMetatypes();
 		}
-		
+
 		«IF !getMembersRecursive(type).empty»
 		«typeName»::«typeName»(
 			«FOR member: getMembersRecursive(type) SEPARATOR ','»
-			 	«getMappedDatatypeOrList(member)» new_«member.joynrName»
-		 	«ENDFOR»
-		 	 ):
+				«getMappedDatatypeOrList(member)» new_«member.joynrName»
+			«ENDFOR»
+			):
 			«IF hasExtendsDeclaration(type as FCompoundType)»
 				«val extendedType = getExtendedType(type as FCompoundType)»
 				«extendedType.joynrName»(
@@ -90,18 +89,18 @@ class TypeCppTemplate {
 			«ELSE»
 				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','» 
-				m_«member.joynrName»(new_«member.joynrName») 
+			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
+				m_«member.joynrName»(new_«member.joynrName»)
 			«ENDFOR»
 		{
 			registerMetatypes();
 		}
 		«ENDIF»
-		
+
 		//CopyConstructor
 		«typeName»::«typeName»(const «typeName»& other) :
 			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«getExtendedType(type as FCompoundType).joynrName»(other), 
+				«getExtendedType(type as FCompoundType).joynrName»(other),
 			«ELSE»
 				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
 			«ENDIF»
@@ -111,45 +110,45 @@ class TypeCppTemplate {
 		{
 			«IF getMembersRecursive(type).empty»
 			Q_UNUSED(other);
-    		«ENDIF»
-			registerMetatypes();		
+			«ENDIF»
+			registerMetatypes();
 		}
-		
-		«typeName»::~«typeName»(){
+
+		«typeName»::~«typeName»() {
 		}
-		
+
 		«FOR member: getMembers(type as FCompoundType)»
 			«val joynrName = member.joynrName»
 			«IF isArray(member)»
 				QList<QVariant> «typeName»::get«joynrName.toFirstUpper»Internal() const {
 					QList<QVariant> returnList;
 					returnList.reserve( this->m_«joynrName».size() );
-				    «getMappedDatatypeOrList(member)»::const_iterator iter = this->m_«joynrName».begin();
-				    while(iter!=this->m_«joynrName».end()){
-				        QVariant value;
-				    	«IF isEnum(member.type)»
-				    		value.setValue((int)*iter);
-				    	«ELSE»
-				    		value.setValue(*iter);
-				    	«ENDIF»
-				        returnList.push_back(value);
-				        iter++;
-				    }
+					«getMappedDatatypeOrList(member)»::const_iterator iter = this->m_«joynrName».begin();
+					while(iter!=this->m_«joynrName».end()) {
+						QVariant value;
+						«IF isEnum(member.type)»
+							value.setValue((int)*iter);
+						«ELSE»
+							value.setValue(*iter);
+						«ENDIF»
+						returnList.push_back(value);
+						iter++;
+					}
 					return returnList;
 				}
-				
-				void «typeName»::set«joynrName.toFirstUpper»Internal(const QList<QVariant>& obj«joynrName.toFirstUpper»)  {
+
+				void «typeName»::set«joynrName.toFirstUpper»Internal(const QList<QVariant>& obj«joynrName.toFirstUpper») {
 					this->m_«joynrName».clear();
 					this->m_«joynrName».reserve( obj«joynrName.toFirstUpper».size() );
-				    QList<QVariant>::const_iterator iter = obj«joynrName.toFirstUpper».begin();
-				    while(iter!=obj«joynrName.toFirstUpper».end()){
-				    	«IF isEnum(member.type)»
-				    		this->m_«joynrName».push_back((«getMappedDatatype(member)»)(*iter).value<int>());
-				    	«ELSE»
-				    		this->m_«joynrName».push_back((*iter).value<«getMappedDatatype(member)»>());
-				    	«ENDIF»
-				        iter++;
-				    }
+					QList<QVariant>::const_iterator iter = obj«joynrName.toFirstUpper».begin();
+					while(iter!=obj«joynrName.toFirstUpper».end()){
+						«IF isEnum(member.type)»
+							this->m_«joynrName».push_back((«getMappedDatatype(member)»)(*iter).value<int>());
+						«ELSE»
+							this->m_«joynrName».push_back((*iter).value<«getMappedDatatype(member)»>());
+						«ENDIF»
+						iter++;
+					}
 				}
 
 			«ELSEIF isByteBuffer(member.type)»
@@ -157,7 +156,7 @@ class TypeCppTemplate {
 					return m_«joynrName».toBase64();
 				}
 
-				void «typeName»::set«joynrName.toFirstUpper»Internal(const QByteArray& obj«joynrName.toFirstUpper»)  {
+				void «typeName»::set«joynrName.toFirstUpper»Internal(const QByteArray& obj«joynrName.toFirstUpper») {
 					m_«joynrName» = QByteArray::fromBase64(obj«joynrName.toFirstUpper»);
 				}
 
@@ -167,46 +166,46 @@ class TypeCppTemplate {
 						QMetaEnum metaEnum = «getMappedDatatypeOrList(member).substring(0, getMappedDatatypeOrList(member).length-6)»::staticMetaObject.enumerator(0);
 						return metaEnum.valueToKey(this->m_«joynrName»);
 					}
-					
-					void «typeName»::set«joynrName.toFirstUpper»Internal(const QString& obj«joynrName.toFirstUpper»)  {
+
+					void «typeName»::set«joynrName.toFirstUpper»Internal(const QString& obj«joynrName.toFirstUpper») {
 						QMetaEnum metaEnum = «getMappedDatatypeOrList(member).substring(0, getMappedDatatypeOrList(member).length-6)»::staticMetaObject.enumerator(0);
 						int value = metaEnum.keyToValue(obj«joynrName.toFirstUpper».toStdString().c_str());
 						this->m_«joynrName» = («getMappedDatatypeOrList(member)»)value;
 					}
-					
+
 				«ENDIF»
 			«ENDIF»
 			«getMappedDatatypeOrList(member)» «typeName»::get«joynrName.toFirstUpper»() const {
-				return m_«joynrName»;  
+				return m_«joynrName»;
 			}
-			
-			void «typeName»::set«joynrName.toFirstUpper»(const «getMappedDatatypeOrList(member)»& obj«joynrName.toFirstUpper»){
+
+			void «typeName»::set«joynrName.toFirstUpper»(const «getMappedDatatypeOrList(member)»& obj«joynrName.toFirstUpper») {
 				this->m_«joynrName» = obj«joynrName.toFirstUpper»;
 			}
 		«ENDFOR»
-		
+
 		//AssignOperator
 		«typeName»& «typeName»::operator=(const «typeName»& other) {
 			«IF getMembersRecursive(type).empty»
 			Q_UNUSED(other);
-    		«ENDIF»
+			«ENDIF»
 			«IF hasExtendsDeclaration(type as FCompoundType)»
 				«val base = getExtendedType(type as FCompoundType)»
-				«getMappedDatatype(base)»::operator=(other); 
+				«getMappedDatatype(base)»::operator=(other);
 			«ENDIF»
 			«FOR member: getMembers(type as FCompoundType)»
 				this->m_«member.joynrName» = other.m_«member.joynrName»;
 			«ENDFOR»
-		    return *this;
+			return *this;
 		}
-		
+
 		bool «typeName»::operator==(const «typeName»& other) const {
 			«IF getMembersRecursive(type).empty»
 			Q_UNUSED(other);
-    		«ENDIF»
+			«ENDIF»
 			return
-			    «FOR member: getMembers(type as FCompoundType)»
-			    	this->m_«member.joynrName» == other.m_«member.joynrName» &&
+				«FOR member: getMembers(type as FCompoundType)»
+					this->m_«member.joynrName» == other.m_«member.joynrName» &&
 				«ENDFOR»
 				«IF hasExtendsDeclaration(type as FCompoundType)»
 					«getMappedDatatype(getExtendedType(type as FCompoundType))»::operator==(other);
@@ -216,7 +215,7 @@ class TypeCppTemplate {
 		}
 
 		bool «typeName»::operator!=(const «typeName»& other) const {
-		    return !(*this==other);
+			return !(*this==other);
 		}
 
 		uint «typeName»::hashCode() const {
@@ -227,33 +226,37 @@ class TypeCppTemplate {
 			«ENDIF»
 			«IF !getMembers(type as FCompoundType).empty»
 			int prime = 31;
-		    «ENDIF»
-		    «FOR member: getMembers(type as FCompoundType)»
-		    hashCode = prime * hashCode + qHash(m_«member.joynrName»);
+			«ENDIF»
+			«FOR member: getMembers(type as FCompoundType)»
+			hashCode = prime * hashCode + qHash(m_«member.joynrName»);
 			«ENDFOR»
-		    return hashCode;
+			return hashCode;
 		}
 
 		QString «typeName»::toString() const {
-		    QString result;
+			QString result("«typeName»{");
 			«IF hasExtendsDeclaration(type as FCompoundType)»
 				result += «getMappedDatatype(getExtendedType(type as FCompoundType))»::toString();
+				«IF !getMembers(type as FCompoundType).empty»
+				result += ", ";
+				«ENDIF»
 			«ENDIF»
-		    «FOR member: getMembers(type as FCompoundType)»
-		    	«val memberName = member.joynrName»
-		    	«IF isArray(member)»
-		    		result += " unprinted List «memberName»  ";
+			«FOR member: getMembers(type as FCompoundType) SEPARATOR "\nresult += \", \";"»
+				«val memberName = member.joynrName»
+				«IF isArray(member)»
+					result += " unprinted List «memberName»  ";
 				«ELSEIF isEnum(member.type)»
-		    		result += "«memberName» :" + get«memberName.toFirstUpper»Internal();
+					result += "«memberName»:" + get«memberName.toFirstUpper»Internal();
 				«ELSEIF isComplex(member.type)»
-		    		result += "«memberName» :" + get«memberName.toFirstUpper»().toString();
+					result += "«memberName»:" + get«memberName.toFirstUpper»().toString();
 				«ELSE»
-		    		result += "«memberName» :(casted to String via Qs)" + QVariant(get«memberName.toFirstUpper»()).toString(); 
+					result += "«memberName»:" + QVariant(get«memberName.toFirstUpper»()).toString();
 				«ENDIF»
 			«ENDFOR»
+			result += "}";
 			return result;
 		}
 		«getNamespaceEnder(type)»
 		'''
-	}		
+	}
 }
