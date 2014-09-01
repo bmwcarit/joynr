@@ -23,11 +23,6 @@
 
 #include "common/websocket/WebSocketMessagingStub.h"
 
-uint qHash(joynr::system::WebSocketAddress key) {
-    return qHash(key.getHost()) + qHash(key.getPort());
-}
-
-
 namespace  joynr {
 
 joynr_logging::Logger* WebSocketMessagingStubFactory::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStubFactory");

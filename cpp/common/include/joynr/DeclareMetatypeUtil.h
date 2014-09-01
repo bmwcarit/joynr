@@ -41,6 +41,16 @@ Q_DECLARE_METATYPE(QList<bool>)
 Q_DECLARE_METATYPE(QList<double>)
 Q_DECLARE_METATYPE(QList<QString>)
 
+template <class T>
+uint qHash(const QList<T>& key, uint seed = 0) {
+    uint hashCode = 0;
+    uint prime = 31;
+    foreach(T k, key) {
+        hashCode = prime * hashCode + qHash(k, seed);
+    }
+    return hashCode;
+}
+
 //#include "Reply.h"
 //Q_DECLARE_METATYPE(QSharedPointer<Reply>) // TM I think this should be moved to Reply.h
 

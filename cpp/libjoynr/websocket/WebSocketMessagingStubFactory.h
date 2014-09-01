@@ -28,8 +28,6 @@
 
 class QWebSocket;
 
-uint qHash(joynr::system::WebSocketAddress key);
-
 namespace joynr {
 
 class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory {

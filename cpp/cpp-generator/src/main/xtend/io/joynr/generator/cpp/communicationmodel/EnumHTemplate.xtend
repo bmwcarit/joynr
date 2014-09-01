@@ -70,6 +70,10 @@ class EnumHTemplate {
 		Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»)
 		Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»>)
 
+		inline uint qHash(«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» key, uint seed = 0) {
+		    return uint(key) ^ seed;
+		}
+
 		#endif // «headerGuard»
 	'''
 	}

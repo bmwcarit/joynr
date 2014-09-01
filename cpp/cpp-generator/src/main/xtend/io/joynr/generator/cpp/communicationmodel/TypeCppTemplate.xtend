@@ -218,7 +218,22 @@ class TypeCppTemplate {
 		bool «typeName»::operator!=(const «typeName»& other) const {
 		    return !(*this==other);
 		}
-		
+
+		uint «typeName»::hashCode() const {
+			«IF hasExtendsDeclaration(type as FCompoundType)»
+			uint hashCode = «getMappedDatatype(getExtendedType(type as FCompoundType))»::hashCode();
+			«ELSE»
+			uint hashCode = 0;
+			«ENDIF»
+			«IF !getMembers(type as FCompoundType).empty»
+			int prime = 31;
+		    «ENDIF»
+		    «FOR member: getMembers(type as FCompoundType)»
+		    hashCode = prime * hashCode + qHash(m_«member.joynrName»);
+			«ENDFOR»
+		    return hashCode;
+		}
+
 		QString «typeName»::toString() const {
 		    QString result;
 			«IF hasExtendsDeclaration(type as FCompoundType)»
@@ -239,7 +254,6 @@ class TypeCppTemplate {
 			return result;
 		}
 		«getNamespaceEnder(type)»
-		
 		'''
 	}		
 }

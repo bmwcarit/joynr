@@ -75,7 +75,6 @@ class TypeHTemplate {
 		«ENDFOR»
 
 	public:
-
 		//general methods
 		«typeName»();
 		«IF !getMembersRecursive(complexType).empty»
@@ -89,10 +88,11 @@ class TypeHTemplate {
 
 		virtual ~«typeName»();
 
-		QString toString() const;
+		virtual QString toString() const;
 		«typeName»& operator=(const «typeName»& «typeName.toFirstLower»Obj);
-		bool operator==(const «typeName»& «typeName.toFirstLower»Obj) const;
-		bool operator!=(const «typeName»& «typeName.toFirstLower»Obj) const;
+		virtual bool operator==(const «typeName»& «typeName.toFirstLower»Obj) const;
+		virtual bool operator!=(const «typeName»& «typeName.toFirstLower»Obj) const;
+		virtual uint hashCode() const;
 
 		//getters
 		«FOR member: getMembers(complexType)»
@@ -138,6 +138,10 @@ class TypeHTemplate {
 	typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
 	Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)
 	Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»>)
+
+	inline uint qHash(const «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»& key) {
+		return key.hashCode();
+	}
 
 	#endif // «headerGuard»
 	'''
