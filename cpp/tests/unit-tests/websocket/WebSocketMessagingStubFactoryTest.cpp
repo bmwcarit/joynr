@@ -31,9 +31,9 @@
 
 using namespace joynr;
 
-class SignalSlotTest : public testing::Test {
+class WebSocketMessagingStubFactoryTest : public testing::Test {
 public:
-    SignalSlotTest() :
+    WebSocketMessagingStubFactoryTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketMessagingStubFactoryTest")),
         webSocketAddress(joynr::system::WebSocketProtocol::WS, "localhost", 42, "path"),
         channelAddress("channelId"),
@@ -53,13 +53,13 @@ protected:
     joynr::system::BrowserAddress browserAddress;
 };
 
-TEST_F(SignalSlotTest, canCreateWebSocketAddressses) {
+TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
     WebSocketMessagingStubFactory factory;
 
     EXPECT_TRUE(factory.canCreate(webSocketAddress));
 }
 
-TEST_F(SignalSlotTest, canOnlyCreateWebSocketAddressses) {
+TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses) {
     WebSocketMessagingStubFactory factory;
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
@@ -67,13 +67,13 @@ TEST_F(SignalSlotTest, canOnlyCreateWebSocketAddressses) {
     EXPECT_FALSE(factory.canCreate(browserAddress));
 }
 
-TEST_F(SignalSlotTest, createReturnsNullForUnknownClient) {
+TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
     WebSocketMessagingStubFactory factory;
 
     EXPECT_TRUE(factory.create(webSocketAddress).isNull());
 }
 
-TEST_F(SignalSlotTest, createReturnsMessagingStub) {
+TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     WebSocketMessagingStubFactory factory;
     QWebSocket* websocket = new QWebSocket();
 
@@ -81,7 +81,7 @@ TEST_F(SignalSlotTest, createReturnsMessagingStub) {
     EXPECT_FALSE(factory.create(webSocketAddress).isNull());
 }
 
-TEST_F(SignalSlotTest, removeClientRemovesMessagingStub) {
+TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
     QWebSocket* websocket = new QWebSocket();
 
