@@ -177,6 +177,8 @@ private:
     // Functions called by runnables
     void pollSubscription(const QString& subscriptionId);
     void removePublication(const QString& subscriptionId);
+    void removeAttributePublication(const QString& subscriptionId);
+    void removeBroadcastPublication(const QString& subscriptionId);
 
     // Helper functions
     bool publicationExists(const QString& subscriptionId) const;

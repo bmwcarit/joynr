@@ -114,7 +114,10 @@ PublicationManager::~PublicationManager() {
     // Remove all publications
     LOG_DEBUG(logger, "Destructor: removing publications");
     foreach(SubscriptionRequestInformation* request, subscriptionId2SubscriptionRequest) {
-        removePublication(request->getSubscriptionId());
+        removeAttributePublication(request->getSubscriptionId());
+    }
+    foreach(BroadcastSubscriptionRequestInformation* request, subscriptionId2BroadcastSubscriptionRequest) {
+        removeBroadcastPublication(request->getSubscriptionId());
     }
 }
 
@@ -303,9 +306,10 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId) {
     LOG_DEBUG(logger, QString("Removing all subscriptions for provider id= %1")
                             .arg(providerId));
 
-    // Build a list of subscriptionIds to remove
+    // Build lists of subscriptionIds to remove
     QString subscriptionId;
-    QList<QString> toRemove;
+
+    QList<QString> publicationsToRemove;
     {
         QReadLocker locker(&subscriptionLock);
 
@@ -313,17 +317,38 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId) {
             subscriptionId = requestInfo->getSubscriptionId();
 
             if(requestInfo->getProviderId() == providerId) {
-                toRemove.append(subscriptionId);
+                publicationsToRemove.append(subscriptionId);
+            }
+        }
+    }
+
+    QList<QString> broadcastsToRemove;
+    {
+        QReadLocker locker(&subscriptionLock);
+
+        foreach (BroadcastSubscriptionRequestInformation* requestInfo, subscriptionId2BroadcastSubscriptionRequest) {
+            subscriptionId = requestInfo->getSubscriptionId();
+
+            if(requestInfo->getProviderId() == providerId) {
+                broadcastsToRemove.append(subscriptionId);
             }
         }
     }
 
     // Remove each publication
-    foreach (subscriptionId, toRemove) {
+    foreach (subscriptionId, publicationsToRemove) {
         LOG_DEBUG(logger, QString("Removing subscription providerId= %1, subscriptionId =%2")
                                 .arg(providerId)
                                 .arg(subscriptionId));
-        removePublication(subscriptionId);
+        removeAttributePublication(subscriptionId);
+    }
+
+    // Remove each broadcast
+    foreach (subscriptionId, broadcastsToRemove) {
+        LOG_DEBUG(logger, QString("Removing subscription providerId= %1, subscriptionId =%2")
+                                .arg(providerId)
+                                .arg(subscriptionId));
+        removeBroadcastPublication(subscriptionId);
     }
 }
 
@@ -469,7 +494,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(const QString &storage
     }
 }
 
-void PublicationManager::removePublication(const QString& subscriptionId) {
+void PublicationManager::removeAttributePublication(const QString& subscriptionId) {
     LOG_DEBUG(logger, QString("removePublication: %1").arg(subscriptionId));
 
     {
@@ -492,6 +517,34 @@ void PublicationManager::removePublication(const QString& subscriptionId) {
         delete publication;
     }
     saveAttributeSubscriptionRequestsMap();
+}
+
+void PublicationManager::removeBroadcastPublication(const QString& subscriptionId)
+{
+    LOG_DEBUG(logger, QString("removeBroadcast: %1").arg(subscriptionId));
+
+    {
+        QWriteLocker locker(&subscriptionLock);
+
+        if (!publicationExists(subscriptionId)) {
+            LOG_DEBUG(logger, QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+            return;
+        }
+
+        Publication* publication = publications.take(subscriptionId);
+        BroadcastSubscriptionRequestInformation* request = subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+
+        // Remove listener
+        QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
+        requestCaller->unregisterBroadcastListener(request->getSubscribeToName(), publication->broadcastListener);
+        publication->broadcastListener = NULL;
+
+        // Remove the publication
+        subscriptionId2BroadcastSubscriptionRequest.remove(subscriptionId);
+        delete request;
+        delete publication;
+    }
+    saveBroadcastSubscriptionRequestsMap();
 }
 
 // This function assumes that a write lock is already held
@@ -613,6 +666,17 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(publicationInterval));
         delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
                                    publicationInterval);
+    }
+}
+
+void PublicationManager::removePublication(const QString &subscriptionId)
+{
+
+    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)){
+        removeAttributePublication(subscriptionId);
+    }
+    else {
+        removeBroadcastPublication(subscriptionId);
     }
 }
 
