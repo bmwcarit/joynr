@@ -16,31 +16,53 @@
  * limitations under the License.
  * #L%
  */
-#include "common/websocket/WebSocketMessagingStub.h"
+#include "WebSocketMessagingStub.h"
 
 #include <QtWebSockets/QWebSocket>
 
-#include "include/joynr/JsonSerializer.h"
-#include "include/joynr/JoynrMessage.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/system/Address.h"
 
 namespace joynr {
 
-using namespace joynr_logging;
+joynr_logging::Logger* WebSocketMessagingStub::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
 
-WebSocketMessagingStub::WebSocketMessagingStub(QWebSocket* webSocket) :
+WebSocketMessagingStub::WebSocketMessagingStub(
+        system::Address* address,
+        QWebSocket* webSocket,
+        QObject *parent
+) :
+    QObject(parent),
+    address(address),
     webSocket(webSocket)
 {
+    connect(
+            webSocket, &QWebSocket::disconnected,
+            this, &WebSocketMessagingStub::onSocketDisconnected
+    );
 }
 
 WebSocketMessagingStub::~WebSocketMessagingStub() {
     webSocket->close();
     webSocket->deleteLater();
+    delete address;
+}
+
+void WebSocketMessagingStub::onSocketDisconnected() {
+    LOG_DEBUG(logger, QString("Web Socket disconnected: %0").arg(address->toString()));
+    emit closed(*address);
 }
 
 void WebSocketMessagingStub::transmit(JoynrMessage& message, const MessagingQos &qos) {
     // QoS is not needed on transmit. Message already contains expiry date.
     // Messaging interface needs to be refactored.
     Q_UNUSED(qos);
+
+    if(!webSocket->isValid()) {
+        return;
+    }
+
     QByteArray serializedMessage(JsonSerializer::serialize(message));
     webSocket->sendBinaryMessage(serializedMessage);
 }

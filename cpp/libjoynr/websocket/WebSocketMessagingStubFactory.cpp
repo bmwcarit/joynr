@@ -21,7 +21,7 @@
 #include <QMutexLocker>
 #include <assert.h>
 
-#include "common/websocket/WebSocketMessagingStub.h"
+#include "websocket/WebSocketMessagingStub.h"
 
 namespace  joynr {
 
@@ -53,7 +53,10 @@ void WebSocketMessagingStubFactory::addClient(
         const joynr::system::WebSocketAddress& clientAddress,
         QWebSocket* webSocket
 ) {
-    QSharedPointer<IMessaging> clientStub(new WebSocketMessagingStub(webSocket));
+    QSharedPointer<IMessaging> clientStub(new WebSocketMessagingStub(
+                new joynr::system::WebSocketAddress(clientAddress),
+                webSocket
+    ));
     stubMap.insert(clientAddress, clientStub);
 }
 

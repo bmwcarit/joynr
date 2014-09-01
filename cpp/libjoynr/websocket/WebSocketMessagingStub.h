@@ -19,8 +19,10 @@
 #ifndef WEBSOCKETMESSAGINSTUB_H
 #define WEBSOCKETMESSAGINSTUB_H
 
+#include <QtCore/QObject>
+
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/joynrlogging.h"
 
 #include "joynr/IMessaging.h"
 
@@ -28,14 +30,26 @@ class QWebSocket;
 
 namespace joynr {
 
-class JOYNRCOMMON_EXPORT WebSocketMessagingStub : public IMessaging
+namespace system {
+    class Address;
+}
+
+class WebSocketMessagingStub : public QObject, public IMessaging
 {
+    Q_OBJECT
 public:
-    WebSocketMessagingStub(QWebSocket* webSocket);
+    WebSocketMessagingStub(system::Address* address, QWebSocket* webSocket, QObject* parent = Q_NULLPTR);
     virtual ~WebSocketMessagingStub();
     virtual void transmit(JoynrMessage &message, const MessagingQos &qos);
 
+Q_SIGNALS:
+    void closed(const joynr::system::Address& address);
+private Q_SLOTS:
+    void onSocketDisconnected();
+
 private:
+    static joynr_logging::Logger* logger;
+    system::Address* address;
     QWebSocket* webSocket;
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);
 };
