@@ -36,6 +36,7 @@ namespace joynr {
 
 class DelayedScheduler;
 class SubscriptionRequest;
+class BroadcastSubscriptionRequest;
 class BroadcastSubscriptionRequestInformation;
 class SubscriptionRequestInformation;
 class IPublicationSender;
@@ -77,6 +78,32 @@ public:
             const QString& proxyParticipantId,
             const QString& providerParticipantId,
             SubscriptionRequest *subscriptionRequest
+    );
+
+    /**
+     * @brief Adds the BroadcastSubscriptionRequest and starts runnable to poll attributes.
+     * @param requestCaller
+     * @param subscriptionRequest
+     * @param publicationSender
+     */
+    void add(
+            const QString& proxyParticipantId,
+            const QString& providerParticipantId,
+            QSharedPointer<RequestCaller> requestCaller,
+            BroadcastSubscriptionRequest* subscriptionRequest,
+            IPublicationSender* publicationSender
+    );
+
+    /**
+     * @brief Adds BroadcastSubscriptionRequest when the Provider is not yet registered
+     *   and there is no RequestCaller as yet.
+     *
+     * @param subscriptionRequest
+     */
+    void add(
+            const QString& proxyParticipantId,
+            const QString& providerParticipantId,
+            BroadcastSubscriptionRequest *subscriptionRequest
     );
 
     /**

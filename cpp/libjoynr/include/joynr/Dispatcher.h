@@ -73,6 +73,7 @@ private:
     void handleReplyReceived(const JoynrMessage& message);
     void handlePublicationReceived(const JoynrMessage& message);
     void handleSubscriptionRequestReceived(const JoynrMessage& message);
+    void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
     void handleSubscriptionStopReceived(const JoynrMessage& message);
 
 private:

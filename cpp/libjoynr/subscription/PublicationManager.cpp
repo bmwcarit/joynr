@@ -28,6 +28,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/BroadcastFilterParameters.h"
 #include "joynr/Util.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 #include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
@@ -301,6 +302,92 @@ void PublicationManager::add(
     saveAttributeSubscriptionRequestsMap();
 }
 
+void PublicationManager::add(
+        const QString &proxyParticipantId,
+        const QString &providerParticipantId,
+        QSharedPointer<RequestCaller> requestCaller,
+        BroadcastSubscriptionRequest *subscriptionRequest,
+        IPublicationSender *publicationSender)
+{
+    assert(!requestCaller.isNull());
+    BroadcastSubscriptionRequestInformation* requestInfo = new BroadcastSubscriptionRequestInformation(
+                proxyParticipantId,
+                providerParticipantId,
+                *subscriptionRequest
+    );
+    delete subscriptionRequest;
+
+    if (publicationExists(requestInfo->getSubscriptionId())){
+        LOG_WARN(logger, "Publication with id: " + requestInfo->getSubscriptionId()
+             + " already exists.");
+        delete requestInfo;
+        return;
+    }
+
+    {
+        QWriteLocker locker(&subscriptionLock);
+        QString subscriptionId = requestInfo->getSubscriptionId();
+        subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
+
+        // Make note of the publication
+        Publication *publication = new Publication(publicationSender, requestCaller);
+        publications.insert(subscriptionId, publication);
+        LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
+
+        // Add an onChange publication if needed
+        addBroadcastPublication(subscriptionId, requestInfo, publication);
+
+        // Schedule a runnable to remove the publication when it finishes
+        QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
+        qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
+
+
+        // check for a valid publication end date
+        if(!isSubscriptionExpired(qos)) {
+            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
+                delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
+                LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+            }
+            {
+                QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
+                currentScheduledPublications.append(subscriptionId);
+            }
+        } else {
+            LOG_WARN(logger, QString("publication end is in the past"));
+        }
+
+    }
+    saveBroadcastSubscriptionRequestsMap();
+}
+
+void PublicationManager::add(
+        const QString &proxyParticipantId,
+        const QString &providerParticipantId,
+        BroadcastSubscriptionRequest *subscriptionRequest)
+{
+    LOG_DEBUG(logger, "Added broadcast subscription for non existing provider (adding subscriptionRequest to queue).");
+    BroadcastSubscriptionRequestInformation* requestInfo = new BroadcastSubscriptionRequestInformation(
+                proxyParticipantId,
+                providerParticipantId,
+                *subscriptionRequest
+    );
+    delete subscriptionRequest;
+    {
+        QMutexLocker locker(&queuedBroadcastSubscriptionRequestsMutex);
+        queuedBroadcastSubscriptionRequests.insert(
+                    requestInfo->getProviderId(),
+                    requestInfo);
+    }
+    {
+        QWriteLocker locker(&subscriptionLock);
+        subscriptionId2BroadcastSubscriptionRequest.insert(
+                requestInfo->getSubscriptionId(),
+                requestInfo);
+    }
+    saveBroadcastSubscriptionRequestsMap();
+}
+
+
 
 void PublicationManager::removeAllSubscriptions(const QString& providerId) {
     LOG_DEBUG(logger, QString("Removing all subscriptions for provider id= %1")
@@ -371,6 +458,18 @@ void PublicationManager::restore(const QString& providerId,
     QList<SubscriptionRequestInformation*> subscriptions = queuedSubscriptionRequests.values(providerId);
 
     foreach (SubscriptionRequestInformation* requestInfo, subscriptions) {
+        if (!isSubscriptionExpired(requestInfo->getQos())){
+            LOG_DEBUG(logger,
+                      QString("Restoring subscription for provider: %1 %2")
+                        .arg(providerId)
+                        .arg(requestInfo->toQString()));
+            add(requestInfo->getProxyId(), requestInfo->getProviderId(), requestCaller, requestInfo, publicationSender);
+        }
+    }
+
+    QList<BroadcastSubscriptionRequestInformation*> broadcasts = queuedBroadcastSubscriptionRequests.values(providerId);
+
+    foreach (BroadcastSubscriptionRequestInformation* requestInfo, broadcasts) {
         if (!isSubscriptionExpired(requestInfo->getQos())){
             LOG_DEBUG(logger,
                       QString("Restoring subscription for provider: %1 %2")

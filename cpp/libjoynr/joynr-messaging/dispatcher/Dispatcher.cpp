@@ -249,6 +249,32 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message) 
     }
 }
 
+void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage &message) {
+    LOG_TRACE(logger, "Starting handleBroadcastSubscriptionRequestReceived");
+    //Make sure that noone is registering a Caller at the moment, because a racing condition could occour.
+    QMutexLocker locker(&subscriptionHandlingMutex);
+    assert(publicationManager != NULL);
+
+    QString receiverId = message.getHeaderTo();
+    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+
+    QByteArray jsonSubscriptionRequest = message.getPayload();
+
+    // PublicationManager is responsible for deleting SubscriptionRequests
+    BroadcastSubscriptionRequest* subscriptionRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(
+                jsonSubscriptionRequest
+    );
+
+    if(caller.isNull()) {
+        // Provider not registered yet
+        // Dispatcher will call publicationManger->restore when a new provider is added to activate
+        // subscriptions for that provider
+        publicationManager->add(message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
+    } else {
+        publicationManager->add(message.getHeaderFrom(), message.getHeaderTo(), caller, subscriptionRequest, messageSender);
+    }
+}
+
 
 void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message) {
     LOG_DEBUG(logger, "handleSubscriptionStopReceived");
