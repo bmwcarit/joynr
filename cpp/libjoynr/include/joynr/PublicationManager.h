@@ -39,6 +39,7 @@ class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class BroadcastSubscriptionRequestInformation;
 class SubscriptionRequestInformation;
+class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
 
@@ -224,9 +225,10 @@ private:
                                           QMultiMap<QString, RequestInformationType*> &queuedSubscriptions);
 
     bool isShuttingDown();
-    qint64 getPublicationTtl(SubscriptionRequestInformation* subscriptionRequest) const;
+    qint64 getPublicationTtl(SubscriptionRequest* subscriptionRequest) const;
     void sendPublication(const QString& subscriptionId,
-                         SubscriptionRequestInformation* subscriptionRequest,
+                         SubscriptionInformation* subscriptionInformation,
+                         qint64 ttl,
                          const QVariant& value);
     void addOnChangePublication(const QString& subscriptionId,
                                 SubscriptionRequestInformation* request,

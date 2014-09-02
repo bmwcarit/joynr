@@ -666,21 +666,21 @@ bool PublicationManager::isShuttingDown() {
     return shuttingDown;
 }
 
-qint64 PublicationManager::getPublicationTtl(SubscriptionRequestInformation* subscriptionRequest) const {
+qint64 PublicationManager::getPublicationTtl(SubscriptionRequest* subscriptionRequest) const {
     return subscriptionRequest->getQos()->getPublicationTtl();
 }
 
 // This function assumes that a lock is held
 void PublicationManager::sendPublication(const QString& subscriptionId,
-                                         SubscriptionRequestInformation* subscriptionRequest,
+                                         SubscriptionInformation* subscriptionInformation,
+                                         qint64 ttl,
                                          const QVariant& value)
 {
     LOG_DEBUG(logger, "sending subscriptionreply");
     MessagingQos mQos;
 
     // Set the TTL
-    qint64 publicationTtl = getPublicationTtl(subscriptionRequest);
-    mQos.setTtl(publicationTtl);
+    mQos.setTtl(ttl);
 
     // Get publication information
     Publication* publication = publications.value(subscriptionId);
@@ -690,8 +690,8 @@ void PublicationManager::sendPublication(const QString& subscriptionId,
     subscriptionPublication.setSubscriptionId(subscriptionId);
     subscriptionPublication.setResponse(value);
     publicationSender->sendSubscriptionPublication(
-                subscriptionRequest->getProviderId(),
-                subscriptionRequest->getProxyId(),
+                subscriptionInformation->getProviderId(),
+                subscriptionInformation->getProxyId(),
                 mQos,
                 subscriptionPublication
     );
@@ -757,8 +757,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
                                                     QList<QVariant>(),
                                                     QList<QVariant>());
 
-    // Publish
-    sendPublication(subscriptionId, subscriptionRequest, response);
+    sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), response);
 
     // Reschedule the next poll
     if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
@@ -829,7 +828,7 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     }
 
     // Send the publication
-    sendPublication(subscriptionId, subscriptionRequest, value);
+    sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
 }
 
 void PublicationManager::eventOccured(const QString &subscriptionId, const QVariant &values){
