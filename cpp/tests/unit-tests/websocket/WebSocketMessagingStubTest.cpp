@@ -31,6 +31,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/WebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
 class WebSocketMessagingStubTest : public QObject, public testing::Test
 {
@@ -84,12 +85,7 @@ public:
                     server.serverPort(),
                     QString()
         );
-        QUrl url(QString("%0://%1:%2/%3")
-                    .arg((serverAddress->getProtocol() == joynr::system::WebSocketProtocol::WS) ? QStringLiteral("ws") : QStringLiteral("wss"))
-                    .arg(serverAddress->getHost())
-                    .arg(serverAddress->getPort())
-                    .arg(serverAddress->getPath())
-        );
+        QUrl url(joynr::WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(*serverAddress));
         LOG_DEBUG(logger, QString("server URL: %0").arg(url.toString()));
         webSocket->open(url);
 

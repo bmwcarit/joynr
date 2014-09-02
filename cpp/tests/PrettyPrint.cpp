@@ -63,6 +63,11 @@ void PrintTo(const QByteArray& value, std::ostream* os)
     *os << value.data();
 }
 
+void PrintTo(const QUrl& value, std::ostream* os)
+{
+    *os << value.toString().toStdString();
+}
+
  void PrintTo(const RequestStatusCode& value, ::std::ostream* os) {
      *os << value.toString().toStdString() << std::endl;
  }

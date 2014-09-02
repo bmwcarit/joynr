@@ -20,22 +20,28 @@
 
 #include "PrettyPrint.h"
 
-#include <QWebSocket>
+#include <QtTest/QSignalSpy>
+#include <QtCore/QTimer>
+#include <QtWebSockets/QWebSocket>
 
+#include "joynr/IMessaging.h"
 #include "joynr/system/WebSocketAddress.h"
+#include "joynr/system/WebSocketClientAddress.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/system/CommonApiDbusAddress.h"
 #include "joynr/system/BrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketMessagingStub.h"
 
-using namespace joynr;
+namespace joynr {
 
 class WebSocketMessagingStubFactoryTest : public testing::Test {
 public:
     WebSocketMessagingStubFactoryTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketMessagingStubFactoryTest")),
-        webSocketAddress(joynr::system::WebSocketProtocol::WS, "localhost", 42, "path"),
+        webSocketServerAddress(joynr::system::WebSocketProtocol::WS, "localhost", 42, "path"),
+        webSocketClientAddress("clientId"),
         channelAddress("channelId"),
         commonApiDbusAddress("domain", "serviceName", "participantId"),
         browserAddress("windowId")
@@ -47,7 +53,8 @@ public:
 
 protected:
     joynr_logging::Logger* logger;
-    joynr::system::WebSocketAddress webSocketAddress;
+    joynr::system::WebSocketAddress webSocketServerAddress;
+    joynr::system::WebSocketClientAddress webSocketClientAddress;
     joynr::system::ChannelAddress channelAddress;
     joynr::system::CommonApiDbusAddress commonApiDbusAddress;
     joynr::system::BrowserAddress browserAddress;
@@ -56,7 +63,8 @@ protected:
 TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
     WebSocketMessagingStubFactory factory;
 
-    EXPECT_TRUE(factory.canCreate(webSocketAddress));
+    EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
+    EXPECT_TRUE(factory.canCreate(webSocketServerAddress));
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses) {
@@ -70,23 +78,66 @@ TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses) {
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
     WebSocketMessagingStubFactory factory;
 
-    EXPECT_TRUE(factory.create(webSocketAddress).isNull());
+    EXPECT_TRUE(factory.create(webSocketClientAddress).isNull());
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     WebSocketMessagingStubFactory factory;
     QWebSocket* websocket = new QWebSocket();
 
-    factory.addClient(webSocketAddress, websocket);
-    EXPECT_FALSE(factory.create(webSocketAddress).isNull());
+    factory.addClient(webSocketClientAddress, websocket);
+    EXPECT_FALSE(factory.create(webSocketClientAddress).isNull());
+    EXPECT_FALSE(factory.create(webSocketServerAddress).isNull());
+}
+
+TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
+    WebSocketMessagingStubFactory factory;
+    QWebSocket* websocket = new QWebSocket();
+
+    factory.addClient(webSocketClientAddress, websocket);
+    QSharedPointer<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
+    QSharedPointer<joynr::WebSocketMessagingStub> wsMessagingStub(messagingStub.dynamicCast<joynr::WebSocketMessagingStub>());
+    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.data(), SIGNAL(closed(joynr::system::Address)));
+    EXPECT_FALSE(messagingStub.isNull());
+
+    QTimer::singleShot(0, wsMessagingStub.data(), SLOT(onSocketDisconnected()));
+    EXPECT_TRUE(wsMessagingStubClosedSpy.wait());
+    EXPECT_EQ(1, wsMessagingStubClosedSpy.count());
+    EXPECT_TRUE(factory.create(webSocketClientAddress).isNull());
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
     QWebSocket* websocket = new QWebSocket();
 
-    factory.addClient(webSocketAddress, websocket);
-    EXPECT_FALSE(factory.create(webSocketAddress).isNull());
-    factory.removeClient(webSocketAddress);
-    EXPECT_TRUE(factory.create(webSocketAddress).isNull());
+    factory.addClient(webSocketClientAddress, websocket);
+    EXPECT_FALSE(factory.create(webSocketClientAddress).isNull());
+    factory.removeClient(webSocketClientAddress);
+    EXPECT_TRUE(factory.create(webSocketClientAddress).isNull());
 }
+
+TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
+    joynr::system::WebSocketAddress wsAddress(
+                joynr::system::WebSocketProtocol::WS,
+                "localhost",
+                42,
+                "some/path/"
+    );
+    QUrl expectedWsUrl(QString("ws://localhost:42/some/path/"));
+
+    QUrl wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
+    EXPECT_EQ(expectedWsUrl, wsUrl);
+
+    joynr::system::WebSocketAddress wssAddress(
+                joynr::system::WebSocketProtocol::WSS,
+                "localhost",
+                42,
+                "some/path"
+    );
+    QUrl expectedWssUrl(QString("wss://localhost:42/some/path"));
+
+    QUrl wssUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wssAddress));
+    EXPECT_EQ(expectedWssUrl, wssUrl);
+}
+
+} // namespace joynr

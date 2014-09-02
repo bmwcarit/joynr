@@ -19,28 +19,43 @@
 #ifndef WEBSOCKETMESSAGINGSTUBFACTORY_H
 #define WEBSOCKETMESSAGINGSTUBFACTORY_H
 
-#include <QHash>
-#include <QMutex>
+#include <QtCore/QObject>
+#include <QtCore/QHash>
+#include <QtCore/QMutex>
+#include <QtCore/QUrl>
 
 #include "joynr/joynrlogging.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/WebSocketAddress.h"
 
 class QWebSocket;
 
 namespace joynr {
 
-class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory {
+namespace system {
+    class Address;
+    class WebSocketAddress;
+    class WebSocketClientAddress;
+}
+
+class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagingStubFactory
+{
+    Q_OBJECT
 
 public:
-    WebSocketMessagingStubFactory();
+    WebSocketMessagingStubFactory(QObject* parent = Q_NULLPTR);
     QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress);
     bool canCreate(const joynr::system::Address& destAddress);
-    void addClient(const joynr::system::WebSocketAddress& clientAddress, QWebSocket* webSocket);
-    void removeClient(const joynr::system::WebSocketAddress& clientAddress);
+    void addClient(const joynr::system::WebSocketClientAddress& clientAddress, QWebSocket* webSocket);
+    void removeClient(const joynr::system::WebSocketClientAddress& clientAddress);
+
+    static QUrl convertWebSocketAddressToUrl(const joynr::system::WebSocketAddress& address);
+
+private Q_SLOTS:
+    void onMessagingStubClosed(const joynr::system::Address& address);
 
 private:
-    QHash<joynr::system::WebSocketAddress, QSharedPointer<IMessaging>> stubMap;
+    QHash<joynr::system::WebSocketAddress, QSharedPointer<IMessaging>> serverStubMap;
+    QHash<joynr::system::WebSocketClientAddress, QSharedPointer<IMessaging>> clientStubMap;
     QMutex mutex;
 
     static joynr_logging::Logger* logger;
