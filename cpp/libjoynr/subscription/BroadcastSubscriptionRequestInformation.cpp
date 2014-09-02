@@ -20,17 +20,12 @@
 #include "joynr/Util.h"
 #include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 
-#include <cassert>
-
 namespace joynr {
 
 using namespace joynr_logging;
 Logger* BroadcastSubscriptionRequestInformation::logger = Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequestInformation");
 
-BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation():
-    BroadcastSubscriptionRequest(),
-    proxyId(),
-    providerId()
+BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation()
 {
 }
 
@@ -40,54 +35,30 @@ BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation
         const BroadcastSubscriptionRequest& subscriptionRequest
 ) :
     BroadcastSubscriptionRequest(subscriptionRequest),
-    proxyId(proxyParticipantId),
-    providerId(providerParticipantId)
+    SubscriptionInformation(proxyParticipantId, providerParticipantId)
 {
 }
 
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) :
     BroadcastSubscriptionRequest(subscriptionRequestInformation),
-    proxyId(subscriptionRequestInformation.getProxyId()),
-    providerId(subscriptionRequestInformation.getProviderId())
+    SubscriptionInformation(subscriptionRequestInformation.getProxyId(), subscriptionRequestInformation.getProviderId())
 {
 }
 
 BroadcastSubscriptionRequestInformation& BroadcastSubscriptionRequestInformation::operator=(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) {
     BroadcastSubscriptionRequest::operator=(subscriptionRequestInformation);
-    proxyId = subscriptionRequestInformation.getProxyId();
-    providerId = subscriptionRequestInformation.getProviderId();
+    SubscriptionInformation::operator =(subscriptionRequestInformation);
     return *this;
 }
 
 bool BroadcastSubscriptionRequestInformation::operator==(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const {
     return
             BroadcastSubscriptionRequest::operator==(subscriptionRequestInformation)
-            && proxyId == subscriptionRequestInformation.getProxyId()
-            && providerId == subscriptionRequestInformation.getProviderId();
+            && SubscriptionInformation::operator ==(subscriptionRequestInformation);
 }
 
-QString BroadcastSubscriptionRequestInformation::getProxyId() const
+QString BroadcastSubscriptionRequestInformation::toQString() const
 {
-    return proxyId;
-}
-
-QString BroadcastSubscriptionRequestInformation::getProviderId() const
-{
-    return providerId;
-}
-
-void BroadcastSubscriptionRequestInformation::setProxyId(const QString &id)
-{
-    this->proxyId = id;
-}
-
-void BroadcastSubscriptionRequestInformation::setProviderId(const QString &id)
-{
-    this->providerId = id;
-}
-
-
-QString BroadcastSubscriptionRequestInformation::toQString() const {
     return JsonSerializer::serialize(*this);
 }
 

@@ -19,9 +19,8 @@
 #ifndef BROADCASTSUBSCRIPTIONREQUESTINFORMATION_H
 #define BROADCASTSUBSCRIPTIONREQUESTINFORMATION_H
 
-
-#include "SubscriptionRequestInformation.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/SubscriptionInformation.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -29,7 +28,7 @@
 namespace joynr {
 
 class JOYNR_EXPORT BroadcastSubscriptionRequestInformation :
-        public BroadcastSubscriptionRequest {
+        public BroadcastSubscriptionRequest, public SubscriptionInformation {
     Q_OBJECT
 
     Q_PROPERTY(QString proxyId READ getProxyId WRITE setProxyId)
@@ -49,18 +48,9 @@ public:
     BroadcastSubscriptionRequestInformation& operator=(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation);
     bool operator==(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const;
 
-    QString getProxyId() const;
-    void setProxyId(const QString& id);
-
-    QString getProviderId() const;
-    void setProviderId(const QString& id);
-
     QString toQString() const;
 
 private:
-    QString proxyId;
-    QString providerId;
-
     static joynr_logging::Logger* logger;
 };
 
