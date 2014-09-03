@@ -791,25 +791,56 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
         return;
     }
 
+    SubscriptionRequestInformation* subscriptionRequest = subscriptionId2SubscriptionRequest.value(subscriptionId);
+
+    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())){
+
+        // Send the publication
+        sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
+    }
+}
+
+void PublicationManager::eventOccured(const QString &subscriptionId, const QVariantMap &values){
+    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Number of values: %2").arg(subscriptionId).arg(values.size()));
+
+    QReadLocker locker(&subscriptionLock);
+
+    // See if the subscription is still valid
+    if (!publicationExists(subscriptionId)) {
+        LOG_ERROR(logger, QString("eventOccured called for non-existing subscription %1").arg(subscriptionId));
+        return;
+    }
+
+    BroadcastSubscriptionRequestInformation* subscriptionRequest = subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+
+    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())){
+
+        // Send the publication
+        QVariant value = QVariant::fromValue(values);
+        sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
+    }
+}
+
+// This functions assumes that a lock is held
+bool PublicationManager::isPublicationReadyToBeSend(const QString &subscriptionId, QSharedPointer<SubscriptionQos> qos){
+
     // See if a publication is already scheduled
     {
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
         if(currentScheduledPublications.contains(subscriptionId)) {
-            LOG_DEBUG(logger, QString("publication runnable already scheduled"));
-            return;
+            LOG_DEBUG(logger, QString("publication runnable already scheduled: %1").arg(subscriptionId));
+            return false;
         }
     }
 
     // Check the last publication time against the min interval
     qint64 now = QDateTime::currentMSecsSinceEpoch();
-    SubscriptionRequestInformation* subscriptionRequest = subscriptionId2SubscriptionRequest.value(subscriptionId);
     Publication* publication = publications.value(subscriptionId);
-    QSharedPointer<SubscriptionQos> qos = subscriptionRequest->getQos();
     qint64 minInterval = SubscriptionUtil::getMinInterval(qos.data());
     qint64 timeSinceLast = now - publication->timeOfLastPublication;
 
     if (minInterval > 0 && timeSinceLast < minInterval) {
-        LOG_DEBUG(logger, QString("attributeValueChanged ignored on subscription %1, %2 < %3")
+        LOG_DEBUG(logger, QString("Time since last publication is less than minInterval on subscription %1, %2 < %3")
                             .arg(subscriptionId)
                             .arg(timeSinceLast)
                             .arg(minInterval));
@@ -824,17 +855,10 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId), nextPublication);
         }
 
-        return;
+        return false;
     }
 
-    // Send the publication
-    sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
-}
-
-void PublicationManager::eventOccured(const QString &subscriptionId, const QVariantMap &values){
-    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Number of values: %2").arg(subscriptionId).arg(values.size()));
-
-    // TODO: Implement
+    return true;
 }
 
 //------ PublicationManager::Publication ---------------------------------------

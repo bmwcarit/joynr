@@ -42,6 +42,7 @@ class SubscriptionRequestInformation;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
+class SubscriptionQos;
 
 /**
   * \class PublicationManager
@@ -215,6 +216,8 @@ private:
     void loadSavedAttributeSubscriptionRequestsMap();
     void saveBroadcastSubscriptionRequestsMap();
     void loadSavedBroadcastSubscriptionRequestsMap();
+
+    bool isPublicationReadyToBeSend(const QString &subscriptionId, QSharedPointer<SubscriptionQos> qos);
 
     template <class RequestInformationType>
     void saveSubscriptionRequestsMap(const QMap<QString, RequestInformationType*>& map, const QString& storageFilename);
