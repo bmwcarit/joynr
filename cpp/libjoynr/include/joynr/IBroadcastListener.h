@@ -21,7 +21,13 @@
 
 #include "joynr/JoynrExport.h"
 
+template <typename K, typename V>
+class QMap;
+
+class QString;
 class QVariant;
+
+typedef QMap<QString, QVariant> QVariantMap;
 
 namespace joynr {
 
@@ -29,7 +35,7 @@ class JOYNR_EXPORT IBroadcastListener
 {
 public:
     virtual ~IBroadcastListener() {}
-    virtual void eventOccured(const QVariant& values) = 0;
+    virtual void eventOccured(const QVariantMap& values) = 0;
 };
 
 } // namespace joynr

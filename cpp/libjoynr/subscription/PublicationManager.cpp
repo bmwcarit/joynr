@@ -831,8 +831,8 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
 }
 
-void PublicationManager::eventOccured(const QString &subscriptionId, const QVariant &values){
-    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Values: %2").arg(subscriptionId).arg(values.toString()));
+void PublicationManager::eventOccured(const QString &subscriptionId, const QVariantMap &values){
+    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Number of values: %2").arg(subscriptionId).arg(values.size()));
 
     // TODO: Implement
 }

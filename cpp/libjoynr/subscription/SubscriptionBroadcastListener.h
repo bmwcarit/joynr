@@ -40,7 +40,7 @@ public:
     SubscriptionBroadcastListener(const QString& subscriptionId, PublicationManager &publicationManager);
 
     // Implementation of IBroadcastListener::eventOccured
-    void eventOccured(const QVariant& values);
+    void eventOccured(const QVariantMap& values);
 private:
     QString subscriptionId;
     PublicationManager& publicationManager;

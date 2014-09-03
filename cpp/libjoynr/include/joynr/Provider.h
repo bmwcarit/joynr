@@ -77,7 +77,7 @@ public:
     /**
      * Called by subclasses when an event occurs
      */
-    void onEventOccured(const QString& broadcastName, const QVariant& values);
+    void onEventOccured(const QString& broadcastName, const QVariantMap& values);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Provider);

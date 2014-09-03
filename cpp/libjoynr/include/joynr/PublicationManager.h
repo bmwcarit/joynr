@@ -149,7 +149,7 @@ public:
       * @param subscriptionId A subscription that was listening on the event
       * @param values The new event values
       */
-    virtual void eventOccured(const QString& subscriptionId, const QVariant& values);
+    virtual void eventOccured(const QString& subscriptionId, const QVariantMap& values);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);

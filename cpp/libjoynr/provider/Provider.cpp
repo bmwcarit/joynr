@@ -94,7 +94,7 @@ void Provider::unregisterBroadcastListener(const QString &broadcastName, IBroadc
     delete listeners.takeAt(listenerIndex);
 }
 
-void Provider::onEventOccured(const QString &broadcastName, const QVariant &values)
+void Provider::onEventOccured(const QString &broadcastName, const QVariantMap &values)
 {
     QReadLocker locker(&lock);
 
