@@ -30,6 +30,7 @@
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/Util.h"
+#include "libjoynr/subscription/IBroadcastFilter.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 #include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
