@@ -17,6 +17,9 @@
  * #L%
  */
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+
+#include <QtConcurrent/QtConcurrent>
+
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
@@ -41,6 +44,7 @@ namespace joynr {
 
 LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
     JoynrRuntime(*settings),
+    runtimeExecutor(NULL),
     connectorFactory(NULL),
     publicationManager(NULL),
     subscriptionManager(NULL),
@@ -69,6 +73,8 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     delete dbusMessageRouterAdapter;
     delete libjoynrSettings;
     delete dbusSettings;
+    delete runtimeExecutor;
+    runtimeExecutor = NULL;
     settings->clear();
     settings->deleteLater();
 }
@@ -197,8 +203,15 @@ void LibJoynrRuntime::unregisterCapability(QString participantId){
     capabilitiesRegistrar->remove(participantId);
 }
 
+void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor)
+{
+    this->runtimeExecutor = runtimeExecutor;
+}
+
 LibJoynrRuntime *LibJoynrRuntime::create(QSettings* settings) {
-    LibJoynrRuntime* runtime = new LibJoynrRuntime(settings);
+    JoynrRuntimeExecutor *runtimeExecutor = new JoynrRuntimeExecutor();
+    LibJoynrRuntime *runtime = runtimeExecutor->create(settings);
+    runtime->setRuntimeExecutor(runtimeExecutor);
     return runtime;
 }
 

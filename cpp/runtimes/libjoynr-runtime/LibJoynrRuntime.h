@@ -25,6 +25,7 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/JoynrRuntime.h"
+#include "JoynrRuntimeExecutor.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -59,6 +60,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
+    JoynrRuntimeExecutor *runtimeExecutor;
+    void setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor);
 
 protected:
     ConnectorFactory* connectorFactory;
