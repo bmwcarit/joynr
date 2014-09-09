@@ -40,11 +40,7 @@ namespace joynr {
   */
 class JOYNR_EXPORT IBroadcastFilter {
 public:
-    IBroadcastFilter();
-    virtual ~IBroadcastFilter();
-
     virtual bool filter(const QVariantMap& eventValues, const BroadcastFilterParameters& filterParameters) = 0;
-
 };
 
 } // namespace joynr

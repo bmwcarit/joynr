@@ -30,6 +30,7 @@
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/Util.h"
+#include "libjoynr/subscription/IBroadcastFilter.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 #include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
@@ -138,7 +139,9 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThrea
       queuedBroadcastSubscriptionRequests(),
       queuedBroadcastSubscriptionRequestsMutex(),
       currentScheduledPublications(),
-      currentScheduledPublicationsMutex()
+      currentScheduledPublicationsMutex(),
+      broadcastFilters(),
+      broadcastFilterLock()
 {
 
     publishingThreadPool.setMaxThreadCount(maxThreads);
@@ -164,7 +167,9 @@ PublicationManager::PublicationManager(int maxThreads)
       queuedBroadcastSubscriptionRequests(),
       queuedBroadcastSubscriptionRequestsMutex(),
       currentScheduledPublications(),
-      currentScheduledPublicationsMutex()
+      currentScheduledPublicationsMutex(),
+      broadcastFilters(),
+      broadcastFilterLock()
 {
 
     publishingThreadPool.setMaxThreadCount(maxThreads);
@@ -818,6 +823,20 @@ void PublicationManager::eventOccured(const QString &subscriptionId, const QVari
         // Send the publication
         QVariant value = QVariant::fromValue(values);
         sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
+    }
+}
+
+void PublicationManager::addBroadcastFilter(const QString &broadcastName, QSharedPointer<IBroadcastFilter> filter)
+{
+    QWriteLocker locker(&broadcastFilterLock);
+
+    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it = broadcastFilters.find(broadcastName);
+
+    if (it != broadcastFilters.end()){
+        it.value().append(filter);
+    }
+    else {
+        broadcastFilters.insert(broadcastName, QList<QSharedPointer<IBroadcastFilter>>({filter}));
     }
 }
 

@@ -43,6 +43,7 @@ class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
 class SubscriptionQos;
+class IBroadcastFilter;
 
 /**
   * \class PublicationManager
@@ -152,6 +153,8 @@ public:
       */
     virtual void eventOccured(const QString& subscriptionId, const QVariantMap& values);
 
+    void addBroadcastFilter(const QString& broadcastName, QSharedPointer<IBroadcastFilter> filter);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
@@ -196,6 +199,12 @@ private:
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
     QList<QString> currentScheduledPublications;
     QMutex currentScheduledPublicationsMutex;
+
+    // Filters registered for broadcasts. Keyed by broadcast name.
+    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>> broadcastFilters;
+
+    // Read/write lock for broadcast filters
+    mutable QReadWriteLock broadcastFilterLock;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
