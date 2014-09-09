@@ -101,7 +101,7 @@ install(
     EXPORT JoynrTargets
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-    # this will flatten directory hierarchy of headder files
+    # this will flatten directory hierarchy of header files
     # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
@@ -173,7 +173,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         EXPORT JoynrTargets
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-        # this will flatten directory hierarchy of headder files
+        # this will flatten directory hierarchy of header files
         # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
     )
     # so we install header files manually to preserve directory hierarchy
@@ -184,10 +184,10 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    # executable to start the cluster controller
-    add_executable(cluster-controller StartClusterController.cpp)
+# executable to start the cluster controller
+add_executable(cluster-controller StartClusterController.cpp)
 
-    qt5_use_modules(cluster-controller Core)
+qt5_use_modules(cluster-controller Core)
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     target_link_libraries(cluster-controller
@@ -196,12 +196,13 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${COMMONAPI_LIBRARIES}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    target_link_libraries(cluster-controller
-        JoynrClusterControllerRuntime
-    )
 
-    install(
-        TARGETS cluster-controller
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-    )
+target_link_libraries(cluster-controller
+    JoynrClusterControllerRuntime
+)
+
+install(
+    TARGETS cluster-controller
+    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+)
