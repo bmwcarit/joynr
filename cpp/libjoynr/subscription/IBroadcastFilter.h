@@ -29,19 +29,24 @@ class QString;
 
 typedef QMap<QString, QVariant> QVariantMap;
 
-class BroadcastFilterParamters;
+class BroadcastFilterParameters;
 
 
 namespace joynr {
 
-class JOYNR_EXPORT IBroadcastFilter
-{
+/**
+  * \class IBroadcastFilter
+  * \brief The IBroadcastFilter class provides an interface for filer logic implementation.
+  */
+class JOYNR_EXPORT IBroadcastFilter {
 public:
+    IBroadcastFilter();
+    virtual ~IBroadcastFilter();
 
-    virtual bool filter(QVariantMap eventValues, BroadcastFilterParamters filterParamters) = 0;
+    virtual bool filter(const QVariantMap& eventValues, const BroadcastFilterParameters& filterParameters) = 0;
 
 };
 
 } // namespace joynr
 
-#endif // IBROADCASTFILTER_H
+#endif // BROADCASTFILTER_H
