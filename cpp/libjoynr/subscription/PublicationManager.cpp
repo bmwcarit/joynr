@@ -100,8 +100,8 @@ PublicationManager::~PublicationManager() {
     saveAttributeSubscriptionRequestsMap();
     saveBroadcastSubscriptionRequestsMap();
 
-    // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we call it first
-    //then set shuttingDown to true
+    // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we
+    // call it first then set shuttingDown to true
     {
         QMutexLocker locker(&shutDownMutex);
         shuttingDown = true;
@@ -118,7 +118,8 @@ PublicationManager::~PublicationManager() {
     foreach(SubscriptionRequestInformation* request, subscriptionId2SubscriptionRequest) {
         removeAttributePublication(request->getSubscriptionId());
     }
-    foreach(BroadcastSubscriptionRequestInformation* request, subscriptionId2BroadcastSubscriptionRequest) {
+    foreach(BroadcastSubscriptionRequestInformation* request,
+            subscriptionId2BroadcastSubscriptionRequest) {
         removeBroadcastPublication(request->getSubscriptionId());
     }
 }
@@ -132,8 +133,10 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThrea
       delayedScheduler(scheduler),
       shutDownMutex(),
       shuttingDown(false),
-      subscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-      broadcastSubscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+      subscriptionRequestStorageFileName(
+          LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+      broadcastSubscriptionRequestStorageFileName(
+          LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
       queuedSubscriptionRequests(),
       queuedSubscriptionRequestsMutex(),
       queuedBroadcastSubscriptionRequests(),
@@ -160,8 +163,10 @@ PublicationManager::PublicationManager(int maxThreads)
       delayedScheduler(NULL),
       shutDownMutex(),
       shuttingDown(false),
-      subscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-      broadcastSubscriptionRequestStorageFileName(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+      subscriptionRequestStorageFileName(
+          LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+      broadcastSubscriptionRequestStorageFileName(
+          LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
       queuedSubscriptionRequests(),
       queuedSubscriptionRequestsMutex(),
       queuedBroadcastSubscriptionRequests(),
@@ -173,7 +178,9 @@ PublicationManager::PublicationManager(int maxThreads)
 {
 
     publishingThreadPool.setMaxThreadCount(maxThreads);
-    delayedScheduler = new ThreadPoolDelayedScheduler(publishingThreadPool, QString("PublicationManager-PublishingThreadPool"));
+    delayedScheduler = new ThreadPoolDelayedScheduler(
+                publishingThreadPool,
+                QString("PublicationManager-PublishingThreadPool"));
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
     loadSavedAttributeSubscriptionRequestsMap();
@@ -181,7 +188,8 @@ PublicationManager::PublicationManager(int maxThreads)
 }
 
 bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0){
-    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() && qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
+    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()
+            && qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
 }
 
 void PublicationManager::add(
@@ -227,7 +235,9 @@ void PublicationManager::add(
         // check for a valid publication end date
         if(!isSubscriptionExpired(qos)) {
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
-                delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
+                delayedScheduler->schedule(
+                            new PublicationEndRunnable(*this, subscriptionId),
+                            publicationEndDelay);
                 LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
             }
             {
@@ -252,7 +262,8 @@ void PublicationManager::addOnChangePublication(const QString& subscriptionId,
         LOG_TRACE(logger, QString("adding onChange subscription: %1").arg(subscriptionId));
 
         // Create an attribute listener to listen for onChange events
-        SubscriptionAttributeListener* attributeListener = new SubscriptionAttributeListener(subscriptionId, *this);
+        SubscriptionAttributeListener* attributeListener =
+                new SubscriptionAttributeListener(subscriptionId, *this);
 
         // Register the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
@@ -269,7 +280,8 @@ void PublicationManager::addBroadcastPublication(const QString &subscriptionId,
     LOG_TRACE(logger, QString("adding broadcast subscription: %1").arg(subscriptionId));
 
     // Create a broadcast listener to listen for broadcast events
-    SubscriptionBroadcastListener* broadcastListener = new SubscriptionBroadcastListener(subscriptionId, *this);
+    SubscriptionBroadcastListener* broadcastListener =
+            new SubscriptionBroadcastListener(subscriptionId, *this);
 
     // Register the broadcast listener
     QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
@@ -350,7 +362,9 @@ void PublicationManager::add(
         // check for a valid publication end date
         if(!isSubscriptionExpired(qos)) {
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
-                delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
+                delayedScheduler->schedule(
+                            new PublicationEndRunnable(*this, subscriptionId),
+                            publicationEndDelay);
                 LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
             }
             {
@@ -418,7 +432,8 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId) {
     {
         QReadLocker locker(&subscriptionLock);
 
-        foreach (BroadcastSubscriptionRequestInformation* requestInfo, subscriptionId2BroadcastSubscriptionRequest) {
+        foreach (BroadcastSubscriptionRequestInformation* requestInfo,
+                 subscriptionId2BroadcastSubscriptionRequest) {
             subscriptionId = requestInfo->getSubscriptionId();
 
             if(requestInfo->getProviderId() == providerId) {
@@ -468,11 +483,16 @@ void PublicationManager::restore(const QString& providerId,
                       QString("Restoring subscription for provider: %1 %2")
                         .arg(providerId)
                         .arg(requestInfo->toQString()));
-            add(requestInfo->getProxyId(), requestInfo->getProviderId(), requestCaller, requestInfo, publicationSender);
+            add(requestInfo->getProxyId(),
+                requestInfo->getProviderId(),
+                requestCaller,
+                requestInfo,
+                publicationSender);
         }
     }
 
-    QList<BroadcastSubscriptionRequestInformation*> broadcasts = queuedBroadcastSubscriptionRequests.values(providerId);
+    QList<BroadcastSubscriptionRequestInformation*> broadcasts =
+            queuedBroadcastSubscriptionRequests.values(providerId);
 
     foreach (BroadcastSubscriptionRequestInformation* requestInfo, broadcasts) {
         if (!isSubscriptionExpired(requestInfo->getQos())){
@@ -480,7 +500,11 @@ void PublicationManager::restore(const QString& providerId,
                       QString("Restoring subscription for provider: %1 %2")
                         .arg(providerId)
                         .arg(requestInfo->toQString()));
-            add(requestInfo->getProxyId(), requestInfo->getProviderId(), requestCaller, requestInfo, publicationSender);
+            add(requestInfo->getProxyId(),
+                requestInfo->getProviderId(),
+                requestCaller,
+                requestInfo,
+                publicationSender);
         }
     }
 }
@@ -489,7 +513,9 @@ void PublicationManager::restore(const QString& providerId,
 void PublicationManager::saveAttributeSubscriptionRequestsMap() {
     LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap<SubscriptionRequestInformation>(subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap<SubscriptionRequestInformation>(
+                subscriptionId2SubscriptionRequest,
+                subscriptionRequestStorageFileName);
 }
 
 void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(){
@@ -520,7 +546,9 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
 }
 
 template <class RequestInformationType>
-void PublicationManager::saveSubscriptionRequestsMap(const QMap<QString, RequestInformationType*>& map, const QString &storageFilename) {
+void PublicationManager::saveSubscriptionRequestsMap(
+        const QMap<QString, RequestInformationType*>& map,
+        const QString &storageFilename) {
 
     static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
                   "saveSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
@@ -557,9 +585,10 @@ void PublicationManager::saveSubscriptionRequestsMap(const QMap<QString, Request
 }
 
 template <class RequestInformationType>
-void PublicationManager::loadSavedSubscriptionRequestsMap(const QString &storageFilename,
-                                                          QMutex &mutex,
-                                                          QMultiMap<QString, RequestInformationType*> &queuedSubscriptions) {
+void PublicationManager::loadSavedSubscriptionRequestsMap(
+        const QString &storageFilename,
+        QMutex &mutex,
+        QMultiMap<QString, RequestInformationType*> &queuedSubscriptions) {
 
     static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
@@ -636,11 +665,14 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         }
 
         Publication* publication = publications.take(subscriptionId);
-        BroadcastSubscriptionRequestInformation* request = subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+        BroadcastSubscriptionRequestInformation* request =
+                subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
 
         // Remove listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->unregisterBroadcastListener(request->getSubscribeToName(), publication->broadcastListener);
+        requestCaller->unregisterBroadcastListener(
+                    request->getSubscribeToName(),
+                    publication->broadcastListener);
         publication->broadcastListener = NULL;
 
         // Remove the publication
@@ -661,9 +693,30 @@ void PublicationManager::removeOnChangePublication(const QString& subscriptionId
 
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->unregisterAttributeListener(request->getSubscribeToName(), publication->attributeListener);
+        requestCaller->unregisterAttributeListener(request->getSubscribeToName(),
+                                                   publication->attributeListener);
         publication->attributeListener = NULL;
     }
+}
+
+
+// This function assumes that a read lock is already held
+bool PublicationManager::processFilterChain(const QString &subscriptionId, const QVariantMap &eventValues) {
+
+    BroadcastSubscriptionRequestInformation* subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+    BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
+    QList<QSharedPointer<IBroadcastFilter>> filters =
+            broadcastFilters.value(subscriptionRequest->getSubscribeToName());
+
+    bool success = true;
+
+    foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
+        success = success &&
+                filter->filter(eventValues, filterParameters);
+    }
+
+    return success;
 }
 
 bool PublicationManager::isShuttingDown() {
@@ -726,7 +779,8 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
 
     // Get the subscription details
     Publication* publication = publications.value(subscriptionId);
-    SubscriptionRequestInformation* subscriptionRequest = subscriptionId2SubscriptionRequest.value(subscriptionId);
+    SubscriptionRequestInformation* subscriptionRequest =
+            subscriptionId2SubscriptionRequest.value(subscriptionId);
 
     // See if the publication is needed
     QSharedPointer<SubscriptionQos> qos = subscriptionRequest->getQos();
@@ -806,7 +860,8 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 }
 
 void PublicationManager::eventOccured(const QString &subscriptionId, const QVariantMap &values){
-    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Number of values: %2").arg(subscriptionId).arg(values.size()));
+    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Number of values: %2")
+              .arg(subscriptionId).arg(values.size()));
 
     QReadLocker locker(&subscriptionLock);
 
@@ -816,21 +871,30 @@ void PublicationManager::eventOccured(const QString &subscriptionId, const QVari
         return;
     }
 
-    BroadcastSubscriptionRequestInformation* subscriptionRequest = subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+    BroadcastSubscriptionRequestInformation* subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
 
     if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())){
 
-        // Send the publication
-        QVariant value = QVariant::fromValue(values);
-        sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
+        // Execute broadcast filters
+        if (processFilterChain(subscriptionId, values)) {
+            // Send the publication
+            QVariant value = QVariant::fromValue(values);
+            sendPublication(subscriptionId,
+                            subscriptionRequest,
+                            getPublicationTtl(subscriptionRequest),
+                            value);
+        }
     }
 }
 
-void PublicationManager::addBroadcastFilter(const QString &broadcastName, QSharedPointer<IBroadcastFilter> filter)
+void PublicationManager::addBroadcastFilter(const QString &broadcastName,
+                                            QSharedPointer<IBroadcastFilter> filter)
 {
     QWriteLocker locker(&broadcastFilterLock);
 
-    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it = broadcastFilters.find(broadcastName);
+    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
+            broadcastFilters.find(broadcastName);
 
     if (it != broadcastFilters.end()){
         it.value().append(filter);
@@ -841,7 +905,8 @@ void PublicationManager::addBroadcastFilter(const QString &broadcastName, QShare
 }
 
 // This functions assumes that a lock is held
-bool PublicationManager::isPublicationReadyToBeSend(const QString &subscriptionId, QSharedPointer<SubscriptionQos> qos){
+bool PublicationManager::isPublicationReadyToBeSend(const QString &subscriptionId,
+                                                    QSharedPointer<SubscriptionQos> qos){
 
     // See if a publication is already scheduled
     {

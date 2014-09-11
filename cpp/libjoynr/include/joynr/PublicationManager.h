@@ -252,6 +252,8 @@ private:
                                    SubscriptionRequestInformation* request,
                                    Publication* publication);
 
+    bool processFilterChain(const QString& subscriptionId, const QVariantMap& eventValues);
+
 };
 
 
