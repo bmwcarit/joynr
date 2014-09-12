@@ -25,6 +25,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QSemaphore>
 #include <QtCore/QCoreApplication>
+#include <QtConcurrent/QtConcurrent>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -45,14 +46,32 @@ public:
     JoynrRuntimeExecutor();
     virtual ~JoynrRuntimeExecutor();
 
+    template <class T>
     LibJoynrRuntime *create(QSettings *settings);
     void quit();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntimeExecutor);
+    template <class T>
     void createRuntimeAndExecuteEventLoop(QSettings* settings);
 };
 
+template <class T>
+void JoynrRuntimeExecutor::createRuntimeAndExecuteEventLoop(QSettings* settings) {
+    runtime = new T(settings);
+    runtimeSemaphore.release();
+    coreApplication.exec();
+}
+
+template <class T>
+LibJoynrRuntime *JoynrRuntimeExecutor::create(QSettings *settings)
+{
+    QtConcurrent::run(this, &JoynrRuntimeExecutor::createRuntimeAndExecuteEventLoop<T>, settings);
+    runtimeSemaphore.acquire();
+    LibJoynrRuntime *runtimeTmp = runtime;
+    runtime = Q_NULLPTR;
+    return runtimeTmp;
+}
 
 } // namespace joynr
 #endif //JOYNRRUNTIMEEXECUTOR_H

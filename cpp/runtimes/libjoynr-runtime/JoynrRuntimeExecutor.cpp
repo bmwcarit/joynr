@@ -41,21 +41,6 @@ JoynrRuntimeExecutor::~JoynrRuntimeExecutor()
     runtime = Q_NULLPTR;
 }
 
-void JoynrRuntimeExecutor::createRuntimeAndExecuteEventLoop(QSettings* settings) {
-    runtime = new LibJoynrRuntime(settings);
-    runtimeSemaphore.release();
-    coreApplication.exec();
-}
-
-LibJoynrRuntime *JoynrRuntimeExecutor::create(QSettings *settings)
-{
-    QtConcurrent::run(this, &JoynrRuntimeExecutor::createRuntimeAndExecuteEventLoop, settings);
-    runtimeSemaphore.acquire();
-    LibJoynrRuntime *runtimeTmp = runtime;
-    runtime = Q_NULLPTR;
-    return runtimeTmp;
-}
-
 void JoynrRuntimeExecutor::quit()
 {
     QTimer::singleShot(0, &coreApplication, SLOT(quit()));

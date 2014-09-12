@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
 #include "joynr/tests/DefaultTestProvider.h"
 #include "joynr/tests/TestProxy.h"
@@ -43,8 +43,8 @@ public:
     QString messageSettingsFilename;
 
     JoynrClusterControllerRuntime* clusterControllerRuntime;
-    LibJoynrRuntime* runtime1;
-    LibJoynrRuntime* runtime2;
+    LibJoynrDbusRuntime* runtime1;
+    LibJoynrDbusRuntime* runtime2;
 
     tests::TestProxy* testProxy;
 
@@ -69,8 +69,8 @@ public:
         clusterControllerRuntime->registerDiscoveryProvider();
 
         // create lib joynr runtimes
-        runtime1 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
-        runtime2 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime1 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime2 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
     }
 
     void SetUp() {

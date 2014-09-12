@@ -20,48 +20,38 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
+#include <QtCore/QString>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QSettings>
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/JoynrRuntime.h"
-#include "JoynrRuntimeExecutor.h"
 
-#include <QString>
-#include <QSharedPointer>
-#include <QSettings>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "common/dbus/DbusSettings.h"
+#include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
 namespace joynr {
 
-class DBusMessageRouterAdapter;
 class IMessaging;
 class JoynrMessageSender;
-class DbusSettings;
 class MessageRouter;
 class InProcessMessagingSkeleton;
+class IMiddlewareMessagingStubFactory;
 
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT LibJoynrRuntime: public JoynrRuntime {
+class LibJoynrRuntime : public JoynrRuntime {
 public:
-
     LibJoynrRuntime(QSettings* settings);
-
-    static LibJoynrRuntime* create(QSettings* settings);
-
     virtual ~LibJoynrRuntime();
 
+    template <class T>
+    static LibJoynrRuntime* create(QSettings* settings);
     void unregisterCapability(QString participantId);
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
-    JoynrRuntimeExecutor *runtimeExecutor;
-    void setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor);
 
 protected:
     ConnectorFactory* connectorFactory;
@@ -75,19 +65,34 @@ protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 
-    DBusMessageRouterAdapter* dbusMessageRouterAdapter;
-
     // take ownership, so a pointer is used
     QSettings* settings;
     // use pointer for settings object to check the configuration before initialization
     LibjoynrSettings* libjoynrSettings;
-    DbusSettings* dbusSettings;
 
     QSharedPointer<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    void initializeAllDependencies();
+    virtual void startLibJoynrMessagingSkeleton(MessageRouter &messageRouter) = 0;
+
+    void init(
+            IMiddlewareMessagingStubFactory *middlewareMessagingStubFactory,
+            QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
+            QSharedPointer<joynr::system::Address> ccMessagingAddress
+    );
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
+    JoynrRuntimeExecutor *runtimeExecutor;
+    void setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor);
 };
 
+template <class T>
+LibJoynrRuntime *LibJoynrRuntime::create(QSettings* settings) {
+    JoynrRuntimeExecutor *runtimeExecutor = new JoynrRuntimeExecutor();
+    LibJoynrRuntime *runtime = runtimeExecutor->create<T>(settings);
+    runtime->setRuntimeExecutor(runtimeExecutor);
+    return runtime;
+}
 
 } // namespace joynr
 #endif //LIBJOYNRRUNTIME_H

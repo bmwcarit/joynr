@@ -17,19 +17,22 @@
  * #L%
  */
 #include "joynr/JoynrRuntime.h"
-#include "LibJoynrRuntime.h"
+#include "libjoynr-runtime/LibJoynrRuntime.h"
+#include "LibJoynrDbusRuntime.h"
 
 #include "joynr/SettingsMerger.h"
 
 namespace joynr {
 
-JoynrRuntime* JoynrRuntime::createRuntime(const QString& pathToLibjoynrSettings,
-                                            const QString& pathToMessagingSettings) {
+JoynrRuntime* JoynrRuntime::createRuntime(
+        const QString& pathToLibjoynrSettings,
+        const QString& pathToMessagingSettings
+) {
     Q_UNUSED(pathToMessagingSettings);
     QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
     SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
 
-    return LibJoynrRuntime::create(settings);
+    return LibJoynrRuntime::create<LibJoynrDbusRuntime>(settings);
 }
 
 } // namespace joynr

@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "PrettyPrint.h"
-#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/vehicle/GpsProxy.h"
@@ -52,7 +52,7 @@ public:
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
     JoynrClusterControllerRuntime* ccRuntime;
-    LibJoynrRuntime* runtime;
+    LibJoynrDbusRuntime* runtime;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
     joynr::types::ProviderQos mockTestProviderQos;
@@ -108,7 +108,7 @@ public:
 
     void SetUp() {
         // start libjoynr runtime
-        runtime = new LibJoynrRuntime(
+        runtime = new LibJoynrDbusRuntime(
                     new QSettings(temporarylibjoynrSettingsFilename, QSettings::IniFormat)
         );
 

@@ -22,19 +22,15 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
-#include "common/dbus/DbusMessagingStubAdapter.h"
 #include "joynr/system/CommonApiDbusAddress.h"
-#include "joynr/DBusMessageRouterAdapter.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
-#include "common/dbus/DbusSettings.h"
 #include "joynr/MessageRouter.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MessagingStubFactory.h"
-#include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/system/DiscoveryProxy.h"
 
@@ -44,7 +40,6 @@ namespace joynr {
 
 LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
     JoynrRuntime(*settings),
-    runtimeExecutor(NULL),
     connectorFactory(NULL),
     publicationManager(NULL),
     subscriptionManager(NULL),
@@ -55,13 +50,12 @@ LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
     joynrMessageSender(NULL),
     joynrDispatcher(NULL),
     inProcessDispatcher(NULL),
-    dbusMessageRouterAdapter(NULL),
     settings(settings),
-    libjoynrSettings(NULL),
-    dbusSettings(NULL),
-    dispatcherMessagingSkeleton(NULL)
+    libjoynrSettings(new LibjoynrSettings(*settings)),
+    dispatcherMessagingSkeleton(NULL),
+    runtimeExecutor(NULL)
 {
-    initializeAllDependencies();
+    libjoynrSettings->printSettings();
 }
 
 LibJoynrRuntime::~LibJoynrRuntime() {
@@ -70,49 +64,41 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     delete capabilitiesRegistrar;
     delete joynrMessageSender;
     delete joynrDispatcher;
-    delete dbusMessageRouterAdapter;
     delete libjoynrSettings;
-    delete dbusSettings;
-    delete runtimeExecutor;
-    runtimeExecutor = NULL;
+    libjoynrSettings = Q_NULLPTR;
     settings->clear();
     settings->deleteLater();
+    runtimeExecutor->deleteLater();
 }
 
-void LibJoynrRuntime::initializeAllDependencies() {
-    assert(settings);
-    libjoynrSettings = new LibjoynrSettings(*settings);
-    libjoynrSettings->printSettings();
-    dbusSettings = new DbusSettings(*settings);
-    dbusSettings->printSettings();
-
-    QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingDomain("local");
-    QString libjoynrMessagingServiceName("io.joynr.libjoynr.Messaging");
-    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
-    QString libjoynrMessagingServiceUrl(libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName + ":" + libjoynrMessagingId);
-    QSharedPointer<joynr::system::Address> libjoynrMessagingAddress(new system::CommonApiDbusAddress(libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
-
+void LibJoynrRuntime::init(
+        IMiddlewareMessagingStubFactory *middlewareMessagingStubFactory,
+        QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
+        QSharedPointer<joynr::system::Address> ccMessagingAddress
+) {
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
-    messagingStubFactory->registerStubFactory(new DbusMessagingStubFactory());
+    messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
     messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
     // create message router
-    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory, libjoynrMessagingAddress));
+    messageRouter = QSharedPointer<MessageRouter>(
+                new MessageRouter(messagingStubFactory, libjoynrMessagingAddress)
+    );
 
-    // create messaging skeleton using uuid
-    dbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, libjoynrMessagingServiceUrl);
+    startLibJoynrMessagingSkeleton(*messageRouter);
 
     joynrMessageSender = new JoynrMessageSender(messageRouter);
     joynrDispatcher = new Dispatcher(joynrMessageSender);
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
-    dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton> (new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = QSharedPointer<joynr::system::Address>(new InProcessMessagingAddress(dispatcherMessagingSkeleton));
-
-
+    dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton>(
+                new InProcessLibJoynrMessagingSkeleton(joynrDispatcher)
+    );
+    dispatcherAddress = QSharedPointer<joynr::system::Address>(
+                new InProcessMessagingAddress(dispatcherMessagingSkeleton)
+    );
 
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
@@ -148,12 +134,6 @@ void LibJoynrRuntime::initializeAllDependencies() {
                 systemServicesSettings
     );
     QString systemServicesDomain = systemServicesSettings.getDomain();
-    // create connection to parent routing service
-    QSharedPointer<joynr::system::Address> ccMessagingAddress(
-                new system::CommonApiDbusAddress(dbusSettings->getClusterControllerMessagingDomain(),
-                                                 dbusSettings->getClusterControllerMessagingServiceName(),
-                                                 dbusSettings->getClusterControllerMessagingParticipantId())
-    );
     QString routingProviderParticipantId = systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
@@ -206,13 +186,6 @@ void LibJoynrRuntime::unregisterCapability(QString participantId){
 void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor)
 {
     this->runtimeExecutor = runtimeExecutor;
-}
-
-LibJoynrRuntime *LibJoynrRuntime::create(QSettings* settings) {
-    JoynrRuntimeExecutor *runtimeExecutor = new JoynrRuntimeExecutor();
-    LibJoynrRuntime *runtime = runtimeExecutor->create(settings);
-    runtime->setRuntimeExecutor(runtimeExecutor);
-    return runtime;
 }
 
 } // namespace joynr

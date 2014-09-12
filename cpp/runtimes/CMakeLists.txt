@@ -115,20 +115,34 @@ install(
 # build libraries and executable for dbus common api
 #######################################################
 
+set(
+    JoynrRuntime_PRIVATE_HEADERS
+    "libjoynr-runtime/JoynrRuntimeExecutor.h"
+    "libjoynr-runtime/LibJoynrRuntime.h"
+)
+
+set(
+    JoynrRuntime_SOURCES
+    "libjoynr-runtime/JoynrRuntimeExecutor.cpp"
+    "libjoynr-runtime/LibJoynrRuntime.cpp"
+)
+
+# library for applications
+set(
+    JoynrRuntime_EXPORT_HEADER
+    "include/joynr/JoynrRuntimeExport.h"
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    file (GLOB_RECURSE JoynrRuntime_PRIVATE_HEADERS
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "libjoynr-runtime/*.h"
+    list(
+        APPEND JoynrRuntime_PRIVATE_HEADERS
+        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
     )
 
-    file (GLOB_RECURSE JoynrRuntime_SOURCES
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "libjoynr-runtime/*.cpp"
-    )
-
-    # library for applications
-    set(JoynrRuntime_EXPORT_HEADER
-        "include/joynr/JoynrRuntimeExport.h"
+    list(
+        APPEND JoynrRuntime_SOURCES
+        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
+        "libjoynr-runtime/dbus/JoynrRuntime.cpp"
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
@@ -136,53 +150,53 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         APPEND JoynrRuntime_INCLUDE_DIRECTORIES
         ${common_api_PUBLIC_INCLUDE_DIRECTORY}
     )
-
-    include_directories(
-       ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    )
-
-    add_library(JoynrRuntime
-        SHARED
-        ${JoynrRuntime_HEADERS}
-        ${JoynrRuntime_SOURCES}
-    )
-
-    qt5_use_modules(JoynrRuntime Core)
-
-    target_link_libraries(
-        JoynrRuntime
-        JoynrCommon
-        Joynr
-    )
-
-    generate_export_header(
-        JoynrRuntime
-        EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
-    )
-
-    set_target_properties(
-        JoynrRuntime
-        PROPERTIES
-        SOVERSION "${JOYNR_VERSION}"
-        VERSION "${JOYNR_VERSION}"
-        PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
-    )
-
-    install(
-        TARGETS JoynrRuntime
-        EXPORT JoynrTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-        # this will flatten directory hierarchy of header files
-        # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
-    )
-    # so we install header files manually to preserve directory hierarchy
-    install(
-        DIRECTORY include/
-        DESTINATION "${INSTALL_INCLUDE_DIR}"
-        FILES_MATCHING PATTERN "*.h"
-    )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
+include_directories(
+    ${JoynrRuntime_INCLUDE_DIRECTORIES}
+)
+
+add_library(JoynrRuntime
+    SHARED
+    ${JoynrRuntime_HEADERS}
+    ${JoynrRuntime_SOURCES}
+)
+
+qt5_use_modules(JoynrRuntime Core)
+
+target_link_libraries(
+    JoynrRuntime
+    JoynrCommon
+    Joynr
+)
+
+generate_export_header(
+    JoynrRuntime
+    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
+)
+
+set_target_properties(
+    JoynrRuntime
+    PROPERTIES
+    SOVERSION "${JOYNR_VERSION}"
+    VERSION "${JOYNR_VERSION}"
+    PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+)
+
+install(
+    TARGETS JoynrRuntime
+    EXPORT JoynrTargets
+    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    # this will flatten directory hierarchy of header files
+    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+)
+# so we install header files manually to preserve directory hierarchy
+install(
+    DIRECTORY include/
+    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    FILES_MATCHING PATTERN "*.h"
+)
 
 # executable to start the cluster controller
 add_executable(cluster-controller StartClusterController.cpp)
