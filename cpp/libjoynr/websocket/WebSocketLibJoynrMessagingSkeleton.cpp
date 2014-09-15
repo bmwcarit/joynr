@@ -44,21 +44,14 @@ void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage &message, const M
     messageRouter.route(message, qos);
 }
 
-void WebSocketLibJoynrMessagingSkeleton::onConnected()
-{
-    QWebSocket* server = qobject_cast<QWebSocket*>(sender());
-
-    connect(
-            server, &QWebSocket::textMessageReceived,
-            this, &WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived
-    );
-}
-
 void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString &message)
 {
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
+    LOG_TRACE(logger, QString("INCOMING\nmessage: %0")
+              .arg(message)
+    );
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg, MessagingQos());

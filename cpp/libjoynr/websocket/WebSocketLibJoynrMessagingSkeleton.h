@@ -44,8 +44,7 @@ public:
 
     virtual void transmit(JoynrMessage& message, const MessagingQos& qos);
 
-private Q_SLOTS:
-    void onConnected();
+public Q_SLOTS:
     void onTextMessageReceived(const QString& message);
 
 private:

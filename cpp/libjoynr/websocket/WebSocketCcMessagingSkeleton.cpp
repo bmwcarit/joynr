@@ -43,6 +43,9 @@ WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
     messageRouter(messageRouter),
     messagingStubFactory(messagingStubFactory)
 {
+    // must register metatype in order to deserialize initialization message from client
+    qRegisterMetaType<joynr::system::WebSocketClientAddress>("joynr::system::WebSocketClientAddress");
+
     if(webSocketServer->listen(QHostAddress::Any, port)) {
         LOG_INFO(logger, QString("joynr CC WebSocket server listening on port %0.").arg(port));
         connect(
@@ -87,6 +90,9 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString &message)
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
 
     if(isInitializationMessage(message)) {
+        LOG_DEBUG(logger, QString("received initialization message from websocket client: %0")
+                  .arg(message)
+        );
         // register client with messaging stub factory
         joynr::system::WebSocketClientAddress* clientAddress =
                 JsonSerializer::deserialize<joynr::system::WebSocketClientAddress>(message.toUtf8());
@@ -99,11 +105,15 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString &message)
                 this, &WebSocketCcMessagingSkeleton::onSocketDisconnected
         );
         clients.removeAll(client);
+        return;
     }
 
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
+    LOG_TRACE(logger, QString("INCOMING\nmessage: %0")
+              .arg(message)
+    );
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg, MessagingQos());
