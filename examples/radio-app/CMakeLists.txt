@@ -143,27 +143,55 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+# Compile the provider application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+add_executable(radio-app-provider-ws
+    ${radio-app-provider_HEADERS}
+    ${radio-app-provider_SOURCES}
+)
+
+# Link the provider application
+target_link_libraries(radio-app-provider-ws
+    radio-app
+    ${JOYNR_LIB_WS_LIBRARIES}
+)
+
+# Compile the consumer application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+add_executable(radio-app-consumer-ws
+    ${radio-app-consumer_HEADERS}
+    ${radio-app-consumer_SOURCES}
+)
+
+# Link the consumer application
+target_link_libraries(radio-app-consumer-ws
+    radio-app
+    ${JOYNR_LIB_WS_LIBRARIES}
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application (requires: Dbus and running cluster controller)
-    add_executable(radio-app-provider
+    # Communicates via Dbus with cluster controller
+    add_executable(radio-app-provider-dbus
         ${radio-app-provider_HEADERS}
         ${radio-app-provider_SOURCES}
     )
 
     # Link the provider application
-    target_link_libraries(radio-app-provider
+    target_link_libraries(radio-app-provider-dbus
         radio-app
         ${JOYNR_LIB_DBUS_LIBRARIES}
     )
 
     # Compile the consumer application (requires: Dbus and running cluster controller)
-    add_executable(radio-app-consumer
+    # Communicates via Dbus with cluster controller
+    add_executable(radio-app-consumer-dbus
         ${radio-app-consumer_HEADERS}
         ${radio-app-consumer_SOURCES}
     )
 
     # Link the consumer application
-    target_link_libraries(radio-app-consumer
+    target_link_libraries(radio-app-consumer-dbus
         radio-app
         ${JOYNR_LIB_DBUS_LIBRARIES}
     )
