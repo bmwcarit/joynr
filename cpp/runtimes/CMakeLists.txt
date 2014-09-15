@@ -111,10 +111,6 @@ install(
     FILES_MATCHING PATTERN "*.h"
 )
 
-#######################################################
-# build libraries and executable for dbus common api
-#######################################################
-
 set(
     JoynrRuntime_PRIVATE_HEADERS
     "libjoynr-runtime/JoynrRuntimeExecutor.h"
@@ -133,50 +129,48 @@ set(
     "include/joynr/JoynrRuntimeExport.h"
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND JoynrRuntime_PRIVATE_HEADERS
-        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
-    )
+#######################################################
+# build libraries and executable for WebSocket
+#######################################################
 
-    list(
-        APPEND JoynrRuntime_SOURCES
-        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
-        "libjoynr-runtime/dbus/JoynrRuntime.cpp"
-    )
+set(
+    JoynrWsRuntime_PRIVATE_HEADERS
+    "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+)
 
-    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
-    list(
-        APPEND JoynrRuntime_INCLUDE_DIRECTORIES
-        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+set(
+    JoynrWsRuntime_SOURCES
+    "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
+    "libjoynr-runtime/websocket/JoynrRuntime.cpp"
+)
 
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
 )
 
-add_library(JoynrRuntime
+add_library(JoynrWsRuntime
     SHARED
-    ${JoynrRuntime_HEADERS}
+    ${JoynrRuntime_PRIVATE_HEADERS}
     ${JoynrRuntime_SOURCES}
+    ${JoynrWsRuntime_PRIVATE_HEADERS}
+    ${JoynrWsRuntime_SOURCES}
 )
 
-qt5_use_modules(JoynrRuntime Core)
+qt5_use_modules(JoynrWsRuntime Core)
 
 target_link_libraries(
-    JoynrRuntime
+    JoynrWsRuntime
     JoynrCommon
     Joynr
 )
 
 generate_export_header(
-    JoynrRuntime
+    JoynrWsRuntime
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
 )
 
 set_target_properties(
-    JoynrRuntime
+    JoynrWsRuntime
     PROPERTIES
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
@@ -184,7 +178,7 @@ set_target_properties(
 )
 
 install(
-    TARGETS JoynrRuntime
+    TARGETS JoynrWsRuntime
     EXPORT JoynrTargets
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
@@ -197,6 +191,78 @@ install(
     DESTINATION "${INSTALL_INCLUDE_DIR}"
     FILES_MATCHING PATTERN "*.h"
 )
+
+#######################################################
+# build libraries and executable for dbus common api
+#######################################################
+
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    set(
+        JoynrDbusRuntime_PRIVATE_HEADERS
+        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
+    )
+
+    set(
+        JoynrDbusRuntime_SOURCES
+        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
+        "libjoynr-runtime/dbus/JoynrRuntime.cpp"
+    )
+
+    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
+    list(
+        APPEND JoynrRuntime_INCLUDE_DIRECTORIES
+        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
+    )
+
+    include_directories(
+        ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    )
+
+    add_library(JoynrDbusRuntime
+        SHARED
+        ${JoynrRuntime_HEADERS}
+        ${JoynrRuntime_SOURCES}
+        ${JoynrDbusRuntime_PRIVATE_HEADERS}
+        ${JoynrDbusRuntime_SOURCES}
+    )
+
+    qt5_use_modules(JoynrDbusRuntime Core)
+
+    target_link_libraries(
+        JoynrDbusRuntime
+        JoynrCommon
+        Joynr
+    )
+
+    generate_export_header(
+        JoynrDbusRuntime
+        EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
+    )
+
+    set_target_properties(
+        JoynrDbusRuntime
+        PROPERTIES
+        SOVERSION "${JOYNR_VERSION}"
+        VERSION "${JOYNR_VERSION}"
+        PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+    )
+
+    install(
+        TARGETS JoynrDbusRuntime
+        EXPORT JoynrTargets
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+        # this will flatten directory hierarchy of header files
+        # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    )
+    # so we install header files manually to preserve directory hierarchy
+    install(
+        DIRECTORY include/
+        DESTINATION "${INSTALL_INCLUDE_DIR}"
+        FILES_MATCHING PATTERN "*.h"
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
 
 # executable to start the cluster controller
 add_executable(cluster-controller StartClusterController.cpp)

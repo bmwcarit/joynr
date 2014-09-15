@@ -340,6 +340,7 @@ set(
     Joynr
     JoynrClusterController
     JoynrClusterControllerRuntime
+    JoynrWsRuntime
     log4qt
     qjson
 )
@@ -347,7 +348,7 @@ set(
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
         APPEND TARGET_LIBS
-        JoynrRuntime
+        JoynrDbusRuntime
         JoynrCommonAPI
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -381,14 +382,23 @@ set(
     log4qt
 )
 
+set(
+    JoynrConfig_LIB_WS_LIBRARIES
+    JoynrCommon
+    Joynr
+    qjson
+    log4qt
+    JoynrWsRuntime
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        JoynrConfig_LIB_LIBRARIES
+        JoynrConfig_LIB_DBUS_LIBRARIES
         JoynrCommon
         Joynr
         qjson
         log4qt
-        JoynrRuntime
+        JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
@@ -408,9 +418,16 @@ set(
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
 )
+set(
+    JoynrConfig_LIB_WS_INCLUDE_DIRS
+    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
+    ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+)
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        JoynrConfig_LIB_INCLUDE_DIRS
+        JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${qjson_PUBLIC_INCLUDE_DIRECTORY}

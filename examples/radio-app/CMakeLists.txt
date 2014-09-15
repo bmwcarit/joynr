@@ -19,9 +19,11 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 # Pull in the Joynr configuration
 find_package(Joynr 0.8.0 REQUIRED)
 message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
-message(STATUS "joynr variable JOYNR_LIB_INCLUDE_DIRS=${JOYNR_LIB_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_LIB_DBUS_INCLUDE_DIRS=${JOYNR_LIB_DBUS_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_LIB_WS_INCLUDE_DIRS=${JOYNR_LIB_WS_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
-message(STATUS "joynr variable JOYNR_LIB_LIBRARIES=${JOYNR_LIB_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_LIB_DBUS_LIBRARIES=${JOYNR_LIB_DBUS_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_LIB_WS_LIBRARIES=${JOYNR_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable JOYNR_EXECUTABLES=${JOYNR_EXECUTABLES}")
 message(STATUS "joynr variable JOYNR_RESOURCES_DIR=${JOYNR_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
@@ -151,7 +153,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Link the provider application
     target_link_libraries(radio-app-provider
         radio-app
-        ${JOYNR_LIB_LIBRARIES}
+        ${JOYNR_LIB_DBUS_LIBRARIES}
     )
 
     # Compile the consumer application (requires: Dbus and running cluster controller)
@@ -163,7 +165,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Link the consumer application
     target_link_libraries(radio-app-consumer
         radio-app
-        ${JOYNR_LIB_LIBRARIES}
+        ${JOYNR_LIB_DBUS_LIBRARIES}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 

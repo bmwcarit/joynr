@@ -155,7 +155,7 @@ set(
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
         APPEND test_TARGET_LIBRARIES
-        JoynrRuntime
+        JoynrDbusRuntime
     )
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
     list(
