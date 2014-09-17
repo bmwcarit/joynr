@@ -19,6 +19,7 @@
 #include "WebSocketMessagingStub.h"
 
 #include <QtWebSockets/QWebSocket>
+#include <QtCore/QMetaObject>
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
@@ -26,7 +27,8 @@
 
 namespace joynr {
 
-joynr_logging::Logger* WebSocketMessagingStub::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
+joynr_logging::Logger* WebSocketMessagingStub::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
 
 WebSocketMessagingStub::WebSocketMessagingStub(
         system::Address* address,
@@ -54,17 +56,39 @@ void WebSocketMessagingStub::onSocketDisconnected() {
     emit closed(*address);
 }
 
+void WebSocketMessagingStub::sendTextMessage(const QString &message)
+{
+    LOG_TRACE(logger, QString("OUTGOING\nmessage: %0\nto: %1")
+              .arg(message)
+              .arg(address->toString())
+    );
+    qint64 bytesSent = webSocket->sendTextMessage(message);
+    LOG_TRACE(logger, QString("bytes actually sent: %0 of %1")
+              .arg(bytesSent)
+              .arg(message.size())
+    );
+
+}
+
 void WebSocketMessagingStub::transmit(JoynrMessage& message, const MessagingQos &qos) {
     // QoS is not needed on transmit. Message already contains expiry date.
     // Messaging interface needs to be refactored.
     Q_UNUSED(qos);
 
     if(!webSocket->isValid()) {
+        LOG_ERROR(logger, QString("WebSocket not ready %0. Unable to send message %1.")
+                  .arg(address->toString())
+                  .arg(QString(JsonSerializer::serialize(message))));
         return;
     }
 
     QByteArray serializedMessage(JsonSerializer::serialize(message));
-    webSocket->sendBinaryMessage(serializedMessage);
+    QMetaObject::invokeMethod(
+                this,
+                "sendTextMessage",
+                Qt::AutoConnection,
+                Q_ARG(QString, QString(serializedMessage))
+    );
 }
 
 } // namespace joynr

@@ -46,6 +46,7 @@ Q_SIGNALS:
     void closed(const joynr::system::Address& address);
 private Q_SLOTS:
     void onSocketDisconnected();
+    void sendTextMessage(const QString &message);
 
 private:
     static joynr_logging::Logger* logger;
