@@ -47,6 +47,7 @@ public:
     bool canCreate(const joynr::system::Address& destAddress);
     void addClient(const joynr::system::WebSocketClientAddress& clientAddress, QWebSocket* webSocket);
     void removeClient(const joynr::system::WebSocketClientAddress& clientAddress);
+    void addServer(const joynr::system::WebSocketAddress& serverAddress, QWebSocket* webSocket);
 
     static QUrl convertWebSocketAddressToUrl(const joynr::system::WebSocketAddress& address);
 

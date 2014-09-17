@@ -31,7 +31,8 @@
 
 namespace  joynr {
 
-joynr_logging::Logger* WebSocketMessagingStubFactory::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStubFactory");
+joynr_logging::Logger* WebSocketMessagingStubFactory::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStubFactory");
 
 WebSocketMessagingStubFactory::WebSocketMessagingStubFactory(QObject *parent) :
     QObject(parent),
@@ -57,7 +58,9 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
         {
             QMutexLocker locker(&mutex);
             if(!clientStubMap.contains(*webSocketClientAddress)) {
-                LOG_ERROR(logger, QString("No websocket found for address %0").arg(webSocketClientAddress->toString()));
+                LOG_ERROR(logger, QString("No websocket found for address %0")
+                          .arg(webSocketClientAddress->toString())
+                );
             }
         }
         return clientStubMap.value(*webSocketClientAddress, QSharedPointer<IMessaging>());
@@ -70,19 +73,9 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
         {
             QMutexLocker locker(&mutex);
             if(!serverStubMap.contains(*webSocketServerAddress)) {
-                QWebSocket* websocket = new QWebSocket();
-                websocket->open(convertWebSocketAddressToUrl(*webSocketServerAddress));
-
-                WebSocketMessagingStub* wsServerStub = new WebSocketMessagingStub(
-                            new joynr::system::WebSocketAddress(*webSocketServerAddress),
-                            websocket
+                LOG_ERROR(logger, QString("No websocket found for address %0")
+                          .arg(webSocketServerAddress->toString())
                 );
-                connect(
-                        wsServerStub, &WebSocketMessagingStub::closed,
-                        this, &WebSocketMessagingStubFactory::onMessagingStubClosed
-                );
-                QSharedPointer<IMessaging> serverStub(wsServerStub);
-                serverStubMap.insert(*webSocketServerAddress, serverStub);
             }
         }
         return serverStubMap.value(*webSocketServerAddress, QSharedPointer<IMessaging>());
@@ -113,6 +106,22 @@ void WebSocketMessagingStubFactory::removeClient(
     clientStubMap.remove(clientAddress);
 }
 
+void WebSocketMessagingStubFactory::addServer(
+        const system::WebSocketAddress &serverAddress,
+        QWebSocket *webSocket
+) {
+    WebSocketMessagingStub* wsServerStub = new WebSocketMessagingStub(
+                new joynr::system::WebSocketAddress(serverAddress),
+                webSocket
+    );
+    connect(
+            wsServerStub, &WebSocketMessagingStub::closed,
+            this, &WebSocketMessagingStubFactory::onMessagingStubClosed
+    );
+    QSharedPointer<IMessaging> serverStub(wsServerStub);
+    serverStubMap.insert(serverAddress, serverStub);
+}
+
 void WebSocketMessagingStubFactory::onMessagingStubClosed(const system::Address &address)
 {
     LOG_DEBUG(logger, QString("removing messaging stub for addres: %0").arg(address.toString()));
@@ -138,6 +147,5 @@ QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
                 .arg(address.getPath())
     );
 }
-
 
 } // namespace joynr
