@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/JoynrRuntime.h"
-#include "libjoynr-runtime/LibJoynrRuntime.h"
-#include "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
-#include "joynr/SettingsMerger.h"
+#include "runtimes/libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.h"
+
+#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 namespace joynr {
 
-JoynrRuntime* JoynrRuntime::createRuntime(
-        const QString& pathToLibjoynrSettings,
-        const QString& pathToMessagingSettings
-) {
-    Q_UNUSED(pathToMessagingSettings);
-    QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
-    SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
+JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(QSettings *settings) :
+    JoynrRuntimeExecutor(settings)
+{
+}
 
-    return LibJoynrRuntime::create(new JoynrDbusRuntimeExecutor(settings));
+void JoynrWebSocketRuntimeExecutor::createRuntime()
+{
+    runtime = new LibJoynrWebSocketRuntime(settings);
+    runtimeSemaphore.release();
 }
 
 } // namespace joynr

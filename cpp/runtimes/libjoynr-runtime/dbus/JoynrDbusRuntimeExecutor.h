@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,32 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/JoynrRuntime.h"
-#include "libjoynr-runtime/LibJoynrRuntime.h"
-#include "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
-#include "joynr/SettingsMerger.h"
+
+#ifndef JOYNRDBUSRUNTIMEEXECUTOR_H
+#define JOYNRDBUSRUNTIMEEXECUTOR_H
+
+#include <QtCore/QSettings>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
 namespace joynr {
 
-JoynrRuntime* JoynrRuntime::createRuntime(
-        const QString& pathToLibjoynrSettings,
-        const QString& pathToMessagingSettings
-) {
-    Q_UNUSED(pathToMessagingSettings);
-    QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
-    SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
+class LibJoynrRuntime;
 
-    return LibJoynrRuntime::create(new JoynrDbusRuntimeExecutor(settings));
-}
+class JoynrDbusRuntimeExecutor : public JoynrRuntimeExecutor {
+    Q_OBJECT
+
+public:
+    JoynrDbusRuntimeExecutor(QSettings *settings);
+    ~JoynrDbusRuntimeExecutor() {}
+
+public slots:
+    virtual void createRuntime();
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(JoynrDbusRuntimeExecutor);
+};
 
 } // namespace joynr
+#endif //JOYNRDBUSRUNTIMEEXECUTOR_H

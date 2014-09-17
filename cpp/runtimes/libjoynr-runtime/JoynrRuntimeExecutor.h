@@ -36,42 +36,27 @@ class LibJoynrRuntime;
 class JoynrRuntimeExecutor : public QObject {
     Q_OBJECT
 
+    QCoreApplication *coreApplication;
+    QThread *runtimeThread;
+
+protected:
+    QSettings *settings;
     LibJoynrRuntime *runtime;
     QSemaphore runtimeSemaphore;
-    int argc;
-    char **argv;
-    QCoreApplication coreApplication;
 
 public:
-    JoynrRuntimeExecutor();
+    JoynrRuntimeExecutor(QSettings *settings);
     virtual ~JoynrRuntimeExecutor();
 
-    template <class T>
-    LibJoynrRuntime *create(QSettings *settings);
-    void quit();
+    LibJoynrRuntime *getRuntime();
+    void stop();
+
+public slots:
+    virtual void createRuntime() = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntimeExecutor);
-    template <class T>
-    void createRuntimeAndExecuteEventLoop(QSettings* settings);
 };
-
-template <class T>
-void JoynrRuntimeExecutor::createRuntimeAndExecuteEventLoop(QSettings* settings) {
-    runtime = new T(settings);
-    runtimeSemaphore.release();
-    coreApplication.exec();
-}
-
-template <class T>
-LibJoynrRuntime *JoynrRuntimeExecutor::create(QSettings *settings)
-{
-    QtConcurrent::run(this, &JoynrRuntimeExecutor::createRuntimeAndExecuteEventLoop<T>, settings);
-    runtimeSemaphore.acquire();
-    LibJoynrRuntime *runtimeTmp = runtime;
-    runtime = Q_NULLPTR;
-    return runtimeTmp;
-}
 
 } // namespace joynr
 #endif //JOYNRRUNTIMEEXECUTOR_H

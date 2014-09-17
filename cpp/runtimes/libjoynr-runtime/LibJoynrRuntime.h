@@ -20,6 +20,7 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
+#include <QtCore/QSemaphore>
 #include <QtCore/QString>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QSettings>
@@ -45,12 +46,12 @@ class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 
 class LibJoynrRuntime : public JoynrRuntime {
+
 public:
     LibJoynrRuntime(QSettings* settings);
     virtual ~LibJoynrRuntime();
 
-    template <class T>
-    static LibJoynrRuntime* create(QSettings* settings);
+    static LibJoynrRuntime* create(JoynrRuntimeExecutor *runtimeExecutor);
     void unregisterCapability(QString participantId);
 
 protected:
@@ -85,14 +86,6 @@ private:
     JoynrRuntimeExecutor *runtimeExecutor;
     void setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor);
 };
-
-template <class T>
-LibJoynrRuntime *LibJoynrRuntime::create(QSettings* settings) {
-    JoynrRuntimeExecutor *runtimeExecutor = new JoynrRuntimeExecutor();
-    LibJoynrRuntime *runtime = runtimeExecutor->create<T>(settings);
-    runtime->setRuntimeExecutor(runtimeExecutor);
-    return runtime;
-}
 
 } // namespace joynr
 #endif //LIBJOYNRRUNTIME_H

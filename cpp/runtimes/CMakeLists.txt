@@ -2,6 +2,7 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
+get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -136,16 +137,19 @@ set(
 set(
     JoynrWsRuntime_PRIVATE_HEADERS
     "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.h"
 )
 
 set(
     JoynrWsRuntime_SOURCES
     "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
     "libjoynr-runtime/websocket/JoynrRuntime.cpp"
+    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.cpp"
 )
 
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 add_library(JoynrWsRuntime
@@ -162,6 +166,7 @@ target_link_libraries(
     JoynrWsRuntime
     JoynrCommon
     Joynr
+    qjson
 )
 
 generate_export_header(
@@ -200,12 +205,14 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrDbusRuntime_PRIVATE_HEADERS
         "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
+        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
     )
 
     set(
         JoynrDbusRuntime_SOURCES
         "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
         "libjoynr-runtime/dbus/JoynrRuntime.cpp"
+        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.cpp"
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)

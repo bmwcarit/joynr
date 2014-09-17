@@ -18,7 +18,7 @@
  */
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr-runtime/LibJoynrRuntime.h"
-#include "LibJoynrWebSocketRuntime.h"
+#include "JoynrWebSocketRuntimeExecutor.h"
 
 #include "joynr/SettingsMerger.h"
 
@@ -32,7 +32,7 @@ JoynrRuntime* JoynrRuntime::createRuntime(
     QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
     SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
 
-    return LibJoynrRuntime::create<LibJoynrWebSocketRuntime>(settings);
+    return LibJoynrRuntime::create(new JoynrWebSocketRuntimeExecutor(settings));
 }
 
 } // namespace joynr

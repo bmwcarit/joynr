@@ -68,6 +68,7 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     libjoynrSettings = Q_NULLPTR;
     settings->clear();
     settings->deleteLater();
+    runtimeExecutor->stop();
     runtimeExecutor->deleteLater();
 }
 
@@ -187,5 +188,12 @@ void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor)
 {
     this->runtimeExecutor = runtimeExecutor;
 }
+
+LibJoynrRuntime *LibJoynrRuntime::create(JoynrRuntimeExecutor *runtimeExecutor) {
+    LibJoynrRuntime *runtime = runtimeExecutor->getRuntime();
+    runtime->setRuntimeExecutor(runtimeExecutor);
+    return runtime;
+}
+
 
 } // namespace joynr

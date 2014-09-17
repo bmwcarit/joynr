@@ -21,8 +21,10 @@
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
 #include <QtCore/QSettings>
+#include <QtWebSockets/QWebSocket>
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/joynrlogging.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 namespace joynr {
@@ -30,6 +32,8 @@ namespace joynr {
 class WebSocketLibJoynrMessagingSkeleton;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime {
+    QWebSocket *websocket;
+
 public:
     LibJoynrWebSocketRuntime(QSettings* settings);
     virtual ~LibJoynrWebSocketRuntime();
@@ -41,6 +45,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
+    static joynr_logging::Logger* logger;
 };
 
 
