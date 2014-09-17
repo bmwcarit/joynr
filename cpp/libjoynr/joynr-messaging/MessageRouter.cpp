@@ -289,20 +289,62 @@ void MessageRouter::addNextHop(
     sendMessages(participantId, address);
 }
 
-void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId) {
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(joynr::RequestStatus& joynrInternalStatus,
+        QString participantId,
+        joynr::system::WebSocketClientAddress webSocketClientAddress
+) {
+    QSharedPointer<joynr::system::WebSocketClientAddress> address(
+                new joynr::system::WebSocketClientAddress(webSocketClientAddress)
+    );
+    addToRoutingTable(participantId, address);
+    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    addNextHopToParent(joynrInternalStatus, participantId);
+
+    sendMessages(participantId, address);
+}
+
+void MessageRouter::addNextHopToParent(
+        joynr::RequestStatus& joynrInternalStatus,
+        QString participantId
+) {
     // add to parent router
     if(isChildMessageRouter()) {
         if(incomingAddress->inherits("joynr::system::ChannelAddress")) {
-            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data()));
+            parentRouter->addNextHop(
+                        joynrInternalStatus,
+                        participantId,
+                        *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data())
+            );
         }
         if(incomingAddress->inherits("joynr::system::CommonApiDbusAddress")) {
-            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::CommonApiDbusAddress*>(incomingAddress.data()));
+            parentRouter->addNextHop(
+                        joynrInternalStatus,
+                        participantId,
+                        *dynamic_cast<joynr::system::CommonApiDbusAddress*>(incomingAddress.data())
+            );
         }
         if(incomingAddress->inherits("joynr::system::BrowserAddress")) {
-            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::BrowserAddress*>(incomingAddress.data()));
+            parentRouter->addNextHop(
+                        joynrInternalStatus,
+                        participantId,
+                        *dynamic_cast<joynr::system::BrowserAddress*>(incomingAddress.data())
+            );
         }
         if(incomingAddress->inherits("joynr::system::WebSocketAddress")) {
-            parentRouter->addNextHop(joynrInternalStatus, participantId, *dynamic_cast<joynr::system::WebSocketAddress*>(incomingAddress.data()));
+            parentRouter->addNextHop(
+                        joynrInternalStatus,
+                        participantId,
+                        *dynamic_cast<joynr::system::WebSocketAddress*>(incomingAddress.data())
+            );
+        }
+        if(incomingAddress->inherits("joynr::system::WebSocketClientAddress")) {
+            parentRouter->addNextHop(
+                        joynrInternalStatus,
+                        participantId,
+                        *dynamic_cast<joynr::system::WebSocketClientAddress*>(incomingAddress.data())
+            );
         }
     }
 }

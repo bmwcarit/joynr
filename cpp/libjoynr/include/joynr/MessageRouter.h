@@ -117,6 +117,12 @@ public:
             joynr::system::WebSocketAddress webSocketAddress
     );
     // inherited method from joynr::system::RoutingProvider
+    virtual void addNextHop(
+            joynr::RequestStatus& joynrInternalStatus,
+            QString participantId,
+            joynr::system::WebSocketClientAddress webSocketClientAddress
+    );
+    // inherited method from joynr::system::RoutingProvider
     virtual void removeNextHop(
             joynr::RequestStatus& joynrInternalStatus,
             QString participantId
