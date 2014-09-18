@@ -26,6 +26,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/types/TStruct.h"
 #include "joynr/system/DiscoveryEntry.h"
+#include "joynr/system/WebSocketAddress.h"
 
 using namespace joynr;
 
@@ -45,6 +46,10 @@ namespace types {
 }
 namespace system {
     void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os) {
+        *os << JsonSerializer::serialize(value).constData() << std::endl;
+    }
+
+    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }

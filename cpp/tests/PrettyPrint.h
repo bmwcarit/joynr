@@ -58,6 +58,8 @@ namespace types {
 namespace system {
     class DiscoveryEntry;
     void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os);
+    class WebSocketAddress;
+    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
 void PrintTo(const QString& value, ::std::ostream* os);

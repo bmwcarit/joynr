@@ -26,12 +26,14 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 namespace joynr {
 
 class WebSocketLibJoynrMessagingSkeleton;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime {
+    WebSocketSettings wsSettings;
     QWebSocket *websocket;
 
 public:

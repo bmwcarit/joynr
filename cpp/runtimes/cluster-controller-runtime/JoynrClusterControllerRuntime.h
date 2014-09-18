@@ -30,6 +30,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrRuntime.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -138,6 +139,7 @@ protected:
     DbusSettings* dbusSettings;
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
+    WebSocketSettings wsSettings;
     WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
 
     static joynr_logging::Logger* logger;

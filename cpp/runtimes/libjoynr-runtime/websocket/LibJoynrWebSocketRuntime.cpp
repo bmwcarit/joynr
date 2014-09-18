@@ -33,6 +33,7 @@ joynr_logging::Logger* LibJoynrWebSocketRuntime::logger =
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings):
     LibJoynrRuntime(settings),
+    wsSettings(*settings),
     websocket(Q_NULLPTR),
     wsLibJoynrMessagingSkeleton(Q_NULLPTR)
 {
@@ -46,12 +47,8 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings):
 
     // create connection to parent routing service
     QSharedPointer<joynr::system::WebSocketAddress> ccMessagingAddress(
-                new system::WebSocketAddress(
-                    // TODO: read CC address from settings file
-                    system::WebSocketProtocol::WS,  // protocol
-                    QString("localhost"),           // host
-                    4242,                           // port
-                    QString()                       // path
+                new joynr::system::WebSocketAddress(
+                    wsSettings.createClusterControllerMessagingAddress()
                 )
     );
 

@@ -140,7 +140,7 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(const system::Address 
 QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
         const system::WebSocketAddress &address
 ) {
-    return QUrl(QString("%0://%1:%2/%3")
+    return QUrl(QString("%0://%1:%2%3")
                 .arg(address.getProtocolInternal().toLower())
                 .arg(address.getHost())
                 .arg(address.getPort())

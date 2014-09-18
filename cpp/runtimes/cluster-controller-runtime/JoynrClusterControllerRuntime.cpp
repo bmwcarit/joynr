@@ -101,6 +101,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         dbusSettings(NULL),
         ccDbusMessageRouterAdapter(NULL),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
+        wsSettings(*settings),
         wsCcMessagingSkeleton(NULL)
 {
     /*
@@ -126,6 +127,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     messagingSettings->printSettings();
     libjoynrSettings = new LibjoynrSettings(*settings);
     libjoynrSettings->printSettings();
+    wsSettings.printSettings();
 
     //CAREFUL: the factory creates an old style dispatcher, not the new one!
 
@@ -161,11 +163,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies(){
     // setup CC WebSocket interface
     WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
-    unsigned short wsServerPort = 4242;
     wsCcMessagingSkeleton = new WebSocketCcMessagingSkeleton(
                 *messageRouter,
                 *wsMessagingStubFactory,
-                wsServerPort
+                wsSettings.createClusterControllerMessagingAddress()
     );
 
     /* LibJoynr */

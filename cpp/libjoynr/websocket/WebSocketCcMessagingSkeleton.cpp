@@ -32,13 +32,9 @@ joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
         WebSocketMessagingStubFactory& messagingStubFactory,
-        unsigned short port
+        const system::WebSocketAddress &serverAddress
 ) :
-    webSocketServer(new QWebSocketServer(
-                QStringLiteral("joynr CC"),
-                QWebSocketServer::NonSecureMode,
-                this
-    )),
+    webSocketServer(Q_NULLPTR),
     clients(),
     messageRouter(messageRouter),
     messagingStubFactory(messagingStubFactory)
@@ -46,14 +42,30 @@ WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
     // must register metatype in order to deserialize initialization message from client
     qRegisterMetaType<joynr::system::WebSocketClientAddress>("joynr::system::WebSocketClientAddress");
 
-    if(webSocketServer->listen(QHostAddress::Any, port)) {
-        LOG_INFO(logger, QString("joynr CC WebSocket server listening on port %0.").arg(port));
+    QWebSocketServer::SslMode sslMode(QWebSocketServer::NonSecureMode);
+    if(serverAddress.getProtocol() == joynr::system::WebSocketProtocol::WSS) {
+        sslMode = QWebSocketServer::SecureMode;
+    }
+
+    webSocketServer = new QWebSocketServer(
+                QStringLiteral("joynr CC"),
+                sslMode,
+                this
+    );
+
+
+    if(webSocketServer->listen(QHostAddress::Any, serverAddress.getPort())) {
+        LOG_INFO(logger, QString("joynr CC WebSocket server listening on port %0.")
+                 .arg(serverAddress.getPort())
+        );
         connect(
                 webSocketServer, &QWebSocketServer::newConnection,
                 this, &WebSocketCcMessagingSkeleton::onNewConnection
         );
     } else {
-        LOG_FATAL(logger, QString("Error: WebSocket server could not listen on port %0.").arg(port));
+        LOG_FATAL(logger, QString("Error: WebSocket server could not listen on port %0.")
+                  .arg(serverAddress.getPort())
+        );
     }
 }
 

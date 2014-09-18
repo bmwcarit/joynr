@@ -30,6 +30,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "joynr/system/WebSocketAddress.h"
 
 #include "joynr/JoynrExport.h"
 
@@ -45,7 +46,7 @@ public:
     WebSocketCcMessagingSkeleton(
             MessageRouter& messageRouter,
             WebSocketMessagingStubFactory& messagingStubFactory,
-            unsigned short port
+            const system::WebSocketAddress& serverAddress
     );
 
     ~WebSocketCcMessagingSkeleton();
