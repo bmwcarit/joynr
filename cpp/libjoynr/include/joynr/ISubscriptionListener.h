@@ -27,7 +27,7 @@ namespace joynr {
   */
 
 
-template<typename T>class ISubscriptionListener
+template<typename T, typename... Ts>class ISubscriptionListener
 {
 public:
     ISubscriptionListener() {}
@@ -35,7 +35,7 @@ public:
     /*
       *     receive will be called on every received publication.
       */
-    virtual void receive(T value) = 0;
+    virtual void receive(T value, Ts... values) = 0;
     /*
       *     publicationMissed will be called when a publication is not received within the time specified in Subscription QoS.
       *     publicationMissed may not block, call any slow methods (like synchronous requests), wait for user actions, or do larger computation.
