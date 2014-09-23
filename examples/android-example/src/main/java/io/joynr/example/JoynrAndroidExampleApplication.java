@@ -20,6 +20,9 @@ package io.joynr.example;
  */
 
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
+import io.joynr.messaging.MessagingPropertyKeys;
+
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +32,22 @@ import android.app.Application;
 public class JoynrAndroidExampleApplication extends Application {
     private static final Logger logger = LoggerFactory.getLogger(JoynrAndroidExampleApplication.class);
 
-    private JoynrAndroidExampleLauncher joynrAndroidExampleLauncher = new JoynrAndroidExampleLauncher();
+    private final JoynrAndroidExampleLauncher joynrAndroidExampleLauncher = new JoynrAndroidExampleLauncher();
 
     private JoynrAndroidRuntime runtime;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        runtime = new JoynrAndroidRuntime(getApplicationContext());
+        // Replace with your bounceproxy's host name
+        String backendHost = "YOURHOSTHERE:8080"; //TODO make this configurable
+        Properties joynrConfig = new Properties();
+        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://" + backendHost + "/bounceproxy/");
+        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://" + backendHost
+                + "/discovery/channels/discoverydirectory_channelid/");
+        joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://" + backendHost
+                + "/discovery/channels/discoverydirectory_channelid/");
+        runtime = new JoynrAndroidRuntime(getApplicationContext(), joynrConfig);
         logger.info("onCreate JoynAndroidExampleApplication");
         joynrAndroidExampleLauncher.setJoynAndroidRuntime(runtime);
 
