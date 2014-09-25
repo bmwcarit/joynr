@@ -128,10 +128,29 @@ public:
     static void logSerializedMessage(joynr_logging::Logger *logger,
                                      const QString& explanation,
                                      const QString &message);
+
+    template<typename... Ts>
+    static int getTypeId();
+
 private:
     static joynr_logging::Logger* logger;
+
+    template<typename T, typename... Ts>
+    static int getTypeId_split() {
+        int prime = 31;
+        return qMetaTypeId<T>() + prime*getTypeId<Ts...>();
+    }
 };
 
+template<typename... Ts> inline
+int Util::getTypeId() {
+    return getTypeId_split<Ts...>();
+}
+
+template<> inline
+int Util::getTypeId<>() {
+    return 0;
+}
 
 } // namespace joynr
 #endif /* UTIL_H_ */

@@ -127,3 +127,16 @@ TEST(UtilTest, convertListToQVariantList){
 
 
 }
+
+TEST(UtilTest, typeIdSingleType){
+    EXPECT_GT(Util::getTypeId<QString>(), 0);
+    EXPECT_NE(Util::getTypeId<QString>(), Util::getTypeId<int>());
+}
+
+TEST(UtilTest, typeIdCompositeType){
+    int typeId1 = Util::getTypeId<QString, int, float>();
+    EXPECT_GT(typeId1, 0);
+
+    int typeId2 = Util::getTypeId<int, QString, float>();
+    EXPECT_NE(typeId1, typeId2);
+}
