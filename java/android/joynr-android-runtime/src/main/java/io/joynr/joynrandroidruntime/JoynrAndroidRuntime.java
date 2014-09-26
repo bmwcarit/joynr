@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Messenger;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
@@ -39,7 +40,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     public JoynrAndroidRuntime(Context applicationContext) {
         runtimeInitTask = new InitRuntimeTask(applicationContext, uiLogger);
-        runtimeInitTask.execute();
+        runtimeInitTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public JoynrAndroidRuntime(Context applicationContext, Properties joynrConfig) {
