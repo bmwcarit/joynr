@@ -97,6 +97,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
         return proxy;
     }
 
+    @Override
     protected void onProgressUpdate(String... progress) {
         uiLogger.logText(progress);
     }
@@ -145,7 +146,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
     @Override
     public void build(ProxyCreatedCallback<T> newCallback) {
         this.callback = newCallback;
-        this.execute();
+        this.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     }
 }

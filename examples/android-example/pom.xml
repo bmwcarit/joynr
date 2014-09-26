@@ -32,8 +32,8 @@
 
 	<properties>
 		<!-- NOTE: platform version and level must match -->
-		<platform.version>2.3.3</platform.version>
-		<platform.level>10</platform.level>
+		<platform.version>4.0.1.2</platform.version>
+		<platform.level>15</platform.level>
 	</properties>
 
 	<dependencies>
