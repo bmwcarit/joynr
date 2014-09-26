@@ -29,7 +29,7 @@ typeCollection LoggingTypes {
 		TRACE
 	}
 	
-	struct JoynrLoggedException {
+	struct JoynrLoggedError {
 		String exceptionClass
 		String exceptionMessage
 	}
@@ -46,7 +46,7 @@ typeCollection LoggingTypes {
 		String path
 		String message
 		JoynrLogLevel priority
-		JoynrLoggedException exception
+		JoynrLoggedError errorEvent
 		JoynrLoggingContextTag[] tags
 	}	
 }

@@ -25,8 +25,9 @@ import java.util.List;
 
 import joynr.system.JoynrLogEvent;
 import joynr.system.JoynrLogLevel;
-import joynr.system.JoynrLoggedException;
 import joynr.system.JoynrLoggingContextTag;
+
+import joynr.system.JoynrLoggedError;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.logging.log4j.core.Filter;
@@ -46,7 +47,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 public class DistributedLoggingAppender extends AbstractAppender {
 
     private static DistributedLoggingManagerFactory factory = new DistributedLoggingManagerFactory();
-    private DistributedLoggingManager manager;
+    private final DistributedLoggingManager manager;
 
     private DistributedLoggingAppender(final String name,
                                        final Filter filter,
@@ -59,7 +60,7 @@ public class DistributedLoggingAppender extends AbstractAppender {
 
     /**
      * Pass of the logEvent to the manager, where it is written to the proxy
-     * 
+     *
      * @param event
      *            The LogEvent.
      */
@@ -68,9 +69,9 @@ public class DistributedLoggingAppender extends AbstractAppender {
         try {
             String message = new String(getLayout().toByteArray(event), "UTF-8");
             Throwable thrown = event.getThrown();
-            JoynrLoggedException exception = null;
+            JoynrLoggedError exception = null;
             if (thrown != null) {
-                exception = new JoynrLoggedException(thrown.getClass().getName(), thrown.getMessage());
+                exception = new JoynrLoggedError(thrown.getClass().getName(), thrown.getMessage());
             }
             List<JoynrLoggingContextTag> tags = new ArrayList<JoynrLoggingContextTag>();
             JoynrLogEvent logEvent = new JoynrLogEvent(event.getMillis(),
@@ -152,8 +153,8 @@ public class DistributedLoggingAppender extends AbstractAppender {
     private static class FactoryData {
         private final long messageTtlMs;
         private final long discoveryTtlMs;
-        private String domain;
-        private int flushPeriodSeconds;
+        private final String domain;
+        private final int flushPeriodSeconds;
 
         public FactoryData(final String domain,
                            final int flushPeriodSeconds,
