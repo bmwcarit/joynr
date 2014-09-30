@@ -26,6 +26,10 @@
 #include <QList>
 #include <QMetaEnum>
 #include <cassert>
+#include <cstddef>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 
 namespace joynr {
@@ -132,6 +136,38 @@ public:
     template<typename... Ts>
     static int getTypeId();
 
+    template<int TupleSize>
+    struct ExpandTupleIntoFunctionArguments {
+        template<typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
+        static inline auto expandTupleIntoFunctionArguments(
+                Function& func,
+                FunctionClass& funcClass,
+                Tuple& tuple,
+                Arguments&... args)
+        -> decltype(ExpandTupleIntoFunctionArguments<TupleSize-1>::
+                    expandTupleIntoFunctionArguments(
+                        func, funcClass, tuple, std::get<TupleSize-1>(tuple), args...)){
+
+            return ExpandTupleIntoFunctionArguments<TupleSize-1>::
+                    expandTupleIntoFunctionArguments(
+                        func, funcClass, tuple, std::get<TupleSize-1>(tuple), args...);
+        }
+    };
+
+    template<typename Function, typename FunctionClass, typename Tuple>
+    static inline auto expandTupleIntoFunctionArguments(
+            Function& func,
+            FunctionClass& funcClass,
+            Tuple& tuple)
+    -> decltype(ExpandTupleIntoFunctionArguments<std::tuple_size<
+                typename std::decay<Tuple>::type>::value>::
+                expandTupleIntoFunctionArguments(func, funcClass, tuple)){
+
+        return ExpandTupleIntoFunctionArguments<std::tuple_size<
+                typename std::decay<Tuple>::type>::value>::
+                expandTupleIntoFunctionArguments(func, funcClass, tuple);
+    }
+
 private:
     static joynr_logging::Logger* logger;
 
@@ -151,6 +187,22 @@ template<> inline
 int Util::getTypeId<>() {
     return 0;
 }
+
+template<>
+struct Util::ExpandTupleIntoFunctionArguments<0> {
+    template<typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
+    static inline auto expandTupleIntoFunctionArguments(
+            Function& func,
+            FunctionClass& funcClass,
+            Tuple& tuple,
+            Arguments&... args)
+    -> decltype(func(funcClass, args...)){
+
+        return func(funcClass, args...);
+    }
+};
+
+
 
 } // namespace joynr
 #endif /* UTIL_H_ */
