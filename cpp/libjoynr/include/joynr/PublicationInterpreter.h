@@ -22,6 +22,7 @@
 #include "joynr/IPublicationInterpreter.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/SubscriptionCallback.h"
+#include "joynr/BroadcastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
 
@@ -113,6 +114,28 @@ public:
         typedCallbackQsp->attributeChanged(valueList);
     }
 private:
+};
+
+template <class... Ts>
+class BroadcastPublicationInterpreter : public IPublicationInterpreter{
+public:
+    BroadcastPublicationInterpreter(){}
+    void execute(QSharedPointer<ISubscriptionCallback> callback, const SubscriptionPublication& subscriptionPublication){
+        assert (!callback.isNull());
+
+        QVariant response = subscriptionPublication.getResponse();
+
+        QVariantMap value = response.value<QVariantMap>();
+
+        QSharedPointer< BroadcastSubscriptionCallback<Ts...> > typedCallbackQsp = callback.dynamicCast<BroadcastSubscriptionCallback<Ts...> >();
+
+        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(value.values());
+        auto func = std::mem_fn(&BroadcastSubscriptionCallback<Ts...>::eventOccured);
+
+        Util::expandTupleIntoFunctionArguments(func, typedCallbackQsp, values);
+    }
+private:
+    static joynr_logging::Logger* logger;
 };
 
 
