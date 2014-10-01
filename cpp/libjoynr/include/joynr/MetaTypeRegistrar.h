@@ -62,6 +62,12 @@ public:
     void registerEnumMetaType();
 
     /**
+     * Register a composite metatype
+     */
+    template <class... Ts>
+    void registerCompositeMetaType();
+
+    /**
      * Get the publication interpreter with the given type id.
      * Returns a reference to enforce that the caller does not have ownership.
      * Publication interpreters are created and registered with the metatype registrar
@@ -100,6 +106,8 @@ private:
     void addPublicationInterpreter();
     template <class T>
     void addReplyInterpreter();
+    template <class... Ts>
+    void addPublicationInterpreterForCompositeType();
 
     // A threadsafe hash holding PublicationInterpreters
     QHash<int, IPublicationInterpreter*> publicationInterpreters;
@@ -178,6 +186,24 @@ void MetaTypeRegistrar::registerMetaType()
     }
 }
 
+template <class... Ts>
+void MetaTypeRegistrar::registerCompositeMetaType()
+{
+    {
+        QMutexLocker locker(&publicationInterpretersMutex);
+        addPublicationInterpreterForCompositeType<Ts...>();
+    }
+}
+
+template <class... Ts>
+void MetaTypeRegistrar::addPublicationInterpreterForCompositeType()
+{
+    int typeId = Util::getTypeId<Ts...>();
+
+    if (!publicationInterpreters.contains(typeId)) {
+        publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
+    }
+}
 
 
 } // namespace joynr
