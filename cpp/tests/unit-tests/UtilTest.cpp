@@ -162,3 +162,12 @@ TEST_F(UtilTest, expandTuple){
 
     EXPECT_TRUE(ret);
 }
+
+TEST_F(UtilTest, toValueTuple){
+    QList<QVariant> list({QVariant(int(23)), QVariant(float(24.25)), QVariant(QString("Test"))});
+    std::tuple<int, float, QString> tup = Util::toValueTuple<int, float, QString>(list);
+
+    EXPECT_EQ(int(23), std::get<0>(tup));
+    EXPECT_EQ(float(24.25), std::get<1>(tup));
+    EXPECT_EQ(QString("Test"), std::get<2>(tup));
+}

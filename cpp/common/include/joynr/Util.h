@@ -168,6 +168,9 @@ public:
                 expandTupleIntoFunctionArguments(func, funcClass, tuple);
     }
 
+    template<typename... Ts>
+    static std::tuple<Ts...> toValueTuple(QList<QVariant> list);
+
 private:
     static joynr_logging::Logger* logger;
 
@@ -175,6 +178,14 @@ private:
     static int getTypeId_split() {
         int prime = 31;
         return qMetaTypeId<T>() + prime*getTypeId<Ts...>();
+    }
+
+    template<typename T, typename... Ts>
+    static std::tuple<T, Ts...> toValueTuple_split(QList<QVariant> list) {
+        T value = list.first().value<T>();
+        list.removeFirst();
+
+        return std::tuple_cat(std::make_tuple(value), toValueTuple<Ts...>(list));
     }
 };
 
@@ -201,6 +212,17 @@ struct Util::ExpandTupleIntoFunctionArguments<0> {
         return func(funcClass, args...);
     }
 };
+
+template<typename... Ts> inline
+std::tuple<Ts...> Util::toValueTuple(QList<QVariant> list){
+    return toValueTuple_split<Ts...>(list);
+}
+
+template<> inline
+std::tuple<> Util::toValueTuple<>(QList<QVariant> list){
+    assert(list.empty());
+    return std::make_tuple();
+}
 
 
 
