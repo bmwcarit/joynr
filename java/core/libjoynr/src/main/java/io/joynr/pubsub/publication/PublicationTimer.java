@@ -109,7 +109,7 @@ public class PublicationTimer extends PubSubTimerBase {
     }
 
     private void findGetterForAttributeName() throws NoSuchMethodException {
-        String attributeName = subscriptionRequest.getAttributeName();
+        String attributeName = subscriptionRequest.getSubscribedToName();
         String attributeGetterName = "get" + attributeName.toUpperCase().charAt(0)
                 + attributeName.subSequence(1, attributeName.length());
         method = ReflectionUtils.findMethodByParamTypes(requestCaller.getClass(), attributeGetterName, new Class[]{});
@@ -133,7 +133,7 @@ public class PublicationTimer extends PubSubTimerBase {
 
                 } else {
                     logger.debug("run: executing attributePollInterpreter for attribute "
-                            + subscriptionRequest.getAttributeName());
+                            + subscriptionRequest.getSubscribedToName());
 
                     sendPublication();
                     delayUntilNextPublication = period;
