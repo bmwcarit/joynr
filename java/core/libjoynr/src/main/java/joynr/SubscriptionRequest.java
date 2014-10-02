@@ -24,7 +24,7 @@ import io.joynr.pubsub.SubscriptionQos;
 public class SubscriptionRequest implements JoynrMessageType {
 
     private String subscriptionId;
-    private String attributeName;
+    private String subscribedToName;
     private SubscriptionQos qos;
 
     /**
@@ -35,10 +35,10 @@ public class SubscriptionRequest implements JoynrMessageType {
     public SubscriptionRequest() {
     }
 
-    public SubscriptionRequest(String subscriptionId, String attributeName, SubscriptionQos qos) {
+    public SubscriptionRequest(String subscriptionId, String subscribedToName, SubscriptionQos qos) {
         super();
         this.subscriptionId = subscriptionId;
-        this.attributeName = attributeName;
+        this.subscribedToName = subscribedToName;
         this.qos = qos;
     }
 
@@ -50,12 +50,12 @@ public class SubscriptionRequest implements JoynrMessageType {
         this.subscriptionId = subscriptionId;
     }
 
-    public String getAttributeName() {
-        return attributeName;
+    public String getSubscribedToName() {
+        return subscribedToName;
     }
 
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
+    public void setSubscribedToName(String subscribedToName) {
+        this.subscribedToName = subscribedToName;
     }
 
     public SubscriptionQos getQos() {
@@ -68,7 +68,8 @@ public class SubscriptionRequest implements JoynrMessageType {
 
     @Override
     public String toString() {
-        return "SubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", attributeName=" + attributeName + "]";
+        return "SubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", subscribedToName=" + subscribedToName
+                + "]";
     }
 
 }
