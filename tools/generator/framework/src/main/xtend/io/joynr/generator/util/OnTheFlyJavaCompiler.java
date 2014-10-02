@@ -45,7 +45,6 @@ import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.jdt.core.compiler.CompilationProgress;
 import org.eclipse.jdt.internal.compiler.batch.FileSystem;
@@ -113,13 +112,6 @@ public class OnTheFlyJavaCompiler {
             delegate.write(b);
         }
 
-    }
-
-    public static class EclipseRuntimeDependentJavaCompiler extends OnTheFlyJavaCompiler {
-        @Override
-        protected URL resolveBundleResourceURL(URL url) throws IOException {
-            return FileLocator.resolve(url);
-        }
     }
 
     public static class PatchedFileSystem extends FileSystem {

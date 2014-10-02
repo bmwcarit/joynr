@@ -17,6 +17,7 @@ package io.joynr.generator
  * limitations under the License.
  */
 
+import com.google.common.collect.Sets
 import com.google.inject.Inject
 import io.joynr.generator.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
@@ -27,8 +28,7 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.HashSet
-import org.eclipse.core.runtime.Path
-import org.eclipse.emf.ecore.plugin.EcorePlugin
+import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.dsl.FrancaPersistenceManager
@@ -38,8 +38,6 @@ import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
 import static org.eclipse.xtext.util.Files.*
-import java.util.Map
-import com.google.common.collect.Sets
 
 class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
@@ -101,7 +99,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		for (r : rs.resources){
 			for (c : r.contents){
 				if (c instanceof FModel){
-					result.addAll((c as FModel).interfaces)
+					result.addAll((c).interfaces)
 				}
 			}
 		}
@@ -115,24 +113,13 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		for (r : rs.resources){
 			for (c : r.contents){
 				if (c instanceof FModel){
-					result.addAll(getComplexDataTypes(c as FModel))
+					result.addAll(getComplexDataTypes(c))
 				}
 			}
 		}
 		return result
 	}
 
-    def getFilePath(Resource resource) {
-        val root = EcorePlugin::workspaceRoot
-        if (resource.URI.file)
-            return resource.URI.toFileString
-
-        val platformPath = new Path(resource.URI.toPlatformString(true))
-        val file = root.getFile(platformPath)
-
-        return file.location.toString
-    }
-    
 	override setParameters(Map<String,String> parameter) {
 		// do nothing
 	}

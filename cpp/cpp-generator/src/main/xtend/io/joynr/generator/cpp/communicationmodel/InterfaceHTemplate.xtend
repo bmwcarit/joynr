@@ -46,10 +46,10 @@ class InterfaceHTemplate {
 	
 	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
-			«IF isComplex(datatype as FType)»
-				«getNamespaceStarter(datatype as FType)» class «(datatype as FType).joynrName»; «getNamespaceEnder(datatype as FType)»
+			«IF isComplex(datatype)»
+				«getNamespaceStarter(datatype)» class «(datatype).joynrName»; «getNamespaceEnder(datatype)»
 			«ELSE»
-				#include "«getIncludeOf(datatype as FType)»"
+				#include "«getIncludeOf(datatype)»"
 			«ENDIF»
 		«ENDIF»
 	«ENDFOR»

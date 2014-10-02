@@ -220,27 +220,26 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	
 	override getDefaultValue(FTypedElement element) {
 		//default values are not supported (currently) by the Franca IDL 
-		if (1==0){
-//		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
-//			if (isEnum(member)){
-//				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
-//				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
-//					if (element.VALUE == member.DEFAULTVALUE){
-//						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
-//					}
-//				}
-//				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
-//			}
-////			else if (isLong(member.getDATATYPEREF().getIDREF())){
-////				return member.getDEFAULTVALUE() + "L"
-////			}
-////			else if (isDouble(member.getDATATYPEREF().getIDREF())){
-////				return member.getDEFAULTVALUE() + "d"
-////			}
-//			else{
-//				return member.getDEFAULTVALUE();
-//			}
-		} else if (isComplex(element.type)) {
+		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
+			if (isEnum(member)){
+				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
+				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
+					if (element.VALUE == member.DEFAULTVALUE){
+						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
+					}
+				}
+				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
+			}
+			else if (isLong(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "L"
+			}
+			else if (isDouble(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "d"
+			}
+			else{
+				return member.getDEFAULTVALUE();
+			}
+		} else */if (isComplex(element.type)) {
 			return "";
 		} else if (isArray(element)){
 			return "";
@@ -266,7 +265,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(getIncludeOf(type as FType));
+				typeList.add(getIncludeOf(type));
 			}
 		}	
 		return typeList;
@@ -276,7 +275,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		val includeSet = new TreeSet<String>();
 		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
 			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype as FType));
+				includeSet.add(getIncludeOf(datatype));
 			}
 		}
 		return includeSet;
@@ -322,7 +321,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") + 
 									"." + datatype.joynrName
-        default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.name)
+        default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
 	

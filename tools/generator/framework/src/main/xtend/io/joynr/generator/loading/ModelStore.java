@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -94,7 +93,7 @@ public class ModelStore implements Iterable<EObject> {
             resource.load(inputStream, emptyMap());
         } catch (IOException ex) {
             ex.printStackTrace();
-            Assert.isTrue(false, ex.getMessage());
+            System.exit(0);
         }
         return resource;
     }

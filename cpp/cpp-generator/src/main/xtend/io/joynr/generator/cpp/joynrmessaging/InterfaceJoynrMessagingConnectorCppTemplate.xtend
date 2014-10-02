@@ -72,8 +72,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 		
 		«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
-			«IF isComplex(datatype as FType)»
-				#include "«getIncludeOf(datatype as FType)»"
+			«IF isComplex(datatype)»
+				#include "«getIncludeOf(datatype)»"
 			«ENDIF»
 		«ENDIF»
 		«ENDFOR»

@@ -23,6 +23,7 @@ This project has dependencies to:
   codegen under Eclipse Public License - v 1.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
+  Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
@@ -49,23 +50,10 @@ This project has dependencies to:
   Maven Wagon API under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Objenesis under MIT License
-  org.eclipse.core.contenttype under Eclipse Public License - v 1.0
-  org.eclipse.core.expressions under Eclipse Public License - v 1.0
-  org.eclipse.core.filesystem under Eclipse Public License - v 1.0
-  org.eclipse.core.jobs under Eclipse Public License - v 1.0
-  org.eclipse.core.resources under Eclipse Public License - v 1.0
-  org.eclipse.core.runtime under Eclipse Public License - v 1.0
-  org.eclipse.equinox.app under Eclipse Public License - v 1.0
-  org.eclipse.equinox.common under Eclipse Public License - v 1.0
-  org.eclipse.equinox.preferences under Eclipse Public License - v 1.0
-  org.eclipse.equinox.registry under Eclipse Public License - v 1.0
-  org.eclipse.osgi under Eclipse Public License - v 1.0
-  org.eclipse.osgi.services under Eclipse Public License - v 1.0
   org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  OSGi R4 Foundation EE under The Apache Software License, Version 2.0
   Plexus :: Default Container under The Apache Software License, Version 2.0
   Plexus Classworlds under The Apache Software License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0

@@ -221,27 +221,26 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	override getDefaultValue(FTypedElement element) {
 		//default values are not supported (currently) by the Franca IDL 
-		if (1==0){
-//		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
-//			if (isEnum(member)){
-//				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
-//				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
-//					if (element.VALUE == member.DEFAULTVALUE){
-//						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
-//					}
-//				}
-//				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
-//			}
-////			else if (isLong(member.getDATATYPEREF().getIDREF())){
-////				return member.getDEFAULTVALUE() + "L"
-////			}
-////			else if (isDouble(member.getDATATYPEREF().getIDREF())){
-////				return member.getDEFAULTVALUE() + "d"
-////			}
-//			else{
-//				return member.getDEFAULTVALUE();
-//			}
-		} else if (isComplex(element.type)) {
+/*		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
+			if (isEnum(member)){
+				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
+				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
+					if (element.VALUE == member.DEFAULTVALUE){
+						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
+					}
+				}
+				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
+			}
+			else if (isLong(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "L"
+			}
+			else if (isDouble(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "d"
+			}
+			else{
+				return member.getDEFAULTVALUE();
+			}
+		} else */ if (isComplex(element.type)) {
 			if ((isArray(element))){
 				return "new ArrayList<" + element.type.complexType.joynrName + ">()";
 			}
@@ -287,7 +286,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(getIncludeOf(type as FType));
+				typeList.add(getIncludeOf(type));
 			}
 		}
 		return typeList;
@@ -301,7 +300,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		val includeSet = new TreeSet<String>();
 		for(datatype: getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes)){
 			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype as FType));
+				includeSet.add(getIncludeOf(datatype));
 			}
 //			else{
 //				includeSet.add(getIncludeOf(datatype as FBasicTypeId));
@@ -391,19 +390,19 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	def String getObjectDataTypeForPlainType(String plainType) {
 		var type = plainType.toLowerCase
 		switch (plainType) {
-			case FBasicTypeId::BOOLEAN.name: type = "Boolean"
-			case FBasicTypeId::INT8.name: type = "Byte"
-			case FBasicTypeId::UINT8.name: type = "Byte"
-			case FBasicTypeId::INT16.name: type = "Integer"
-			case FBasicTypeId::UINT16.name: type = "Integer"
-			case FBasicTypeId::INT32.name: type = "Integer"
-			case FBasicTypeId::UINT32.name: type = "Integer"
-			case FBasicTypeId::INT64.name: type = "Long"
-			case FBasicTypeId::UINT64.name: type = "Long"
-			case FBasicTypeId::FLOAT.name: type = "Double"
-			case FBasicTypeId::DOUBLE.name: type = "Double"
-			case FBasicTypeId::STRING.name: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.name: type = "byte[]"
+			case FBasicTypeId::BOOLEAN.getName: type = "Boolean"
+			case FBasicTypeId::INT8.getName: type = "Byte"
+			case FBasicTypeId::UINT8.getName: type = "Byte"
+			case FBasicTypeId::INT16.getName: type = "Integer"
+			case FBasicTypeId::UINT16.getName: type = "Integer"
+			case FBasicTypeId::INT32.getName: type = "Integer"
+			case FBasicTypeId::UINT32.getName: type = "Integer"
+			case FBasicTypeId::INT64.getName: type = "Long"
+			case FBasicTypeId::UINT64.getName: type = "Long"
+			case FBasicTypeId::FLOAT.getName: type = "Double"
+			case FBasicTypeId::DOUBLE.getName: type = "Double"
+			case FBasicTypeId::STRING.getName: type = "String"
+			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
 			case "void": type = "Void"
 			default :  type = plainType
 

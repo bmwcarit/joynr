@@ -57,7 +57,7 @@ class InterfaceRequestInterpreterCppTemplate {
 		{
 			«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 				«IF datatype instanceof FType»
-					qRegisterMetaType<«getMappedDatatype(datatype as FType)»>("«getMappedDatatype(datatype as FType)»");
+					qRegisterMetaType<«getMappedDatatype(datatype)»>("«getMappedDatatype(datatype)»");
 				«ENDIF»
 			«ENDFOR»
 		}

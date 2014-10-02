@@ -44,7 +44,7 @@ class CommunicationModelGenerator {
 				
 				fsa.generateFile(
 					path + type.joynrName + ".java",
-					complexTypeTemplate.generate(type as FCompoundType).toString
+					complexTypeTemplate.generate(type).toString
 				)
 	
 			}
@@ -52,11 +52,12 @@ class CommunicationModelGenerator {
 		
 		for( type: getEnumDataTypes(fModel)){
 			val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator 
-			
-			fsa.generateFile(
-				path + type.joynrName + ".java",
-				enumTemplate.generate(type as FEnumerationType).toString
-			)
+			if(type instanceof FEnumerationType) {
+				fsa.generateFile(
+					path + type.joynrName + ".java",
+					enumTemplate.generate(type).toString
+				)
+			}
 		}
 
 	}

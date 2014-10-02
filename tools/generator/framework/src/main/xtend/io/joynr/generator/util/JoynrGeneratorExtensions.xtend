@@ -69,16 +69,16 @@ abstract class JoynrGeneratorExtensions {
 			return new HashSet<FArgument>
 		}
 		else{
-			event.getOutArgs().filterNull
+			event.outArgs.filterNull
 		}
 	}
 
 	def Iterable<FArgument> getInputParameters(FMethod method) {
-		if (method == null || method.getInArgs().size() == 0){
+		if (method == null || method.inArgs.size() == 0){
 			return new HashSet<FArgument>
 		}
 		else{
-			return method.getInArgs().filterNull
+			return method.inArgs.filterNull
 		}
 	}
 
@@ -756,7 +756,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def joynrName(FBasicTypeId type){
-		type.name
+		type.getName
 	}
 
 	def joynrName(FModel model){
