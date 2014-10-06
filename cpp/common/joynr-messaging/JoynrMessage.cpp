@@ -225,7 +225,7 @@ bool JoynrMessage::containsHeaderExpiryDate() const
 
 QDateTime JoynrMessage::getHeaderExpiryDate() const
 {
-    return QDateTime::fromMSecsSinceEpoch(getHeader<qint64>(HEADER_EXPIRY_DATE()));
+    return QDateTime::fromMSecsSinceEpoch(getHeader<qint64>(HEADER_EXPIRY_DATE()), Qt::UTC);
 }
 
 void JoynrMessage::setHeaderExpiryDate(const QDateTime &expiryDate)

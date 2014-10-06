@@ -40,11 +40,27 @@ DispatcherUtils::DispatcherUtils()
 //Dispatcher Utils
 
 QDateTime DispatcherUtils::convertTtlToAbsoluteTime(qint64 ttl_ms) {
-    return QDateTime::currentDateTime().addMSecs(ttl_ms);
+    QDateTime now = QDateTime::currentDateTimeUtc();
+    QDateTime expiryDate = now.addMSecs(ttl_ms);
+
+    // check for overflow
+    if(ttl_ms > 0) {
+        bool positiveOverflow = expiryDate.toMSecsSinceEpoch() < now.toMSecsSinceEpoch();
+        if(positiveOverflow) {
+            return getMaxAbsoluteTime();
+        }
+    } else if(ttl_ms < 0) {
+        bool negativeOverflow = expiryDate.toMSecsSinceEpoch() > now.toMSecsSinceEpoch();
+        if(negativeOverflow) {
+            return QDateTime::fromMSecsSinceEpoch(std::numeric_limits<qint64>::min(), Qt::UTC);
+        }
+    }
+
+    return expiryDate;
 }
 
 QDateTime DispatcherUtils::getMaxAbsoluteTime(){
-    return QDateTime::fromMSecsSinceEpoch(std::numeric_limits< qint64 >::max());
+    return QDateTime::fromMSecsSinceEpoch(std::numeric_limits<qint64>::max(), Qt::UTC);
 }
 
 qint64 DispatcherUtils::convertAbsoluteTimeToTtl(const QDateTime& date) {
