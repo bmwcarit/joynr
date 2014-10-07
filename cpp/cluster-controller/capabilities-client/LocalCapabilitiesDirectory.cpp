@@ -142,20 +142,25 @@ void LocalCapabilitiesDirectory::add(
     }
 }
 
-void LocalCapabilitiesDirectory::remove(const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
+void LocalCapabilitiesDirectory::remove(
+        const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
     //TODO does it make sense to remove any capability for a domain/interfaceName without knowing which provider registered the capability
     QMutexLocker locker(cacheLock);
     QList<CapabilityEntry> entries = interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
+    QList<QString> participantIdsToRemove;
     for (int i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
             registeredGlobalCapabilities.removeAll(types::CapabilityInformation(domain, interfaceName,qos, capabilitiesClient->getLocalChannelId(), entry.getParticipantId()));
-            capabilitiesClient->remove(entry.getParticipantId());
+            participantIdsToRemove.append(entry.getParticipantId());
             participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
             interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
         }
         participantId2LocalCapability.remove(entry.getParticipantId(),entry);
         interfaceAddress2LocalCapabilities.remove(InterfaceAddress(domain, interfaceName), entry);
+    }
+    if(!participantIdsToRemove.isEmpty()) {
+        capabilitiesClient->remove(participantIdsToRemove);
     }
 }
 
