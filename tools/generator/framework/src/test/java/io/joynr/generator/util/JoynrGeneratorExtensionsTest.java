@@ -21,17 +21,26 @@ package io.joynr.generator.util;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+import java.net.URL;
+import java.util.ArrayList;
+
+import io.joynr.generator.loading.ModelLoader;
+
+import org.eclipse.emf.ecore.resource.Resource;
+import org.franca.core.franca.FBroadcast;
 import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FField;
+import org.franca.core.franca.FModel;
 import org.franca.core.franca.FStructType;
 import org.franca.core.franca.FTypeRef;
 import org.franca.core.franca.FrancaFactory;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.CallsRealMethods;
 
-public class RecursiveStructTest {
+public class JoynrGeneratorExtensionsTest {
 
     @Test
     public void testRecurstiveStruct() throws Exception {
@@ -47,6 +56,22 @@ public class RecursiveStructTest {
         JoynrGeneratorExtensions extension = mock(JoynrGeneratorExtensions.class, new CallsRealMethods());
         FCompoundType result = extension.getComplexType(structType);
         assertEquals(structType, result);
+    }
+
+    @Test
+    public void testFilterParameters() throws Exception {
+        URL fixtureURL = JoynrGeneratorExtensionsTest.class.getResource("FilterParameters.fidl");
+        ModelLoader loader = new ModelLoader(fixtureURL.getPath());
+        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
+        JoynrGeneratorExtensions extension = mock(JoynrGeneratorExtensions.class, new CallsRealMethods());
+
+        FModel model = (FModel) fixtureResource.getContents().get(0);
+        FBroadcast fixture = model.getInterfaces().get(0).getBroadcasts().get(0);
+
+        ArrayList<String> result = extension.getFilterParameters(fixture);
+        assertEquals(result.size(), 2);
+        assertTrue(result.contains("genre"));
+        assertTrue(result.contains("language"));
     }
 
 }

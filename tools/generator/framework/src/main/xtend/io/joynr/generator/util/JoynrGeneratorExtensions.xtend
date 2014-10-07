@@ -47,6 +47,9 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
 import org.franca.core.franca.FEnumerator
+import org.franca.core.franca.FAnnotation
+import java.util.List
+import org.franca.core.franca.FAnnotationType
 
 abstract class JoynrGeneratorExtensions {
 
@@ -201,6 +204,19 @@ abstract class JoynrGeneratorExtensions {
 
 	def getAttributes(FInterface fInterface) {
 		fInterface.attributes
+	}
+	
+	def getFilterParameters(FBroadcast broadcast) {
+		val paramList = new ArrayList<String>();
+		if (broadcast.comment != null) {
+			for(annotation: broadcast.comment.elements) {
+				if(annotation.type == FAnnotationType::PARAM) {
+					val comment = annotation.comment
+					paramList.add(comment.split("\\s+").get(0))
+				}
+			}
+		}
+		return paramList
 	}
 
 	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
