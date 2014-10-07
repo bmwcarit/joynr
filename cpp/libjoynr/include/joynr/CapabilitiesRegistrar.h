@@ -103,7 +103,7 @@ public:
         return participantId;
     }
 
-    void remove(QString participantId);
+    void remove(const QString& participantId);
 
     template <class T>
     QString remove(
