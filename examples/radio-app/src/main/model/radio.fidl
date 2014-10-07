@@ -95,4 +95,25 @@ interface Radio  {
 		  radiotypes.RadioStation radioStation
 		}
 	}
+	
+	<**
+	 @description: Selective broadcast with predefined filter parameters.
+	 @param: genre Restrict on stations of this music genre
+	 @param: language Language Restrict on stations of this language
+	**>
+	broadcast newStationFound selective {
+		out {
+			radiotypes.RadioStation radioStation
+			Boolean hasTrafficInfo
+		}
+	}
+
+	/**
+	 * Selective broadcast without predefined filter parameters.
+	 */
+	broadcast stationLost selective {
+		out {
+			radiotypes.RadioStation radioStation
+		}
+	}
 }
