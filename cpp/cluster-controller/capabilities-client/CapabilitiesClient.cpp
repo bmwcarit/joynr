@@ -84,46 +84,37 @@ void CapabilitiesClient::remove(const QString& participantId){
 
 void CapabilitiesClient::remove(QList<QString> participantIdList){
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    Q_UNUSED(participantIdList);
     RequestStatus status;
     capabilitiesProxy->remove(status, participantIdList);
 }
 
 QList<types::CapabilityInformation>  CapabilitiesClient::lookup(const QString& domain, const QString& interfaceName){
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
-    //capabilitiesProxy->getChannelsForInterfaceAddress(domain, interfaceName);
-    assert(false); //not yet implemented
 
-    return QList<types::CapabilityInformation>();
+    RequestStatus status;
+    QList<types::CapabilityInformation> result;
+    capabilitiesProxy->lookup(status, result, domain, interfaceName);
+    return result;
 }
 
 void CapabilitiesClient::lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback) {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
-    Q_UNUSED(callback);
 
     //This callback in a callback is a workaround, see GlobalCapabilitiesInformationCallback.h for details
-    QSharedPointer<ICallback<QList<types::CapabilityInformation> > > icallback(
-                QSharedPointer<ICallback<QList<types::CapabilityInformation> > >(
-                    new GlobalCapabilitiesInformationCallback(callback)
-                    )
-                );
-    capabilitiesProxy->lookup(icallback, domain, interfaceName); //QList QString is needed, because capabilititiesInterface on java expects a map<string, string>
+    QSharedPointer<ICallback<QList<types::CapabilityInformation>>> capabilitiesCallback(
+            new GlobalCapabilitiesInformationCallback(callback)
+    );
+    capabilitiesProxy->lookup(capabilitiesCallback, domain, interfaceName); //QList QString is needed, because capabilititiesInterface on java expects a map<string, string>
 }
 
 
 void CapabilitiesClient::lookup(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback){
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
     //This callback in a callback is a workaround, see GlobalCapabilityInformationCallback.h for details
-    QSharedPointer<ICallback<types::CapabilityInformation > > icallback(
-                QSharedPointer<ICallback<types::CapabilityInformation> >(
-                    new GlobalCapabilityInformationCallback(callback)
-                    )
-                );
-    capabilitiesProxy->lookup(icallback, participantId);
+    QSharedPointer<ICallback<types::CapabilityInformation>> capabilitiesCallback(
+            new GlobalCapabilityInformationCallback(callback)
+    );
+    capabilitiesProxy->lookup(capabilitiesCallback, participantId);
 }
 
 void CapabilitiesClient::init(QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)

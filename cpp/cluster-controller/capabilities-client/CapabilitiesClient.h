@@ -84,12 +84,12 @@ public:
     virtual void remove(const QString& participantId);
 
     /*
-      Channel id lookup for a known interfaceAddress.
+      Synchronous lookup of capabilities for domain and interface.
       */
     virtual QList<types::CapabilityInformation> lookup(const QString& domain, const QString& interfaceName);
 
     /*
-      Asynchronous channel id lookup for a known interfaceAddress.
+      Asynchronous lookup of capabilities for domain and interface.
       */
     virtual void lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
