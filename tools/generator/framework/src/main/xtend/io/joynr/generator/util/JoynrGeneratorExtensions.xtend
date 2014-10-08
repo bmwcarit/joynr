@@ -220,10 +220,10 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true)
+		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true)
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes, boolean methods, boolean readAttributes, boolean writeAttributes){
+	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts){
 		val typeList = new HashSet<Object>();
 		if (methods){
 			for (method : fInterface.methods) {
@@ -248,6 +248,17 @@ abstract class JoynrGeneratorExtensions {
 				}
 			}
 		}
+
+		if (broadcasts) {
+			for (broadcast : fInterface.broadcasts) {
+				for (outParameter : getOutputParameters(broadcast)) {
+					if (outParameter != null && (isComplex(outParameter.type) || isEnum(outParameter.type))) {
+						typeList.add(getDatatype(outParameter.type));
+					}
+				}
+			}
+		}
+
 		if (includingTransitiveTypes){
 			var returnValue = new HashSet<Object>()
 			getAllReferredDatatypes(typeList, returnValue)
@@ -273,8 +284,8 @@ abstract class JoynrGeneratorExtensions {
 		getAllComplexAndEnumTypes(fInterface, false)
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, boolean methods, boolean readAttributes, boolean writeAttributes) {
-		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes)
+	def getAllComplexAndEnumTypes(FInterface fInterface, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts) {
+		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, broadcasts)
 	}
 
 	def getDataTypes(FModel fModel) {
