@@ -123,7 +123,6 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
         arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localCapabilitiesDirectory);
-        arbitrator.startArbitration();
 
         return this;
     }
@@ -157,6 +156,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
      */
     @Override
     public T build() {
+        arbitrator.startArbitration();
         ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler();
 
         return ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
