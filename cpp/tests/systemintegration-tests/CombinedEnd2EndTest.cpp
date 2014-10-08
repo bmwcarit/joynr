@@ -281,9 +281,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         // List of strings,
         QList<QString> localStrList;
         QList<QString> remoteStrList;
-        localStrList.append("one");
-        localStrList.append("two");
-        localStrList.append("three");
+        localStrList.append("one ü");
+        localStrList.append("two 漢語");
+        localStrList.append("three ـتـ");
+        localStrList.append("four {");
         testProvider->setListOfStrings(statusOfSet, localStrList);
 
         testProxy->getListOfStrings(status, remoteStrList);
