@@ -61,6 +61,15 @@ QMap<QString, QVariant> BroadcastFilterParameters::getFilterParameters() const {
     return filterParameters;
 }
 
+QString BroadcastFilterParameters::getFilterParameter(QString parameter) const {
+    if (filterParameters.contains(parameter)) {
+        return filterParameters.value(parameter).value<QString>();
+    }
+    else {
+        return QString();
+    }
+}
+
 void BroadcastFilterParameters::setFilterParameters(const QMap<QString, QVariant> &value){
     filterParameters = value;
 }

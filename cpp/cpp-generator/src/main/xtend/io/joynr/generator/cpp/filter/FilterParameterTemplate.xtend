@@ -43,15 +43,22 @@ class FilterParameterTemplate  {
 		«getNamespaceStarter(serviceInterface)»
 		class «getDllExportMacro()» «className» : public BroadcastFilterParameters {
 		public:
-		
+
 			«IF (getFilterParameters(broadcast).isEmpty())»
-				void setParameter(QString key, QString value) {
+				void set(QString key, QString value) {
 					setFilterParameter(key, value);
+				}
+
+				QString get(QString key) const {
+					return getFilterParameter(key);
 				}
 			«ELSE»
 				«FOR parameter: getFilterParameters(broadcast)»
 					void set«parameter.toFirstUpper»(QString value) {
 						setFilterParameter("«parameter»", value);
+					}
+					QString get«parameter.toFirstUpper»() const {
+						return getFilterParameter("«parameter»");
 					}
 				«ENDFOR»
 			«ENDIF»

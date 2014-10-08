@@ -48,11 +48,12 @@ public:
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(QString parameter, QString value);
+    void setFilterParameters(const QMap<QString, QVariant> &value);
 
     virtual bool equals(const QObject& other) const;
 
     QMap<QString, QVariant> getFilterParameters() const;
-    void setFilterParameters(const QMap<QString, QVariant> &value);
+    QString getFilterParameter(QString parameter) const;
 
 private:
     QMap<QString, QVariant> filterParameters;
