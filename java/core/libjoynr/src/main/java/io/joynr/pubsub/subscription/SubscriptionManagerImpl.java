@@ -109,6 +109,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
                 missedPublicationTimers.put(subscriptionId,
                                             new MissedPublicationTimer(expiryDate,
+                                                                       heartbeat.getHeartbeat(),
                                                                        heartbeat.getAlertAfterInterval(),
                                                                        attributeSubscriptionCallback,
                                                                        subState));

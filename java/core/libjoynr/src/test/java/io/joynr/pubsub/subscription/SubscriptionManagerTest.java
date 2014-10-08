@@ -105,6 +105,7 @@ public class SubscriptionManagerTest {
                                                            alertInterval_ms,
                                                            publicationTtl_ms);
         missedPublicationTimer = new MissedPublicationTimer(endDate_ms,
+                                                            maxInterval_ms,
                                                             alertInterval_ms,
                                                             attributeSubscriptionCallback,
                                                             subscriptionState);
