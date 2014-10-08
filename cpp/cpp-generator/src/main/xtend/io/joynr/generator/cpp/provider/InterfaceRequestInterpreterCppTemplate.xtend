@@ -51,7 +51,7 @@ class InterfaceRequestInterpreterCppTemplate {
 		
 		«getNamespaceStarter(serviceInterface)» 
 		
-		joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joynr::joynr_logging::Logging::getInstance()->getLogger("SDMO", "«interfaceName»JsonRequestInterpreter");
+		joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joynr::joynr_logging::Logging::getInstance()->getLogger("SDMO", "«interfaceName»RequestInterpreter");
 		
 		«interfaceName»RequestInterpreter::«interfaceName»RequestInterpreter()
 		{
