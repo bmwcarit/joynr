@@ -31,6 +31,9 @@ class FilterGenerator {
 	@Inject
 	FilterParameterTemplate filterParameterTemplate;
 
+	@Inject
+	FilterTemplate filterTemplate;
+
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,
 		IFileSystemAccess headerFileSystem,
@@ -48,6 +51,12 @@ class FilterGenerator {
 					headerFileSystem.generateFile(
 						filterParameterLocation,
 						filterParameterTemplate.generate(fInterface, broadcast).toString
+					);
+
+					val filterLocation = headerPath + serviceName.toFirstUpper + broadcast.name.toFirstUpper + "BroadcastFilter.h"
+					headerFileSystem.generateFile(
+						filterLocation,
+						filterTemplate.generate(fInterface, broadcast).toString
 					);
 				}
 			}

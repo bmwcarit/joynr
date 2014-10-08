@@ -34,6 +34,8 @@ import org.franca.core.franca.FArgument
 import com.google.inject.Inject
 import com.google.inject.name.Namedimport org.franca.core.franca.FModelElement
 import java.io.File
+import org.franca.core.franca.FBroadcast
+import javax.sound.sampled.BooleanControl.Type
 
 class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	
@@ -124,22 +126,50 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
 	}
-	 
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
+
+	def getCommaSeperatedTypedOutputParameterList(
+		Iterable<FArgument> arguments,
+		boolean constParameters,
+		boolean linebreak
+	) {
 		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
+		for(FArgument argument : arguments){
+
+			if (constParameters) {
+				returnStringBuilder.append("const ");
+			}
+
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
 			returnStringBuilder.append("& ");
 			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
+			returnStringBuilder.append(",");
+
+			if (linebreak) {
+				returnStringBuilder.append("\n");
+			}
+			else {
+				returnStringBuilder.append(" ");
+			}
 		}
         val returnString = returnStringBuilder.toString();
         if (returnString.length() == 0) {
             return "";
         }
         else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
+	        return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
         }
+	}
+
+	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, false)
+	}
+	
+	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false, false)
+	}
+	
+	def getCommaSeperatedTypedOutputParameterListConstLinebreak(FBroadcast broadcast) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true, true)
 	}
 	
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
