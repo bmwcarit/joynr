@@ -31,7 +31,6 @@ class InterfaceProviderImplTemplate {
 		val className = "Default" + interfaceName + "Provider"
 		val abstractProviderName = interfaceName + "AbstractProvider"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		
 
 		'''
 		«warning()»
@@ -42,52 +41,50 @@ class InterfaceProviderImplTemplate {
 		import com.google.inject.Singleton;
 		import org.slf4j.Logger;
 		import org.slf4j.LoggerFactory;
-		
+
 		import «joynTypePackagePrefix».types.ProviderQos;
-		
+
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
-//The current generator is not able to check wether some of the imports are acutally necessary for this specific interface.
-//Therefore some imports migth be unused in this version of the interface.
-//To prevent warnings @SuppressWarnings("unused") is being used. 
-//To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
-import java.util.TreeSet;
-@SuppressWarnings("unused")
-			
+		//The current generator is not able to check wether some of the imports are acutally necessary for this specific interface.
+		//Therefore some imports migth be unused in this version of the interface.
+		//To prevent warnings @SuppressWarnings("unused") is being used. 
+		//To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
+		import java.util.TreeSet;
+		@SuppressWarnings("unused")
+
 		@Singleton
 		public class «className» extends «abstractProviderName» {
 			private static final Logger logger = LoggerFactory.getLogger(«className».class);
-			    
+
 			public «className»() {				
 				// default uses a priority that is the current time, causing arbitration to the last started instance
 				//providerQos.put(ArbitrationConstants.PRIORITY_PARAMETER, "" + System.currentTimeMillis());
 				providerQos.setPriority(System.currentTimeMillis());
 			}	
 
-		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.joynrName»
-			«val attributeType = getMappedDatatypeOrList(attribute)»
-		
-			«IF isReadable(attribute)»
-				@Override
-				public «attributeType» get«attributeName.toFirstUpper»() {
-					return «attributeName»;
-				}
-			«ENDIF»
-		
-			«IF isWritable(attribute)»
-				@Override
-				public void set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
-					«IF isNotifiable(attribute)»
-						super.«attributeName»Changed(«attributeName»);
-					«ENDIF»
-					this.«attributeName» = «attributeName»;
-				}
-			«ENDIF»
-		«ENDFOR»
-		
-				
+			«FOR attribute: getAttributes(serviceInterface)»
+				«val attributeName = attribute.joynrName»
+				«val attributeType = getMappedDatatypeOrList(attribute)»
+
+				«IF isReadable(attribute)»
+					@Override
+					public «attributeType» get«attributeName.toFirstUpper»() {
+						return «attributeName»;
+					}
+				«ENDIF»
+				«IF isWritable(attribute)»
+					@Override
+					public void set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
+						«IF isNotifiable(attribute)»
+							super.«attributeName»Changed(«attributeName»);
+						«ENDIF»
+						this.«attributeName» = «attributeName»;
+					}
+				«ENDIF»
+			«ENDFOR»
+
 		«FOR method: getMethods(serviceInterface)»
 		«val methodName = method.joynrName»
 		«val outputParameters = getOutputParameters(method)»
@@ -98,7 +95,7 @@ import java.util.TreeSet;
 				logger.warn("**********************************************");
 				logger.warn("* «interfaceName».«methodName» called");
 				logger.warn("**********************************************");	
-		
+
 			«IF outputParameterType=="void"»
 			«ELSEIF outputParameterType=="String"»
 				return "Hello World";
@@ -119,17 +116,15 @@ import java.util.TreeSet;
 			«ELSE»
 				return new «outputParameterType»();	
 			«ENDIF»
-		
+
 			}
-		«ENDFOR»    	
-			
+		«ENDFOR»
+
 			@Override
 			public ProviderQos getProviderQos() {
 			    return providerQos;
 			}	
 		}
 		'''	
-	}	
-	
-			
+	}
 }

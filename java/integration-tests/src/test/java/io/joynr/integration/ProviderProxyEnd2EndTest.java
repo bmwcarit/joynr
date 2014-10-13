@@ -496,6 +496,16 @@ public class ProviderProxyEnd2EndTest {
         }
 
         @Override
+        public void methodWithEnumReturnValue(Callback<TestEnum> callback) {
+            callback.onSuccess(TestEnum.TWO);
+        }
+
+        @Override
+        public void getEnumAttributeReadOnly(Callback<TestEnum> callback) {
+            callback.onSuccess(TestEnum.ONE);
+        }
+
+        @Override
         public void methodStringDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
                                                  @JoynrRpcParam("stringParam") String stringParam,
                                                  @JoynrRpcParam("doubleParam") Double doubleParam) {
