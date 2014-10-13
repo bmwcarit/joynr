@@ -38,6 +38,9 @@ class IInterfaceConnectorHTemplate {
 		#define «headerGuard»
 		
 		«getDllExportIncludeStatement()»
+		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+		#include "«parameterType»"
+		«ENDFOR»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include "joynr/ISubscriptionListener.h"
 		#include "joynr/IConnector.h"

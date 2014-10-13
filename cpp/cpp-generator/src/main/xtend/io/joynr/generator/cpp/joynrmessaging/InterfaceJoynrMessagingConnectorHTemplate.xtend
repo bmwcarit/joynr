@@ -23,36 +23,39 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class InterfaceJoynrMessagingConnectorHTemplate {
-	
+
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-	
+
 	def generate(FInterface serviceInterface) {
 		val interfaceName = serviceInterface.joynrName;
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"JoynrMessagingConnector_h").toUpperCase
 		'''
 		«warning()»
-		
+
 		#ifndef «headerGuard»
 		#define «headerGuard»
-		
+
 		«getDllExportIncludeStatement()»
+		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+		#include "«parameterType»"
+		«ENDFOR»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 		#include "joynr/AbstractJoynrMessagingConnector.h"
 		#include "joynr/JoynrMessagingConnectorFactory.h"
-		
+
 		namespace joynr {
 			class MessagingQos;
 			class IJoynrMessageSender;
 			class SubscriptionManager;
 		}
-		
+
 		«getNamespaceStarter(serviceInterface)»
-		
-		
+
+
 		class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 		public:
 		    «interfaceName»JoynrMessagingConnector(
@@ -65,12 +68,12 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 		        joynr::IClientCache *cache,
 		        bool cached,
 		        qint64 reqCacheDataFreshness_ms);
-		
-		
+
+
 			virtual bool usesClusterController() const;
-			
+
 			virtual ~«interfaceName»JoynrMessagingConnector(){}
-		
+
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				«val attributeName = attribute.joynrName»
@@ -87,7 +90,7 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 				virtual QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
 				virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
 			«ENDFOR»
-		    
+
 			«FOR method: getMethods(serviceInterface)»
 				«val methodName = method.joynrName»
 				«IF getMappedOutputParameter(method).head == "void"»
@@ -99,11 +102,27 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 				virtual void «methodName» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 				virtual void «methodName» (QSharedPointer<joynr::ICallback<«getMappedOutputParameter(method).head»> > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 			«ENDFOR»
+
+			«FOR broadcast: serviceInterface.broadcasts»
+				«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+				«val broadcastName = broadcast.joynrName»
+				«IF isSelective(broadcast)»
+				virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+				            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+				«ELSE»
+				virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+				«ENDIF»
+				virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
+			«ENDFOR»
 		};
 		«getNamespaceEnder(serviceInterface)»
 
 		namespace joynr {
-			
+
 		// Helper class for use by the JoynrMessagingConnectorFactory
 		// This class creates instances of «interfaceName»JoynrMessagingConnector
 		template <>
@@ -133,7 +152,7 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 		        );
 		    }
 		};
-		
+
 		} // namespace joynr
 		#endif // «headerGuard»
 		'''

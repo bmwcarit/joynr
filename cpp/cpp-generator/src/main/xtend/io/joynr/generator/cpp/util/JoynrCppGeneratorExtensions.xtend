@@ -32,7 +32,8 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FArgument
 import com.google.inject.Inject
-import com.google.inject.name.Namedimport org.franca.core.franca.FModelElement
+import com.google.inject.name.Named
+import org.franca.core.franca.FModelElement
 import java.io.File
 import org.franca.core.franca.FBroadcast
 import javax.sound.sampled.BooleanControl.Type
@@ -310,7 +311,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 
 		for (broadcast: serviceInterface.broadcasts) {
-			if (broadcast.selective != null) {
+			if (isSelective(broadcast)) {
 				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
 			}
 		}

@@ -34,11 +34,14 @@ class InterfaceProxyHTemplate  {
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"Proxy_h").toUpperCase
 		'''
 		«warning()»
-		
+
 		#ifndef «headerGuard»
 		#define «headerGuard»
-		
+
 		#include "joynr/PrivateCopyAssign.h"
+		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+		#include "«parameterType»"
+		«ENDFOR»
 		«getDllExportIncludeStatement()»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
@@ -50,10 +53,10 @@ class InterfaceProxyHTemplate  {
 			// http://msdn.microsoft.com/en-us/library/6b3sy7ae(v=vs.80).aspx
 			#pragma warning( disable : 4250 )
 		#endif
-		
+
 		«getNamespaceStarter(serviceInterface)» 
 		class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
-		public:    
+		public:
 		    «className»(
 		            QSharedPointer<joynr::system::Address> messagingAddress,
 		            joynr::ConnectorFactory* connectorFactory,
@@ -66,7 +69,7 @@ class InterfaceProxyHTemplate  {
 
 			«FOR attribute: getAttributes(serviceInterface)»
 				«var attributeName = attribute.joynrName»
-				«val returnType = getMappedDatatypeOrList(attribute)»         
+				«val returnType = getMappedDatatypeOrList(attribute)»
 				void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
 					«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 				}
@@ -75,9 +78,37 @@ class InterfaceProxyHTemplate  {
 					return «className»Base::subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos);
 				}
 			«ENDFOR»
-		
+
+			«FOR broadcast: serviceInterface.broadcasts»
+				«var broadcastName = broadcast.joynrName»
+				«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+				void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString &subscriptionId) {
+				    «className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
+				}
+
+				«IF isSelective(broadcast)»
+				QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+				            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+				    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				                filterParameters,
+				                subscriptionListener,
+				                subscriptionQos);
+				}
+				«ELSE»
+				QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+				    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				                subscriptionListener,
+				                subscriptionQos);
+				}
+				«ENDIF»
+			«ENDFOR»
+
 			virtual ~«className»();
-		
+
 			// attributes
 			«FOR attribute: getAttributes(serviceInterface)»
 				«var attributeName = attribute.joynrName»
@@ -87,7 +118,7 @@ class InterfaceProxyHTemplate  {
 				using «syncClassName»::set«attributeName.toFirstUpper»;
 
 			«ENDFOR»
-		
+
 		    // operations
 			«FOR methodName: getUniqueMethodNames(serviceInterface)»
 				using «asyncClassName»::«methodName»;
@@ -97,12 +128,11 @@ class InterfaceProxyHTemplate  {
 		private:
 		    DISALLOW_COPY_AND_ASSIGN(«className»);
 		};
-		
+
 		«getNamespaceEnder(serviceInterface)»
 
 		#endif // «headerGuard»
-		'''	
-	}	
-	
-			
+		'''
+	}
+
 }

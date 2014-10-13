@@ -31,5 +31,20 @@ class InterfaceSubscriptionUtil {
 			virtual QString subscribeTo«attribute.joynrName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
 			virtual void unsubscribeFrom«attribute.joynrName.toFirstUpper»(QString& subscriptionId)«IF pure» = 0«ENDIF»;
 	    «ENDFOR»
+
+		«FOR broadcast: serviceInterface.broadcasts»
+			«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+			«IF isSelective(broadcast)»
+			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			            «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
+			«ELSE»
+			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
+			«ENDIF»
+			virtual void unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(QString& subscriptionId)«IF pure» = 0«ENDIF»;
+	    «ENDFOR»
 	'''
 }

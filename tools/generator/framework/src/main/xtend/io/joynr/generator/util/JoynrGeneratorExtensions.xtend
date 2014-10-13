@@ -841,4 +841,8 @@ abstract class JoynrGeneratorExtensions {
 		argument.name
 	}
 
+	def isSelective(FBroadcast broadcast) {
+		return broadcast.selective != null
+	}
+
 }

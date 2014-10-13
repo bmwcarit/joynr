@@ -25,18 +25,18 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 class InterfaceProxyCppTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	
+
 	def generate(FInterface fInterface) {
 		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "AsyncProxy"
 		val syncClassName = interfaceName + "SyncProxy"
-		
+
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
-		
+
 		«getNamespaceStarter(fInterface)» 
 		«className»::«className»(
 		        QSharedPointer<joynr::system::Address> messagingAddress,
@@ -53,13 +53,13 @@ class InterfaceProxyCppTemplate {
 		        «asyncClassName»(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
 		{
 		}
-		
+
 		«className»::~«className»()
 		{
 		}
 		«getNamespaceEnder(fInterface)»
 		'''
-	}	
-	
-			
+	}
+
+
 }

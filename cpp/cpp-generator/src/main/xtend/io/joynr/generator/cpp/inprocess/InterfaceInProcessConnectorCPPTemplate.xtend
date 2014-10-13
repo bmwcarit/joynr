@@ -24,13 +24,13 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class InterfaceInProcessConnectorCPPTemplate { 
-	
+
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-		
+
 	def generate(FInterface serviceInterface){
 		'''
 		«var interfaceName = serviceInterface.joynrName»
@@ -45,19 +45,21 @@ class InterfaceInProcessConnectorCPPTemplate {
 			«ENDIF»
 		«ENDIF»
 		«ENDFOR»
-		
+
 		#include "joynr/InProcessAddress.h"
 		#include "joynr/SubscriptionManager.h"
 		#include "joynr/PublicationManager.h"
 		#include "joynr/SubscriptionCallback.h"
+		#include "joynr/BroadcastSubscriptionCallback.h"
+		#include "joynr/BroadcastSubscriptionRequest.h"
 		#include "joynr/Future.h"
-		
+
 
 		«getNamespaceStarter(serviceInterface)»
-		
+
 		using namespace joynr::joynr_logging;
 		Logger* «interfaceName»InProcessConnector::logger = Logging::getInstance()->getLogger("MSG", "«interfaceName»InProcessConnector");
-		
+
 		«interfaceName»InProcessConnector::«interfaceName»InProcessConnector(
 					joynr::SubscriptionManager* subscriptionManager,
 					joynr::PublicationManager* publicationManager,
@@ -74,11 +76,11 @@ class InterfaceInProcessConnectorCPPTemplate {
 		    inProcessPublicationSender(inProcessPublicationSender)
 		{
 		}
-		
+
 		bool «interfaceName»InProcessConnector::usesClusterController() const{
 			return false;
 		}
-		
+
 		«FOR attribute : getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
@@ -95,7 +97,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    assert(!«serviceInterface.interfaceCaller».isNull());
 			    //see header for more information
 			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«getAttributeName»(Future) is synchronous.");
-			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);				
+			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);	
 			}
 
 			void «interfaceName»InProcessConnector::«getAttributeName»(
@@ -119,9 +121,9 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    } else {
 			        future->onFailure(status);
 			        callBack->onFailure(status);
-			    }			    
+			    }
 			}
-			
+
 			void «interfaceName»InProcessConnector::«getAttributeName»(
 					QSharedPointer<joynr::Future<«returnType»> > future
 			) {
@@ -142,7 +144,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    	future->onFailure(status);
 			    }
 			}
-			
+
 			void «interfaceName»InProcessConnector::«getAttributeName»(
 					QSharedPointer< joynr::ICallback<«returnType»> > callBack
 			) {
@@ -162,8 +164,8 @@ class InterfaceInProcessConnectorCPPTemplate {
 			        callBack->onFailure(status);
 			    }
 			}
-			
-			
+
+
 			void «interfaceName»InProcessConnector::«setAttributeName»(
 					QSharedPointer< joynr::ICallback<void> > callBack,
 					«returnType» input
@@ -184,7 +186,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    }
 
 			}
-			
+
 			void «interfaceName»InProcessConnector::«setAttributeName»(
 					QSharedPointer< joynr::Future<void> > future,
 					QSharedPointer< joynr::ICallback<void> > callBack,
@@ -206,9 +208,9 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    } else {
 			        future->onFailure(status);
 			        callBack->onFailure(status);
-			    }			    
+			    }
 			}
-			
+
 			void «interfaceName»InProcessConnector::«setAttributeName»(
 					QSharedPointer<joynr::Future<void> > future,
 					«returnType» input
@@ -229,7 +231,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    	future->onFailure(status);
 			    }
 			}
-			
+
 			void «interfaceName»InProcessConnector::«setAttributeName»(
 					joynr::RequestStatus& status,
 					const «returnType»& input
@@ -241,9 +243,9 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    assert(!«serviceInterface.interfaceCaller».isNull());
 			    //see header for more information
 			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«getAttributeName»(Future) is synchronous.");
-			    «serviceInterface.interfaceCaller»->«setAttributeName»(status, input);				
+			    «serviceInterface.interfaceCaller»->«setAttributeName»(status, input);
 			}
-			
+
 			QString «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					QSharedPointer<joynr::SubscriptionQos> subscriptionQos)
@@ -273,7 +275,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    QString subscriptionId = subscriptionRequest->getSubscriptionId();
-			    
+
 			    if(caller.isNull()) {
 			    	assert(publicationManager != NULL);
 			    	/**
@@ -308,7 +310,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    «ENDIF»
 			}
 		«ENDFOR»
-		
+
 		«FOR method: getMethods(serviceInterface)»
 			«var methodname = method.joynrName»
 			«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
@@ -317,7 +319,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
 			«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 
-		
+
 
 			«IF outputParameter.head =="void"»
 				void «interfaceName»InProcessConnector::«methodname»(
@@ -328,7 +330,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 					assert(!caller.isNull());
 					QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 					assert(!«serviceInterface.interfaceCaller».isNull());
-					«serviceInterface.interfaceCaller»->«methodname»(status «inputParamList» );									
+					«serviceInterface.interfaceCaller»->«methodname»(status «inputParamList» );
 				}
 			«ELSE»
 				void «interfaceName»InProcessConnector::«methodname»(
@@ -342,9 +344,9 @@ class InterfaceInProcessConnectorCPPTemplate {
 					«serviceInterface.interfaceCaller»->«methodname»(status«outputUntypedParamList» «inputParamList»);
 				}
 			«ENDIF»
-			
-		
-			
+
+
+
 			«IF outputParameter.head =="void"»
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer<joynr::Future<«outputParameter.head»> > future,
@@ -387,11 +389,11 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    } else {
 			        future->onFailure(status);
 			        callBack->onFailure(status);
-			    }	
-			}			
+			    }
+			}
 			«ENDIF»
-			
-			
+
+
 			«IF outputParameter.head =="void"»
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
@@ -409,7 +411,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			        future->onSuccess(status);
 			    } else {
 			        future->onFailure(status);
-			    }	
+			    }
 			}
 			«ELSE»
 			void «interfaceName»InProcessConnector::«methodname»(
@@ -428,12 +430,12 @@ class InterfaceInProcessConnectorCPPTemplate {
 			        future->onSuccess(status, result);
 			    } else {
 			        future->onFailure(status);
-			    }	
+			    }
 			}
 			«ENDIF»
-			
-			
-			
+
+
+
 		«IF outputParameter.head =="void"»
 			void «interfaceName»InProcessConnector::«methodname»(
 					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
@@ -470,17 +472,82 @@ class InterfaceInProcessConnectorCPPTemplate {
 			        callBack->onSuccess(status, result);
 			    } else {
 			        callBack->onFailure(status);
-			    }	
+			    }
 			}
 		«ENDIF»
-			
+		«ENDFOR»
+
+		«FOR broadcast: serviceInterface.broadcasts»
+			«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+			«val broadcastName = broadcast.joynrName»
+
+			«IF isSelective(broadcast)»
+			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			    «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos
+			«ELSE»
+			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos
+			«ENDIF»
+			) {
+			    logger->log(DEBUG, "Subscribing to «broadcastName».");
+			    assert(subscriptionManager != NULL);
+			    QString broadcastName = "«broadcastName»";
+			    joynr::BroadcastSubscriptionCallback<«returnTypes»>* subscriptionCallback =
+			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener);
+			    joynr::BroadcastSubscriptionRequest* subscriptionRequest =
+			                new joynr::BroadcastSubscriptionRequest();//ownership goes to PublicationManager
+			    subscriptionManager->registerSubscription(
+			                broadcastName,
+			                subscriptionCallback,
+			                subscriptionQos,
+			                *subscriptionRequest);
+			    logger->log(DEBUG, "Registered broadcast subscription: " + subscriptionRequest->toQString());
+			    assert(!address.isNull());
+			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+			    assert(!caller.isNull());
+			    QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
+			    QString subscriptionId = subscriptionRequest->getSubscriptionId();
+
+			    if(caller.isNull()) {
+			        assert(publicationManager != NULL);
+			        /**
+			        * Provider not registered yet
+			        * Dispatcher will call publicationManger->restore when a new provider is added to activate
+			        * subscriptions for that provider
+			        */
+			        publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
+			    } else {
+			        publicationManager->add(
+			                    proxyParticipantId,
+			                    providerParticipantId,
+			                    caller,
+			                    subscriptionRequest,
+			                    inProcessPublicationSender);
+			    }
+			    return subscriptionId;
+			}
+
+			void «interfaceName»InProcessConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
+			        QString& subscriptionId
+			) {
+			    logger->log(DEBUG, "Unsubscribing broadcast. Id=" +subscriptionId);
+			    assert(publicationManager != NULL);
+			    logger->log(DEBUG, "Stopping publications by publication manager.");
+			    publicationManager->stopPublication(subscriptionId);
+			    assert(subscriptionManager != NULL);
+			    logger->log(DEBUG, "Unregistering broadcast subscription.");
+			    subscriptionManager->unregisterSubscription(subscriptionId);
+			}
 		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»
 		'''
 	}
-	
+
 	def getInterfaceCaller(FInterface serviceInterface){
 	   serviceInterface.joynrName.toFirstLower + "Caller"
 	}
-	
+
 }

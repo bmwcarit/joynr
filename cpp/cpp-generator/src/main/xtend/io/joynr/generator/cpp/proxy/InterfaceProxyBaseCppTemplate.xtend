@@ -29,18 +29,18 @@ class InterfaceProxyBaseCppTemplate {
 	def generate(FInterface fInterface) {
 		val serviceName =  fInterface.joynrName
 		val className = serviceName + "ProxyBase"
-		
+
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
 		#include "joynr/exceptions.h"
 		#include "joynr/ConnectorFactory.h"
 		#include "joynr/ISubscriptionListener.h"
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»InProcessConnector.h"
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»JoynrMessagingConnector.h"
-		
-		
+
+
 		«getNamespaceStarter(fInterface)»
 		«className»::«className»(
 		        QSharedPointer<joynr::system::Address> messagingAddress,
@@ -56,7 +56,7 @@ class InterfaceProxyBaseCppTemplate {
 		        connector(NULL)
 		{
 		}
-		
+
 		//tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
 		void «className»::handleArbitrationFinished(
 		        const QString &providerParticipantId,
@@ -75,10 +75,10 @@ class InterfaceProxyBaseCppTemplate {
 		                proxyQos.getReqCacheDataFreshness_ms(),
 		                connection
 		    );
-		    
+
 		    joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, connection);
 		}
-		
+
 		«FOR attribute: getAttributes(fInterface)»
 			«var attributeName = attribute.joynrName»
 			«val returnType = getMappedDatatypeOrList(attribute)»
@@ -92,7 +92,7 @@ class InterfaceProxyBaseCppTemplate {
 			        connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 			    }
 			}
-			
+
 			QString «className»::subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», because the communication end partner is not (yet) known");
@@ -104,12 +104,52 @@ class InterfaceProxyBaseCppTemplate {
 			}
 
 		«ENDFOR»
+
+		«FOR broadcast: fInterface.broadcasts»
+			«var broadcastName = broadcast.joynrName»
+			«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+			void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId)
+			{
+			    if (connector==NULL){
+			        LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, because the communication end partner is not (yet) known");
+			        return;
+			    }
+			    else{
+			        connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
+			    }
+			}
+
+			«IF isSelective(broadcast)»
+			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			«ELSE»
+			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			«ENDIF»
+			    if (connector==NULL){
+			        LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, because the communication end partner is not (yet) known");
+			        return "";
+			    }
+			    else{
+			        «IF isSelective(broadcast)»
+			        return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(filterParameters, subscriptionListener, subscriptionQos);
+			        «ELSE»
+			        return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos);
+			        «ENDIF»
+			    }
+			}
+
+		«ENDFOR»
+
 		«className»::~«className»(){
 		    if (connector != NULL){
 		        delete connector;
 		    }
 		}
 		«getNamespaceEnder(fInterface)»
-		'''	
-	}	
+		'''
+	}
 }

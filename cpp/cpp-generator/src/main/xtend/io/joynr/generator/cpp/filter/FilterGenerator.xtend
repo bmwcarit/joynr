@@ -46,7 +46,7 @@ class FilterGenerator {
 			var serviceName = fInterface.joynrName
 
 			for (broadcast : fInterface.broadcasts) {
-				if (broadcast.selective != null){
+				if (isSelective(broadcast)) {
 					val filterParameterLocation = headerPath + serviceName.toFirstUpper + broadcast.name.toFirstUpper + "BroadcastFilterParameters.h"
 					headerFileSystem.generateFile(
 						filterParameterLocation,
