@@ -108,7 +108,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		primitiveDataTypeNameMap = Collections::unmodifiableMap(aMap);
 */
 
-	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();		
+	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();
 		bMap.put(FBasicTypeId::BOOLEAN, "false");
 		bMap.put(FBasicTypeId::INT8, "-1");
 		bMap.put(FBasicTypeId::UINT8, "-1");
@@ -123,7 +123,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		bMap.put(FBasicTypeId::STRING, "\"\"");
 		bMap.put(FBasicTypeId::BYTE_BUFFER, "\"\"");
 		bMap.put(FBasicTypeId::UNDEFINED,"");
-		
+
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
 	}
 
@@ -163,15 +163,15 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, false)
 	}
-	
+
 	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false, false)
 	}
-	
+
 	def getCommaSeperatedTypedOutputParameterListConstLinebreak(FBroadcast broadcast) {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true, true)
 	}
-	
+
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
 		val returnStringBuilder = new StringBuilder();
 		for(FArgument argument : getOutputParameters(method)){
@@ -186,7 +186,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
         }
 	}
-	 
+
 	def getCommaSeperatedTypedParameterList(FMethod method) {
 		val returnStringBuilder = new StringBuilder();
 		for (param : getInputParameters(method)) {
@@ -219,7 +219,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		};
 		return packagepath;
 	}
-         
+
 	override getMappedDatatype(FType datatype) {
 		val packagepath = buildPackagePath(datatype, "::");
 		if (isEnum(datatype)){
@@ -247,7 +247,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 			return mappedDatatype;
 		}
 	}
-	
+
 	override getDefaultValue(FTypedElement element) {
 		//default values are not supported (currently) by the Franca IDL 
 		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
@@ -280,13 +280,13 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
  		} else {
 			return primitiveDataTypeDefaultMap.get(element.type.predefined);
 		}
-		
+
 	}
 
-	
+
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
 		val members = getComplexAndEnumMembers(datatype);
-		
+
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
 			typeList.add(getIncludeOf(getExtendedType(datatype)))
@@ -297,10 +297,10 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 			if (type instanceof FType){
 				typeList.add(getIncludeOf(type));
 			}
-		}	
+		}
 		return typeList;
 	}
-		
+
 	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new TreeSet<String>();
 		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
@@ -308,9 +308,15 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 				includeSet.add(getIncludeOf(datatype));
 			}
 		}
+
+		for (broadcast: serviceInterface.broadcasts) {
+			if (broadcast.selective != null) {
+				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
+			}
+		}
 		return includeSet;
 	}
-	
+
 	override String getOneLineWarning() {
 		//return ""
 		return "/* Generated Code */  "
@@ -326,7 +332,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	def String getEnumContainer(FTypeRef enumeration) {
         return getEnumContainer(enumeration.derived);
 	}
- 
+
 	// Get the name of enum types that are nested in an Enum wrapper class
 	def String getNestedEnumName() {
 		return "Enum";
@@ -354,7 +360,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
         default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
-	
+
 	// Return a call to a macro that allows classes to be exported and imported
 	// from DLLs when compiling with VC++
 	def String getDllExportMacro() {
@@ -363,7 +369,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		} 
 		return "";
 	}
-	
+
 	// Return an include statement that pulls in VC++ macros for DLL import and
 	// export
 	def String getDllExportIncludeStatement() {
@@ -372,14 +378,21 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 		return "";
 	}
-	
+
 	def String getIncludeOf(FType dataType) {
 		val path = getPackagePathWithJoynrPrefix(dataType, "/")
 		return path + "/" + dataType.joynrName + ".h";
 	}
 
+	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
+		return getPackagePathWithJoynrPrefix(serviceInterface, "/")
+			+ "/" + serviceInterface.name.toFirstUpper 
+			+ broadcast.joynrName.toFirstUpper
+			+ "BroadcastFilterParameters.h"
+	}
+
 	def getPackageSourceDirectory(FModelElement fModelElement) {
     	return super.getPackageName(fModelElement).replace('.', File::separator)
 	}
-   	
+
 }
