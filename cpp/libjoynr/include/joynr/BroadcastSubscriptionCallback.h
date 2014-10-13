@@ -39,7 +39,7 @@ template<typename T, typename... Ts>
 class BroadcastSubscriptionCallback : public ISubscriptionCallback{
 public:
 
-    BroadcastSubscriptionCallback(QSharedPointer<ISubscriptionListener<Ts...> > listener)
+    BroadcastSubscriptionCallback(QSharedPointer<ISubscriptionListener<T, Ts...> > listener)
     : listener(listener){
 
     }
@@ -67,7 +67,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionCallback);
-    QSharedPointer<ISubscriptionListener<Ts...> > listener;
+    QSharedPointer<ISubscriptionListener<T, Ts...> > listener;
     static joynr_logging::Logger* logger;
 };
 
