@@ -186,6 +186,21 @@ abstract class JoynrGeneratorExtensions {
 
 	def String getMappedDatatypeOrList(FBasicTypeId datatype, boolean array)
 
+	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast) {
+		val commaSeparatedParams = new StringBuilder();
+		for (parameter : mapOutputParameters(getOutputParameters(broadcast))) {
+			commaSeparatedParams.append(parameter);
+			commaSeparatedParams.append(", ");
+		}
+		val returnString = commaSeparatedParams.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
+	}
+
 	def getMethods(FInterface fInterface) {
 		fInterface.methods
 	}
@@ -205,7 +220,7 @@ abstract class JoynrGeneratorExtensions {
 	def getAttributes(FInterface fInterface) {
 		fInterface.attributes
 	}
-	
+
 	def getFilterParameters(FBroadcast broadcast) {
 		val paramList = new ArrayList<String>();
 		if (broadcast.comment != null) {
