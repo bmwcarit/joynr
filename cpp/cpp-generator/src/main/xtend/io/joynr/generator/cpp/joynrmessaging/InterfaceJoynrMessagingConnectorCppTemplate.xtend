@@ -297,7 +297,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 		«ENDFOR»
 
 		«FOR broadcast: serviceInterface.broadcasts»
-			«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+			«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 			«val broadcastName = broadcast.joynrName»
 
 			«IF isSelective(broadcast)»

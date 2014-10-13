@@ -104,7 +104,7 @@ class InterfaceJoynrMessagingConnectorHTemplate {
 			«ENDFOR»
 
 			«FOR broadcast: serviceInterface.broadcasts»
-				«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+				«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 				«val broadcastName = broadcast.joynrName»
 				«IF isSelective(broadcast)»
 				virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(

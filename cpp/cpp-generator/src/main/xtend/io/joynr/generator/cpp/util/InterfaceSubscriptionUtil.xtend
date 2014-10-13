@@ -33,7 +33,7 @@ class InterfaceSubscriptionUtil {
 	    «ENDFOR»
 
 		«FOR broadcast: serviceInterface.broadcasts»
-			«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+			«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 			«IF isSelective(broadcast)»
 			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 			            «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters filterParameters,

@@ -71,7 +71,7 @@ class InterfaceProxyBaseHTemplate {
 			«ENDFOR»
 
 			«FOR broadcast: serviceInterface.broadcasts»
-				«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+				«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 				«var broadcastName = broadcast.joynrName»
 				«IF isSelective(broadcast)»
 				QString subscribeTo«broadcastName.toFirstUpper»Broadcast(

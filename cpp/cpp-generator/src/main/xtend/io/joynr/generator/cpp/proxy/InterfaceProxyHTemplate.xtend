@@ -81,7 +81,7 @@ class InterfaceProxyHTemplate  {
 
 			«FOR broadcast: serviceInterface.broadcasts»
 				«var broadcastName = broadcast.joynrName»
-				«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+				«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 				void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString &subscriptionId) {
 				    «className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 				}

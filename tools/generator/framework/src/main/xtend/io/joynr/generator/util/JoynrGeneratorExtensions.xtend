@@ -186,10 +186,32 @@ abstract class JoynrGeneratorExtensions {
 
 	def String getMappedDatatypeOrList(FBasicTypeId datatype, boolean array)
 
-	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast) {
+	def String getMappedOutputParameterTypesCommaSeparated(FBroadcast broadcast) {
 		val commaSeparatedParams = new StringBuilder();
 		for (parameter : mapOutputParameters(getOutputParameters(broadcast))) {
 			commaSeparatedParams.append(parameter);
+			commaSeparatedParams.append(", ");
+		}
+		val returnString = commaSeparatedParams.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
+	}
+
+	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast, boolean constRef) {
+		val commaSeparatedParams = new StringBuilder();
+		for (parameter : getOutputParameters(broadcast)) {
+			if (constRef) {
+				commaSeparatedParams.append("const ")
+			}
+			commaSeparatedParams.append(getMappedDatatypeOrList(parameter));
+			if (constRef) {
+				commaSeparatedParams.append("& ")
+			}
+			commaSeparatedParams.append(parameter.name);
 			commaSeparatedParams.append(", ");
 		}
 		val returnString = commaSeparatedParams.toString();
@@ -844,5 +866,4 @@ abstract class JoynrGeneratorExtensions {
 	def isSelective(FBroadcast broadcast) {
 		return broadcast.selective != null
 	}
-
 }

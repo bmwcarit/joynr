@@ -107,7 +107,7 @@ class InterfaceProxyBaseCppTemplate {
 
 		«FOR broadcast: fInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
-			«val returnTypes = getMappedOutputParametersCommaSeparated(broadcast)»
+			«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 			void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId)
 			{
 			    if (connector==NULL){
