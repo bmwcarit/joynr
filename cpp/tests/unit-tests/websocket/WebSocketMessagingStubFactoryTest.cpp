@@ -83,9 +83,11 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    QWebSocket* websocket = new QWebSocket();
+    QWebSocket* clientWebsocket = new QWebSocket();
+    QWebSocket* serverWebsocket = new QWebSocket();
 
-    factory.addClient(webSocketClientAddress, websocket);
+    factory.addClient(webSocketClientAddress, clientWebsocket);
+    factory.addServer(webSocketServerAddress, serverWebsocket);
     EXPECT_FALSE(factory.create(webSocketClientAddress).isNull());
     EXPECT_FALSE(factory.create(webSocketServerAddress).isNull());
 }
@@ -121,7 +123,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
                 joynr::system::WebSocketProtocol::WS,
                 "localhost",
                 42,
-                "some/path/"
+                "/some/path/"
     );
     QUrl expectedWsUrl(QString("ws://localhost:42/some/path/"));
 
@@ -132,7 +134,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
                 joynr::system::WebSocketProtocol::WSS,
                 "localhost",
                 42,
-                "some/path"
+                "/some/path"
     );
     QUrl expectedWssUrl(QString("wss://localhost:42/some/path"));
 

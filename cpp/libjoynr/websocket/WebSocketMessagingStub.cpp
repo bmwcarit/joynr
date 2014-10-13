@@ -48,7 +48,7 @@ WebSocketMessagingStub::WebSocketMessagingStub(
 WebSocketMessagingStub::~WebSocketMessagingStub() {
     webSocket->close();
     webSocket->deleteLater();
-    delete address;
+    address->deleteLater();
 }
 
 void WebSocketMessagingStub::onSocketDisconnected() {

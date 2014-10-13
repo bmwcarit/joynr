@@ -67,8 +67,10 @@ public:
     }
 
     ~WebSocketMessagingStubTest() {
+        QSignalSpy serverClosedSpy(&server, SIGNAL(closed()));
         server.close();
         qDeleteAll(clients.begin(), clients.end());
+        serverClosedSpy.wait();
     }
 
     static void SetUpTestCase() {}
@@ -101,7 +103,7 @@ public:
     virtual void TearDown() {}
 
 Q_SIGNALS:
-    void binaryMessageReceived(const QByteArray& message);
+    void textMessageReceived(const QString& message);
 
 public Q_SLOTS:
     void onNewConnection() {
@@ -109,8 +111,8 @@ public Q_SLOTS:
         QWebSocket* client = server.nextPendingConnection();
 
         connect(
-                client, &QWebSocket::binaryMessageReceived,
-                this, &WebSocketMessagingStubTest::binaryMessageReceived
+                client, &QWebSocket::textMessageReceived,
+                this, &WebSocketMessagingStubTest::textMessageReceived
         );
         connect(
                 client, &QWebSocket::disconnected,
@@ -151,35 +153,35 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
 
     // wait for closed signal
     EXPECT_TRUE(messagingStubClosedSpy.wait());
-    EXPECT_EQ(1, messagingStubClosedSpy.count());
+    ASSERT_EQ(1, messagingStubClosedSpy.count());
 
     // verify signal's address parameter
     QList<QVariant> args = messagingStubClosedSpy.takeFirst();
-    EXPECT_EQ(1, args.size());
+    ASSERT_EQ(1, args.size());
     EXPECT_EQ(QVariant::UserType, args.first().type());
     EXPECT_TRUE(args.first().canConvert<joynr::system::Address>());
 }
 
 TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     LOG_TRACE(logger, QStringLiteral("transmit message"));
-    QSignalSpy binaryMessageReceivedSignalSpy(this, SIGNAL(binaryMessageReceived(QByteArray)));
+    QSignalSpy textMessageReceivedSignalSpy(this, SIGNAL(textMessageReceived(QString)));
 
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(serverAddress, webSocket);
     joynr::JoynrMessage joynrMsg;
-    QByteArray expectedMessage(joynr::JsonSerializer::serialize(joynrMsg));
+    QString expectedMessage(joynr::JsonSerializer::serialize(joynrMsg));
     joynr::MessagingQos qos;
     messagingStub.transmit(joynrMsg, qos);
 
     // wait until message is received
-    EXPECT_TRUE(binaryMessageReceivedSignalSpy.wait());
-    EXPECT_EQ(1, binaryMessageReceivedSignalSpy.count());
+    EXPECT_TRUE(textMessageReceivedSignalSpy.wait());
+    ASSERT_EQ(1, textMessageReceivedSignalSpy.count());
 
     // verify received message
-    QList<QVariant> args = binaryMessageReceivedSignalSpy.takeFirst();
-    EXPECT_EQ(1, args.size());
-    EXPECT_EQ(QVariant::ByteArray, args.first().type());
-    EXPECT_EQ(expectedMessage, args.first().toByteArray());
+    QList<QVariant> args = textMessageReceivedSignalSpy.takeFirst();
+    ASSERT_EQ(1, args.size());
+    EXPECT_EQ(QVariant::String, args.first().type());
+    EXPECT_EQ(expectedMessage, args.first().toString());
 }
 
 #include "WebSocketMessagingStubTest.moc"

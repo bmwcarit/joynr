@@ -68,8 +68,11 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     libjoynrSettings = Q_NULLPTR;
     settings->clear();
     settings->deleteLater();
-    runtimeExecutor->stop();
-    runtimeExecutor->deleteLater();
+    if(runtimeExecutor != Q_NULLPTR) {
+        runtimeExecutor->stop();
+        runtimeExecutor->deleteLater();
+        runtimeExecutor = Q_NULLPTR;
+    }
 }
 
 void LibJoynrRuntime::init(

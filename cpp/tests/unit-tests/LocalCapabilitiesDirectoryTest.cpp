@@ -223,7 +223,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlobal) {
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    EXPECT_CALL(*capabilitiesClient, remove(dummyParticipantId1)).Times(1);
+    QList<QString> participantIdsToRemove;
+    participantIdsToRemove.append(dummyParticipantId1);
+    EXPECT_CALL(*capabilitiesClient, remove(participantIdsToRemove)).Times(1);
     joynr::system::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
@@ -237,7 +239,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlob
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    EXPECT_CALL(*capabilitiesClient, remove(dummyParticipantId1)).Times(1);
+    QList<QString> participantIdsToRemove;
+    participantIdsToRemove.append(dummyParticipantId1);
+    EXPECT_CALL(*capabilitiesClient, remove(participantIdsToRemove)).Times(1);
     EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
