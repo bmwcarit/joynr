@@ -69,7 +69,8 @@ class FilterTemplate  {
 		«getNamespaceStarter(serviceInterface)»
 		class «getDllExportMacro()» «className» : public IBroadcastFilter {
 		public:
-			«className»() { }
+			«className»() :
+				IBroadcastFilter("«broadcastName»") { }
 
 			/*
 			* Override this method to provide a filter logic implementation.
