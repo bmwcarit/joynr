@@ -96,6 +96,17 @@ class InterfaceProviderCppTemplate {
 			    onAttributeValueChanged("«attributeName»", QVariant::fromValue(«attributeName»));
 			}
 		«ENDFOR»
+
+		«FOR broadcast: serviceInterface.broadcasts»
+			«var broadcastName = broadcast.joynrName»
+			void «interfaceName»Provider::«broadcastName»EventOccured(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
+				QVariantMap eventValues;
+				«FOR parameter: getOutputParameters(broadcast)»
+					eventValues.insert("«parameter.name»", QVariant::fromValue(«parameter.name»));
+				«ENDFOR»
+			    onEventOccured("«broadcastName»", eventValues);
+			}
+		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»
 	'''
 }

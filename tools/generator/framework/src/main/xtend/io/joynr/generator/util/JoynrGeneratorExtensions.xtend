@@ -204,6 +204,7 @@ abstract class JoynrGeneratorExtensions {
 	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast, boolean constRef) {
 		val commaSeparatedParams = new StringBuilder();
 		for (parameter : getOutputParameters(broadcast)) {
+			commaSeparatedParams.append("\n        ")
 			if (constRef) {
 				commaSeparatedParams.append("const ")
 			}
@@ -212,14 +213,14 @@ abstract class JoynrGeneratorExtensions {
 				commaSeparatedParams.append("& ")
 			}
 			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(", ");
+			commaSeparatedParams.append(",");
 		}
 		val returnString = commaSeparatedParams.toString();
 		if (returnString.length() == 0) {
 			return "";
 		}
 		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+			return returnString.substring(0, returnString.length() - 1); //remove the last ","
 		}
 	}
 

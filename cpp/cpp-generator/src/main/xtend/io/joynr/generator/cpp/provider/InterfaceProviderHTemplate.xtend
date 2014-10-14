@@ -25,7 +25,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 class InterfaceProviderHTemplate {
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
@@ -36,37 +36,37 @@ class InterfaceProviderHTemplate {
 	«warning()»
 	#ifndef «headerGuard»
 	#define «headerGuard»
-	
+
 	#include "joynr/PrivateCopyAssign.h"
-	
+
 	#include "joynr/Provider.h"
 	#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 	#include "joynr/DeclareMetatypeUtil.h"
 	#include "joynr/types/ProviderQos.h"
 	#include "joynr/RequestCallerFactory.h"
 	#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-	
+
 	«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 		#include "«parameterType»"
 	«ENDFOR»
-	
+
 	«getDllExportIncludeStatement()»
-	
+
 	namespace joynr { class SubscriptionManager; }
-	
+
 	«getNamespaceStarter(serviceInterface)»
-	
+
 	class «getDllExportMacro()» «interfaceName»Provider : public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Sync, public joynr::Provider {
-	
+
 	public:
 	    //TODO remove default value for ProviderQos and pass in real qos parameters
 	    «interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
 	    //for each Attribute the provider needs setters, sync and async getters.
 	    //They have default implementation for pushing Providers and can be overwritten by pulling Providers.
 	    virtual ~«interfaceName»Provider();
-	
+
 	    // request status, result, (params......)*
-	
+
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeName = attribute.joynrName»
 			virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)»& result);
@@ -85,18 +85,28 @@ class InterfaceProviderHTemplate {
 			«ELSE»
 				virtual void «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») = 0;
 			«ENDIF»
-		«ENDFOR»    
-	
+		«ENDFOR»
+
+		«FOR broadcast: serviceInterface.broadcasts»
+			«var broadcastName = broadcast.joynrName»
+			/**
+			* @brief «broadcastName»EventOccured must be called by a concrete provider to signal an occured
+			* event. It is used to implement broadcast publications.
+			* @param «broadcastName» the new attribute value
+			*/
+			void «broadcastName»EventOccured(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
+		«ENDFOR»
+
 	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
 	    void setDomainAndInterface(const QString& domain, const QString& interfaceName);
-		
+
 	    joynr::types::ProviderQos getProviderQos() const;
-		
+
 	protected:
 		«FOR attribute: getAttributes(serviceInterface)»
 		    «getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
 		«ENDFOR»
-	
+
 	private:
 	    DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
 	    joynr::SubscriptionManager* subscriptionManager;
@@ -107,7 +117,7 @@ class InterfaceProviderHTemplate {
 	«getNamespaceEnder(serviceInterface)»
 
 	namespace joynr {
-	
+
 	// Helper class for use by the RequestCallerFactory.
 	// This class creates instances of «interfaceName»RequestCaller
 	template<>
