@@ -153,7 +153,7 @@ public:
       */
     virtual void eventOccured(const QString& subscriptionId, const QVariantMap& values);
 
-    void addBroadcastFilter(const QString& broadcastName, QSharedPointer<IBroadcastFilter> filter);
+    void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);

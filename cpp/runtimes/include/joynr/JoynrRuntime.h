@@ -31,6 +31,8 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/PublicationManager.h"
+#include "joynr/IBroadcastFilter.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -93,6 +95,8 @@ public:
         );
         return builder;
     }
+
+    void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
     static JoynrRuntime* createRuntime(const QString& pathToLibjoynrSettings,
                                       const QString& pathToMessagingSettings = "");

@@ -888,19 +888,18 @@ void PublicationManager::eventOccured(const QString &subscriptionId, const QVari
     }
 }
 
-void PublicationManager::addBroadcastFilter(const QString &broadcastName,
-                                            QSharedPointer<IBroadcastFilter> filter)
+void PublicationManager::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
 {
     QWriteLocker locker(&broadcastFilterLock);
 
     QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
-            broadcastFilters.find(broadcastName);
+            broadcastFilters.find(filter->getName());
 
     if (it != broadcastFilters.end()){
         it.value().append(filter);
     }
     else {
-        broadcastFilters.insert(broadcastName, QList<QSharedPointer<IBroadcastFilter>>({filter}));
+        broadcastFilters.insert(filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
     }
 }
 
