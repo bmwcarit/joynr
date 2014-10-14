@@ -24,18 +24,18 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class InterfaceCppTemplate {
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-	
+
 	@Inject
 	private extension TemplateBase
-		
+
 	def generate(FInterface serviceInterface){
 		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include "qjson/serializer.h"
 		#include "joynr/MetaTypeRegistrar.h"
@@ -46,7 +46,7 @@ class InterfaceCppTemplate {
 
 		#include "joynr/Future.h"
 		#include "joynr/ICallback.h"
-		
+
 		«getNamespaceStarter(serviceInterface)»
 
 		I«interfaceName»Base::I«interfaceName»Base()
@@ -72,16 +72,28 @@ class InterfaceCppTemplate {
 				«ENDIF»
 			«ENDFOR»
 
+			«FOR broadcast: serviceInterface.broadcasts»
+				«IF broadcast.outArgs.size > 1»
+					/*
+					 * Broadcast output parameters are packed into a single publication message when the
+					 * broadcast occurs. Hence, a new composite data type is needed for all broadcasts with
+					 * more than one out parameter. This composite type (containing all out parameters) is then
+					 * serialised into the publication message. When deserialising on consumer side, the right
+					 * publication interpreter is chosen by calculating a type id for the composite type.
+					*/
+					registrar.registerCompositeMetaType<«getMappedOutputParameterTypesCommaSeparated(broadcast)»>();
+				«ENDIF»
+			«ENDFOR»
 		}
 
-	
+
 		static const QString INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
-		
+
 		const QString I«interfaceName»Base::getInterfaceName()
 		{
 			return INTERFACE_NAME;
 		}
-		
+
 		«getNamespaceEnder(serviceInterface)»
 		'''
 	}
