@@ -41,7 +41,6 @@ namespace joynr {
 LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
     JoynrRuntime(*settings),
     connectorFactory(NULL),
-    publicationManager(NULL),
     subscriptionManager(NULL),
     inProcessPublicationSender(NULL),
     inProcessConnectorFactory(NULL),

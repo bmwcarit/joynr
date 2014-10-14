@@ -76,7 +76,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         joynrDispatcher(NULL),
         inProcessDispatcher(NULL),
         ccDispatcher(NULL),
-        publicationManager(NULL),
         subscriptionManager(NULL),
         joynrMessagingSendSkeleton(NULL),
         joynrMessageSender(NULL),

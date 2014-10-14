@@ -101,7 +101,6 @@ protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
-    PublicationManager* publicationManager;
     SubscriptionManager* subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;

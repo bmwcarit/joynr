@@ -53,7 +53,8 @@ public:
             systemServicesSettings(settings),
             dispatcherAddress(NULL),
             messageRouter(NULL),
-            discoveryProxy(NULL)
+            discoveryProxy(NULL),
+            publicationManager(NULL)
     {
         systemServicesSettings.printSettings();
     }
@@ -104,6 +105,7 @@ protected:
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
     LocalDiscoveryAggregator* discoveryProxy;
+    PublicationManager* publicationManager;
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
 };

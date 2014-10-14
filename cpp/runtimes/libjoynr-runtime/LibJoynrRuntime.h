@@ -56,7 +56,6 @@ public:
 
 protected:
     ConnectorFactory* connectorFactory;
-    PublicationManager* publicationManager;
     SubscriptionManager* subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
