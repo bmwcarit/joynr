@@ -143,21 +143,41 @@ void LocalCapabilitiesDirectory::add(
 }
 
 void LocalCapabilitiesDirectory::remove(
-        const QString& domain, const QString& interfaceName, const types::ProviderQos& qos) {
-    //TODO does it make sense to remove any capability for a domain/interfaceName without knowing which provider registered the capability
+        const QString& domain,
+        const QString& interfaceName,
+        const types::ProviderQos& qos
+) {
+    //TODO does it make sense to remove any capability for a domain/interfaceName
+    // without knowing which provider registered the capability
     QMutexLocker locker(cacheLock);
-    QList<CapabilityEntry> entries = interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
+    QList<CapabilityEntry> entries = interfaceAddress2GlobalCapabilities.lookUpAll(
+                InterfaceAddress(domain, interfaceName)
+    );
     QList<QString> participantIdsToRemove;
     for (int i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            registeredGlobalCapabilities.removeAll(types::CapabilityInformation(domain, interfaceName,qos, capabilitiesClient->getLocalChannelId(), entry.getParticipantId()));
+            registeredGlobalCapabilities.removeAll(
+                        types::CapabilityInformation(
+                            domain,
+                            interfaceName,
+                            qos,
+                            capabilitiesClient->getLocalChannelId(),
+                            entry.getParticipantId()
+                        )
+            );
             participantIdsToRemove.append(entry.getParticipantId());
             participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
-            interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+            interfaceAddress2GlobalCapabilities.remove(
+                        InterfaceAddress(entry.getDomain(), entry.getInterfaceName()),
+                        entry
+            );
         }
-        participantId2LocalCapability.remove(entry.getParticipantId(),entry);
-        interfaceAddress2LocalCapabilities.remove(InterfaceAddress(domain, interfaceName), entry);
+        participantId2LocalCapability.remove(entry.getParticipantId(), entry);
+        interfaceAddress2LocalCapabilities.remove(
+                    InterfaceAddress(domain, interfaceName),
+                    entry
+        );
     }
     if(!participantIdsToRemove.isEmpty()) {
         capabilitiesClient->remove(participantIdsToRemove);
@@ -167,10 +187,16 @@ void LocalCapabilitiesDirectory::remove(
 void LocalCapabilitiesDirectory::remove(const QString& participantId) {
     QMutexLocker lock(cacheLock);
     CapabilityEntry entry = participantId2LocalCapability.take(participantId);
-    interfaceAddress2LocalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()),entry);
+    interfaceAddress2LocalCapabilities.remove(
+                InterfaceAddress(entry.getDomain(), entry.getInterfaceName()),
+                entry
+    );
     if(entry.isGlobal()) {
         participantId2GlobalCapabilities.remove(participantId, entry);
-        interfaceAddress2GlobalCapabilities.remove(InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+        interfaceAddress2GlobalCapabilities.remove(
+                    InterfaceAddress(entry.getDomain(), entry.getInterfaceName()),
+                    entry
+        );
     }
 
     capabilitiesClient->remove(participantId);
@@ -183,8 +209,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 ) {
     joynr::system::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    QList<CapabilityEntry> localCapabilities = searchCache(interfaceAddress, -1, true);
-    QList<CapabilityEntry> globalCapabilities = searchCache(interfaceAddress, discoveryQos.getCacheMaxAge(), false);
+    QList<CapabilityEntry> localCapabilities =
+            searchCache(interfaceAddress, -1, true);
+    QList<CapabilityEntry> globalCapabilities =
+            searchCache(interfaceAddress, discoveryQos.getCacheMaxAge(), false);
 
     return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
@@ -196,8 +224,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 ) {
     joynr::system::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    QList<CapabilityEntry> localCapabilities = searchCache(participantId, -1, true);
-    QList<CapabilityEntry> globalCapabilities = searchCache(participantId, discoveryQos.getCacheMaxAge(), false);
+    QList<CapabilityEntry> localCapabilities =
+            searchCache(participantId, -1, true);
+    QList<CapabilityEntry> globalCapabilities =
+            searchCache(participantId, discoveryQos.getCacheMaxAge(), false);
 
     return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
@@ -264,7 +294,14 @@ void LocalCapabilitiesDirectory::lookup(
     // if no reciever is called, use the global capabilities directory
     if (!recieverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallback(new LocalCapabilitiesCallbackWrapper(this, callback, participantId, discoveryQos));
+        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallback(
+                    new LocalCapabilitiesCallbackWrapper(
+                        this,
+                        callback,
+                        participantId,
+                        discoveryQos
+                    )
+        );
         this->capabilitiesClient->lookup(participantId, wrappedCallback);
     }
 }
@@ -283,22 +320,33 @@ void LocalCapabilitiesDirectory::lookup(
     // if no reciever is called, use the global capabilities directory
     if(!recieverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(new LocalCapabilitiesCallbackWrapper(this, callback, interfaceAddress, discoveryQos));
+        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(
+                    new LocalCapabilitiesCallbackWrapper(
+                        this,
+                        callback,
+                        interfaceAddress,
+                        discoveryQos
+                    )
+        );
         this->capabilitiesClient->lookup(domain, interfaceName, wrappedCallBack);
     }
 }
 
-QList<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(const QString &participantId){
+QList<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
+        const QString &participantId
+) {
     return searchCache(participantId, -1, true);
 }
 
-QList<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(const InterfaceAddress &interfaceAddress){
+QList<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
+        const InterfaceAddress &interfaceAddress
+) {
     return searchCache(interfaceAddress, -1, true);
 }
 
 void LocalCapabilitiesDirectory::cleanCache(qint64 maxAge_ms) {
-    // QMutexLocker locks the mutex, and when the locker variable is destroyed (when it leaves this method)
-    // it will unlock the mutex
+    // QMutexLocker locks the mutex, and when the locker variable is destroyed (when
+    // it leaves this method) it will unlock the mutex
     QMutexLocker locker(cacheLock);
     interfaceAddress2GlobalCapabilities.cleanup(maxAge_ms);
     participantId2GlobalCapabilities.cleanup(maxAge_ms);
@@ -314,7 +362,9 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        QSharedPointer<joynr::system::Address> joynrAddress(new system::ChannelAddress(entryIterator.key()));
+        QSharedPointer<joynr::system::Address> joynrAddress(
+                    new system::ChannelAddress(entryIterator.key())
+        );
         messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }
@@ -372,7 +422,11 @@ void LocalCapabilitiesDirectory::remove(
  /**
   * Private convenience methods.
   */
-void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache) {
+void LocalCapabilitiesDirectory::insertInCache(
+        const CapabilityEntry& entry,
+        bool localCache,
+        bool globalCache
+) {
     QMutexLocker lock(cacheLock);
     InterfaceAddress addr(entry.getDomain(), entry.getInterfaceName());
 
@@ -419,7 +473,11 @@ void LocalCapabilitiesDirectory::insertInCache(
     insertInCache(entry, !foundMatch && localCache, globalCache);
 }
 
-QList<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(const InterfaceAddress& interfaceAddress, const qint64& maxCacheAge, bool localEntries) {
+QList<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
+        const InterfaceAddress& interfaceAddress,
+        const qint64& maxCacheAge,
+        bool localEntries
+) {
     QMutexLocker locker(cacheLock);
 
     // search in local
@@ -430,7 +488,11 @@ QList<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(const InterfaceAd
     }
 }
 
-QList<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(const QString& participantId, const qint64& maxCacheAge, bool localEntries) {
+QList<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
+        const QString& participantId,
+        const qint64& maxCacheAge,
+        bool localEntries
+) {
     QMutexLocker locker(cacheLock);
 
     // search in local

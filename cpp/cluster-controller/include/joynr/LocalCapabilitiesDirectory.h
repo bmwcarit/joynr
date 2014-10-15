@@ -71,7 +71,9 @@ namespace types { class ProviderQos;
                   class CapabilitiesInformation;
                 }
 
-class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory : public joynr::system::DiscoveryProvider {
+class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory :
+        public joynr::system::DiscoveryProvider
+{
 public:
     LocalCapabilitiesDirectory(
             MessagingSettings& messagingSettings,
@@ -103,8 +105,8 @@ public:
     virtual void remove(const QString& participantId);
 
     /*
-     * Returns a list of capabilities matching the given domain and interfaceName, this is an asynchronous request,
-     * must supply a callback.
+     * Returns a list of capabilities matching the given domain and interfaceName,
+     * this is an asynchronous request, must supply a callback.
      */
     virtual void lookup(
             const QString& domain,
@@ -114,7 +116,8 @@ public:
     );
 
     /*
-     * Returns a capability entry for a given participant ID or an empty list if it cannot be found.
+     * Returns a capability entry for a given participant ID or an empty list
+     * if it cannot be found.
      */
     virtual void lookup(
             const QString& participantId,
@@ -122,8 +125,9 @@ public:
     );
 
     /*
-      * Returns a list of locally cached capabilitiy entries. This method is used when capabilities from the
-      * global directory are received, to check if a new local provider was registered in the meantime.
+      * Returns a list of locally cached capabilitiy entries. This method is used
+      * when capabilities from the global directory are received, to check if a new
+      * local provider was registered in the meantime.
       */
     QList<CapabilityEntry> getCachedLocalCapabilities(const QString& participantId);
     QList<CapabilityEntry> getCachedLocalCapabilities(const InterfaceAddress& interfaceAddress);
@@ -133,8 +137,9 @@ public:
     void cleanCache(qint64 maxAge_ms);
 
     /*
-     * Call back methods which will update the local capabilities cache and call the original callback with the results, this indirection was
-     * needed because we need to convert a CapabilitiesInformation object into a CapabilityEntry object.
+     * Call back methods which will update the local capabilities cache and call the
+     * original callback with the results, this indirection was needed because we
+     * need to convert a CapabilitiesInformation object into a CapabilityEntry object.
      */
     virtual void registerReceivedCapabilities(QMap<QString, CapabilityEntry> capabilityEntries);
 
@@ -184,15 +189,27 @@ private:
             QSharedPointer<ILocalCapabilitiesCallback> callback
     );
 
-    void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
+    void insertInCache(
+            const CapabilityEntry& entry,
+            bool localCache,
+            bool globalCache
+    );
     void insertInCache(
             const joynr::system::DiscoveryEntry& entry,
             bool isGlobal,
             bool localCache,
             bool globalCache
     );
-    QList<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress, const qint64& maxCacheAge, bool localEntries);
-    QList<CapabilityEntry> searchCache(const QString& participantId, const qint64& maxCacheAge, bool localEntries);
+    QList<CapabilityEntry> searchCache(
+            const InterfaceAddress& interfaceAddress,
+            const qint64& maxCacheAge,
+            bool localEntries
+    );
+    QList<CapabilityEntry> searchCache(
+            const QString& participantId,
+            const qint64& maxCacheAge,
+            bool localEntries
+    );
 
     static void convertDiscoveryEntryIntoCapabilityEntry(
         const joynr::system::DiscoveryEntry& discoveryEntry,
