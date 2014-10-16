@@ -49,6 +49,20 @@ add_library(
     ${JoynrCommonAPI_SOURCES}
 )
 
+set(COMMENT "running C++ code formatter: clang-format")
+set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommonAPI_HEADERS}")
+set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommonAPI_SOURCES}")
+
+add_custom_command(
+    TARGET JoynrCommonAPI
+    PRE_BUILD
+    COMMAND clang-format -i ${JoynrCommonAPI_HEADERS} ${JoynrCommonAPI_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "${COMMENT}"
+    VERBATIM
+)
+
 set_target_properties(
     JoynrCommonAPI
     PROPERTIES

@@ -309,20 +309,20 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
     message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
 
-    include_directories(SYSTEM
-
+    include_directories(
+        SYSTEM
         ${COMMONAPI_INCLUDE_DIRS}
         ${DBUS1_INCLUDE_DIRS}
         ${COMMONAPI_DBUS_INCLUDE_DIRS}
     )
 
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
-
-    add_subdirectory(common-api)
-
-ENDIF(${USE_DBUS_COMMONAPI_COMMUNICATION})
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 ######## Add submodules ########
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    add_subdirectory(common-api)
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(libs)
 add_subdirectory(common)
 add_subdirectory(libjoynr)

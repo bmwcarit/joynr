@@ -122,6 +122,20 @@ add_library(
 )
 qt5_use_modules(JoynrClusterController Core WebSockets)
 
+set(COMMENT "running C++ code formatter: clang-format")
+set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterController_HEADERS}")
+set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterController_SOURCES}")
+
+add_custom_command(
+    TARGET JoynrClusterController
+    PRE_BUILD
+    COMMAND clang-format -i ${JoynrClusterController_HEADERS} ${JoynrClusterController_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "${COMMENT}"
+    VERBATIM
+)
+
 set_target_properties(
     JoynrClusterController
     PROPERTIES

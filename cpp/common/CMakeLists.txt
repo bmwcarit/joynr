@@ -130,6 +130,20 @@ add_library(
 )
 qt5_use_modules(JoynrCommon Core WebSockets)
 
+set(COMMENT "running C++ code formatter: clang-format")
+set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommon_HEADERS}")
+set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommon_SOURCES}")
+
+add_custom_command(
+    TARGET JoynrCommon
+    PRE_BUILD
+    COMMAND clang-format -i ${JoynrCommon_HEADERS} ${JoynrCommon_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "${COMMENT}"
+    VERBATIM
+)
+
 set_target_properties(
     JoynrCommon
     PROPERTIES

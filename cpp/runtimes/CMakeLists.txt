@@ -79,6 +79,20 @@ add_library(
 )
 qt5_use_modules(JoynrClusterControllerRuntime Core)
 
+set(COMMENT "running C++ code formatter: clang-format")
+set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterControllerRuntime_HEADERS}")
+set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterControllerRuntime_SOURCES}")
+
+add_custom_command(
+    TARGET JoynrClusterControllerRuntime
+    PRE_BUILD
+    COMMAND clang-format -i ${JoynrClusterControllerRuntime_HEADERS} ${JoynrClusterControllerRuntime_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "${COMMENT}"
+    VERBATIM
+)
+
 set_target_properties(
     JoynrClusterControllerRuntime
     PROPERTIES
@@ -152,15 +166,33 @@ include_directories(
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
 )
 
-add_library(JoynrWsRuntime
+add_library(
+    JoynrWsRuntime
     SHARED
     ${JoynrRuntime_PRIVATE_HEADERS}
     ${JoynrRuntime_SOURCES}
     ${JoynrWsRuntime_PRIVATE_HEADERS}
     ${JoynrWsRuntime_SOURCES}
 )
-
 qt5_use_modules(JoynrWsRuntime Core)
+
+set(COMMENT "running C++ code formatter: clang-format")
+set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrRuntime_PRIVATE_HEADERS};${JoynrWsRuntime_PRIVATE_HEADERS}")
+set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrRuntime_SOURCES};${JoynrWsRuntime_SOURCES}")
+
+add_custom_command(
+    TARGET JoynrWsRuntime
+    PRE_BUILD
+    COMMAND clang-format -i
+        ${JoynrRuntime_PRIVATE_HEADERS}
+        ${JoynrWsRuntime_PRIVATE_HEADERS}
+        ${JoynrRuntime_SOURCES}
+        ${JoynrWsRuntime_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "${COMMENT}"
+    VERBATIM
+)
 
 target_link_libraries(
     JoynrWsRuntime
@@ -225,15 +257,29 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrRuntime_INCLUDE_DIRECTORIES}
     )
 
-    add_library(JoynrDbusRuntime
+    add_library(
+        JoynrDbusRuntime
         SHARED
         ${JoynrRuntime_HEADERS}
         ${JoynrRuntime_SOURCES}
         ${JoynrDbusRuntime_PRIVATE_HEADERS}
         ${JoynrDbusRuntime_SOURCES}
     )
-
     qt5_use_modules(JoynrDbusRuntime Core)
+
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrDbusRuntime_PRIVATE_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrDbusRuntime_SOURCES}")
+
+    add_custom_command(
+        TARGET JoynrDbusRuntime
+        PRE_BUILD
+        COMMAND clang-format -i ${JoynrDbusRuntime_PRIVATE_HEADERS} ${JoynrDbusRuntime_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
 
     target_link_libraries(
         JoynrDbusRuntime
@@ -272,9 +318,31 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 
 # executable to start the cluster controller
-add_executable(cluster-controller StartClusterController.cpp)
+set(
+    cluster-controller_HEADERS
+    StartClusterController.cpp
+)
+set(
+    cluster-controller_SOURCES
+    StartClusterController.cpp
+)
 
+add_executable(cluster-controller StartClusterController.cpp)
 qt5_use_modules(cluster-controller Core)
+
+set(COMMENT "running C++ code formatter: clang-format")
+set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMENT "${COMMENT}\nprocessing header files:\n${cluster-controller_HEADERS}")
+set(COMMENT "${COMMENT}\nprocessing source files:\n${cluster-controller_SOURCES}")
+
+add_custom_command(
+    TARGET cluster-controller
+    PRE_BUILD
+    COMMAND clang-format -i ${cluster-controller_HEADERS} ${cluster-controller_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "${COMMENT}"
+    VERBATIM
+)
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     target_link_libraries(cluster-controller
