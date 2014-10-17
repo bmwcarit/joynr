@@ -50,7 +50,7 @@ public:
 
     virtual void removeRequestCaller(const QString& participantId);
 
-    virtual void receive(const JoynrMessage& message, const MessagingQos& qosSettings);
+    virtual void receive(const JoynrMessage& message);
 
     virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager);
 

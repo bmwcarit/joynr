@@ -30,9 +30,9 @@ DBusMessageRouterAdapter::~DBusMessageRouterAdapter() {
     delete dbusSkeletonWrapper;
 }
 
-void DBusMessageRouterAdapter::transmit(JoynrMessage &message, const MessagingQos &qos) {
+void DBusMessageRouterAdapter::transmit(JoynrMessage &message) {
     dbusSkeletonWrapper->logMethodCall("transmit", "DBusMessageRouterAdapter");
-    messageRouter.route(message, qos);
+    messageRouter.route(message);
 }
 
 } // namespace joynr

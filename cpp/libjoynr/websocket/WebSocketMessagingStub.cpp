@@ -70,11 +70,7 @@ void WebSocketMessagingStub::sendTextMessage(const QString &message)
 
 }
 
-void WebSocketMessagingStub::transmit(JoynrMessage& message, const MessagingQos &qos) {
-    // QoS is not needed on transmit. Message already contains expiry date.
-    // Messaging interface needs to be refactored.
-    Q_UNUSED(qos);
-
+void WebSocketMessagingStub::transmit(JoynrMessage& message) {
     if(!webSocket->isValid()) {
         LOG_ERROR(logger, QString("WebSocket not ready %0. Unable to send message %1.")
                   .arg(address->toString())

@@ -37,10 +37,9 @@ qint64 MessageQueue::getQueueLength(){
     return queue->size();
 }
 
-qint64 MessageQueue::queueMessage(const JoynrMessage &message,
-                                const MessagingQos &qos) {
-    QDateTime absTtl = DispatcherUtils::convertTtlToAbsoluteTime(qos.getTtl());
-    MessageQueueItem* item = new MessageQueueItem(QPair<JoynrMessage, MessagingQos>(message, qos), absTtl);
+qint64 MessageQueue::queueMessage(const JoynrMessage &message) {
+    QDateTime absTtl = message.getHeaderExpiryDate();
+    MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
         QMutexLocker locker(&queueMutex);
         queue->insertMulti(message.getHeaderTo(), item);

@@ -27,8 +27,4 @@ typeCollection Types {
     map JoynrMessageHeader {
         String to String
     }
-
-    struct JoynrMessageQos {
-        Int64 ttl
-    }
 }

@@ -40,7 +40,7 @@ class WebSocketMessagingStub : public QObject, public IMessaging
 public:
     WebSocketMessagingStub(system::Address* address, QWebSocket* webSocket, QObject* parent = Q_NULLPTR);
     virtual ~WebSocketMessagingStub();
-    virtual void transmit(JoynrMessage &message, const MessagingQos &qos);
+    virtual void transmit(JoynrMessage &message);
 
 Q_SIGNALS:
     void closed(const joynr::system::Address& address);

@@ -42,7 +42,7 @@ public:
             const QString& participantId,
             QSharedPointer<RequestCaller> requestCaller) = 0;
     virtual void removeRequestCaller(const QString& participantId) = 0;
-    virtual void receive(const JoynrMessage& message,const MessagingQos& qosSettings) = 0;
+    virtual void receive(const JoynrMessage& message) = 0;
 
 
     virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager) = 0;

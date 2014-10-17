@@ -182,14 +182,9 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
         messageRouter->addNextHop(msg->getHeaderFrom(), address);
     }
 
-    QDateTime expiryDate = msg->getHeaderExpiryDate();
-    // Set the Qos for the reply message
-    qint64 ttl = DispatcherUtils::convertAbsoluteTimeToTtl(expiryDate);
-    MessagingQos qos(ttl);
-
     // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
     //TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable, and runnable should delete it.
-    messageRouter->route(*msg, qos);
+    messageRouter->route(*msg);
     delete msg;
 }
 

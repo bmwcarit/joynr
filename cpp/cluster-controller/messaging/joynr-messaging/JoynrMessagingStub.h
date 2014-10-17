@@ -35,7 +35,7 @@ class JoynrMessagingStub : public IMessaging {
 public:
     explicit JoynrMessagingStub(QSharedPointer<IMessageSender> messageSender, QString destinationChannelId, QString receiveChannelId);
     virtual ~JoynrMessagingStub();
-    void transmit(JoynrMessage& message, const MessagingQos& qos);
+    void transmit(JoynrMessage& message);
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessagingStub);
     QSharedPointer<IMessageSender> messageSender;

@@ -23,7 +23,6 @@
 #include "joynr/JoynrExport.h"
 
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/ContentWithDecayTime.h"
 
 #include <QMutex>
@@ -31,7 +30,7 @@
 
 namespace joynr {
 
-typedef ContentWithDecayTime<QPair<JoynrMessage, MessagingQos>> MessageQueueItem;
+typedef ContentWithDecayTime<JoynrMessage> MessageQueueItem;
 
 class JOYNR_EXPORT MessageQueue {
 public:
@@ -41,8 +40,7 @@ public:
 
     qint64 getQueueLength();
 
-    qint64 queueMessage(const JoynrMessage& message,
-                      const MessagingQos& qos);
+    qint64 queueMessage(const JoynrMessage& message);
 
     MessageQueueItem* getNextMessageForParticipant(const QString destinationPartId);
 

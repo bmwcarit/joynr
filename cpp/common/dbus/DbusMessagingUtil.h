@@ -24,7 +24,6 @@
 namespace joynr {
     class JoynrMessage;
 }
-#include "joynr/MessagingQos.h"
 
 // save the GCC diagnostic state
 #pragma GCC diagnostic push
@@ -43,10 +42,8 @@ namespace joynr {
 class DbusMessagingUtil {
 public:
     static void copyDbusMsgToJoynrMsg(const joynr::messaging::IMessaging::JoynrMessage& DbusMsg, JoynrMessage& joynrMsg);
-    static void copyDbusQosToJoynrQos(const joynr::messaging::types::Types::JoynrMessageQos& dbusQos, MessagingQos& joynrQos);
 
     static void copyJoynrMsgToDbusMsg(const JoynrMessage& joynrMsg, joynr::messaging::IMessaging::JoynrMessage& dbusMsg);
-    static void copyJoynrQosToDbusQos(const MessagingQos& joynrQos, joynr::messaging::types::Types::JoynrMessageQos& dbusQos);
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingUtil);
 };

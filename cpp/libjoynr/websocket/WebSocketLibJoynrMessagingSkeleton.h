@@ -42,7 +42,7 @@ public:
 
     ~WebSocketLibJoynrMessagingSkeleton();
 
-    virtual void transmit(JoynrMessage& message, const MessagingQos& qos);
+    virtual void transmit(JoynrMessage& message);
 
 public Q_SLOTS:
     void onTextMessageReceived(const QString& message);

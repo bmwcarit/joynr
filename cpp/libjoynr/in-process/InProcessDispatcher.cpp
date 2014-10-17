@@ -63,9 +63,8 @@ void InProcessDispatcher::removeRequestCaller(const QString &participantId){
     requestCallerDirectory.remove(participantId);
 }
 
-void InProcessDispatcher::receive(const JoynrMessage &message, const MessagingQos& qosSettings){
+void InProcessDispatcher::receive(const JoynrMessage &message){
     Q_UNUSED(message);
-    Q_UNUSED(qosSettings);
     LOG_FATAL(logger, "Not implemented");
     assert(false);
 

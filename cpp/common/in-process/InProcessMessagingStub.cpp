@@ -29,9 +29,9 @@ InProcessMessagingStub::InProcessMessagingStub(QSharedPointer<InProcessMessaging
 
 
 
-void InProcessMessagingStub::transmit(JoynrMessage& message, const MessagingQos& qos) {
+void InProcessMessagingStub::transmit(JoynrMessage& message) {
     assert(skeleton!=NULL);
-    skeleton->transmit(message, qos);
+    skeleton->transmit(message);
 }
 
 } // namespace joynr

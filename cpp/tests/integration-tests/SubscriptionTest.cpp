@@ -146,7 +146,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                 subscriptionRequest);
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // Wait for a call to be made to the mockRequestCaller
     ASSERT_TRUE(semaphore.tryAcquire(1,1000));
@@ -205,7 +205,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
@@ -252,7 +252,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                 subscriptionRequest);
     // first received message with subscription request
 
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     ASSERT_TRUE(semaphore.tryAcquire(1,15000));
     //Try to acquire a semaphore for up to 5 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
@@ -294,7 +294,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
     // remove the request caller
@@ -338,7 +338,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
@@ -351,7 +351,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 providerParticipantId,
                 qos,
                 subscriptionStop);
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // assert that less than 2 requests happen in the next 300 milliseconds
     ASSERT_FALSE(semaphore.tryAcquire(2, 300));

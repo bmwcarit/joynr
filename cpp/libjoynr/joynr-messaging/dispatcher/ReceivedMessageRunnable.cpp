@@ -26,14 +26,11 @@ using namespace joynr_logging;
 Logger* ReceivedMessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "ReceiverRunnable ");
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(
-        const QDateTime& decayTime,
         const JoynrMessage& message,
-        const MessagingQos& qos,
         Dispatcher& dispatcher
 ) :
-    ObjectWithDecayTime(decayTime),
+    ObjectWithDecayTime(message.getHeaderExpiryDate()),
     message(message),
-    qos(qos),
     dispatcher(dispatcher){
         LOG_DEBUG(logger, "Creating ReceivedMessageRunnable for message type: " + message.getType());
 }
@@ -46,7 +43,7 @@ void ReceivedMessageRunnable::run() {
     }
 
     if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
-        dispatcher.handleRequestReceived(message, qos);
+        dispatcher.handleRequestReceived(message);
     } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
         dispatcher.handleReplyReceived(message);
     } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {

@@ -55,7 +55,6 @@ public:
     */
     void sendMessage(
             const QString& channelId,
-            const QDateTime& decayTime,
             const JoynrMessage& message);
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for

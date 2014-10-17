@@ -30,7 +30,6 @@ interface IMessaging {
     method transmit {
         in {
             JoynrMessage message
-            Types.JoynrMessageQos qos
         }
     }
 

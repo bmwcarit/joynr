@@ -121,11 +121,11 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
 
     MockDispatcher mockDispatcher;
     // InProcessMessagingSkeleton should receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,Eq(qos)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_))
             .Times(0);
 
     // MessageSender should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
             .Times(1);
 
     EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
@@ -155,7 +155,7 @@ TEST_F(MessagingTest, routeMsgWithInvalidParticipantId)
                 request);
 
 
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
     SUCCEED();
 }
 
@@ -168,11 +168,11 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
                 request);
 
     // InProcessMessagingSkeleton should receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
             .Times(1);
 
     // MessageSender should not receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
             .Times(0);
 
     EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
@@ -185,7 +185,7 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
 
     messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr);
 
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
@@ -206,11 +206,11 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //            .Times(1);
 
     // InProcessMessagingSkeleton should not receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
             .Times(0);
 
     // MessageSender should not receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
             .Times(0);
 
 // NOTE: LipciMessaging doesn't exists (2012-05-08)
@@ -218,7 +218,7 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //            QSharedPointer<LipciEndpointAddress>(new LipciEndpointAddress(messagingSkeleton));
 
 //    messageRouter->add(receiverId, messagingSkeletonEndpointAddr);
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 
@@ -232,11 +232,11 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
     message.setHeaderReplyChannelId(senderChannelId);
 
     // InProcessMessagingSkeleton should not receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),Eq(qos)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
             .Times(0);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),_,Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
             .Times(1);
 
     QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
@@ -245,7 +245,7 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 
@@ -267,11 +267,11 @@ TEST_F(MessagingTest, routeMultipleMessages)
     message2.setHeaderReplyChannelId(senderChannelId);
 
     // InProcessMessagingSkeleton should receive the message2 and message3
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),Eq(qos)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2)))
             .Times(2);
 
     // MessageSender should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), _ , Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message)))
             .Times(1);
 
     EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
@@ -290,9 +290,9 @@ TEST_F(MessagingTest, routeMultipleMessages)
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
-    messageRouter->route(message, qos);
-    messageRouter->route(message2, qos);
-    messageRouter->route(message2, qos);
+    messageRouter->route(message);
+    messageRouter->route(message2);
+    messageRouter->route(message2);
 }
 
 // global function used for calls to the MockChannelUrlSelectorProxy

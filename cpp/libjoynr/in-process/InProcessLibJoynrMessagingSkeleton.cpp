@@ -26,10 +26,10 @@ InProcessLibJoynrMessagingSkeleton::InProcessLibJoynrMessagingSkeleton(IDispatch
 
 
 
-void InProcessLibJoynrMessagingSkeleton::transmit(JoynrMessage& message, const MessagingQos& qoS) {
+void InProcessLibJoynrMessagingSkeleton::transmit(JoynrMessage& message) {
 
 //cast
-     dispatcher->receive(message,qoS);
+     dispatcher->receive(message);
 }
 
 } // namespace joynr

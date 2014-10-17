@@ -170,8 +170,7 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     joynr::WebSocketMessagingStub messagingStub(serverAddress, webSocket);
     joynr::JoynrMessage joynrMsg;
     QString expectedMessage(joynr::JsonSerializer::serialize(joynrMsg));
-    joynr::MessagingQos qos;
-    messagingStub.transmit(joynrMsg, qos);
+    messagingStub.transmit(joynrMsg);
 
     // wait until message is received
     EXPECT_TRUE(textMessageReceivedSignalSpy.wait());

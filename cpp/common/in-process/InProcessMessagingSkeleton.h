@@ -23,7 +23,6 @@
 
 namespace joynr {
 
-class MessagingQos;
 class JoynrMessage;
 
 /*
@@ -35,7 +34,7 @@ class JOYNRCOMMON_EXPORT InProcessMessagingSkeleton : public IMessaging
 {
 public:
     virtual ~InProcessMessagingSkeleton() {}
-    virtual void transmit(JoynrMessage &message, const MessagingQos &qos) = 0;
+    virtual void transmit(JoynrMessage &message) = 0;
 private:
 };
 

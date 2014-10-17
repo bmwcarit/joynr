@@ -145,7 +145,7 @@ bool MessageRouter::isChildMessageRouter(){
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) {
+void MessageRouter::route(const JoynrMessage& message) {
     assert(messagingStubFactory != NULL);
     // neither JoynrMessage nor MessagingQos give a decaytime, so it doesn't make sense to check for
     // a passed TTL. The TTL itself is only relative, not absolute, so it cannot be used here.
@@ -166,12 +166,12 @@ void MessageRouter::route(const JoynrMessage& message, const MessagingQos& qos) 
 
     // schedule message for sending
     if (!destAddress.isNull()) {
-        sendMessage(message, qos, destAddress);
+        sendMessage(message, destAddress);
         return;
     }
 
     // save message for later delivery
-    messageQueue->queueMessage(message, qos);
+    messageQueue->queueMessage(message);
 
     // try to resolve destination address via parent message router
     if(isChildMessageRouter()){
@@ -195,17 +195,16 @@ void MessageRouter::sendMessages(QString& destinationPartId, QSharedPointer<joyn
         if(!item) {
             break;
         }
-        sendMessage(item->getContent().first, item->getContent().second, address);
+        sendMessage(item->getContent(), address);
         delete item;
     }
 }
 
 void MessageRouter::sendMessage(const JoynrMessage& message,
-                                const MessagingQos& qos,
                                 QSharedPointer<joynr::system::Address> destAddress) {
     auto stub = messagingStubFactory->create(message.getHeaderTo(), *destAddress);
     if(!stub.isNull()) {
-        threadPool.start(new MessageRunnable(message, qos, stub));
+        threadPool.start(new MessageRunnable(message, stub));
     }
 }
 
@@ -418,18 +417,16 @@ void ResolveCallBack::onSuccess(const RequestStatus status, bool resolved) {
 Logger* MessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "MessageRunnable");
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
-                                 const MessagingQos& qos,
                                  QSharedPointer<IMessaging> messagingStub):
-    ObjectWithDecayTime(DispatcherUtils::convertTtlToAbsoluteTime(qos.getTtl())),
+    ObjectWithDecayTime(message.getHeaderExpiryDate()),
     message(message),
-    qos(qos),
     messagingStub(messagingStub)
 {
 }
 
 void MessageRunnable::run() {
     if(!isExpired()) {
-        messagingStub->transmit(message, qos);
+        messagingStub->transmit(message);
     } else {
         LOG_ERROR(logger, "Message expired: dropping!");
     }

@@ -39,7 +39,7 @@ public:
 
     DbusMessagingSkeleton(IMessaging& callBack);
 
-    virtual void transmit(joynr::messaging::IMessaging::JoynrMessage message, joynr::messaging::types::Types::JoynrMessageQos qos);
+    virtual void transmit(joynr::messaging::IMessaging::JoynrMessage message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingSkeleton);

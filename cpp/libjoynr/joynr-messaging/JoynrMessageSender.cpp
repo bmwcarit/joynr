@@ -67,7 +67,7 @@ void JoynrMessageSender::sendRequest(
                 request
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 
 }
 
@@ -84,7 +84,7 @@ void JoynrMessageSender::sendReply(
                 reply
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendSubscriptionRequest(
@@ -100,7 +100,7 @@ void JoynrMessageSender::sendSubscriptionRequest(
                 subscriptionRequest
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendBroadcastSubscriptionRequest(
@@ -116,7 +116,7 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
                 subscriptionRequest
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendSubscriptionReply(
@@ -132,7 +132,7 @@ void JoynrMessageSender::sendSubscriptionReply(
                 subscriptionReply
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendSubscriptionStop(
@@ -148,7 +148,7 @@ void JoynrMessageSender::sendSubscriptionStop(
                 subscriptionStop
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendSubscriptionPublication(
@@ -164,7 +164,7 @@ void JoynrMessageSender::sendSubscriptionPublication(
                 subscriptionPublication
     );
     assert(!messageRouter.isNull());
-    messageRouter->route(message, qos);
+    messageRouter->route(message);
 }
 
 } // namespace joynr

@@ -42,7 +42,7 @@ class JOYNRCOMMON_EXPORT DbusMessagingStubAdapter : public IDbusStubWrapper<joyn
 {
 public:
     DbusMessagingStubAdapter(QString serviceAddress);
-    virtual void transmit(JoynrMessage &message, const MessagingQos &qos);
+    virtual void transmit(JoynrMessage &message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingStubAdapter);

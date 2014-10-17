@@ -128,19 +128,17 @@ void Dispatcher::removeReplyCaller(const QString &requestReplyId)
     replyCallerDirectory.remove(requestReplyId);
 }
 
-void Dispatcher::receive(const JoynrMessage& message, const MessagingQos& qos)
+void Dispatcher::receive(const JoynrMessage& message)
 {
     LOG_DEBUG(logger, "receive: entered");
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(
-                DispatcherUtils::convertTtlToAbsoluteTime( qos.getTtl() ),
                 message,
-                qos,
                 *this);
     handleReceivedMessageThreadPool.start(receivedMessageRunnable);
 }
 
 
-void Dispatcher::handleRequestReceived(const JoynrMessage& message, const MessagingQos& qos)
+void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 {
 
     QString senderId = message.getHeaderFrom();
@@ -176,10 +174,11 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message, const Messag
     Reply reply;
     reply.setRequestReplyId(requestReplyId);
     reply.setResponse(returnValueQVar);
+    qint64 ttl = message.getHeaderExpiryDate().toMSecsSinceEpoch() - QDateTime::currentMSecsSinceEpoch();
     messageSender->sendReply(
                 receiverId, // receiver of the request is sender of reply
                 senderId,   // sender of request is receiver of reply
-                qos,
+                MessagingQos(ttl),
                 reply
     );
 

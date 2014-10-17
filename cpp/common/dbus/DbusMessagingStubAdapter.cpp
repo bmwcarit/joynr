@@ -35,17 +35,14 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress):
     init();
 }
 
-void DbusMessagingStubAdapter::transmit(JoynrMessage &message, const MessagingQos &qos) {
+void DbusMessagingStubAdapter::transmit(JoynrMessage &message) {
     logMethodCall("transmit");
     // copy joynr message
     joynr::messaging::IMessaging::JoynrMessage dbusMsg;
     DbusMessagingUtil::copyJoynrMsgToDbusMsg(message, dbusMsg);
-    // copy qos
-    joynr::messaging::types::Types::JoynrMessageQos dbusQos;
-    DbusMessagingUtil::copyJoynrQosToDbusQos(qos, dbusQos);
     // call
     CommonAPI::CallStatus status;
-    proxy->transmit(dbusMsg, dbusQos, status);
+    proxy->transmit(dbusMsg, status);
     // print the status
     printCallStatus(status, "transmit");
 }

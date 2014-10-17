@@ -58,30 +58,30 @@ TEST_F(MessageQueueTest, initialQueueIsEmpty) {
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos()), 1);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos()), 2);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos()), 3);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos()), 4);
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 1);
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 2);
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 3);
+    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 4);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
     // add messages to the queue
     JoynrMessage msg1;
     msg1.setHeaderTo("TEST1");
-    messageQueue->queueMessage(msg1, MessagingQos());
+    messageQueue->queueMessage(msg1);
 
     JoynrMessage msg2;
     msg2.setHeaderTo("TEST2");
-    messageQueue->queueMessage(msg2, MessagingQos());
+    messageQueue->queueMessage(msg2);
     EXPECT_EQ(messageQueue->getQueueLength(), 2);
 
     // get messages from queue
     MessageQueueItem* item = messageQueue->getNextMessageForParticipant("TEST1");
-    EXPECT_EQ(item->getContent().first, msg1);
+    EXPECT_EQ(item->getContent(), msg1);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     item = messageQueue->getNextMessageForParticipant("TEST2");
-    EXPECT_EQ(item->getContent().first, msg2);
+    EXPECT_EQ(item->getContent(), msg2);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }
 
@@ -89,17 +89,17 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
     // add messages to the queue
     JoynrMessage msg;
     msg.setHeaderTo("TEST");
-    messageQueue->queueMessage(msg, MessagingQos());
-    messageQueue->queueMessage(msg, MessagingQos());
+    messageQueue->queueMessage(msg);
+    messageQueue->queueMessage(msg);
     EXPECT_EQ(messageQueue->getQueueLength(), 2);
 
     // get messages from queue
     MessageQueueItem* item = messageQueue->getNextMessageForParticipant("TEST");
-    EXPECT_EQ(item->getContent().first, msg);
+    EXPECT_EQ(item->getContent(), msg);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     item = messageQueue->getNextMessageForParticipant("TEST");
-    EXPECT_EQ(item->getContent().first, msg);
+    EXPECT_EQ(item->getContent(), msg);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }
 
@@ -108,7 +108,10 @@ TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
 }
 
 TEST_F(MessageQueueTest, removeOutdatedMessage) {
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(10)), 1);
+    QDateTime now = QDateTime::currentDateTimeUtc();
+    JoynrMessage msg10;
+    msg10.setHeaderExpiryDate(now.addMSecs(10));
+    EXPECT_EQ(messageQueue->queueMessage(msg10), 1);
     QThread::msleep(5);
     EXPECT_EQ(messageQueue->removeOutdatedMessages(), 0);
     QThread::msleep(6);
@@ -116,9 +119,16 @@ TEST_F(MessageQueueTest, removeOutdatedMessage) {
 }
 
 TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(25)), 1);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(250)), 2);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage(), MessagingQos(250)), 3);
+    QDateTime now = QDateTime::currentDateTimeUtc();
+    JoynrMessage msg25;
+    msg25.setHeaderExpiryDate(now.addMSecs(25));
+    JoynrMessage msg250;
+    msg250.setHeaderExpiryDate(now.addMSecs(250));
+    JoynrMessage msg300;
+    msg300.setHeaderExpiryDate(now.addMSecs(250));
+    EXPECT_EQ(messageQueue->queueMessage(msg25), 1);
+    EXPECT_EQ(messageQueue->queueMessage(msg250), 2);
+    EXPECT_EQ(messageQueue->queueMessage(msg300), 3);
 
     // wait to remove the first message
     QThread::msleep(100);

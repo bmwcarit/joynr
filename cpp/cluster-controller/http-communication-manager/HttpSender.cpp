@@ -96,7 +96,6 @@ HttpSender::~HttpSender() {
 
 void HttpSender::sendMessage(
         const QString& channelId,
-        const QDateTime& decayTime,
         const JoynrMessage& message) {
 
     LOG_TRACE(logger, "sendMessage: ...");
@@ -118,7 +117,7 @@ void HttpSender::sendMessage(
                 new SendMessageRunnable(
                     this,
                     channelId,
-                    decayTime,
+                    message.getHeaderExpiryDate(),
                     serializedMessage,
                     *scheduler,
                     maxAttemptTtl_ms));

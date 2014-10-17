@@ -34,12 +34,11 @@ JoynrMessagingStub::JoynrMessagingStub(
 
 JoynrMessagingStub::~JoynrMessagingStub() {}
 
-void JoynrMessagingStub::transmit(JoynrMessage& message, const MessagingQos& qos) {
+void JoynrMessagingStub::transmit(JoynrMessage& message) {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST || message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST){
         message.setHeaderReplyChannelId(receiveChannelId);
     }
-    QDateTime decayTime = QDateTime::currentDateTime().addMSecs(qos.getTtl());
-    messageSender->sendMessage(destinationChannelId, decayTime,message);
+    messageSender->sendMessage(destinationChannelId, message);
 }
 
 } // namespace joynr

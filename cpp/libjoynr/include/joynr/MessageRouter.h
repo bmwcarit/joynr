@@ -23,7 +23,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/IMessaging.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
@@ -90,7 +89,7 @@ public:
      * @param message the message to route.
      * @param qos the QoS used to route the message.
      */
-    virtual void route(const JoynrMessage& message, const MessagingQos& qos);
+    virtual void route(const JoynrMessage& message);
 
     // inherited method from joynr::system::RoutingProvider
     virtual void addNextHop(
@@ -167,7 +166,6 @@ private:
     void addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId);
 
     void sendMessage(const JoynrMessage& message,
-                     const MessagingQos& qos,
                      QSharedPointer<joynr::system::Address> destAddress);
 
     void sendMessages(QString& destinationPartId, QSharedPointer<joynr::system::Address> address);
@@ -203,13 +201,11 @@ private:
 class MessageRunnable: public QRunnable, public ObjectWithDecayTime {
 public:
     MessageRunnable(const JoynrMessage& message,
-                    const MessagingQos& qos,
                     QSharedPointer<IMessaging> messagingStub);
     void run();
 
 private:
     JoynrMessage message;
-    MessagingQos qos;
     QSharedPointer<IMessaging> messagingStub;
     static joynr_logging::Logger* logger;
 };

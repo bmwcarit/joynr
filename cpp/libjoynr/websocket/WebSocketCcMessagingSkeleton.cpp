@@ -76,9 +76,9 @@ WebSocketCcMessagingSkeleton::~WebSocketCcMessagingSkeleton()
     qDeleteAll(clients.begin(), clients.end());
 }
 
-void WebSocketCcMessagingSkeleton::transmit(JoynrMessage &message, const MessagingQos &qos)
+void WebSocketCcMessagingSkeleton::transmit(JoynrMessage &message)
 {
-    messageRouter.route(message, qos);
+    messageRouter.route(message);
 }
 
 void WebSocketCcMessagingSkeleton::onNewConnection()
@@ -128,7 +128,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString &message)
     );
     // message router copies joynr message when scheduling thread that handles
     // message delivery
-    transmit(*joynrMsg, MessagingQos());
+    transmit(*joynrMsg);
     delete joynrMsg;
 }
 

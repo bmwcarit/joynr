@@ -129,7 +129,7 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const joynr::MessagingQos& qoS));
+    MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
 };
 
 class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
@@ -158,7 +158,7 @@ public:
     MOCK_METHOD1(removeReplyCaller, void(const QString& requestReplyId));
     MOCK_METHOD2(addRequestCaller, void(const QString& participantId, QSharedPointer<joynr::RequestCaller> requestCaller));
     MOCK_METHOD1(removeRequestCaller, void(const QString& participantId));
-    MOCK_METHOD2(receive, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qosSettings));
+    MOCK_METHOD1(receive, void(const joynr::JoynrMessage& message));
     MOCK_METHOD1(registerSubscriptionManager, void(joynr::SubscriptionManager* subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
 };
@@ -171,7 +171,7 @@ public:
 
 class MockMessaging : public joynr::IMessaging {
 public:
-  MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
+  MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
   MOCK_METHOD2(test1, void(int a0, int a1));
 };
 
@@ -181,7 +181,7 @@ public:
         MessageRouter(NULL, 500, 0){
 
     }
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
+    MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
     MOCK_METHOD2(addNextHop, void(QString participantId, QSharedPointer<joynr::system::Address> inprocessAddress));
     MOCK_METHOD2(removeNextHop, void(joynr::RequestStatus& joynrInternalStatus, QString participantId));
 };
@@ -487,7 +487,7 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD3(sendMessage,void(const QString&, const QDateTime&, const joynr::JoynrMessage&));
+    MOCK_METHOD2(sendMessage,void(const QString&, const joynr::JoynrMessage&));
     MOCK_METHOD2(init,void(QSharedPointer<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
 };
 

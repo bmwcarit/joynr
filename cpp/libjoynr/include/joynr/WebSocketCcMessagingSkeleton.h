@@ -51,7 +51,7 @@ public:
 
     ~WebSocketCcMessagingSkeleton();
 
-    virtual void transmit(JoynrMessage& message, const MessagingQos& qos);
+    virtual void transmit(JoynrMessage& message);
 
 private Q_SLOTS:
     void onNewConnection();

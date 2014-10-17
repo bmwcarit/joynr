@@ -54,12 +54,4 @@ void DbusMessagingUtil::copyJoynrMsgToDbusMsg(const JoynrMessage& joynrMsg, joyn
     dbusMsg.payload = payLoad.toStdString();
 }
 
-void DbusMessagingUtil::copyDbusQosToJoynrQos(const joynr::messaging::types::Types::JoynrMessageQos& dbusQos, MessagingQos& joynrQos) {
-    joynrQos.setTtl(dbusQos.ttl);
-}
-
-void DbusMessagingUtil::copyJoynrQosToDbusQos(const MessagingQos& joynrQos, joynr::messaging::types::Types::JoynrMessageQos& dbusQos) {
-    dbusQos.ttl = joynrQos.getTtl();
-}
-
 } // namespace joynr

@@ -62,14 +62,14 @@ public:
 
     virtual void removeRequestCaller(const QString& participantId);
 
-    virtual void receive(const JoynrMessage& message, const MessagingQos& qos);
+    virtual void receive(const JoynrMessage& message);
 
     virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager);
 
     virtual void registerPublicationManager(PublicationManager* publicationManager);
 
 private:
-    void handleRequestReceived(const JoynrMessage& message, const MessagingQos& qos);
+    void handleRequestReceived(const JoynrMessage& message);
     void handleReplyReceived(const JoynrMessage& message);
     void handlePublicationReceived(const JoynrMessage& message);
     void handleSubscriptionRequestReceived(const JoynrMessage& message);

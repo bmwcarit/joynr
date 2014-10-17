@@ -39,9 +39,9 @@ WebSocketLibJoynrMessagingSkeleton::~WebSocketLibJoynrMessagingSkeleton()
 {
 }
 
-void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage &message, const MessagingQos &qos)
+void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage &message)
 {
-    messageRouter.route(message, qos);
+    messageRouter.route(message);
 }
 
 void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString &message)
@@ -54,7 +54,7 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString &me
     );
     // message router copies joynr message when scheduling thread that handles
     // message delivery
-    transmit(*joynrMsg, MessagingQos());
+    transmit(*joynrMsg);
     delete joynrMsg;
 }
 

@@ -147,8 +147,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                     AllOf(
                         Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
                         Property(&JoynrMessage::getPayload, Eq(expectedReply.getPayload()))
-                    ),
-                    qos
+                    )
                 )
     );
 
@@ -156,7 +155,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     // This should cause our mock messaging to receive a reply from the mock provider
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
     QThreadSleep::msleep(250);
 }
 
@@ -189,7 +188,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     // test code: send the reply through the dispatcher.
     // This should cause our reply caller to be called
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
 
     QThreadSleep::msleep(250);
