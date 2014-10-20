@@ -63,15 +63,14 @@ import com.google.inject.name.Named;
 /**
  * The channel lifecycle callable is started in a new thread and loops infinitely until an exception is thrown:
  * <ul>
- * <li> creates the channel (in a looop, until it is created or maxRetries is exceeded
- * <li> longPolls (in a loop, until an exception is thrown or the system is being shutdown, ie started==false)
- * </ul> 
+ * <li>creates the channel (in a looop, until it is created or maxRetries is exceeded
+ * <li>longPolls (in a loop, until an exception is thrown or the system is being shutdown, ie started==false)
+ * </ul>
  */
 @Singleton
 public class LongPollingChannelLifecycle {
 
     private static final Logger logger = LoggerFactory.getLogger(LongPollingChannelLifecycle.class);
-    protected static final long WAITTIME_MS = 10000;
     private String channelUrl = null;
 
     private final String channelId;
@@ -282,13 +281,22 @@ public class LongPollingChannelLifecycle {
     }
 
     private int createChannelLoop(final MessageReceiver messageReceiver, int retries) {
-        while (retries > 0) {
-            retries--;
+        while (started && !channelCreated) {
 
             channelCreated = createChannel();
-            // let the messageReceive know that we are ready for business
-            // TODO: usually would not be ready until after register with UrlDirectory is finished
-            break;
+
+            if (channelCreated || retries <= 0) {
+                break;
+            }
+
+            // retries
+            try {
+                long waitMs = settings.getLongPollRetryIntervalMs();
+                Thread.sleep(waitMs);
+            } catch (InterruptedException e) {
+                // assume started will be set to false if shutting down
+            }
+            retries--;
         }
         return retries;
     }
@@ -334,11 +342,7 @@ public class LongPollingChannelLifecycle {
     /**
      * Create a new channel for the given cluster controller id. If a channel already exists, it is returned instead.
      * 
-     * @param maxRetries
-     * @throws ClientProtocolException
-     * @throws IOException
-     * @throws TimeoutException
-     * @throws ExecutionException
+     * @return whether channel was created
      */
     private synchronized boolean createChannel() {
 
