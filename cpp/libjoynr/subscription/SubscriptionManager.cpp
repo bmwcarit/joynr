@@ -70,10 +70,13 @@ void SubscriptionManager::registerSubscription(
     LOG_DEBUG(logger, "Subscription registered. ID=" + subscriptionId);
     subscriptionDirectory.add(subscriptionId, subscriptionCaller);// Owner: directory
 
-    if(SubscriptionUtil::getAlertInterval(qos.data()) > 0) {
+    if(SubscriptionUtil::getAlertInterval(qos.data()) > 0
+            && SubscriptionUtil::getPeriodicPublicationInterval(qos.data()) > 0) {
         LOG_DEBUG(logger, "Will notify if updates are missed.");
         qint64 alertAfterInterval = SubscriptionUtil::getAlertInterval(qos.data());
         qint64 expiryDate = qos->getExpiryDate();
+        qint64 periodicPublicationInterval =
+                SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
 
         if (expiryDate == joynr::SubscriptionQos::NO_EXPIRY_DATE()){
             expiryDate = joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL();
@@ -84,6 +87,7 @@ void SubscriptionManager::registerSubscription(
         subscriptionStates->insert(subscriptionId, subState);
         MissedPublicationRunnable* processor = new MissedPublicationRunnable(
                     QDateTime::fromMSecsSinceEpoch(expiryDate),
+                    periodicPublicationInterval,
                     subscriptionId,
                     *this,
                     alertAfterInterval);
@@ -152,12 +156,14 @@ Logger* SubscriptionManager::MissedPublicationRunnable::logger = Logging::getIns
         ->getLogger("MSG", "MissedPublicationRunnable");
 
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
-        const QDateTime& decayTime,
+        const QDateTime& expiryDate,
+        const qint64 &expectedIntervalMSecs,
         const QString& subscriptionId,
         SubscriptionManager& subscriptionManager,
         const qint64& alertAfterInterval) :
-    ObjectWithDecayTime(decayTime),
+    ObjectWithDecayTime(expiryDate),
     stoppedSemaphore(),
+    expectedIntervalMSecs(expectedIntervalMSecs),
     subscriptionId(subscriptionId),
     alertAfterInterval(alertAfterInterval),
     subscriptionManager(subscriptionManager),
@@ -186,12 +192,13 @@ void SubscriptionManager::MissedPublicationRunnable::run(){
             QSharedPointer<ISubscriptionCallback> callback =
                     subscriptionManager.getSubscriptionCallback(subscriptionId);
             callback->publicationMissed();
-            delay = alertAfterInterval;
+            delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
         LOG_DEBUG(logger, "Resceduling MissedPublicationRunnable with delay: "
                   + QString::number(delay));
         MissedPublicationRunnable* newRunnable = new MissedPublicationRunnable(
                     decayTime,
+                    expectedIntervalMSecs,
                     subscriptionId,
                     subscriptionManager,
                     alertAfterInterval);
@@ -201,6 +208,12 @@ void SubscriptionManager::MissedPublicationRunnable::run(){
                   + subscriptionId );
         subscriptionManager.subscriptionEnded(subscriptionId);
     }
+}
+
+qint64 SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPublication(
+        const qint64 &timeSinceLastPublication
+) {
+    return timeSinceLastPublication % expectedIntervalMSecs;
 }
 
 Logger* SubscriptionManager::ExpiredSubscriptionRunnable::logger = Logging::getInstance()

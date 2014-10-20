@@ -109,7 +109,8 @@ private:
       */
     class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime {
     public:
-        MissedPublicationRunnable(const QDateTime& decayTime,
+        MissedPublicationRunnable(const QDateTime& expiryDate,
+                                  const qint64& expectedIntervalMSecs,
                                   const QString& subscriptionId,
                                   SubscriptionManager& subscriptionManager,
                                   const qint64& alertAfterInterval);
@@ -121,7 +122,9 @@ private:
         void run();
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
+        qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
         QSemaphore stoppedSemaphore;
+        qint64 expectedIntervalMSecs;
         QString subscriptionId;
         qint64 alertAfterInterval;
         SubscriptionManager& subscriptionManager;

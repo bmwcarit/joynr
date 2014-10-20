@@ -125,19 +125,23 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
     QSharedPointer<MockGpsSubscriptionListener> mockGpsSubscriptionListener(new MockGpsSubscriptionListener());
     EXPECT_CALL(*mockGpsSubscriptionListener,
                 publicationMissed())
-            .Times(Between(4,6));
+            .Times(Between(2,3));
     SubscriptionManager subscriptionManager;
     SubscriptionCallback<types::GpsLocation>* gpslocationCallback = new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
-    auto qos = QSharedPointer<PeriodicSubscriptionQos>(new PeriodicSubscriptionQos(QDateTime::currentMSecsSinceEpoch() + 2000, 100, 200));
+    auto qos = QSharedPointer<PeriodicSubscriptionQos>(new PeriodicSubscriptionQos(
+                QDateTime::currentMSecsSinceEpoch() + 2000, // expiry date
+                100,                                        // period
+                400                                         // alert after interval
+    ));
     SubscriptionRequest subscriptionRequest;
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
                 qos,
                 subscriptionRequest);
-     QThreadSleep::msleep(1100);
-     subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
      QThreadSleep::msleep(900);
+     subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
+     QThreadSleep::msleep(1100);
 }
 
 TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistantSubscription) {
