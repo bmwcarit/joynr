@@ -19,6 +19,7 @@ package io.joynr.demo;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
@@ -138,7 +139,11 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     @Override
     public void shutdown() {
         if (provider != null) {
-            runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+            try {
+                runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+            } catch (JoynrException e) {
+                LOG.error("unable to unregister capabilities {}", e.getMessage());
+            }
         }
         runtime.shutdown(true);
     }

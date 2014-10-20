@@ -84,8 +84,7 @@ public class MessageSenderImpl implements MessageSender {
     /*
      * (non-Javadoc)
      * 
-     * @see io.joynr.messaging.MessageSender#sendMessage(java.lang.String,
-     * io.joynr.messaging.JoynrMessage, long)
+     * @see io.joynr.messaging.MessageSender#sendMessage(java.lang.String, io.joynr.messaging.JoynrMessage, long)
      */
     @Override
     public void sendMessage(final String channelId, final JoynrMessage message) throws JoynrSendBufferFullException,
@@ -157,12 +156,12 @@ public class MessageSenderImpl implements MessageSender {
         final FailureAction failureAction = new FailureAction() {
             @Override
             public void execute(Throwable error) {
-                logger.error("!!!! ERROR SENDING: messageId: {} on Channel: {}. Error: {}", new String[]{
-                        message.getId(), channelId, error.getMessage() });
                 if (error instanceof JoynrShutdownException) {
-                    logger.error("Message not sent because joynr is already shutting down.");
+                    logger.warn("{}", error.getMessage());
                     return;
                 }
+                logger.error("!!!! ERROR SENDING: messageId: {} on Channel: {}. Error: {}", new String[]{
+                        message.getId(), channelId, error.getMessage() });
 
                 long delay_ms = settings.getSendMsgRetryIntervalMs();
                 delay_ms += exponentialWait(messageContainer.getTries());

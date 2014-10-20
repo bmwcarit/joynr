@@ -131,13 +131,13 @@ public class MessageScheduler {
             if (scheduler.isShutdown()) {
                 JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
                         + messageContainer.getMessageId() + "].");
-                logger.error("scheduler already shutting down", joynrShutdownEx);
                 failureAction.execute(joynrShutdownEx);
                 throw joynrShutdownEx;
             }
 
             try {
                 scheduler.schedule(new Runnable() {
+                    @Override
                     public void run() {
                         if (!messageReceiver.isChannelCreated()) {
                             scheduleMessage(messageContainer,
