@@ -26,7 +26,8 @@
 #include <QVariant>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNRCOMMON_EXPORT Reply : public QObject
 {
@@ -35,14 +36,13 @@ class JOYNRCOMMON_EXPORT Reply : public QObject
     Q_PROPERTY(QString requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
     Q_PROPERTY(QVariant response READ getResponse WRITE setResponse)
 public:
-    Reply& operator=(const Reply &other);
+    Reply& operator=(const Reply& other);
     bool operator==(const Reply& other) const;
     bool operator!=(const Reply& other) const;
 
-
     const static Reply NULL_RESPONSE;
 
-    Reply(const Reply &other);
+    Reply(const Reply& other);
     Reply();
 
     QString getRequestReplyId() const;
@@ -50,6 +50,7 @@ public:
 
     QVariant getResponse() const;
     void setResponse(QVariant response);
+
 private:
     QString requestReplyId;
     QVariant response;
@@ -59,4 +60,4 @@ private:
 
 Q_DECLARE_METATYPE(joynr::Reply)
 Q_DECLARE_METATYPE(QSharedPointer<joynr::Reply>)
-#endif //REPLY_H
+#endif // REPLY_H

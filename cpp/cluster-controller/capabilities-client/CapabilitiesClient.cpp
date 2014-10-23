@@ -34,62 +34,73 @@
 #include <QString>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 CapabilitiesClient::CapabilitiesClient(const QString& localChannelId)
-    : defaultRequestTTL(30000),
-      defaultRequestRoundtripTTL(40000),
-      capabilitiesClientParticipantId(),
-      localChannelId(localChannelId),
-      capabilitiesProxy(NULL)
+        : defaultRequestTTL(30000),
+          defaultRequestRoundtripTTL(40000),
+          capabilitiesClientParticipantId(),
+          localChannelId(localChannelId),
+          capabilitiesProxy(NULL)
 {
     // We will be deserializing CapabilityInformation - register the metatypes
     qRegisterMetaType<joynr::types::CapabilityInformation>("joynr::types::CapabilityInformation");
     qRegisterMetaType<joynr__types__CapabilityInformation>("joynr__types__CapabilityInformation");
 }
 
-CapabilitiesClient::~CapabilitiesClient(){
+CapabilitiesClient::~CapabilitiesClient()
+{
 }
 
-
-QString CapabilitiesClient::getLocalChannelId(){
+QString CapabilitiesClient::getLocalChannelId()
+{
     return localChannelId;
 }
 
-
-void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInformationList){
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    if (localChannelId.isEmpty()){
-        assert(false);// "Assertion in CapabilitiesClient: Local channelId is empty. Tried to register capabilities before messaging was started(no queueing implemented yet;
+void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInformationList)
+{
+    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
+                                         // the capabilitiesProxy has been set via the init method
+    if (localChannelId.isEmpty()) {
+        assert(false); // "Assertion in CapabilitiesClient: Local channelId is empty. Tried to
+                       // register capabilities before messaging was started(no queueing implemented
+                       // yet;
     } else {
-        for(int i=0; i < capabilitiesInformationList.size(); i++){
+        for (int i = 0; i < capabilitiesInformationList.size(); i++) {
             capabilitiesInformationList[i].setChannelId(localChannelId);
         }
         RequestStatus rs;
-        //TM switching from sync to async
-        //capabilitiesProxy->add(rs, capabilitiesInformationList);
-        QSharedPointer<Future<void > > future(new Future<void>() );
+        // TM switching from sync to async
+        // capabilitiesProxy->add(rs, capabilitiesInformationList);
+        QSharedPointer<Future<void>> future(new Future<void>());
         capabilitiesProxy->add(future, capabilitiesInformationList);
 
-        //check requestStatus?
-
+        // check requestStatus?
     }
 }
 
-void CapabilitiesClient::remove(const QString& participantId){
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
+void CapabilitiesClient::remove(const QString& participantId)
+{
+    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
+                                         // the capabilitiesProxy has been set via the init method
     RequestStatus status;
     capabilitiesProxy->remove(status, participantId);
 }
 
-void CapabilitiesClient::remove(QList<QString> participantIdList){
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
+void CapabilitiesClient::remove(QList<QString> participantIdList)
+{
+    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
+                                         // the capabilitiesProxy has been set via the init method
     RequestStatus status;
     capabilitiesProxy->remove(status, participantIdList);
 }
 
-QList<types::CapabilityInformation>  CapabilitiesClient::lookup(const QString& domain, const QString& interfaceName){
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
+QList<types::CapabilityInformation> CapabilitiesClient::lookup(const QString& domain,
+                                                               const QString& interfaceName)
+{
+    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
+                                         // the capabilitiesProxy has been set via the init method
 
     RequestStatus status;
     QList<types::CapabilityInformation> result;
@@ -97,31 +108,39 @@ QList<types::CapabilityInformation>  CapabilitiesClient::lookup(const QString& d
     return result;
 }
 
-void CapabilitiesClient::lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback) {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
+void CapabilitiesClient::lookup(const QString& domain,
+                                const QString& interfaceName,
+                                QSharedPointer<IGlobalCapabilitiesCallback> callback)
+{
+    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
+                                         // the capabilitiesProxy has been set via the init method
 
-    //This callback in a callback is a workaround, see GlobalCapabilitiesInformationCallback.h for details
+    // This callback in a callback is a workaround, see GlobalCapabilitiesInformationCallback.h for
+    // details
     QSharedPointer<ICallback<QList<types::CapabilityInformation>>> capabilitiesCallback(
-            new GlobalCapabilitiesInformationCallback(callback)
-    );
-    capabilitiesProxy->lookup(capabilitiesCallback, domain, interfaceName); //QList QString is needed, because capabilititiesInterface on java expects a map<string, string>
+            new GlobalCapabilitiesInformationCallback(callback));
+    capabilitiesProxy->lookup(
+            capabilitiesCallback, domain, interfaceName); // QList QString is needed, because
+                                                          // capabilititiesInterface on java expects
+                                                          // a map<string, string>
 }
 
-
-void CapabilitiesClient::lookup(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback){
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once the capabilitiesProxy has been set via the init method
-    //This callback in a callback is a workaround, see GlobalCapabilityInformationCallback.h for details
+void CapabilitiesClient::lookup(const QString& participantId,
+                                QSharedPointer<IGlobalCapabilitiesCallback> callback)
+{
+    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
+                                         // the capabilitiesProxy has been set via the init method
+    // This callback in a callback is a workaround, see GlobalCapabilityInformationCallback.h for
+    // details
     QSharedPointer<ICallback<types::CapabilityInformation>> capabilitiesCallback(
-            new GlobalCapabilityInformationCallback(callback)
-    );
+            new GlobalCapabilityInformationCallback(callback));
     capabilitiesProxy->lookup(capabilitiesCallback, participantId);
 }
 
-void CapabilitiesClient::init(QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)
+void CapabilitiesClient::init(
+        QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)
 {
     this->capabilitiesProxy = capabilitiesProxy;
 }
 
-
 } // namespace joynr
-

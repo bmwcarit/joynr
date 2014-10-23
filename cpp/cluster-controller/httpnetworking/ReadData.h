@@ -22,12 +22,14 @@
 #include <QString>
 #include <QByteArray>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * Value class for data to be sent using post or put.
   */
-class ReadData {
+class ReadData
+{
 public:
     ReadData();
     ReadData(const QString& dataQString);
@@ -40,6 +42,5 @@ private:
     QByteArray byteArray;
 };
 
-
 } // namespace joynr
-#endif //READDATA_H_
+#endif // READDATA_H_

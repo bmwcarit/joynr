@@ -25,23 +25,25 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
-
+namespace joynr
+{
 
 /*
  *  IArbitrationListener is an interface used by ProviderArbitrator
  *  to norify the AbstractProxy about a successful completion
  *  of the arbitration process.
  */
-class IArbitrationListener {
+class IArbitrationListener
+{
 public:
-
-    virtual ~IArbitrationListener(){}
-    virtual void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) = 0;
+    virtual ~IArbitrationListener()
+    {
+    }
+    virtual void setArbitrationStatus(
+            ArbitrationStatus::ArbitrationStatusType arbitrationStatus) = 0;
     virtual void setParticipantId(const QString& participantId) = 0;
     virtual void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection) = 0;
 };
 
-
 } // namespace joynr
-#endif //IARBITRATIONLISTENER_H
+#endif // IARBITRATIONLISTENER_H

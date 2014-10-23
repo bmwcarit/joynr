@@ -21,13 +21,13 @@
 
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
 MessagingPropertiesPersistence::MessagingPropertiesPersistence(const QString& filename)
-    : filename(filename)
+        : filename(filename)
 {
 }
-
 
 QString MessagingPropertiesPersistence::getChannelId()
 {
@@ -71,12 +71,14 @@ QString MessagingPropertiesPersistence::getReceiverId()
     return receiverId;
 }
 
-const QString& MessagingPropertiesPersistence::CHANNEL_ID_KEY() {
+const QString& MessagingPropertiesPersistence::CHANNEL_ID_KEY()
+{
     static const QString value("messaging/channelId");
     return value;
 }
 
-const QString& MessagingPropertiesPersistence::RECEIVER_ID_KEY() {
+const QString& MessagingPropertiesPersistence::RECEIVER_ID_KEY()
+{
     static const QString value("messaging/receiverId");
     return value;
 }

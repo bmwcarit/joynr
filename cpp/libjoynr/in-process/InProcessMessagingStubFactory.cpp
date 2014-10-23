@@ -20,17 +20,23 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "common/in-process/InProcessMessagingStub.h"
 
-namespace  joynr {
+namespace joynr
+{
 
-InProcessMessagingStubFactory::InProcessMessagingStubFactory() {
+InProcessMessagingStubFactory::InProcessMessagingStubFactory()
+{
 }
 
-bool InProcessMessagingStubFactory::canCreate(const joynr::system::Address& destAddress) {
+bool InProcessMessagingStubFactory::canCreate(const joynr::system::Address& destAddress)
+{
     return destAddress.inherits(InProcessMessagingAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> InProcessMessagingStubFactory::create(const joynr::system::Address& destAddress) {
-    const InProcessMessagingAddress* inprocessAddress = dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
+QSharedPointer<IMessaging> InProcessMessagingStubFactory::create(
+        const joynr::system::Address& destAddress)
+{
+    const InProcessMessagingAddress* inprocessAddress =
+            dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
     return QSharedPointer<IMessaging>(new InProcessMessagingStub(inprocessAddress->getSkeleton()));
 }
 

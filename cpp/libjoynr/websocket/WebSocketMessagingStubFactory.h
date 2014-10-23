@@ -29,12 +29,14 @@
 
 class QWebSocket;
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class Address;
-    class WebSocketAddress;
-    class WebSocketClientAddress;
+namespace system
+{
+class Address;
+class WebSocketAddress;
+class WebSocketClientAddress;
 }
 
 class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagingStubFactory
@@ -45,7 +47,8 @@ public:
     WebSocketMessagingStubFactory(QObject* parent = Q_NULLPTR);
     QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress);
     bool canCreate(const joynr::system::Address& destAddress);
-    void addClient(const joynr::system::WebSocketClientAddress& clientAddress, QWebSocket* webSocket);
+    void addClient(const joynr::system::WebSocketClientAddress& clientAddress,
+                   QWebSocket* webSocket);
     void removeClient(const joynr::system::WebSocketClientAddress& clientAddress);
     void addServer(const joynr::system::WebSocketAddress& serverAddress, QWebSocket* webSocket);
 

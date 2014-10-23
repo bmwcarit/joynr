@@ -25,10 +25,12 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNR_EXPORT SubscriptionRequestInformation :
-        public SubscriptionRequest, public SubscriptionInformation{
+class JOYNR_EXPORT SubscriptionRequestInformation : public SubscriptionRequest,
+                                                    public SubscriptionInformation
+{
     Q_OBJECT
 
     Q_PROPERTY(QString proxyId READ getProxyId WRITE setProxyId)
@@ -36,16 +38,18 @@ class JOYNR_EXPORT SubscriptionRequestInformation :
 
 public:
     SubscriptionRequestInformation();
+    SubscriptionRequestInformation(const QString& proxyParticipantId,
+                                   const QString& providerParticipantId,
+                                   const SubscriptionRequest& subscriptionRequest);
+
     SubscriptionRequestInformation(
-            const QString& proxyParticipantId,
-            const QString& providerParticipantId,
-            const SubscriptionRequest& subscriptionRequest
-    );
+            const SubscriptionRequestInformation& subscriptionRequestInformation);
+    virtual ~SubscriptionRequestInformation()
+    {
+    }
 
-    SubscriptionRequestInformation(const SubscriptionRequestInformation& subscriptionRequestInformation);
-    virtual ~SubscriptionRequestInformation(){}
-
-    SubscriptionRequestInformation& operator=(const SubscriptionRequestInformation& subscriptionRequestInformation);
+    SubscriptionRequestInformation& operator=(
+            const SubscriptionRequestInformation& subscriptionRequestInformation);
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     QString toQString() const;

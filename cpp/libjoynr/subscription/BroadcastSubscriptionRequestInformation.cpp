@@ -20,10 +20,12 @@
 #include "joynr/Util.h"
 #include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
-Logger* BroadcastSubscriptionRequestInformation::logger = Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequestInformation");
+Logger* BroadcastSubscriptionRequestInformation::logger =
+        Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequestInformation");
 
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation()
 {
@@ -32,29 +34,33 @@ BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(
         const QString& proxyParticipantId,
         const QString& providerParticipantId,
-        const BroadcastSubscriptionRequest& subscriptionRequest
-) :
-    BroadcastSubscriptionRequest(subscriptionRequest),
-    SubscriptionInformation(proxyParticipantId, providerParticipantId)
+        const BroadcastSubscriptionRequest& subscriptionRequest)
+        : BroadcastSubscriptionRequest(subscriptionRequest),
+          SubscriptionInformation(proxyParticipantId, providerParticipantId)
 {
 }
 
-BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) :
-    BroadcastSubscriptionRequest(subscriptionRequestInformation),
-    SubscriptionInformation(subscriptionRequestInformation.getProxyId(), subscriptionRequestInformation.getProviderId())
+BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(
+        const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation)
+        : BroadcastSubscriptionRequest(subscriptionRequestInformation),
+          SubscriptionInformation(subscriptionRequestInformation.getProxyId(),
+                                  subscriptionRequestInformation.getProviderId())
 {
 }
 
-BroadcastSubscriptionRequestInformation& BroadcastSubscriptionRequestInformation::operator=(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) {
+BroadcastSubscriptionRequestInformation& BroadcastSubscriptionRequestInformation::operator=(
+        const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation)
+{
     BroadcastSubscriptionRequest::operator=(subscriptionRequestInformation);
-    SubscriptionInformation::operator =(subscriptionRequestInformation);
+    SubscriptionInformation::operator=(subscriptionRequestInformation);
     return *this;
 }
 
-bool BroadcastSubscriptionRequestInformation::operator==(const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const {
-    return
-            BroadcastSubscriptionRequest::operator==(subscriptionRequestInformation)
-            && SubscriptionInformation::operator ==(subscriptionRequestInformation);
+bool BroadcastSubscriptionRequestInformation::operator==(
+        const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const
+{
+    return BroadcastSubscriptionRequest::operator==(subscriptionRequestInformation) &&
+           SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
 QString BroadcastSubscriptionRequestInformation::toQString() const

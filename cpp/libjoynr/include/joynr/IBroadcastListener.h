@@ -29,12 +29,15 @@ class QVariant;
 
 typedef QMap<QString, QVariant> QVariantMap;
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT IBroadcastListener
 {
 public:
-    virtual ~IBroadcastListener() {}
+    virtual ~IBroadcastListener()
+    {
+    }
     virtual void eventOccured(const QVariantMap& values) = 0;
 };
 

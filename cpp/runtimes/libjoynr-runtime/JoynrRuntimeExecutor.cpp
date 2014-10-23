@@ -23,37 +23,32 @@
 #include "LibJoynrRuntime.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
-namespace joynr {
-
-JoynrRuntimeExecutor::JoynrRuntimeExecutor(QSettings *settings) :
-    QObject(),
-    coreApplication(Q_NULLPTR),
-    runtimeThread(new QThread()),
-    settings(settings),
-    runtime(Q_NULLPTR),
-    runtimeSemaphore(0)
+namespace joynr
 {
-    if(QCoreApplication::instance() == Q_NULLPTR) {
+
+JoynrRuntimeExecutor::JoynrRuntimeExecutor(QSettings* settings)
+        : QObject(),
+          coreApplication(Q_NULLPTR),
+          runtimeThread(new QThread()),
+          settings(settings),
+          runtime(Q_NULLPTR),
+          runtimeSemaphore(0)
+{
+    if (QCoreApplication::instance() == Q_NULLPTR) {
         int argc = 0;
-        char *argv[] = {0};
+        char* argv[] = {0};
         coreApplication = new QCoreApplication(argc, argv);
     }
     runtimeThread->setObjectName(QString("LibJoynrRuntime-Thread"));
     this->moveToThread(runtimeThread);
-    connect(
-            runtimeThread, &QThread::finished,
-            this, &QObject::deleteLater
-    );
-    connect(
-            runtimeThread, &QThread::started,
-            this, &JoynrRuntimeExecutor::createRuntime
-    );
+    connect(runtimeThread, &QThread::finished, this, &QObject::deleteLater);
+    connect(runtimeThread, &QThread::started, this, &JoynrRuntimeExecutor::createRuntime);
     runtimeThread->start();
 }
 
 JoynrRuntimeExecutor::~JoynrRuntimeExecutor()
 {
-    if(coreApplication != Q_NULLPTR) {
+    if (coreApplication != Q_NULLPTR) {
         coreApplication->deleteLater();
         coreApplication = Q_NULLPTR;
     }
@@ -62,10 +57,10 @@ JoynrRuntimeExecutor::~JoynrRuntimeExecutor()
     runtime = Q_NULLPTR;
 }
 
-LibJoynrRuntime *JoynrRuntimeExecutor::getRuntime()
+LibJoynrRuntime* JoynrRuntimeExecutor::getRuntime()
 {
     runtimeSemaphore.acquire();
-    LibJoynrRuntime *runtimeTmp = runtime;
+    LibJoynrRuntime* runtimeTmp = runtime;
     runtime = Q_NULLPTR;
     return runtimeTmp;
 }

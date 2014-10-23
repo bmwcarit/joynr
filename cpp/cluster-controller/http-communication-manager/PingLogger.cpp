@@ -20,41 +20,31 @@
 #include "joynr/Util.h"
 #include <QMetaEnum>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
+joynr_logging::Logger* PingLogger::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "PingLogger");
 
-joynr_logging::Logger* PingLogger::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "PingLogger");
-
-PingLogger::PingLogger(const QString& host, QObject* parent) :
-    QObject(parent),
-    ping(this)
+PingLogger::PingLogger(const QString& host, QObject* parent) : QObject(parent), ping(this)
 {
-    connect(
-            &ping, SIGNAL(error(QProcess::ProcessError)),
-            this, SLOT(error(QProcess::ProcessError))
-    );
-    connect(
-            &ping, SIGNAL(finished(int,QProcess::ExitStatus)),
-            this, SLOT(finished(int,QProcess::ExitStatus))
-    );
-    connect(
-            &ping, SIGNAL(readyReadStandardError()),
-            this, SLOT(readyReadStandardError())
-    );
-    connect(
-            &ping, SIGNAL(readyReadStandardOutput()),
-            this, SLOT(readyReadStandardOutput())
-    );
-    connect(
-            &ping, SIGNAL(started()),
-            this, SLOT(started())
-    );
-    connect(
-            &ping, SIGNAL(stateChanged(QProcess::ProcessState)),
-            this, SLOT(stateChanged(QProcess::ProcessState))
-    );
+    connect(&ping,
+            SIGNAL(error(QProcess::ProcessError)),
+            this,
+            SLOT(error(QProcess::ProcessError)));
+    connect(&ping,
+            SIGNAL(finished(int, QProcess::ExitStatus)),
+            this,
+            SLOT(finished(int, QProcess::ExitStatus)));
+    connect(&ping, SIGNAL(readyReadStandardError()), this, SLOT(readyReadStandardError()));
+    connect(&ping, SIGNAL(readyReadStandardOutput()), this, SLOT(readyReadStandardOutput()));
+    connect(&ping, SIGNAL(started()), this, SLOT(started()));
+    connect(&ping,
+            SIGNAL(stateChanged(QProcess::ProcessState)),
+            this,
+            SLOT(stateChanged(QProcess::ProcessState)));
     QString cmd = "ping";
     QStringList args;
 #ifdef Q_OS_WIN32
@@ -66,24 +56,26 @@ PingLogger::PingLogger(const QString& host, QObject* parent) :
     ping.start(cmd, args);
 }
 
-PingLogger::~PingLogger() {
+PingLogger::~PingLogger()
+{
     LOG_DEBUG(logger, "starting ~PingLogger");
     ping.kill();
     ping.waitForFinished();
     LOG_DEBUG(logger, "finished ~PingLogger");
 }
 
-void PingLogger::error(QProcess::ProcessError error) {
+void PingLogger::error(QProcess::ProcessError error)
+{
     // for some reasons QMetaObject for QProcess is not working
     // so the Util::convertEnumValueToString will not work
-//    LOG_DEBUG(
-//            logger,
-//            QString("error while executing ping: ")
-//                +Util::convertEnumValueToString<QProcess>("ProcessError", error)
-//    );
+    //    LOG_DEBUG(
+    //            logger,
+    //            QString("error while executing ping: ")
+    //                +Util::convertEnumValueToString<QProcess>("ProcessError", error)
+    //    );
 
     QString errorStr;
-    switch(error) {
+    switch (error) {
     case QProcess::FailedToStart:
         errorStr = "FailedToStart";
         break;
@@ -99,77 +91,80 @@ void PingLogger::error(QProcess::ProcessError error) {
     case QProcess::ReadError:
         errorStr = "ReadError";
         break;
-    case QProcess::UnknownError :
+    case QProcess::UnknownError:
         errorStr = "UnknownError ";
         break;
     default:
         errorStr = "unknown";
     }
 
-    LOG_DEBUG(logger, QString("error while executing ping: ")+errorStr);
+    LOG_DEBUG(logger, QString("error while executing ping: ") + errorStr);
 }
 
-void PingLogger::finished(int exitCode, QProcess::ExitStatus exitStatus) {
-// for some reasons QMetaObject for QProcess is not working
-// so the Util::convertEnumValueToString will not work
-//    LOG_DEBUG(
-//            logger,
-//            QString("ping finished; exit code: ")+exitCode
-//                +QString("; exit status: ")
-//                +Util::convertEnumValueToString<QProcess>("ExitStatus", exitStatus)
-//    );
+void PingLogger::finished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    // for some reasons QMetaObject for QProcess is not working
+    // so the Util::convertEnumValueToString will not work
+    //    LOG_DEBUG(
+    //            logger,
+    //            QString("ping finished; exit code: ")+exitCode
+    //                +QString("; exit status: ")
+    //                +Util::convertEnumValueToString<QProcess>("ExitStatus", exitStatus)
+    //    );
 
     QString exitStatusStr;
-    switch(exitStatus) {
+    switch (exitStatus) {
     case QProcess::NormalExit:
         exitStatusStr = "NormalExit";
         break;
-    case QProcess::CrashExit :
+    case QProcess::CrashExit:
         exitStatusStr = "CrashExit ";
         break;
     default:
         exitStatusStr = "unknown";
     }
 
-    LOG_DEBUG(
-            logger,
-            QString("ping finished; exit code: ")+QString::number(exitCode)
-                +QString("; exit status: ")+ exitStatusStr
-    );
-
+    LOG_DEBUG(logger,
+              QString("ping finished; exit code: ") + QString::number(exitCode) +
+                      QString("; exit status: ") + exitStatusStr);
 }
 
-void PingLogger::readyReadStandardError() {
-//    LOG_TRACE(logger, QString("data available on standard error"));
+void PingLogger::readyReadStandardError()
+{
+    //    LOG_TRACE(logger, QString("data available on standard error"));
     ping.setReadChannel(QProcess::StandardError);
     readAndLogAvailableInput();
 }
 
-void PingLogger::readAndLogAvailableInput() {
+void PingLogger::readAndLogAvailableInput()
+{
     LOG_DEBUG(logger, QString(ping.readAll()));
 }
 
-void PingLogger::readyReadStandardOutput() {
-//    LOG_TRACE(logger, QString("data available on standard output"));
+void PingLogger::readyReadStandardOutput()
+{
+    //    LOG_TRACE(logger, QString("data available on standard output"));
     ping.setReadChannel(QProcess::StandardOutput);
     readAndLogAvailableInput();
 }
 
-void PingLogger::started() {
+void PingLogger::started()
+{
     LOG_DEBUG(logger, QString("ping process started"));
 }
 
-void PingLogger::stateChanged(QProcess::ProcessState newState) {
-// for some reasons QMetaObject for QProcess is not working
-// so the Util::convertEnumValueToString will not work
-//    LOG_DEBUG(
-//            logger,
-//            QString("ping process state changed to ")
-//                +Util::convertEnumValueToString<QProcess>("ProcessState", newState)
-//    );
+void PingLogger::stateChanged(QProcess::ProcessState newState)
+{
+    // for some reasons QMetaObject for QProcess is not working
+    // so the Util::convertEnumValueToString will not work
+    //    LOG_DEBUG(
+    //            logger,
+    //            QString("ping process state changed to ")
+    //                +Util::convertEnumValueToString<QProcess>("ProcessState", newState)
+    //    );
 
     QString stateStr;
-    switch(newState) {
+    switch (newState) {
     case QProcess::NotRunning:
         stateStr = "NotRunning";
         break;
@@ -183,10 +178,7 @@ void PingLogger::stateChanged(QProcess::ProcessState newState) {
         stateStr = "unknown";
     }
 
-    LOG_DEBUG(logger, QString("ping process state changed to ")+stateStr);
-
+    LOG_DEBUG(logger, QString("ping process state changed to ") + stateStr);
 }
-
-
 
 } // namespace joynr

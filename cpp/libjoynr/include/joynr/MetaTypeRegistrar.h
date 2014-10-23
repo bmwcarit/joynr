@@ -28,7 +28,8 @@
 #include <QHash>
 #include <QMetaType>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * A class that registers metatypes so that ReplyInterpreters and
@@ -142,12 +143,12 @@ void MetaTypeRegistrar::registerEnumMetaType()
     {
         QMutexLocker locker(&publicationInterpretersMutex);
         addEnumPublicationInterpreter<T>(qMetaTypeId<typename T::Enum>());
-        addEnumPublicationInterpreter<QList<T> >(qMetaTypeId<QList<typename T::Enum> >());
+        addEnumPublicationInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
     }
     {
         QMutexLocker locker(&replyInterpretersMutex);
         addEnumReplyInterpreter<T>(qMetaTypeId<typename T::Enum>());
-        addEnumReplyInterpreter<QList<T> >(qMetaTypeId<QList<typename T::Enum> >());
+        addEnumReplyInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
     }
 }
 
@@ -177,12 +178,12 @@ void MetaTypeRegistrar::registerMetaType()
     {
         QMutexLocker locker(&publicationInterpretersMutex);
         addPublicationInterpreter<T>();
-        addPublicationInterpreter<QList<T> >();
+        addPublicationInterpreter<QList<T>>();
     }
     {
         QMutexLocker locker(&replyInterpretersMutex);
         addReplyInterpreter<T>();
-        addReplyInterpreter<QList<T> >();
+        addReplyInterpreter<QList<T>>();
     }
 }
 
@@ -204,7 +205,6 @@ void MetaTypeRegistrar::addPublicationInterpreterForCompositeType()
         publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
     }
 }
-
 
 } // namespace joynr
 #endif // METATYPEREGISTRAR_H

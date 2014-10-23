@@ -21,10 +21,11 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(QSettings *settings) :
-    JoynrRuntimeExecutor(settings)
+JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(QSettings* settings)
+        : JoynrRuntimeExecutor(settings)
 {
 }
 

@@ -16,24 +16,24 @@
  * limitations under the License.
  * #L%
  */
-	
+
 #include "joynr/ProxyFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
-ProxyFactory::ProxyFactory(
-        QSharedPointer<joynr::system::Address> messagingEndpointAddress,
-        ConnectorFactory* connectorFactory,
-        IClientCache* cache
-) :
-    messagingEndpointAddress(messagingEndpointAddress),
-    connectorFactory(connectorFactory),
-    cache(cache)
+ProxyFactory::ProxyFactory(QSharedPointer<joynr::system::Address> messagingEndpointAddress,
+                           ConnectorFactory* connectorFactory,
+                           IClientCache* cache)
+        : messagingEndpointAddress(messagingEndpointAddress),
+          connectorFactory(connectorFactory),
+          cache(cache)
 {
 }
 
-ProxyFactory::~ProxyFactory(){
-	delete connectorFactory;
+ProxyFactory::~ProxyFactory()
+{
+    delete connectorFactory;
 }
 
 } // namespace joynr

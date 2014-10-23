@@ -20,16 +20,17 @@
 #include "joynr/exceptions.h"
 #include "joynr/system/IDiscovery.h"
 
-namespace joynr {
+namespace joynr
+{
 
 ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
         const QString& domain,
         const QString& interfaceName,
         joynr::system::IDiscoverySync& discoveryProxy,
-        const DiscoveryQos &discoveryQos
-){
+        const DiscoveryQos& discoveryQos)
+{
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
-    switch (strategy){
+    switch (strategy) {
     case DiscoveryQos::ArbitrationStrategy::NOT_SET:
         return new DefaultArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
         break;
@@ -40,7 +41,7 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
         return new QosArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
-        if(!discoveryQos.getCustomParameters().contains("keyword")){
+        if (!discoveryQos.getCustomParameters().contains("keyword")) {
             throw JoynrArbitrationException("KeywordArbitrator creation failed: keyword not set");
         }
         return new KeywordArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
@@ -48,7 +49,5 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
         throw JoynrArbitrationException("Arbitrator creation failed: Invalid strategy!");
     }
 }
-
-
 
 } // namespace joynr

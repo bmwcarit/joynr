@@ -36,65 +36,54 @@
 #include <QSharedPointer>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNR_EXPORT CapabilitiesRegistrar {
+class JOYNR_EXPORT CapabilitiesRegistrar
+{
 public:
-    CapabilitiesRegistrar(
-            QList<IDispatcher*> dispatcherList,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            QSharedPointer<joynr::system::Address> messagingStubAddress,
-            QSharedPointer<ParticipantIdStorage> participantIdStorage,
-            QSharedPointer<joynr::system::Address> dispatcherAddress,
-            QSharedPointer<MessageRouter> messageRouter
-    );
+    CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
+                          joynr::system::IDiscoverySync& discoveryProxy,
+                          QSharedPointer<joynr::system::Address> messagingStubAddress,
+                          QSharedPointer<ParticipantIdStorage> participantIdStorage,
+                          QSharedPointer<joynr::system::Address> dispatcherAddress,
+                          QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
-    QString add(
-            const QString& domain,
-            QSharedPointer<T> provider,
-            QString authenticationToken
-    ) {
+    QString add(const QString& domain, QSharedPointer<T> provider, QString authenticationToken)
+    {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId = participantIdStorage->getProviderParticipantId(
-                    domain,
-                    T::getInterfaceName(),
-                    authenticationToken
-        );
+                domain, T::getInterfaceName(), authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
-            //TODO will the provider be registered at all dispatchers or
+            // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher!=NULL);
-            currentDispatcher->addRequestCaller(participantId,caller);
+            assert(currentDispatcher != NULL);
+            currentDispatcher->addRequestCaller(participantId, caller);
         }
 
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
         connections.append(joynr::system::CommunicationMiddleware::JOYNR);
         joynr::RequestStatus status;
         joynr::system::DiscoveryEntry entry(domain,
-            T::getInterfaceName(),
-            participantId,
-            provider->getProviderQos(),
-            connections);
-        discoveryProxy.add(
-                    status,
-                    entry
-        );
-        if(!status.successful()) {
-            LOG_ERROR(
-                        logger,
-                        QString("Unable to add provider (participant ID: %1, domain: %2, interface: %3) "
-                                "to discovery. Status code: %4."
-                        )
-                        .arg(participantId)
-                        .arg(domain)
-                        .arg(T::getInterfaceName())
-                        .arg(status.getCode().toString())
-            );
+                                            T::getInterfaceName(),
+                                            participantId,
+                                            provider->getProviderQos(),
+                                            connections);
+        discoveryProxy.add(status, entry);
+        if (!status.successful()) {
+            LOG_ERROR(logger,
+                      QString("Unable to add provider (participant ID: %1, domain: %2, interface: "
+                              "%3) "
+                              "to discovery. Status code: %4.")
+                              .arg(participantId)
+                              .arg(domain)
+                              .arg(T::getInterfaceName())
+                              .arg(status.getCode().toString()));
         }
 
         // add next hop to dispatcher
@@ -106,49 +95,39 @@ public:
     void remove(const QString& participantId);
 
     template <class T>
-    QString remove(
-            const QString& domain,
-            QSharedPointer<T> provider,
-            QString authenticationToken
-    ) {
+    QString remove(const QString& domain, QSharedPointer<T> provider, QString authenticationToken)
+    {
         Q_UNUSED(provider)
 
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId = participantIdStorage->getProviderParticipantId(
-                    domain,
-                    T::getInterfaceName(),
-                    authenticationToken
-         );
+                domain, T::getInterfaceName(), authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
-            //TODO will the provider be registered at all dispatchers or
+            // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher!=NULL);
+            assert(currentDispatcher != NULL);
             currentDispatcher->removeRequestCaller(participantId);
         }
 
         joynr::RequestStatus status;
         discoveryProxy.remove(status, participantId);
-        if(!status.successful()) {
-            LOG_ERROR(
-                        logger,
-                        QString("Unable to remove provider (participant ID: %1, domain: %2, interface: %3) "
-                                "to discovery. Status code: %4."
-                        )
-                        .arg(participantId)
-                        .arg(domain)
-                        .arg(T::getInterfaceName())
-                        .arg(status.getCode().toString())
-            );
+        if (!status.successful()) {
+            LOG_ERROR(logger,
+                      QString("Unable to remove provider (participant ID: %1, domain: %2, "
+                              "interface: %3) "
+                              "to discovery. Status code: %4.")
+                              .arg(participantId)
+                              .arg(domain)
+                              .arg(T::getInterfaceName())
+                              .arg(status.getCode().toString()));
         }
 
         messageRouter->removeNextHop(status, participantId);
-        if(!status.successful()) {
-            LOG_ERROR(
-                        logger,
-                        QString("Unable to remove next hop (participant ID: %1) from message router.")
-                        .arg(participantId)
-            );
+        if (!status.successful()) {
+            LOG_ERROR(logger,
+                      QString("Unable to remove next hop (participant ID: %1) from message router.")
+                              .arg(participantId));
         }
         return participantId;
     }
@@ -167,6 +146,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //CAPABILITIESREGISTRAR_H
+#endif // CAPABILITIESREGISTRAR_H

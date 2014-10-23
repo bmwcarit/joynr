@@ -29,21 +29,24 @@
 #include <QSemaphore>
 #include <QMutex>
 
-namespace joynr {
+namespace joynr
+{
 
 class ILocalChannelUrlDirectory;
 
 class IMessageReceiver;
 class MessageRouter;
 
-namespace system {
-    class Address;
+namespace system
+{
+class Address;
 }
 
 /**
  * Structure used for configuring the long poll message receiver
  */
-struct LongPollingMessageReceiverSettings {
+struct LongPollingMessageReceiverSettings
+{
     qint64 bounceProxyTimeout_ms;
     qint64 longPollTimeout_ms;
     int longPollRetryInterval_ms;
@@ -53,7 +56,8 @@ struct LongPollingMessageReceiverSettings {
 /**
  * Class that makes long polling requests to the bounce proxy
  */
-class LongPollingMessageReceiver : public QThread {
+class LongPollingMessageReceiver : public QThread
+{
     Q_OBJECT
 
 public:
@@ -69,8 +73,7 @@ public:
     bool isInterrupted();
 
     void processReceivedInput(const QByteArray& receivedInput);
-    void processReceivedQjsonObjects(const QByteArray &jsonObject);
-
+    void processReceivedQjsonObjects(const QByteArray& jsonObject);
 
 private:
     void checkServerTime();
@@ -89,6 +92,5 @@ private:
     QSharedPointer<MessageRouter> messageRouter;
 };
 
-
 } // namespace joynr
-#endif //LONGPOLLINGMESSAGERECEIVER_H_
+#endif // LONGPOLLINGMESSAGERECEIVER_H_

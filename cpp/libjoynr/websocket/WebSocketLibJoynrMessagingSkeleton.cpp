@@ -23,15 +23,15 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/WebSocketClientAddress.h"
 
-namespace joynr {
+namespace joynr
+{
 
 joynr_logging::Logger* WebSocketLibJoynrMessagingSkeleton::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketLibJoynrMessagingSkeleton");
+        joynr_logging::Logging::getInstance()->getLogger("MSG",
+                                                         "WebSocketLibJoynrMessagingSkeleton");
 
-WebSocketLibJoynrMessagingSkeleton::WebSocketLibJoynrMessagingSkeleton(
-        MessageRouter& messageRouter
-) :
-    messageRouter(messageRouter)
+WebSocketLibJoynrMessagingSkeleton::WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter)
+        : messageRouter(messageRouter)
 {
 }
 
@@ -39,19 +39,17 @@ WebSocketLibJoynrMessagingSkeleton::~WebSocketLibJoynrMessagingSkeleton()
 {
 }
 
-void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage &message)
+void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage& message)
 {
     messageRouter.route(message);
 }
 
-void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString &message)
+void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString& message)
 {
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
-    LOG_TRACE(logger, QString("INCOMING\nmessage: %0")
-              .arg(message)
-    );
+    LOG_TRACE(logger, QString("INCOMING\nmessage: %0").arg(message));
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);

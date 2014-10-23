@@ -28,9 +28,11 @@
 
 #include <QMetaType>
 
-namespace joynr {
+namespace joynr
+{
 
-void registerJoynrMetaTypes(){
+void registerJoynrMetaTypes()
+{
     qRegisterMetaType<JoynrMessage>("joynr.JoynrMessage");
     qRegisterMetaType<Request>("joynr.Request");
     qRegisterMetaType<Reply>("joynr.Reply");

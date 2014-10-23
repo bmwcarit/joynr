@@ -25,16 +25,20 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class LibJoynrRuntime;
 
-class JoynrDbusRuntimeExecutor : public JoynrRuntimeExecutor {
+class JoynrDbusRuntimeExecutor : public JoynrRuntimeExecutor
+{
     Q_OBJECT
 
 public:
-    JoynrDbusRuntimeExecutor(QSettings *settings);
-    ~JoynrDbusRuntimeExecutor() {}
+    JoynrDbusRuntimeExecutor(QSettings* settings);
+    ~JoynrDbusRuntimeExecutor()
+    {
+    }
 
 public slots:
     virtual void createRuntime();
@@ -44,4 +48,4 @@ private:
 };
 
 } // namespace joynr
-#endif //JOYNRDBUSRUNTIMEEXECUTOR_H
+#endif // JOYNRDBUSRUNTIMEEXECUTOR_H

@@ -22,19 +22,20 @@
 #include "joynr/ObjectWithDecayTime.h"
 #include <QDateTime>
 
-namespace joynr {
+namespace joynr
+{
 
 template <class T>
 class ContentWithDecayTime : public ObjectWithDecayTime
 {
 public:
-    ContentWithDecayTime(const T& content, QDateTime decayTime):
-            ObjectWithDecayTime(decayTime),
-            content(content)
+    ContentWithDecayTime(const T& content, QDateTime decayTime)
+            : ObjectWithDecayTime(decayTime), content(content)
     {
     }
 
-    T getContent() const {
+    T getContent() const
+    {
         return content;
     }
 
@@ -42,10 +43,8 @@ private:
     T content;
 };
 
-
 class SendMsgRequest;
 typedef ContentWithDecayTime<SendMsgRequest> SendMsgRequestWithDecayTime;
-
 
 } // namespace joynr
 #endif // CONTENTWITHTTL_H

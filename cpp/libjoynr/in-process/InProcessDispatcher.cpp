@@ -21,69 +21,77 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
-Logger* InProcessDispatcher::logger = Logging::getInstance()->getLogger("MSG", "InProcessDispatcher");
-
+Logger* InProcessDispatcher::logger =
+        Logging::getInstance()->getLogger("MSG", "InProcessDispatcher");
 
 InProcessDispatcher::InProcessDispatcher()
-    : requestCallerDirectory(QString("InProcessDispatcher-RequestCallerDirectory")),
-      replyCallerDirectory(QString("InProcessDispatcher-ReplyCallerDirectory")),
-      publicationManager(),
-      subscriptionManager()
+        : requestCallerDirectory(QString("InProcessDispatcher-RequestCallerDirectory")),
+          replyCallerDirectory(QString("InProcessDispatcher-ReplyCallerDirectory")),
+          publicationManager(),
+          subscriptionManager()
 
 {
-
 }
 
-InProcessDispatcher::~InProcessDispatcher(){
+InProcessDispatcher::~InProcessDispatcher()
+{
     LOG_TRACE(logger, "Deleting InProcessDispatcher");
 }
 
-void InProcessDispatcher::addReplyCaller(const QString &requestReplyId, QSharedPointer<IReplyCaller> replyCaller, const MessagingQos& qosSettings){
-    replyCallerDirectory.add(requestReplyId,
-                             replyCaller,
-                             qosSettings.getTtl());
-
+void InProcessDispatcher::addReplyCaller(const QString& requestReplyId,
+                                         QSharedPointer<IReplyCaller> replyCaller,
+                                         const MessagingQos& qosSettings)
+{
+    replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
 
-void InProcessDispatcher::removeReplyCaller(const QString &requestReplyId){
+void InProcessDispatcher::removeReplyCaller(const QString& requestReplyId)
+{
     replyCallerDirectory.remove(requestReplyId);
 }
 
-void InProcessDispatcher::addRequestCaller(const QString &participantId, QSharedPointer<RequestCaller> requestCaller){
-      requestCallerDirectory.add(participantId, requestCaller);
+void InProcessDispatcher::addRequestCaller(const QString& participantId,
+                                           QSharedPointer<RequestCaller> requestCaller)
+{
+    requestCallerDirectory.add(participantId, requestCaller);
     // check if there are subscriptions waiting for this provider
-    //publicationManager->restore(participantId,requestCaller, messageSender);
+    // publicationManager->restore(participantId,requestCaller, messageSender);
 }
 
-void InProcessDispatcher::removeRequestCaller(const QString &participantId){
+void InProcessDispatcher::removeRequestCaller(const QString& participantId)
+{
     requestCallerDirectory.remove(participantId);
 }
 
-void InProcessDispatcher::receive(const JoynrMessage &message){
+void InProcessDispatcher::receive(const JoynrMessage& message)
+{
     Q_UNUSED(message);
     LOG_FATAL(logger, "Not implemented");
     assert(false);
-
 }
 
-QSharedPointer<RequestCaller> InProcessDispatcher::lookupRequestCaller(const QString& participantId){
+QSharedPointer<RequestCaller> InProcessDispatcher::lookupRequestCaller(const QString& participantId)
+{
     return requestCallerDirectory.lookup(participantId);
 }
 
-bool InProcessDispatcher::containsRequestCaller(const QString &participantId){
+bool InProcessDispatcher::containsRequestCaller(const QString& participantId)
+{
     return requestCallerDirectory.contains(participantId);
 }
 
-
-void InProcessDispatcher::registerSubscriptionManager(SubscriptionManager* subscriptionManager) {
+void InProcessDispatcher::registerSubscriptionManager(SubscriptionManager* subscriptionManager)
+{
     this->subscriptionManager = subscriptionManager;
 }
 
-void InProcessDispatcher::registerPublicationManager(PublicationManager* publicationManager) {
+void InProcessDispatcher::registerPublicationManager(PublicationManager* publicationManager)
+{
     this->publicationManager = publicationManager;
 }
 

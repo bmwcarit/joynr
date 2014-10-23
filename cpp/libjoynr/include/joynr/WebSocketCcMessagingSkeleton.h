@@ -37,17 +37,16 @@
 class QWebSocketServer;
 class QWebSocket;
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT WebSocketCcMessagingSkeleton : public QObject, public IMessaging
 {
     Q_OBJECT
 public:
-    WebSocketCcMessagingSkeleton(
-            MessageRouter& messageRouter,
-            WebSocketMessagingStubFactory& messagingStubFactory,
-            const system::WebSocketAddress& serverAddress
-    );
+    WebSocketCcMessagingSkeleton(MessageRouter& messageRouter,
+                                 WebSocketMessagingStubFactory& messagingStubFactory,
+                                 const system::WebSocketAddress& serverAddress);
 
     ~WebSocketCcMessagingSkeleton();
 
@@ -69,7 +68,6 @@ private:
     MessageRouter& messageRouter;
     WebSocketMessagingStubFactory& messagingStubFactory;
 };
-
 
 } // namespace joynr
 #endif // WEBSOCKETCCMESSAGINGSKELETON_H

@@ -23,64 +23,51 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"
 
-namespace joynr {
+namespace joynr
+{
 
 joynr_logging::Logger* DefaultArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("DIS", "DefaultArbitrator");
 
-DefaultArbitrator::DefaultArbitrator(
-        const QString& domain,
-        const QString& interfaceName,
-        joynr::system::IDiscoverySync& discoveryProxy,
-        const DiscoveryQos &discoveryQos
-) :
-    ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
+DefaultArbitrator::DefaultArbitrator(const QString& domain,
+                                     const QString& interfaceName,
+                                     joynr::system::IDiscoverySync& discoveryProxy,
+                                     const DiscoveryQos& discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
 {
-
 }
 
-
-void DefaultArbitrator::attemptArbitration() {
+void DefaultArbitrator::attemptArbitration()
+{
     joynr::RequestStatus status;
     QList<joynr::system::DiscoveryEntry> result;
-    discoveryProxy.lookup(
-                status,
-                result,
-                domain,
-                interfaceName,
-                systemDiscoveryQos
-    );
-    if(status.successful()) {
+    discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
+    if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
     } else {
-        LOG_ERROR(
-                    logger,
-                    QString("Unable to lookup provider (domain: %1, interface: %2) "
-                            "from discovery. Status code: %3."
-                    )
-                    .arg(domain)
-                    .arg(interfaceName)
-                    .arg(status.getCode().toString())
-        );
+        LOG_ERROR(logger,
+                  QString("Unable to lookup provider (domain: %1, interface: %2) "
+                          "from discovery. Status code: %3.")
+                          .arg(domain)
+                          .arg(interfaceName)
+                          .arg(status.getCode().toString()));
     }
 }
 
 void DefaultArbitrator::receiveCapabilitiesLookupResults(
-        const QList<joynr::system::DiscoveryEntry>& discoveryEntries
-) {
+        const QList<joynr::system::DiscoveryEntry>& discoveryEntries)
+{
     // Check for empty results
-    if (discoveryEntries.size() == 0) return;
+    if (discoveryEntries.size() == 0)
+        return;
 
     // default arbitrator picks first entry
     joynr::system::DiscoveryEntry discoveredProvider = discoveryEntries.first();
     joynr::system::CommunicationMiddleware::Enum preferredConnection(
-            selectPreferredCommunicationMiddleware(discoveredProvider.getConnections())
-    );
-    updateArbitrationStatusParticipantIdAndAddress(
-                ArbitrationStatus::ArbitrationSuccessful,
-                discoveredProvider.getParticipantId(),
-                preferredConnection
-    );
+            selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
+    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
+                                                   discoveredProvider.getParticipantId(),
+                                                   preferredConnection);
 }
 
 } // namespace joynr

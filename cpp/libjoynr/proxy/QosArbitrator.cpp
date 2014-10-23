@@ -26,85 +26,79 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
-Logger* QosArbitrator::logger = joynr_logging::Logging::getInstance()->getLogger("Arbi", "QosArbitrator");
+Logger* QosArbitrator::logger =
+        joynr_logging::Logging::getInstance()->getLogger("Arbi", "QosArbitrator");
 
-
-QosArbitrator::QosArbitrator(
-        const QString& domain,
-        const QString& interfaceName,
-        joynr::system::IDiscoverySync& discoveryProxy,
-        const DiscoveryQos &discoveryQos
-) :
-    ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-    keyword(discoveryQos.getCustomParameter("keyword").getValue())
+QosArbitrator::QosArbitrator(const QString& domain,
+                             const QString& interfaceName,
+                             joynr::system::IDiscoverySync& discoveryProxy,
+                             const DiscoveryQos& discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+          keyword(discoveryQos.getCustomParameter("keyword").getValue())
 {
 }
-
 
 void QosArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
     QList<joynr::system::DiscoveryEntry> result;
-    discoveryProxy.lookup(
-                status,
-                result,
-                domain,
-                interfaceName,
-                systemDiscoveryQos
-    );
-    if(status.successful()) {
+    discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
+    if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
     } else {
-        LOG_ERROR(
-                    logger,
-                    QString("Unable to lookup provider (domain: %1, interface: %2) "
-                            "from discovery. Status code: %3."
-                    )
-                    .arg(domain)
-                    .arg(interfaceName)
-                    .arg(status.getCode().toString())
-        );
+        LOG_ERROR(logger,
+                  QString("Unable to lookup provider (domain: %1, interface: %2) "
+                          "from discovery. Status code: %3.")
+                          .arg(domain)
+                          .arg(interfaceName)
+                          .arg(status.getCode().toString()));
     }
 }
 
-
 // Returns true if arbitration was successful, false otherwise
 void QosArbitrator::receiveCapabilitiesLookupResults(
-        const QList<joynr::system::DiscoveryEntry>& discoveryEntries
-) {
+        const QList<joynr::system::DiscoveryEntry>& discoveryEntries)
+{
     QString res = "";
-    joynr::system::CommunicationMiddleware::Enum preferredConnection(joynr::system::CommunicationMiddleware::NONE);
+    joynr::system::CommunicationMiddleware::Enum preferredConnection(
+            joynr::system::CommunicationMiddleware::NONE);
 
     // Check for empty results
-    if (discoveryEntries.size() == 0) return;
+    if (discoveryEntries.size() == 0)
+        return;
 
     qint64 highestPriority = -1;
     QListIterator<joynr::system::DiscoveryEntry> discoveryEntriesIterator(discoveryEntries);
     while (discoveryEntriesIterator.hasNext()) {
         joynr::system::DiscoveryEntry discoveryEntry = discoveryEntriesIterator.next();
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        LOG_TRACE(logger,"Looping over capabilitiesEntry: " + discoveryEntry.toString());
-        if ( discoveryQos.getProviderMustSupportOnChange() &&  !providerQos.getSupportsOnChangeSubscriptions()) {
+        LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
+        if (discoveryQos.getProviderMustSupportOnChange() &&
+            !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
-        if ( providerQos.getPriority() > highestPriority) {
+        if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
-            LOG_TRACE(logger,"setting res to " + res);
-            preferredConnection = selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
+            LOG_TRACE(logger, "setting res to " + res);
+            preferredConnection =
+                    selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
         }
     }
-    if (res==""){
-        LOG_WARN(logger,"There was more than one entries in capabilitiesEntries, but none had a Priority > 1");
+    if (res == "") {
+        LOG_WARN(logger,
+                 "There was more than one entries in capabilitiesEntries, but none had a "
+                 "Priority > 1");
         return;
     }
 
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
+    updateArbitrationStatusParticipantIdAndAddress(
+            ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
 }
-
 
 } // namespace joynr

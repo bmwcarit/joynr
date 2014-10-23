@@ -26,7 +26,8 @@
 
 #include <QRunnable>
 
-namespace joynr {
+namespace joynr
+{
 
 class Dispatcher;
 
@@ -35,21 +36,19 @@ class Dispatcher;
   *
   */
 
-class ReceivedMessageRunnable : public QRunnable, public ObjectWithDecayTime {
+class ReceivedMessageRunnable : public QRunnable, public ObjectWithDecayTime
+{
 public:
-    ReceivedMessageRunnable(
-            const JoynrMessage& message,
-            Dispatcher& dispatcher);
+    ReceivedMessageRunnable(const JoynrMessage& message, Dispatcher& dispatcher);
 
     void run();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
     JoynrMessage message;
     Dispatcher& dispatcher;
     static joynr_logging::Logger* logger;
-
 };
-
 
 } // namespace joynr
 #endif // RECEIVEDMESSAGERUNNABLE_H

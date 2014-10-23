@@ -29,26 +29,28 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class LibJoynrRuntime;
 
-class JoynrRuntimeExecutor : public QObject {
+class JoynrRuntimeExecutor : public QObject
+{
     Q_OBJECT
 
-    QCoreApplication *coreApplication;
-    QThread *runtimeThread;
+    QCoreApplication* coreApplication;
+    QThread* runtimeThread;
 
 protected:
-    QSettings *settings;
-    LibJoynrRuntime *runtime;
+    QSettings* settings;
+    LibJoynrRuntime* runtime;
     QSemaphore runtimeSemaphore;
 
 public:
-    JoynrRuntimeExecutor(QSettings *settings);
+    JoynrRuntimeExecutor(QSettings* settings);
     virtual ~JoynrRuntimeExecutor();
 
-    LibJoynrRuntime *getRuntime();
+    LibJoynrRuntime* getRuntime();
     void stop();
 
 public slots:
@@ -59,4 +61,4 @@ private:
 };
 
 } // namespace joynr
-#endif //JOYNRRUNTIMEEXECUTOR_H
+#endif // JOYNRRUNTIMEEXECUTOR_H

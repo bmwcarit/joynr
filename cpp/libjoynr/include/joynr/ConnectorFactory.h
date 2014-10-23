@@ -31,38 +31,50 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system { class Address; }
+namespace system
+{
+class Address;
+}
 class InProcessDispatcher;
 
-class JOYNR_EXPORT ConnectorFactory {
+class JOYNR_EXPORT ConnectorFactory
+{
 public:
-    ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory, JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
+    ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory,
+                     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
     ~ConnectorFactory();
     template <class T>
-    T* create(
-            const QString &domain,
-            const QString proxyParticipantId,
-            const QString& providerParticipantId,
-            const MessagingQos &qosSettings,
-            IClientCache *cache,
-            bool cached,
-            qint64 reqCacheDataFreshness_ms,
-            const joynr::system::CommunicationMiddleware::Enum& connection
-    ) {
+    T* create(const QString& domain,
+              const QString proxyParticipantId,
+              const QString& providerParticipantId,
+              const MessagingQos& qosSettings,
+              IClientCache* cache,
+              bool cached,
+              qint64 reqCacheDataFreshness_ms,
+              const joynr::system::CommunicationMiddleware::Enum& connection)
+    {
 
-        if (inProcessConnectorFactory->canBeCreated(connection)){
+        if (inProcessConnectorFactory->canBeCreated(connection)) {
             return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId);
         }
 
-        if (joynrMessagingConnectorFactory->canBeCreated(connection)){
-            return joynrMessagingConnectorFactory->create<T>(domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached, reqCacheDataFreshness_ms);
+        if (joynrMessagingConnectorFactory->canBeCreated(connection)) {
+            return joynrMessagingConnectorFactory->create<T>(domain,
+                                                             proxyParticipantId,
+                                                             providerParticipantId,
+                                                             qosSettings,
+                                                             cache,
+                                                             cached,
+                                                             reqCacheDataFreshness_ms);
         }
 
         LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
         return NULL;
     }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ConnectorFactory);
     InProcessConnectorFactory* inProcessConnectorFactory;
@@ -70,6 +82,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //CONNECTORFACTORY_H
+#endif // CONNECTORFACTORY_H

@@ -24,7 +24,8 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionManager.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class SubscriptionPublication;
 
@@ -33,7 +34,8 @@ class SubscriptionPublication;
  * The InProcessPublicationSender is used to transfer publications from the PublicationManager to
  * the (local) SubscriptionManager.
  */
-class JOYNR_EXPORT InProcessPublicationSender : public IPublicationSender {
+class JOYNR_EXPORT InProcessPublicationSender : public IPublicationSender
+{
 public:
 public:
     virtual ~InProcessPublicationSender();
@@ -51,8 +53,8 @@ public:
             const QString& senderParticipantId,
             const QString& receiverParticipantId,
             const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication
-    );
+            const SubscriptionPublication& subscriptionPublication);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessPublicationSender);
     SubscriptionManager* subscriptionManager;
@@ -60,4 +62,4 @@ private:
 };
 
 } // namespace joynr
-#endif //INPROCESSPUBLICATIONSENDER_H
+#endif // INPROCESSPUBLICATIONSENDER_H

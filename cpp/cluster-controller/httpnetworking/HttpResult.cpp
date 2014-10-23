@@ -19,59 +19,80 @@
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include <curl/curl.h>
 
-namespace joynr {
+namespace joynr
+{
 
-HttpResult::HttpResult(long curlError, int statusCode, QByteArray* body, QMultiMap<QString, QString>* headers)
-    : curlError(static_cast<int>(curlError)),
-      statusCode(statusCode),
-      body(body),
-      headers(headers)
+HttpResult::HttpResult(long curlError,
+                       int statusCode,
+                       QByteArray* body,
+                       QMultiMap<QString, QString>* headers)
+        : curlError(static_cast<int>(curlError)),
+          statusCode(statusCode),
+          body(body),
+          headers(headers)
 {
 }
 
-HttpResult::~HttpResult() {
+HttpResult::~HttpResult()
+{
 }
 
-bool HttpResult::isCurlError() const {
+bool HttpResult::isCurlError() const
+{
     return (curlError != 0);
 }
 
-int HttpResult::getCurlError() const {
+int HttpResult::getCurlError() const
+{
     return curlError;
 }
 
-int HttpResult::getStatusCode() const {
+int HttpResult::getStatusCode() const
+{
     return statusCode;
 }
 
-QString HttpResult::getErrorMessage() const {
+QString HttpResult::getErrorMessage() const
+{
     if (isCurlError()) {
         switch (curlError) {
-        case CURLE_COULDNT_RESOLVE_PROXY:   return QString("Could not resolve network proxy address");
-        case CURLE_COULDNT_RESOLVE_HOST:    return QString("Could not resolve host address");
-        case CURLE_COULDNT_CONNECT:         return QString("Curl reported connection failure");
-        case CURLE_OPERATION_TIMEDOUT:      return QString("Curl operation timeout");
-        case CURLE_SSL_CONNECT_ERROR:       return QString("SSL connection error");
+        case CURLE_COULDNT_RESOLVE_PROXY:
+            return QString("Could not resolve network proxy address");
+        case CURLE_COULDNT_RESOLVE_HOST:
+            return QString("Could not resolve host address");
+        case CURLE_COULDNT_CONNECT:
+            return QString("Curl reported connection failure");
+        case CURLE_OPERATION_TIMEDOUT:
+            return QString("Curl operation timeout");
+        case CURLE_SSL_CONNECT_ERROR:
+            return QString("SSL connection error");
         default:
-            return QString("Error during HTTP request/response, curl error code : %1").arg(curlError);
+            return QString("Error during HTTP request/response, curl error code : %1")
+                    .arg(curlError);
         }
     } else {
         switch (statusCode) {
-        case 407: return QString("407 Proxy authentication required");
-        case 500: return QString("500 Internal server error");
-        case 502: return QString("502 Bad gateway");
-        case 503: return QString("503 Service unavailable");
+        case 407:
+            return QString("407 Proxy authentication required");
+        case 500:
+            return QString("500 Internal server error");
+        case 502:
+            return QString("502 Bad gateway");
+        case 503:
+            return QString("503 Service unavailable");
         default:
             return QString("HTTP error, status code : %1").arg(statusCode);
         }
     }
 }
 
-const QByteArray& HttpResult::getBody() const {
+const QByteArray& HttpResult::getBody() const
+{
     return *body;
 }
 
-const QMultiMap<QString, QString>& HttpResult::getHeaders() const {
+const QMultiMap<QString, QString>& HttpResult::getHeaders() const
+{
     return *headers;
 }
 

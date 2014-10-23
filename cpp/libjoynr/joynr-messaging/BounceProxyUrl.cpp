@@ -19,41 +19,46 @@
 #include <QtCore/QUrlQuery>
 #include "joynr/BounceProxyUrl.h"
 
-namespace joynr {
+namespace joynr
+{
 
-joynr_logging::Logger* BounceProxyUrl::logger = joynr_logging::Logging::getInstance()->getLogger("JOYNR", "BounceProxyUrl");
+joynr_logging::Logger* BounceProxyUrl::logger =
+        joynr_logging::Logging::getInstance()->getLogger("JOYNR", "BounceProxyUrl");
 
-const QString& BounceProxyUrl::URL_PATH_SEPARATOR() {
+const QString& BounceProxyUrl::URL_PATH_SEPARATOR()
+{
     static const QString value("/");
     return value;
 }
 
-const QString& BounceProxyUrl::CREATE_CHANNEL_QUERY_ITEM() {
+const QString& BounceProxyUrl::CREATE_CHANNEL_QUERY_ITEM()
+{
     static const QString value("ccid");
     return value;
 }
 
-const QString& BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX() {
+const QString& BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX()
+{
     static const QString value("message");
     return value;
 }
 
-const QString& BounceProxyUrl::CHANNEL_PATH_SUFFIX() {
+const QString& BounceProxyUrl::CHANNEL_PATH_SUFFIX()
+{
     static const QString value("channels");
     return value;
 }
 
-const QString& BounceProxyUrl::TIMECHECK_PATH_SUFFIX() {
+const QString& BounceProxyUrl::TIMECHECK_PATH_SUFFIX()
+{
     static const QString value("time");
     return value;
 }
 
-BounceProxyUrl::BounceProxyUrl(const QString& bounceProxyBaseUrl, QObject* parent) :
-    QObject(parent),
-    bounceProxyBaseUrl(bounceProxyBaseUrl),
-    bounceProxyChannelsBaseUrl()
+BounceProxyUrl::BounceProxyUrl(const QString& bounceProxyBaseUrl, QObject* parent)
+        : QObject(parent), bounceProxyBaseUrl(bounceProxyBaseUrl), bounceProxyChannelsBaseUrl()
 {
-    if(!this->bounceProxyBaseUrl.endsWith(URL_PATH_SEPARATOR())){
+    if (!this->bounceProxyBaseUrl.endsWith(URL_PATH_SEPARATOR())) {
         this->bounceProxyBaseUrl.append(URL_PATH_SEPARATOR());
     }
     QString channelsBaseUrl(this->bounceProxyBaseUrl);
@@ -62,25 +67,26 @@ BounceProxyUrl::BounceProxyUrl(const QString& bounceProxyBaseUrl, QObject* paren
     this->bounceProxyChannelsBaseUrl = QUrl(channelsBaseUrl);
 }
 
-BounceProxyUrl::BounceProxyUrl(const BounceProxyUrl& other) :
-        QObject(other.parent()),
-        bounceProxyBaseUrl(other.bounceProxyBaseUrl),
-        bounceProxyChannelsBaseUrl(other.bounceProxyChannelsBaseUrl)
+BounceProxyUrl::BounceProxyUrl(const BounceProxyUrl& other)
+        : QObject(other.parent()),
+          bounceProxyBaseUrl(other.bounceProxyBaseUrl),
+          bounceProxyChannelsBaseUrl(other.bounceProxyChannelsBaseUrl)
 {
-
 }
 
-BounceProxyUrl& BounceProxyUrl::operator=(const BounceProxyUrl& bounceProxyUrl) {
+BounceProxyUrl& BounceProxyUrl::operator=(const BounceProxyUrl& bounceProxyUrl)
+{
     bounceProxyChannelsBaseUrl = bounceProxyUrl.bounceProxyChannelsBaseUrl;
     return *this;
 }
 
-bool BounceProxyUrl::operator==(const BounceProxyUrl& bounceProxyUrl) const {
+bool BounceProxyUrl::operator==(const BounceProxyUrl& bounceProxyUrl) const
+{
     return bounceProxyChannelsBaseUrl == bounceProxyUrl.getBounceProxyBaseUrl();
 }
 
-
-QUrl BounceProxyUrl::getCreateChannelUrl(const QString& mcid) const {
+QUrl BounceProxyUrl::getCreateChannelUrl(const QString& mcid) const
+{
     QUrl createChannelUrl(bounceProxyChannelsBaseUrl);
     QUrlQuery query;
     query.addQueryItem(CREATE_CHANNEL_QUERY_ITEM(), mcid);
@@ -88,10 +94,11 @@ QUrl BounceProxyUrl::getCreateChannelUrl(const QString& mcid) const {
     return createChannelUrl;
 }
 
-QUrl BounceProxyUrl::getSendUrl(const QString& channelId) const {
+QUrl BounceProxyUrl::getSendUrl(const QString& channelId) const
+{
     QUrl sendUrl(bounceProxyChannelsBaseUrl);
     QString path = sendUrl.path();
-    if(!path.endsWith(URL_PATH_SEPARATOR())) {
+    if (!path.endsWith(URL_PATH_SEPARATOR())) {
         path.append(URL_PATH_SEPARATOR());
     }
     path.append(channelId);
@@ -102,17 +109,19 @@ QUrl BounceProxyUrl::getSendUrl(const QString& channelId) const {
     return sendUrl;
 }
 
-QUrl BounceProxyUrl::getBounceProxyBaseUrl() const {
+QUrl BounceProxyUrl::getBounceProxyBaseUrl() const
+{
     QUrl sendUrl(bounceProxyChannelsBaseUrl);
     QString path = sendUrl.path();
-    if(!path.endsWith(URL_PATH_SEPARATOR())) {
+    if (!path.endsWith(URL_PATH_SEPARATOR())) {
         path.append(URL_PATH_SEPARATOR());
     }
     sendUrl.setPath(path);
     return sendUrl;
 }
 
-QUrl BounceProxyUrl::getDeleteChannelUrl(const QString& mcid) const {
+QUrl BounceProxyUrl::getDeleteChannelUrl(const QString& mcid) const
+{
     QUrl sendUrl(bounceProxyChannelsBaseUrl);
     QString path = sendUrl.path();
     path.append(mcid);

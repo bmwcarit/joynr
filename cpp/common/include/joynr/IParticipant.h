@@ -19,14 +19,16 @@
 #ifndef IPARTICIPANT_H
 #define IPARTICIPANT_H
 
+namespace joynr
+{
 
-namespace joynr {
-
-class IParticipant {
-public :
-    virtual ~IParticipant() { }
+class IParticipant
+{
+public:
+    virtual ~IParticipant()
+    {
+    }
 };
 
-
 } // namespace joynr
-#endif //IPARTICIPANT_H
+#endif // IPARTICIPANT_H

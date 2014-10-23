@@ -28,25 +28,29 @@
 
 class QWebSocket;
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class Address;
+namespace system
+{
+class Address;
 }
 
 class WebSocketMessagingStub : public QObject, public IMessaging
 {
     Q_OBJECT
 public:
-    WebSocketMessagingStub(system::Address* address, QWebSocket* webSocket, QObject* parent = Q_NULLPTR);
+    WebSocketMessagingStub(system::Address* address,
+                           QWebSocket* webSocket,
+                           QObject* parent = Q_NULLPTR);
     virtual ~WebSocketMessagingStub();
-    virtual void transmit(JoynrMessage &message);
+    virtual void transmit(JoynrMessage& message);
 
 Q_SIGNALS:
     void closed(const joynr::system::Address& address);
 private Q_SLOTS:
     void onSocketDisconnected();
-    void sendTextMessage(const QString &message);
+    void sendTextMessage(const QString& message);
 
 private:
     static joynr_logging::Logger* logger;
@@ -54,7 +58,6 @@ private:
     QWebSocket* webSocket;
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);
 };
-
 
 } // namespace joynr
 #endif // WEBSOCKETMESSAGINSTUB_H

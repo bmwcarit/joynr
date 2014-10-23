@@ -20,10 +20,12 @@
 #include "joynr/Util.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
-Logger* SubscriptionRequestInformation::logger = Logging::getInstance()->getLogger("MSG", "SubscriptionRequestInformation");
+Logger* SubscriptionRequestInformation::logger =
+        Logging::getInstance()->getLogger("MSG", "SubscriptionRequestInformation");
 
 SubscriptionRequestInformation::SubscriptionRequestInformation()
 {
@@ -32,36 +34,38 @@ SubscriptionRequestInformation::SubscriptionRequestInformation()
 SubscriptionRequestInformation::SubscriptionRequestInformation(
         const QString& proxyParticipantId,
         const QString& providerParticipantId,
-        const SubscriptionRequest& subscriptionRequest
-) :
-    SubscriptionRequest(subscriptionRequest),
-    SubscriptionInformation(proxyParticipantId, providerParticipantId)
+        const SubscriptionRequest& subscriptionRequest)
+        : SubscriptionRequest(subscriptionRequest),
+          SubscriptionInformation(proxyParticipantId, providerParticipantId)
 {
 }
 
-SubscriptionRequestInformation::SubscriptionRequestInformation(const SubscriptionRequestInformation& subscriptionRequestInformation) :
-    SubscriptionRequest(subscriptionRequestInformation),
-    SubscriptionInformation(subscriptionRequestInformation.getProxyId(), subscriptionRequestInformation.getProviderId())
+SubscriptionRequestInformation::SubscriptionRequestInformation(
+        const SubscriptionRequestInformation& subscriptionRequestInformation)
+        : SubscriptionRequest(subscriptionRequestInformation),
+          SubscriptionInformation(subscriptionRequestInformation.getProxyId(),
+                                  subscriptionRequestInformation.getProviderId())
 {
 }
 
-SubscriptionRequestInformation& SubscriptionRequestInformation::operator=(const SubscriptionRequestInformation& subscriptionRequestInformation) {
+SubscriptionRequestInformation& SubscriptionRequestInformation::operator=(
+        const SubscriptionRequestInformation& subscriptionRequestInformation)
+{
     SubscriptionRequest::operator=(subscriptionRequestInformation);
-    SubscriptionInformation::operator =(subscriptionRequestInformation);
+    SubscriptionInformation::operator=(subscriptionRequestInformation);
     return *this;
 }
 
-bool SubscriptionRequestInformation::operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const {
-    return
-            SubscriptionRequest::operator==(subscriptionRequestInformation)
-            && SubscriptionInformation::operator ==(subscriptionRequestInformation);
+bool SubscriptionRequestInformation::operator==(
+        const SubscriptionRequestInformation& subscriptionRequestInformation) const
+{
+    return SubscriptionRequest::operator==(subscriptionRequestInformation) &&
+           SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
 QString SubscriptionRequestInformation::toQString() const
 {
     return JsonSerializer::serialize(*this);
 }
-
-
 
 } // namespace joynr

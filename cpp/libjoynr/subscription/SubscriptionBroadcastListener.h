@@ -24,7 +24,8 @@
 
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class PublicationManager;
 
@@ -37,10 +38,12 @@ public:
     /**
      * Create an broadcast listener linked to a subscription
      */
-    SubscriptionBroadcastListener(const QString& subscriptionId, PublicationManager &publicationManager);
+    SubscriptionBroadcastListener(const QString& subscriptionId,
+                                  PublicationManager& publicationManager);
 
     // Implementation of IBroadcastListener::eventOccured
     void eventOccured(const QVariantMap& values);
+
 private:
     QString subscriptionId;
     PublicationManager& publicationManager;

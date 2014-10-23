@@ -25,47 +25,45 @@
 #include <QWriteLocker>
 #include <QReadLocker>
 
-namespace joynr {
+namespace joynr
+{
 
-Provider::Provider()
-    : lock(),
-      attributeListeners(),
-      broadcastListeners()
+Provider::Provider() : lock(), attributeListeners(), broadcastListeners()
 {
 }
 
 Provider::~Provider()
 {
     // Delete all attribute listeners
-    foreach (const QList<IAttributeListener *>& listeners, attributeListeners) {
-        foreach (IAttributeListener *listener, listeners) {
+    foreach (const QList<IAttributeListener*>& listeners, attributeListeners) {
+        foreach (IAttributeListener* listener, listeners) {
             delete listener;
         }
     }
 }
 
-void Provider::registerAttributeListener(const QString& attributeName, IAttributeListener* attributeListener)
+void Provider::registerAttributeListener(const QString& attributeName,
+                                         IAttributeListener* attributeListener)
 {
     QWriteLocker locker(&lock);
     attributeListeners[attributeName].append(attributeListener);
 }
 
-
-void Provider::unregisterAttributeListener(const QString& attributeName, IAttributeListener* attributeListener)
+void Provider::unregisterAttributeListener(const QString& attributeName,
+                                           IAttributeListener* attributeListener)
 {
     QWriteLocker locker(&lock);
     QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Find and delete the attribute listener
     for (int i = 0; i < listeners.length(); i++) {
-       if (listeners[i] == attributeListener) {
-           IAttributeListener* listener = listeners[i];
-           listeners.removeAt(i);
-           delete listener;
-       }
+        if (listeners[i] == attributeListener) {
+            IAttributeListener* listener = listeners[i];
+            listeners.removeAt(i);
+            delete listener;
+        }
     }
 }
-
 
 void Provider::onAttributeValueChanged(const QString& attributeName, const QVariant& value)
 {
@@ -79,13 +77,15 @@ void Provider::onAttributeValueChanged(const QString& attributeName, const QVari
     }
 }
 
-void Provider::registerBroadcastListener(const QString &broadcastName, IBroadcastListener *broadcastListener)
+void Provider::registerBroadcastListener(const QString& broadcastName,
+                                         IBroadcastListener* broadcastListener)
 {
     QWriteLocker locker(&lock);
     broadcastListeners[broadcastName].append(broadcastListener);
 }
 
-void Provider::unregisterBroadcastListener(const QString &broadcastName, IBroadcastListener *broadcastListener)
+void Provider::unregisterBroadcastListener(const QString& broadcastName,
+                                           IBroadcastListener* broadcastListener)
 {
     QWriteLocker locker(&lock);
     QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
@@ -94,7 +94,7 @@ void Provider::unregisterBroadcastListener(const QString &broadcastName, IBroadc
     delete listeners.takeAt(listenerIndex);
 }
 
-void Provider::onEventOccured(const QString &broadcastName, const QVariantMap &values)
+void Provider::onEventOccured(const QString& broadcastName, const QVariantMap& values)
 {
     QReadLocker locker(&lock);
 

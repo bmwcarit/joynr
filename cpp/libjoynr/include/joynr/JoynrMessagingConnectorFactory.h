@@ -25,31 +25,35 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class IJoynrMessageSender;
 class SubscriptionManager;
 class MessagingQos;
 class IClientCache;
-namespace system { class Address; }
+namespace system
+{
+class Address;
+}
 
 // Default implementation of a JoynrMessagingConnectorFactoryHelper
 // Template specializations are found in the generated *JoynrMessagingConnector.h files
 template <class T>
-class JoynrMessagingConnectorFactoryHelper {
+class JoynrMessagingConnectorFactoryHelper
+{
 public:
-    T* create(
-            IJoynrMessageSender* messageSender,
-            SubscriptionManager* subscriptionManager,
-            const QString &domain,
-            const QString &interfaceName,
-            const QString proxyParticipantId,
-            const QString& providerParticipantId,
-            const MessagingQos &qosSettings,
-            IClientCache *cache,
-            bool cached,
-            qint64 reqCacheDataFreshness_ms
-    ){
+    T* create(IJoynrMessageSender* messageSender,
+              SubscriptionManager* subscriptionManager,
+              const QString& domain,
+              const QString& interfaceName,
+              const QString proxyParticipantId,
+              const QString& providerParticipantId,
+              const MessagingQos& qosSettings,
+              IClientCache* cache,
+              bool cached,
+              qint64 reqCacheDataFreshness_ms)
+    {
         Q_UNUSED(messageSender);
         Q_UNUSED(subscriptionManager);
         Q_UNUSED(domain);
@@ -67,39 +71,38 @@ public:
 };
 
 // Create a JoynrMessagingConnector for a generated interface
-class JOYNR_EXPORT JoynrMessagingConnectorFactory {
+class JOYNR_EXPORT JoynrMessagingConnectorFactory
+{
 public:
-    JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender, SubscriptionManager* subscriptionManager);
+    JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
+                                   SubscriptionManager* subscriptionManager);
 
     bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
 
     template <class T>
-    T* create(
-    		const QString &domain,
-            const QString proxyParticipantId,
-            const QString& providerParticipantId,
-            const MessagingQos &qosSettings,
-            IClientCache *cache,
-            bool cached,
-            qint64 reqCacheDataFreshness_ms
-    ) {
-        return JoynrMessagingConnectorFactoryHelper<T>().create(
-        		messageSender,
-        		subscriptionManager,
-        		domain,
-        		proxyParticipantId,
-        		providerParticipantId,
-        		qosSettings,
-        		cache,
-        		cached,
-        		reqCacheDataFreshness_ms
-        );
+    T* create(const QString& domain,
+              const QString proxyParticipantId,
+              const QString& providerParticipantId,
+              const MessagingQos& qosSettings,
+              IClientCache* cache,
+              bool cached,
+              qint64 reqCacheDataFreshness_ms)
+    {
+        return JoynrMessagingConnectorFactoryHelper<T>().create(messageSender,
+                                                                subscriptionManager,
+                                                                domain,
+                                                                proxyParticipantId,
+                                                                providerParticipantId,
+                                                                qosSettings,
+                                                                cache,
+                                                                cached,
+                                                                reqCacheDataFreshness_ms);
     }
+
 private:
     IJoynrMessageSender* messageSender;
     SubscriptionManager* subscriptionManager;
 };
 
-
 } // namespace joynr
-#endif //JOYNRMESSAGINGCONNECTORFACTORY_H
+#endif // JOYNRMESSAGINGCONNECTORFACTORY_H

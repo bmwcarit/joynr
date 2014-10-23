@@ -21,12 +21,12 @@
 #include "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
 #include "joynr/SettingsMerger.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrRuntime* JoynrRuntime::createRuntime(
-        const QString& pathToLibjoynrSettings,
-        const QString& pathToMessagingSettings
-) {
+JoynrRuntime* JoynrRuntime::createRuntime(const QString& pathToLibjoynrSettings,
+                                          const QString& pathToMessagingSettings)
+{
     Q_UNUSED(pathToMessagingSettings);
     QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
     SettingsMerger::mergeSettings(pathToMessagingSettings, settings);

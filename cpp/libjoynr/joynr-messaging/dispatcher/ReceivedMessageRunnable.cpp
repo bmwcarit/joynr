@@ -19,49 +19,51 @@
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
 #include "joynr/Dispatcher.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
-Logger* ReceivedMessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "ReceiverRunnable ");
+Logger* ReceivedMessageRunnable::logger =
+        Logging::getInstance()->getLogger("MSG", "ReceiverRunnable ");
 
-ReceivedMessageRunnable::ReceivedMessageRunnable(
-        const JoynrMessage& message,
-        Dispatcher& dispatcher
-) :
-    ObjectWithDecayTime(message.getHeaderExpiryDate()),
-    message(message),
-    dispatcher(dispatcher){
-        LOG_DEBUG(logger, "Creating ReceivedMessageRunnable for message type: " + message.getType());
+ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
+                                                 Dispatcher& dispatcher)
+        : ObjectWithDecayTime(message.getHeaderExpiryDate()),
+          message(message),
+          dispatcher(dispatcher)
+{
+    LOG_DEBUG(logger, "Creating ReceivedMessageRunnable for message type: " + message.getType());
 }
 
-void ReceivedMessageRunnable::run() {
+void ReceivedMessageRunnable::run()
+{
     LOG_DEBUG(logger, "Running ReceivedMessageRunnable for message type: " + message.getType());
     if (isExpired()) {
-        LOG_DEBUG(logger, "Dropping ReceivedMessageRunnable message, because it is expired: " );
+        LOG_DEBUG(logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
         return;
     }
 
-    if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
+    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
         dispatcher.handleRequestReceived(message);
-    } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
         dispatcher.handleReplyReceived(message);
-    } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         dispatcher.handleSubscriptionRequestReceived(message);
-    } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+    } else if (message.getType() ==
+               JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
-    } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
         LOG_FATAL(logger, "subscription reply not yet implemented");
         assert(false);
-    } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         dispatcher.handlePublicationReceived(message);
-    } else if(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
         dispatcher.handleSubscriptionStopReceived(message);
     } else {
-        LOG_FATAL(logger, "unknown message type: "+message.getType());
+        LOG_FATAL(logger, "unknown message type: " + message.getType());
         assert(false);
     }
 }
-
 
 } // namespace joynr

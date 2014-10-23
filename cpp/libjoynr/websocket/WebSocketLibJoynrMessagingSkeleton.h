@@ -30,15 +30,14 @@
 class QWebSocketServer;
 class QWebSocket;
 
-namespace joynr {
+namespace joynr
+{
 
 class WebSocketLibJoynrMessagingSkeleton : public QObject, public IMessaging
 {
     Q_OBJECT
 public:
-    WebSocketLibJoynrMessagingSkeleton(
-            MessageRouter& messageRouter
-    );
+    WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
     ~WebSocketLibJoynrMessagingSkeleton();
 
@@ -52,7 +51,6 @@ private:
     static joynr_logging::Logger* logger;
     MessageRouter& messageRouter;
 };
-
 
 } // namespace joynr
 #endif // WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H

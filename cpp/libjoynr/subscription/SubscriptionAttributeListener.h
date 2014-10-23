@@ -24,7 +24,8 @@
 
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class PublicationManager;
 
@@ -37,10 +38,12 @@ public:
     /**
      * Create an attribute listener linked to a subscription
      */
-    SubscriptionAttributeListener(const QString& subscriptionId, PublicationManager &publicationManager);
+    SubscriptionAttributeListener(const QString& subscriptionId,
+                                  PublicationManager& publicationManager);
 
     // Implementation of IAttributeListener::attributeValueChanged
     void attributeValueChanged(const QVariant& value);
+
 private:
     QString subscriptionId;
     PublicationManager& publicationManager;

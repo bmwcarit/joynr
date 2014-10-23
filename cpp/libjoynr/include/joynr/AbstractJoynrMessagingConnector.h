@@ -38,27 +38,29 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IJoynrMessageSender;
 class SubscriptionManager;
 
-class JOYNR_EXPORT AbstractJoynrMessagingConnector: public IConnector {
+class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
+{
 public:
-    AbstractJoynrMessagingConnector(
-            IJoynrMessageSender* joynrMessageSender,
-            SubscriptionManager* subscriptionManager,
-            const QString &domain,
-            const QString &interfaceName,
-            const QString proxyParticipantId,
-            const QString& providerParticipantId,
-            const MessagingQos &qosSettings,
-            IClientCache *cache,
-            bool cached,
-            const qint64 reqCacheDataFreshness_ms
-            );
+    AbstractJoynrMessagingConnector(IJoynrMessageSender* joynrMessageSender,
+                                    SubscriptionManager* subscriptionManager,
+                                    const QString& domain,
+                                    const QString& interfaceName,
+                                    const QString proxyParticipantId,
+                                    const QString& providerParticipantId,
+                                    const MessagingQos& qosSettings,
+                                    IClientCache* cache,
+                                    bool cached,
+                                    const qint64 reqCacheDataFreshness_ms);
     virtual bool usesClusterController() const;
-    virtual ~AbstractJoynrMessagingConnector(){}
+    virtual ~AbstractJoynrMessagingConnector()
+    {
+    }
 
     /**
      * @brief Makes a request and returns the received response via the callback.
@@ -68,7 +70,7 @@ public:
      * @param replyCaller
      * @return Reply
      */
-    template<typename T>
+    template <typename T>
     void attributeRequest(QString methodName,
                           RequestStatus& status,
                           QSharedPointer<IReplyCaller> replyCaller)
@@ -78,28 +80,25 @@ public:
 
         if (cached) {
             QVariant entry = cache->lookUp(attributeID, reqCacheDataFreshness_ms);
-            if(!entry.isValid()){
-                LOG_DEBUG(logger, "Cached value for " + methodName +" is not valid");
-            }
-            else if(!entry.canConvert<T>()){
-                LOG_DEBUG(logger, "Cached value for " + methodName +" cannot be converted to type T");
+            if (!entry.isValid()) {
+                LOG_DEBUG(logger, "Cached value for " + methodName + " is not valid");
+            } else if (!entry.canConvert<T>()) {
+                LOG_DEBUG(logger,
+                          "Cached value for " + methodName + " cannot be converted to type T");
                 assert(false);
             } else {
                 LOG_DEBUG(logger, "Returning cached value for method " + methodName);
-                QSharedPointer<ReplyCaller<T> > typedReplyCaller = replyCaller.dynamicCast<ReplyCaller<T> >();
+                QSharedPointer<ReplyCaller<T>> typedReplyCaller =
+                        replyCaller.dynamicCast<ReplyCaller<T>>();
                 typedReplyCaller->returnValue(entry.value<T>());
             }
         } else {
             Request request;
             request.setMethodName(methodName);
             sendRequest(request, replyCaller);
-            //TODO the retrieved values are never stored into the cache.
+            // TODO the retrieved values are never stored into the cache.
         }
-
     }
-
-
-
 
     /**
      * @brief Makes a request and returns the received response via the callback.
@@ -111,9 +110,9 @@ public:
      * @param paramOrder
      * @return Reply
      */
-    void operationRequest(RequestStatus& status, QSharedPointer<IReplyCaller> replyCaller,
+    void operationRequest(RequestStatus& status,
+                          QSharedPointer<IReplyCaller> replyCaller,
                           const Request& request);
-
 
 protected:
     IJoynrMessageSender* joynrMessageSender;
@@ -131,13 +130,15 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);
 
-    //Request jsonRequest;
+    // Request jsonRequest;
     void sendRequest(const Request& request, QSharedPointer<IReplyCaller> replyCaller);
 
-    Reply makeRequest(QString methodName, RequestStatus* status, ICallback<Reply>* callBack, QVariantMap params);
+    Reply makeRequest(QString methodName,
+                      RequestStatus* status,
+                      ICallback<Reply>* callBack,
+                      QVariantMap params);
     Reply makeRequest(QString methodName, RequestStatus* status, QVariantMap params);
-
 };
 
 } // namespace joynr
-#endif //ABSTRACTJOYNRMESSAGINGCONNECTOR_H
+#endif // ABSTRACTJOYNRMESSAGINGCONNECTOR_H

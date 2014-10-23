@@ -27,8 +27,8 @@
 // operator as private.
 //------------------------------------------------------------------------------
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);   \
-  void operator=(const TypeName&)
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)                                                         \
+    TypeName(const TypeName&);                                                                     \
+    void operator=(const TypeName&)
 
 #endif

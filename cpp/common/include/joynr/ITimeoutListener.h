@@ -19,15 +19,16 @@
 #ifndef ITIMEOUTLISTENER_H
 #define ITIMEOUTLISTENER_H
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * @brief This interface should be used for objects stored in the Directory that
  * wish to be notified when the time to live expires.
  */
-class ITimeoutListener {
+class ITimeoutListener
+{
 public:
-
     /**
      * @brief This method will be called by the directory when
      * a time out occurs.
@@ -35,9 +36,10 @@ public:
      * this object from its directory.
      */
     virtual void timeOut() = 0;
-    virtual ~ITimeoutListener(){ }
+    virtual ~ITimeoutListener()
+    {
+    }
 };
 
-
 } // namespace joynr
-#endif //ITIMEOUTLISTENER_H
+#endif // ITIMEOUTLISTENER_H

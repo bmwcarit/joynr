@@ -25,22 +25,25 @@
 #include <QSharedPointer>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class IDiscoverySync;
-    class DiscoveryEntry;
+namespace system
+{
+class IDiscoverySync;
+class DiscoveryEntry;
 }
 
-class FixedParticipantArbitrator : public ProviderArbitrator {
+class FixedParticipantArbitrator : public ProviderArbitrator
+{
 public:
-    virtual ~FixedParticipantArbitrator() { }
-    FixedParticipantArbitrator(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const DiscoveryQos &discoveryQos
-    );
+    virtual ~FixedParticipantArbitrator()
+    {
+    }
+    FixedParticipantArbitrator(const QString& domain,
+                               const QString& interfaceName,
+                               joynr::system::IDiscoverySync& discoveryProxy,
+                               const DiscoveryQos& discoveryQos);
 
     /*
      * Attempt to arbitrate with a set participant id
@@ -54,6 +57,5 @@ private:
     qint64 reqCacheDataFreshness;
 };
 
-
 } // namespace joynr
-#endif //FIXEDPARTICIPANTARBITRATOR_H
+#endif // FIXEDPARTICIPANTARBITRATOR_H

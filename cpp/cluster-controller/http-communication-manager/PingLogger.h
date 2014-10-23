@@ -24,9 +24,11 @@
 #include <QObject>
 #include <QProcess>
 
-namespace joynr {
+namespace joynr
+{
 
-class PingLogger :  public QObject {
+class PingLogger : public QObject
+{
     Q_OBJECT
 public:
     PingLogger(const QString& host, QObject* parent = 0);
@@ -49,6 +51,5 @@ private:
     QProcess ping;
 };
 
-
 } // namespace joynr
-#endif//PINGLOGGER_H
+#endif // PINGLOGGER_H

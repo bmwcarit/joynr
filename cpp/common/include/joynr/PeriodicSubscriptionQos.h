@@ -21,26 +21,30 @@
 
 #include "joynr/SubscriptionQos.h"
 
-namespace joynr {
+namespace joynr
+{
 
-
-class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public SubscriptionQos {
+class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public SubscriptionQos
+{
 
     Q_OBJECT
 
     Q_PROPERTY(qint64 period READ getPeriod WRITE setPeriod)
-    Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval  WRITE setAlertAfterInterval)
+    Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval WRITE setAlertAfterInterval)
 
 public:
-
     PeriodicSubscriptionQos();
     PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other);
-    PeriodicSubscriptionQos(const qint64& validity, const qint64& period, const qint64& alertAfterInterval);
+    PeriodicSubscriptionQos(const qint64& validity,
+                            const qint64& period,
+                            const qint64& alertAfterInterval);
 
     /**
-    * The provider will send notifications every maximum interval in milliseconds, even if the value didn't
+    * The provider will send notifications every maximum interval in milliseconds, even if the value
+    *didn't
     * change. It will send notifications more often if on-change notifications are enabled,
-    * the value changes more often, and the minimum interval QoS does not prevent it. The maximum interval
+    * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
+    *interval
     * can thus be seen as a sort of heart beat.
     *
     * @return qint64 period
@@ -49,9 +53,11 @@ public:
     virtual qint64 getPeriod() const;
 
     /**
-     * The provider will send notifications every maximum interval in milliseconds, even if the value didn't
+     * The provider will send notifications every maximum interval in milliseconds, even if the
+     *value didn't
      * change. It will send notifications more often if on-change notifications are enabled,
-     * the value changes more often, and the minimum interval QoS does not prevent it. The maximum interval
+     * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
+     *interval
      * can thus be seen as a sort of heart beat.
      *
      * @param period
@@ -64,7 +70,8 @@ public:
      * notification will be raised.
      *
      * @return alertInterval_ms
-     *            If more than alertInterval_ms pass without receiving a message, subscriptionManager will issue a
+     *            If more than alertInterval_ms pass without receiving a message,
+     *subscriptionManager will issue a
      *            publicationMissed.
      */
     virtual qint64 getAlertAfterInterval() const;
@@ -74,7 +81,8 @@ public:
      * notification will be raised.
      *
      * @param alertInterval_ms
-     *            If more than alertInterval pass without receiving a message, subscriptionManager will issue a
+     *            If more than alertInterval pass without receiving a message, subscriptionManager
+     *will issue a
      *            publicationMissed..
      */
     virtual void setAlertAfterInterval(const qint64& alertAfterInterval);

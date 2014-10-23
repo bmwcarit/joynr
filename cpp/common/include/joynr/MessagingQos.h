@@ -27,15 +27,15 @@
 #include <QVariantMap>
 #include <QDateTime>
 
-
-namespace joynr {
+namespace joynr
+{
 
 /**
   * Data Class that stores QoS Settings like Ttl
   */
 class JOYNRCOMMON_EXPORT MessagingQos : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
     Q_PROPERTY(qint64 ttl READ getTtl WRITE setTtl)
 

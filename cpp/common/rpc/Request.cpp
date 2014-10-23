@@ -1,4 +1,4 @@
- /*
+/*
   * #%L
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
@@ -20,27 +20,25 @@
 #include "joynr/Util.h"
 #include <QStringList>
 
-namespace joynr {
+namespace joynr
+{
 
-Request::Request():
-    requestReplyId(),
-    methodName(),
-    params(),
-    paramDatatypes()
+Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
 {
     this->requestReplyId = Util::createUuid();
 }
 
-Request::Request(const Request& other) :
-    QObject(),
-    requestReplyId(other.getRequestReplyId()),
-    methodName(other.getMethodName()),
-    params(other.getParams()),
-    paramDatatypes(other.paramDatatypes)
+Request::Request(const Request& other)
+        : QObject(),
+          requestReplyId(other.getRequestReplyId()),
+          methodName(other.getMethodName()),
+          params(other.getParams()),
+          paramDatatypes(other.paramDatatypes)
 {
 }
 
-Request& Request::operator=(const Request& other) {
+Request& Request::operator=(const Request& other)
+{
     requestReplyId = other.getRequestReplyId();
     methodName = other.getMethodName();
     params = other.getParams();
@@ -48,51 +46,58 @@ Request& Request::operator=(const Request& other) {
     return *this;
 }
 
-bool Request::operator==(const Request& other) const {
-    return requestReplyId == other.getRequestReplyId()
-           && methodName == other.getMethodName()
-           && params == other.getParams()
-           && paramDatatypes == other.paramDatatypes;
+bool Request::operator==(const Request& other) const
+{
+    return requestReplyId == other.getRequestReplyId() && methodName == other.getMethodName() &&
+           params == other.getParams() && paramDatatypes == other.paramDatatypes;
 }
 
-const QString& Request::getRequestReplyId() const {
+const QString& Request::getRequestReplyId() const
+{
     return requestReplyId;
 }
 
-void Request::setRequestReplyId(const QString& requestReplyId) {
+void Request::setRequestReplyId(const QString& requestReplyId)
+{
     this->requestReplyId = requestReplyId;
 }
 
-const QString& Request::getMethodName() const {
+const QString& Request::getMethodName() const
+{
     return methodName;
 }
 
-void Request::setMethodName(const QString& methodName) {
+void Request::setMethodName(const QString& methodName)
+{
     this->methodName = methodName;
 }
 
-QList<QVariant> Request::getParams() const {
+QList<QVariant> Request::getParams() const
+{
     return params;
 }
 
 // Set the parameters - called by the QJson deserializer
-void Request::setParams(const QList<QVariant>& params) {
+void Request::setParams(const QList<QVariant>& params)
+{
     this->params = params;
 }
 
-void Request::addParam(QVariant value, QString datatype){
+void Request::addParam(QVariant value, QString datatype)
+{
     this->params.append(value);
     this->paramDatatypes.append(QVariant(datatype));
 }
 
-QList<QVariant> Request::getParamDatatypes() const {
+QList<QVariant> Request::getParamDatatypes() const
+{
     return paramDatatypes;
 }
 
 // Set the parameter datatypes - called by the QJson deserializer
-void Request::setParamDatatypes(const QList<QVariant>& paramDatatypes) {
+void Request::setParamDatatypes(const QList<QVariant>& paramDatatypes)
+{
     this->paramDatatypes = paramDatatypes;
 }
-
 
 } // namespace joynr

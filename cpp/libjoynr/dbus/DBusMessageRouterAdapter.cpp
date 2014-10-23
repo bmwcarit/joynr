@@ -18,19 +18,24 @@
  */
 #include "joynr/DBusMessageRouterAdapter.h"
 
-namespace joynr {
+namespace joynr
+{
 
-DBusMessageRouterAdapter::DBusMessageRouterAdapter(MessageRouter& messageRouter, QString dbusAddress)
-    : dbusSkeletonWrapper(new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*this, dbusAddress)),
-      messageRouter(messageRouter)
+DBusMessageRouterAdapter::DBusMessageRouterAdapter(MessageRouter& messageRouter,
+                                                   QString dbusAddress)
+        : dbusSkeletonWrapper(
+                  new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*this, dbusAddress)),
+          messageRouter(messageRouter)
 {
 }
 
-DBusMessageRouterAdapter::~DBusMessageRouterAdapter() {
+DBusMessageRouterAdapter::~DBusMessageRouterAdapter()
+{
     delete dbusSkeletonWrapper;
 }
 
-void DBusMessageRouterAdapter::transmit(JoynrMessage &message) {
+void DBusMessageRouterAdapter::transmit(JoynrMessage& message)
+{
     dbusSkeletonWrapper->logMethodCall("transmit", "DBusMessageRouterAdapter");
     messageRouter.route(message);
 }

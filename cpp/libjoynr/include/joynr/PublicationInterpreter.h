@@ -28,48 +28,63 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 template <class T>
-class PublicationInterpreter : public IPublicationInterpreter{
+class PublicationInterpreter : public IPublicationInterpreter
+{
 public:
-    PublicationInterpreter(){}
-    void execute(QSharedPointer<ISubscriptionCallback> callback, const SubscriptionPublication& subscriptionPublication){
-        assert (!callback.isNull());
+    PublicationInterpreter()
+    {
+    }
+    void execute(QSharedPointer<ISubscriptionCallback> callback,
+                 const SubscriptionPublication& subscriptionPublication)
+    {
+        assert(!callback.isNull());
 
         QVariant response = subscriptionPublication.getResponse();
 
         T value = response.value<T>();
 
-        QSharedPointer< SubscriptionCallback<T> > typedCallbackQsp = callback.dynamicCast<SubscriptionCallback<T> >();
+        QSharedPointer<SubscriptionCallback<T>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<T>>();
 
         // value is copied in onSuccess
-        //LOG_TRACE(logger, "Publication received: notifying attribute changed");
+        // LOG_TRACE(logger, "Publication received: notifying attribute changed");
         typedCallbackQsp->attributeChanged(value);
     }
+
 private:
     static joynr_logging::Logger* logger;
 };
 
-//specialisation for Lists.. if the value is of Type QList<T> it has to be converted from
-//QList<QVariant> to QList<T> before being passed to the SubscriptionCallback.
+// specialisation for Lists.. if the value is of Type QList<T> it has to be converted from
+// QList<QVariant> to QList<T> before being passed to the SubscriptionCallback.
 template <class T>
-class PublicationInterpreter<QList<T> > :public IPublicationInterpreter{
+class PublicationInterpreter<QList<T>> : public IPublicationInterpreter
+{
 public:
-    PublicationInterpreter() {}
+    PublicationInterpreter()
+    {
+    }
 
-    void execute (QSharedPointer<ISubscriptionCallback> callback, const SubscriptionPublication& subscriptionPublication){
-        assert (!callback.isNull());
+    void execute(QSharedPointer<ISubscriptionCallback> callback,
+                 const SubscriptionPublication& subscriptionPublication)
+    {
+        assert(!callback.isNull());
 
-        QList<QVariant> qvList = subscriptionPublication.getResponse().value<QList<QVariant> >();
-        QSharedPointer< SubscriptionCallback<QList<T> > > typedCallbackQsp = callback.dynamicCast<SubscriptionCallback<QList<T> > >();
+        QList<QVariant> qvList = subscriptionPublication.getResponse().value<QList<QVariant>>();
+        QSharedPointer<SubscriptionCallback<QList<T>>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<QList<T>>>();
         QList<T> valueList = Util::convertVariantListToList<T>(qvList);
 
         // value is copied in onSuccess
         typedCallbackQsp->attributeChanged(valueList);
     }
+
 private:
 };
 
@@ -78,66 +93,85 @@ private:
   * Template parameter T is the Enum wrapper class
   */
 template <class T>
-class EnumPublicationInterpreter : public IPublicationInterpreter{
+class EnumPublicationInterpreter : public IPublicationInterpreter
+{
 public:
-    EnumPublicationInterpreter(){}
-    void execute(QSharedPointer<ISubscriptionCallback> callback, const SubscriptionPublication& subscriptionPublication){
-        assert (!callback.isNull());
+    EnumPublicationInterpreter()
+    {
+    }
+    void execute(QSharedPointer<ISubscriptionCallback> callback,
+                 const SubscriptionPublication& subscriptionPublication)
+    {
+        assert(!callback.isNull());
 
-        typename T::Enum value = Util::convertVariantToEnum<T>(subscriptionPublication.getResponse());
+        typename T::Enum value =
+                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse());
 
-        QSharedPointer<SubscriptionCallback<typename T::Enum> > typedCallbackQsp =
-                             callback.dynamicCast<SubscriptionCallback<typename T::Enum> >();
+        QSharedPointer<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<typename T::Enum>>();
 
         // value is copied in onSuccess
-        //LOG_TRACE(logger, "Publication received: notifying attribute changed");
+        // LOG_TRACE(logger, "Publication received: notifying attribute changed");
         typedCallbackQsp->attributeChanged(value);
     }
+
 private:
     static joynr_logging::Logger* logger;
 };
 
 template <class T>
-class EnumPublicationInterpreter<QList<T> > :public IPublicationInterpreter{
+class EnumPublicationInterpreter<QList<T>> : public IPublicationInterpreter
+{
 public:
-    EnumPublicationInterpreter() {}
+    EnumPublicationInterpreter()
+    {
+    }
 
-    void execute (QSharedPointer<ISubscriptionCallback> callback, const SubscriptionPublication& subscriptionPublication){
-        assert (!callback.isNull());
+    void execute(QSharedPointer<ISubscriptionCallback> callback,
+                 const SubscriptionPublication& subscriptionPublication)
+    {
+        assert(!callback.isNull());
 
-        QList<QVariant> qvList = subscriptionPublication.getResponse().value<QList<QVariant> >();
-        QSharedPointer< SubscriptionCallback<QList<typename T::Enum> > > typedCallbackQsp =
-                                        callback.dynamicCast<SubscriptionCallback<QList<typename T::Enum> > >();
+        QList<QVariant> qvList = subscriptionPublication.getResponse().value<QList<QVariant>>();
+        QSharedPointer<SubscriptionCallback<QList<typename T::Enum>>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<QList<typename T::Enum>>>();
         QList<typename T::Enum> valueList = Util::convertVariantListToEnumList<T>(qvList);
 
         // value is copied in onSuccess
         typedCallbackQsp->attributeChanged(valueList);
     }
+
 private:
 };
 
 template <class... Ts>
-class BroadcastPublicationInterpreter : public IPublicationInterpreter{
+class BroadcastPublicationInterpreter : public IPublicationInterpreter
+{
 public:
-    BroadcastPublicationInterpreter(){}
-    void execute(QSharedPointer<ISubscriptionCallback> callback, const SubscriptionPublication& subscriptionPublication){
-        assert (!callback.isNull());
+    BroadcastPublicationInterpreter()
+    {
+    }
+    void execute(QSharedPointer<ISubscriptionCallback> callback,
+                 const SubscriptionPublication& subscriptionPublication)
+    {
+        assert(!callback.isNull());
 
         QVariant response = subscriptionPublication.getResponse();
 
         QVariantMap value = response.value<QVariantMap>();
 
-        QSharedPointer< BroadcastSubscriptionCallback<Ts...> > typedCallbackQsp = callback.dynamicCast<BroadcastSubscriptionCallback<Ts...> >();
+        QSharedPointer<BroadcastSubscriptionCallback<Ts...>> typedCallbackQsp =
+                callback.dynamicCast<BroadcastSubscriptionCallback<Ts...>>();
 
         std::tuple<Ts...> values = Util::toValueTuple<Ts...>(value.values());
         auto func = std::mem_fn(&BroadcastSubscriptionCallback<Ts...>::eventOccured);
 
         Util::expandTupleIntoFunctionArguments(func, typedCallbackQsp, values);
     }
+
 private:
     static joynr_logging::Logger* logger;
 };
-
 
 } // namespace joynr
 #endif // PUBLICATIONINTERPRETER_H

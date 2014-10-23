@@ -22,15 +22,15 @@
 #include <QtCore/QMetaEnum>
 #include "joynr/SettingsMerger.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 Logger* WebSocketSettings::logger = Logging::getInstance()->getLogger("MSG", "WebSocketSettings");
 
-WebSocketSettings::WebSocketSettings(QSettings& settings, QObject *parent) :
-    QObject(parent),
-    settings(settings)
+WebSocketSettings::WebSocketSettings(QSettings& settings, QObject* parent)
+        : QObject(parent), settings(settings)
 {
     qRegisterMetaType<joynr::system::WebSocketAddress>("joynr::system::WebSocketAddress");
     qRegisterMetaType<joynr::system::WebSocketProtocol>();
@@ -40,61 +40,68 @@ WebSocketSettings::WebSocketSettings(QSettings& settings, QObject *parent) :
     checkSettings();
 }
 
-WebSocketSettings::WebSocketSettings(const WebSocketSettings& other) :
-    QObject(other.parent()),
-    settings(other.settings)
+WebSocketSettings::WebSocketSettings(const WebSocketSettings& other)
+        : QObject(other.parent()), settings(other.settings)
 {
 }
 
-WebSocketSettings::~WebSocketSettings () {
+WebSocketSettings::~WebSocketSettings()
+{
 }
 
-void WebSocketSettings::checkSettings() const {
+void WebSocketSettings::checkSettings() const
+{
     assert(settings.contains(SETTING_CC_MESSAGING_URL()));
 }
 
-const QString& WebSocketSettings::SETTING_CC_MESSAGING_URL() {
+const QString& WebSocketSettings::SETTING_CC_MESSAGING_URL()
+{
     static const QString value("websocket/cluster-controller-messaging-url");
     return value;
 }
 
-const QString& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME() {
+const QString& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME()
+{
     static const QString value("resources/default-websocket.settings");
     return value;
 }
 
-QString WebSocketSettings::getClusterControllerMessagingUrl() const {
+QString WebSocketSettings::getClusterControllerMessagingUrl() const
+{
     return settings.value(WebSocketSettings::SETTING_CC_MESSAGING_URL()).toString();
 }
 
-void WebSocketSettings::setClusterControllerMessagingUrl(const QString& url) {
+void WebSocketSettings::setClusterControllerMessagingUrl(const QString& url)
+{
     settings.setValue(WebSocketSettings::SETTING_CC_MESSAGING_URL(), url);
 }
 
-joynr::system::WebSocketAddress WebSocketSettings::createClusterControllerMessagingAddress() const {
+joynr::system::WebSocketAddress WebSocketSettings::createClusterControllerMessagingAddress() const
+{
     QUrl url(getClusterControllerMessagingUrl());
     QMetaEnum metaEnum = joynr::system::WebSocketProtocol::staticMetaObject.enumerator(0);
     joynr::system::WebSocketProtocol::Enum protocol =
-            (joynr::system::WebSocketProtocol::Enum) metaEnum.keyToValue(url.scheme().toUpper().toStdString().c_str());
+            (joynr::system::WebSocketProtocol::Enum)metaEnum.keyToValue(
+                    url.scheme().toUpper().toStdString().c_str());
 
-    return system::WebSocketAddress(
-                protocol,
-                url.host(),
-                url.port(),
-                url.path()
-    );
+    return system::WebSocketAddress(protocol, url.host(), url.port(), url.path());
 }
 
-bool WebSocketSettings::contains(const QString& key) const {
+bool WebSocketSettings::contains(const QString& key) const
+{
     return settings.contains(key);
 }
 
-QVariant WebSocketSettings::value(const QString& key) const {
+QVariant WebSocketSettings::value(const QString& key) const
+{
     return settings.value(key);
 }
 
-void WebSocketSettings::printSettings() const {
-    LOG_DEBUG(logger, "SETTING: " + SETTING_CC_MESSAGING_URL() + " = " + settings.value(SETTING_CC_MESSAGING_URL()).toString());
+void WebSocketSettings::printSettings() const
+{
+    LOG_DEBUG(logger,
+              "SETTING: " + SETTING_CC_MESSAGING_URL() + " = " +
+                      settings.value(SETTING_CC_MESSAGING_URL()).toString());
 }
 
 } // namespace joynr

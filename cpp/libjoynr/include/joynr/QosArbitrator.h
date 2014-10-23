@@ -25,27 +25,30 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class IDiscoverySync;
-    class DiscoveryEntry;
+namespace system
+{
+class IDiscoverySync;
+class DiscoveryEntry;
 }
 
 /*
   * The QoS Arbitrator arbitrates according to the QoS of the provider.
   * Currently it arbitrates to the provider with the highest priority.
   */
-class JOYNR_EXPORT QosArbitrator : public ProviderArbitrator {
+class JOYNR_EXPORT QosArbitrator : public ProviderArbitrator
+{
 
 public:
-    virtual ~QosArbitrator() { }
-    QosArbitrator(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const DiscoveryQos &discoveryQos
-    );
+    virtual ~QosArbitrator()
+    {
+    }
+    QosArbitrator(const QString& domain,
+                  const QString& interfaceName,
+                  joynr::system::IDiscoverySync& discoveryProxy,
+                  const DiscoveryQos& discoveryQos);
 
     /*
      *  Attempts to arbitrate. This function is called by the ProviderArbitrator
@@ -56,18 +59,14 @@ public:
      * Made public for testing purposes
      */
     void receiveCapabilitiesLookupResults(
-            const QList<joynr::system::DiscoveryEntry>& discoveryEntries
-    );
+            const QList<joynr::system::DiscoveryEntry>& discoveryEntries);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrator);
     QString keyword;
     static int ARBITRATION_RETRY_INTERVAL;
     static joynr_logging::Logger* logger;
-
 };
-
-
 
 } // namespace joynr
 #endif // QOSARBITRATOR_H

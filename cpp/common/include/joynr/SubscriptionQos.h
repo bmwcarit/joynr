@@ -24,9 +24,11 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT SubscriptionQos : public QObject {
+class JOYNRCOMMON_EXPORT SubscriptionQos : public QObject
+{
     Q_OBJECT
 
     Q_PROPERTY(qint64 expiryDate READ getExpiryDate WRITE setExpiryDate)
@@ -57,7 +59,8 @@ public:
     virtual void clearExpiryDate();
 
     /**
-     * The provider will send notifications until the the end date is reached. You will not receive any
+     * The provider will send notifications until the the end date is reached. You will not receive
+     *any
      * notifications (neither value notifications nor missed publication notifications) after
      * this date.
      *
@@ -69,13 +72,15 @@ public:
     virtual void setExpiryDate(const qint64& expiryDate);
 
     /**
-     * Notification messages will be sent with this time-to-live. If a notification message can not be
+     * Notification messages will be sent with this time-to-live. If a notification message can not
+     *be
      * delivered within its TTL, it will be deleted from the system.
      * <p>NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
      *       missed publication notification (depending on the value of the alert interval QoS).
      *
      * @return publicationTtl
-     *            Returns the TTL of the publication Messages -1 means, the message will be valid until the EndDate of the
+     *            Returns the TTL of the publication Messages -1 means, the message will be valid
+     *until the EndDate of the
      *            Subscription.
      *
      * @see SubscriptionQos#setAlertInterval_ms
@@ -98,13 +103,15 @@ public:
     virtual void setValidity(const qint64& validity);
 
     /**
-     * Notification messages will be sent with this time-to-live. If a notification message can not be
+     * Notification messages will be sent with this time-to-live. If a notification message can not
+     *be
      * delivered within its TTL, it will be deleted from the system.
      * <p>NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
      *       missed publication notification (depending on the value of the alert interval QoS).
      *
      * @param publicationTtl
-     *            Sets the TTL of the publication Messages -1 means, the message will be valid until the EndDate of the
+     *            Sets the TTL of the publication Messages -1 means, the message will be valid until
+     *the EndDate of the
      *            Subscription.
      *
      * @see SubscriptionQos#setAlertInterval_ms

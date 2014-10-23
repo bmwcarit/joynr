@@ -25,13 +25,14 @@
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #include "joynr/Util.h"
 
-namespace joynr {
+namespace joynr
+{
 
-LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings):
-    LibJoynrRuntime(settings),
-    dbusMessageRouterAdapter(Q_NULLPTR),
-    dbusSettings(new DbusSettings(*settings)),
-    libjoynrMessagingServiceUrl()
+LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings)
+        : LibJoynrRuntime(settings),
+          dbusMessageRouterAdapter(Q_NULLPTR),
+          dbusSettings(new DbusSettings(*settings)),
+          libjoynrMessagingServiceUrl()
 {
     dbusSettings->printSettings();
 
@@ -40,42 +41,35 @@ LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings):
     QString libjoynrMessagingServiceName("io.joynr.libjoynr.Messaging");
     QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
     libjoynrMessagingServiceUrl = QString(
-                QString("%0:%1:%2")
-                .arg(libjoynrMessagingDomain)
-                .arg(libjoynrMessagingServiceName)
-                .arg(libjoynrMessagingId)
-    );
+            QString("%0:%1:%2").arg(libjoynrMessagingDomain).arg(libjoynrMessagingServiceName).arg(
+                    libjoynrMessagingId));
     QSharedPointer<joynr::system::Address> libjoynrMessagingAddress(
-                new system::CommonApiDbusAddress(
-                    libjoynrMessagingDomain,
-                    libjoynrMessagingServiceName,
-                    libjoynrMessagingId
-                )
-    );
+            new system::CommonApiDbusAddress(
+                    libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
 
     // create connection to parent routing service
-    QSharedPointer<joynr::system::Address> ccMessagingAddress(
-                new system::CommonApiDbusAddress(
-                    dbusSettings->getClusterControllerMessagingDomain(),
-                    dbusSettings->getClusterControllerMessagingServiceName(),
-                    dbusSettings->getClusterControllerMessagingParticipantId()
-                )
-    );
+    QSharedPointer<joynr::system::Address> ccMessagingAddress(new system::CommonApiDbusAddress(
+            dbusSettings->getClusterControllerMessagingDomain(),
+            dbusSettings->getClusterControllerMessagingServiceName(),
+            dbusSettings->getClusterControllerMessagingParticipantId()));
 
-    LibJoynrRuntime::init(new DbusMessagingStubFactory(), libjoynrMessagingAddress, ccMessagingAddress);
+    LibJoynrRuntime::init(
+            new DbusMessagingStubFactory(), libjoynrMessagingAddress, ccMessagingAddress);
 }
 
-LibJoynrDbusRuntime::~LibJoynrDbusRuntime() {
+LibJoynrDbusRuntime::~LibJoynrDbusRuntime()
+{
     delete dbusMessageRouterAdapter;
     dbusMessageRouterAdapter = Q_NULLPTR;
     delete dbusSettings;
     dbusSettings = Q_NULLPTR;
 }
 
-void LibJoynrDbusRuntime::startLibJoynrMessagingSkeleton(MessageRouter &messageRouter)
+void LibJoynrDbusRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)
 {
     // create messaging skeleton using uuid
-    dbusMessageRouterAdapter = new DBusMessageRouterAdapter(messageRouter, libjoynrMessagingServiceUrl);
+    dbusMessageRouterAdapter =
+            new DBusMessageRouterAdapter(messageRouter, libjoynrMessagingServiceUrl);
 }
 
 } // namespace joynr

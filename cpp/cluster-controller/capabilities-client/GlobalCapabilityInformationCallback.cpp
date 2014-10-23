@@ -20,28 +20,31 @@
 #include "joynr/joynrlogging.h"
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
-GlobalCapabilityInformationCallback::GlobalCapabilityInformationCallback(QSharedPointer<IGlobalCapabilitiesCallback> igc) :
-    callback (igc)
+GlobalCapabilityInformationCallback::GlobalCapabilityInformationCallback(
+        QSharedPointer<IGlobalCapabilitiesCallback> igc)
+        : callback(igc)
 {
 }
-
 
 GlobalCapabilityInformationCallback::~GlobalCapabilityInformationCallback()
 {
-
 }
 
-void GlobalCapabilityInformationCallback::onFailure(const RequestStatus status){
+void GlobalCapabilityInformationCallback::onFailure(const RequestStatus status)
+{
     Q_UNUSED(status);
-    //TODO: handle failures.
+    // TODO: handle failures.
 }
 
-void GlobalCapabilityInformationCallback::onSuccess(const RequestStatus status, types::CapabilityInformation capInfo){
+void GlobalCapabilityInformationCallback::onSuccess(const RequestStatus status,
+                                                    types::CapabilityInformation capInfo)
+{
     assert(status.successful());
-	QList<types::CapabilityInformation> result;
-	result.push_back(capInfo);
+    QList<types::CapabilityInformation> result;
+    result.push_back(capInfo);
     callback->capabilitiesReceived(result);
 }
 

@@ -25,38 +25,37 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
-joynr_logging::Logger* ProviderArbitrator::logger = joynr_logging::Logging::getInstance()->getLogger("Arb", "ProviderArbitrator");
+joynr_logging::Logger* ProviderArbitrator::logger =
+        joynr_logging::Logging::getInstance()->getLogger("Arb", "ProviderArbitrator");
 
-ProviderArbitrator::ProviderArbitrator(
-        const QString& domain,
-        const QString& interfaceName,
-        joynr::system::IDiscoverySync& discoveryProxy,
-        const DiscoveryQos& discoveryQos
-) :
-    discoveryProxy(discoveryProxy),
-    discoveryQos(discoveryQos),
-    systemDiscoveryQos(
-        discoveryQos.getCacheMaxAge(),
-        discoveryQos.getDiscoveryScope(),
-        discoveryQos.getProviderMustSupportOnChange()
-    ),
-    domain(domain),
-    interfaceName(interfaceName),
-    participantId(""),
-    connection(joynr::system::CommunicationMiddleware::NONE),
-    arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-    listener(NULL),
-    listenerSemaphore(0)
+ProviderArbitrator::ProviderArbitrator(const QString& domain,
+                                       const QString& interfaceName,
+                                       joynr::system::IDiscoverySync& discoveryProxy,
+                                       const DiscoveryQos& discoveryQos)
+        : discoveryProxy(discoveryProxy),
+          discoveryQos(discoveryQos),
+          systemDiscoveryQos(discoveryQos.getCacheMaxAge(),
+                             discoveryQos.getDiscoveryScope(),
+                             discoveryQos.getProviderMustSupportOnChange()),
+          domain(domain),
+          interfaceName(interfaceName),
+          participantId(""),
+          connection(joynr::system::CommunicationMiddleware::NONE),
+          arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
+          listener(NULL),
+          listenerSemaphore(0)
 {
 }
 
-ProviderArbitrator::~ProviderArbitrator() {
+ProviderArbitrator::~ProviderArbitrator()
+{
 }
 
-
-void ProviderArbitrator::startArbitration(){
+void ProviderArbitrator::startArbitration()
+{
     QTime timer;
     QSemaphore semaphore;
 
@@ -69,77 +68,87 @@ void ProviderArbitrator::startArbitration(){
         attemptArbitration();
 
         // Finish on success or failure
-        if (arbitrationStatus != ArbitrationStatus::ArbitrationRunning) return;
+        if (arbitrationStatus != ArbitrationStatus::ArbitrationRunning)
+            return;
 
         // Reduce the timeout by the elapsed time
         discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.restart());
-        if (discoveryQos.getDiscoveryTimeout() <= 0) break;
+        if (discoveryQos.getDiscoveryTimeout() <= 0)
+            break;
 
         // If there are no suitable providers, wait for a second before trying again
         semaphore.tryAcquire(1, discoveryQos.getRetryInterval());
 
         // Reduce the timeout again
         discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.elapsed());
-        if (discoveryQos.getDiscoveryTimeout() <= 0) break;
+        if (discoveryQos.getDiscoveryTimeout() <= 0)
+            break;
     }
 
     // If this point is reached the arbitration timed out
-    updateArbitrationStatusParticipantIdAndAddress(
-                ArbitrationStatus::ArbitrationCanceledForever,
-                "",
-                joynr::system::CommunicationMiddleware::NONE
-    );
+    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationCanceledForever,
+                                                   "",
+                                                   joynr::system::CommunicationMiddleware::NONE);
 }
 
-joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::selectPreferredCommunicationMiddleware(
-        const QList<joynr::system::CommunicationMiddleware::Enum>& connections
-) {
-    if(connections.contains(joynr::system::CommunicationMiddleware::IN_PROCESS)) {
+joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::
+        selectPreferredCommunicationMiddleware(
+                const QList<joynr::system::CommunicationMiddleware::Enum>& connections)
+{
+    if (connections.contains(joynr::system::CommunicationMiddleware::IN_PROCESS)) {
         return joynr::system::CommunicationMiddleware::IN_PROCESS;
     }
-    if(connections.contains(joynr::system::CommunicationMiddleware::COMMONAPI_DBUS)) {
+    if (connections.contains(joynr::system::CommunicationMiddleware::COMMONAPI_DBUS)) {
         return joynr::system::CommunicationMiddleware::COMMONAPI_DBUS;
     }
-    if(connections.contains(joynr::system::CommunicationMiddleware::WEBSOCKET)) {
+    if (connections.contains(joynr::system::CommunicationMiddleware::WEBSOCKET)) {
         return joynr::system::CommunicationMiddleware::WEBSOCKET;
     }
-    if(connections.contains(joynr::system::CommunicationMiddleware::SOME_IP)) {
+    if (connections.contains(joynr::system::CommunicationMiddleware::SOME_IP)) {
         return joynr::system::CommunicationMiddleware::SOME_IP;
     }
-    if(connections.contains(joynr::system::CommunicationMiddleware::JOYNR)) {
+    if (connections.contains(joynr::system::CommunicationMiddleware::JOYNR)) {
         return joynr::system::CommunicationMiddleware::JOYNR;
     }
     return joynr::system::CommunicationMiddleware::NONE;
 }
 
-
-QString ProviderArbitrator::getParticipantId(){
-    if(participantId.isEmpty()){
-        throw JoynrArbitrationException("ParticipantId is empty: Called getParticipantId() before arbitration has finished / Arbitrator did not set participantId.");
+QString ProviderArbitrator::getParticipantId()
+{
+    if (participantId.isEmpty()) {
+        throw JoynrArbitrationException("ParticipantId is empty: Called getParticipantId() before "
+                                        "arbitration has finished / Arbitrator did not set "
+                                        "participantId.");
     }
     return participantId;
 }
 
-void ProviderArbitrator::setParticipantId(QString participantId){
+void ProviderArbitrator::setParticipantId(QString participantId)
+{
     this->participantId = participantId;
-    if(listenerSemaphore.tryAcquire(1)){
-        assert(listener!=NULL);
+    if (listenerSemaphore.tryAcquire(1)) {
+        assert(listener != NULL);
         listener->setParticipantId(participantId);
         listenerSemaphore.release(1);
     }
 }
 
-joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::getConnection(){
-    if(connection == joynr::system::CommunicationMiddleware::NONE) {
-        throw JoynrArbitrationException("Connection is NULL: Called getConnection() before arbitration has finished / Arbitrator did not set connection.");
+joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::getConnection()
+{
+    if (connection == joynr::system::CommunicationMiddleware::NONE) {
+        throw JoynrArbitrationException("Connection is NULL: Called getConnection() before "
+                                        "arbitration has finished / Arbitrator did not set "
+                                        "connection.");
     }
     return connection;
 }
 
-void ProviderArbitrator::setConnection(const joynr::system::CommunicationMiddleware::Enum& connection){
+void ProviderArbitrator::setConnection(
+        const joynr::system::CommunicationMiddleware::Enum& connection)
+{
     this->connection = connection;
-    if(listenerSemaphore.tryAcquire(1)){
-        assert(listener!=NULL);
+    if (listenerSemaphore.tryAcquire(1)) {
+        assert(listener != NULL);
         listener->setConnection(connection);
         listenerSemaphore.release(1);
     }
@@ -148,22 +157,25 @@ void ProviderArbitrator::setConnection(const joynr::system::CommunicationMiddlew
 void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(
         ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
         QString participantId,
-        const joynr::system::CommunicationMiddleware::Enum& connection
-) {
+        const joynr::system::CommunicationMiddleware::Enum& connection)
+{
     setParticipantId(participantId);
     setConnection(connection);
     setArbitrationStatus(arbitrationStatus);
 }
 
-
-void ProviderArbitrator::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus){
+void ProviderArbitrator::setArbitrationStatus(
+        ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
+{
     this->arbitrationStatus = arbitrationStatus;
-    if(listenerSemaphore.tryAcquire(1)){
+    if (listenerSemaphore.tryAcquire(1)) {
         try {
-            assert(listener!=NULL);
+            assert(listener != NULL);
             listener->setArbitrationStatus(arbitrationStatus);
-        } catch (std::exception& e) { //TODO replace by expected exception type
-            LOG_ERROR(logger, "Exception while setting arbitration status: " + QString::fromStdString(e.what()));
+        } catch (std::exception& e) { // TODO replace by expected exception type
+            LOG_ERROR(logger,
+                      "Exception while setting arbitration status: " +
+                              QString::fromStdString(e.what()));
             listenerSemaphore.release(1);
             throw;
         }
@@ -171,24 +183,23 @@ void ProviderArbitrator::setArbitrationStatus(ArbitrationStatus::ArbitrationStat
     }
 }
 
-void ProviderArbitrator::removeArbitationListener(){
-    if (listener!=NULL){
+void ProviderArbitrator::removeArbitationListener()
+{
+    if (listener != NULL) {
         this->listener = NULL;
         listenerSemaphore.acquire(1);
     }
 }
 
-void ProviderArbitrator::setArbitrationListener(IArbitrationListener *listener){
+void ProviderArbitrator::setArbitrationListener(IArbitrationListener* listener)
+{
     this->listener = listener;
     listenerSemaphore.release(1);
-    if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful){
+    if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
         listener->setParticipantId(participantId);
         listener->setConnection(connection);
         listener->setArbitrationStatus(arbitrationStatus);
     }
 }
-
-
-
 
 } // namespace joynr

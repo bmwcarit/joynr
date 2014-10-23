@@ -22,38 +22,41 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
 
-namespace joynr {
+namespace joynr
+{
 
 // printing MessagingQos with google-test and google-mock
-void PrintTo(const MessagingQos& value, ::std::ostream* os) {
+void PrintTo(const MessagingQos& value, ::std::ostream* os)
+{
     *os << joynr::JsonSerializer::serialize(value).constData();
 }
 
-MessagingQos::MessagingQos(const MessagingQos& other)
-    : QObject(),
-      ttl(other.ttl)
+MessagingQos::MessagingQos(const MessagingQos& other) : QObject(), ttl(other.ttl)
 {
 }
 
-MessagingQos::MessagingQos(qint64 ttl)
-    : ttl(ttl)
+MessagingQos::MessagingQos(qint64 ttl) : ttl(ttl)
 {
     qRegisterMetaType<joynr::MessagingQos>("joynr::MessagingQos");
 }
 
-qint64 MessagingQos::getTtl() const {
+qint64 MessagingQos::getTtl() const
+{
     return ttl;
 }
 
-void MessagingQos::setTtl(const qint64 &ttl) {
+void MessagingQos::setTtl(const qint64& ttl)
+{
     this->ttl = ttl;
 }
 
-bool MessagingQos::operator==(const MessagingQos& other) const{
+bool MessagingQos::operator==(const MessagingQos& other) const
+{
     return this->getTtl() == other.getTtl();
 }
 
-MessagingQos& MessagingQos::operator=(const MessagingQos& other) {
+MessagingQos& MessagingQos::operator=(const MessagingQos& other)
+{
     ttl = other.getTtl();
     return *this;
 }

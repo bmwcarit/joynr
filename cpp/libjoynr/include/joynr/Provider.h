@@ -30,7 +30,8 @@
 #include <QVariant>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class IAttributeListener;
 class IBroadcastListener;
@@ -39,7 +40,8 @@ class IBroadcastListener;
  * Abstract class that specifies the interface providers need to implement
  * and contains functionality to support listening to onChange events
  */
-class JOYNR_EXPORT Provider : public IParticipant {
+class JOYNR_EXPORT Provider : public IParticipant
+{
 public:
     Provider();
     virtual ~Provider();
@@ -52,12 +54,14 @@ public:
     /**
      * Register an object that will be informed when the value of an attribute changes
      */
-    void registerAttributeListener(const QString& attributeName, IAttributeListener* attributeListener);
+    void registerAttributeListener(const QString& attributeName,
+                                   IAttributeListener* attributeListener);
 
     /**
      * Unregister and delete an attribute listener
      */
-    void unregisterAttributeListener(const QString& attributeName, IAttributeListener* attributeListener);
+    void unregisterAttributeListener(const QString& attributeName,
+                                     IAttributeListener* attributeListener);
 
     /**
      * Called by subclasses when the value of an attribute changes
@@ -67,12 +71,14 @@ public:
     /**
      * Register an object that will be informed when an event occurs
      */
-    void registerBroadcastListener(const QString& broadcastName, IBroadcastListener* broadcastListener);
+    void registerBroadcastListener(const QString& broadcastName,
+                                   IBroadcastListener* broadcastListener);
 
     /**
      * Unregister and delete a broadcast listener
      */
-    void unregisterBroadcastListener(const QString& broadcastName, IBroadcastListener* broadcastListener);
+    void unregisterBroadcastListener(const QString& broadcastName,
+                                     IBroadcastListener* broadcastListener);
 
     /**
      * Called by subclasses when an event occurs
@@ -83,10 +89,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(Provider);
 
     QReadWriteLock lock;
-    QMap<QString, QList<IAttributeListener*> > attributeListeners;
-    QMap<QString, QList<IBroadcastListener*> > broadcastListeners;
+    QMap<QString, QList<IAttributeListener*>> attributeListeners;
+    QMap<QString, QList<IBroadcastListener*>> broadcastListeners;
 };
 
-
 } // namespace joynr
-#endif //JOYNRPROVIDER_H
+#endif // JOYNRPROVIDER_H

@@ -27,15 +27,20 @@
 
 struct curl_slist;
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * Implementation for all builder interfaces.
   *
   * ATTENTION: Changes to this class might have a side effect on PooledCurlHandle::clearHandle.
-  * If some curl property is set inside this builder it must be reset in PooledCurlHandle::clearHandle.
+  * If some curl property is set inside this builder it must be reset in
+  *PooledCurlHandle::clearHandle.
   */
-class HttpRequestBuilder : public IHttpGetBuilder, public IHttpPostBuilder, public IHttpDeleteBuilder {
+class HttpRequestBuilder : public IHttpGetBuilder,
+                           public IHttpPostBuilder,
+                           public IHttpDeleteBuilder
+{
 public:
     HttpRequestBuilder(const QString& url);
     ~HttpRequestBuilder();
@@ -66,7 +71,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
-
 } // namespace joynr
-#endif //HTTPREQUESTBUILDER_H_
+#endif // HTTPREQUESTBUILDER_H_

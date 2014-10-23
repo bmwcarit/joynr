@@ -20,130 +20,155 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/exceptions.h"
 
-namespace joynr {
+namespace joynr
+{
 
-qint64& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT(){
+qint64& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
+{
     static qint64 default_timeout = 30000;
     return default_timeout;
 }
 
-DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY() {
-    static DiscoveryQos::ArbitrationStrategy default_strategy = DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY;
+DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
+{
+    static DiscoveryQos::ArbitrationStrategy default_strategy =
+            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY;
     return default_strategy;
 }
 
-qint64& DiscoveryQos::DO_NOT_USE_CACHE(){
+qint64& DiscoveryQos::DO_NOT_USE_CACHE()
+{
     static qint64 do_not_use_cache = 0;
     return do_not_use_cache;
 }
 
-qint64& DiscoveryQos::DEFAULT_CACHEMAXAGE(){
+qint64& DiscoveryQos::DEFAULT_CACHEMAXAGE()
+{
     return DO_NOT_USE_CACHE();
 }
 
-joynr::system::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE() {
-    static joynr::system::DiscoveryScope::Enum default_scope = joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL;
+joynr::system::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
+{
+    static joynr::system::DiscoveryScope::Enum default_scope =
+            joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL;
     return default_scope;
 }
 
-qint64& DiscoveryQos::DEFAULT_RETRYINTERVAL() {
+qint64& DiscoveryQos::DEFAULT_RETRYINTERVAL()
+{
     static qint64 default_retryInterval = 1000;
     return default_retryInterval;
 }
 
 DiscoveryQos::DiscoveryQos()
-    : customParameters(),
-      arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
-      discoveryTimeout(DEFAULT_DISCOVERYTIMEOUT()),
-      cacheMaxAge(DEFAULT_CACHEMAXAGE()),
-      discoveryScope(DEFAULT_DISCOVERYSCOPE()),
-      providerMustSupportOnChange(false),
-      retryInterval(DEFAULT_RETRYINTERVAL())
+        : customParameters(),
+          arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
+          discoveryTimeout(DEFAULT_DISCOVERYTIMEOUT()),
+          cacheMaxAge(DEFAULT_CACHEMAXAGE()),
+          discoveryScope(DEFAULT_DISCOVERYSCOPE()),
+          providerMustSupportOnChange(false),
+          retryInterval(DEFAULT_RETRYINTERVAL())
 {
 }
 
 DiscoveryQos::DiscoveryQos(const qint64& cacheMaxAge)
-    : customParameters(),
-      arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
-      discoveryTimeout (DEFAULT_DISCOVERYTIMEOUT()),
-      cacheMaxAge(cacheMaxAge),
-      discoveryScope(DEFAULT_DISCOVERYSCOPE()),
-      providerMustSupportOnChange(false),
-      retryInterval(DEFAULT_RETRYINTERVAL())
+        : customParameters(),
+          arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
+          discoveryTimeout(DEFAULT_DISCOVERYTIMEOUT()),
+          cacheMaxAge(cacheMaxAge),
+          discoveryScope(DEFAULT_DISCOVERYSCOPE()),
+          providerMustSupportOnChange(false),
+          retryInterval(DEFAULT_RETRYINTERVAL())
 {
 }
 
-void DiscoveryQos::setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy){
-   this->arbitrationStrategy = arbitrationStrategy;
+void DiscoveryQos::setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy)
+{
+    this->arbitrationStrategy = arbitrationStrategy;
 }
 
-void DiscoveryQos::setDiscoveryTimeout(qint64 discoveryTimeout){
-    this->discoveryTimeout  = discoveryTimeout;
-    if(this->discoveryTimeout < 0) {
+void DiscoveryQos::setDiscoveryTimeout(qint64 discoveryTimeout)
+{
+    this->discoveryTimeout = discoveryTimeout;
+    if (this->discoveryTimeout < 0) {
         this->discoveryTimeout = 0;
     }
 }
 
-qint64 DiscoveryQos::getDiscoveryTimeout() const {
+qint64 DiscoveryQos::getDiscoveryTimeout() const
+{
     return discoveryTimeout;
 }
 
-DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const {
+DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const
+{
     return arbitrationStrategy;
 }
 
-void DiscoveryQos::addCustomParameter(QString name, QString value){
+void DiscoveryQos::addCustomParameter(QString name, QString value)
+{
     types::CustomParameter param(name, value);
     customParameters.insert(name, param);
 }
 
-types::CustomParameter DiscoveryQos::getCustomParameter(QString name) const {
+types::CustomParameter DiscoveryQos::getCustomParameter(QString name) const
+{
     return customParameters.value(name);
 }
 
-QMap<QString, types::CustomParameter> DiscoveryQos::getCustomParameters() const {
+QMap<QString, types::CustomParameter> DiscoveryQos::getCustomParameters() const
+{
     return customParameters;
 }
 
-qint64 DiscoveryQos::getCacheMaxAge() const {
+qint64 DiscoveryQos::getCacheMaxAge() const
+{
     return cacheMaxAge;
 }
 
-void DiscoveryQos::setCacheMaxAge(const qint64& cacheMaxAge) {
+void DiscoveryQos::setCacheMaxAge(const qint64& cacheMaxAge)
+{
     this->cacheMaxAge = cacheMaxAge;
-    if(this->cacheMaxAge < 0) {
+    if (this->cacheMaxAge < 0) {
         this->cacheMaxAge = 0;
     }
 }
 
-bool DiscoveryQos::getProviderMustSupportOnChange() const {
+bool DiscoveryQos::getProviderMustSupportOnChange() const
+{
     return providerMustSupportOnChange;
 }
 
-void DiscoveryQos::setProviderMustSupportOnChange(bool providerMustSupportOnChange) {
-    this->providerMustSupportOnChange = providerMustSupportOnChange ;
+void DiscoveryQos::setProviderMustSupportOnChange(bool providerMustSupportOnChange)
+{
+    this->providerMustSupportOnChange = providerMustSupportOnChange;
 }
 
-const QString DiscoveryQos::KEYWORD_PARAMETER() {
+const QString DiscoveryQos::KEYWORD_PARAMETER()
+{
     static const QString keyword("keyword");
     return keyword;
 }
 
-joynr::system::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const {
+joynr::system::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
+{
     return discoveryScope;
 }
 
-void DiscoveryQos::setDiscoveryScope(joynr::system::DiscoveryScope::Enum discoveryScope) {
+void DiscoveryQos::setDiscoveryScope(joynr::system::DiscoveryScope::Enum discoveryScope)
+{
     this->discoveryScope = discoveryScope;
 }
 
-qint64 DiscoveryQos::getRetryInterval() const {
+qint64 DiscoveryQos::getRetryInterval() const
+{
     return this->retryInterval;
 }
 
-void DiscoveryQos::setRetryInterval(qint64 retryInterval) {
+void DiscoveryQos::setRetryInterval(qint64 retryInterval)
+{
     this->retryInterval = retryInterval;
-    if(this->retryInterval < 0) {
+    if (this->retryInterval < 0) {
         this->retryInterval = 0;
     }
 }

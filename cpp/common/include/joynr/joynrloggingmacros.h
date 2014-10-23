@@ -25,52 +25,52 @@
 #define LOG_INFO(logger, message)
 #define LOG_WARN(logger, message)
 #define LOG_ERROR(logger, message)
-#endif //JOYNR_MAX_LOG_LEVEL_FATAL
+#endif // JOYNR_MAX_LOG_LEVEL_FATAL
 
 #ifdef JOYNR_MAX_LOG_LEVEL_ERROR
 #define LOG_TRACE(logger, message)
 #define LOG_DEBUG(logger, message)
 #define LOG_INFO(logger, message)
 #define LOG_WARN(logger, message)
-#endif //JOYNR_MAX_LOG_LEVEL_ERROR
+#endif // JOYNR_MAX_LOG_LEVEL_ERROR
 
 #ifdef JOYNR_MAX_LOG_LEVEL_WARN
 #define LOG_TRACE(logger, message)
 #define LOG_DEBUG(logger, message)
 #define LOG_INFO(logger, message)
-#endif //JOYNR_MAX_LOG_LEVEL_WARN
+#endif // JOYNR_MAX_LOG_LEVEL_WARN
 
 #ifdef JOYNR_MAX_LOG_LEVEL_INFO
 #define LOG_TRACE(logger, message)
 #define LOG_DEBUG(logger, message)
-#endif //JOYNR_MAX_LOG_LEVEL_INFO
+#endif // JOYNR_MAX_LOG_LEVEL_INFO
 
 #ifdef JOYNR_MAX_LOG_LEVEL_DEBUG
 #define LOG_TRACE(logger, message)
-#endif //JOYNR_MAX_LOG_LEVEL_DEBUG
+#endif // JOYNR_MAX_LOG_LEVEL_DEBUG
 
 #ifndef LOG_TRACE
 #define LOG_TRACE(logger, message) logger->log(joynr::joynr_logging::TRACE, message)
-#endif //LOG_TRACE
+#endif // LOG_TRACE
 
 #ifndef LOG_DEBUG
 #define LOG_DEBUG(logger, message) logger->log(joynr::joynr_logging::DEBUG, message)
-#endif //LOG_DEBUG
+#endif // LOG_DEBUG
 
 #ifndef LOG_INFO
 #define LOG_INFO(logger, message) logger->log(joynr::joynr_logging::INFO, message)
-#endif //LOG_INFO
+#endif // LOG_INFO
 
 #ifndef LOG_WARN
 #define LOG_WARN(logger, message) logger->log(joynr::joynr_logging::WARN, message)
-#endif //LOG_WARN
+#endif // LOG_WARN
 
 #ifndef LOG_ERROR
 #define LOG_ERROR(logger, message) logger->log(joynr::joynr_logging::ERROR, message)
-#endif //LOG_ERROR
+#endif // LOG_ERROR
 
 #ifndef LOG_FATAL
 #define LOG_FATAL(logger, message) logger->log(joynr::joynr_logging::FATAL, message)
-#endif //LOG_FATAL
+#endif // LOG_FATAL
 
-#endif //JOYNRLOGGINGMACROS_H_
+#endif // JOYNRLOGGINGMACROS_H_

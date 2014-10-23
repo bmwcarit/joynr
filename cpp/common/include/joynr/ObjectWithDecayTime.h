@@ -22,25 +22,25 @@
 #include <QObject>
 #include <QDateTime>
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNRCOMMON_EXPORT ObjectWithDecayTime
 {
 
 public:
-    virtual ~ObjectWithDecayTime(){}
-//    ObjectWithDecayTime();
+    virtual ~ObjectWithDecayTime()
+    {
+    }
+    //    ObjectWithDecayTime();
     explicit ObjectWithDecayTime(const QDateTime& decayTime);
     qint64 getRemainingTtl_ms() const;
     QDateTime getDecayTime() const;
-    bool isExpired() const; 
+    bool isExpired() const;
 
-protected: 
+protected:
     QDateTime decayTime;
-
-
 };
-
 
 } // namespace joynr
 #endif // OBJECTWITHDECAYTIME_H

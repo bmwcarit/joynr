@@ -18,70 +18,60 @@
  */
 #include "joynr/exceptions.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrException::JoynrException() throw() :
-    message("")
+JoynrException::JoynrException() throw() : message("")
 {
 }
 
-JoynrException::JoynrException(const std::string& what) throw() :
-    message(what)
+JoynrException::JoynrException(const std::string& what) throw() : message(what)
 {
-
 }
 
-JoynrException::~JoynrException() throw() {
-
+JoynrException::~JoynrException() throw()
+{
 }
 
-const char* JoynrException::what() const throw() {
+const char* JoynrException::what() const throw()
+{
     return message.c_str();
 }
 
-JoynrTimeOutException::JoynrTimeOutException() throw() {
+JoynrTimeOutException::JoynrTimeOutException() throw()
+{
 }
 
-JoynrTimeOutException::JoynrTimeOutException(const std::string& what) throw()
-    : JoynrException(what)
+JoynrTimeOutException::JoynrTimeOutException(const std::string& what) throw() : JoynrException(what)
 {
-
 }
 
-JoynrParseError::JoynrParseError(const std::string& what) throw()
-    : JoynrException(what)
+JoynrParseError::JoynrParseError(const std::string& what) throw() : JoynrException(what)
 {
-
 }
 
 JoynrArbitrationException::JoynrArbitrationException(const std::string& what) throw()
-    : JoynrException(what)
+        : JoynrException(what)
 {
-
 }
 
-
 JoynrArbitrationFailedException::JoynrArbitrationFailedException(const std::string& what) throw()
-    : JoynrException(what)
+        : JoynrException(what)
 {
-
 }
 
 JoynrArbitrationTimeOutException::JoynrArbitrationTimeOutException(const std::string& what) throw()
-    : JoynrException(what)
+        : JoynrException(what)
 {
-
 }
 
-JoynrRuntimeException::JoynrRuntimeException(const std::string& what) throw()
-    : JoynrException(what)
+JoynrRuntimeException::JoynrRuntimeException(const std::string& what) throw() : JoynrException(what)
 {
-
 }
 
 void JoynrException::setMessage(std::string what)
 {
-    this->message=what;
+    this->message = what;
 }
 
 } // namespace joynr

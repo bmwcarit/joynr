@@ -21,21 +21,26 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrMessagingStub::JoynrMessagingStub(
-        QSharedPointer<IMessageSender> messageSender,
-        QString destinationChannelId,
-        QString receiveChannelId):
-        messageSender(messageSender),
-        destinationChannelId(destinationChannelId),
-        receiveChannelId(receiveChannelId)
-{}
+JoynrMessagingStub::JoynrMessagingStub(QSharedPointer<IMessageSender> messageSender,
+                                       QString destinationChannelId,
+                                       QString receiveChannelId)
+        : messageSender(messageSender),
+          destinationChannelId(destinationChannelId),
+          receiveChannelId(receiveChannelId)
+{
+}
 
-JoynrMessagingStub::~JoynrMessagingStub() {}
+JoynrMessagingStub::~JoynrMessagingStub()
+{
+}
 
-void JoynrMessagingStub::transmit(JoynrMessage& message) {
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST || message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST){
+void JoynrMessagingStub::transmit(JoynrMessage& message)
+{
+    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         message.setHeaderReplyChannelId(receiveChannelId);
     }
     messageSender->sendMessage(destinationChannelId, message);

@@ -21,10 +21,12 @@
 
 #include <QtGlobal>
 
-namespace joynr {
+namespace joynr
+{
 
 template <class T>
-class CachedValue{
+class CachedValue
+{
 
 public:
     CachedValue<T>();
@@ -34,61 +36,67 @@ public:
     T getValue();
     qint64 getTimestamp();
 
-    CachedValue<T>& operator =(const CachedValue<T>& other);
-    bool operator==(const CachedValue<T> &other) const;
-    bool operator!=(const CachedValue<T> &other) const;
+    CachedValue<T>& operator=(const CachedValue<T>& other);
+    bool operator==(const CachedValue<T>& other) const;
+    bool operator!=(const CachedValue<T>& other) const;
+
 private:
     T value;
     qint64 timestamp;
 };
 
-
-template<class T>
-CachedValue<T>::CachedValue():
-    value(T()),
-    timestamp(0){
+template <class T>
+CachedValue<T>::CachedValue()
+        : value(T()), timestamp(0)
+{
 }
 
 template <class T>
-CachedValue<T>::CachedValue(const CachedValue<T>& other):
-    value(other.value),
-    timestamp(other.timestamp){
+CachedValue<T>::CachedValue(const CachedValue<T>& other)
+        : value(other.value), timestamp(other.timestamp)
+{
 }
 
 template <class T>
-CachedValue<T>::CachedValue(T value, qint64 timestamp):  value(value), timestamp(timestamp){}
+CachedValue<T>::CachedValue(T value, qint64 timestamp)
+        : value(value), timestamp(timestamp)
+{
+}
 
 template <class T>
-qint64 CachedValue<T>::getTimestamp() {
+qint64 CachedValue<T>::getTimestamp()
+{
     return timestamp;
 }
 
 template <class T>
-T CachedValue<T>::getValue() {
+T CachedValue<T>::getValue()
+{
     return value;
 }
 
 template <class T>
-bool CachedValue<T>::operator==(const CachedValue<T> &other) const {
-    if(other.value == value){
+bool CachedValue<T>::operator==(const CachedValue<T>& other) const
+{
+    if (other.value == value) {
         return true;
     }
     return false;
 }
 
 template <class T>
-bool CachedValue<T>::operator!=(const CachedValue<T> &other) const {
-  return !(*this == other);
+bool CachedValue<T>::operator!=(const CachedValue<T>& other) const
+{
+    return !(*this == other);
 }
 
 template <class T>
-CachedValue<T>& CachedValue<T>::operator=(const CachedValue<T> & other){
+CachedValue<T>& CachedValue<T>::operator=(const CachedValue<T>& other)
+{
     this->value = other.value;
     this->timestamp = other.timestamp;
     return *this;
 }
-
-
 
 } // namespace joynr
 #endif // CACHEDVALUE_H

@@ -21,10 +21,11 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 void JOYNRCOMMON_EXPORT registerCapabilitiesMetaTypes();
 
 } // namespace joynr
 
-#endif //CAPABILITIESMETATYPES
+#endif // CAPABILITIESMETATYPES

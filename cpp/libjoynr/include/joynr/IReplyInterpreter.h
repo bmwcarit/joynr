@@ -22,19 +22,20 @@
 #include "joynr/IReplyCaller.h"
 #include <QVariant>
 
-namespace joynr {
+namespace joynr
+{
 
 class Reply;
 
-class IReplyInterpreter {
+class IReplyInterpreter
+{
 public:
-    virtual ~IReplyInterpreter(){}
+    virtual ~IReplyInterpreter()
+    {
+    }
     // The ReplyCaller is the instance that calls the actual receiver of the reply.
-    virtual void execute(
-            QSharedPointer<IReplyCaller> replyCaller,
-            const Reply& reply)=0;
+    virtual void execute(QSharedPointer<IReplyCaller> replyCaller, const Reply& reply) = 0;
 };
-
 
 } // namespace joynr
 #endif // IREPLYINTERPRETER_H

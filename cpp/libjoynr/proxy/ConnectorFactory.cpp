@@ -18,19 +18,22 @@
  */
 #include "joynr/ConnectorFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 Logger* ConnectorFactory::logger = Logging::getInstance()->getLogger("CON", "ConnectorFactory");
 
-ConnectorFactory::ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory, JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory)
-    : inProcessConnectorFactory(inProcessConnectorFactory),
-      joynrMessagingConnectorFactory(joynrMessagingConnectorFactory)
+ConnectorFactory::ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory,
+                                   JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory)
+        : inProcessConnectorFactory(inProcessConnectorFactory),
+          joynrMessagingConnectorFactory(joynrMessagingConnectorFactory)
 {
 }
 
-ConnectorFactory::~ConnectorFactory(){
+ConnectorFactory::~ConnectorFactory()
+{
     delete inProcessConnectorFactory;
     delete joynrMessagingConnectorFactory;
 }

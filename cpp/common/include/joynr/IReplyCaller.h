@@ -23,21 +23,25 @@
 #include <QString>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * @brief This interface is required by the JoynrMessageSender to initiate the
  * request and return the response to its caller.
  * IReplyCaller is in /common, because the Directory needs to be aware of IReplyCaller, to call
  * timeOut() when an Object of Type IReplyCaller is removed because ttl has passed.
- * As Directory is in Common, it cannot have a dependency to libjoynr (where IReplyCaller was previously
+ * As Directory is in Common, it cannot have a dependency to libjoynr (where IReplyCaller was
+ * previously
  * situated). In C++ there is no language mechanism to require a template to inherit from a specific
  * class (like ITimeOutListener), so Directory has to be aware of IReplyCaller directly
  */
-class IReplyCaller : virtual public ITimeoutListener {
+class IReplyCaller : virtual public ITimeoutListener
+{
 public:
-
-    virtual ~IReplyCaller() { }
+    virtual ~IReplyCaller()
+    {
+    }
 
     /**
       * Every Replycaller should have a returnValue<T> method.
@@ -63,7 +67,5 @@ public:
     virtual int getTypeId() const = 0;
 };
 
-
-
 } // namespace joynr
-#endif //IREPLYCALLER_H
+#endif // IREPLYCALLER_H

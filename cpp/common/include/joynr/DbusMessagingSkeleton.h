@@ -32,11 +32,12 @@
 // restore the old GCC diagnostic state
 #pragma GCC diagnostic pop
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT DbusMessagingSkeleton : public joynr::messaging::IMessagingStubDefault {
+class JOYNRCOMMON_EXPORT DbusMessagingSkeleton : public joynr::messaging::IMessagingStubDefault
+{
 public:
-
     DbusMessagingSkeleton(IMessaging& callBack);
 
     virtual void transmit(joynr::messaging::IMessaging::JoynrMessage message);
@@ -45,7 +46,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingSkeleton);
     IMessaging& callBack;
 };
-
 
 } // namespace joynr
 #endif // DBUSMESSAGINGSKELETON_H

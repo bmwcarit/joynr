@@ -19,10 +19,10 @@
 #ifndef MESSAGINGMETATYPES
 #define MESSAGINGMETATYPES
 
-namespace joynr {
+namespace joynr
+{
 
 void registerMessagingMetaTypes();
 
-
 } // namespace joynr
-#endif //MESSAGINGMETATYPES
+#endif // MESSAGINGMETATYPES

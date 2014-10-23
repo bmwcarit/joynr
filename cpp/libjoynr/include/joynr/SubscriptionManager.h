@@ -34,8 +34,8 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
-
+namespace joynr
+{
 
 class PubSubState;
 
@@ -43,12 +43,14 @@ class PubSubState;
   * \class SubscriptionManager
   * \brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
-  * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application and
+  * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
+ * and
   * packaged into a callback by the connector.
   * This listener is notified (via the callback) when a subscription is missed or when a publication
   * arrives.
   */
-class JOYNR_EXPORT SubscriptionManager {
+class JOYNR_EXPORT SubscriptionManager
+{
 
 public:
     ~SubscriptionManager();
@@ -67,8 +69,8 @@ public:
      * @param subscriptionRequest
      */
     void registerSubscription(
-            const QString &subscribeToName,
-            ISubscriptionCallback * subscriptionCaller, // SubMgr gets ownership of ptr
+            const QString& subscribeToName,
+            ISubscriptionCallback* subscriptionCaller, // SubMgr gets ownership of ptr
             QSharedPointer<SubscriptionQos> qos,
             SubscriptionRequest& subscriptionRequest);
 
@@ -81,14 +83,16 @@ public:
     void unregisterSubscription(const QString& subscriptionId);
 
     /**
-     * @brief Sets the time of last received publication (incoming attribute value) to the current system time.
+     * @brief Sets the time of last received publication (incoming attribute value) to the current
+     *system time.
      *
      * @param subscriptionId
      */
     void touchSubscriptionState(const QString& subscriptionId);
 
     /**
-     * @brief Get a shared pointer to the subscription callback - ownership remains with the subscription manager.
+     * @brief Get a shared pointer to the subscription callback - ownership remains with the
+     *subscription manager.
      *
      * @param subscriptionId
      * @return QSharedPointer<ISubscriptionCallback>
@@ -107,7 +111,8 @@ private:
       * \class SubscriptionManager::MissedPublicationRunnable
       * \brief
       */
-    class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime {
+    class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime
+    {
     public:
         MissedPublicationRunnable(const QDateTime& expiryDate,
                                   const qint64& expectedIntervalMSecs,
@@ -116,10 +121,12 @@ private:
                                   const qint64& alertAfterInterval);
 
         /**
-         * @brief Checks whether a publication arrived in time, whether it is expired or interrupted.
+         * @brief Checks whether a publication arrived in time, whether it is expired or
+         *interrupted.
          *
          */
         void run();
+
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
         qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
@@ -135,16 +142,18 @@ private:
       * \class SubscriptionManager::ExpiredSubscriptionRunnable
       * \brief
       */
-    class ExpiredSubscriptionRunnable : public QRunnable {
+    class ExpiredSubscriptionRunnable : public QRunnable
+    {
     public:
         ExpiredSubscriptionRunnable(const QString& subscriptionId,
-                                  SubscriptionManager& subscriptionManager);
+                                    SubscriptionManager& subscriptionManager);
 
         /**
          * @brief removes subscription once running.
          *
          */
         void run();
+
     private:
         DISALLOW_COPY_AND_ASSIGN(ExpiredSubscriptionRunnable);
         QString subscriptionId;
@@ -152,7 +161,6 @@ private:
         static joynr_logging::Logger* logger;
     };
 };
-
 
 } // namespace joynr
 #endif // SUBSCRIPTIONMANAGER_H

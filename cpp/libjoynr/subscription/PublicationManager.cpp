@@ -42,14 +42,15 @@
 #include <QFile>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 //------ HelperClasses ---------------------------------------------------------
 
-class PublicationManager::Publication {
+class PublicationManager::Publication
+{
 public:
-    Publication(IPublicationSender* publicationSender,
-                QSharedPointer<RequestCaller> requestCaller);
+    Publication(IPublicationSender* publicationSender, QSharedPointer<RequestCaller> requestCaller);
     ~Publication();
 
     qint64 timeOfLastPublication;
@@ -57,45 +58,48 @@ public:
     QSharedPointer<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
     SubscriptionBroadcastListener* broadcastListener;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Publication);
 };
 
-class PublicationManager::PublisherRunnable : public QRunnable {
+class PublicationManager::PublisherRunnable : public QRunnable
+{
 public:
     virtual ~PublisherRunnable();
-    PublisherRunnable(PublicationManager& publicationManager,
-                      const QString& subscriptionId);
+    PublisherRunnable(PublicationManager& publicationManager, const QString& subscriptionId);
 
     // Calls PublicationManager::pollSubscription()
     void run();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublisherRunnable);
     PublicationManager& publicationManager;
     QString subscriptionId;
 };
 
-class PublicationManager::PublicationEndRunnable : public QRunnable {
+class PublicationManager::PublicationEndRunnable : public QRunnable
+{
 public:
     virtual ~PublicationEndRunnable();
-    PublicationEndRunnable(PublicationManager& publicationManager,
-                           const QString& subscriptionId);
+    PublicationEndRunnable(PublicationManager& publicationManager, const QString& subscriptionId);
 
     // Calls PublicationManager::removePublication()
     void run();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationEndRunnable);
     PublicationManager& publicationManager;
     QString subscriptionId;
 };
 
-
 //------ PublicationManager ----------------------------------------------------
 
 using namespace joynr_logging;
 Logger* PublicationManager::logger = Logging::getInstance()->getLogger("MSG", "PublicationManager");
 
-PublicationManager::~PublicationManager() {
+PublicationManager::~PublicationManager()
+{
     LOG_DEBUG(logger, "Destructor, saving subscriptionsMap...");
     saveAttributeSubscriptionRequestsMap();
     saveBroadcastSubscriptionRequestsMap();
@@ -115,101 +119,97 @@ PublicationManager::~PublicationManager() {
 
     // Remove all publications
     LOG_DEBUG(logger, "Destructor: removing publications");
-    foreach(SubscriptionRequestInformation* request, subscriptionId2SubscriptionRequest) {
+    foreach (SubscriptionRequestInformation* request, subscriptionId2SubscriptionRequest) {
         removeAttributePublication(request->getSubscriptionId());
     }
-    foreach(BroadcastSubscriptionRequestInformation* request,
-            subscriptionId2BroadcastSubscriptionRequest) {
+    foreach (BroadcastSubscriptionRequestInformation* request,
+             subscriptionId2BroadcastSubscriptionRequest) {
         removeBroadcastPublication(request->getSubscriptionId());
     }
 }
 
 PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThreads)
-    : publications(),
-      subscriptionId2SubscriptionRequest(),
-      subscriptionId2BroadcastSubscriptionRequest(),
-      subscriptionLock(),
-      publishingThreadPool(),
-      delayedScheduler(scheduler),
-      shutDownMutex(),
-      shuttingDown(false),
-      subscriptionRequestStorageFileName(
-          LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-      broadcastSubscriptionRequestStorageFileName(
-          LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-      queuedSubscriptionRequests(),
-      queuedSubscriptionRequestsMutex(),
-      queuedBroadcastSubscriptionRequests(),
-      queuedBroadcastSubscriptionRequestsMutex(),
-      currentScheduledPublications(),
-      currentScheduledPublicationsMutex(),
-      broadcastFilters(),
-      broadcastFilterLock()
+        : publications(),
+          subscriptionId2SubscriptionRequest(),
+          subscriptionId2BroadcastSubscriptionRequest(),
+          subscriptionLock(),
+          publishingThreadPool(),
+          delayedScheduler(scheduler),
+          shutDownMutex(),
+          shuttingDown(false),
+          subscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          broadcastSubscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          queuedSubscriptionRequests(),
+          queuedSubscriptionRequestsMutex(),
+          queuedBroadcastSubscriptionRequests(),
+          queuedBroadcastSubscriptionRequestsMutex(),
+          currentScheduledPublications(),
+          currentScheduledPublicationsMutex(),
+          broadcastFilters(),
+          broadcastFilterLock()
 {
 
     publishingThreadPool.setMaxThreadCount(maxThreads);
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-    qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
+    qRegisterMetaType<QSharedPointer<SubscriptionRequest>>("QSharedPointer<SubscriptionRequest>");
     loadSavedAttributeSubscriptionRequestsMap();
     loadSavedBroadcastSubscriptionRequestsMap();
 }
 
 PublicationManager::PublicationManager(int maxThreads)
-    : publications(),
-      subscriptionId2SubscriptionRequest(),
-      subscriptionId2BroadcastSubscriptionRequest(),
-      subscriptionLock(),
-      publishingThreadPool(),
-      delayedScheduler(NULL),
-      shutDownMutex(),
-      shuttingDown(false),
-      subscriptionRequestStorageFileName(
-          LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-      broadcastSubscriptionRequestStorageFileName(
-          LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-      queuedSubscriptionRequests(),
-      queuedSubscriptionRequestsMutex(),
-      queuedBroadcastSubscriptionRequests(),
-      queuedBroadcastSubscriptionRequestsMutex(),
-      currentScheduledPublications(),
-      currentScheduledPublicationsMutex(),
-      broadcastFilters(),
-      broadcastFilterLock()
+        : publications(),
+          subscriptionId2SubscriptionRequest(),
+          subscriptionId2BroadcastSubscriptionRequest(),
+          subscriptionLock(),
+          publishingThreadPool(),
+          delayedScheduler(NULL),
+          shutDownMutex(),
+          shuttingDown(false),
+          subscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          broadcastSubscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          queuedSubscriptionRequests(),
+          queuedSubscriptionRequestsMutex(),
+          queuedBroadcastSubscriptionRequests(),
+          queuedBroadcastSubscriptionRequestsMutex(),
+          currentScheduledPublications(),
+          currentScheduledPublicationsMutex(),
+          broadcastFilters(),
+          broadcastFilterLock()
 {
 
     publishingThreadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(
-                publishingThreadPool,
-                QString("PublicationManager-PublishingThreadPool"));
+            publishingThreadPool, QString("PublicationManager-PublishingThreadPool"));
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-    qRegisterMetaType<QSharedPointer<SubscriptionRequest> >("QSharedPointer<SubscriptionRequest>");
+    qRegisterMetaType<QSharedPointer<SubscriptionRequest>>("QSharedPointer<SubscriptionRequest>");
     loadSavedAttributeSubscriptionRequestsMap();
     loadSavedBroadcastSubscriptionRequestsMap();
 }
 
-bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0){
-    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()
-            && qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
+bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0)
+{
+    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
+           qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
 }
 
-void PublicationManager::add(
-        const QString& proxyParticipantId,
-        const QString& providerParticipantId,
-        QSharedPointer<RequestCaller> requestCaller,
-        SubscriptionRequest* subscriptionRequest,
-        IPublicationSender* publicationSender
-) {
+void PublicationManager::add(const QString& proxyParticipantId,
+                             const QString& providerParticipantId,
+                             QSharedPointer<RequestCaller> requestCaller,
+                             SubscriptionRequest* subscriptionRequest,
+                             IPublicationSender* publicationSender)
+{
     assert(!requestCaller.isNull());
     SubscriptionRequestInformation* requestInfo = new SubscriptionRequestInformation(
-                proxyParticipantId,
-                providerParticipantId,
-                *subscriptionRequest
-    );
+            proxyParticipantId, providerParticipantId, *subscriptionRequest);
     delete subscriptionRequest;
 
-    if (publicationExists(requestInfo->getSubscriptionId())){
-        LOG_WARN(logger, "Publication with id: " + requestInfo->getSubscriptionId()
-             + " already exists.");
+    if (publicationExists(requestInfo->getSubscriptionId())) {
+        LOG_WARN(logger,
+                 "Publication with id: " + requestInfo->getSubscriptionId() + " already exists.");
         delete requestInfo;
         return;
     }
@@ -220,7 +220,7 @@ void PublicationManager::add(
         subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
 
         // Make note of the publication
-        Publication *publication = new Publication(publicationSender, requestCaller);
+        Publication* publication = new Publication(publicationSender, requestCaller);
         publications.insert(subscriptionId, publication);
         LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
 
@@ -231,25 +231,23 @@ void PublicationManager::add(
         QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
-
         // check for a valid publication end date
-        if(!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
+        if (!isSubscriptionExpired(qos)) {
+            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 delayedScheduler->schedule(
-                            new PublicationEndRunnable(*this, subscriptionId),
-                            publicationEndDelay);
-                LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+                        new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
+                LOG_DEBUG(
+                        logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
             }
             {
                 QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
                 currentScheduledPublications.append(subscriptionId);
             }
-            //sent at least once the current value
+            // sent at least once the current value
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId), -1);
         } else {
             LOG_WARN(logger, QString("publication end is in the past"));
         }
-
     }
     saveAttributeSubscriptionRequestsMap();
 }
@@ -258,7 +256,7 @@ void PublicationManager::addOnChangePublication(const QString& subscriptionId,
                                                 SubscriptionRequestInformation* request,
                                                 Publication* publication)
 {
-    if(SubscriptionUtil::isOnChangeSubscription(request->getQos().data())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQos().data())) {
         LOG_TRACE(logger, QString("adding onChange subscription: %1").arg(subscriptionId));
 
         // Create an attribute listener to listen for onChange events
@@ -274,9 +272,10 @@ void PublicationManager::addOnChangePublication(const QString& subscriptionId,
     }
 }
 
-void PublicationManager::addBroadcastPublication(const QString &subscriptionId,
-                                                 BroadcastSubscriptionRequestInformation *request,
-                                                 PublicationManager::Publication *publication) {
+void PublicationManager::addBroadcastPublication(const QString& subscriptionId,
+                                                 BroadcastSubscriptionRequestInformation* request,
+                                                 PublicationManager::Publication* publication)
+{
     LOG_TRACE(logger, QString("adding broadcast subscription: %1").arg(subscriptionId));
 
     // Create a broadcast listener to listen for broadcast events
@@ -289,54 +288,44 @@ void PublicationManager::addBroadcastPublication(const QString &subscriptionId,
 
     // Make note of the attribute listener so that it can be unregistered
     publication->broadcastListener = broadcastListener;
-
 }
 
-void PublicationManager::add(
-        const QString& proxyParticipantId,
-        const QString& providerParticipantId,
-        SubscriptionRequest *subscriptionRequest
-) {
-    LOG_DEBUG(logger, "Added subscription for non existing provider (adding subscriptionRequest to queue).");
+void PublicationManager::add(const QString& proxyParticipantId,
+                             const QString& providerParticipantId,
+                             SubscriptionRequest* subscriptionRequest)
+{
+    LOG_DEBUG(
+            logger,
+            "Added subscription for non existing provider (adding subscriptionRequest to queue).");
     SubscriptionRequestInformation* requestInfo = new SubscriptionRequestInformation(
-                proxyParticipantId,
-                providerParticipantId,
-                *subscriptionRequest
-    );
+            proxyParticipantId, providerParticipantId, *subscriptionRequest);
     delete subscriptionRequest;
     {
         QMutexLocker locker(&queuedSubscriptionRequestsMutex);
-        queuedSubscriptionRequests.insert(
-                    requestInfo->getProviderId(),
-                    requestInfo);
+        queuedSubscriptionRequests.insert(requestInfo->getProviderId(), requestInfo);
     }
     {
         QWriteLocker locker(&subscriptionLock);
-        subscriptionId2SubscriptionRequest.insert(
-                requestInfo->getSubscriptionId(),
-                requestInfo);
+        subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
     }
     saveAttributeSubscriptionRequestsMap();
 }
 
-void PublicationManager::add(
-        const QString &proxyParticipantId,
-        const QString &providerParticipantId,
-        QSharedPointer<RequestCaller> requestCaller,
-        BroadcastSubscriptionRequest *subscriptionRequest,
-        IPublicationSender *publicationSender)
+void PublicationManager::add(const QString& proxyParticipantId,
+                             const QString& providerParticipantId,
+                             QSharedPointer<RequestCaller> requestCaller,
+                             BroadcastSubscriptionRequest* subscriptionRequest,
+                             IPublicationSender* publicationSender)
 {
     assert(!requestCaller.isNull());
-    BroadcastSubscriptionRequestInformation* requestInfo = new BroadcastSubscriptionRequestInformation(
-                proxyParticipantId,
-                providerParticipantId,
-                *subscriptionRequest
-    );
+    BroadcastSubscriptionRequestInformation* requestInfo =
+            new BroadcastSubscriptionRequestInformation(
+                    proxyParticipantId, providerParticipantId, *subscriptionRequest);
     delete subscriptionRequest;
 
-    if (publicationExists(requestInfo->getSubscriptionId())){
-        LOG_WARN(logger, "Publication with id: " + requestInfo->getSubscriptionId()
-             + " already exists.");
+    if (publicationExists(requestInfo->getSubscriptionId())) {
+        LOG_WARN(logger,
+                 "Publication with id: " + requestInfo->getSubscriptionId() + " already exists.");
         delete requestInfo;
         return;
     }
@@ -347,7 +336,7 @@ void PublicationManager::add(
         subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
 
         // Make note of the publication
-        Publication *publication = new Publication(publicationSender, requestCaller);
+        Publication* publication = new Publication(publicationSender, requestCaller);
         publications.insert(subscriptionId, publication);
         LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
 
@@ -358,14 +347,13 @@ void PublicationManager::add(
         QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
-
         // check for a valid publication end date
-        if(!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()){
+        if (!isSubscriptionExpired(qos)) {
+            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 delayedScheduler->schedule(
-                            new PublicationEndRunnable(*this, subscriptionId),
-                            publicationEndDelay);
-                LOG_DEBUG(logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+                        new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
+                LOG_DEBUG(
+                        logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
             }
             {
                 QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
@@ -374,43 +362,36 @@ void PublicationManager::add(
         } else {
             LOG_WARN(logger, QString("publication end is in the past"));
         }
-
     }
     saveBroadcastSubscriptionRequestsMap();
 }
 
-void PublicationManager::add(
-        const QString &proxyParticipantId,
-        const QString &providerParticipantId,
-        BroadcastSubscriptionRequest *subscriptionRequest)
+void PublicationManager::add(const QString& proxyParticipantId,
+                             const QString& providerParticipantId,
+                             BroadcastSubscriptionRequest* subscriptionRequest)
 {
-    LOG_DEBUG(logger, "Added broadcast subscription for non existing provider (adding subscriptionRequest to queue).");
-    BroadcastSubscriptionRequestInformation* requestInfo = new BroadcastSubscriptionRequestInformation(
-                proxyParticipantId,
-                providerParticipantId,
-                *subscriptionRequest
-    );
+    LOG_DEBUG(logger,
+              "Added broadcast subscription for non existing provider (adding "
+              "subscriptionRequest to queue).");
+    BroadcastSubscriptionRequestInformation* requestInfo =
+            new BroadcastSubscriptionRequestInformation(
+                    proxyParticipantId, providerParticipantId, *subscriptionRequest);
     delete subscriptionRequest;
     {
         QMutexLocker locker(&queuedBroadcastSubscriptionRequestsMutex);
-        queuedBroadcastSubscriptionRequests.insert(
-                    requestInfo->getProviderId(),
-                    requestInfo);
+        queuedBroadcastSubscriptionRequests.insert(requestInfo->getProviderId(), requestInfo);
     }
     {
         QWriteLocker locker(&subscriptionLock);
         subscriptionId2BroadcastSubscriptionRequest.insert(
-                requestInfo->getSubscriptionId(),
-                requestInfo);
+                requestInfo->getSubscriptionId(), requestInfo);
     }
     saveBroadcastSubscriptionRequestsMap();
 }
 
-
-
-void PublicationManager::removeAllSubscriptions(const QString& providerId) {
-    LOG_DEBUG(logger, QString("Removing all subscriptions for provider id= %1")
-                            .arg(providerId));
+void PublicationManager::removeAllSubscriptions(const QString& providerId)
+{
+    LOG_DEBUG(logger, QString("Removing all subscriptions for provider id= %1").arg(providerId));
 
     // Build lists of subscriptionIds to remove
     QString subscriptionId;
@@ -422,7 +403,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId) {
         foreach (SubscriptionRequestInformation* requestInfo, subscriptionId2SubscriptionRequest) {
             subscriptionId = requestInfo->getSubscriptionId();
 
-            if(requestInfo->getProviderId() == providerId) {
+            if (requestInfo->getProviderId() == providerId) {
                 publicationsToRemove.append(subscriptionId);
             }
         }
@@ -436,7 +417,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId) {
                  subscriptionId2BroadcastSubscriptionRequest) {
             subscriptionId = requestInfo->getSubscriptionId();
 
-            if(requestInfo->getProviderId() == providerId) {
+            if (requestInfo->getProviderId() == providerId) {
                 broadcastsToRemove.append(subscriptionId);
             }
         }
@@ -444,28 +425,31 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId) {
 
     // Remove each publication
     foreach (subscriptionId, publicationsToRemove) {
-        LOG_DEBUG(logger, QString("Removing subscription providerId= %1, subscriptionId =%2")
-                                .arg(providerId)
-                                .arg(subscriptionId));
+        LOG_DEBUG(logger,
+                  QString("Removing subscription providerId= %1, subscriptionId =%2")
+                          .arg(providerId)
+                          .arg(subscriptionId));
         removeAttributePublication(subscriptionId);
     }
 
     // Remove each broadcast
     foreach (subscriptionId, broadcastsToRemove) {
-        LOG_DEBUG(logger, QString("Removing subscription providerId= %1, subscriptionId =%2")
-                                .arg(providerId)
-                                .arg(subscriptionId));
+        LOG_DEBUG(logger,
+                  QString("Removing subscription providerId= %1, subscriptionId =%2")
+                          .arg(providerId)
+                          .arg(subscriptionId));
         removeBroadcastPublication(subscriptionId);
     }
 }
 
-
-void PublicationManager::stopPublication(const QString& subscriptionId){
+void PublicationManager::stopPublication(const QString& subscriptionId)
+{
     LOG_DEBUG(logger, QString("stopPublication: %1").arg(subscriptionId));
     removePublication(subscriptionId);
 }
 
-bool PublicationManager::publicationExists(const QString& subscriptionId) const {
+bool PublicationManager::publicationExists(const QString& subscriptionId) const
+{
     return publications.contains(subscriptionId);
 }
 
@@ -475,14 +459,14 @@ void PublicationManager::restore(const QString& providerId,
 {
     LOG_DEBUG(logger, "restore: entering ...");
 
-    QList<SubscriptionRequestInformation*> subscriptions = queuedSubscriptionRequests.values(providerId);
+    QList<SubscriptionRequestInformation*> subscriptions =
+            queuedSubscriptionRequests.values(providerId);
 
     foreach (SubscriptionRequestInformation* requestInfo, subscriptions) {
-        if (!isSubscriptionExpired(requestInfo->getQos())){
+        if (!isSubscriptionExpired(requestInfo->getQos())) {
             LOG_DEBUG(logger,
-                      QString("Restoring subscription for provider: %1 %2")
-                        .arg(providerId)
-                        .arg(requestInfo->toQString()));
+                      QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
+                              requestInfo->toQString()));
             add(requestInfo->getProxyId(),
                 requestInfo->getProviderId(),
                 requestCaller,
@@ -495,11 +479,10 @@ void PublicationManager::restore(const QString& providerId,
             queuedBroadcastSubscriptionRequests.values(providerId);
 
     foreach (BroadcastSubscriptionRequestInformation* requestInfo, broadcasts) {
-        if (!isSubscriptionExpired(requestInfo->getQos())){
+        if (!isSubscriptionExpired(requestInfo->getQos())) {
             LOG_DEBUG(logger,
-                      QString("Restoring subscription for provider: %1 %2")
-                        .arg(providerId)
-                        .arg(requestInfo->toQString()));
+                      QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
+                              requestInfo->toQString()));
             add(requestInfo->getProxyId(),
                 requestInfo->getProviderId(),
                 requestCaller,
@@ -510,29 +493,30 @@ void PublicationManager::restore(const QString& providerId,
 }
 
 // This function assumes that no lock is held
-void PublicationManager::saveAttributeSubscriptionRequestsMap() {
+void PublicationManager::saveAttributeSubscriptionRequestsMap()
+{
     LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
 
     saveSubscriptionRequestsMap<SubscriptionRequestInformation>(
-                subscriptionId2SubscriptionRequest,
-                subscriptionRequestStorageFileName);
+            subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
 }
 
-void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(){
+void PublicationManager::loadSavedAttributeSubscriptionRequestsMap()
+{
 
     loadSavedSubscriptionRequestsMap<SubscriptionRequestInformation>(
-                subscriptionRequestStorageFileName,
-                queuedSubscriptionRequestsMutex,
-                queuedSubscriptionRequests);
+            subscriptionRequestStorageFileName,
+            queuedSubscriptionRequestsMutex,
+            queuedSubscriptionRequests);
 }
 
-void PublicationManager::saveBroadcastSubscriptionRequestsMap() {
+void PublicationManager::saveBroadcastSubscriptionRequestsMap()
+{
     LOG_DEBUG(logger, "Saving active broadcastSubscriptionRequests to file.");
 
     saveSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
-                subscriptionId2BroadcastSubscriptionRequest,
-                broadcastSubscriptionRequestStorageFileName);
-
+            subscriptionId2BroadcastSubscriptionRequest,
+            broadcastSubscriptionRequestStorageFileName);
 }
 
 void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
@@ -540,28 +524,31 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
     LOG_DEBUG(logger, "Loading stored BroadcastSubscriptionrequests.");
 
     loadSavedSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
-                broadcastSubscriptionRequestStorageFileName,
-                queuedBroadcastSubscriptionRequestsMutex,
-                queuedBroadcastSubscriptionRequests);
+            broadcastSubscriptionRequestStorageFileName,
+            queuedBroadcastSubscriptionRequestsMutex,
+            queuedBroadcastSubscriptionRequests);
 }
 
 template <class RequestInformationType>
 void PublicationManager::saveSubscriptionRequestsMap(
         const QMap<QString, RequestInformationType*>& map,
-        const QString &storageFilename) {
+        const QString& storageFilename)
+{
 
-    static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
-                  "saveSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
+    static_assert(
+            std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
+            "saveSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
 
-    if (isShuttingDown()){
+    if (isShuttingDown()) {
         LOG_DEBUG(logger, "Abort saving, because we are already shutting down.");
         return;
     }
 
     QFile file(storageFilename);
     if (!file.open(QIODevice::WriteOnly)) {
-        LOG_ERROR(logger, QString("Could not open subscription request storage file: %1")
-                                 .arg(file.errorString()));
+        LOG_ERROR(logger,
+                  QString("Could not open subscription request storage file: %1")
+                          .arg(file.errorString()));
         return;
     }
 
@@ -575,26 +562,28 @@ void PublicationManager::saveSubscriptionRequestsMap(
         QReadLocker locker(&subscriptionLock);
 
         foreach (RequestInformationType* requestInfo, map) {
-            if(!isSubscriptionExpired(requestInfo->getQos())) {
-                subscriptionList.append( QVariant::fromValue(*requestInfo) );
+            if (!isSubscriptionExpired(requestInfo->getQos())) {
+                subscriptionList.append(QVariant::fromValue(*requestInfo));
             }
         }
     }
     QString json = JsonSerializer::serialize(subscriptionList);
-    file.write( json.toUtf8().constData() );
+    file.write(json.toUtf8().constData());
 }
 
 template <class RequestInformationType>
 void PublicationManager::loadSavedSubscriptionRequestsMap(
-        const QString &storageFilename,
-        QMutex &mutex,
-        QMultiMap<QString, RequestInformationType*> &queuedSubscriptions) {
+        const QString& storageFilename,
+        QMutex& mutex,
+        QMultiMap<QString, RequestInformationType*>& queuedSubscriptions)
+{
 
     static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
-                  "loadSavedSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
+                  "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
+                  "SubscriptionRequest");
 
     QFile file(storageFilename);
-    if (!file.open(QIODevice::ReadOnly)){
+    if (!file.open(QIODevice::ReadOnly)) {
         LOG_ERROR(logger, QString("Unable to read file: %1").arg(file.errorString()));
         return;
     }
@@ -610,16 +599,16 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
     QDateTime now = QDateTime::currentDateTime();
     QMutexLocker locker(&mutex);
 
-    while(!subscriptionList.isEmpty()) {
+    while (!subscriptionList.isEmpty()) {
         RequestInformationType* requestInfo = subscriptionList.takeFirst();
 
         // Add the subscription if it is still valid
-        if (!isSubscriptionExpired(requestInfo->getQos())){
+        if (!isSubscriptionExpired(requestInfo->getQos())) {
             QString providerId = requestInfo->getProviderId();
             queuedSubscriptions.insertMulti(providerId, requestInfo);
-            LOG_DEBUG(logger, QString("Queuing subscription Request: %1 : %2")
-                      .arg(providerId)
-                      .arg(requestInfo->toQString()));
+            LOG_DEBUG(logger,
+                      QString("Queuing subscription Request: %1 : %2").arg(providerId).arg(
+                              requestInfo->toQString()));
         } else {
             // delete the subscription request
             delete requestInfo;
@@ -627,19 +616,23 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
     }
 }
 
-void PublicationManager::removeAttributePublication(const QString& subscriptionId) {
+void PublicationManager::removeAttributePublication(const QString& subscriptionId)
+{
     LOG_DEBUG(logger, QString("removePublication: %1").arg(subscriptionId));
 
     {
         QWriteLocker locker(&subscriptionLock);
 
         if (!publicationExists(subscriptionId)) {
-            LOG_DEBUG(logger, QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+            LOG_DEBUG(
+                    logger,
+                    QString("publication %1 does not exist - will not remove").arg(subscriptionId));
             return;
         }
 
         Publication* publication = publications.take(subscriptionId);
-        SubscriptionRequestInformation* request = subscriptionId2SubscriptionRequest.value(subscriptionId);
+        SubscriptionRequestInformation* request =
+                subscriptionId2SubscriptionRequest.value(subscriptionId);
 
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
@@ -660,7 +653,9 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         QWriteLocker locker(&subscriptionLock);
 
         if (!publicationExists(subscriptionId)) {
-            LOG_DEBUG(logger, QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+            LOG_DEBUG(
+                    logger,
+                    QString("publication %1 does not exist - will not remove").arg(subscriptionId));
             return;
         }
 
@@ -671,8 +666,7 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         // Remove listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
-                    request->getSubscribeToName(),
-                    publication->broadcastListener);
+                request->getSubscribeToName(), publication->broadcastListener);
         publication->broadcastListener = NULL;
 
         // Remove the publication
@@ -693,15 +687,16 @@ void PublicationManager::removeOnChangePublication(const QString& subscriptionId
 
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->unregisterAttributeListener(request->getSubscribeToName(),
-                                                   publication->attributeListener);
+        requestCaller->unregisterAttributeListener(
+                request->getSubscribeToName(), publication->attributeListener);
         publication->attributeListener = NULL;
     }
 }
 
-
 // This function assumes that a read lock is already held
-bool PublicationManager::processFilterChain(const QString &subscriptionId, const QVariantMap &eventValues) {
+bool PublicationManager::processFilterChain(const QString& subscriptionId,
+                                            const QVariantMap& eventValues)
+{
 
     BroadcastSubscriptionRequestInformation* subscriptionRequest =
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
@@ -712,19 +707,20 @@ bool PublicationManager::processFilterChain(const QString &subscriptionId, const
     bool success = true;
 
     foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
-        success = success &&
-                filter->filter(eventValues, filterParameters);
+        success = success && filter->filter(eventValues, filterParameters);
     }
 
     return success;
 }
 
-bool PublicationManager::isShuttingDown() {
+bool PublicationManager::isShuttingDown()
+{
     QMutexLocker locker(&shutDownMutex);
     return shuttingDown;
 }
 
-qint64 PublicationManager::getPublicationTtl(SubscriptionRequest* subscriptionRequest) const {
+qint64 PublicationManager::getPublicationTtl(SubscriptionRequest* subscriptionRequest) const
+{
     return subscriptionRequest->getQos()->getPublicationTtl();
 }
 
@@ -747,12 +743,10 @@ void PublicationManager::sendPublication(const QString& subscriptionId,
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionId);
     subscriptionPublication.setResponse(value);
-    publicationSender->sendSubscriptionPublication(
-                subscriptionInformation->getProviderId(),
-                subscriptionInformation->getProxyId(),
-                mQos,
-                subscriptionPublication
-    );
+    publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
+                                                   subscriptionInformation->getProxyId(),
+                                                   mQos,
+                                                   subscriptionPublication);
 
     // Make note of when this publication was sent
     qint64 now = QDateTime::currentMSecsSinceEpoch();
@@ -788,93 +782,102 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     qint64 publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
 
     // check if the subscription qos needs a periodic publication
-    if(publicationInterval > 0) {
+    if (publicationInterval > 0) {
         qint64 timeSinceLast = now - publication->timeOfLastPublication;
         // publish only if not published in the current interval
-        if(timeSinceLast < publicationInterval) {
-            LOG_DEBUG(logger,  QString("no publication necessary. publicationInterval: %1, timeSinceLast %2")
-                                .arg(publicationInterval)
-                                .arg(timeSinceLast));
+        if (timeSinceLast < publicationInterval) {
+            LOG_DEBUG(logger,
+                      QString("no publication necessary. publicationInterval: %1, timeSinceLast %2")
+                              .arg(publicationInterval)
+                              .arg(timeSinceLast));
 
             qint64 delayUntilNextPublication = publicationInterval - timeSinceLast;
-            assert(delayUntilNextPublication >=0);
-            delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
-                                        delayUntilNextPublication);
+            assert(delayUntilNextPublication >= 0);
+            delayedScheduler->schedule(
+                    new PublisherRunnable(*this, subscriptionId), delayUntilNextPublication);
             return;
         }
     }
 
     // Get the value of the attribute
-    QString attributeGetter = Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName());
+    QString attributeGetter =
+            Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName());
     QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
     QSharedPointer<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(requestCaller->getInterfaceName());
 
     LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
-    QVariant response = requestInterpreter->execute(requestCaller,
-                                                    attributeGetter,
-                                                    QList<QVariant>(),
-                                                    QList<QVariant>());
+    QVariant response = requestInterpreter->execute(
+            requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>());
 
-    sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), response);
+    sendPublication(
+            subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), response);
 
     // Reschedule the next poll
     if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
         LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(publicationInterval));
-        delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
-                                   publicationInterval);
+        delayedScheduler->schedule(
+                new PublisherRunnable(*this, subscriptionId), publicationInterval);
     }
 }
 
-void PublicationManager::removePublication(const QString &subscriptionId)
+void PublicationManager::removePublication(const QString& subscriptionId)
 {
 
-    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)){
+    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
         removeAttributePublication(subscriptionId);
-    }
-    else {
+    } else {
         removeBroadcastPublication(subscriptionId);
     }
 }
 
-
 void PublicationManager::attributeValueChanged(const QString& subscriptionId, const QVariant& value)
 {
-    LOG_DEBUG(logger, QString("attributeValueChanged for onChange subscription %1").arg(subscriptionId));
+    LOG_DEBUG(logger,
+              QString("attributeValueChanged for onChange subscription %1").arg(subscriptionId));
 
     QReadLocker locker(&subscriptionLock);
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
-        LOG_ERROR(logger, QString("attributeValueChanged called for non-existing subscription %1").arg(subscriptionId));
+        LOG_ERROR(logger,
+                  QString("attributeValueChanged called for non-existing subscription %1")
+                          .arg(subscriptionId));
         return;
     }
 
-    SubscriptionRequestInformation* subscriptionRequest = subscriptionId2SubscriptionRequest.value(subscriptionId);
+    SubscriptionRequestInformation* subscriptionRequest =
+            subscriptionId2SubscriptionRequest.value(subscriptionId);
 
-    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())){
+    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())) {
 
         // Send the publication
-        sendPublication(subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
+        sendPublication(
+                subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
     }
 }
 
-void PublicationManager::eventOccured(const QString &subscriptionId, const QVariantMap &values){
-    LOG_DEBUG(logger, QString("eventOccured for broadcast subscription %1. Number of values: %2")
-              .arg(subscriptionId).arg(values.size()));
+void PublicationManager::eventOccured(const QString& subscriptionId, const QVariantMap& values)
+{
+    LOG_DEBUG(logger,
+              QString("eventOccured for broadcast subscription %1. Number of values: %2")
+                      .arg(subscriptionId)
+                      .arg(values.size()));
 
     QReadLocker locker(&subscriptionLock);
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
-        LOG_ERROR(logger, QString("eventOccured called for non-existing subscription %1").arg(subscriptionId));
+        LOG_ERROR(logger,
+                  QString("eventOccured called for non-existing subscription %1")
+                          .arg(subscriptionId));
         return;
     }
 
     BroadcastSubscriptionRequestInformation* subscriptionRequest =
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
 
-    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())){
+    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())) {
 
         // Execute broadcast filters
         if (processFilterChain(subscriptionId, values)) {
@@ -895,23 +898,25 @@ void PublicationManager::addBroadcastFilter(QSharedPointer<IBroadcastFilter> fil
     QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
             broadcastFilters.find(filter->getName());
 
-    if (it != broadcastFilters.end()){
+    if (it != broadcastFilters.end()) {
         it.value().append(filter);
-    }
-    else {
-        broadcastFilters.insert(filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
+    } else {
+        broadcastFilters.insert(
+                filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
     }
 }
 
 // This functions assumes that a lock is held
-bool PublicationManager::isPublicationReadyToBeSend(const QString &subscriptionId,
-                                                    QSharedPointer<SubscriptionQos> qos){
+bool PublicationManager::isPublicationReadyToBeSend(const QString& subscriptionId,
+                                                    QSharedPointer<SubscriptionQos> qos)
+{
 
     // See if a publication is already scheduled
     {
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
-        if(currentScheduledPublications.contains(subscriptionId)) {
-            LOG_DEBUG(logger, QString("publication runnable already scheduled: %1").arg(subscriptionId));
+        if (currentScheduledPublications.contains(subscriptionId)) {
+            LOG_DEBUG(logger,
+                      QString("publication runnable already scheduled: %1").arg(subscriptionId));
             return false;
         }
     }
@@ -923,19 +928,22 @@ bool PublicationManager::isPublicationReadyToBeSend(const QString &subscriptionI
     qint64 timeSinceLast = now - publication->timeOfLastPublication;
 
     if (minInterval > 0 && timeSinceLast < minInterval) {
-        LOG_DEBUG(logger, QString("Time since last publication is less than minInterval on subscription %1, %2 < %3")
-                            .arg(subscriptionId)
-                            .arg(timeSinceLast)
-                            .arg(minInterval));
+        LOG_DEBUG(logger,
+                  QString("Time since last publication is less than minInterval on subscription "
+                          "%1, %2 < %3")
+                          .arg(subscriptionId)
+                          .arg(timeSinceLast)
+                          .arg(minInterval));
 
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
 
         // Schedule a publication so that the change is not forgotten
-        if(!currentScheduledPublications.contains(subscriptionId)) {
+        if (!currentScheduledPublications.contains(subscriptionId)) {
             qint64 nextPublication = minInterval - timeSinceLast;
             LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(nextPublication));
             currentScheduledPublications.append(subscriptionId);
-            delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId), nextPublication);
+            delayedScheduler->schedule(
+                    new PublisherRunnable(*this, subscriptionId), nextPublication);
         }
 
         return false;
@@ -951,17 +959,15 @@ PublicationManager::Publication::~Publication()
     // This class is not responsible for deleting the PublicationSender or AttributeListener
 }
 
-
 PublicationManager::Publication::Publication(IPublicationSender* publicationSender,
-                                             QSharedPointer<RequestCaller> requestCaller) :
-    timeOfLastPublication(0),
-    sender(publicationSender),
-    requestCaller(requestCaller),
-    attributeListener(NULL),
-    broadcastListener(NULL)
+                                             QSharedPointer<RequestCaller> requestCaller)
+        : timeOfLastPublication(0),
+          sender(publicationSender),
+          requestCaller(requestCaller),
+          attributeListener(NULL),
+          broadcastListener(NULL)
 {
 }
-
 
 //------ PublicationManager::PublisherRunnable ---------------------------------
 
@@ -969,15 +975,12 @@ PublicationManager::PublisherRunnable::~PublisherRunnable()
 {
 }
 
-
 PublicationManager::PublisherRunnable::PublisherRunnable(PublicationManager& publicationManager,
-                                                         const QString& subscriptionId) :
-    publicationManager(publicationManager),
-    subscriptionId(subscriptionId)
+                                                         const QString& subscriptionId)
+        : publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
     setAutoDelete(true);
 }
-
 
 void PublicationManager::PublisherRunnable::run()
 {
@@ -990,22 +993,17 @@ PublicationManager::PublicationEndRunnable::~PublicationEndRunnable()
 {
 }
 
-
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
         PublicationManager& publicationManager,
-        const QString& subscriptionId) :
-    publicationManager(publicationManager),
-    subscriptionId(subscriptionId)
+        const QString& subscriptionId)
+        : publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
     setAutoDelete(true);
 }
-
 
 void PublicationManager::PublicationEndRunnable::run()
 {
     publicationManager.removePublication(subscriptionId);
 }
-
-
 
 } // namespace joynr

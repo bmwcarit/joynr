@@ -19,33 +19,36 @@
 #include "common/InterfaceAddress.h"
 #include <QHash>
 
-namespace joynr {
+namespace joynr
+{
 
-InterfaceAddress::InterfaceAddress():
-    domain(),
-    interfaceName()
+InterfaceAddress::InterfaceAddress() : domain(), interfaceName()
 {
 }
 
-InterfaceAddress::InterfaceAddress(const QString &domain, const QString &interfaceName)
-        : domain(domain),
-        interfaceName(interfaceName)
+InterfaceAddress::InterfaceAddress(const QString& domain, const QString& interfaceName)
+        : domain(domain), interfaceName(interfaceName)
 {
 }
 
-const QString& InterfaceAddress::getDomain() const {
+const QString& InterfaceAddress::getDomain() const
+{
     return domain;
 }
 
-const QString& InterfaceAddress::getInterface() const {
+const QString& InterfaceAddress::getInterface() const
+{
     return interfaceName;
 }
 
-bool InterfaceAddress::operator==(const InterfaceAddress& interfaceAddress) const {
-    return ((domain == interfaceAddress.domain) && (interfaceName == interfaceAddress.interfaceName));
+bool InterfaceAddress::operator==(const InterfaceAddress& interfaceAddress) const
+{
+    return ((domain == interfaceAddress.domain) &&
+            (interfaceName == interfaceAddress.interfaceName));
 }
 
-uint qHash(const InterfaceAddress& interfaceAddress) {
+uint qHash(const InterfaceAddress& interfaceAddress)
+{
     return qHash(interfaceAddress.getDomain()) * 31 + qHash(interfaceAddress.getInterface());
 }
 

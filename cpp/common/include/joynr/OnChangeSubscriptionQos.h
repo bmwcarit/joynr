@@ -29,39 +29,46 @@
 * If no publications is received for alertInterval a publicationMissed will be called.
 */
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos {
+class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
+{
 
     Q_OBJECT
 
     Q_PROPERTY(qint64 minInterval READ getMinInterval WRITE setMinInterval)
 
 public:
-
     OnChangeSubscriptionQos();
     OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other);
     OnChangeSubscriptionQos(const qint64& validity, const qint64& minInterval);
 
     /**
     * The provider will maintain at least a minimum interval idle time in milliseconds between
-    * successive notifications, even if on-change notifications are enabled and the value changes more
-    * often. This prevents the consumer from being flooded by updated values. The filtering happens on
+    * successive notifications, even if on-change notifications are enabled and the value changes
+    *more
+    * often. This prevents the consumer from being flooded by updated values. The filtering happens
+    *on
     * the provider's side, thus also preventing excessive network traffic.
     *
     * @return qint64 minInterval
-    *            The publisher will keep a minimum idle time of minInterval between two successive notifications.
+    *            The publisher will keep a minimum idle time of minInterval between two successive
+    *notifications.
     */
     virtual qint64 getMinInterval() const;
 
     /**
      * The provider will maintain at least a minimum interval idle time in milliseconds between
-     * successive notifications, even if on-change notifications are enabled and the value changes more
-     * often. This prevents the consumer from being flooded by updated values. The filtering happens on
+     * successive notifications, even if on-change notifications are enabled and the value changes
+     *more
+     * often. This prevents the consumer from being flooded by updated values. The filtering happens
+     *on
      * the provider's side, thus also preventing excessive network traffic.
      *
      * @param minInterval
-     *            The publisher will keep a minimum idle time of minInterval between two successive notifications.
+     *            The publisher will keep a minimum idle time of minInterval between two successive
+     *notifications.
      */
     virtual void setMinInterval(const qint64& minInterval);
 

@@ -21,7 +21,8 @@
 
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * \class ISubscriptionCallback
@@ -32,10 +33,10 @@ class ISubscriptionCallback
 {
 public:
     virtual void publicationMissed() = 0;
-    virtual ~ISubscriptionCallback() {
+    virtual ~ISubscriptionCallback()
+    {
     }
-    virtual int getTypeId () const = 0;
-
+    virtual int getTypeId() const = 0;
 };
 
 } // namespace joynr

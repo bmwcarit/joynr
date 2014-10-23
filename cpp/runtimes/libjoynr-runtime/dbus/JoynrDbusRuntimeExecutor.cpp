@@ -21,10 +21,11 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrDbusRuntimeExecutor::JoynrDbusRuntimeExecutor(QSettings *settings) :
-    JoynrRuntimeExecutor(settings)
+JoynrDbusRuntimeExecutor::JoynrDbusRuntimeExecutor(QSettings* settings)
+        : JoynrRuntimeExecutor(settings)
 {
 }
 

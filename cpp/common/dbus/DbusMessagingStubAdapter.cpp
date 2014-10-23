@@ -20,12 +20,13 @@
 #include "common/dbus/DbusMessagingUtil.h"
 #include <CommonAPI/CommonAPI.h>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
-DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress):
-    IDbusStubWrapper(serviceAddress)
+DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress)
+        : IDbusStubWrapper(serviceAddress)
 {
     // init logger
     logger = Logging::getInstance()->getLogger("MSG", "DbusMessagingStubAdapter");
@@ -35,7 +36,8 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress):
     init();
 }
 
-void DbusMessagingStubAdapter::transmit(JoynrMessage &message) {
+void DbusMessagingStubAdapter::transmit(JoynrMessage& message)
+{
     logMethodCall("transmit");
     // copy joynr message
     joynr::messaging::IMessaging::JoynrMessage dbusMsg;

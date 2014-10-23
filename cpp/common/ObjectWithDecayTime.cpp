@@ -19,27 +19,30 @@
 #include "joynr/ObjectWithDecayTime.h"
 #include <QDateTime>
 
-namespace joynr {
+namespace joynr
+{
 
-ObjectWithDecayTime::ObjectWithDecayTime(const QDateTime& decayTime)
-: decayTime(decayTime)
+ObjectWithDecayTime::ObjectWithDecayTime(const QDateTime& decayTime) : decayTime(decayTime)
 {
 }
-//this constructor should not be needed
-//ObjectWithDecayTime::ObjectWithDecayTime()
+// this constructor should not be needed
+// ObjectWithDecayTime::ObjectWithDecayTime()
 //: decayTime(QDateTime::currentDateTime())
 //{
 //}
 
-qint64 ObjectWithDecayTime::getRemainingTtl_ms() const {
-    //todo optimise using appropriate operator from QDateTime
+qint64 ObjectWithDecayTime::getRemainingTtl_ms() const
+{
+    // todo optimise using appropriate operator from QDateTime
     return decayTime.toMSecsSinceEpoch() - QDateTime::currentMSecsSinceEpoch();
 }
-QDateTime ObjectWithDecayTime::getDecayTime() const{
+QDateTime ObjectWithDecayTime::getDecayTime() const
+{
     return decayTime;
 }
 
-bool ObjectWithDecayTime::isExpired() const {
+bool ObjectWithDecayTime::isExpired() const
+{
     return QDateTime::currentDateTime() > decayTime;
 }
 

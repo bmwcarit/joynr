@@ -26,9 +26,11 @@
 
 #include "joynr/system/WebSocketAddress.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class WebSocketSettings : public QObject {
+class WebSocketSettings : public QObject
+{
     Q_OBJECT
 
 public:
@@ -51,13 +53,12 @@ public:
     QVariant value(const QString& key) const;
 
 private:
-    void operator =(const WebSocketSettings &other);
+    void operator=(const WebSocketSettings& other);
 
     QSettings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
-
 
 } // namespace joynr
 #endif // WEBSOCKETSETTINGS_H

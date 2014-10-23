@@ -26,8 +26,8 @@
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/MessagingSettings.h"
 
-
-namespace joynr {
+namespace joynr
+{
 
 /**
  * @brief The LocalChannelUrlDirectory is used within the cluster controller (message routing)
@@ -35,12 +35,13 @@ namespace joynr {
  * ChannelUrlDirectory and stores the resulting ChannelInformation.
  *
  */
-class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory : public ILocalChannelUrlDirectory {
+class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory : public ILocalChannelUrlDirectory
+{
 
 public:
     LocalChannelUrlDirectory(
-             MessagingSettings& messagingSettings,
-             QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
+            MessagingSettings& messagingSettings,
+            QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
 
     virtual ~LocalChannelUrlDirectory();
 
@@ -51,10 +52,9 @@ public:
      * @param channelUrlInformation
      * @param status
      */
-    virtual void registerChannelUrls(
-            QSharedPointer<Future<void> > future,
-            const QString& channelId,
-            types::ChannelUrlInformation channelUrlInformation);
+    virtual void registerChannelUrls(QSharedPointer<Future<void>> future,
+                                     const QString& channelId,
+                                     types::ChannelUrlInformation channelUrlInformation);
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -62,22 +62,21 @@ public:
      * @param status
      * @param channelId
      */
-    virtual void unregisterChannelUrls(
-            QSharedPointer<Future<void> > future ,
-            const QString& channelId);
+    virtual void unregisterChannelUrls(QSharedPointer<Future<void>> future,
+                                       const QString& channelId);
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
-     * entry is obtained it is stored and returned from there on (instead of starting another remote request).
+     * entry is obtained it is stored and returned from there on (instead of starting another remote
+     *request).
      *
      * @param future
      * @param channelId
      * @param timeout
      */
-    virtual void getUrlsForChannel(
-            QSharedPointer<Future<types::ChannelUrlInformation> > future,
-            const QString &channelId,
-            const qint64& timeout_ms);
+    virtual void getUrlsForChannel(QSharedPointer<Future<types::ChannelUrlInformation>> future,
+                                   const QString& channelId,
+                                   const qint64& timeout_ms);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);
@@ -88,6 +87,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //LOCALCHANNELURLDIRECTORY_H_
+#endif // LOCALCHANNELURLDIRECTORY_H_

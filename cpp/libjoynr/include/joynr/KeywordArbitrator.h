@@ -25,11 +25,13 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class IDiscoverySync;
-    class DiscoveryEntry;
+namespace system
+{
+class IDiscoverySync;
+class DiscoveryEntry;
 }
 
 /**
@@ -38,18 +40,18 @@ namespace system {
   * of the first entry with the correct keyword is returned.
   */
 
-
-class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator {
+class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator
+{
 
 public:
-    virtual ~KeywordArbitrator() { }
+    virtual ~KeywordArbitrator()
+    {
+    }
 
-    KeywordArbitrator(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const DiscoveryQos &discoveryQos
-    );
+    KeywordArbitrator(const QString& domain,
+                      const QString& interfaceName,
+                      joynr::system::IDiscoverySync& discoveryProxy,
+                      const DiscoveryQos& discoveryQos);
 
     /*
      *  Attempts to the arbitrate. This function is called by the ProviderArbitrator
@@ -65,17 +67,14 @@ public:
      * Made public for testing purposes
      */
     void receiveCapabilitiesLookupResults(
-            const QList<joynr::system::DiscoveryEntry>& discoveryEntries
-    );
+            const QList<joynr::system::DiscoveryEntry>& discoveryEntries);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);
     QString keyword;
     static int ARBITRATION_RETRY_INTERVAL;
     joynr_logging::Logger* logger;
-
 };
 
-
 } // namespace joynr
-#endif //KEYWORDARBITRATOR
+#endif // KEYWORDARBITRATOR

@@ -34,8 +34,8 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/system/CommunicationMiddleware.h"
 
-
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT CapabilityEntry : QObject
 {
@@ -44,28 +44,26 @@ class JOYNR_EXPORT CapabilityEntry : QObject
     Q_PROPERTY(QString domain READ getDomain WRITE setDomain)
     Q_PROPERTY(joynr__types__ProviderQos qos READ getQos WRITE setQos)
     Q_PROPERTY(QString participantId READ getParticipantId WRITE setParticipantId)
-    Q_PROPERTY(QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections READ getMiddlewareConnections WRITE setMiddlewareConnections)
+    Q_PROPERTY(QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections READ
+                       getMiddlewareConnections WRITE setMiddlewareConnections)
     Q_PROPERTY(bool global READ isGlobal)
 
 public:
-
     CapabilityEntry();
 
-    CapabilityEntry(const CapabilityEntry &other);
+    CapabilityEntry(const CapabilityEntry& other);
 
-    CapabilityEntry(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::types::ProviderQos qos,
-            const QString& participantId,
-            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
-            bool isGlobal,
-            QObject* parent = 0
-    );
+    CapabilityEntry(const QString& domain,
+                    const QString& interfaceName,
+                    joynr::types::ProviderQos qos,
+                    const QString& participantId,
+                    QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections,
+                    bool isGlobal,
+                    QObject* parent = 0);
 
-    CapabilityEntry& operator =(const CapabilityEntry& other);
+    CapabilityEntry& operator=(const CapabilityEntry& other);
 
-    bool operator ==(const CapabilityEntry& other) const;
+    bool operator==(const CapabilityEntry& other) const;
 
     QString getInterfaceName() const;
     QString getDomain() const;
@@ -78,22 +76,19 @@ public:
     QString getParticipantId() const;
     void setParticipantId(QString participantId);
 
-
     void setMiddlewareConnections(
-            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections
-    );
+            QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections);
     QList<joynr::system::CommunicationMiddleware::Enum> getMiddlewareConnections() const;
 
     void prependMiddlewareConnection(
-            joynr::system::CommunicationMiddleware::Enum middlewareConnection
-    );
+            joynr::system::CommunicationMiddleware::Enum middlewareConnection);
 
     bool isGlobal() const;
     void setGlobal(bool global);
 
     QString toString() const;
 
- private:
+private:
     QString domain;
     QString interfaceName;
     types::ProviderQos qos;
@@ -106,4 +101,4 @@ public:
 
 Q_DECLARE_METATYPE(joynr::CapabilityEntry)
 
-#endif //CAPABILITYENTRY_H
+#endif // CAPABILITYENTRY_H

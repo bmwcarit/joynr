@@ -21,63 +21,73 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
-Logger* BroadcastSubscriptionRequest::logger = Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequest");
+Logger* BroadcastSubscriptionRequest::logger =
+        Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequest");
 
-BroadcastSubscriptionRequest::BroadcastSubscriptionRequest():
-    filterParameters()
+BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
     qRegisterMetaType<BroadcastFilterParameters>("BroadcastFilterParameters");
     qRegisterMetaType<QSharedPointer<BroadcastFilterParameters>>();
 }
 
-BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest& subscriptionRequest) :
-    SubscriptionRequest(subscriptionRequest),
-    filterParameters(subscriptionRequest.getFilterParameters()) {
+BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(
+        const BroadcastSubscriptionRequest& subscriptionRequest)
+        : SubscriptionRequest(subscriptionRequest),
+          filterParameters(subscriptionRequest.getFilterParameters())
+{
 }
 
-
-BroadcastSubscriptionRequest& BroadcastSubscriptionRequest::operator=(const BroadcastSubscriptionRequest& subscriptionRequest) {
-    SubscriptionRequest::operator =(subscriptionRequest);
+BroadcastSubscriptionRequest& BroadcastSubscriptionRequest::operator=(
+        const BroadcastSubscriptionRequest& subscriptionRequest)
+{
+    SubscriptionRequest::operator=(subscriptionRequest);
     filterParameters = subscriptionRequest.getFilterParameters();
     return *this;
 }
 
-bool BroadcastSubscriptionRequest::operator==(const BroadcastSubscriptionRequest& subscriptionRequest) const {
+bool BroadcastSubscriptionRequest::operator==(
+        const BroadcastSubscriptionRequest& subscriptionRequest) const
+{
 
-    bool equal = getQos()->equals(*subscriptionRequest.getQos())
-            && getFilterParameters().equals(subscriptionRequest.getFilterParameters());
-    return
-            getSubscriptionId() == subscriptionRequest.getSubscriptionId()
-            && getSubscribeToName() == subscriptionRequest.getSubscribeToName()
-            && equal;
+    bool equal = getQos()->equals(*subscriptionRequest.getQos()) &&
+                 getFilterParameters().equals(subscriptionRequest.getFilterParameters());
+    return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
+           getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParameters) {
+void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParameters)
+{
     this->filterParameters = filterParameters.value<BroadcastFilterParameters>();
 }
 
-QString BroadcastSubscriptionRequest::toQString() const {
+QString BroadcastSubscriptionRequest::toQString() const
+{
     return JsonSerializer::serialize(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(QSharedPointer<OnChangeSubscriptionQos> qos){
+void BroadcastSubscriptionRequest::setQos(QSharedPointer<OnChangeSubscriptionQos> qos)
+{
     SubscriptionRequest::setQos(qos);
 }
 
-QVariant BroadcastSubscriptionRequest::getFilterParametersData() const {
+QVariant BroadcastSubscriptionRequest::getFilterParametersData() const
+{
     return QVariant::fromValue(filterParameters);
 }
 
-BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const{
+BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
+{
     return filterParameters;
 }
 
-void BroadcastSubscriptionRequest::setFilterParameters(const BroadcastFilterParameters &filterParameters){
+void BroadcastSubscriptionRequest::setFilterParameters(
+        const BroadcastFilterParameters& filterParameters)
+{
     this->filterParameters = filterParameters;
 }
-
 
 } // namespace joynr

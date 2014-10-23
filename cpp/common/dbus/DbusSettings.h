@@ -26,9 +26,11 @@
 #include <QObject>
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT DbusSettings : public QObject {
+class JOYNRCOMMON_EXPORT DbusSettings : public QObject
+{
     Q_OBJECT
 
 public:
@@ -57,13 +59,12 @@ public:
     QVariant value(const QString& key) const;
 
 private:
-    void operator =(const DbusSettings &other);
+    void operator=(const DbusSettings& other);
 
     QSettings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
-
 
 } // namespace joynr
 #endif // DBUSSETTINGS_H

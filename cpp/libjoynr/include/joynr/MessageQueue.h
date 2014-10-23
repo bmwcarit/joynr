@@ -28,11 +28,13 @@
 #include <QMutex>
 #include <QRunnable>
 
-namespace joynr {
+namespace joynr
+{
 
 typedef ContentWithDecayTime<JoynrMessage> MessageQueueItem;
 
-class JOYNR_EXPORT MessageQueue {
+class JOYNR_EXPORT MessageQueue
+{
 public:
     MessageQueue();
 
@@ -45,22 +47,21 @@ public:
     MessageQueueItem* getNextMessageForParticipant(const QString destinationPartId);
 
     qint64 removeOutdatedMessages();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-
     QMap<QString, MessageQueueItem*>* queue;
     mutable QMutex queueMutex;
-
 };
 
 /**
  * Runnable to remove outdated message from message queue
  */
-class JOYNR_EXPORT MessageQueueCleanerRunnable: public QRunnable {
+class JOYNR_EXPORT MessageQueueCleanerRunnable : public QRunnable
+{
 public:
-    MessageQueueCleanerRunnable(MessageQueue& messageQueue,
-                                qint64 sleepInterval = 1000);
+    MessageQueueCleanerRunnable(MessageQueue& messageQueue, qint64 sleepInterval = 1000);
     void run();
     void stop();
 
@@ -69,7 +70,6 @@ private:
     bool stopped;
     qint64 sleepInterval;
 };
-
 }
 
 #endif // MESSAGEQUEUE_H

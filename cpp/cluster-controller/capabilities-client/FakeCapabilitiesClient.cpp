@@ -17,119 +17,129 @@
  * #L%
  */
 
-
 #include "cluster-controller/capabilities-client/FakeCapabilitiesClient.h"
 #include "joynr/exceptions.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 
 #include <QUuid>
 
-namespace joynr {
+namespace joynr
+{
 
 FakeCapabilitiesClient::FakeCapabilitiesClient(const QString& localChannelId,
-                                               const QString &settingsFileName)
-    : defaultRequestTTL(30000),
-      defaultRequestRoundtripTTL(40000),
-      capabilitiesClientParticipantId(),
-      localChannelId(localChannelId),
-      configuration(settingsFileName, QSettings::IniFormat),
-      preconfiguredDomain(configuration
-                          .value("capabilitiesClient/fakeDomain", "fakeDomain")
-                          .value<QString>()),
-      preconfiguredInterfaceName(configuration
-                                 .value("capabilitiesClient/fakeInterfaceName", "fakeInterfaceName")
-                                 .value<QString>()),
-      preconfiguredChannelId(configuration
-                             .value("capabilitiesClient/fakeChannelId", "fakeChannelId")
-                             .value<QString>()),
-      preconfiguredParticipantId(configuration
-                                 .value("capabilitiesClient/fakeParticipantId", "fakeParticipantId")
-                                 .value<QString>())
+                                               const QString& settingsFileName)
+        : defaultRequestTTL(30000),
+          defaultRequestRoundtripTTL(40000),
+          capabilitiesClientParticipantId(),
+          localChannelId(localChannelId),
+          configuration(settingsFileName, QSettings::IniFormat),
+          preconfiguredDomain(configuration.value("capabilitiesClient/fakeDomain", "fakeDomain")
+                                      .value<QString>()),
+          preconfiguredInterfaceName(configuration.value("capabilitiesClient/fakeInterfaceName",
+                                                         "fakeInterfaceName").value<QString>()),
+          preconfiguredChannelId(configuration.value("capabilitiesClient/fakeChannelId",
+                                                     "fakeChannelId").value<QString>()),
+          preconfiguredParticipantId(configuration.value("capabilitiesClient/fakeParticipantId",
+                                                         "fakeParticipantId").value<QString>())
 {
     capabilitiesClientParticipantId = QUuid::createUuid().toString();
-    capabilitiesClientParticipantId = capabilitiesClientParticipantId
-                                        .mid(1,capabilitiesClientParticipantId.length()-2);
+    capabilitiesClientParticipantId =
+            capabilitiesClientParticipantId.mid(1, capabilitiesClientParticipantId.length() - 2);
 }
 
-FakeCapabilitiesClient::~FakeCapabilitiesClient(){
+FakeCapabilitiesClient::~FakeCapabilitiesClient()
+{
 }
 
-
-QString FakeCapabilitiesClient::getLocalChannelId(){
+QString FakeCapabilitiesClient::getLocalChannelId()
+{
     return localChannelId;
 }
 
-
-void FakeCapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInformationList){
+void FakeCapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInformationList)
+{
     Q_UNUSED(capabilitiesInformationList)
-    if (localChannelId.isEmpty()){
-        throw JoynrException("Exception in CapabilitiesClient: Local channelId is empty. Tried to register capabilities before messaging was started(no queueing implemented yet)");
+    if (localChannelId.isEmpty()) {
+        throw JoynrException("Exception in CapabilitiesClient: Local channelId is empty. Tried to "
+                             "register capabilities before messaging was started(no queueing "
+                             "implemented yet)");
     } else {
     }
 }
 
-void FakeCapabilitiesClient::remove(QList<QString> participantIdList){
+void FakeCapabilitiesClient::remove(QList<QString> participantIdList)
+{
     Q_UNUSED(participantIdList);
 }
 
 QList<types::CapabilityInformation> FakeCapabilitiesClient::lookup(const QString& domain,
-                                                                                          const QString& interfaceName)
+                                                                   const QString& interfaceName)
 {
-    //return faked list to simulate incoming results
+    // return faked list to simulate incoming results
     return createFakedCapInfoList(domain, interfaceName);
 }
 
 void FakeCapabilitiesClient::lookup(const QString& domain,
-                                                                const QString& interfaceName,
-                                                                QSharedPointer<IGlobalCapabilitiesCallback> callback)
+                                    const QString& interfaceName,
+                                    QSharedPointer<IGlobalCapabilitiesCallback> callback)
 {
-    //return faked list to simulate incoming results
-        callback->capabilitiesReceived(createFakedCapInfoList(domain, interfaceName));
+    // return faked list to simulate incoming results
+    callback->capabilitiesReceived(createFakedCapInfoList(domain, interfaceName));
 }
 
-
 void FakeCapabilitiesClient::lookup(const QString& participantId,
-                                                             QSharedPointer<IGlobalCapabilitiesCallback> callback)
+                                    QSharedPointer<IGlobalCapabilitiesCallback> callback)
 {
     callback->capabilitiesReceived(createFakedCapInfoListForParticipantId(participantId));
 }
 
-QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList(const QString& domain,
-                                                                              const QString& interfaceName)
+QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList(
+        const QString& domain,
+        const QString& interfaceName)
 {
     QList<types::CapabilityInformation> fakedCapInfoList;
     QString fakeParticipantId = preconfiguredParticipantId + "_" + interfaceName + "DummyProvider";
-    fakedCapInfoList.append(types::CapabilityInformation(domain,
-                                                    interfaceName,
-                                                    types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false),
-                                                    preconfiguredChannelId,
-                                                    fakeParticipantId));
+    fakedCapInfoList.append(types::CapabilityInformation(
+            domain,
+            interfaceName,
+            types::ProviderQos(
+                    QList<types::CustomParameter>(), 1, 1, types::ProviderScope::GLOBAL, false),
+            preconfiguredChannelId,
+            fakeParticipantId));
     return fakedCapInfoList;
 }
 
-QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoListForChannelId(const QString& channelId){
+QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoListForChannelId(
+        const QString& channelId)
+{
     QList<types::CapabilityInformation> fakedCapInfoList;
-    fakedCapInfoList.append(types::CapabilityInformation(preconfiguredDomain,
-                                                    preconfiguredInterfaceName,
-                                                    types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false),
-                                                    channelId,
-                                                    preconfiguredParticipantId));
+    fakedCapInfoList.append(types::CapabilityInformation(
+            preconfiguredDomain,
+            preconfiguredInterfaceName,
+            types::ProviderQos(
+                    QList<types::CustomParameter>(), 1, 1, types::ProviderScope::GLOBAL, false),
+            channelId,
+            preconfiguredParticipantId));
     return fakedCapInfoList;
 }
 
-QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoListForParticipantId(const QString& participantId){
+QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoListForParticipantId(
+        const QString& participantId)
+{
     QList<types::CapabilityInformation> fakedCapInfoList;
-    fakedCapInfoList.append(types::CapabilityInformation(preconfiguredDomain,
-                                                    preconfiguredInterfaceName,
-                                                    types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false),
-                                                    preconfiguredChannelId,
-                                                    participantId));
+    fakedCapInfoList.append(types::CapabilityInformation(
+            preconfiguredDomain,
+            preconfiguredInterfaceName,
+            types::ProviderQos(
+                    QList<types::CustomParameter>(), 1, 1, types::ProviderScope::GLOBAL, false),
+            preconfiguredChannelId,
+            participantId));
     return fakedCapInfoList;
 }
 
-QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList(){
+QList<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList()
+{
     return createFakedCapInfoList(preconfiguredDomain, preconfiguredInterfaceName);
 }
-
 
 } // namespace joynr

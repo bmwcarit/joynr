@@ -20,14 +20,13 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 InterfaceRegistrar* InterfaceRegistrar::registrarInstance = 0;
 
 InterfaceRegistrar::InterfaceRegistrar()
-    : requestInterpreters(),
-      requestInterpretersMutex(),
-      requestInterpreterCounts()
+        : requestInterpreters(), requestInterpretersMutex(), requestInterpreterCounts()
 {
 }
 
@@ -63,7 +62,8 @@ void InterfaceRegistrar::unregisterRequestInterpreter(const QString& interfaceNa
     }
 }
 
-QSharedPointer<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(const QString& interfaceName)
+QSharedPointer<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
+        const QString& interfaceName)
 {
     QMutexLocker locker(&requestInterpretersMutex);
 

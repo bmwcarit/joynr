@@ -23,21 +23,19 @@
 
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
         IJoynrMessageSender* messageSender,
-        SubscriptionManager* subscriptionManager
-) :
-    messageSender(messageSender),
-    subscriptionManager(subscriptionManager)
+        SubscriptionManager* subscriptionManager)
+        : messageSender(messageSender), subscriptionManager(subscriptionManager)
 {
 }
 
-
 bool JoynrMessagingConnectorFactory::canBeCreated(
-        const joynr::system::CommunicationMiddleware::Enum& connection
-) {
+        const joynr::system::CommunicationMiddleware::Enum& connection)
+{
     return connection == joynr::system::CommunicationMiddleware::JOYNR;
 }
 

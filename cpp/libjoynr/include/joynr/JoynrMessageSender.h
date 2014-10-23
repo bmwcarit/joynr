@@ -24,11 +24,11 @@
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IMessaging;
 class MessageRouter;
-
 
 /**
   * The class JoynrMessageSender enables the exchange of JoynrMessages
@@ -36,7 +36,6 @@ class MessageRouter;
   * It uses a JoynrMessage factory to create a JoynrMessage
   * and sends it via a <Middleware>MessagingStub.
   */
-
 
 /*
   * JoynrMessageSender needs an Dispatcher, and Dispatcher needs a JoynrMessageSender.
@@ -55,9 +54,9 @@ class MessageRouter;
   *     No reference to the dispatcher.
   */
 
-class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender {
+class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
+{
 public:
-
     JoynrMessageSender(QSharedPointer<MessageRouter> messagingRouter);
 
     virtual ~JoynrMessageSender();
@@ -67,56 +66,45 @@ public:
       */
     void registerDispatcher(IDispatcher* dispatcher);
 
-    virtual void sendRequest(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
-            const MessagingQos& qos,
-            const Request& request,
-            QSharedPointer<IReplyCaller> callback
-    );
+    virtual void sendRequest(const QString& senderParticipantId,
+                             const QString& receiverParticipantId,
+                             const MessagingQos& qos,
+                             const Request& request,
+                             QSharedPointer<IReplyCaller> callback);
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
-    virtual void sendReply(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
-            const MessagingQos& qos,
-            const Reply& reply
-    );
+    virtual void sendReply(const QString& senderParticipantId,
+                           const QString& receiverParticipantId,
+                           const MessagingQos& qos,
+                           const Reply& reply);
 
-    virtual void sendSubscriptionRequest(
-            const QString &senderParticipantId,
-            const QString &receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionRequest& subscriptionRequest
-    );
+    virtual void sendSubscriptionRequest(const QString& senderParticipantId,
+                                         const QString& receiverParticipantId,
+                                         const MessagingQos& qos,
+                                         const SubscriptionRequest& subscriptionRequest);
 
     virtual void sendBroadcastSubscriptionRequest(
-            const QString &senderParticipantId,
-            const QString &receiverParticipantId,
-            const MessagingQos& qos,
-            const BroadcastSubscriptionRequest& subscriptionRequest
-    );
-
-    virtual void sendSubscriptionReply(
-            const QString &senderParticipantId,
-            const QString &receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionReply& subscriptionReply
-    );
-
-    virtual void sendSubscriptionStop(
             const QString& senderParticipantId,
             const QString& receiverParticipantId,
             const MessagingQos& qos,
-            const SubscriptionStop& subscriptionStop
-    );
+            const BroadcastSubscriptionRequest& subscriptionRequest);
+
+    virtual void sendSubscriptionReply(const QString& senderParticipantId,
+                                       const QString& receiverParticipantId,
+                                       const MessagingQos& qos,
+                                       const SubscriptionReply& subscriptionReply);
+
+    virtual void sendSubscriptionStop(const QString& senderParticipantId,
+                                      const QString& receiverParticipantId,
+                                      const MessagingQos& qos,
+                                      const SubscriptionStop& subscriptionStop);
 
     virtual void sendSubscriptionPublication(
-            const QString& senderParticipantId, const QString& receiverParticipantId,
+            const QString& senderParticipantId,
+            const QString& receiverParticipantId,
             const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication
-    );
+            const SubscriptionPublication& subscriptionPublication);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
@@ -125,7 +113,6 @@ private:
     JoynrMessageFactory messageFactory;
     static joynr_logging::Logger* logger;
 };
-
 
 } // namespace joynr
 #endif // JOYNRMESSAGESENDER_H

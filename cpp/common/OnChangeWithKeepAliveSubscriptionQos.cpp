@@ -20,86 +20,102 @@
 
 using namespace joynr;
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL() {
+const qint64& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL()
+{
     static qint64 defaultMaxInterval = 2592000000UL;
     return defaultMaxInterval;
 }
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL(){
+const qint64& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
+{
     static qint64 maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL(){
+const qint64& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
+{
     return NO_ALERT_AFTER_INTERVAL();
 }
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL() {
+const qint64& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
+{
     static qint64 noAlertAfterInterval = 0;
     return noAlertAfterInterval;
 }
 
-OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos() :
-    OnChangeSubscriptionQos(),
-    maxInterval(getMinInterval()),
-    alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
+        : OnChangeSubscriptionQos(),
+          maxInterval(getMinInterval()),
+          alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
 }
 
-OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(const qint64& validity, const qint64& minInterval, const qint64& maxInterval, const qint64& alertAfterInterval) :
-    OnChangeSubscriptionQos(validity, minInterval),
-    maxInterval(getMinInterval()),
-    alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
+        const qint64& validity,
+        const qint64& minInterval,
+        const qint64& maxInterval,
+        const qint64& alertAfterInterval)
+        : OnChangeSubscriptionQos(validity, minInterval),
+          maxInterval(getMinInterval()),
+          alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
     setMaxInterval(maxInterval);
     setAlertAfterInterval(alertAfterInterval);
 }
 
-OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(const OnChangeWithKeepAliveSubscriptionQos& other) :
-    OnChangeSubscriptionQos(other),
-    maxInterval(other.getMaxInterval()),
-    alertAfterInterval(other.getAlertAfterInterval())
+OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
+        const OnChangeWithKeepAliveSubscriptionQos& other)
+        : OnChangeSubscriptionQos(other),
+          maxInterval(other.getMaxInterval()),
+          alertAfterInterval(other.getAlertAfterInterval())
 {
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const qint64& maxInterval){
+void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const qint64& maxInterval)
+{
     this->maxInterval = maxInterval;
-    if(this->maxInterval < this->getMinInterval()) {
+    if (this->maxInterval < this->getMinInterval()) {
         this->maxInterval = this->minInterval;
     }
-    if(this->maxInterval > MAX_MAX_INTERVAL()) {
+    if (this->maxInterval > MAX_MAX_INTERVAL()) {
         this->maxInterval = MAX_MAX_INTERVAL();
     }
-    if(this->alertAfterInterval != 0 && this->alertAfterInterval < this->maxInterval) {
+    if (this->alertAfterInterval != 0 && this->alertAfterInterval < this->maxInterval) {
         this->alertAfterInterval = this->maxInterval;
     }
 }
 
-qint64 OnChangeWithKeepAliveSubscriptionQos::getMaxInterval() const {
+qint64 OnChangeWithKeepAliveSubscriptionQos::getMaxInterval() const
+{
     return this->maxInterval;
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const qint64 &minInterval) {
+void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const qint64& minInterval)
+{
     OnChangeSubscriptionQos::setMinInterval(minInterval);
     // corrects the maxinterval if minInterval changes
     setMaxInterval(this->maxInterval);
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(const qint64 &alertAfterInterval) {
+void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(const qint64& alertAfterInterval)
+{
     this->alertAfterInterval = alertAfterInterval;
-    if(this->alertAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
+    if (this->alertAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
         this->alertAfterInterval = MAX_ALERT_AFTER_INTERVAL();
     }
-    if(this->alertAfterInterval != 0 && this->alertAfterInterval < this->getMaxInterval()) {
+    if (this->alertAfterInterval != 0 && this->alertAfterInterval < this->getMaxInterval()) {
         this->alertAfterInterval = this->getMaxInterval();
     }
 }
 
-qint64 OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const {
+qint64 OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const
+{
     return alertAfterInterval;
 }
 
-OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::operator=(const OnChangeWithKeepAliveSubscriptionQos& other) {
+OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::operator=(
+        const OnChangeWithKeepAliveSubscriptionQos& other)
+{
     expiryDate = other.getExpiryDate();
     publicationTtl = other.getPublicationTtl();
     minInterval = other.getMinInterval();
@@ -108,16 +124,16 @@ OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::oper
     return *this;
 }
 
-bool OnChangeWithKeepAliveSubscriptionQos::operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const {
-    return
-        expiryDate == other.getExpiryDate() &&
-        publicationTtl == other.getPublicationTtl() &&
-        minInterval == other.getMinInterval() &&
-        maxInterval == other.getMaxInterval() &&
-        alertAfterInterval == other.getAlertAfterInterval();
+bool OnChangeWithKeepAliveSubscriptionQos::operator==(
+        const OnChangeWithKeepAliveSubscriptionQos& other) const
+{
+    return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
+           minInterval == other.getMinInterval() && maxInterval == other.getMaxInterval() &&
+           alertAfterInterval == other.getAlertAfterInterval();
 }
 
-bool OnChangeWithKeepAliveSubscriptionQos::equals(const QObject &other) const {
+bool OnChangeWithKeepAliveSubscriptionQos::equals(const QObject& other) const
+{
     int typeThis = QMetaType::type(this->metaObject()->className());
     int typeOther = QMetaType::type(other.metaObject()->className());
     auto newOther = dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos*>(&other);

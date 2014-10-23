@@ -19,52 +19,54 @@
 
 #include "joynr/SubscriptionPublication.h"
 
-namespace joynr {
+namespace joynr
+{
 
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication():
-    subscriptionId(),
-    response()
+SubscriptionPublication::SubscriptionPublication() : subscriptionId(), response()
 {
-
 }
-SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication &other) :
-    QObject(),
-    subscriptionId(other.getSubscriptionId()),
-    response(other.response)
+SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication& other)
+        : QObject(), subscriptionId(other.getSubscriptionId()), response(other.response)
 {
 }
 
-SubscriptionPublication& SubscriptionPublication::operator=(const SubscriptionPublication &other){
+SubscriptionPublication& SubscriptionPublication::operator=(const SubscriptionPublication& other)
+{
     this->subscriptionId = other.getSubscriptionId();
     this->response = other.response;
     return *this;
 }
 
-QString SubscriptionPublication::getSubscriptionId() const {
+QString SubscriptionPublication::getSubscriptionId() const
+{
     return subscriptionId;
 }
 
-void SubscriptionPublication::setSubscriptionId(QString subscriptionId){
+void SubscriptionPublication::setSubscriptionId(QString subscriptionId)
+{
     this->subscriptionId = subscriptionId;
 }
 
-QVariant SubscriptionPublication::getResponse() const {
+QVariant SubscriptionPublication::getResponse() const
+{
     return response;
 }
 
-void SubscriptionPublication::setResponse(QVariant response){
+void SubscriptionPublication::setResponse(QVariant response)
+{
     this->response = response;
 }
 
-bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const {
-    return subscriptionId == other.getSubscriptionId()
-            && response == other.getResponse();
+bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
+{
+    return subscriptionId == other.getSubscriptionId() && response == other.getResponse();
 }
 
-bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const {
-    return !(*this==other);
+bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
+{
+    return !(*this == other);
 }
 
 } // namespace joynr

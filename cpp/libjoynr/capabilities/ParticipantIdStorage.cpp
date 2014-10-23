@@ -21,25 +21,24 @@
 
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
-ParticipantIdStorage::ParticipantIdStorage(const QString& filename) :
-    filename(filename)
+ParticipantIdStorage::ParticipantIdStorage(const QString& filename) : filename(filename)
 {
 }
 
-const QString &ParticipantIdStorage::STORAGE_FORMAT_STRING()
+const QString& ParticipantIdStorage::STORAGE_FORMAT_STRING()
 {
     static const QString value("joynr.participant.%1.%2.%3");
     return value;
 }
 
-void ParticipantIdStorage::setProviderParticipantId(
-        const QString &domain,
-        const QString &interfaceName,
-        const QString &authenticationToken,
-        const QString &participantId
-) {
+void ParticipantIdStorage::setProviderParticipantId(const QString& domain,
+                                                    const QString& interfaceName,
+                                                    const QString& authenticationToken,
+                                                    const QString& participantId)
+{
     // Access the persistence file through a threadsafe QSettings object
     QSettings settings(filename, QSettings::IniFormat);
 
@@ -64,8 +63,7 @@ QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
     QSettings settings(filename, QSettings::IniFormat);
 
     // Arrange the provider ids by authentication token
-    QString authToken = (!authenticationToken.isEmpty()) ? authenticationToken :
-                                                           QString("default");
+    QString authToken = (!authenticationToken.isEmpty()) ? authenticationToken : QString("default");
     QString providerKey = createProviderKey(domain, interfaceName, authToken);
 
     // Lookup the participant id
@@ -84,17 +82,12 @@ QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
     return participantId;
 }
 
-QString ParticipantIdStorage::createProviderKey(
-        const QString &domain,
-        const QString &interfaceName,
-        const QString &authenticationToken
-) {
-    QString key = STORAGE_FORMAT_STRING()
-            .arg(domain)
-            .arg(interfaceName)
-            .arg(authenticationToken)
-    ;
-    
+QString ParticipantIdStorage::createProviderKey(const QString& domain,
+                                                const QString& interfaceName,
+                                                const QString& authenticationToken)
+{
+    QString key = STORAGE_FORMAT_STRING().arg(domain).arg(interfaceName).arg(authenticationToken);
+
     return key.replace("/", ".");
 }
 

@@ -22,15 +22,14 @@
 
 #include <QVariant>
 
-namespace joynr {
+namespace joynr
+{
 
-SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString &subscriptionId,
-                                                             PublicationManager &publicationManager) :
-        subscriptionId(subscriptionId),
-        publicationManager(publicationManager)
+SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString& subscriptionId,
+                                                             PublicationManager& publicationManager)
+        : subscriptionId(subscriptionId), publicationManager(publicationManager)
 {
 }
-
 
 void SubscriptionBroadcastListener::eventOccured(const QVariantMap& values)
 {

@@ -25,12 +25,14 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class DBusMessageRouterAdapter;
 class DbusSettings;
 
-class LibJoynrDbusRuntime : public LibJoynrRuntime {
+class LibJoynrDbusRuntime : public LibJoynrRuntime
+{
 public:
     LibJoynrDbusRuntime(QSettings* settings);
     virtual ~LibJoynrDbusRuntime();
@@ -39,13 +41,12 @@ protected:
     DBusMessageRouterAdapter* dbusMessageRouterAdapter;
     DbusSettings* dbusSettings;
 
-    virtual void startLibJoynrMessagingSkeleton(MessageRouter &messageRouter);
+    virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrDbusRuntime);
     QString libjoynrMessagingServiceUrl;
 };
 
-
 } // namespace joynr
-#endif //LIBJOYNRDBUSRUNTIME_H
+#endif // LIBJOYNRDBUSRUNTIME_H

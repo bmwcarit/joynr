@@ -25,66 +25,59 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/Address.h"
 
-namespace joynr {
+namespace joynr
+{
 
 joynr_logging::Logger* WebSocketMessagingStub::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
 
-WebSocketMessagingStub::WebSocketMessagingStub(
-        system::Address* address,
-        QWebSocket* webSocket,
-        QObject *parent
-) :
-    QObject(parent),
-    address(address),
-    webSocket(webSocket)
+WebSocketMessagingStub::WebSocketMessagingStub(system::Address* address,
+                                               QWebSocket* webSocket,
+                                               QObject* parent)
+        : QObject(parent), address(address), webSocket(webSocket)
 {
-    connect(
-            webSocket, &QWebSocket::disconnected,
-            this, &WebSocketMessagingStub::onSocketDisconnected
-    );
+    connect(webSocket,
+            &QWebSocket::disconnected,
+            this,
+            &WebSocketMessagingStub::onSocketDisconnected);
 }
 
-WebSocketMessagingStub::~WebSocketMessagingStub() {
+WebSocketMessagingStub::~WebSocketMessagingStub()
+{
     webSocket->close();
     webSocket->deleteLater();
     address->deleteLater();
 }
 
-void WebSocketMessagingStub::onSocketDisconnected() {
+void WebSocketMessagingStub::onSocketDisconnected()
+{
     LOG_DEBUG(logger, QString("Web Socket disconnected: %0").arg(address->toString()));
     emit closed(*address);
 }
 
-void WebSocketMessagingStub::sendTextMessage(const QString &message)
+void WebSocketMessagingStub::sendTextMessage(const QString& message)
 {
-    LOG_TRACE(logger, QString("OUTGOING\nmessage: %0\nto: %1")
-              .arg(message)
-              .arg(address->toString())
-    );
+    LOG_TRACE(
+            logger, QString("OUTGOING\nmessage: %0\nto: %1").arg(message).arg(address->toString()));
     qint64 bytesSent = webSocket->sendTextMessage(message);
-    LOG_TRACE(logger, QString("bytes actually sent: %0 of %1")
-              .arg(bytesSent)
-              .arg(message.size())
-    );
-
+    LOG_TRACE(logger, QString("bytes actually sent: %0 of %1").arg(bytesSent).arg(message.size()));
 }
 
-void WebSocketMessagingStub::transmit(JoynrMessage& message) {
-    if(!webSocket->isValid()) {
-        LOG_ERROR(logger, QString("WebSocket not ready %0. Unable to send message %1.")
-                  .arg(address->toString())
-                  .arg(QString(JsonSerializer::serialize(message))));
+void WebSocketMessagingStub::transmit(JoynrMessage& message)
+{
+    if (!webSocket->isValid()) {
+        LOG_ERROR(logger,
+                  QString("WebSocket not ready %0. Unable to send message %1.")
+                          .arg(address->toString())
+                          .arg(QString(JsonSerializer::serialize(message))));
         return;
     }
 
     QByteArray serializedMessage(JsonSerializer::serialize(message));
-    QMetaObject::invokeMethod(
-                this,
-                "sendTextMessage",
-                Qt::AutoConnection,
-                Q_ARG(QString, QString(serializedMessage))
-    );
+    QMetaObject::invokeMethod(this,
+                              "sendTextMessage",
+                              Qt::AutoConnection,
+                              Q_ARG(QString, QString(serializedMessage)));
 }
 
 } // namespace joynr

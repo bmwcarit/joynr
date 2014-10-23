@@ -23,9 +23,10 @@
 #include "joynr/Reply.h"
 #include "joynr/IReplyCaller.h"
 
-namespace joynr {
+namespace joynr
+{
 
-template<class T>
+template <class T>
 /**
  * @brief This class is used to bridge the user-typed ICallback interface to
  * a standard type ICallback.  This was needed so an API could be defined
@@ -33,11 +34,11 @@ template<class T>
  *
  * T is the type that the Reply will be converted to for the callback.
  */
-class JsonCallback : public ICallback<Reply> {
+class JsonCallback : public ICallback<Reply>
+{
 
 public:
-    JsonCallback(QSharedPointer<ICallback<T> > callback)
-        : callback(callback)
+    JsonCallback(QSharedPointer<ICallback<T>> callback) : callback(callback)
     {
     }
 
@@ -56,28 +57,28 @@ public:
         callback->onFailure(status);
     }
 
-
 private:
-    QSharedPointer<ICallback<T> > callback;
+    QSharedPointer<ICallback<T>> callback;
 };
 
-
-
-template<>
+template <>
 /**
  * @brief The "void" specialisation of the JsonCallback<T> class.
  *
  */
-class JsonCallback<void> : public ICallback<Reply> {
+class JsonCallback<void> : public ICallback<Reply>
+{
 public:
-    JsonCallback(QSharedPointer<ICallback<void> > callback)
-        : callback(callback){
+    JsonCallback(QSharedPointer<ICallback<void>> callback) : callback(callback)
+    {
     }
 
-    ~JsonCallback () {
+    ~JsonCallback()
+    {
     }
 
-    void onSuccess(const RequestStatus status, Reply result) {
+    void onSuccess(const RequestStatus status, Reply result)
+    {
         Q_UNUSED(result);
         callback->onSuccess(status);
     }
@@ -88,9 +89,8 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<void> > callback;
+    QSharedPointer<ICallback<void>> callback;
 };
 
-
 } // namespace joynr
-#endif //JSONCALLBACK_H
+#endif // JSONCALLBACK_H

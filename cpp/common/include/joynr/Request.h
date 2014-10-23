@@ -25,9 +25,11 @@
 #include <QVariant>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT Request : public QObject {
+class JOYNRCOMMON_EXPORT Request : public QObject
+{
     Q_OBJECT
 
     Q_PROPERTY(QString requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
@@ -65,9 +67,8 @@ private:
     QList<QVariant> paramDatatypes;
 };
 
-
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::Request)
 Q_DECLARE_METATYPE(QSharedPointer<joynr::Request>)
-#endif //REQUEST_H
+#endif // REQUEST_H

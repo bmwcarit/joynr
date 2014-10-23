@@ -23,7 +23,8 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class HttpResult;
 class HttpRequestBuilder;
@@ -34,7 +35,8 @@ class HttpRequestBuilder;
   * The function is not thread safe but can be called from different threads
   * as long as it does not happen simultaneously.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpRequest {
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpRequest
+{
 public:
     /**
       * This method blocks until the execution finishes. It can block for a very long time.
@@ -42,22 +44,26 @@ public:
       */
     virtual HttpResult execute() = 0;
 
-    virtual ~HttpRequest() {}
+    virtual ~HttpRequest()
+    {
+    }
 };
 
 /**
   * Base interface for http builders. Contains methods, that are common to all http methods.
   */
-template<class T> class JOYNRCLUSTERCONTROLLER_EXPORT IHttpBuilder {
+template <class T>
+class JOYNRCLUSTERCONTROLLER_EXPORT IHttpBuilder
+{
 public:
-
     /**
-      * Creates a new HttpRequest using the builder. The builder must not be used after this method was called.
+      * Creates a new HttpRequest using the builder. The builder must not be used after this method
+     * was called.
       * The returned pointer must be deleted manually.
       */
     virtual HttpRequest* build() = 0;
 
-    virtual ~IHttpBuilder() {};
+    virtual ~IHttpBuilder(){};
     /**
       * Sets a proxy for the built http request overriding the global proxy set in HttpNetworking.
       */
@@ -96,7 +102,8 @@ public:
   * Interface for http get builders. Contains methods, that are specific to http GET.
   * Derives all the common methods from HttpBuilder.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT IHttpGetBuilder : public IHttpBuilder<IHttpGetBuilder> {
+class JOYNRCLUSTERCONTROLLER_EXPORT IHttpGetBuilder : public IHttpBuilder<IHttpGetBuilder>
+{
 public:
     /**
      * Accept responses from the server that have been gzipped
@@ -108,14 +115,16 @@ public:
   * Interface for http delete builders. Contains methods, that are specific to http DELETE.
   * Derives all the common methods from HttpBuilder.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT IHttpDeleteBuilder : public IHttpBuilder<IHttpDeleteBuilder> {
+class JOYNRCLUSTERCONTROLLER_EXPORT IHttpDeleteBuilder : public IHttpBuilder<IHttpDeleteBuilder>
+{
 };
 
 /**
   * Interface for http post builders. Contains methods, that are specific to http POST.
   * Derives all the common methods from HttpBuilder.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT IHttpPostBuilder : public IHttpBuilder<IHttpPostBuilder> {
+class JOYNRCLUSTERCONTROLLER_EXPORT IHttpPostBuilder : public IHttpBuilder<IHttpPostBuilder>
+{
 public:
     /**
       * Sets the content type. Only ASCII characters are allowed.
@@ -124,19 +133,20 @@ public:
 
     /**
       * Tells to post the data supplied. No copy of the data is internally created.
-      * The caller must ensure that the pointer stays valid until the built HttpRequest is no longer used.
+      * The caller must ensure that the pointer stays valid until the built HttpRequest is no longer
+     * used.
       */
     virtual IHttpPostBuilder* postContent(const QByteArray& data) = 0;
     virtual ~IHttpPostBuilder();
 };
-
 
 /**
   * Encapsulates the management of curl handles. Used internally by HttpNetworking.
   *
   * The user has to return all handles aquiered by getHandle(...) using returnHandle(...)
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT ICurlHandlePool {
+class JOYNRCLUSTERCONTROLLER_EXPORT ICurlHandlePool
+{
 public:
     virtual void* getHandle(const QString& url) = 0;
     virtual void returnHandle(void* handle) = 0;
@@ -147,10 +157,12 @@ public:
   * Encapsulates the http networking for Joynr.
   * Offers methods to set the global proxy settings and to create builders to build http requests.
   *
-  * Builders returned by this class can be used to build a request only once. Calling the method more than once will result in an exception beeing thrown.
+  * Builders returned by this class can be used to build a request only once. Calling the method
+  *more than once will result in an exception beeing thrown.
   * Pointers to created builders must be deleted when no longer used.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpNetworking {
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpNetworking
+{
 public:
     static HttpNetworking* getInstance();
 
@@ -182,12 +194,14 @@ public:
     void setHTTPDebugOn();
 
     /**
-      * Sets the certificate authority that will be used to authenticate the server for HTTPS requests
+      * Sets the certificate authority that will be used to authenticate the server for HTTPS
+     * requests
       */
     void setCertificateAuthority(const QString& certificateAuthority);
 
     /**
-      * Sets the client certificate that the server will use to authenticate the client during HTTPS requests
+      * Sets the client certificate that the server will use to authenticate the client during HTTPS
+     * requests
       */
     void setClientCertificate(const QString& clientCertificate);
 
@@ -211,6 +225,5 @@ private:
     bool httpDebug;
 };
 
-
 } // namespace joynr
-#endif //HTTPNETWORKING_H_
+#endif // HTTPNETWORKING_H_

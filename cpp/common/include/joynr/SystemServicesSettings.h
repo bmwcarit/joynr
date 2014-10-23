@@ -24,9 +24,11 @@
 #include <QObject>
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT SystemServicesSettings : public QObject {
+class JOYNRCOMMON_EXPORT SystemServicesSettings : public QObject
+{
     Q_OBJECT
 
 public:
@@ -67,7 +69,6 @@ private:
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
-
 
 } // namespace joynr
 #endif // SYSTEMSERVICESSETTINGS_H

@@ -28,13 +28,15 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class WebSocketLibJoynrMessagingSkeleton;
 
-class LibJoynrWebSocketRuntime : public LibJoynrRuntime {
+class LibJoynrWebSocketRuntime : public LibJoynrRuntime
+{
     WebSocketSettings wsSettings;
-    QWebSocket *websocket;
+    QWebSocket* websocket;
 
 public:
     LibJoynrWebSocketRuntime(QSettings* settings);
@@ -43,13 +45,12 @@ public:
 protected:
     WebSocketLibJoynrMessagingSkeleton* wsLibJoynrMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(MessageRouter &messageRouter);
+    virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //LIBJOYNRWEBSOCKETRUNTIME_H
+#endif // LIBJOYNRWEBSOCKETRUNTIME_H

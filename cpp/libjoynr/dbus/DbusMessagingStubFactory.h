@@ -24,9 +24,11 @@
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class DbusMessagingStubFactory : public IMiddlewareMessagingStubFactory {
+class DbusMessagingStubFactory : public IMiddlewareMessagingStubFactory
+{
 
 public:
     DbusMessagingStubFactory();

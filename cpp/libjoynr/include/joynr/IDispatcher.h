@@ -22,7 +22,8 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class SubscriptionManager;
 class PublicationManager;
@@ -31,25 +32,24 @@ class MessagingQos;
 class RequestCaller;
 class JoynrMessage;
 
-class IDispatcher {
+class IDispatcher
+{
 public:
-    virtual ~IDispatcher () {}
+    virtual ~IDispatcher()
+    {
+    }
     virtual void addReplyCaller(const QString& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings) = 0;
     virtual void removeReplyCaller(const QString& requestReplyId) = 0;
-    virtual void addRequestCaller(
-            const QString& participantId,
-            QSharedPointer<RequestCaller> requestCaller) = 0;
+    virtual void addRequestCaller(const QString& participantId,
+                                  QSharedPointer<RequestCaller> requestCaller) = 0;
     virtual void removeRequestCaller(const QString& participantId) = 0;
     virtual void receive(const JoynrMessage& message) = 0;
 
-
     virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager) = 0;
     virtual void registerPublicationManager(PublicationManager* publicationManager) = 0;
-
 };
 
-
 } // namespace joynr
-#endif //DISPATCHER_H
+#endif // DISPATCHER_H

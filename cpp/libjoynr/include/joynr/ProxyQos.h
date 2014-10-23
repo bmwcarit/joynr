@@ -23,13 +23,13 @@
 
 #include <QtGlobal>
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT ProxyQos
 {
 
 public:
-
     static const qint64 NO_CACHE_FRESHNESS_REQ;
     static const qint64 DONT_USE_CACHE;
 
@@ -41,7 +41,6 @@ public:
 private:
     qint64 reqCacheDataFreshness_ms;
 };
-
 
 } // namespace joynr
 #endif // PROXYQOS_H

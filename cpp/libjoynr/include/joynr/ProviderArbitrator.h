@@ -32,17 +32,19 @@
 #include <QString>
 #include <QSemaphore>
 
+namespace joynr
+{
 
-namespace joynr {
-
-namespace system {
-    class IDiscoverySync;
+namespace system
+{
+class IDiscoverySync;
 }
 
 /*
  *  Base class for different arbitration strategies.
  */
-class JOYNR_EXPORT ProviderArbitrator {
+class JOYNR_EXPORT ProviderArbitrator
+{
 
 public:
     virtual ~ProviderArbitrator();
@@ -80,20 +82,18 @@ protected:
      *  This blocking is need for example for the fixed channel arbitrator which
      *  sets the channelId instantly.
      */
-    ProviderArbitrator(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const DiscoveryQos& discoveryQos
-    );
+    ProviderArbitrator(const QString& domain,
+                       const QString& interfaceName,
+                       joynr::system::IDiscoverySync& discoveryProxy,
+                       const DiscoveryQos& discoveryQos);
     /*
-     *  setArbitrationStatus uses the callback to notify the ProviderProxy about the arbitration results.
+     *  setArbitrationStatus uses the callback to notify the ProviderProxy about the arbitration
+     * results.
      */
     void updateArbitrationStatusParticipantIdAndAddress(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
             QString participantId,
-            const joynr::system::CommunicationMiddleware::Enum& connection
-    );
+            const joynr::system::CommunicationMiddleware::Enum& connection);
     /**
      * @brief selectPreferredCommunicationMiddleware Selects the preferred communication middleware
      * from a list of available connections.
@@ -102,14 +102,12 @@ protected:
      * @return The preferred connection.
      */
     virtual joynr::system::CommunicationMiddleware::Enum selectPreferredCommunicationMiddleware(
-            const QList<joynr::system::CommunicationMiddleware::Enum>& connections
-    );
+            const QList<joynr::system::CommunicationMiddleware::Enum>& connections);
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::system::DiscoveryQos systemDiscoveryQos;
     QString domain;
     QString interfaceName;
-
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
@@ -124,6 +122,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //PROVIDERARBITRATOR_H
+#endif // PROVIDERARBITRATOR_H

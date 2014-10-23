@@ -29,27 +29,26 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class IDiscoverySync;
+namespace system
+{
+class IDiscoverySync;
 }
 
-class JOYNR_EXPORT ProviderArbitratorFactory {
-
+class JOYNR_EXPORT ProviderArbitratorFactory
+{
 
 public:
     /*
      *  Creates an arbitrator object using the type specified in the qosParameters.
      */
-    static ProviderArbitrator* createArbitrator(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const DiscoveryQos &discoveryQos
-    );
+    static ProviderArbitrator* createArbitrator(const QString& domain,
+                                                const QString& interfaceName,
+                                                joynr::system::IDiscoverySync& discoveryProxy,
+                                                const DiscoveryQos& discoveryQos);
 };
 
-
 } // namespace joynr
-#endif //PROVIDERARBITRATORFACTORY_H
+#endif // PROVIDERARBITRATORFACTORY_H

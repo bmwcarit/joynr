@@ -26,24 +26,26 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 /** \class SubscriptionInformation
   * \brief SubscriptionInformation stores information about the context in which a concrete
   * subscription request is used.
   */
 
-class JOYNR_EXPORT SubscriptionInformation{
+class JOYNR_EXPORT SubscriptionInformation
+{
 
 public:
     SubscriptionInformation();
-    SubscriptionInformation(
-            const QString& proxyParticipantId,
-            const QString& providerParticipantId
-    );
+    SubscriptionInformation(const QString& proxyParticipantId,
+                            const QString& providerParticipantId);
     SubscriptionInformation(const SubscriptionInformation& subscriptionInformation);
     SubscriptionInformation& operator=(const SubscriptionInformation& subscriptionInformation);
-    virtual ~SubscriptionInformation(){}
+    virtual ~SubscriptionInformation()
+    {
+    }
     bool operator==(const SubscriptionInformation& subscriptionInformation) const;
 
     QString getProxyId() const;
@@ -58,7 +60,6 @@ private:
 
     static joynr_logging::Logger* logger;
 };
-
 
 } // namespace joynr
 

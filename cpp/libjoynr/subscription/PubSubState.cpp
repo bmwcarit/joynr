@@ -20,15 +20,12 @@
 
 #include <QDateTime>
 
-namespace joynr {
-
-PubSubState::PubSubState():
-    interrupted(false),
-    stopped(false),
-    timeOfLastPublication(0),
-    accesMutex()
+namespace joynr
 {
 
+PubSubState::PubSubState()
+        : interrupted(false), stopped(false), timeOfLastPublication(0), accesMutex()
+{
 }
 
 qint64 PubSubState::getTimeOfLastPublication() const
@@ -40,10 +37,10 @@ qint64 PubSubState::getTimeOfLastPublication() const
 void PubSubState::setTimeOfLastPublication(qint64 timeOfLastPublication /* = 0 */)
 {
     QMutexLocker locker(&accesMutex);
-    if (timeOfLastPublication == 0){
+    if (timeOfLastPublication == 0) {
         this->timeOfLastPublication = QDateTime::currentMSecsSinceEpoch();
     } else {
-        this->timeOfLastPublication=timeOfLastPublication;
+        this->timeOfLastPublication = timeOfLastPublication;
     }
 }
 
@@ -71,9 +68,4 @@ void PubSubState::stop()
     this->stopped = true;
 }
 
-
-
-
 } // namespace joynr
-
-

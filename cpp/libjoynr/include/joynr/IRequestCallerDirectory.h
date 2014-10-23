@@ -21,17 +21,20 @@
 
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class RequestCaller;
 
-class IRequestCallerDirectory {
+class IRequestCallerDirectory
+{
 public:
-    virtual ~IRequestCallerDirectory(){}
+    virtual ~IRequestCallerDirectory()
+    {
+    }
     virtual QSharedPointer<RequestCaller> lookupRequestCaller(const QString& participantId) = 0;
     virtual bool containsRequestCaller(const QString& participantId) = 0;
 };
 
-
 } // namespace joynr
-#endif //IREQUESTCALLERDIRECTORY_H
+#endif // IREQUESTCALLERDIRECTORY_H

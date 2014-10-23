@@ -26,18 +26,21 @@
 #include <QList>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-class GlobalCapabilityInformationCallback : public ICallback<types::CapabilityInformation> {
+class GlobalCapabilityInformationCallback : public ICallback<types::CapabilityInformation>
+{
 public:
     GlobalCapabilityInformationCallback(QSharedPointer<IGlobalCapabilitiesCallback> igc);
     virtual ~GlobalCapabilityInformationCallback();
     virtual void onFailure(const RequestStatus status);
     virtual void onSuccess(const RequestStatus status, types::CapabilityInformation result);
+
 private:
     QSharedPointer<IGlobalCapabilitiesCallback> callback;
 };
 
 } // namespace joynr
 
-#endif //CAPABILITIESRESULTCALLBACK_H
+#endif // CAPABILITIESRESULTCALLBACK_H

@@ -21,8 +21,9 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-namespace joynr {
-    class JoynrMessage;
+namespace joynr
+{
+class JoynrMessage;
 }
 
 // save the GCC diagnostic state
@@ -37,17 +38,21 @@ namespace joynr {
 
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
-class DbusMessagingUtil {
+class DbusMessagingUtil
+{
 public:
-    static void copyDbusMsgToJoynrMsg(const joynr::messaging::IMessaging::JoynrMessage& DbusMsg, JoynrMessage& joynrMsg);
+    static void copyDbusMsgToJoynrMsg(const joynr::messaging::IMessaging::JoynrMessage& DbusMsg,
+                                      JoynrMessage& joynrMsg);
 
-    static void copyJoynrMsgToDbusMsg(const JoynrMessage& joynrMsg, joynr::messaging::IMessaging::JoynrMessage& dbusMsg);
+    static void copyJoynrMsgToDbusMsg(const JoynrMessage& joynrMsg,
+                                      joynr::messaging::IMessaging::JoynrMessage& dbusMsg);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingUtil);
 };
-
 
 } // namespace joynr
 #endif // DBUSMESSAGINGUTIL_H

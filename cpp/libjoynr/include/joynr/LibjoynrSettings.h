@@ -25,10 +25,11 @@
 #include <QObject>
 #include <QSettings>
 
+namespace joynr
+{
 
-namespace joynr {
-
-class JOYNR_EXPORT LibjoynrSettings : public QObject {
+class JOYNR_EXPORT LibjoynrSettings : public QObject
+{
     Q_OBJECT
 
 public:
@@ -48,13 +49,12 @@ public:
     void printSettings() const;
 
 private:
-    void operator =(const LibjoynrSettings &other);
+    void operator=(const LibjoynrSettings& other);
 
     QSettings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
-
 
 } // namespace joynr
 #endif // LIBJOYNRSETTINGS_H

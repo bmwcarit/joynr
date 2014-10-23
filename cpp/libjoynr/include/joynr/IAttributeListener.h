@@ -23,12 +23,15 @@
 
 class QVariant;
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT IAttributeListener
 {
 public:
-    virtual ~IAttributeListener() {}
+    virtual ~IAttributeListener()
+    {
+    }
     virtual void attributeValueChanged(const QVariant& value) = 0;
 };
 

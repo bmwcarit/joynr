@@ -27,7 +27,8 @@
 #include <QSharedPointer>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 template <class T>
 /**
@@ -38,16 +39,20 @@ template <class T>
  *
  * Applications instantiate this class and pass it to asynchronous proxy methods.
  */
-class Future : public ICallback<T> {
+class Future : public ICallback<T>
+{
 
 public:
     Future<T>()
-        : callback(NULL),
-          status(RequestStatusCode::IN_PROGRESS),
-          result(),
-          resultReceived(0),
-          callbackSupplied(false){
-        LOG_INFO(logger,  QString("resultReceived.available():") + QString::number(resultReceived.available()));
+            : callback(NULL),
+              status(RequestStatusCode::IN_PROGRESS),
+              result(),
+              resultReceived(0),
+              callbackSupplied(false)
+    {
+        LOG_INFO(logger,
+                 QString("resultReceived.available():") +
+                         QString::number(resultReceived.available()));
     }
 
     /**
@@ -62,7 +67,8 @@ public:
      *
      * @return T The typed value from the request.
      */
-    T getValue() {
+    T getValue()
+    {
         if (!resultReceived.tryAcquire(1)) {
             LOG_FATAL(logger, "The request is not yet finished when calling getValue()");
             assert(false);
@@ -71,20 +77,22 @@ public:
 
         RequestStatusCode code = getStatus().getCode();
         if (code != RequestStatusCode::OK) {
-            LOG_FATAL(logger, "The request status code was not OK when calling getValue(), it was: " + code.toString());
+            LOG_FATAL(logger,
+                      "The request status code was not OK when calling getValue(), it was: " +
+                              code.toString());
             assert(false);
         }
 
         return result;
     }
 
-
     /**
      * @brief Returns the current RequestStatus for the given request.
      *
      * @return RequestStatus
      */
-    RequestStatus& getStatus() {
+    RequestStatus& getStatus()
+    {
         return status;
     }
 
@@ -97,7 +105,8 @@ public:
      *
      * @param callback A shared pointer to the real application callback.
      */
-    void setCallback(QSharedPointer<ICallback<T> > callback) {
+    void setCallback(QSharedPointer<ICallback<T>> callback)
+    {
         callbackSupplied = true;
         this->callback = callback;
     }
@@ -110,13 +119,13 @@ public:
      * if no response is received.
      * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
      */
-    RequestStatus waitForFinished(int timeOut) {
+    RequestStatus waitForFinished(int timeOut)
+    {
         if (resultReceived.tryAcquire(1, timeOut)) {
             resultReceived.release(1);
         }
         return status;
     }
-
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
@@ -124,8 +133,11 @@ public:
      *
      * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
      */
-    RequestStatus waitForFinished() {
-        LOG_INFO(logger,  QString("resultReceived.available():") + QString::number(resultReceived.available()));
+    RequestStatus waitForFinished()
+    {
+        LOG_INFO(logger,
+                 QString("resultReceived.available():") +
+                         QString::number(resultReceived.available()));
         resultReceived.acquire(1);
         resultReceived.release(1);
         return status;
@@ -136,14 +148,16 @@ public:
      *
      * @return Returns whether the status is Ok or not.
      */
-    bool isOk() {
+    bool isOk()
+    {
         return status.successful();
     }
 
     /**
      * @brief Callback which indicates the operation has finished and is successful.
      */
-    void onSuccess(const RequestStatus status, T result) {
+    void onSuccess(const RequestStatus status, T result)
+    {
         LOG_INFO(logger, "onSuccess has been invoked");
         this->status = RequestStatus(status);
         this->result = result;
@@ -151,13 +165,13 @@ public:
         if (callbackSupplied) {
             callback->onSuccess(status, result);
         }
-
     }
 
     /**
      * @brief Callback which indicates the operation has finished and has failed.
      */
-    void onFailure(const RequestStatus status) {
+    void onFailure(const RequestStatus status)
+    {
         LOG_INFO(logger, "onFailure has been invoked");
         this->status = RequestStatus(status);
         resultReceived.release();
@@ -167,7 +181,7 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<T> > callback;
+    QSharedPointer<ICallback<T>> callback;
     RequestStatus status;
     T result;
     QSemaphore resultReceived;
@@ -177,52 +191,59 @@ private:
 };
 
 template <class T>
-joynr_logging::Logger* Future<T>::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "Future");
-
-
+joynr_logging::Logger* Future<T>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "Future");
 
 template <>
 /**
  * @brief The void specialisation of this class.
  *
  */
-class Future<void> : public ICallback<void> {
+class Future<void> : public ICallback<void>
+{
 
 public:
     Future<void>()
-        : callback(NULL),
-          status(RequestStatusCode::IN_PROGRESS),
-          resultReceived(0),
-          callbackSupplied(false){
+            : callback(NULL),
+              status(RequestStatusCode::IN_PROGRESS),
+              resultReceived(0),
+              callbackSupplied(false)
+    {
     }
 
-    RequestStatus& getStatus() {
+    RequestStatus& getStatus()
+    {
         return status;
     }
 
-    void setCallback(QSharedPointer<ICallback<void> > callback) {
+    void setCallback(QSharedPointer<ICallback<void>> callback)
+    {
         callbackSupplied = true;
         this->callback = callback;
     }
 
-    RequestStatus waitForFinished(int timeOut) {
+    RequestStatus waitForFinished(int timeOut)
+    {
         if (resultReceived.tryAcquire(1, timeOut)) {
             resultReceived.release(1);
         }
         return status;
     }
 
-    RequestStatus waitForFinished() {
+    RequestStatus waitForFinished()
+    {
         resultReceived.acquire(1);
         resultReceived.release(1);
         return status;
     }
 
-    bool isOk() {
+    bool isOk()
+    {
         return status.successful();
     }
 
-    void onSuccess(const RequestStatus status) {
+    void onSuccess(const RequestStatus status)
+    {
         this->status = RequestStatus(status);
         resultReceived.release(1);
         if (callbackSupplied) {
@@ -230,7 +251,8 @@ public:
         }
     }
 
-    void onFailure(const RequestStatus status) {
+    void onFailure(const RequestStatus status)
+    {
         this->status = RequestStatus(status);
         resultReceived.release(1);
         if (callbackSupplied) {
@@ -239,13 +261,11 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<void> > callback;
+    QSharedPointer<ICallback<void>> callback;
     RequestStatus status;
     QSemaphore resultReceived;
     bool callbackSupplied;
 };
 
-
-
 } // namespace joynr
-#endif //FUTURE_H
+#endif // FUTURE_H

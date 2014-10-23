@@ -19,10 +19,10 @@
 #include "joynr/RequestCaller.h"
 #include "iostream"
 
-namespace joynr {
+namespace joynr
+{
 
-RequestCaller::RequestCaller(const QString& interfaceName)
-    : interfaceName(interfaceName)
+RequestCaller::RequestCaller(const QString& interfaceName) : interfaceName(interfaceName)
 {
 }
 

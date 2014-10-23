@@ -23,18 +23,19 @@
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
-
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 /** \class BroadcastSubscriptionRequest
   * \brief SubscriptionRequest stores the information that is necessary to store a broadcast
   * subscription-Request on subscriber side, while Aribtration is handled.
   */
 
-class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest{
+class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest
+{
     Q_OBJECT
 
     Q_PROPERTY(QVariant filterParameters READ getFilterParametersData WRITE setFilterParametersData)
@@ -42,7 +43,8 @@ class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest{
 public:
     BroadcastSubscriptionRequest();
     BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest& subscriptionRequest);
-    BroadcastSubscriptionRequest& operator=(const BroadcastSubscriptionRequest& subscriptionRequest);
+    BroadcastSubscriptionRequest& operator=(
+            const BroadcastSubscriptionRequest& subscriptionRequest);
     bool operator==(const BroadcastSubscriptionRequest& subscriptionRequest) const;
 
     QString toQString() const;
@@ -52,21 +54,19 @@ public:
     void setQos(QSharedPointer<OnChangeSubscriptionQos> qos);
 
     BroadcastFilterParameters getFilterParameters() const;
-    void setFilterParameters(const BroadcastFilterParameters &filterParameters);
+    void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
 protected:
     void setFilterParametersData(QVariant filterParameters);
     QVariant getFilterParametersData() const;
 
 private:
-
     // Hide method for setting all kinds of QOS derived from base class
     void setQos(QSharedPointer<SubscriptionQos> qos);
 
     BroadcastFilterParameters filterParameters;
 
     static joynr_logging::Logger* logger;
-
 };
 
 } // namespace joynr

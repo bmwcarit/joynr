@@ -28,7 +28,8 @@
 #include <QHash>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * Registers RequestInterpreters for generated interfaces.
@@ -40,7 +41,6 @@ namespace joynr {
 class JOYNR_EXPORT InterfaceRegistrar
 {
 public:
-
     /**
       * This class is currently implemented as a singleton
       */
@@ -73,14 +73,13 @@ private:
     static InterfaceRegistrar* registrarInstance;
 
     // Thread safe hash table of request interpreters
-    QHash<QString, QSharedPointer<IRequestInterpreter> > requestInterpreters;
+    QHash<QString, QSharedPointer<IRequestInterpreter>> requestInterpreters;
     QMutex requestInterpretersMutex;
 
     // A count of how many registrations are done for each request interpreter
     // Also protected by requestInterpretersMutex
-    QHash<QString, int > requestInterpreterCounts;
+    QHash<QString, int> requestInterpreterCounts;
 };
-
 
 template <class T>
 void InterfaceRegistrar::registerRequestInterpreter(const QString& interfaceName)
@@ -94,8 +93,6 @@ void InterfaceRegistrar::registerRequestInterpreter(const QString& interfaceName
         ++requestInterpreterCounts[interfaceName];
     }
 }
-
-
 
 } // namespace joynr
 #endif // INTERFACEREGISTRAR_H

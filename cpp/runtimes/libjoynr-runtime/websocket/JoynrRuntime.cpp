@@ -22,12 +22,12 @@
 
 #include "joynr/SettingsMerger.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrRuntime* JoynrRuntime::createRuntime(
-        const QString& pathToLibjoynrSettings,
-        const QString& pathToMessagingSettings
-) {
+JoynrRuntime* JoynrRuntime::createRuntime(const QString& pathToLibjoynrSettings,
+                                          const QString& pathToMessagingSettings)
+{
     Q_UNUSED(pathToMessagingSettings);
     QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
     SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
@@ -35,7 +35,8 @@ JoynrRuntime* JoynrRuntime::createRuntime(
     return LibJoynrRuntime::create(new JoynrWebSocketRuntimeExecutor(settings));
 }
 
-void JoynrRuntime::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter) {
+void JoynrRuntime::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
+{
     if (!publicationManager) {
         throw JoynrException("Exception in JoynrRuntime: PublicationManager not created yet.");
     }

@@ -28,7 +28,8 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class InProcessPublicationSender;
 class SubscriptionManager;
@@ -37,17 +38,17 @@ class PublicationManager;
 // Default implementation for the InProcessConnectorFactoryHelper
 // Template specializations are provided in *InProcessConnector.h
 template <class T>
-class InProcessConnectorFactoryHelper {
+class InProcessConnectorFactoryHelper
+{
 public:
-    T* create(
-    		SubscriptionManager* subscriptionManager,
-    		PublicationManager* publicationManager,
-            const QString& proxyParticipantId,
-            const QString& providerParticipantId,
-            QSharedPointer<InProcessAddress> address
-   	) {
-		Q_UNUSED(subscriptionManager);
-		Q_UNUSED(publicationManager);
+    T* create(SubscriptionManager* subscriptionManager,
+              PublicationManager* publicationManager,
+              const QString& proxyParticipantId,
+              const QString& providerParticipantId,
+              QSharedPointer<InProcessAddress> address)
+    {
+        Q_UNUSED(subscriptionManager);
+        Q_UNUSED(publicationManager);
         Q_UNUSED(proxyParticipantId);
         Q_UNUSED(providerParticipantId);
         Q_UNUSED(address);
@@ -58,38 +59,35 @@ public:
 };
 
 // A factory that creates an InProcessConnector for a generated interface
-class JOYNR_EXPORT InProcessConnectorFactory {
+class JOYNR_EXPORT InProcessConnectorFactory
+{
 public:
-    InProcessConnectorFactory(
-            SubscriptionManager* subscriptionManager,
-            PublicationManager* publicationManager,
-            InProcessPublicationSender* inProcessPublicationSender,
-            IRequestCallerDirectory* requestCallerDirectory
-    );
+    InProcessConnectorFactory(SubscriptionManager* subscriptionManager,
+                              PublicationManager* publicationManager,
+                              InProcessPublicationSender* inProcessPublicationSender,
+                              IRequestCallerDirectory* requestCallerDirectory);
 
     bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
-    virtual ~InProcessConnectorFactory(){}
+    virtual ~InProcessConnectorFactory()
+    {
+    }
 
     template <class T>
-    T* create(
-            const QString& proxyParticipantId,
-            const QString& providerParticipantId
-    ) {
+    T* create(const QString& proxyParticipantId, const QString& providerParticipantId)
+    {
         QSharedPointer<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
         QSharedPointer<InProcessAddress> inProcessEndpointAddress(
-                    new InProcessAddress(requestCaller)
-        );
+                new InProcessAddress(requestCaller));
 
-	    return InProcessConnectorFactoryHelper<T>().create(
-                    subscriptionManager,
-                    publicationManager,
-                    inProcessPublicationSender,
-                    proxyParticipantId,
-                    providerParticipantId,
-                    inProcessEndpointAddress
-	    );
+        return InProcessConnectorFactoryHelper<T>().create(subscriptionManager,
+                                                           publicationManager,
+                                                           inProcessPublicationSender,
+                                                           proxyParticipantId,
+                                                           providerParticipantId,
+                                                           inProcessEndpointAddress);
     }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConnectorFactory);
     SubscriptionManager* subscriptionManager;
@@ -98,6 +96,5 @@ private:
     IRequestCallerDirectory* requestCallerDirectory;
 };
 
-
 } // namespace joynr
-#endif //INPROCESSCONNECTORFACTORY_H
+#endif // INPROCESSCONNECTORFACTORY_H

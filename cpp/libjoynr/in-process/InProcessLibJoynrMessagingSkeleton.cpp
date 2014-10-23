@@ -20,16 +20,19 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
 
-namespace joynr {
+namespace joynr
+{
 
-InProcessLibJoynrMessagingSkeleton::InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher) : dispatcher(dispatcher){}
+InProcessLibJoynrMessagingSkeleton::InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher)
+        : dispatcher(dispatcher)
+{
+}
 
+void InProcessLibJoynrMessagingSkeleton::transmit(JoynrMessage& message)
+{
 
-
-void InProcessLibJoynrMessagingSkeleton::transmit(JoynrMessage& message) {
-
-//cast
-     dispatcher->receive(message);
+    // cast
+    dispatcher->receive(message);
 }
 
 } // namespace joynr

@@ -36,28 +36,30 @@
 
 #include "joynr/Util.h"
 
-namespace joynr {
+namespace joynr
+{
 
-LibJoynrRuntime::LibJoynrRuntime(QSettings* settings):
-    JoynrRuntime(*settings),
-    connectorFactory(NULL),
-    subscriptionManager(NULL),
-    inProcessPublicationSender(NULL),
-    inProcessConnectorFactory(NULL),
-    joynrMessagingConnectorFactory(NULL),
-    joynrMessagingSendStub(NULL),
-    joynrMessageSender(NULL),
-    joynrDispatcher(NULL),
-    inProcessDispatcher(NULL),
-    settings(settings),
-    libjoynrSettings(new LibjoynrSettings(*settings)),
-    dispatcherMessagingSkeleton(NULL),
-    runtimeExecutor(NULL)
+LibJoynrRuntime::LibJoynrRuntime(QSettings* settings)
+        : JoynrRuntime(*settings),
+          connectorFactory(NULL),
+          subscriptionManager(NULL),
+          inProcessPublicationSender(NULL),
+          inProcessConnectorFactory(NULL),
+          joynrMessagingConnectorFactory(NULL),
+          joynrMessagingSendStub(NULL),
+          joynrMessageSender(NULL),
+          joynrDispatcher(NULL),
+          inProcessDispatcher(NULL),
+          settings(settings),
+          libjoynrSettings(new LibjoynrSettings(*settings)),
+          dispatcherMessagingSkeleton(NULL),
+          runtimeExecutor(NULL)
 {
     libjoynrSettings->printSettings();
 }
 
-LibJoynrRuntime::~LibJoynrRuntime() {
+LibJoynrRuntime::~LibJoynrRuntime()
+{
     delete proxyFactory;
     delete inProcessDispatcher;
     delete capabilitiesRegistrar;
@@ -67,18 +69,17 @@ LibJoynrRuntime::~LibJoynrRuntime() {
     libjoynrSettings = Q_NULLPTR;
     settings->clear();
     settings->deleteLater();
-    if(runtimeExecutor != Q_NULLPTR) {
+    if (runtimeExecutor != Q_NULLPTR) {
         runtimeExecutor->stop();
         runtimeExecutor->deleteLater();
         runtimeExecutor = Q_NULLPTR;
     }
 }
 
-void LibJoynrRuntime::init(
-        IMiddlewareMessagingStubFactory *middlewareMessagingStubFactory,
-        QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
-        QSharedPointer<joynr::system::Address> ccMessagingAddress
-) {
+void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
+                           QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
+                           QSharedPointer<joynr::system::Address> ccMessagingAddress)
+{
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
     messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
@@ -86,8 +87,7 @@ void LibJoynrRuntime::init(
 
     // create message router
     messageRouter = QSharedPointer<MessageRouter>(
-                new MessageRouter(messagingStubFactory, libjoynrMessagingAddress)
-    );
+            new MessageRouter(messagingStubFactory, libjoynrMessagingAddress));
 
     startLibJoynrMessagingSkeleton(*messageRouter);
 
@@ -97,11 +97,9 @@ void LibJoynrRuntime::init(
 
     // create the inprocess skeleton for the dispatcher
     dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton>(
-                new InProcessLibJoynrMessagingSkeleton(joynrDispatcher)
-    );
+            new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
     dispatcherAddress = QSharedPointer<joynr::system::Address>(
-                new InProcessMessagingAddress(dispatcherMessagingSkeleton)
-    );
+            new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
@@ -109,23 +107,25 @@ void LibJoynrRuntime::init(
 
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
     inProcessConnectorFactory = new InProcessConnectorFactory(
-                subscriptionManager,
-                publicationManager,
-                inProcessPublicationSender,
-                dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher)
-    );
-    joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
+            subscriptionManager,
+            publicationManager,
+            inProcessPublicationSender,
+            dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
+    joynrMessagingConnectorFactory =
+            new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
-    connectorFactory = new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
+    connectorFactory =
+            new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
     proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, NULL);
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage =
+            QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     // initialize the dispatchers
-    QList<IDispatcher *> dispatcherList;
+    QList<IDispatcher*> dispatcherList;
     dispatcherList.append(inProcessDispatcher);
     dispatcherList.append(joynrDispatcher);
 
@@ -133,69 +133,68 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
     discoveryProxy = new LocalDiscoveryAggregator(
-                *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher),
-                systemServicesSettings
-    );
+            *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
     QString systemServicesDomain = systemServicesSettings.getDomain();
-    QString routingProviderParticipantId = systemServicesSettings.getCcRoutingProviderParticipantId();
+    QString routingProviderParticipantId =
+            systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
     routingProviderDiscoveryQos.setCacheMaxAge(1000);
-    routingProviderDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    routingProviderDiscoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
+    routingProviderDiscoveryQos.setArbitrationStrategy(
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    routingProviderDiscoveryQos.addCustomParameter(
+            "fixedParticipantId", routingProviderParticipantId);
     routingProviderDiscoveryQos.setDiscoveryTimeout(50);
 
     auto routingProxyBuilder = getProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
-    auto routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
-            ->setCached(false)
-            ->setDiscoveryQos(routingProviderDiscoveryQos)
-            ->build();
+    auto routingProxy = routingProxyBuilder->setRuntimeQos(MessagingQos(5000))
+                                ->setCached(false)
+                                ->setDiscoveryQos(routingProviderDiscoveryQos)
+                                ->build();
     messageRouter->setParentRouter(routingProxy, ccMessagingAddress, routingProviderParticipantId);
     delete routingProxyBuilder;
 
     // setup discovery
-    QString discoveryProviderParticipantId = systemServicesSettings.getCcDiscoveryProviderParticipantId();
+    QString discoveryProviderParticipantId =
+            systemServicesSettings.getCcDiscoveryProviderParticipantId();
     DiscoveryQos discoveryProviderDiscoveryQos;
     discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
-    discoveryProviderDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    discoveryProviderDiscoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
+    discoveryProviderDiscoveryQos.setArbitrationStrategy(
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryProviderDiscoveryQos.addCustomParameter(
+            "fixedParticipantId", discoveryProviderParticipantId);
     discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
             getProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
-    discoveryProxy->setDiscoveryProxy(
-                discoveryProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
-                ->setCached(false)
-                ->setDiscoveryQos(discoveryProviderDiscoveryQos)
-                ->build()
-    );
-    capabilitiesRegistrar = new CapabilitiesRegistrar(
-                dispatcherList,
-                *discoveryProxy,
-                libjoynrMessagingAddress,
-                participantIdStorage,
-                dispatcherAddress,
-                messageRouter
-    );
+    discoveryProxy->setDiscoveryProxy(discoveryProxyBuilder->setRuntimeQos(MessagingQos(5000))
+                                              ->setCached(false)
+                                              ->setDiscoveryQos(discoveryProviderDiscoveryQos)
+                                              ->build());
+    capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
+                                                      *discoveryProxy,
+                                                      libjoynrMessagingAddress,
+                                                      participantIdStorage,
+                                                      dispatcherAddress,
+                                                      messageRouter);
 }
 
-void LibJoynrRuntime::unregisterCapability(QString participantId){
+void LibJoynrRuntime::unregisterCapability(QString participantId)
+{
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(participantId);
 }
 
-void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor)
+void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)
 {
     this->runtimeExecutor = runtimeExecutor;
 }
 
-LibJoynrRuntime *LibJoynrRuntime::create(JoynrRuntimeExecutor *runtimeExecutor) {
-    LibJoynrRuntime *runtime = runtimeExecutor->getRuntime();
+LibJoynrRuntime* LibJoynrRuntime::create(JoynrRuntimeExecutor* runtimeExecutor)
+{
+    LibJoynrRuntime* runtime = runtimeExecutor->getRuntime();
     runtime->setRuntimeExecutor(runtimeExecutor);
     return runtime;
 }
-
 
 } // namespace joynr

@@ -24,11 +24,16 @@
 #include <QString>
 #include <QSemaphore>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace joynr_logging { class Logger; }
+namespace joynr_logging
+{
+class Logger;
+}
 
-class DbusProcessor {
+class DbusProcessor
+{
 public:
     DbusProcessor(const QString& dbusBusName);
     virtual ~DbusProcessor();
@@ -50,4 +55,4 @@ private:
 };
 
 } // namespace joynr
-#endif //DBUSPROCESSOR_H
+#endif // DBUSPROCESSOR_H

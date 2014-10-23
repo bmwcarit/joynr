@@ -28,17 +28,19 @@
 #include <QSharedPointer>
 #include <QMap>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
-  * Simple implementation, that always creates a new handle and instantly frees it, when it is returned.
+  * Simple implementation, that always creates a new handle and instantly frees it, when it is
+ * returned.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT AlwaysNewCurlHandlePool : public ICurlHandlePool {
+class JOYNRCLUSTERCONTROLLER_EXPORT AlwaysNewCurlHandlePool : public ICurlHandlePool
+{
 public:
     void* getHandle(const QString& url);
     void returnHandle(void* handle);
 };
-
 
 /**
   * Encapsulates a pooled curl handle and the hosts it might have an open connection to.
@@ -46,7 +48,8 @@ public:
   * Hosts supplied to this class must have the syntax <hostName or ip>:<port>.
   * Hosts are compared using string comparison and not using DNS.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT PooledCurlHandle {
+class JOYNRCLUSTERCONTROLLER_EXPORT PooledCurlHandle
+{
 public:
     PooledCurlHandle();
     ~PooledCurlHandle();
@@ -84,10 +87,11 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(PooledCurlHandle);
     /**
-      * Hosts in this linked list are ordered by last use. The most recently used host is at the front.
+      * Hosts in this linked list are ordered by last use. The most recently used host is at the
+     * front.
       */
     QLinkedList<QString> hosts;
-    void *handle;
+    void* handle;
 };
 
 /**
@@ -103,7 +107,8 @@ private:
   * The getHandle and returrnHandle methods are synchonized and therby thread-safe.
   * This can impeed performance in highly concurrent enviroments.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT SingleThreadCurlHandlePool : public ICurlHandlePool {
+class JOYNRCLUSTERCONTROLLER_EXPORT SingleThreadCurlHandlePool : public ICurlHandlePool
+{
 public:
     void* getHandle(const QString& url);
     void returnHandle(void* handle);
@@ -117,14 +122,15 @@ private:
     QSharedPointer<PooledCurlHandle> takeOrCreateHandle(const QString& host);
 
     /**
-      * Handles in this linked list are ordered by last use. The most recently used handle is at the front.
+      * Handles in this linked list are ordered by last use. The most recently used handle is at the
+     * front.
       */
-    QLinkedList <QSharedPointer<PooledCurlHandle> > handleList;
+    QLinkedList<QSharedPointer<PooledCurlHandle>> handleList;
 
     /**
       * Handles that are currently in use(rented using getHandle(url)).
       */
-    QMap <void*, QSharedPointer<PooledCurlHandle> > outHandleMap;
+    QMap<void*, QSharedPointer<PooledCurlHandle>> outHandleMap;
 
     /**
       * The number of handles that are internally pooled (out and on hold).
@@ -139,58 +145,63 @@ private:
     QMutex mutex;
 };
 
-
 /**
-  * Thread aware implementation of the curl handle pool: A handle will not be shared between different threads.
+  * Thread aware implementation of the curl handle pool: A handle will not be shared between
+  *different threads.
   * This is essential as it would produce segmentation faults.
-  * When getHandle is called, the id of the calling thread is checked. If the pool contains an idle handle
-  * which has been created for the same thread it will be reused. If there is no matching handle a new one will be created.
-  * If there are multiple idle handle in the pool, one which was already connected to the host will be choosen.
+  * When getHandle is called, the id of the calling thread is checked. If the pool contains an idle
+  *handle
+  * which has been created for the same thread it will be reused. If there is no matching handle a
+  *new one will be created.
+  * If there are multiple idle handle in the pool, one which was already connected to the host will
+  *be choosen.
   *
   */
 
-class JOYNRCLUSTERCONTROLLER_EXPORT PerThreadCurlHandlePool : public ICurlHandlePool {
+class JOYNRCLUSTERCONTROLLER_EXPORT PerThreadCurlHandlePool : public ICurlHandlePool
+{
 public:
     PerThreadCurlHandlePool();
 
     /**
-      * Handles returned by getHandle should NOT be forwarded to another thread (or even shared between threads). Use the handle in the requesting thread only!
+      * Handles returned by getHandle should NOT be forwarded to another thread (or even shared
+     * between threads). Use the handle in the requesting thread only!
       */
     void* getHandle(const QString& url);
 
     void returnHandle(void* handle);
 
 private:
-
     static QString extractHost(const QString& url);
     /**
-      * If there already exists a handle for the current thread which is not in use at the moment it is removed from the list and returned.
+      * If there already exists a handle for the current thread which is not in use at the moment it
+     * is removed from the list and returned.
       * If no handle is available for the current thread, a new one is created.
       */
     QSharedPointer<PooledCurlHandle> takeOrCreateHandle(const Qt::HANDLE& threadId, QString host);
 
     /**
-      * Handles in this Map are available for reuse. The keys are ThreadIds and values are PooledCurlHandles.
-      * At startup it is empty, new entries are added whenever a handle is returned with returnHandle(void* handle)
+      * Handles in this Map are available for reuse. The keys are ThreadIds and values are
+     * PooledCurlHandles.
+      * At startup it is empty, new entries are added whenever a handle is returned with
+     * returnHandle(void* handle)
       * and the size of this map plus the size of outHandleMap is smaller than POOL_SIZE
       */
-    //TODO shouldn't the POOL_SIZE define the amount of idle handles?
+    // TODO shouldn't the POOL_SIZE define the amount of idle handles?
     // key of this QMultiMap: Qt::HANDLE == the thread id the handle has been created for.
-    QMultiMap <Qt::HANDLE, QSharedPointer<PooledCurlHandle> > idleHandleMap;
+    QMultiMap<Qt::HANDLE, QSharedPointer<PooledCurlHandle>> idleHandleMap;
     // handleOrderList is used to sort the curl handles according to their last use.
     // By deleting the last item of this list, the longest idle curl handle will be deleted.
-    QList<QSharedPointer< PooledCurlHandle> > handleOrderList;
+    QList<QSharedPointer<PooledCurlHandle>> handleOrderList;
 
     /**
       * Handles that are currently in use(rented using getHandle(url)).
       */
-    QMap <void*, QSharedPointer<PooledCurlHandle> > outHandleMap;
-
+    QMap<void*, QSharedPointer<PooledCurlHandle>> outHandleMap;
 
     static const int POOL_SIZE;
     QMutex mutex;
 };
 
-
 } // namespace joynr
-#endif //CURLHANDLEPOOL_H_
+#endif // CURLHANDLEPOOL_H_

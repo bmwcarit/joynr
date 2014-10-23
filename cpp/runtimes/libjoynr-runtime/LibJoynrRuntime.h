@@ -37,7 +37,8 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IMessaging;
 class JoynrMessageSender;
@@ -45,13 +46,14 @@ class MessageRouter;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 
-class LibJoynrRuntime : public JoynrRuntime {
+class LibJoynrRuntime : public JoynrRuntime
+{
 
 public:
     LibJoynrRuntime(QSettings* settings);
     virtual ~LibJoynrRuntime();
 
-    static LibJoynrRuntime* create(JoynrRuntimeExecutor *runtimeExecutor);
+    static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
     void unregisterCapability(QString participantId);
 
 protected:
@@ -72,19 +74,17 @@ protected:
 
     QSharedPointer<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(MessageRouter &messageRouter) = 0;
+    virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
 
-    void init(
-            IMiddlewareMessagingStubFactory *middlewareMessagingStubFactory,
-            QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
-            QSharedPointer<joynr::system::Address> ccMessagingAddress
-    );
+    void init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
+              QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
+              QSharedPointer<joynr::system::Address> ccMessagingAddress);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
-    JoynrRuntimeExecutor *runtimeExecutor;
-    void setRuntimeExecutor(JoynrRuntimeExecutor *runtimeExecutor);
+    JoynrRuntimeExecutor* runtimeExecutor;
+    void setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor);
 };
 
 } // namespace joynr
-#endif //LIBJOYNRRUNTIME_H
+#endif // LIBJOYNRRUNTIME_H

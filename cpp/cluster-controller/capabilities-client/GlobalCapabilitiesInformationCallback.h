@@ -27,29 +27,33 @@
 #include <QList>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 /*
  * IGlobalCapabilitiesCallback is an old callback method for capabilities.
  * Now that Code is generated the new interface for callbacks using ICallback.h is needed
  * to access the proxy.
- * For this reason, we currently have two callbacks: One GlobalCapabilitiesInformationCallback : ICallback<types::CapabilityInformation> for the proxy
- * and one IGlobalCapabilitiesCallback for the application. The ICallback<types::CapabilityInformation> just calls the
+ * For this reason, we currently have two callbacks: One GlobalCapabilitiesInformationCallback :
+ * ICallback<types::CapabilityInformation> for the proxy
+ * and one IGlobalCapabilitiesCallback for the application. The
+ * ICallback<types::CapabilityInformation> just calls the
  * IGlobalCapabilitiesCallback.
  * Those two callbacks should be merged into one.
  */
 
-
-class GlobalCapabilitiesInformationCallback : public ICallback<QList<types::CapabilityInformation> > {
+class GlobalCapabilitiesInformationCallback : public ICallback<QList<types::CapabilityInformation>>
+{
 public:
     GlobalCapabilitiesInformationCallback(QSharedPointer<IGlobalCapabilitiesCallback> igc);
     virtual ~GlobalCapabilitiesInformationCallback();
     virtual void onFailure(const RequestStatus status);
     virtual void onSuccess(const RequestStatus status, QList<types::CapabilityInformation> result);
+
 private:
     QSharedPointer<IGlobalCapabilitiesCallback> callback;
 };
 
 } // namespace joynr
 
-#endif //CAPABILITIESRESULTCALLBACK_H
+#endif // CAPABILITIESRESULTCALLBACK_H

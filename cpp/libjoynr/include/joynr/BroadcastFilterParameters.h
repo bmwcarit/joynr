@@ -28,14 +28,16 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * \class BroadcastFilterParameters
  * \brief The BroadcastFilterParameters class represents generic filter parameters
  * for selective broadcasts
  */
-class JOYNRCOMMON_EXPORT BroadcastFilterParameters : public QObject {
+class JOYNRCOMMON_EXPORT BroadcastFilterParameters : public QObject
+{
     Q_OBJECT
 
     Q_PROPERTY(QMap filterParameters READ getFilterParameters WRITE setFilterParameters)
@@ -48,7 +50,7 @@ public:
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(QString parameter, QString value);
-    void setFilterParameters(const QMap<QString, QVariant> &value);
+    void setFilterParameters(const QMap<QString, QVariant>& value);
 
     virtual bool equals(const QObject& other) const;
 

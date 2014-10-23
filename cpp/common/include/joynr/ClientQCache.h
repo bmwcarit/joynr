@@ -29,7 +29,8 @@
 #include <QMutex>
 #include <QCache>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * Implements IClientCache. Stores objects with a key and a timestamp.
@@ -39,31 +40,33 @@ namespace joynr {
  * memory only, no persistence.
  *
  */
-class JOYNRCOMMON_EXPORT ClientQCache : public IClientCache{
-    public:
-        ClientQCache();
-        virtual ~ClientQCache(){}
-        /**
-         * Returns the stored object associated with the key 'attributeId',
-         * or an empty QVariant() if the object is either not present or
-         * older than maxAcceptedAgeInMs.
-         */
-        QVariant lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs);
-        /**
-          * Inserts 'value' into the cache under the key 'attributeId'.
-          * The entry is associated with a time stamp guranteed to be valid for 24hrs.
-          */
-        void insert(QString attributeId, QVariant value);
+class JOYNRCOMMON_EXPORT ClientQCache : public IClientCache
+{
+public:
+    ClientQCache();
+    virtual ~ClientQCache()
+    {
+    }
+    /**
+     * Returns the stored object associated with the key 'attributeId',
+     * or an empty QVariant() if the object is either not present or
+     * older than maxAcceptedAgeInMs.
+     */
+    QVariant lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs);
+    /**
+      * Inserts 'value' into the cache under the key 'attributeId'.
+      * The entry is associated with a time stamp guranteed to be valid for 24hrs.
+      */
+    void insert(QString attributeId, QVariant value);
 
-    private:
-        /**
-          * Time since activation in ms
-          */
-        qint64 elapsed(qint64 entryTime);
-        QCache<QString, CachedValue<QVariant> > cache;
-        QMutex mutex;
+private:
+    /**
+      * Time since activation in ms
+      */
+    qint64 elapsed(qint64 entryTime);
+    QCache<QString, CachedValue<QVariant>> cache;
+    QMutex mutex;
 };
-
 
 } // namespace joynr
 #endif // ClientQCache_H

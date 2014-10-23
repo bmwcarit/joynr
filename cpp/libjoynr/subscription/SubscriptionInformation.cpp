@@ -19,41 +19,43 @@
 #include "joynr/SubscriptionInformation.h"
 #include "joynr/JsonSerializer.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
-Logger* SubscriptionInformation::logger = Logging::getInstance()->getLogger("MSG", "SubscriptionInformation");
+Logger* SubscriptionInformation::logger =
+        Logging::getInstance()->getLogger("MSG", "SubscriptionInformation");
 
-SubscriptionInformation::SubscriptionInformation():
-    proxyId(),
-    providerId()
+SubscriptionInformation::SubscriptionInformation() : proxyId(), providerId()
+{
+}
+
+SubscriptionInformation::SubscriptionInformation(const QString& proxyParticipantId,
+                                                 const QString& providerParticipantId)
+        : proxyId(proxyParticipantId), providerId(providerParticipantId)
 {
 }
 
 SubscriptionInformation::SubscriptionInformation(
-        const QString& proxyParticipantId,
-        const QString& providerParticipantId
-) :
-    proxyId(proxyParticipantId),
-    providerId(providerParticipantId)
+        const SubscriptionInformation& subscriptionInformation)
+        : proxyId(subscriptionInformation.getProxyId()),
+          providerId(subscriptionInformation.getProviderId())
 {
 }
 
-SubscriptionInformation::SubscriptionInformation(const SubscriptionInformation& subscriptionInformation) :
-    proxyId(subscriptionInformation.getProxyId()),
-    providerId(subscriptionInformation.getProviderId())
+SubscriptionInformation& SubscriptionInformation::operator=(
+        const SubscriptionInformation& subscriptionInformation)
 {
-}
-
-SubscriptionInformation& SubscriptionInformation::operator=(const SubscriptionInformation& subscriptionInformation) {
     proxyId = subscriptionInformation.getProxyId();
     providerId = subscriptionInformation.getProviderId();
     return *this;
 }
 
-bool SubscriptionInformation::operator==(const SubscriptionInformation& subscriptionInformation) const {
-    return proxyId == subscriptionInformation.getProxyId()
-            && providerId == subscriptionInformation.getProviderId();
+bool SubscriptionInformation::operator==(
+        const SubscriptionInformation& subscriptionInformation) const
+{
+    return proxyId == subscriptionInformation.getProxyId() &&
+           providerId == subscriptionInformation.getProviderId();
 }
 
 QString SubscriptionInformation::getProxyId() const
@@ -66,15 +68,14 @@ QString SubscriptionInformation::getProviderId() const
     return providerId;
 }
 
-void SubscriptionInformation::setProxyId(const QString &id)
+void SubscriptionInformation::setProxyId(const QString& id)
 {
     this->proxyId = id;
 }
 
-void SubscriptionInformation::setProviderId(const QString &id)
+void SubscriptionInformation::setProviderId(const QString& id)
 {
     this->providerId = id;
 }
-
 
 } // namespace joynr

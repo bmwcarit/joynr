@@ -20,11 +20,12 @@
 #ifndef ARBITRATIONSTATUS_H
 #define ARBITRATIONSTATUS_H
 
-namespace joynr {
+namespace joynr
+{
 
-
-class ArbitrationStatus{
-   public:
+class ArbitrationStatus
+{
+public:
     enum ArbitrationStatusType {
         ArbitrationSuccessful = 0,
         ArbitrationRunning = 1,
@@ -32,9 +33,6 @@ class ArbitrationStatus{
     };
 };
 
-
-
 } // namespace joynr
 
-
-#endif //ARBITRATIONSTATUS_H
+#endif // ARBITRATIONSTATUS_H

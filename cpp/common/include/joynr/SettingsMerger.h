@@ -25,9 +25,11 @@
 #include <QString>
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT SettingsMerger {
+class JOYNRCOMMON_EXPORT SettingsMerger
+{
 
 public:
     static QSettings* mergeSettings(QString fileName, QSettings* currentSettings = NULL);
@@ -36,7 +38,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(SettingsMerger);
 };
-
 
 } // namespace joynr
 #endif // QSETTINGSMERGER_H

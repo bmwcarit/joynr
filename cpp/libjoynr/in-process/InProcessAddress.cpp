@@ -18,20 +18,21 @@
  */
 #include "joynr/InProcessAddress.h"
 
-namespace joynr {
+namespace joynr
+{
 
 InProcessAddress::InProcessAddress(QSharedPointer<RequestCaller> requestCaller)
-    : requestCaller(requestCaller)
+        : requestCaller(requestCaller)
 {
 }
 
-InProcessAddress::~InProcessAddress(){
+InProcessAddress::~InProcessAddress()
+{
 }
 
-QSharedPointer<RequestCaller> InProcessAddress::getRequestCaller() const{
+QSharedPointer<RequestCaller> InProcessAddress::getRequestCaller() const
+{
     return requestCaller;
 }
-
-
 
 } // namespace joynr

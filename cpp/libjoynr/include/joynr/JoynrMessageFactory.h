@@ -24,7 +24,8 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/joynrlogging.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class MessagingQos;
 class Request;
@@ -39,72 +40,65 @@ class BroadcastSubscriptionRequest;
   * The JoynrMessageFactory creates JoynrMessages. It sets the headers and
   * payload according to the message type. It is used by the JoynrMessageSender.
   */
-class JOYNR_EXPORT JoynrMessageFactory {
+class JOYNR_EXPORT JoynrMessageFactory
+{
 public:
     JoynrMessageFactory();
-    virtual ~JoynrMessageFactory() {}
+    virtual ~JoynrMessageFactory()
+    {
+    }
 
-    JoynrMessage createRequest(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos& qos,
-            const Request& payload);
+    JoynrMessage createRequest(const QString& senderId,
+                               const QString& receiverId,
+                               const MessagingQos& qos,
+                               const Request& payload);
 
-    JoynrMessage createReply(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos& qos,
-            const Reply& payload);
+    JoynrMessage createReply(const QString& senderId,
+                             const QString& receiverId,
+                             const MessagingQos& qos,
+                             const Reply& payload);
 
-    JoynrMessage createOneWay(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos& qos,
-            const Reply& payload);
+    JoynrMessage createOneWay(const QString& senderId,
+                              const QString& receiverId,
+                              const MessagingQos& qos,
+                              const Reply& payload);
 
-    JoynrMessage createSubscriptionPublication(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos& qos,
-            const SubscriptionPublication& payload);
+    JoynrMessage createSubscriptionPublication(const QString& senderId,
+                                               const QString& receiverId,
+                                               const MessagingQos& qos,
+                                               const SubscriptionPublication& payload);
 
-    JoynrMessage createSubscriptionRequest(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos &qos,
-            const SubscriptionRequest& payload);
+    JoynrMessage createSubscriptionRequest(const QString& senderId,
+                                           const QString& receiverId,
+                                           const MessagingQos& qos,
+                                           const SubscriptionRequest& payload);
 
-    JoynrMessage createBroadcastSubscriptionRequest(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos &qos,
-            const BroadcastSubscriptionRequest& payload);
+    JoynrMessage createBroadcastSubscriptionRequest(const QString& senderId,
+                                                    const QString& receiverId,
+                                                    const MessagingQos& qos,
+                                                    const BroadcastSubscriptionRequest& payload);
 
-    JoynrMessage createSubscriptionReply(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos &qos,
-            const SubscriptionReply& payload);
+    JoynrMessage createSubscriptionReply(const QString& senderId,
+                                         const QString& receiverId,
+                                         const MessagingQos& qos,
+                                         const SubscriptionReply& payload);
 
-    JoynrMessage createSubscriptionStop(
-            const QString& senderId,
-            const QString& receiverId,
-            const MessagingQos &qos,
-            const SubscriptionStop& payload);
+    JoynrMessage createSubscriptionStop(const QString& senderId,
+                                        const QString& receiverId,
+                                        const MessagingQos& qos,
+                                        const SubscriptionStop& payload);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageFactory);
 
-    void initMsg(
-            JoynrMessage& msg,
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
-            const qint64 ttl,
-            const QObject& payload);
+    void initMsg(JoynrMessage& msg,
+                 const QString& senderParticipantId,
+                 const QString& receiverParticipantId,
+                 const qint64 ttl,
+                 const QObject& payload);
 
     joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //JOYNRMESSAGEFACTORY_H_
+#endif // JOYNRMESSAGEFACTORY_H_

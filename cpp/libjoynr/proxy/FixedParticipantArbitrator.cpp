@@ -26,51 +26,41 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
-joynr_logging::Logger* FixedParticipantArbitrator::logger = joynr_logging::Logging::getInstance()->getLogger("Arb", "FixedParticipantArbitrator");
+joynr_logging::Logger* FixedParticipantArbitrator::logger =
+        joynr_logging::Logging::getInstance()->getLogger("Arb", "FixedParticipantArbitrator");
 
 FixedParticipantArbitrator::FixedParticipantArbitrator(
         const QString& domain,
         const QString& interfaceName,
         joynr::system::IDiscoverySync& discoveryProxy,
-        const DiscoveryQos &discoveryQos
-) :
-    ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-    participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
-    reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
+        const DiscoveryQos& discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+          participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
+          reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
 {
 }
 
-void FixedParticipantArbitrator::attemptArbitration() {
+void FixedParticipantArbitrator::attemptArbitration()
+{
     joynr::RequestStatus status;
     joynr::system::DiscoveryEntry result;
-    discoveryProxy.lookup(
-                status,
-                result,
-                participantId
-    );
-    if(status.successful()) {
+    discoveryProxy.lookup(status, result, participantId);
+    if (status.successful()) {
         joynr::system::CommunicationMiddleware::Enum preferredConnection(
-                selectPreferredCommunicationMiddleware(result.getConnections())
-        );
+                selectPreferredCommunicationMiddleware(result.getConnections()));
         updateArbitrationStatusParticipantIdAndAddress(
-                    ArbitrationStatus::ArbitrationSuccessful,
-                    participantId,
-                    preferredConnection
-        );
+                ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
     } else {
-        LOG_ERROR(
-                    logger,
-                    QString("Unable to lookup provider (domain: %1, interface: %2) "
-                            "from discovery. Status code: %3."
-                    )
-                    .arg(domain)
-                    .arg(interfaceName)
-                    .arg(status.getCode().toString())
-        );
+        LOG_ERROR(logger,
+                  QString("Unable to lookup provider (domain: %1, interface: %2) "
+                          "from discovery. Status code: %3.")
+                          .arg(domain)
+                          .arg(interfaceName)
+                          .arg(status.getCode().toString()));
     }
 }
-
 
 } // namespace joynr

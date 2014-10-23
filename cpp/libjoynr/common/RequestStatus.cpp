@@ -18,39 +18,44 @@
  */
 #include "joynr/RequestStatus.h"
 
-namespace joynr {
+namespace joynr
+{
 
-RequestStatus::RequestStatus()
-    : code(RequestStatusCode::NOT_STARTED),
-      description() {
+RequestStatus::RequestStatus() : code(RequestStatusCode::NOT_STARTED), description()
+{
 }
 
-RequestStatus::RequestStatus(RequestStatusCode requestStatus)
-    : code(requestStatus),
-      description() {
+RequestStatus::RequestStatus(RequestStatusCode requestStatus) : code(requestStatus), description()
+{
 }
 
-bool RequestStatus::successful() const {
+bool RequestStatus::successful() const
+{
     return code == RequestStatusCode::OK;
 }
 
-RequestStatusCode RequestStatus::getCode() const{
+RequestStatusCode RequestStatus::getCode() const
+{
     return code;
 }
 
-void RequestStatus::setCode(const RequestStatusCode& code) {
+void RequestStatus::setCode(const RequestStatusCode& code)
+{
     this->code = code;
 }
 
-QStringList RequestStatus::getDescription() {
+QStringList RequestStatus::getDescription()
+{
     return description;
 }
 
-void RequestStatus::addDescription(const QString& description) {
+void RequestStatus::addDescription(const QString& description)
+{
     this->description.append(description);
 }
 
-QString RequestStatus::toString() const {
+QString RequestStatus::toString() const
+{
     QString desc;
     for (int i = 0; i < description.size(); i++) {
         if (i != 0) {
@@ -60,9 +65,7 @@ QString RequestStatus::toString() const {
         desc.append(description.at(i));
     }
 
-
-    return "[RequestStatus code: " + code.toString()
-            + "description: " + desc + "]";
+    return "[RequestStatus code: " + code.toString() + "description: " + desc + "]";
 }
 
 } // namespace joynr

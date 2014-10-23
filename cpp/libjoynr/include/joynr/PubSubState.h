@@ -21,7 +21,8 @@
 
 #include <QMutex>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * \class PubSubState
@@ -32,7 +33,9 @@ namespace joynr {
 class PubSubState
 {
 public:
-    virtual ~PubSubState(){}
+    virtual ~PubSubState()
+    {
+    }
     PubSubState();
     qint64 getTimeOfLastPublication() const;
     void setTimeOfLastPublication(qint64 timeOfLastPublication = 0);
@@ -45,16 +48,17 @@ protected:
     bool interrupted;
     bool stopped;
     qint64 timeOfLastPublication;
-    mutable QMutex accesMutex; //QMutex has to be mutable to allow ConstCorrectness of getter-Functions.
-    /*A Mutable member variable can be changed in a const method call. Mutable implies, that the state of this member
-      variable is not related to the logical constness of the object. E.g. a publicationState would not change, just because
+    mutable QMutex
+            accesMutex; // QMutex has to be mutable to allow ConstCorrectness of getter-Functions.
+    /*A Mutable member variable can be changed in a const method call. Mutable implies, that the
+      state of this member
+      variable is not related to the logical constness of the object. E.g. a publicationState would
+      not change, just because
       the accessMutex has been modified. */
 
-    //this Mutex will prevent two concurrent read-access as well, could be optimised if necessary.
-    //E.g. by using a QReadWriteLock
-
+    // this Mutex will prevent two concurrent read-access as well, could be optimised if necessary.
+    // E.g. by using a QReadWriteLock
 };
-
 
 } // namespace joynr
 #endif // PUBSUBSTATE_H

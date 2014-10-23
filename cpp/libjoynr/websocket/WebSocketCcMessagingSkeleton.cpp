@@ -24,7 +24,8 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/WebSocketClientAddress.h"
 
-namespace joynr {
+namespace joynr
+{
 
 joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketCcMessagingSkeleton");
@@ -32,40 +33,35 @@ joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
         WebSocketMessagingStubFactory& messagingStubFactory,
-        const system::WebSocketAddress &serverAddress
-) :
-    webSocketServer(Q_NULLPTR),
-    clients(),
-    messageRouter(messageRouter),
-    messagingStubFactory(messagingStubFactory)
+        const system::WebSocketAddress& serverAddress)
+        : webSocketServer(Q_NULLPTR),
+          clients(),
+          messageRouter(messageRouter),
+          messagingStubFactory(messagingStubFactory)
 {
     // must register metatype in order to deserialize initialization message from client
-    qRegisterMetaType<joynr::system::WebSocketClientAddress>("joynr::system::WebSocketClientAddress");
+    qRegisterMetaType<joynr::system::WebSocketClientAddress>(
+            "joynr::system::WebSocketClientAddress");
 
     QWebSocketServer::SslMode sslMode(QWebSocketServer::NonSecureMode);
-    if(serverAddress.getProtocol() == joynr::system::WebSocketProtocol::WSS) {
+    if (serverAddress.getProtocol() == joynr::system::WebSocketProtocol::WSS) {
         sslMode = QWebSocketServer::SecureMode;
     }
 
-    webSocketServer = new QWebSocketServer(
-                QStringLiteral("joynr CC"),
-                sslMode,
-                this
-    );
+    webSocketServer = new QWebSocketServer(QStringLiteral("joynr CC"), sslMode, this);
 
-
-    if(webSocketServer->listen(QHostAddress::Any, serverAddress.getPort())) {
-        LOG_INFO(logger, QString("joynr CC WebSocket server listening on port %0.")
-                 .arg(serverAddress.getPort())
-        );
-        connect(
-                webSocketServer, &QWebSocketServer::newConnection,
-                this, &WebSocketCcMessagingSkeleton::onNewConnection
-        );
+    if (webSocketServer->listen(QHostAddress::Any, serverAddress.getPort())) {
+        LOG_INFO(logger,
+                 QString("joynr CC WebSocket server listening on port %0.")
+                         .arg(serverAddress.getPort()));
+        connect(webSocketServer,
+                &QWebSocketServer::newConnection,
+                this,
+                &WebSocketCcMessagingSkeleton::onNewConnection);
     } else {
-        LOG_FATAL(logger, QString("Error: WebSocket server could not listen on port %0.")
-                  .arg(serverAddress.getPort())
-        );
+        LOG_FATAL(logger,
+                  QString("Error: WebSocket server could not listen on port %0.")
+                          .arg(serverAddress.getPort()));
     }
 }
 
@@ -76,7 +72,7 @@ WebSocketCcMessagingSkeleton::~WebSocketCcMessagingSkeleton()
     qDeleteAll(clients.begin(), clients.end());
 }
 
-void WebSocketCcMessagingSkeleton::transmit(JoynrMessage &message)
+void WebSocketCcMessagingSkeleton::transmit(JoynrMessage& message)
 {
     messageRouter.route(message);
 }
@@ -85,37 +81,38 @@ void WebSocketCcMessagingSkeleton::onNewConnection()
 {
     QWebSocket* client = webSocketServer->nextPendingConnection();
 
-    connect(
-            client, &QWebSocket::textMessageReceived,
-            this, &WebSocketCcMessagingSkeleton::onTextMessageReceived
-    );
-    connect(
-            client, &QWebSocket::disconnected,
-            this, &WebSocketCcMessagingSkeleton::onSocketDisconnected
-    );
+    connect(client,
+            &QWebSocket::textMessageReceived,
+            this,
+            &WebSocketCcMessagingSkeleton::onTextMessageReceived);
+    connect(client,
+            &QWebSocket::disconnected,
+            this,
+            &WebSocketCcMessagingSkeleton::onSocketDisconnected);
 
     clients.append(client);
 }
 
-void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString &message)
+void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 {
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
 
-    if(isInitializationMessage(message)) {
-        LOG_DEBUG(logger, QString("received initialization message from websocket client: %0")
-                  .arg(message)
-        );
+    if (isInitializationMessage(message)) {
+        LOG_DEBUG(
+                logger,
+                QString("received initialization message from websocket client: %0").arg(message));
         // register client with messaging stub factory
         joynr::system::WebSocketClientAddress* clientAddress =
-                JsonSerializer::deserialize<joynr::system::WebSocketClientAddress>(message.toUtf8());
+                JsonSerializer::deserialize<joynr::system::WebSocketClientAddress>(
+                        message.toUtf8());
         messagingStubFactory.addClient(*clientAddress, client);
         delete clientAddress;
 
         // cleanup
-        disconnect(
-                client, &QWebSocket::disconnected,
-                this, &WebSocketCcMessagingSkeleton::onSocketDisconnected
-        );
+        disconnect(client,
+                   &QWebSocket::disconnected,
+                   this,
+                   &WebSocketCcMessagingSkeleton::onSocketDisconnected);
         clients.removeAll(client);
         return;
     }
@@ -123,9 +120,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString &message)
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
-    LOG_TRACE(logger, QString("INCOMING\nmessage: %0")
-              .arg(message)
-    );
+    LOG_TRACE(logger, QString("INCOMING\nmessage: %0").arg(message));
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);
@@ -135,7 +130,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString &message)
 void WebSocketCcMessagingSkeleton::onSocketDisconnected()
 {
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-    if(clients.contains(client)) {
+    if (clients.contains(client)) {
         clients.removeAll(client);
         client->deleteLater();
     }
@@ -152,13 +147,12 @@ void WebSocketCcMessagingSkeleton::onServerError(QWebSocketProtocol::CloseCode c
 {
     QString code;
     QDebug(&code) << closeCode;
-    LOG_ERROR(logger, QString("Error occured on WebSocket connection: %0. Description: %1.")
-              .arg(code)
-              .arg(webSocketServer->errorString())
-              );
+    LOG_ERROR(logger,
+              QString("Error occured on WebSocket connection: %0. Description: %1.").arg(code).arg(
+                      webSocketServer->errorString()));
 }
 
-bool WebSocketCcMessagingSkeleton::isInitializationMessage(const QString &message)
+bool WebSocketCcMessagingSkeleton::isInitializationMessage(const QString& message)
 {
     return message.startsWith("{\"_typeName\":\"joynr.system.WebSocketClientAddress\"");
 }

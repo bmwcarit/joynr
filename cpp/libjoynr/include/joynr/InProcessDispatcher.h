@@ -30,14 +30,16 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class MessagingQos;
 
-class JOYNR_EXPORT InProcessDispatcher : public IDispatcher , public IRequestCallerDirectory {
+class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory
+{
 public:
     InProcessDispatcher();
-    virtual ~InProcessDispatcher ();
+    virtual ~InProcessDispatcher();
 
     virtual void addReplyCaller(const QString& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
@@ -69,6 +71,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //INPROCESSDISPATCHER_H
+#endif // INPROCESSDISPATCHER_H

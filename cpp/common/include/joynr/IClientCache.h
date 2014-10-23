@@ -22,14 +22,18 @@
 #include <QVariant>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /*
  * Interface for an attribute cache that can be used by one or several clients.
  */
-class IClientCache {
+class IClientCache
+{
 public:
-    virtual ~IClientCache(){}
+    virtual ~IClientCache()
+    {
+    }
 
     /*
      * Returns the value stored for the attributeId. If none exists, it return an invalid
@@ -43,9 +47,7 @@ public:
      * Note, this insert does not perform any validation on the value.
      */
     virtual void insert(QString attributeId, QVariant value) = 0;
-
 };
-
 
 } // namespace joynr
 #endif // CLIENTCACHE_H

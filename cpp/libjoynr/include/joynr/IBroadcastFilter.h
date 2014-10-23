@@ -21,7 +21,7 @@
 
 #include "joynr/JoynrExport.h"
 
-template<typename K, typename V>
+template <typename K, typename V>
 class QMap;
 
 class QVariant;
@@ -31,23 +31,28 @@ typedef QMap<QString, QVariant> QVariantMap;
 
 class BroadcastFilterParameters;
 
-
-namespace joynr {
+namespace joynr
+{
 
 /**
   * \class IBroadcastFilter
   * \brief The IBroadcastFilter class provides an interface for filer logic implementation.
   */
-class JOYNR_EXPORT IBroadcastFilter {
+class JOYNR_EXPORT IBroadcastFilter
+{
 public:
-    IBroadcastFilter(QString name) :
-        name(name) { }
+    IBroadcastFilter(QString name) : name(name)
+    {
+    }
 
-    virtual bool filter(const QVariantMap& eventValues, const BroadcastFilterParameters& filterParameters) = 0;
+    virtual bool filter(const QVariantMap& eventValues,
+                        const BroadcastFilterParameters& filterParameters) = 0;
 
-    const QString& getName() {
+    const QString& getName()
+    {
         return name;
     }
+
 private:
     QString name;
 };

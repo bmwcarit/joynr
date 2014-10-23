@@ -29,32 +29,35 @@
 #include <QByteArray>
 #include <QMultiMap>
 
-namespace joynr {
+namespace joynr
+{
 
 HttpNetworking* HttpNetworking::httpNetworking = new HttpNetworking();
 
-HttpNetworking::HttpNetworking() :
-    curlHandlePool(NULL),
-    proxy(),
-    connectTimeout_ms(0),
-    certificateAuthority(),
-    clientCertificate(),
-    clientCertificatePassword(),
-    httpDebug(false)
+HttpNetworking::HttpNetworking()
+        : curlHandlePool(NULL),
+          proxy(),
+          connectTimeout_ms(0),
+          certificateAuthority(),
+          clientCertificate(),
+          clientCertificatePassword(),
+          httpDebug(false)
 {
     curl_global_init(CURL_GLOBAL_ALL);
-    //curlHandlePool = new DefaultCurlHandlePool;
-    //curlHandlePool = new AlwaysNewCurlHandlePool;
+    // curlHandlePool = new DefaultCurlHandlePool;
+    // curlHandlePool = new AlwaysNewCurlHandlePool;
     curlHandlePool = new PerThreadCurlHandlePool;
 }
 
-HttpNetworking* HttpNetworking::getInstance() {
+HttpNetworking* HttpNetworking::getInstance()
+{
     return httpNetworking;
 }
 
-HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url) {
+HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url)
+{
     HttpRequestBuilder* requestBuilder = new HttpRequestBuilder(url);
-    if(!proxy.isEmpty()) {
+    if (!proxy.isEmpty()) {
         requestBuilder->withProxy(proxy);
     }
     if (httpDebug) {
@@ -79,15 +82,18 @@ HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url) {
     return requestBuilder;
 }
 
-IHttpGetBuilder* HttpNetworking::createHttpGetBuilder(const QString& url) {
+IHttpGetBuilder* HttpNetworking::createHttpGetBuilder(const QString& url)
+{
     return createRequestBuilder(url);
 }
 
-IHttpDeleteBuilder* HttpNetworking::createHttpDeleteBuilder(const QString& url) {
+IHttpDeleteBuilder* HttpNetworking::createHttpDeleteBuilder(const QString& url)
+{
     return createRequestBuilder(url)->asDelete();
 }
 
-IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const QString& url) {
+IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const QString& url)
+{
     return createRequestBuilder(url)->asPost();
 }
 
@@ -95,15 +101,18 @@ IHttpPostBuilder::~IHttpPostBuilder()
 {
 }
 
-void HttpNetworking::setGlobalProxy(const QString& proxy) {
+void HttpNetworking::setGlobalProxy(const QString& proxy)
+{
     this->proxy = proxy;
 }
 
-void HttpNetworking::setHTTPDebugOn() {
+void HttpNetworking::setHTTPDebugOn()
+{
     this->httpDebug = true;
 }
 
-void HttpNetworking::setConnectTimeout_ms(long connectTimeout) {
+void HttpNetworking::setConnectTimeout_ms(long connectTimeout)
+{
     this->connectTimeout_ms = connectTimeout;
 }
 
@@ -122,14 +131,13 @@ void HttpNetworking::setClientCertificatePassword(const QString& clientCertifica
     this->clientCertificatePassword = clientCertificatePassword;
 }
 
-
-ICurlHandlePool* HttpNetworking::getCurlHandlePool() {
+ICurlHandlePool* HttpNetworking::getCurlHandlePool()
+{
     return curlHandlePool;
 }
 
 ICurlHandlePool::~ICurlHandlePool()
 {
-
 }
 
 } // namespace joynr

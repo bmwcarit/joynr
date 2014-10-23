@@ -20,24 +20,25 @@
 #include "joynr/DispatcherUtils.h"
 #include <QThread>
 
-namespace joynr {
+namespace joynr
+{
 
-
-MessageQueue::MessageQueue():
-    queue(new QMap<QString, MessageQueueItem*>()),
-    queueMutex()
+MessageQueue::MessageQueue() : queue(new QMap<QString, MessageQueueItem*>()), queueMutex()
 {
 }
 
-MessageQueue::~MessageQueue() {
+MessageQueue::~MessageQueue()
+{
     delete queue;
 }
 
-qint64 MessageQueue::getQueueLength(){
+qint64 MessageQueue::getQueueLength()
+{
     return queue->size();
 }
 
-qint64 MessageQueue::queueMessage(const JoynrMessage &message) {
+qint64 MessageQueue::queueMessage(const JoynrMessage& message)
+{
     QDateTime absTtl = message.getHeaderExpiryDate();
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
@@ -47,17 +48,19 @@ qint64 MessageQueue::queueMessage(const JoynrMessage &message) {
     return queue->size();
 }
 
-MessageQueueItem* MessageQueue::getNextMessageForParticipant(const QString destinationPartId) {
+MessageQueueItem* MessageQueue::getNextMessageForParticipant(const QString destinationPartId)
+{
     QMutexLocker locker(&queueMutex);
-    if(queue->contains(destinationPartId)) {
+    if (queue->contains(destinationPartId)) {
         return queue->take(destinationPartId);
     }
     return NULL;
 }
 
-qint64 MessageQueue::removeOutdatedMessages(){
+qint64 MessageQueue::removeOutdatedMessages()
+{
     qint64 counter = 0;
-    if(queue->isEmpty()) {
+    if (queue->isEmpty()) {
         return counter;
     }
 
@@ -65,12 +68,12 @@ qint64 MessageQueue::removeOutdatedMessages(){
     QDateTime now = QDateTime::currentDateTime();
     {
         QMutexLocker locker(&queueMutex);
-        for(i = queue->begin(); i != queue->end();) {
+        for (i = queue->begin(); i != queue->end();) {
             MessageQueueItem* value = i.value();
-            if(value->getDecayTime() < now) {
+            if (value->getDecayTime() < now) {
                 i = queue->erase(i);
                 delete value;
-                counter ++;
+                counter++;
             } else {
                 ++i;
             }
@@ -83,23 +86,22 @@ qint64 MessageQueue::removeOutdatedMessages(){
  * IMPLEMENTATION of MessageQueueCleanerRunnable
  */
 
-MessageQueueCleanerRunnable::MessageQueueCleanerRunnable(MessageQueue &messageQueue,
-                                                         qint64 sleepInterval):
-    messageQueue(messageQueue),
-    stopped(false),
-    sleepInterval(sleepInterval)
+MessageQueueCleanerRunnable::MessageQueueCleanerRunnable(MessageQueue& messageQueue,
+                                                         qint64 sleepInterval)
+        : messageQueue(messageQueue), stopped(false), sleepInterval(sleepInterval)
 {
 }
 
-void MessageQueueCleanerRunnable::stop() {
+void MessageQueueCleanerRunnable::stop()
+{
     stopped = true;
 }
 
-void MessageQueueCleanerRunnable::run() {
-    while(!stopped) {
+void MessageQueueCleanerRunnable::run()
+{
+    while (!stopped) {
         QThread::msleep(sleepInterval);
         messageQueue.removeOutdatedMessages();
     }
 }
-
 }

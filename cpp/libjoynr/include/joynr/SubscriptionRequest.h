@@ -19,7 +19,6 @@
 #ifndef SUBSCRIPTIONREQUEST_H
 #define SUBSCRIPTIONREQUEST_H
 
-
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
@@ -28,14 +27,17 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 /** \class SubscriptionRequest
-  * \brief SubscriptionRequest stores the information that is necessary to store a subscription-Request on
+  * \brief SubscriptionRequest stores the information that is necessary to store a
+ * subscription-Request on
   * subscriber side, while Aribtration is handled.
   */
 
-class JOYNR_EXPORT SubscriptionRequest : public QObject{
+class JOYNR_EXPORT SubscriptionRequest : public QObject
+{
     Q_OBJECT
 
     Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
@@ -46,7 +48,9 @@ public:
     SubscriptionRequest();
     SubscriptionRequest(const SubscriptionRequest& subscriptionRequest);
     SubscriptionRequest& operator=(const SubscriptionRequest& subscriptionRequest);
-    virtual ~SubscriptionRequest(){}
+    virtual ~SubscriptionRequest()
+    {
+    }
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 
     QString getSubscriptionId() const;
@@ -66,8 +70,10 @@ protected:
 
 private:
     /*
-      SubscriptionRequest is used to store a subscription while Arbitration is still being done. To allow SubscriptionManager
-      to notify about missedPublications for a subscription while offline, the SubscriptionId has to be determined when registering
+      SubscriptionRequest is used to store a subscription while Arbitration is still being done. To
+      allow SubscriptionManager
+      to notify about missedPublications for a subscription while offline, the SubscriptionId has to
+      be determined when registering
       the subscription, and thus must be stored while waiting for arbitrations.
       */
     QString subscriptionId;
@@ -76,7 +82,6 @@ private:
 
     static joynr_logging::Logger* logger;
 };
-
 
 } // namespace joynr
 

@@ -18,16 +18,17 @@
  */
 #include "joynr/InProcessMessagingAddress.h"
 
-namespace joynr {
-
-InProcessMessagingAddress::InProcessMessagingAddress(QSharedPointer<InProcessMessagingSkeleton> skeleton)
-    : Address(),
-      skeleton(skeleton)
+namespace joynr
 {
 
+InProcessMessagingAddress::InProcessMessagingAddress(
+        QSharedPointer<InProcessMessagingSkeleton> skeleton)
+        : Address(), skeleton(skeleton)
+{
 }
 
-QSharedPointer<InProcessMessagingSkeleton> InProcessMessagingAddress::getSkeleton() const{
+QSharedPointer<InProcessMessagingSkeleton> InProcessMessagingAddress::getSkeleton() const
+{
     return skeleton;
 }
 

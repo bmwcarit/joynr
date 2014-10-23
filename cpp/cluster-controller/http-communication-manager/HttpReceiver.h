@@ -35,16 +35,17 @@
 class DispatcherIntegrationTest;
 class CapabilitiesClientTest;
 
-namespace joynr {
+namespace joynr
+{
 
 class JoynrMessage;
 class LongPollingMessageReceiver;
 class MessageRouter;
 
-namespace system {
-    class Address;
+namespace system
+{
+class Address;
 }
-
 
 /**
   * \class HttpReceiver
@@ -53,10 +54,12 @@ namespace system {
   * Implements the IMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver {
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
+{
 
 public:
-    explicit HttpReceiver(const MessagingSettings& settings, QSharedPointer<MessageRouter> messageRouter);
+    explicit HttpReceiver(const MessagingSettings& settings,
+                          QSharedPointer<MessageRouter> messageRouter);
     virtual ~HttpReceiver();
 
     /**
@@ -82,9 +85,9 @@ public:
 
     virtual void startReceiveQueue();
 
-
     /**
-      * stops the receiveQue. This might ungracefully terminate the thread of the LongPollingMessageReceiver.
+      * stops the receiveQue. This might ungracefully terminate the thread of the
+     * LongPollingMessageReceiver.
       */
     virtual void stopReceiveQueue();
 
@@ -94,13 +97,17 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
     void init();
 
-    /* This semaphore keeps track of the status of the channel. On creation no resources are available.
-       Once the channel is created, one resource will be released. WaitForReceiveQueueStarted will try to
+    /* This semaphore keeps track of the status of the channel. On creation no resources are
+       available.
+       Once the channel is created, one resource will be released. WaitForReceiveQueueStarted will
+       try to
        acquire a resource from this semaphore, and block until it gets one.
-       On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle of
+       On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
+       of
        createChannel and waitForReceiveQueueStarted works as well. */
     QSemaphore* channelCreatedSemaphore;
-    QString channelId; //currently channelid is used to construct the channelUrl or channelLocation.
+    QString channelId; // currently channelid is used to construct the channelUrl or
+                       // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
     QString receiverId;
@@ -115,8 +122,6 @@ private:
 
     static joynr_logging::Logger* logger;
 };
-
-
 
 } // namespace joynr
 #endif // HTTPRECEIVER_H_

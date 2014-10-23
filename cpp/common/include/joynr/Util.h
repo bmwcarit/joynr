@@ -31,14 +31,15 @@
 #include <type_traits>
 #include <utility>
 
-
-namespace joynr {
+namespace joynr
+{
 
 /**
   * \class Util
   * \brief Container class for helper methods
   */
-class JOYNRCOMMON_EXPORT Util {
+class JOYNRCOMMON_EXPORT Util
+{
 public:
     /**
       * Splits a byte array representation of multiple JSON objects into
@@ -52,35 +53,37 @@ public:
       * \param enumName, the name of the enum, e.g. ProcessError (defined in QProcess)
       * \param value, the int value to convert
       */
-    template<class T>
-    static QString convertEnumValueToString(const char* enumName, int value) {
-        QMetaEnum metaEnum = T::staticMetaObject.enumerator(
-                    T::staticMetaObject.indexOfEnumerator(enumName)
-        );
+    template <class T>
+    static QString convertEnumValueToString(const char* enumName, int value)
+    {
+        QMetaEnum metaEnum =
+                T::staticMetaObject.enumerator(T::staticMetaObject.indexOfEnumerator(enumName));
         return QLatin1String(metaEnum.valueToKey(value));
     }
 
     static QString attributeGetterFromName(const QString& attributeName);
 
     template <class T>
-    static typename T::Enum convertVariantToEnum(const QVariant& v) {
+    static typename T::Enum convertVariantToEnum(const QVariant& v)
+    {
         QMetaEnum metaEnum = T::staticMetaObject.enumerator(0);
-        return static_cast<typename T::Enum>(
-                    metaEnum.keyToValue(v.toString().toLatin1().data()));
+        return static_cast<typename T::Enum>(metaEnum.keyToValue(v.toString().toLatin1().data()));
     }
 
     template <class T>
-    static QList<typename T::Enum> convertVariantListToEnumList(const QVariantList& variantList) {
+    static QList<typename T::Enum> convertVariantListToEnumList(const QVariantList& variantList)
+    {
         QList<typename T::Enum> ret;
         ret.reserve(variantList.length());
-        foreach ( const QVariant& v, variantList ) {
+        foreach (const QVariant& v, variantList) {
             ret.append(convertVariantToEnum<T>(v));
         }
         return ret;
     }
 
     template <class T>
-    static QList<QVariant> convertListToVariantList(const QList<T>& inputList){
+    static QList<QVariant> convertListToVariantList(const QList<T>& inputList)
+    {
         QList<QVariant> ret;
         ret.reserve(inputList.length());
         foreach (const T& q, inputList) {
@@ -90,10 +93,11 @@ public:
     }
 
     template <class T>
-    static QList<T> convertVariantListToList(const QList<QVariant>& inputList){
+    static QList<T> convertVariantListToList(const QList<QVariant>& inputList)
+    {
         QList<T> ret;
         ret.reserve(inputList.length());
-        foreach( const QVariant& q, inputList ) {
+        foreach (const QVariant& q, inputList) {
             assert(q.canConvert<T>());
             ret.append(q.value<T>());
         }
@@ -101,10 +105,11 @@ public:
     }
 
     template <class T>
-    static QList<T> convertIntListToEnumList(const QList<int>& inputList){
+    static QList<T> convertIntListToEnumList(const QList<int>& inputList)
+    {
         QList<T> ret;
         ret.reserve(inputList.length());
-        foreach(const int& i, inputList ) {
+        foreach (const int& i, inputList) {
             ret.append((T)i);
         }
         return ret;
@@ -129,59 +134,67 @@ public:
     /**
      * Log a serialized Joynr message
      */
-    static void logSerializedMessage(joynr_logging::Logger *logger,
+    static void logSerializedMessage(joynr_logging::Logger* logger,
                                      const QString& explanation,
-                                     const QString &message);
+                                     const QString& message);
 
-    template<typename... Ts>
+    template <typename... Ts>
     static int getTypeId();
 
-    template<int TupleSize>
-    struct ExpandTupleIntoFunctionArguments {
-        template<typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
-        static inline auto expandTupleIntoFunctionArguments(
-                Function& func,
-                FunctionClass& funcClass,
-                Tuple& tuple,
-                Arguments&... args)
-        -> decltype(ExpandTupleIntoFunctionArguments<TupleSize-1>::
-                    expandTupleIntoFunctionArguments(
-                        func, funcClass, tuple, std::get<TupleSize-1>(tuple), args...)){
+    template <int TupleSize>
+    struct ExpandTupleIntoFunctionArguments
+    {
+        template <typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
+        static inline auto expandTupleIntoFunctionArguments(Function& func,
+                                                            FunctionClass& funcClass,
+                                                            Tuple& tuple,
+                                                            Arguments&... args)
+                -> decltype(ExpandTupleIntoFunctionArguments<
+                        TupleSize - 1>::expandTupleIntoFunctionArguments(func,
+                                                                         funcClass,
+                                                                         tuple,
+                                                                         std::get<TupleSize - 1>(
+                                                                                 tuple),
+                                                                         args...))
+        {
 
-            return ExpandTupleIntoFunctionArguments<TupleSize-1>::
-                    expandTupleIntoFunctionArguments(
-                        func, funcClass, tuple, std::get<TupleSize-1>(tuple), args...);
+            return ExpandTupleIntoFunctionArguments<
+                    TupleSize - 1>::expandTupleIntoFunctionArguments(func,
+                                                                     funcClass,
+                                                                     tuple,
+                                                                     std::get<TupleSize - 1>(tuple),
+                                                                     args...);
         }
     };
 
-    template<typename Function, typename FunctionClass, typename Tuple>
-    static inline auto expandTupleIntoFunctionArguments(
-            Function& func,
-            FunctionClass& funcClass,
-            Tuple& tuple)
-    -> decltype(ExpandTupleIntoFunctionArguments<std::tuple_size<
-                typename std::decay<Tuple>::type>::value>::
-                expandTupleIntoFunctionArguments(func, funcClass, tuple)){
+    template <typename Function, typename FunctionClass, typename Tuple>
+    static inline auto expandTupleIntoFunctionArguments(Function& func,
+                                                        FunctionClass& funcClass,
+                                                        Tuple& tuple)
+            -> decltype(ExpandTupleIntoFunctionArguments<std::tuple_size<typename std::decay<
+                    Tuple>::type>::value>::expandTupleIntoFunctionArguments(func, funcClass, tuple))
+    {
 
-        return ExpandTupleIntoFunctionArguments<std::tuple_size<
-                typename std::decay<Tuple>::type>::value>::
-                expandTupleIntoFunctionArguments(func, funcClass, tuple);
+        return ExpandTupleIntoFunctionArguments<std::tuple_size<typename std::decay<
+                Tuple>::type>::value>::expandTupleIntoFunctionArguments(func, funcClass, tuple);
     }
 
-    template<typename... Ts>
+    template <typename... Ts>
     static std::tuple<Ts...> toValueTuple(QList<QVariant> list);
 
 private:
     static joynr_logging::Logger* logger;
 
-    template<typename T, typename... Ts>
-    static int getTypeId_split() {
+    template <typename T, typename... Ts>
+    static int getTypeId_split()
+    {
         int prime = 31;
-        return qMetaTypeId<T>() + prime*getTypeId<Ts...>();
+        return qMetaTypeId<T>() + prime * getTypeId<Ts...>();
     }
 
-    template<typename T, typename... Ts>
-    static std::tuple<T, Ts...> toValueTuple_split(QList<QVariant> list) {
+    template <typename T, typename... Ts>
+    static std::tuple<T, Ts...> toValueTuple_split(QList<QVariant> list)
+    {
         T value = list.first().value<T>();
         list.removeFirst();
 
@@ -189,42 +202,45 @@ private:
     }
 };
 
-template<typename... Ts> inline
-int Util::getTypeId() {
+template <typename... Ts>
+inline int Util::getTypeId()
+{
     return getTypeId_split<Ts...>();
 }
 
-template<> inline
-int Util::getTypeId<>() {
+template <>
+inline int Util::getTypeId<>()
+{
     return 0;
 }
 
-template<>
-struct Util::ExpandTupleIntoFunctionArguments<0> {
-    template<typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
-    static inline auto expandTupleIntoFunctionArguments(
-            Function& func,
-            FunctionClass& funcClass,
-            Tuple& tuple,
-            Arguments&... args)
-    -> decltype(func(funcClass, args...)){
+template <>
+struct Util::ExpandTupleIntoFunctionArguments<0>
+{
+    template <typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
+    static inline auto expandTupleIntoFunctionArguments(Function& func,
+                                                        FunctionClass& funcClass,
+                                                        Tuple& tuple,
+                                                        Arguments&... args)
+            -> decltype(func(funcClass, args...))
+    {
 
         return func(funcClass, args...);
     }
 };
 
-template<typename... Ts> inline
-std::tuple<Ts...> Util::toValueTuple(QList<QVariant> list){
+template <typename... Ts>
+inline std::tuple<Ts...> Util::toValueTuple(QList<QVariant> list)
+{
     return toValueTuple_split<Ts...>(list);
 }
 
-template<> inline
-std::tuple<> Util::toValueTuple<>(QList<QVariant> list){
+template <>
+inline std::tuple<> Util::toValueTuple<>(QList<QVariant> list)
+{
     assert(list.empty());
     return std::make_tuple();
 }
-
-
 
 } // namespace joynr
 #endif /* UTIL_H_ */

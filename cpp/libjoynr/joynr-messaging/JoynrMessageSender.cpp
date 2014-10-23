@@ -26,79 +26,59 @@
 #include <QUuid>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
-joynr_logging::Logger* JoynrMessageSender::logger = joynr_logging::Logging::getInstance()->getLogger("JOYNR", "JoynrMessageSender");
-
+joynr_logging::Logger* JoynrMessageSender::logger =
+        joynr_logging::Logging::getInstance()->getLogger("JOYNR", "JoynrMessageSender");
 
 JoynrMessageSender::JoynrMessageSender(QSharedPointer<MessageRouter> messageRouter)
-    : dispatcher(NULL),
-      messageRouter(messageRouter),
-      messageFactory() {
-
+        : dispatcher(NULL), messageRouter(messageRouter), messageFactory()
+{
 }
 
 JoynrMessageSender::~JoynrMessageSender()
 {
 }
 
-void JoynrMessageSender::registerDispatcher(IDispatcher *dispatcher){
+void JoynrMessageSender::registerDispatcher(IDispatcher* dispatcher)
+{
     this->dispatcher = dispatcher;
 }
 
-void JoynrMessageSender::sendRequest(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
-        const MessagingQos& qos,
-        const Request& request,
-        QSharedPointer<IReplyCaller> callback
-) {
-    assert(dispatcher!=NULL);
+void JoynrMessageSender::sendRequest(const QString& senderParticipantId,
+                                     const QString& receiverParticipantId,
+                                     const MessagingQos& qos,
+                                     const Request& request,
+                                     QSharedPointer<IReplyCaller> callback)
+{
+    assert(dispatcher != NULL);
 
-    dispatcher->addReplyCaller(
-                request.getRequestReplyId(),
-                callback,
-                qos
-    );
-    JoynrMessage message = messageFactory.createRequest(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                request
-    );
-    assert(!messageRouter.isNull());
-    messageRouter->route(message);
-
-}
-
-void JoynrMessageSender::sendReply(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
-        const MessagingQos& qos,
-        const Reply& reply
-) {
-    JoynrMessage message = messageFactory.createReply(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                reply
-    );
+    dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
+    JoynrMessage message =
+            messageFactory.createRequest(senderParticipantId, receiverParticipantId, qos, request);
     assert(!messageRouter.isNull());
     messageRouter->route(message);
 }
 
-void JoynrMessageSender::sendSubscriptionRequest(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
-        const MessagingQos& qos,
-        const SubscriptionRequest& subscriptionRequest
-) {
+void JoynrMessageSender::sendReply(const QString& senderParticipantId,
+                                   const QString& receiverParticipantId,
+                                   const MessagingQos& qos,
+                                   const Reply& reply)
+{
+    JoynrMessage message =
+            messageFactory.createReply(senderParticipantId, receiverParticipantId, qos, reply);
+    assert(!messageRouter.isNull());
+    messageRouter->route(message);
+}
+
+void JoynrMessageSender::sendSubscriptionRequest(const QString& senderParticipantId,
+                                                 const QString& receiverParticipantId,
+                                                 const MessagingQos& qos,
+                                                 const SubscriptionRequest& subscriptionRequest)
+{
     JoynrMessage message = messageFactory.createSubscriptionRequest(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                subscriptionRequest
-    );
+            senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
     assert(!messageRouter.isNull());
     messageRouter->route(message);
 }
@@ -107,46 +87,32 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
         const QString& senderParticipantId,
         const QString& receiverParticipantId,
         const MessagingQos& qos,
-        const BroadcastSubscriptionRequest& subscriptionRequest
-) {
+        const BroadcastSubscriptionRequest& subscriptionRequest)
+{
     JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                subscriptionRequest
-    );
+            senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
     assert(!messageRouter.isNull());
     messageRouter->route(message);
 }
 
-void JoynrMessageSender::sendSubscriptionReply(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
-        const MessagingQos& qos,
-        const SubscriptionReply& subscriptionReply
-){
+void JoynrMessageSender::sendSubscriptionReply(const QString& senderParticipantId,
+                                               const QString& receiverParticipantId,
+                                               const MessagingQos& qos,
+                                               const SubscriptionReply& subscriptionReply)
+{
     JoynrMessage message = messageFactory.createSubscriptionReply(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                subscriptionReply
-    );
+            senderParticipantId, receiverParticipantId, qos, subscriptionReply);
     assert(!messageRouter.isNull());
     messageRouter->route(message);
 }
 
-void JoynrMessageSender::sendSubscriptionStop(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
-        const MessagingQos& qos,
-        const SubscriptionStop& subscriptionStop
-) {
+void JoynrMessageSender::sendSubscriptionStop(const QString& senderParticipantId,
+                                              const QString& receiverParticipantId,
+                                              const MessagingQos& qos,
+                                              const SubscriptionStop& subscriptionStop)
+{
     JoynrMessage message = messageFactory.createSubscriptionStop(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                subscriptionStop
-    );
+            senderParticipantId, receiverParticipantId, qos, subscriptionStop);
     assert(!messageRouter.isNull());
     messageRouter->route(message);
 }
@@ -155,14 +121,10 @@ void JoynrMessageSender::sendSubscriptionPublication(
         const QString& senderParticipantId,
         const QString& receiverParticipantId,
         const MessagingQos& qos,
-        const SubscriptionPublication& subscriptionPublication
-) {
+        const SubscriptionPublication& subscriptionPublication)
+{
     JoynrMessage message = messageFactory.createSubscriptionPublication(
-                senderParticipantId,
-                receiverParticipantId,
-                qos,
-                subscriptionPublication
-    );
+            senderParticipantId, receiverParticipantId, qos, subscriptionPublication);
     assert(!messageRouter.isNull());
     messageRouter->route(message);
 }

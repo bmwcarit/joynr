@@ -21,55 +21,49 @@
 
 #include <QDateTime>
 
-namespace joynr {
-
+namespace joynr
+{
 
 template <class T>
 class ContentWithTtl
 {
 public:
-    ContentWithTtl(T& content, qint64 ttl_ms):
-            initialTtl_ms(ttl_ms),
-            content(content)
+    ContentWithTtl(T& content, qint64 ttl_ms) : initialTtl_ms(ttl_ms), content(content)
     {
         entryTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     }
 
-    ContentWithTtl():
-            content(NULL)
+    ContentWithTtl() : content(NULL)
     {
     }
 
-    const T getContent() const {
+    const T getContent() const
+    {
         return content;
     }
-    qint64 getRemainingTtl_ms() const {
+    qint64 getRemainingTtl_ms() const
+    {
         return initialTtl_ms - (QDateTime::currentDateTime().toMSecsSinceEpoch() - entryTime);
     }
 
-    qint64 getEntryTime() const {
+    qint64 getEntryTime() const
+    {
         return entryTime;
     }
 
-    bool isExpired() const {
+    bool isExpired() const
+    {
         return QDateTime::currentDateTime().toMSecsSinceEpoch() - entryTime > initialTtl_ms;
     }
 
 private:
-
     qint64 entryTime;
     qint64 initialTtl_ms;
     T content;
 };
 
-
 class Message;
-typedef  ContentWithTtl<QSharedPointer<const QByteArray> > SerializedMessageWithTtl;
-
-
+typedef ContentWithTtl<QSharedPointer<const QByteArray>> SerializedMessageWithTtl;
 
 } // namespace joynr
 #endif // CONTENTWITHTTL_H
-
-
-

@@ -25,16 +25,20 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class LibJoynrRuntime;
 
-class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor {
+class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor
+{
     Q_OBJECT
 
 public:
-    JoynrWebSocketRuntimeExecutor(QSettings *settings);
-    ~JoynrWebSocketRuntimeExecutor() {}
+    JoynrWebSocketRuntimeExecutor(QSettings* settings);
+    ~JoynrWebSocketRuntimeExecutor()
+    {
+    }
 
 public slots:
     virtual void createRuntime();
@@ -44,4 +48,4 @@ private:
 };
 
 } // namespace joynr
-#endif //JOYNRWEBSOCKETRUNTIMEEXECUTOR_H
+#endif // JOYNRWEBSOCKETRUNTIMEEXECUTOR_H

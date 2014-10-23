@@ -19,30 +19,35 @@
 #ifndef ISUBSCRIPTIONLISTENER_H
 #define ISUBSCRIPTIONLISTENER_H
 
-namespace joynr {
+namespace joynr
+{
 
+/*
+ *    Inherit this Interface to create a SubscriptionListener for a datatype.
+ */
 
- /*
-  *    Inherit this Interface to create a SubscriptionListener for a datatype.
-  */
-
-
-template<typename T, typename... Ts>class ISubscriptionListener
+template <typename T, typename... Ts>
+class ISubscriptionListener
 {
 public:
-    ISubscriptionListener() {}
-    virtual ~ISubscriptionListener(){}
+    ISubscriptionListener()
+    {
+    }
+    virtual ~ISubscriptionListener()
+    {
+    }
     /*
       *     receive will be called on every received publication.
       */
     virtual void receive(T value, Ts... values) = 0;
     /*
-      *     publicationMissed will be called when a publication is not received within the time specified in Subscription QoS.
-      *     publicationMissed may not block, call any slow methods (like synchronous requests), wait for user actions, or do larger computation.
+      *     publicationMissed will be called when a publication is not received within the time
+     * specified in Subscription QoS.
+      *     publicationMissed may not block, call any slow methods (like synchronous requests), wait
+     * for user actions, or do larger computation.
       */
     virtual void publicationMissed() = 0;
 };
-
 
 } // namespace joynr
 #endif // SUBSCRIPTIONLISTENER_H
