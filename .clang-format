@@ -1,18 +1,18 @@
 ---
 # for details on style options see
 # http://clang.llvm.org/docs/ClangFormatStyleOptions.html
-	
+
 # Language: Cpp
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 ConstructorInitializerIndentWidth: 8
 # AlignEscapedNewlinesLeft: false
 # AlignTrailingComments: true
-# AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 # AllowShortBlocksOnASingleLine: false
 # AllowShortIfStatementsOnASingleLine: false
 # AllowShortLoopsOnASingleLine: false
-# AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: None
 AlwaysBreakTemplateDeclarations: true
 # AlwaysBreakBeforeMultilineStrings: false
 # BreakBeforeBinaryOperators: false
@@ -37,7 +37,7 @@ PenaltyBreakBeforeFirstCallParameter: 0
 # PenaltyBreakFirstLessLess: 120
 # PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 600
-# PointerAlignment: Right
+PointerAlignment: Left
 # SpacesBeforeTrailingComments: 1
 # Cpp11BracedListStyle: true
 # Standard: Cpp11
