@@ -23,13 +23,11 @@
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioProvider::logger = joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
+joynr_logging::Logger* MyRadioProvider::logger =
+        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
 
-MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos) :
-    RadioProvider(providerQos),
-    currentStationIndex(0),
-    stationsList(),
-    mutex()
+MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos)
+        : RadioProvider(providerQos), currentStationIndex(0), stationsList(), mutex()
 {
     stationsList << QString("Triple J") << QString("FM 4") << QString("Radio ABC");
     isOn = false;
@@ -58,11 +56,14 @@ void MyRadioProvider::shuffleStations(RequestStatus& status)
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
     currentStationChanged(stationsList.at(currentStationIndex));
-    MyRadioHelper::prettyLog(logger, QString("shuffleStations: %1 -> %2").arg(oldStation).arg(currentStation));
+    MyRadioHelper::prettyLog(
+            logger, QString("shuffleStations: %1 -> %2").arg(oldStation).arg(currentStation));
     status.setCode(RequestStatusCode::OK);
 }
 
-void MyRadioProvider::addFavouriteStation(RequestStatus& status, bool& returnValue, QString radioStation)
+void MyRadioProvider::addFavouriteStation(RequestStatus& status,
+                                          bool& returnValue,
+                                          QString radioStation)
 {
     QMutexLocker locker(&mutex);
 
@@ -79,7 +80,7 @@ void MyRadioProvider::setCurrentStation(RequestStatus& status, QString currentSt
 
     int index = stationsList.indexOf(currentStation);
 
-    if(index == -1) {
+    if (index == -1) {
         // the station is not known
         stationsList.append(currentStation);
         index = stationsList.indexOf(currentStation);
@@ -92,10 +93,11 @@ void MyRadioProvider::setCurrentStation(RequestStatus& status, QString currentSt
     status.setCode(RequestStatusCode::OK);
 }
 
-void MyRadioProvider::addFavouriteStationList(RequestStatus& status, bool& returnValue, QList<QString>  radioStationList)
+void MyRadioProvider::addFavouriteStationList(RequestStatus& status,
+                                              bool& returnValue,
+                                              QList<QString> radioStationList)
 {
     foreach (const QString& station, radioStationList) {
         addFavouriteStation(status, returnValue, station);
     }
 }
-

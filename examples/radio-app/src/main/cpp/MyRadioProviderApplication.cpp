@@ -29,14 +29,15 @@ using namespace joynr;
 using joynr_logging::Logger;
 using joynr_logging::Logging;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
     // Get a logger
     Logger* logger = Logging::getInstance()->getLogger("DEMO", "MyRadioProviderApplication");
 
     // Check the usage
     QString programName(argv[0]);
-    if(argc != 2) {
+    if (argc != 2) {
         LOG_ERROR(logger, QString("USAGE: %1 <provider-domain>").arg(programName));
         return 1;
     }
@@ -50,8 +51,10 @@ int main(int argc, char* argv[]) {
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));
-    QString pathToLibJoynrSettings(dir + QString("/resources/radio-app-provider.libjoynr.settings"));
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+    QString pathToLibJoynrSettings(dir +
+                                   QString("/resources/radio-app-provider.libjoynr.settings"));
+    JoynrRuntime* runtime =
+            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently
@@ -62,20 +65,17 @@ int main(int argc, char* argv[]) {
     // Register the provider
     QSharedPointer<MyRadioProvider> provider(new MyRadioProvider(providerQos));
     QString authenticationToken("MyRadioProvider_authToken");
-    runtime->registerCapability<vehicle::RadioProvider>(providerDomain,
-                                                        provider,
-                                                        authenticationToken);
+    runtime->registerCapability<vehicle::RadioProvider>(
+            providerDomain, provider, authenticationToken);
 
     // Run until the user hits q
     MyRadioHelper::pressQToContinue();
 
     // Unregister the provider
-    runtime->unregisterCapability<vehicle::RadioProvider>(providerDomain,
-                                                        provider,
-                                                        authenticationToken);
+    runtime->unregisterCapability<vehicle::RadioProvider>(
+            providerDomain, provider, authenticationToken);
 
     delete runtime;
     delete logger;
     return 0;
 }
-

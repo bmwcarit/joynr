@@ -22,14 +22,12 @@ MyRadioNewStationFoundBroadcastFilter::MyRadioNewStationFoundBroadcastFilter()
 {
 }
 
-
 bool MyRadioNewStationFoundBroadcastFilter::filter(
-        const vehicle::RadioStation &radioStation,
-        const bool &hasTrafficInfo,
-        const vehicle::RadioNewStationFoundBroadcastFilterParameters &filterParameters)
+        const vehicle::RadioStation& radioStation,
+        const bool& hasTrafficInfo,
+        const vehicle::RadioNewStationFoundBroadcastFilterParameters& filterParameters)
 {
 
-    return
-            radioStation.getSource() == vehicle::Country::GERMANY &&
-            filterParameters.getLanguage() == "German";
+    return radioStation.getSource() == vehicle::Country::GERMANY &&
+           filterParameters.getLanguage() == "German";
 }

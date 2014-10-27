@@ -29,9 +29,9 @@ public:
     MyRadioNewStationFoundBroadcastFilter();
 
     virtual bool filter(
-            const vehicle::RadioStation &radioStation,
-            const bool &hasTrafficInfo,
-            const vehicle::RadioNewStationFoundBroadcastFilterParameters &filterParameters);
+            const vehicle::RadioStation& radioStation,
+            const bool& hasTrafficInfo,
+            const vehicle::RadioNewStationFoundBroadcastFilterParameters& filterParameters);
 };
 
 #endif // MYRADIONEWSTATIONFOUNDFILTER_H

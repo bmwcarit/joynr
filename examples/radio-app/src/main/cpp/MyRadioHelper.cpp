@@ -22,7 +22,8 @@
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioHelper::logger = joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioHelper");
+joynr_logging::Logger* MyRadioHelper::logger =
+        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioHelper");
 
 MyRadioHelper::MyRadioHelper()
 {
@@ -41,7 +42,7 @@ void MyRadioHelper::pressQToContinue()
     } while (input != QString("q"));
 }
 
-void MyRadioHelper::prettyLog(joynr_logging::Logger *logger, const QString& message)
+void MyRadioHelper::prettyLog(joynr_logging::Logger* logger, const QString& message)
 {
     LOG_INFO(logger, QString("--------------------------------------------------"));
     LOG_INFO(logger, message);

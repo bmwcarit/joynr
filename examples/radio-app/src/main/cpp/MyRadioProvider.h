@@ -28,10 +28,11 @@
 /**
   * A Radio Provider with a circular list of radio stations
   */
-class MyRadioProvider : public joynr::vehicle::RadioProvider {
+class MyRadioProvider : public joynr::vehicle::RadioProvider
+{
 public:
     MyRadioProvider(const joynr::types::ProviderQos& providerQos);
-   ~MyRadioProvider();
+    ~MyRadioProvider();
 
     /**
       * Get the current radio station
@@ -56,16 +57,18 @@ public:
     /*
      * Add a list of favourite stations
      */
-    void addFavouriteStationList(joynr::RequestStatus& status, bool& returnValue, QList<QString>  radioStationList);
+    void addFavouriteStationList(joynr::RequestStatus& status,
+                                 bool& returnValue,
+                                 QList<QString> radioStationList);
 
 private:
     // Disallow copy and assign
     MyRadioProvider(const MyRadioProvider&);
     void operator=(const MyRadioProvider&);
 
-    int currentStationIndex;                // Index to the current station
-    QStringList stationsList;   // List of possible stations
-    QMutex mutex;               // Providers need to be threadsafe
+    int currentStationIndex;  // Index to the current station
+    QStringList stationsList; // List of possible stations
+    QMutex mutex;             // Providers need to be threadsafe
 
     static joynr::joynr_logging::Logger* logger;
 };
