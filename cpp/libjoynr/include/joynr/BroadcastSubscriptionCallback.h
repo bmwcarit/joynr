@@ -68,7 +68,7 @@ public:
 
     int getTypeId() const
     {
-        return Util::getTypeId<T, Ts...>();
+        return Util::getBroadcastTypeId<T, Ts...>();
     }
 
 private:

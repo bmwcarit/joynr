@@ -139,7 +139,7 @@ public:
                                      const QString& message);
 
     template <typename... Ts>
-    static int getTypeId();
+    static int getBroadcastTypeId();
 
     template <int TupleSize>
     struct ExpandTupleIntoFunctionArguments
@@ -189,7 +189,7 @@ private:
     static int getTypeId_split()
     {
         int prime = 31;
-        return qMetaTypeId<T>() + prime * getTypeId<Ts...>();
+        return prime * qMetaTypeId<T>() + prime * getBroadcastTypeId<Ts...>();
     }
 
     template <typename T, typename... Ts>
@@ -203,13 +203,13 @@ private:
 };
 
 template <typename... Ts>
-inline int Util::getTypeId()
+inline int Util::getBroadcastTypeId()
 {
     return getTypeId_split<Ts...>();
 }
 
 template <>
-inline int Util::getTypeId<>()
+inline int Util::getBroadcastTypeId<>()
 {
     return 0;
 }

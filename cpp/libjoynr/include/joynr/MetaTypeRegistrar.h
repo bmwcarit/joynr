@@ -66,7 +66,7 @@ public:
      * Register a composite metatype
      */
     template <class... Ts>
-    void registerCompositeMetaType();
+    void registerBroadcastMetaType();
 
     /**
      * Get the publication interpreter with the given type id.
@@ -108,7 +108,7 @@ private:
     template <class T>
     void addReplyInterpreter();
     template <class... Ts>
-    void addPublicationInterpreterForCompositeType();
+    void addPublicationInterpreterForBroadcastType();
 
     // A threadsafe hash holding PublicationInterpreters
     QHash<int, IPublicationInterpreter*> publicationInterpreters;
@@ -188,18 +188,18 @@ void MetaTypeRegistrar::registerMetaType()
 }
 
 template <class... Ts>
-void MetaTypeRegistrar::registerCompositeMetaType()
+void MetaTypeRegistrar::registerBroadcastMetaType()
 {
     {
         QMutexLocker locker(&publicationInterpretersMutex);
-        addPublicationInterpreterForCompositeType<Ts...>();
+        addPublicationInterpreterForBroadcastType<Ts...>();
     }
 }
 
 template <class... Ts>
-void MetaTypeRegistrar::addPublicationInterpreterForCompositeType()
+void MetaTypeRegistrar::addPublicationInterpreterForBroadcastType()
 {
-    int typeId = Util::getTypeId<Ts...>();
+    int typeId = Util::getBroadcastTypeId<Ts...>();
 
     if (!publicationInterpreters.contains(typeId)) {
         publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());

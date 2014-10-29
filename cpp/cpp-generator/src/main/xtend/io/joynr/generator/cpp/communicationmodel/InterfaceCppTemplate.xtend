@@ -72,17 +72,17 @@ class InterfaceCppTemplate {
 				«ENDIF»
 			«ENDFOR»
 
+			«IF serviceInterface.broadcasts.size > 0»
+				/*
+				 * Broadcast output parameters are packed into a single publication message when the
+				 * broadcast occurs. They are encapsulated in a map. Hence, a new composite data type is
+				 * needed for all broadcasts. The map is serialised into the publication message. When
+				 * deserialising on consumer side, the right publication interpreter is chosen by calculating
+				 * the type id for the composite type.
+				*/
+			«ENDIF»
 			«FOR broadcast: serviceInterface.broadcasts»
-				«IF broadcast.outArgs.size > 1»
-					/*
-					 * Broadcast output parameters are packed into a single publication message when the
-					 * broadcast occurs. Hence, a new composite data type is needed for all broadcasts with
-					 * more than one out parameter. This composite type (containing all out parameters) is then
-					 * serialised into the publication message. When deserialising on consumer side, the right
-					 * publication interpreter is chosen by calculating a type id for the composite type.
-					*/
-					registrar.registerCompositeMetaType<«getMappedOutputParameterTypesCommaSeparated(broadcast)»>();
-				«ENDIF»
+				registrar.registerBroadcastMetaType<«getMappedOutputParameterTypesCommaSeparated(broadcast)»>();
 			«ENDFOR»
 		}
 
