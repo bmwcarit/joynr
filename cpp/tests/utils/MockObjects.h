@@ -283,10 +283,19 @@ public:
      MOCK_METHOD2_T(onSuccess, void(const joynr::RequestStatus status, T result));
 };
 
+// GMock doesn't support mocking variadic template functions directly.
+// Workaround: Mock exactly the functions with the number of arguments used in the tests.
 template <typename T>
-class MockSubscriptionListener : public joynr::ISubscriptionListener<T> {
+class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T> {
 public:
      MOCK_METHOD1_T(receive, void( T value));
+     MOCK_METHOD0(publicationMissed, void());
+};
+
+template <typename T1, typename T2, typename... Ts>
+class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
+public:
+     MOCK_METHOD2_T(receive, void( T1 value1, T2 value2, Ts... values));
      MOCK_METHOD0(publicationMissed, void());
 };
 

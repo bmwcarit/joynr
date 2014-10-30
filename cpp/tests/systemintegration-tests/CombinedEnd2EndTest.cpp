@@ -539,7 +539,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     //so the datatype is not registered, and cannot be deserialized.
     qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
 
-    MockSubscriptionListener<QList<int> > *mockListener = new MockSubscriptionListener<QList<int> >();
+    MockSubscriptionListenerOneType<QList<int> > *mockListener = new MockSubscriptionListenerOneType<QList<int> >();
 
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, receive(A<QList<int> >()))

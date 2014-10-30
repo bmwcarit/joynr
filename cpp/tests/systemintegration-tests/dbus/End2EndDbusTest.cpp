@@ -222,7 +222,7 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     connectProxy();
 
     // use semaphore to count recieves
-    auto mockListener = new MockSubscriptionListener<int>();
+    auto mockListener = new MockSubscriptionListenerOneType<int>();
     EXPECT_CALL(*mockListener, receive(A<int>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
     QSharedPointer<ISubscriptionListener<int> > subscriptionListener(mockListener);
 
