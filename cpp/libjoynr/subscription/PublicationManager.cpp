@@ -355,10 +355,6 @@ void PublicationManager::add(const QString& proxyParticipantId,
                 LOG_DEBUG(
                         logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
             }
-            {
-                QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
-                currentScheduledPublications.append(subscriptionId);
-            }
         } else {
             LOG_WARN(logger, QString("publication end is in the past"));
         }
