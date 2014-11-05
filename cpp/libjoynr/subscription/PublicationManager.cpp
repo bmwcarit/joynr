@@ -769,8 +769,14 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
 
     // Get the subscription details
     Publication* publication = publications.value(subscriptionId);
-    SubscriptionRequestInformation* subscriptionRequest =
-            subscriptionId2SubscriptionRequest.value(subscriptionId);
+
+    SubscriptionRequest* subscriptionRequest;
+
+    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
+        subscriptionRequest = subscriptionId2SubscriptionRequest.value(subscriptionId);
+    } else {
+        subscriptionRequest = subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+    }
 
     // See if the publication is needed
     QSharedPointer<SubscriptionQos> qos = subscriptionRequest->getQos();
@@ -806,8 +812,13 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     QVariant response = requestInterpreter->execute(
             requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>());
 
-    sendPublication(
-            subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), response);
+    SubscriptionInformation* subscriptionInformation =
+            dynamic_cast<SubscriptionInformation*>(subscriptionRequest);
+
+    sendPublication(subscriptionId,
+                    subscriptionInformation,
+                    getPublicationTtl(subscriptionRequest),
+                    response);
 
     // Reschedule the next poll
     if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
