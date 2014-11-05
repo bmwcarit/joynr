@@ -67,9 +67,9 @@ QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
     return jsonObjects;
 }
 
-QString Util::attributeGetterFromName(const QString& attributeName)
+QString Util::valueGetterFromName(const QString& subscribeToName)
 {
-    QString result = attributeName;
+    QString result = subscribeToName;
     result[0] = result[0].toUpper();
     result.prepend("get");
     return result;

@@ -61,7 +61,7 @@ public:
         return QLatin1String(metaEnum.valueToKey(value));
     }
 
-    static QString attributeGetterFromName(const QString& attributeName);
+    static QString valueGetterFromName(const QString& subscribeToName);
 
     template <class T>
     static typename T::Enum convertVariantToEnum(const QVariant& v)

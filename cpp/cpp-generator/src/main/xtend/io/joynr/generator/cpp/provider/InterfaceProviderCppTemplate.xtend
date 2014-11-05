@@ -102,9 +102,18 @@ class InterfaceProviderCppTemplate {
 			void «interfaceName»Provider::«broadcastName»EventOccured(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
 				QVariantMap eventValues;
 				«FOR parameter: getOutputParameters(broadcast)»
+					«broadcastName.toFirstLower»OutputParameters.«parameter.name» = «parameter.name»;
 					eventValues.insert("«parameter.name»", QVariant::fromValue(«parameter.name»));
 				«ENDFOR»
 			    onEventOccured("«broadcastName»", eventValues);
+			}
+			
+			void «interfaceName»Provider::get«broadcastName.toFirstUpper»(RequestStatus &joynrInternalStatus, QVariantMap &result)
+			{
+				«FOR parameter: getOutputParameters(broadcast)»
+					result.insert("«parameter.name»", QVariant::fromValue(«broadcastName»OutputParameters.«parameter.name»));
+					joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+				«ENDFOR»
 			}
 		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»

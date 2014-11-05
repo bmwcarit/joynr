@@ -802,15 +802,14 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     }
 
     // Get the value of the attribute
-    QString attributeGetter =
-            Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName());
+    QString valueGetter = Util::valueGetterFromName(subscriptionRequest->getSubscribeToName());
     QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
     QSharedPointer<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(requestCaller->getInterfaceName());
 
-    LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
+    LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(valueGetter));
     QVariant response = requestInterpreter->execute(
-            requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>());
+            requestCaller, valueGetter, QList<QVariant>(), QList<QVariant>());
 
     SubscriptionInformation* subscriptionInformation =
             dynamic_cast<SubscriptionInformation*>(subscriptionRequest);

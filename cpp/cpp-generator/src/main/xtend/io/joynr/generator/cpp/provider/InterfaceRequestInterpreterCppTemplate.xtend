@@ -44,6 +44,7 @@ class InterfaceRequestInterpreterCppTemplate {
 		#include "joynr/Util.h"
 		#include "joynr/RequestStatus.h"
 		#include <cassert>
+		#include <QVariantMap>
 		
 		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 			#include "«parameterType»"
@@ -80,6 +81,7 @@ class InterfaceRequestInterpreterCppTemplate {
 			// TODO need to put the status code into the reply
 			«val attributes = getAttributes(serviceInterface)»
 			«val methods = getMethods(serviceInterface)»
+			«val broadcasts = serviceInterface.broadcasts»
 			«IF attributes.size>0»
 				«FOR attribute: attributes SEPARATOR "\n} else"»
 					«val attributeName = attribute.joynrName»
@@ -111,6 +113,16 @@ class InterfaceRequestInterpreterCppTemplate {
 						QVariant returnValue("void");
 						return returnValue;
 
+				«ENDFOR»
+				}«IF broadcasts.size>0» else«ENDIF»
+			«ENDIF»
+			«IF broadcasts.size > 0»
+				«FOR broadcast: broadcasts SEPARATOR "\n} else"»
+				if (methodName == "get«broadcast.name.toFirstUpper»"){
+						QVariantMap returnValue;
+						«requestCallerName»->get«broadcast.name.toFirstUpper»(status, returnValue);
+						// convert typed return value into variant
+						return QVariant::fromValue(returnValue);
 				«ENDFOR»
 				}«IF methods.size>0» else«ENDIF»
 			«ENDIF»

@@ -95,6 +95,8 @@ class InterfaceProviderHTemplate {
 			* @param «broadcastName» the new attribute value
 			*/
 			void «broadcastName»EventOccured(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
+			
+			virtual void get«broadcastName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, QVariantMap& result);
 		«ENDFOR»
 
 	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
@@ -105,6 +107,16 @@ class InterfaceProviderHTemplate {
 	protected:
 		«FOR attribute: getAttributes(serviceInterface)»
 		    «getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
+		«ENDFOR»
+		
+		«FOR broadcast: serviceInterface.broadcasts»
+			struct «broadcast.joynrName.toFirstUpper»OutputParameters {
+			«FOR parameter: getOutputParameters(broadcast)»
+			    «getMappedDatatypeOrList(parameter)» «parameter.name»;
+			«ENDFOR»
+			};
+			«broadcast.joynrName.toFirstUpper»OutputParameters «broadcast.joynrName.toFirstLower»OutputParameters;
+			
 		«ENDFOR»
 
 	private:
