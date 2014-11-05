@@ -184,7 +184,8 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
     }
 
     if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
         QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress(replyChannelId));
