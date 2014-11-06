@@ -60,7 +60,10 @@ void WebSocketMessagingStub::sendTextMessage(const QString& message)
     LOG_TRACE(
             logger, QString("OUTGOING\nmessage: %0\nto: %1").arg(message).arg(address->toString()));
     qint64 bytesSent = webSocket->sendTextMessage(message);
-    LOG_TRACE(logger, QString("bytes actually sent: %0 of %1").arg(bytesSent).arg(message.size()));
+    bool flushed = webSocket->flush();
+    LOG_TRACE(logger,
+              QString("bytes actually sent (%0): %1 of %2").arg(flushed).arg(bytesSent).arg(
+                      message.size()));
 }
 
 void WebSocketMessagingStub::transmit(JoynrMessage& message)
@@ -74,10 +77,7 @@ void WebSocketMessagingStub::transmit(JoynrMessage& message)
     }
 
     QByteArray serializedMessage(JsonSerializer::serialize(message));
-    QMetaObject::invokeMethod(this,
-                              "sendTextMessage",
-                              Qt::AutoConnection,
-                              Q_ARG(QString, QString(serializedMessage)));
+    this->sendTextMessage(serializedMessage);
 }
 
 } // namespace joynr
