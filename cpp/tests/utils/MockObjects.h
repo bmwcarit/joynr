@@ -27,6 +27,7 @@
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
+#include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "QtCore"
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
@@ -763,6 +764,14 @@ public:
     }
     MOCK_METHOD3(getProviderParticipantId, QString(const QString& domain, const QString& interfaceName, const QString& authenticationToken));
     MOCK_METHOD4(getProviderParticipantId, QString(const QString& domain, const QString& interfaceName, const QString& authenticationToken, const QString& defaultValue));
+};
+
+class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
+public:
+    MOCK_METHOD2(filter,
+                 bool(
+                     const joynr::types::GpsLocation &location,
+                     const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
 
 #ifdef _MSC_VER

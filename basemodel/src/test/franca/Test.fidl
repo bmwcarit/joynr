@@ -356,10 +356,10 @@ interface test{
 	}
 
 	<**
-		@description Selective broadcast with one output parameter
-		@param country Only update location when in this country
-		@param startTime Start update at this time
-		@param endTime End update at this time
+		@description: Selective broadcast with one output parameter
+		@param: country Only update location when in this country
+		@param: startTime Start update at this time
+		@param: endTime End update at this time
 	**>
 	broadcast locationUpdateSelective selective {
 		out {
@@ -368,11 +368,11 @@ interface test{
 	}
 
 	<**
-		@description Selective broadcast with multiple output parameters
-		@param country Only update location when in this country
-		@param startTime Start update at this time
-		@param endTime End update at this time
-	<**
+		@description: Selective broadcast with multiple output parameters
+		@param: country Only update location when in this country
+		@param: startTime Start update at this time
+		@param: endTime End update at this time
+	**>
 	broadcast locationUpdateWithSpeedSelective selective {
 		out {
 			GpsLocation location

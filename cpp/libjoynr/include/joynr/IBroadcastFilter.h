@@ -20,6 +20,7 @@
 #define IBROADCASTFILTER_H
 
 #include "joynr/JoynrExport.h"
+#include "joynr/BroadcastFilterParameters.h"
 
 template <typename K, typename V>
 class QMap;
@@ -28,8 +29,6 @@ class QVariant;
 class QString;
 
 typedef QMap<QString, QVariant> QVariantMap;
-
-class BroadcastFilterParameters;
 
 namespace joynr
 {
