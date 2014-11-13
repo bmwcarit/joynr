@@ -29,4 +29,12 @@ JoynrRuntime* JoynrRuntime::createRuntime(const QString& pathToLibjoynrSettings,
     SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
     return JoynrClusterControllerRuntime::create(settings);
 }
+
+void JoynrRuntime::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
+{
+    if (!publicationManager) {
+        throw JoynrException("Exception in JoynrRuntime: PublicationManager not created yet.");
+    }
+    publicationManager->addBroadcastFilter(filter);
+}
 } // namespace joynr
