@@ -145,3 +145,47 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnEventTriggered) {
 
     provider->locationUpdateSelectiveEventOccured(gpsLocation1);
 }
+
+/**
+  * Trigger:    An event occurs. The filter chain has a positive result.
+  * Expected:   A broadcast publication is triggered
+  */
+TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
+
+    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
+                    Eq(providerParticipantId),
+                    Eq(proxyParticipantId),
+                    _,
+                    AllOf(
+                        A<SubscriptionPublication>(),
+                        Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
+                    ));
+
+    provider->locationUpdateSelectiveEventOccured(gpsLocation1);
+}
+
+/**
+  * Trigger:    An event occurs. The filter chain has a negative result.
+  * Expected:   A broadcast publication is triggered
+  */
+TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
+
+    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
+
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
+                    Eq(providerParticipantId),
+                    Eq(proxyParticipantId),
+                    _,
+                    AllOf(
+                        A<SubscriptionPublication>(),
+                        Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
+                    ))
+            .Times(Exactly(0));
+
+    provider->locationUpdateSelectiveEventOccured(gpsLocation1);
+}
+
