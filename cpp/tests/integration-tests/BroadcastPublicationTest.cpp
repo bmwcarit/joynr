@@ -34,12 +34,6 @@ using ::testing::InSequence;
 using namespace joynr;
 using namespace joynr::tests;
 
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->release(1);
-    return true;
-}
-
 /**
   * Is an integration test. Tests from Provider -> PublicationManager
   */
@@ -99,6 +93,18 @@ public:
     }
 
     void TearDown(){
+        delete publicationSender;
+
+        // The filter objects' destructors aren't executed at the end of the test, because gmock seems
+        // to still hold a reference internally. This leads to gmock reporting an error about leaked
+        // mock objects when leaving the scope of the test.
+        // --> Delete the pointers manually.
+
+        delete filter1.data();
+        filter1.clear();
+
+        delete filter2.data();
+        filter2.clear();
     }
 
 protected:
@@ -129,31 +135,13 @@ private:
   */
 TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnEventTriggered) {
 
-    // Use a semaphore to count and wait on calls to the filters
-    QSemaphore semaphore(0);
+    // It's only guaranteed that all filters are executed when they return true
+    // (When not returning true, filter chain execution is interrupted)
+    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    // Check also the order of filter calls
-    {
-        InSequence dummy;
-
-        EXPECT_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters)))
-                .WillRepeatedly(ReleaseSemaphore(&semaphore));
-        EXPECT_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters)))
-                .WillRepeatedly(ReleaseSemaphore(&semaphore));
-    }
+    EXPECT_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters)));
+    EXPECT_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters)));
 
     provider->locationUpdateSelectiveEventOccured(gpsLocation1);
-
-    ASSERT_TRUE(semaphore.tryAcquire(2, 4000));
-
-    // The filter objects' destructors aren't executed at the end of the test, because gmock seems
-    // to still hold a reference internally. This leads to gmock reporting an error about leaked
-    // mock objects when leaving the scope of the test.
-    // --> Delete the pointers manually.
-
-    delete filter1.data();
-    filter1.clear();
-
-    delete filter2.data();
-    filter2.clear();
 }
