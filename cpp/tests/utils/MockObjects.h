@@ -306,6 +306,13 @@ public:
     MOCK_METHOD0(publicationMissed, void());
 };
 
+class MockGpsDoubleSubscriptionListener
+        : public joynr::ISubscriptionListener<joynr::types::GpsLocation, double> {
+public:
+    MOCK_METHOD2(receive, void(joynr::types::GpsLocation value, double));
+    MOCK_METHOD0(publicationMissed, void());
+};
+
 class MockPublicationSender : public joynr::IPublicationSender {
 public:
     MOCK_METHOD4(
