@@ -31,7 +31,7 @@ SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString& subs
 {
 }
 
-void SubscriptionBroadcastListener::eventOccured(const QVariantMap& values)
+void SubscriptionBroadcastListener::eventOccured(const QList<QVariant>& values)
 {
     publicationManager.eventOccured(subscriptionId, values);
 }

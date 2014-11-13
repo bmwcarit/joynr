@@ -691,7 +691,7 @@ void PublicationManager::removeOnChangePublication(const QString& subscriptionId
 
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(const QString& subscriptionId,
-                                            const QVariantMap& eventValues)
+                                            const QList<QVariant>& eventValues)
 {
 
     BroadcastSubscriptionRequestInformation* subscriptionRequest =
@@ -863,7 +863,7 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     }
 }
 
-void PublicationManager::eventOccured(const QString& subscriptionId, const QVariantMap& values)
+void PublicationManager::eventOccured(const QString& subscriptionId, const QList<QVariant>& values)
 {
     LOG_DEBUG(logger,
               QString("eventOccured for broadcast subscription %1. Number of values: %2")

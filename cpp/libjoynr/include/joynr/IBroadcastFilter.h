@@ -44,7 +44,7 @@ public:
     {
     }
 
-    virtual bool filter(const QVariantMap& eventValues,
+    virtual bool filter(const QList<QVariant>& eventValues,
                         const BroadcastFilterParameters& filterParameters) = 0;
 
     const QString& getName()

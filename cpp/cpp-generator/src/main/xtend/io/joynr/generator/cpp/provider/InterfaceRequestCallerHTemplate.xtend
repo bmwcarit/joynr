@@ -44,7 +44,8 @@ class InterfaceRequestCallerHTemplate {
 		#include "joynr/RequestCaller.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include <QSharedPointer>
-		#include <QVariantMap>
+		#include <QList>
+		#include <QVariant>
 		
 		«getNamespaceStarter(serviceInterface)»
 	
@@ -72,7 +73,7 @@ class InterfaceRequestCallerHTemplate {
 				«ENDIF»
 			«ENDFOR»
 			«FOR broadcast: serviceInterface.broadcasts»
-				virtual void get«broadcast.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, QVariantMap& result);
+				virtual void get«broadcast.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, QList<QVariant>& result);
 			«ENDFOR»
 
 			void registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener);

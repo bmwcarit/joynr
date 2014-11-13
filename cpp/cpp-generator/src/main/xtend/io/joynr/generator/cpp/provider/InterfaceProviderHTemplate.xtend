@@ -96,7 +96,7 @@ class InterfaceProviderHTemplate {
 			*/
 			void «broadcastName»EventOccured(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
 			
-			virtual void get«broadcastName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, QVariantMap& result);
+			virtual void get«broadcastName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, QList<QVariant>& result);
 		«ENDFOR»
 
 	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);

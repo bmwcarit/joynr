@@ -145,7 +145,7 @@ public:
       * @param subscriptionId A subscription that was listening on the event
       * @param values The new event values
       */
-    virtual void eventOccured(const QString& subscriptionId, const QVariantMap& values);
+    virtual void eventOccured(const QString& subscriptionId, const QList<QVariant>& values);
 
     void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
@@ -251,7 +251,7 @@ private:
                                    SubscriptionRequestInformation* request,
                                    Publication* publication);
 
-    bool processFilterChain(const QString& subscriptionId, const QVariantMap& eventValues);
+    bool processFilterChain(const QString& subscriptionId, const QList<QVariant>& eventValues);
 };
 
 } // namespace joynr

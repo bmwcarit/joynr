@@ -28,12 +28,13 @@ class FilterTemplate  {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def getCommaSeperatedEventArgumentListFromQVariantMap(Iterable<FArgument> arguments) {
+	def getCommaSeperatedEventArgumentListFromQList(Iterable<FArgument> arguments) {
 		val returnStringBuilder = new StringBuilder();
+		var i = 0
 		for(FArgument argument : arguments){
-			returnStringBuilder.append("eventValues.value(\"");
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append("\").value<");
+			returnStringBuilder.append("eventValues[");
+			returnStringBuilder.append(i++);
+			returnStringBuilder.append("].value<");
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
 			returnStringBuilder.append(">(),\n");
 		}
@@ -84,14 +85,14 @@ class FilterTemplate  {
 		    DISALLOW_COPY_AND_ASSIGN(«className»);
 
 			virtual bool filter(
-					const QVariantMap& eventValues,
+					const QList<QVariant>& eventValues,
 					const BroadcastFilterParameters& filterParameters) {
 
 				«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
 				params.setFilterParameters(filterParameters.getFilterParameters());
 
 				return filter(
-						«getCommaSeperatedEventArgumentListFromQVariantMap(getOutputParameters(broadcast))»,
+						«getCommaSeperatedEventArgumentListFromQList(getOutputParameters(broadcast))»,
 						params);
 			}
 		};

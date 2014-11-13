@@ -44,7 +44,8 @@ class InterfaceRequestInterpreterCppTemplate {
 		#include "joynr/Util.h"
 		#include "joynr/RequestStatus.h"
 		#include <cassert>
-		#include <QVariantMap>
+		#include <QList>
+		#include <QVariant>
 		
 		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 			#include "«parameterType»"
@@ -119,7 +120,7 @@ class InterfaceRequestInterpreterCppTemplate {
 			«IF broadcasts.size > 0»
 				«FOR broadcast: broadcasts SEPARATOR "\n} else"»
 				if (methodName == "get«broadcast.name.toFirstUpper»"){
-						QVariantMap returnValue;
+						QList<QVariant> returnValue;
 						«requestCallerName»->get«broadcast.name.toFirstUpper»(status, returnValue);
 						// convert typed return value into variant
 						return QVariant::fromValue(returnValue);

@@ -158,12 +158,12 @@ public:
 
         QVariant response = subscriptionPublication.getResponse();
 
-        QVariantMap value = response.value<QVariantMap>();
+        QList<QVariant> value = response.value<QList<QVariant>>();
 
         QSharedPointer<BroadcastSubscriptionCallback<Ts...>> typedCallbackQsp =
                 callback.dynamicCast<BroadcastSubscriptionCallback<Ts...>>();
 
-        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(value.values());
+        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(value);
         auto func = std::mem_fn(&BroadcastSubscriptionCallback<Ts...>::eventOccured);
 
         Util::expandTupleIntoFunctionArguments(func, typedCallbackQsp, values);
