@@ -23,9 +23,9 @@ import io.joynr.pubsub.SubscriptionQos;
 
 public class SubscriptionRequest implements JoynrMessageType {
 
-    private String subscriptionId;
-    private String subscribedToName;
-    private SubscriptionQos qos;
+    protected String subscriptionId;
+    protected String subscribedToName;
+    protected SubscriptionQos qos;
 
     /**
      * \class SubscriptionRequest \brief SubscriptionRequest stores the information that is necessary to store a
