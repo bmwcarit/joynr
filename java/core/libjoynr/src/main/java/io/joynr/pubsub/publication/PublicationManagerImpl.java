@@ -31,11 +31,13 @@ import io.joynr.pubsub.SubscriptionQos;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
@@ -77,10 +79,12 @@ public class PublicationManagerImpl implements PublicationManager {
         private String providerParticipantId;
         private String proxyParticipantId;
         private SubscriptionRequest subscriptionRequest;
+        public PubSubState pubState;
 
         PublicationInformation(String providerParticipantId,
                                String proxyParticipantId,
                                SubscriptionRequest subscriptionRequest) {
+            pubState = new PubSubState();
             this.setProviderParticipantId(providerParticipantId);
             this.subscriptionRequest = subscriptionRequest;
             this.setProxyParticipantId(proxyParticipantId);
@@ -166,6 +170,66 @@ public class PublicationManagerImpl implements PublicationManager {
         this.unregisterOnChange = Maps.newConcurrentMap();
     }
 
+    private void handleSubscriptionRequest(PublicationInformation publicationInformation,
+                                           SubscriptionRequest subscriptionRequest,
+                                           RequestCaller requestCaller) {
+
+        final String subscriptionId = subscriptionRequest.getSubscriptionId();
+        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
+
+        try {
+            Method method = findGetterForAttributeName(requestCaller.getClass(),
+                                                       subscriptionRequest.getSubscribedToName());
+
+            // Send initial publication
+            triggerPublication(publicationInformation, requestCaller, method);
+
+            boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
+            boolean isKeepAliveSubscription = subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos;
+
+            if (hasSubscriptionHeartBeat || isKeepAliveSubscription) {
+                final PublicationTimer timer = new PublicationTimer(publicationInformation.providerParticipantId,
+                                                                    publicationInformation.proxyParticipantId,
+                                                                    method,
+                                                                    publicationInformation.pubState,
+                                                                    subscriptionRequest,
+                                                                    requestCaller,
+                                                                    requestReplySender,
+                                                                    attributePollInterpreter);
+
+                timer.startTimer();
+                publicationTimers.putIfAbsent(subscriptionId, timer);
+            }
+
+            // Handle onChange subscriptions
+            if (subscriptionQos instanceof OnChangeSubscriptionQos) {
+                AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
+                String attributeName = subscriptionRequest.getSubscribedToName();
+                requestCaller.registerAttributeListener(attributeName, attributeListener);
+                unregisterOnChange.putIfAbsent(subscriptionId, new UnregisterOnChange(requestCaller,
+                                                                                      attributeName,
+                                                                                      attributeListener));
+            }
+        } catch (NoSuchMethodException e) {
+            cancelPublicationCreation(subscriptionId);
+            logger.error("Error subscribing: {}. The provider does not have the requested attribute",
+                         subscriptionRequest);
+        } catch (IllegalArgumentException e) {
+            cancelPublicationCreation(subscriptionId);
+            logger.error("Error subscribing: " + subscriptionRequest, e);
+
+        }
+
+    }
+
+    private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
+                                                    String providerParticipantId,
+                                                    BroadcastSubscriptionRequest subscriptionRequest,
+                                                    RequestCaller requestCaller) {
+        logger.info("adding broadcast publication: " + subscriptionRequest.toString());
+
+    }
+
     @Override
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
@@ -190,81 +254,45 @@ public class PublicationManagerImpl implements PublicationManager {
             return;
         }
 
-        PubSubState pubState = new PubSubState();
+        logger.info("adding publication: " + subscriptionRequest.toString());
         PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                    proxyParticipantId,
                                                                                    subscriptionRequest);
-
-        try {
-            logger.info("adding publication: " + subscriptionRequest.toString());
-            PublicationInformation existingSubscriptionRequest = subscriptionId2PublicationInformation.putIfAbsent(subscriptionId,
-                                                                                                                   publicationInformation);
-            if (existingSubscriptionRequest != null) {
-                // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
-                logger.debug("there already was a SubscriptionRequest with that subscriptionId in the map");
-            }
-            PubSubState existingPubSubState = publicationStates.putIfAbsent(subscriptionId, pubState);
-            if (existingPubSubState != null) {
-                // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
-                logger.debug("there already was a pubState with that subscriptionId in the map");
-            }
-
-            Method method = findGetterForAttributeName(requestCaller.getClass(),
-                                                       subscriptionRequest.getSubscribedToName());
-
-            // Send initial publication
-            triggerPublication(publicationInformation, requestCaller, method);
-
-            boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
-            boolean isKeepAliveSubscription = subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos;
-
-            if (hasSubscriptionHeartBeat || isKeepAliveSubscription) {
-                final PublicationTimer timer = new PublicationTimer(providerParticipantId,
-                                                                    proxyParticipantId,
-                                                                    method,
-                                                                    pubState,
-                                                                    subscriptionRequest,
-                                                                    requestCaller,
-                                                                    requestReplySender,
-                                                                    attributePollInterpreter);
-
-                timer.startTimer();
-                publicationTimers.putIfAbsent(subscriptionId, timer);
-            }
-
-            // Handle onChange subscriptions
-            if (subscriptionQos instanceof OnChangeSubscriptionQos) {
-                AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
-                String attributeName = subscriptionRequest.getSubscribedToName();
-                requestCaller.registerAttributeListener(attributeName, attributeListener);
-                unregisterOnChange.putIfAbsent(subscriptionId, new UnregisterOnChange(requestCaller,
-                                                                                      attributeName,
-                                                                                      attributeListener));
-            }
-
-            if (subscriptionQos.getExpiryDate() != SubscriptionQos.NO_EXPIRY_DATE) {
-                // Create a runnable to remove the publication when the subscription expires
-                ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        logger.info("Publication expired...");
-                        removePublication(subscriptionId);
-                    }
-
-                }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
-                subscriptionEndFutures.putIfAbsent(subscriptionId, subscriptionEndFuture);
-            }
-            logger.info("publication added: " + subscriptionRequest.toString());
-
-        } catch (NoSuchMethodException e) {
-            cancelPublicationCreation(subscriptionId);
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            cancelPublicationCreation(subscriptionId);
-            e.printStackTrace();
+        PublicationInformation existingSubscriptionRequest = subscriptionId2PublicationInformation.putIfAbsent(subscriptionId,
+                                                                                                               publicationInformation);
+        if (existingSubscriptionRequest != null) {
+            // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
+            logger.debug("there already was a SubscriptionRequest with that subscriptionId in the map");
+        }
+        PubSubState existingPubSubState = publicationStates.putIfAbsent(subscriptionId, publicationInformation.pubState);
+        if (existingPubSubState != null) {
+            // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
+            logger.debug("there already was a pubState with that subscriptionId in the map");
         }
 
+        if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
+            handleBroadcastSubscriptionRequest(proxyParticipantId,
+                                               providerParticipantId,
+                                               (BroadcastSubscriptionRequest) subscriptionRequest,
+                                               requestCaller);
+        } else {
+            handleSubscriptionRequest(publicationInformation, subscriptionRequest, requestCaller);
+        }
+
+        if (subscriptionQos.getExpiryDate() != SubscriptionQos.NO_EXPIRY_DATE) {
+            // Create a runnable to remove the publication when the subscription expires
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    logger.info("Publication expired...");
+                    removePublication(subscriptionId);
+                }
+
+            }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
+            subscriptionEndFutures.putIfAbsent(subscriptionId, subscriptionEndFuture);
+        }
+        logger.info("publication added: " + subscriptionRequest.toString());
     }
 
     private void cancelPublicationCreation(String subscriptionId) {
@@ -384,6 +412,29 @@ public class PublicationManagerImpl implements PublicationManager {
             return;
         }
 
+    }
+
+    @Override
+    public void eventOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values) {
+        if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
+            PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+
+            if (processFilterChain(subscriptionId, values)) {
+                sendPublication(values, publicationInformation);
+                logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                            subscriptionId);
+            }
+
+        } else {
+            logger.error("subscription {} has expired but eventOccurred has been called", subscriptionId);
+            return;
+        }
+
+    }
+
+    private boolean processFilterChain(String subscriptionId, Object[] values) {
+        // TODO Auto-generated method stub
+        return true;
     }
 
     private void sendPublication(Object value, PublicationInformation publicationInformation) {

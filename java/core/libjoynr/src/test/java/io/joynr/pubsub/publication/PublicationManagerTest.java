@@ -19,6 +19,7 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -26,6 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
@@ -33,6 +36,7 @@ import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
@@ -40,6 +44,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import joynr.BroadcastSubscriptionRequest;
+import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
@@ -51,12 +57,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Multimap;
 
 @SuppressWarnings("unchecked")
@@ -89,6 +98,7 @@ public class PublicationManagerTest {
     AttributePollInterpreter attributePollInterpreter;
 
     private RequestCaller requestCaller;
+
     @Mock
     private SubscriptionRequest subscriptionRequest;
 
@@ -109,8 +119,10 @@ public class PublicationManagerTest {
 
     @Mock
     private ScheduledFuture scheduledFuture;
+
     @Mock
     private PublicationInformation subscriptionRequest1;
+
     @Mock
     private PublicationInformation subscriptionRequest2;
 
@@ -196,7 +208,6 @@ public class PublicationManagerTest {
     }
 
     private void verifyPublicationIsAdded(boolean expectCleanupTask) {
-        verify(subscriptionRequest, Mockito.atLeast(1)).getSubscriptionId();
         verify(subscriptionId2SubscriptionRequest).putIfAbsent(eq(SUBSCRIPTION_ID), eq(publicationInformation));
         verify(publicationStates).putIfAbsent(eq(SUBSCRIPTION_ID), any(PubSubState.class));
         verify(publicationTimers).putIfAbsent(eq(SUBSCRIPTION_ID), any(PublicationTimer.class));
@@ -285,5 +296,43 @@ public class PublicationManagerTest {
 
         verify(queuedSubscriptionRequests).remove(providerId, publicationInformation);
         verifyPublicationIsAdded(true);
+    }
+
+    @Test
+    public void broadcastPublicationIsSent() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                            JsonGenerationException, JsonMappingException, IOException {
+
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+
+        long minInterval_ms = 0;
+        long ttl = 1000;
+        SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+        SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
+                                                                                   "subscribedToName",
+                                                                                   qos);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        Object[] eventValues = { "value1", "value2" };
+
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(),
+                                         new ArrayList<BroadcastFilter>(),
+                                         eventValues);
+
+        ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
+        ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
+
+        verify(messageSender).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(PROXY_PARTICIPANT_ID),
+                                                          publicationCaptured.capture(),
+                                                          qosCaptured.capture());
+
+        Object[] response = (Object[]) publicationCaptured.getValue().getResponse();
+        assertEquals(eventValues[0], response[0]);
+        assertEquals(eventValues[1], response[1]);
+        assertEquals(ttl, qosCaptured.getValue().getRoundTripTtl_ms());
+
     }
 }
