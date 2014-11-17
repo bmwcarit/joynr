@@ -184,7 +184,7 @@ else()
     # ...and for install tree
     install(
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
