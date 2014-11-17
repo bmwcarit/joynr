@@ -92,7 +92,7 @@ public class PushingPublicationTest {
                        JsonMappingException, IOException {
         provider = new PubSubTestProviderImpl();
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, requestReplySender, cleanupScheduler);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";
@@ -115,7 +115,7 @@ public class PushingPublicationTest {
 
     void setupMixedQos() {
         long minInterval_ms = 10;
-        long maxInterval_ms = 3000; //TODO Also write this test with -1
+        long maxInterval_ms = 3000; // TODO Also write this test with -1
 
         long endDate = System.currentTimeMillis() + 19000;
         long alertInterval_ms = 500;
@@ -161,11 +161,7 @@ public class PushingPublicationTest {
                                                   JsonMappingException, IOException {
         setupMixedQos();
 
-        publicationManager.addSubscriptionRequest(proxyId,
-                                                  providerId,
-                                                  subscriptionRequest,
-                                                  requestCaller,
-                                                  requestReplySender);
+        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
         Thread.sleep(100);
         provider.setTestAttribute(testAttribute);
         Thread.sleep(1500);
@@ -186,14 +182,8 @@ public class PushingPublicationTest {
                                                                              JsonMappingException, IOException {
         setupPureOnChangedQos();
 
-        publicationManager.addSubscriptionRequest(proxyId,
-                                                  providerId,
-                                                  subscriptionRequest,
-                                                  requestCaller,
-                                                  requestReplySender);
-        Thread.sleep(100);
+        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
         provider.setTestAttribute(testAttribute);
-        Thread.sleep(1500);
 
         ArgumentCaptor<SubscriptionPublication> sentPublication = ArgumentCaptor.forClass(SubscriptionPublication.class);
         verify(requestReplySender, times(2)).sendSubscriptionPublication(eq(providerId),

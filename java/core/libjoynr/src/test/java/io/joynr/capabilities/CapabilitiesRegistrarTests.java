@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
@@ -53,8 +52,7 @@ public class CapabilitiesRegistrarTests {
 
     @Mock
     private RequestCaller requestCaller;
-    @Mock
-    private RequestReplySender requestReplySender;
+
     @Mock
     private PublicationManager publicationManager;
 
@@ -83,7 +81,6 @@ public class CapabilitiesRegistrarTests {
         registrar = new CapabilitiesRegistrarImpl(localCapabilitiesDirectory,
                                                   requestCallerFactory,
                                                   dispatcher,
-                                                  requestReplySender,
                                                   publicationManager,
                                                   participantIdStorage);
     }

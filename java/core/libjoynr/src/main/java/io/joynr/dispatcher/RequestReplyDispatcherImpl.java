@@ -250,6 +250,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     }
 
+    @Override
     public void removeRequestCaller(String participantId) {
         synchronized (requestCallerDirectory) {
             requestCallerDirectory.remove(participantId);
@@ -348,8 +349,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 publicationManager.addSubscriptionRequest(fromParticipantId,
                                                           toParticipantId,
                                                           subscriptionRequest,
-                                                          requestCaller,
-                                                          messageSender);
+                                                          requestCaller);
             } catch (JsonParseException e) {
                 logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
                              new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
@@ -527,6 +527,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         callBack.messageCallBack(reply);
     }
 
+    @Override
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN Dispatcher");
         shutdown = true;

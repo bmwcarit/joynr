@@ -21,9 +21,15 @@ package io.joynr.pubsub.publication;
 
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
+import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.exceptions.JoynrException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,11 +37,15 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
+import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -61,6 +71,7 @@ public class PublicationManagerImpl implements PublicationManager {
 
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
+    private RequestReplySender requestReplySender;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -119,8 +130,10 @@ public class PublicationManagerImpl implements PublicationManager {
 
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
+                                  RequestReplySender requestReplySender,
                                   @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
         super();
+        this.requestReplySender = requestReplySender;
         this.cleanupScheduler = cleanupScheduler;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
@@ -138,6 +151,7 @@ public class PublicationManagerImpl implements PublicationManager {
                            ConcurrentMap<String, PublicationTimer> publicationTimers,
                            ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                            AttributePollInterpreter attributePollInterpreter,
+                           RequestReplySender requestReplySender,
                            ScheduledExecutorService cleanupScheduler) {
         super();
         this.queuedSubscriptionRequests = queuedSubscriptionRequests;
@@ -146,6 +160,7 @@ public class PublicationManagerImpl implements PublicationManager {
         this.publicationTimers = publicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
         this.attributePollInterpreter = attributePollInterpreter;
+        this.requestReplySender = requestReplySender;
         this.cleanupScheduler = cleanupScheduler;
 
         this.unregisterOnChange = Maps.newConcurrentMap();
@@ -155,8 +170,7 @@ public class PublicationManagerImpl implements PublicationManager {
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest,
-                                       RequestCaller requestCaller,
-                                       RequestReplySender requestReplySender) {
+                                       RequestCaller requestCaller) {
 
         // Check that this is a valid subscription
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
@@ -177,12 +191,14 @@ public class PublicationManagerImpl implements PublicationManager {
         }
 
         PubSubState pubState = new PubSubState();
+        PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
+                                                                                   proxyParticipantId,
+                                                                                   subscriptionRequest);
+
         try {
             logger.info("adding publication: " + subscriptionRequest.toString());
             PublicationInformation existingSubscriptionRequest = subscriptionId2PublicationInformation.putIfAbsent(subscriptionId,
-                                                                                                                   new PublicationInformation(providerParticipantId,
-                                                                                                                                              proxyParticipantId,
-                                                                                                                                              subscriptionRequest));
+                                                                                                                   publicationInformation);
             if (existingSubscriptionRequest != null) {
                 // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
                 logger.debug("there already was a SubscriptionRequest with that subscriptionId in the map");
@@ -193,18 +209,28 @@ public class PublicationManagerImpl implements PublicationManager {
                 logger.debug("there already was a pubState with that subscriptionId in the map");
             }
 
-            // TODO only use timer for periodic subscriptions
-            final PublicationTimer timer = new PublicationTimer(providerParticipantId,
-                                                                proxyParticipantId,
-                                                                pubState,
-                                                                subscriptionRequest,
-                                                                requestCaller,
-                                                                requestReplySender,
-                                                                attributePollInterpreter);
+            Method method = findGetterForAttributeName(requestCaller.getClass(),
+                                                       subscriptionRequest.getSubscribedToName());
 
-            timer.startTimer();
+            // Send initial publication
+            triggerPublication(publicationInformation, requestCaller, method);
 
-            publicationTimers.putIfAbsent(subscriptionId, timer);
+            boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
+            boolean isKeepAliveSubscription = subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos;
+
+            if (hasSubscriptionHeartBeat || isKeepAliveSubscription) {
+                final PublicationTimer timer = new PublicationTimer(providerParticipantId,
+                                                                    proxyParticipantId,
+                                                                    method,
+                                                                    pubState,
+                                                                    subscriptionRequest,
+                                                                    requestCaller,
+                                                                    requestReplySender,
+                                                                    attributePollInterpreter);
+
+                timer.startTimer();
+                publicationTimers.putIfAbsent(subscriptionId, timer);
+            }
 
             // Handle onChange subscriptions
             if (subscriptionQos instanceof OnChangeSubscriptionQos) {
@@ -323,17 +349,14 @@ public class PublicationManagerImpl implements PublicationManager {
     }
 
     @Override
-    public void restoreQueuedSubscription(String providerId,
-                                          RequestCaller requestCaller,
-                                          RequestReplySender requestReplySender) {
+    public void restoreQueuedSubscription(String providerId, RequestCaller requestCaller) {
         Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
         for (PublicationInformation publicInformation : queuedRequests) {
             if (System.currentTimeMillis() < publicInformation.subscriptionRequest.getQos().getExpiryDate()) {
                 addSubscriptionRequest(publicInformation.getProxyParticipantId(),
                                        publicInformation.getProviderParticipantId(),
                                        publicInformation.subscriptionRequest,
-                                       requestCaller,
-                                       requestReplySender);
+                                       requestCaller);
             }
             queuedSubscriptionRequests.remove(providerId, publicInformation);
         }
@@ -341,16 +364,61 @@ public class PublicationManagerImpl implements PublicationManager {
 
     @Override
     public void attributeValueChanged(String subscriptionId, Object value) {
-        PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
 
-        if (publicationTimer == null) {
+        if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
+            PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+
+            PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
+            if (publicationTimer != null) {
+                // used by OnChangedWithKeepAlive
+                publicationTimer.sendPublicationNow(value);
+            } else {
+                sendPublication(value, publicationInformation);
+            }
+
+            logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                        subscriptionId);
+
+        } else {
             logger.error("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
             return;
         }
 
-        logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
-                    subscriptionId);
-        publicationTimer.sendPublicationNow(value);
+    }
+
+    private void sendPublication(Object value, PublicationInformation publicationInformation) {
+        SubscriptionPublication publication = new SubscriptionPublication(value,
+                                                                          publicationInformation.getSubscriptionId());
+        try {
+            MessagingQos messagingQos = new MessagingQos();
+            messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtl());
+            requestReplySender.sendSubscriptionPublication(publicationInformation.providerParticipantId,
+                                                           publicationInformation.proxyParticipantId,
+                                                           publication,
+                                                           messagingQos);
+            // TODO handle exceptions during publication. See JOYNR-2113
+        } catch (JoynrException e) {
+            logger.error("sendPublication error: {}", e.getMessage());
+        } catch (JsonGenerationException e) {
+            logger.error("sendPublication error: {}", e.getMessage());
+        } catch (JsonMappingException e) {
+            logger.error("sendPublication error: {}", e.getMessage());
+        } catch (IOException e) {
+            logger.error("sendPublication error: {}", e.getMessage());
+        }
+    }
+
+    private void triggerPublication(PublicationInformation publicationInformation,
+                                    RequestCaller requestCaller,
+                                    Method method) {
+        sendPublication(attributePollInterpreter.execute(requestCaller, method), publicationInformation);
+    }
+
+    private Method findGetterForAttributeName(Class<?> clazz, String attributeName) throws NoSuchMethodException {
+        String attributeGetterName = "get" + attributeName.toUpperCase().charAt(0)
+                + attributeName.subSequence(1, attributeName.length());
+        return ReflectionUtils.findMethodByParamTypes(clazz, attributeGetterName, new Class[]{});
+
     }
 
     @Override

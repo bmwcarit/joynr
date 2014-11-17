@@ -21,7 +21,6 @@ package io.joynr.pubsub.publication;
 
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -76,6 +75,7 @@ public class PublicationTimer extends PubSubTimerBase {
      */
     public PublicationTimer(String providerParticipantId,
                             String proxyParticipantId,
+                            Method method,
                             PubSubState state,
                             SubscriptionRequest subscriptionRequest,
                             RequestCaller requestCaller,
@@ -99,15 +99,7 @@ public class PublicationTimer extends PubSubTimerBase {
         this.requestCaller = requestCaller;
         this.requestReplySender = messageSender;
         this.attributePollInterpreter = attributePollInterpreter;
-        findGetterForAttributeName();
-
-    }
-
-    private void findGetterForAttributeName() throws NoSuchMethodException {
-        String attributeName = subscriptionRequest.getSubscribedToName();
-        String attributeGetterName = "get" + attributeName.toUpperCase().charAt(0)
-                + attributeName.subSequence(1, attributeName.length());
-        method = ReflectionUtils.findMethodByParamTypes(requestCaller.getClass(), attributeGetterName, new Class[]{});
+        this.method = method;
 
     }
 
@@ -194,13 +186,8 @@ public class PublicationTimer extends PubSubTimerBase {
         return new PublicationTask();
     }
 
-    public void sendInitialPublication() {
-        sendPublication();
-    }
-
     @Override
     public void startTimer() {
-        sendInitialPublication();
         if (period > 0) {
             super.startTimer(period);
         }
@@ -215,7 +202,6 @@ public class PublicationTimer extends PubSubTimerBase {
             return;
         }
 
-        // TODO dka serialization issue JOYN-1351
         SubscriptionPublication publication = new SubscriptionPublication(value,
                                                                           subscriptionRequest.getSubscriptionId());
         sendPublication(publication);

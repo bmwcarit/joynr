@@ -29,7 +29,7 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
     /**
      * \class BroadcastSubscriptionRequest \brief BroadcastSubscriptionRequest stores the information that is necessary
-     * to store a a slective broadcast request on subscriber side, while Arbitration is handled.
+     * to store a a selective broadcast request on subscriber side, while Arbitration is handled.
      */
 
     public BroadcastSubscriptionRequest() {

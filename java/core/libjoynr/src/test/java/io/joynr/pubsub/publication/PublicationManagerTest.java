@@ -125,6 +125,7 @@ public class PublicationManagerTest {
                                                         publicationTimers,
                                                         subscriptionEndFutures,
                                                         attributePollInterpreter,
+                                                        messageSender,
                                                         cleanupScheduler);
         subscriptionQos = new PeriodicSubscriptionQos(400, END_DATE_MS, 500, 1000);
         subscriptionQosWithoutExpiryDate = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
@@ -144,8 +145,7 @@ public class PublicationManagerTest {
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
                                                   PROVIDER_PARTICIPANT_ID,
                                                   subscriptionRequest,
-                                                  requestCaller,
-                                                  messageSender);
+                                                  requestCaller);
         verifyPublicationIsAdded(true);
     }
 
@@ -173,13 +173,13 @@ public class PublicationManagerTest {
             publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
                                                       PROVIDER_PARTICIPANT_ID,
                                                       subscriptionRequest,
-                                                      requestCaller,
-                                                      messageSender);
+                                                      requestCaller);
             verifyPublicationIsAdded(false);
             Assert.assertEquals(1, count[0]);
 
             boolean correctUpdate = false;
-            //the publication is done completely asynchronously in an own thread. Thus, we cannot give any timing guarantees
+            // the publication is done completely asynchronously in an own thread. Thus, we cannot give any timing
+            // guarantees
             for (int i = 0; i < 5; i++) {
                 count[0] = 0;
                 Thread.sleep(n * subscriptionQosWithoutExpiryDate.getPeriod());
@@ -281,7 +281,7 @@ public class PublicationManagerTest {
                .thenReturn(new PeriodicSubscriptionQos(1000, System.currentTimeMillis() + 30000, 1500, 1000));
         addPublicationMockBehaviour(subscriptionQos);
 
-        publicationManager.restoreQueuedSubscription(providerId, requestCaller, messageSender);
+        publicationManager.restoreQueuedSubscription(providerId, requestCaller);
 
         verify(queuedSubscriptionRequests).remove(providerId, publicationInformation);
         verifyPublicationIsAdded(true);

@@ -20,7 +20,6 @@ package io.joynr.pubsub.publication;
  */
 
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
 import joynr.SubscriptionRequest;
 
 public interface PublicationManager {
@@ -44,8 +43,7 @@ public interface PublicationManager {
     void addSubscriptionRequest(String fromParticipantId,
                                 String toParticipantId,
                                 SubscriptionRequest subscriptionRequest,
-                                RequestCaller requestCaller,
-                                RequestReplySender requestReplySender);
+                                RequestCaller requestCaller);
 
     /**
      * @brief Stops the sending of publications
@@ -69,9 +67,7 @@ public interface PublicationManager {
      * @param requestCaller
      * @param publicationSender
      */
-    void restoreQueuedSubscription(final String providerId,
-                                   RequestCaller requestCaller,
-                                   RequestReplySender requestReplySender);
+    void restoreQueuedSubscription(final String providerId, RequestCaller requestCaller);
 
     void attributeValueChanged(String subscriptionId, Object value);
 

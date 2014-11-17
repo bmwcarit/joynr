@@ -21,7 +21,6 @@ package io.joynr.capabilities;
 
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
@@ -36,21 +35,18 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private RequestCallerFactory requestCallerFactory;
     private RequestReplyDispatcher dispatcher;
     private final PublicationManager publicationManager;
-    private final RequestReplySender requestReplySender;
     private ParticipantIdStorage participantIdStorage;
 
     @Inject
     public CapabilitiesRegistrarImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                      RequestCallerFactory requestCallerFactory,
                                      RequestReplyDispatcher dispatcher,
-                                     RequestReplySender requestReplySender,
                                      PublicationManager publicationManager,
                                      ParticipantIdStorage participantIdStorage) {
         super();
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.requestCallerFactory = requestCallerFactory;
         this.dispatcher = dispatcher;
-        this.requestReplySender = requestReplySender;
         this.publicationManager = publicationManager;
         this.participantIdStorage = participantIdStorage;
     }
@@ -78,7 +74,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         dispatcher.addRequestCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
         // TODO write a test for subscription restoration
-        publicationManager.restoreQueuedSubscription(participantId, requestCaller, requestReplySender);
+        publicationManager.restoreQueuedSubscription(participantId, requestCaller);
         return ret;
     }
 

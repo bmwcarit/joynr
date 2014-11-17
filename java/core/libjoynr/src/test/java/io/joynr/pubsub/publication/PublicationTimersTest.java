@@ -104,7 +104,7 @@ public class PublicationTimersTest {
         requestCallerFactory = new RequestCallerFactory();
 
         requestCaller = requestCallerFactory.create(provider, testProxy.class);
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
     }
 
     private long getExpiryDate() {
@@ -146,11 +146,7 @@ public class PublicationTimersTest {
                                             Mockito.any(MessagingQos.class));
 
         qos.setExpiryDate(getExpiryDate());
-        publicationManager.addSubscriptionRequest(proxyId,
-                                                  providerId,
-                                                  subscriptionRequest,
-                                                  requestCaller,
-                                                  messageSender);
+        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
 
         // the publication timer will send one publ ication at t=0, and then 5 further publications within the time
         // alloted
