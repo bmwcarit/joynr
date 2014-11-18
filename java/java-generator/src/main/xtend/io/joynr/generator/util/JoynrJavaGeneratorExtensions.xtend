@@ -30,6 +30,7 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FBroadcast
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -186,6 +187,22 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			returnStringBuilder.append(getMappedDatatypeOrList(param));
 			returnStringBuilder.append(" ");
 			returnStringBuilder.append(param.joynrName);
+			returnStringBuilder.append(", ");
+		}
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
+	}
+
+	def getCommaSeperatedTypedFilterParameterList(FBroadcast broadcast) {
+		val returnStringBuilder = new StringBuilder();
+		for (filterParameter : getFilterParameters(broadcast)) {
+			returnStringBuilder.append("Object ");
+			returnStringBuilder.append(filterParameter);
 			returnStringBuilder.append(", ");
 		}
 		val returnString = returnStringBuilder.toString();

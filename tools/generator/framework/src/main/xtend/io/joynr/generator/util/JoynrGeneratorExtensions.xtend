@@ -211,6 +211,8 @@ abstract class JoynrGeneratorExtensions {
 			commaSeparatedParams.append(getMappedDatatypeOrList(parameter));
 			if (constRef) {
 				commaSeparatedParams.append("& ")
+			} else {
+				commaSeparatedParams.append(" ")
 			}
 			commaSeparatedParams.append(parameter.name);
 			commaSeparatedParams.append(",");
@@ -221,6 +223,21 @@ abstract class JoynrGeneratorExtensions {
 		}
 		else{
 			return returnString.substring(0, returnString.length() - 1); //remove the last ","
+		}
+	}
+	
+		def String getOutputParametersCommaSeparated(FBroadcast broadcast) {
+		val commaSeparatedParams = new StringBuilder();
+		for (parameter : getOutputParameters(broadcast)) {
+			commaSeparatedParams.append(parameter.name);
+			commaSeparatedParams.append(", ");
+		}
+		val returnString = commaSeparatedParams.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ","
 		}
 	}
 
