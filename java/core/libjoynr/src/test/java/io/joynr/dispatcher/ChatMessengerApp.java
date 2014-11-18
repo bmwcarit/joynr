@@ -23,6 +23,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -96,6 +97,18 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
 
         @Override
         public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
             // TODO Auto-generated method stub
 
         }
@@ -175,6 +188,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("TestScheduler-%d").build();
         scheduler = Executors.newScheduledThreadPool(1, namedThreadFactory);
         scheduler.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 getUserInput();
             }

@@ -91,6 +91,14 @@ class InterfaceAbstractProviderTemplate {
 			«ENDIF»
 		«ENDFOR»
 		
+		«FOR broadcast: serviceInterface.broadcasts»
+			«var broadcastName = broadcast.joynrName»
+			public void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
+			    onEventOccurred("«broadcastName»", broadcastFilters, «getOutputParametersCommaSeparated(broadcast)»);
+			}
+			
+		«ENDFOR»
+		
 			@Override
 			public ProviderQos getProviderQos() {
 				return providerQos;

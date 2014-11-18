@@ -45,6 +45,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -306,6 +307,18 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
+        }
+
+        @Override
+        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+            // TODO Auto-generated method stub
+
         }
 
         @Override

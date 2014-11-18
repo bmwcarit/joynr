@@ -20,8 +20,11 @@ package io.joynr.provider;
  */
 
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,9 +35,13 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractJoynrProvider.class);
 
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
+    ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
+    protected List<BroadcastFilter> broadcastFilters;
 
     public AbstractJoynrProvider() {
         attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
+        broadcastListeners = new ConcurrentHashMap<String, List<BroadcastListener>>();
+        broadcastFilters = new ArrayList<BroadcastFilter>();
     }
 
     public void onAttributeValueChanged(String attributeName, Object value) {
@@ -45,6 +52,18 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         synchronized (listeners) {
             for (AttributeListener listener : listeners) {
                 listener.attributeValueChanged(value);
+            }
+        }
+    }
+
+    public void onEventOccurred(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+        if (!broadcastListeners.containsKey(broadcastName)) {
+            return;
+        }
+        List<BroadcastListener> listeners = broadcastListeners.get(broadcastName);
+        synchronized (listeners) {
+            for (BroadcastListener listener : listeners) {
+                listener.eventOccurred(broadcastFilters, values);
             }
         }
     }
@@ -74,6 +93,41 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
                 return;
             }
         }
+    }
+
+    @Override
+    public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+        broadcastListeners.putIfAbsent(broadcastName, new ArrayList<BroadcastListener>());
+        List<BroadcastListener> listeners = broadcastListeners.get(broadcastName);
+        synchronized (listeners) {
+            listeners.add(broadcastListener);
+        }
+    }
+
+    @Override
+    public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+        List<BroadcastListener> listeners = broadcastListeners.get(broadcastName);
+        if (listeners == null) {
+            LOG.error("trying to unregister a listener for broadcast \"" + broadcastName
+                    + "\" that was never registered");
+            return;
+        }
+        synchronized (listeners) {
+            boolean success = listeners.remove(broadcastListener);
+            if (!success) {
+                LOG.error("trying to unregister a listener for broadcast \"" + broadcastName
+                        + "\" that was never registered");
+                return;
+            }
+        }
+    }
+
+    public void addBroadcastFilter(BroadcastFilter filter) {
+        broadcastFilters.add(filter);
+    }
+
+    public void addBroadcastFilter(BroadcastFilter... filters) {
+        broadcastFilters.addAll(Arrays.asList(filters));
     }
 
 }

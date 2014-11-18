@@ -1,4 +1,6 @@
-package io.joynr.provider;
+package io.joynr.pubsub.publication;
+
+import java.util.List;
 
 /*
  * #%L
@@ -19,19 +21,18 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastListener;
-import joynr.types.ProviderQos;
+public class BroadcastListenerImpl implements BroadcastListener {
 
-public interface JoynrProvider {
-    ProviderQos getProviderQos();
+    private final String subscriptionId;
+    private final PublicationManagerImpl publicationManagerImpl;
 
-    void registerAttributeListener(String attributeName, AttributeListener attributeListener);
+    public BroadcastListenerImpl(String subscriptionId, PublicationManagerImpl publicationManagerImpl) {
+        this.subscriptionId = subscriptionId;
+        this.publicationManagerImpl = publicationManagerImpl;
+    }
 
-    void unregisterAttributeListener(String attributeName, AttributeListener attributeListener);
-
-    void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
-
-    void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
-
+    @Override
+    public void eventOccurred(List<BroadcastFilter> filters, Object... values) {
+        publicationManagerImpl.eventOccurred(subscriptionId, filters, values);
+    }
 }
