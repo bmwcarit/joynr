@@ -36,8 +36,17 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
         super();
     }
 
-    public BroadcastSubscriptionRequest(String subscriptionId, String subscribedToName, SubscriptionQos qos) {
+    public BroadcastSubscriptionRequest(String subscriptionId,
+                                        String subscribedToName,
+                                        Map<String, Object> filterParameters,
+                                        SubscriptionQos qos) {
         super(subscriptionId, subscribedToName, qos);
+        this.filterParameters = filterParameters;
+
+    }
+
+    public Map<String, Object> getFilterParameters() {
+        return filterParameters;
     }
 
     @Override
@@ -45,22 +54,4 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
         return "BroadcastSubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", subscribedToName="
                 + subscribedToName + ", filterParameters=" + filterParameters + "]";
     }
-
-    @Override
-    public void setQos(final SubscriptionQos qos) {
-        if (qos instanceof OnChangeSubscriptionQos) {
-            super.setQos(qos);
-        } else {
-            throw new IllegalArgumentException("only OnChangeSubscriptionQos is supported for selective broadcasts");
-        }
-    }
-
-    public Map<String, Object> getFilterParameters() {
-        return filterParameters;
-    }
-
-    public void setFilterParameters(final Map<String, Object> filterParameters) {
-        this.filterParameters = filterParameters;
-    }
-
 }

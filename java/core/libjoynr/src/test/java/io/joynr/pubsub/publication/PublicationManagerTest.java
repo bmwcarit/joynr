@@ -22,6 +22,7 @@ package io.joynr.pubsub.publication;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,6 +40,8 @@ import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -58,6 +61,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -306,9 +310,12 @@ public class PublicationManagerTest {
 
         long minInterval_ms = 0;
         long ttl = 1000;
+        Map<String, Object> filterParameters = new HashMap<String, Object>();
         SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
                                                                                    "subscribedToName",
+                                                                                   filterParameters,
                                                                                    qos);
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
                                                   PROVIDER_PARTICIPANT_ID,
@@ -333,6 +340,142 @@ public class PublicationManagerTest {
         assertEquals(eventValues[0], response[0]);
         assertEquals(eventValues[1], response[1]);
         assertEquals(ttl, qosCaptured.getValue().getRoundTripTtl_ms());
+
+    }
+
+    @Test
+    public void broadcastPublicationCallsAllFiltersWithFilterParametersAndValues() throws JoynrSendBufferFullException,
+                                                                                  JoynrMessageNotSentException,
+                                                                                  JsonGenerationException,
+                                                                                  JsonMappingException, IOException {
+
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+
+        long minInterval_ms = 0;
+        long ttl = 1000;
+        Map<String, Object> filterParameters = new HashMap<String, Object>();
+        filterParameters.put("filterParam1", "filterValue1");
+        filterParameters.put("filterParam2", "filterValue2");
+
+        SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+
+        SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
+                                                                                   "subscribedToName",
+                                                                                   filterParameters,
+                                                                                   qos);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        Object[] eventValues = { "value1", "value2" };
+
+        ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
+        BroadcastFilter filter1 = mock(BroadcastFilter.class);
+        when(filter1.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        filters.add(filter1);
+
+        BroadcastFilter filter2 = mock(BroadcastFilter.class);
+        when(filter2.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        filters.add(filter2);
+
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
+
+        ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
+        ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
+
+        verify(messageSender).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(PROXY_PARTICIPANT_ID),
+                                                          publicationCaptured.capture(),
+                                                          qosCaptured.capture());
+
+        verify(filter1).filter(eventValues, filterParameters);
+        verify(filter2).filter(eventValues, filterParameters);
+
+    }
+
+    @Test
+    public void broadcastPublicationIsSentWhenFiltersPass() throws JoynrSendBufferFullException,
+                                                           JoynrMessageNotSentException, JsonGenerationException,
+                                                           JsonMappingException, IOException {
+
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+
+        long minInterval_ms = 0;
+        long ttl = 1000;
+        Map<String, Object> filterParameters = new HashMap<String, Object>();
+        SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+
+        SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
+                                                                                   "subscribedToName",
+                                                                                   filterParameters,
+                                                                                   qos);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        Object[] eventValues = { "value1", "value2" };
+
+        ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
+        BroadcastFilter filterTrue = mock(BroadcastFilter.class);
+        when(filterTrue.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        filters.add(filterTrue);
+
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
+
+        ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
+        ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
+
+        verify(messageSender).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(PROXY_PARTICIPANT_ID),
+                                                          publicationCaptured.capture(),
+                                                          qosCaptured.capture());
+
+        Object[] response = (Object[]) publicationCaptured.getValue().getResponse();
+        assertEquals(eventValues[0], response[0]);
+        assertEquals(eventValues[1], response[1]);
+
+    }
+
+    @Test
+    public void broadcastPublicationNotSentWhenFiltersFail() throws JoynrSendBufferFullException,
+                                                            JoynrMessageNotSentException, JsonGenerationException,
+                                                            JsonMappingException, IOException {
+
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+
+        long minInterval_ms = 0;
+        long ttl = 1000;
+        Map<String, Object> filterParameters = new HashMap<String, Object>();
+        SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
+
+        SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
+                                                                                   "subscribedToName",
+                                                                                   filterParameters,
+                                                                                   qos);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        Object[] eventValues = { "value1", "value2" };
+
+        ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
+        BroadcastFilter filterTrue = mock(BroadcastFilter.class);
+        when(filterTrue.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        filters.add(filterTrue);
+
+        BroadcastFilter filterFalse = mock(BroadcastFilter.class);
+        when(filterFalse.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(false);
+        filters.add(filterFalse);
+
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
+
+        verify(messageSender, never()).sendSubscriptionPublication(any(String.class),
+                                                                   any(String.class),
+                                                                   any(SubscriptionPublication.class),
+                                                                   any(MessagingQos.class));
 
     }
 }

@@ -19,7 +19,7 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 
-import java.util.List;
+import java.util.Map;
 
 public abstract class BroadcastFilter {
 
@@ -33,6 +33,6 @@ public abstract class BroadcastFilter {
         return name;
     }
 
-    abstract boolean filter(List<?> eventValues, BroadcastFilterParameters filterParameters);
+    abstract boolean filter(Object[] values, Map<String, Object> filterParameters);
 
 }
