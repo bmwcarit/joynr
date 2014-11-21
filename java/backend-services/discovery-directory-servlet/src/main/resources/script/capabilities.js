@@ -45,6 +45,10 @@ function init() {
     
     {
         "sTitle": "Version"
+    },
+    
+    {
+        "sTitle": "Keywords"
     }
 ]
         
@@ -60,6 +64,16 @@ function init() {
     update(); 
 }
 
+function extractKeywords(keywords) {
+    var i;
+    var result = "";
+    for (i=0;i<keywords.length;i++) {
+        result += keywords[i].name + " : " +  keywords[i].value;
+        result += " ";
+    }
+    return result;
+}
+
     
 function update() {
     $.getJSON('capabilities/', function(data) {
@@ -73,26 +87,27 @@ function update() {
             var interfaceName = entry.interfaceName;
             var priority = entry.providerQos.priority;
             var version = entry.providerQos.version;
+            var keywords =  extractKeywords(entry.providerQos.customParameters); 
             
-			if(channel === undefined) {
-				channel = "undefined";
-			}
-			if(participant === undefined) {
-				participant = "undefined";
-			}
-			if(domain === undefined) {
-				domain = "undefined";
-			}
-			if(interfaceName === undefined) {
-				interfaceName = "undefined";
-			}
-			if(priority === undefined) {
-				priority = "undefined";
-			}
-			if(version === undefined) {
-				version = "undefined";
-			}
-			
+            if(channel === undefined) {
+                channel = "undefined";
+            }
+            if(participant === undefined) {
+                participant = "undefined";
+            }
+            if(domain === undefined) {
+                domain = "undefined";
+            }
+            if(interfaceName === undefined) {
+                interfaceName = "undefined";
+            }
+            if(priority === undefined) {
+                priority = "undefined";
+            }
+            if(version === undefined) {
+                version = "undefined";
+            }
+            
             var row = [];
             row.push(channel);
             row.push(participant);
@@ -100,6 +115,7 @@ function update() {
             row.push(interfaceName);
             row.push(priority);            
             row.push(version);
+            row.push(keywords);
             items.push(row);
 
         }
