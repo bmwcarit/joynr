@@ -40,7 +40,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.PubSubTestProviderImpl;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -175,7 +175,7 @@ public class SubscriptionEnd2EndTest {
     @Ignore
     @SuppressWarnings("unchecked")
     public void registerSubscriptionAndReceiveUpdates() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         int subscriptionDuration = (period_ms * 4);
         long alertInterval_ms = 500;
@@ -196,7 +196,7 @@ public class SubscriptionEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForComplexDatatype() throws InterruptedException {
-        SubscriptionListener<GpsLocation> gpsListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<GpsLocation> gpsListener = mock(AttributeSubscriptionListener.class);
         int subscriptionDuration = (period_ms * 4);
         long alertInterval_ms = 500;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
@@ -214,7 +214,7 @@ public class SubscriptionEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForListAndReceiveUpdates() throws InterruptedException {
-        SubscriptionListener<List<Integer>> integerListListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<List<Integer>> integerListListener = mock(AttributeSubscriptionListener.class);
         provider.setTestAttribute(42);
 
         int subscriptionDuration = (period_ms * 3);
@@ -236,7 +236,7 @@ public class SubscriptionEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerAndStopSubscription() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
         int subscriptionDuration = (period_ms * 2);
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
@@ -256,7 +256,7 @@ public class SubscriptionEnd2EndTest {
     @Test
     @Ignore
     public void testOnChangeWithKeepAliveSubscriptionSendsOnChange() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         // NOTE: 50 is the minimum minInterval supported
         long minInterval_ms = 50;
@@ -298,7 +298,7 @@ public class SubscriptionEnd2EndTest {
     @Ignore
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         // NOTE: 50 is the minimum minInterval supported
         long minInterval_ms = 50;
@@ -338,7 +338,7 @@ public class SubscriptionEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeWithKeepAliveSubscription() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         long minInterval_ms = 50; // NOTE: 50 is the minimum minInterval
         // supported
@@ -381,7 +381,7 @@ public class SubscriptionEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeSubscription() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         long minInterval_ms = 0;
         long publicationTtl_ms = 1000;
@@ -409,7 +409,7 @@ public class SubscriptionEnd2EndTest {
     @Ignore
     @Test
     public void testExpiredOnChangeSubscription() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         // Only get onChange messages
         long minInterval_ms = 0;
@@ -440,7 +440,7 @@ public class SubscriptionEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testSubscribeToNonExistentDomain() throws InterruptedException {
-        SubscriptionListener<Integer> integerListener = mock(SubscriptionListener.class);
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
         testProxy proxyToNonexistentDomain = null;
         try {
             ProxyBuilder<testProxy> proxyBuilder;

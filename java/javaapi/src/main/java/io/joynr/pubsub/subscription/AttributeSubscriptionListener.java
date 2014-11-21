@@ -19,7 +19,7 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
-public interface SubscriptionListener<T> {
+public interface AttributeSubscriptionListener<T> {
     void receive(T value);
 
     void publicationMissed();

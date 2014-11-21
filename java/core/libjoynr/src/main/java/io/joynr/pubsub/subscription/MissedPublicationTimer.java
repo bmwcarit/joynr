@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class MissedPublicationTimer extends PubSubTimerBase {
 
-    private final SubscriptionListener<?> callback;
+    private final AttributeSubscriptionListener<?> callback;
     private final long alertAfterInterval_ms;
     private long expectedInterval_ms;
     private static final Logger logger = LoggerFactory.getLogger(MissedPublicationTimer.class);
@@ -37,7 +37,7 @@ public class MissedPublicationTimer extends PubSubTimerBase {
     public MissedPublicationTimer(long expiryDate,
                                   long expectedInterval_ms,
                                   long alertAfterInterval_ms,
-                                  SubscriptionListener<?> callback,
+                                  AttributeSubscriptionListener<?> callback,
                                   PubSubState state) {
         super(expiryDate, state);
         this.expectedInterval_ms = expectedInterval_ms;

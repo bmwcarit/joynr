@@ -24,7 +24,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
@@ -210,7 +210,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // reading an attribute value
         gpsProxy = proxyBuilder.setMessagingQos(new MessagingQos()).setDiscoveryQos(discoveryQos).build();
 
-        subscriptionIdLocation = gpsProxy.subscribeToLocation(new SubscriptionListener<GpsLocation>() {
+        subscriptionIdLocation = gpsProxy.subscribeToLocation(new AttributeSubscriptionListener<GpsLocation>() {
 
             @Override
             public void receive(GpsLocation value) {

@@ -29,7 +29,7 @@ public interface SubscriptionManager {
 
     String registerAttributeSubscription(final String attributeName,
                                          Class<? extends TypeReference<?>> attributeTypeReference,
-                                         SubscriptionListener<?> attributeSubscriptionCallback,
+                                         AttributeSubscriptionListener<?> attributeSubscriptionCallback,
                                          final SubscriptionQos qos);
 
     void unregisterAttributeSubscription(final String subscriptionId);
@@ -37,7 +37,7 @@ public interface SubscriptionManager {
     void touchSubscriptionState(final String subscriptionId);
 
     @CheckForNull
-    SubscriptionListener<?> getSubscriptionListener(final String subscriptionId);
+    AttributeSubscriptionListener<?> getSubscriptionListener(final String subscriptionId);
 
     Class<? extends TypeReference<?>> getAttributeTypeReference(String subscriptionId);
 

@@ -33,7 +33,7 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.pubsub.publication.PublicationManager;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
@@ -307,7 +307,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             TypeReference<?> typeRef = attributeType.newInstance();
             Object receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
             @SuppressWarnings("unchecked")
-            SubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
+            AttributeSubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
             if (listener == null) {
                 logger.error("No subscription listener found for incoming publication!");
             } else {

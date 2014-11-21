@@ -43,13 +43,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class SubscriptionManagerTest {
 
     private String attributeName;
-    private SubscriptionListener<?> attributeSubscriptionCallback;
+    private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
     private SubscriptionQos qos;
     private SubscriptionQos qosWithoutExpiryDate;
 
     @Mock
-    private ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory;
+    private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory;
 
     @Mock
     private ConcurrentMap<String, PubSubState> subscriptionStates;
@@ -83,7 +83,7 @@ public class SubscriptionManagerTest {
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";
-        attributeSubscriptionCallback = new SubscriptionListener<Integer>() {
+        attributeSubscriptionCallback = new AttributeSubscriptionListener<Integer>() {
             @Override
             public void publicationMissed() {
                 // TODO Auto-generated method stub

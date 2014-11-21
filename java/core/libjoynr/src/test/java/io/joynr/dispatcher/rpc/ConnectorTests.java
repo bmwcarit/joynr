@@ -31,7 +31,7 @@ import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -115,7 +115,7 @@ public class ConnectorTests {
             PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(1000, 0, 1000);
             Object[] args = new Object[]{ null, subscriptionQos };
             Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
-                                                                                      SubscriptionListener.class,
+                                                                                      AttributeSubscriptionListener.class,
                                                                                       SubscriptionQos.class,
                                                                                       String.class);
             connector.executeSubscriptionMethod(method, args, future, subscriptionId);

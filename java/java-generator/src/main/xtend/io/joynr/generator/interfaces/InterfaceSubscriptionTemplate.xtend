@@ -47,7 +47,7 @@ import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 import com.fasterxml.jackson.core.type.TypeReference;
 «IF hasReadAttribute(serviceInterface)»
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.SubscriptionQos;
 «ENDIF»
 «ENDIF»
@@ -69,10 +69,10 @@ public interface «subscriptionClassName» extends JoynrSubscriptionInterface, �
 «var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
 	«IF isReadable(attribute)»	
 		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
-		public String subscribeTo«attributeName.toFirstUpper»(SubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
+		public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
 		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
-		public String subscribeTo«attributeName.toFirstUpper»(SubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
+		public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
 
 		public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
 	«ENDIF»

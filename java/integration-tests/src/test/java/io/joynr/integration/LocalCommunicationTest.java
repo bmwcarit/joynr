@@ -33,7 +33,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.PubSubTestProviderImpl;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -75,7 +75,7 @@ public class LocalCommunicationTest {
     private testProxy proxy;
 
     @Mock
-    private SubscriptionListener<Integer> listener;
+    private AttributeSubscriptionListener<Integer> listener;
     private SubscriptionQos subscriptionQos;
     private int lengthInMS = 2000;
 

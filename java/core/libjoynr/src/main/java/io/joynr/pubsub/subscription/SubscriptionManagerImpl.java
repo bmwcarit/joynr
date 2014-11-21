@@ -41,7 +41,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager {
 
-    private ConcurrentMap<String, SubscriptionListener<?>> subscriptionListenerDirectory;
+    private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
     private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
@@ -64,7 +64,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     }
 
-    public SubscriptionManagerImpl(ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory,
+    public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
                                    ConcurrentMap<String, PubSubState> subscriptionStates,
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
@@ -82,7 +82,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Override
     public String registerAttributeSubscription(final String attributeName,
                                                 Class<? extends TypeReference<?>> attributeTypeReference,
-                                                SubscriptionListener<?> attributeSubscriptionCallback,
+                                                AttributeSubscriptionListener<?> attributeSubscriptionCallback,
                                                 final SubscriptionQos qos) {
 
         String uuid = UUID.randomUUID().toString();
@@ -149,7 +149,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public SubscriptionListener<?> getSubscriptionListener(final String subscriptionId) {
+    public AttributeSubscriptionListener<?> getSubscriptionListener(final String subscriptionId) {
         if (!subscriptionStates.containsKey(subscriptionId)
                 || !subscriptionListenerDirectory.containsKey(subscriptionId)) {
             logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);

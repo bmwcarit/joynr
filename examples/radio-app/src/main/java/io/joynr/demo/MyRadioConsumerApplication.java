@@ -26,7 +26,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
@@ -213,7 +213,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             boolean isOn = radioProxy.getIsOn();
             LOG.info(PRINT_BORDER + "Is the radio on? " + isOn + PRINT_BORDER);
 
-            subscriptionIdIsOn = radioProxy.subscribeToIsOn(new SubscriptionListener<Boolean>() {
+            subscriptionIdIsOn = radioProxy.subscribeToIsOn(new AttributeSubscriptionListener<Boolean>() {
 
                 @Override
                 public void receive(Boolean value) {
@@ -225,7 +225,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     LOG.info(PRINT_BORDER + "SUBSCRIPTION: isOn, publication missed " + PRINT_BORDER);
                 }
             }, subscriptionQos);
-            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new SubscriptionListener<String>() {
+            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<String>() {
 
                 @Override
                 public void receive(String value) {

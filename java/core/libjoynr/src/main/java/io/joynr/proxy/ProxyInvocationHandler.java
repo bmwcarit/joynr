@@ -32,7 +32,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
@@ -267,12 +267,12 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
                 throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
             }
             String attributeName = subscriptionAnnotation.attributeName();
-            if (args[0] == null || !SubscriptionListener.class.isAssignableFrom(args[0].getClass())) {
-                throw new JoynrIllegalStateException("First parameter of subscribeTo... has to implement SubscriptionListener");
+            if (args[0] == null || !AttributeSubscriptionListener.class.isAssignableFrom(args[0].getClass())) {
+                throw new JoynrIllegalStateException("First parameter of subscribeTo... has to implement AttributeSubscriptionListener");
             }
             Class<? extends TypeReference<?>> attributeTypeReference = subscriptionAnnotation.attributeType();
 
-            SubscriptionListener<?> attributeSubscriptionListener = (SubscriptionListener<?>) args[0];
+            AttributeSubscriptionListener<?> attributeSubscriptionListener = (AttributeSubscriptionListener<?>) args[0];
             if (args[1] == null || !SubscriptionQos.class.isAssignableFrom(args[1].getClass())) {
                 throw new JoynrIllegalStateException("Second parameter of subscribeTo... has to be of type SubscriptionQos");
             }

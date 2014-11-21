@@ -29,7 +29,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import joynr.PeriodicSubscriptionQos;
 import joynr.types.GpsLocation;
 import joynr.vehicle.GpsProxy;
@@ -119,7 +119,7 @@ public class JoynrAndroidExampleLauncher {
                                                                       expiryDate_ms,
                                                                       alertInterval_ms,
                                                                       publicationTtl_ms);
-        SubscriptionListener<GpsLocation> listener = new SubscriptionListener<GpsLocation>() {
+        AttributeSubscriptionListener<GpsLocation> listener = new AttributeSubscriptionListener<GpsLocation>() {
 
             @Override
             public void receive(GpsLocation value) {

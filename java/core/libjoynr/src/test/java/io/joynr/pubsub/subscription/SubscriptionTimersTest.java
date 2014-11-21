@@ -49,7 +49,7 @@ public class SubscriptionTimersTest {
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionTimersTest.class);
 
     private SubscriptionManager subscriptionManager;
-    private ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory;
+    private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ScheduledExecutorService subscriptionEndScheduler;
     ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
@@ -57,7 +57,7 @@ public class SubscriptionTimersTest {
 
     private String attributeName;
     @Mock
-    private SubscriptionListener<?> attributeSubscriptionCallback;
+    private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
     @Mock
     private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
