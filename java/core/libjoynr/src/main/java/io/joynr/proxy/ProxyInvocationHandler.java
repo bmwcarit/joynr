@@ -292,7 +292,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
                 throw new JoynrIllegalStateException("First parameter of unsubscribe... has to be a String containing the subscriptionId");
             }
             String subscriptionId = (String) args[0];
-            subscriptionManager.unregisterAttributeSubscription(subscriptionId);
+            subscriptionManager.unregisterSubscription(subscriptionId);
             sendSubscriptionMethod(method, args, subscriptionId);
             return null;
         } else {

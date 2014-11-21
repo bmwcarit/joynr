@@ -127,7 +127,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public void unregisterAttributeSubscription(final String subscriptionId) {
+    public void unregisterSubscription(final String subscriptionId) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);

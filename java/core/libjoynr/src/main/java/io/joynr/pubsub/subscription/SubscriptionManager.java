@@ -32,7 +32,7 @@ public interface SubscriptionManager {
                                          AttributeSubscriptionListener<?> attributeSubscriptionCallback,
                                          final SubscriptionQos qos);
 
-    void unregisterAttributeSubscription(final String subscriptionId);
+    void unregisterSubscription(final String subscriptionId);
 
     void touchSubscriptionState(final String subscriptionId);
 

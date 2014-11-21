@@ -158,7 +158,7 @@ public class SubscriptionManagerTest {
         Mockito.when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
         Mockito.when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
         Mockito.when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
-        subscriptionManager.unregisterAttributeSubscription(subscriptionId);
+        subscriptionManager.unregisterSubscription(subscriptionId);
 
         Mockito.verify(subscriptionStates).get(Mockito.eq(subscriptionId));
         Mockito.verify(subscriptionState).stop();
