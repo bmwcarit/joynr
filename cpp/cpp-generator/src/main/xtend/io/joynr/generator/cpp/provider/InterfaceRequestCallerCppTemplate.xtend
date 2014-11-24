@@ -75,12 +75,6 @@ class InterfaceRequestCallerCppTemplate {
 
 		«ENDFOR»
 		
-		«FOR broadcast: serviceInterface.broadcasts»
-		    void «interfaceName»RequestCaller::get«broadcast.name.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, QList<QVariant>& result){
-		        provider->get«broadcast.name.toFirstUpper»(joynrInternalStatus, result); 
-		    }
-		«ENDFOR»
-		
 		void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
 		{
 			provider->registerAttributeListener(attributeName, attributeListener);
