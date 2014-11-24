@@ -32,13 +32,14 @@ class InterfaceProxyTemplate {
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
+		val broadcastClassName = interfaceName + "BroadcastInterface"
 		val packagePath = getPackagePathWithJoynrPrefix(fInterface, ".")
 		'''
 
 		«warning()»
 		package «packagePath»;
 
-		public interface «className» extends «asyncClassName», «syncClassName»«IF fInterface.attributes.size>0», «subscriptionClassName»«ENDIF» {
+		public interface «className» extends «asyncClassName», «syncClassName»«IF fInterface.attributes.size>0», «subscriptionClassName»«ENDIF»«IF fInterface.broadcasts.size>0», «broadcastClassName»«ENDIF» {
 		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(fInterface, "/")»/«interfaceName.toLowerCase»";
 		}
 		'''

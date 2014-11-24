@@ -1,5 +1,10 @@
 package io.joynr.pubsub.publication;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
+
 /*
  * #%L
  * %%
@@ -19,5 +24,10 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 public class BroadcastFilterParameters {
+    Map<String, Object> filterParameters = new HashMap<String, Object>();
+
+    protected void addFilterParameter(@Nonnull String key, Object value) {
+        filterParameters.put(key, value);
+    }
 
 }

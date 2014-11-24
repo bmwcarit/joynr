@@ -1,4 +1,4 @@
-package io.joynr.pubsub.subscription;
+package io.joynr.dispatcher.rpc;
 
 /*
  * #%L
@@ -19,6 +19,6 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
-public interface BroadcastSubscriptionListener {
+public interface JoynrBroadcastSubscriptionInterface extends JoynrInterface {
 
 }

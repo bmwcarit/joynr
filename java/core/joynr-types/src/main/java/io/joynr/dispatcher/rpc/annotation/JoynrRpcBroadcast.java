@@ -1,4 +1,4 @@
-package io.joynr.pubsub.subscription;
+package io.joynr.dispatcher.rpc.annotation;
 
 /*
  * #%L
@@ -19,6 +19,15 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
-public interface BroadcastSubscriptionListener {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface JoynrRpcBroadcast {
+
+    // name of the broadcast to subscribe to
+    String broadcastName();
 }

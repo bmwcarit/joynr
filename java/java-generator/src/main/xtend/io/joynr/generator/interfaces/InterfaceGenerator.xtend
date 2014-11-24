@@ -40,6 +40,10 @@ class InterfaceGenerator {
 
 	@Inject
 	InterfaceSubscriptionTemplate interfaceSubscription
+	
+	@Inject
+	InterfaceBroadcastTemplate interfaceBroadcast
+	
 
 	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa){
 
@@ -66,6 +70,13 @@ class InterfaceGenerator {
 			fsa.generateFile(
 				path + serviceName + "SubscriptionInterface.java",
 				interfaceSubscription.generate(serviceInterface).toString
+			);
+		}
+		
+		if (serviceInterface.broadcasts.size>0){
+			fsa.generateFile(
+				path + serviceName + "BroadcastInterface.java",
+				interfaceBroadcast.generate(serviceInterface).toString
 			);
 		}
 	}
