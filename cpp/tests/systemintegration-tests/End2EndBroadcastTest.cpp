@@ -214,7 +214,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     // This wait is necessary, because subcriptions are async, and an event could occur
     // before the subscription has started.
-    QThreadSleep::msleep(5000);
+    QThreadSleep::msleep(50);
 
     testProvider->locationUpdateEventOccured(
                 types::GpsLocation(
@@ -233,6 +233,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
+
     testProvider->locationUpdateEventOccured(
                 types::GpsLocation(
                     9.0,
@@ -248,6 +252,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                     3));
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
 
     testProvider->locationUpdateEventOccured(
                 types::GpsLocation(
@@ -375,6 +383,9 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
 
     testProvider->locationUpdateWithSpeedEventOccured(
                 types::GpsLocation(
@@ -391,6 +402,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                     3), 200);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
 
     testProvider->locationUpdateWithSpeedEventOccured(
                 types::GpsLocation(
@@ -524,6 +539,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
+
     testProvider->locationUpdateSelectiveEventOccured(
                 types::GpsLocation(
                     9.0,
@@ -540,6 +559,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
 
     testProvider->locationUpdateSelectiveEventOccured(
                 types::GpsLocation(
@@ -635,6 +658,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
 
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
+
     testProvider->locationUpdateSelectiveEventOccured(
                 types::GpsLocation(
                     9.0,
@@ -651,6 +678,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+
+    // Waiting between event occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    QThreadSleep::msleep(minInterval_ms);
 
     testProvider->locationUpdateSelectiveEventOccured(
                 types::GpsLocation(

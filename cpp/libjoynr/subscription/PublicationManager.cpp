@@ -733,7 +733,14 @@ void PublicationManager::sendPublication(const QString& subscriptionId,
     mQos.setTtl(ttl);
 
     // Get publication information
-    Publication* publication = publications.value(subscriptionId);
+    Publication* publication = publications.value(subscriptionId, NULL);
+    if (!publication) {
+        LOG_FATAL(logger,
+                  QString("Publication for subscriptionId %1 not found but should exist.")
+                          .arg(subscriptionId));
+        return;
+    }
+
     IPublicationSender* publicationSender = publication->sender;
 
     SubscriptionPublication subscriptionPublication;
@@ -856,11 +863,19 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     SubscriptionRequestInformation* subscriptionRequest =
             subscriptionId2SubscriptionRequest.value(subscriptionId);
 
-    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())) {
+    if (!isPublicationAlreadyScheduled(subscriptionId)) {
+        qint64 timeUntilNextPublication =
+                getTimeUntilNextPublication(subscriptionId, subscriptionRequest->getQos());
 
-        // Send the publication
-        sendPublication(
-                subscriptionId, subscriptionRequest, getPublicationTtl(subscriptionRequest), value);
+        if (timeUntilNextPublication == 0) {
+            // Send the publication
+            sendPublication(subscriptionId,
+                            subscriptionRequest,
+                            getPublicationTtl(subscriptionRequest),
+                            value);
+        } else {
+            reschedulePublication(subscriptionId, timeUntilNextPublication);
+        }
     }
 }
 
@@ -884,8 +899,11 @@ void PublicationManager::eventOccured(const QString& subscriptionId, const QList
     BroadcastSubscriptionRequestInformation* subscriptionRequest =
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
 
-    if (isPublicationReadyToBeSend(subscriptionId, subscriptionRequest->getQos())) {
+    // Only proceed if publication can immediately be sent
+    qint64 timeUntilNextPublication =
+            getTimeUntilNextPublication(subscriptionId, subscriptionRequest->getQos());
 
+    if (timeUntilNextPublication == 0) {
         // Execute broadcast filters
         if (processFilterChain(subscriptionId, values)) {
             // Send the publication
@@ -895,6 +913,15 @@ void PublicationManager::eventOccured(const QString& subscriptionId, const QList
                             getPublicationTtl(subscriptionRequest),
                             value);
         }
+    } else {
+        LOG_DEBUG(
+                logger,
+                QString("Omitting broadcast publication for subscription %1 because of ")
+                        .append(timeUntilNextPublication > 0
+                                        ? "too short interval. Next publication possible in %2 ms."
+                                        : " error.")
+                        .arg(subscriptionId)
+                        .arg(timeUntilNextPublication));
     }
 }
 
@@ -913,50 +940,56 @@ void PublicationManager::addBroadcastFilter(QSharedPointer<IBroadcastFilter> fil
     }
 }
 
-// This functions assumes that a lock is held
-bool PublicationManager::isPublicationReadyToBeSend(const QString& subscriptionId,
-                                                    QSharedPointer<SubscriptionQos> qos)
+bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscriptionId)
 {
-
-    // See if a publication is already scheduled
-    {
-        QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
-        if (currentScheduledPublications.contains(subscriptionId)) {
-            LOG_DEBUG(logger,
-                      QString("publication runnable already scheduled: %1").arg(subscriptionId));
-            return false;
-        }
+    QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
+    if (currentScheduledPublications.contains(subscriptionId)) {
+        return true;
     }
 
+    return false;
+}
+
+qint64 PublicationManager::getTimeUntilNextPublication(const QString& subscriptionId,
+                                                       QSharedPointer<SubscriptionQos> qos)
+{
     // Check the last publication time against the min interval
     qint64 now = QDateTime::currentMSecsSinceEpoch();
-    Publication* publication = publications.value(subscriptionId);
     qint64 minInterval = SubscriptionUtil::getMinInterval(qos.data());
+
+    Publication* publication = publications.value(subscriptionId, NULL);
+
+    if (!publication) {
+        LOG_FATAL(logger,
+                  QString("Publication for subscriptionId %1 not found but should exist.")
+                          .arg(subscriptionId));
+        return -1;
+    }
+
     qint64 timeSinceLast = now - publication->timeOfLastPublication;
 
     if (minInterval > 0 && timeSinceLast < minInterval) {
-        LOG_DEBUG(logger,
-                  QString("Time since last publication is less than minInterval on subscription "
-                          "%1, %2 < %3")
-                          .arg(subscriptionId)
-                          .arg(timeSinceLast)
-                          .arg(minInterval));
+        return minInterval - timeSinceLast;
+    }
 
+    return 0;
+}
+
+// This functions assumes that a lock is held
+void PublicationManager::reschedulePublication(const QString& subscriptionId,
+                                               qint64 nextPublication)
+{
+    if (nextPublication > 0) {
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
 
         // Schedule a publication so that the change is not forgotten
         if (!currentScheduledPublications.contains(subscriptionId)) {
-            qint64 nextPublication = minInterval - timeSinceLast;
             LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(nextPublication));
             currentScheduledPublications.append(subscriptionId);
             delayedScheduler->schedule(
                     new PublisherRunnable(*this, subscriptionId), nextPublication);
         }
-
-        return false;
     }
-
-    return true;
 }
 
 //------ PublicationManager::Publication ---------------------------------------

@@ -222,8 +222,21 @@ private:
     void saveBroadcastSubscriptionRequestsMap();
     void loadSavedBroadcastSubscriptionRequestsMap();
 
-    bool isPublicationReadyToBeSend(const QString& subscriptionId,
-                                    QSharedPointer<SubscriptionQos> qos);
+    void reschedulePublication(const QString& subscriptionId, qint64 nextPublication);
+
+    bool isPublicationAlreadyScheduled(const QString& subscriptionId);
+
+    /**
+     * @brief getTimeUntilNextPublication determines the time to wait until the next publication
+     * can be sent base on the QOS information.
+     * @param subscriptionId
+     * @param qos
+     * @return  0 if publication can immediately be sent;
+     *          amount of ms to wait, if interval was too short;
+     *          -1 on error
+     */
+    qint64 getTimeUntilNextPublication(const QString& subscriptionId,
+                                       QSharedPointer<SubscriptionQos> qos);
 
     template <class RequestInformationType>
     void saveSubscriptionRequestsMap(const QMap<QString, RequestInformationType*>& map,
