@@ -31,9 +31,11 @@ SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString& subs
 {
 }
 
-void SubscriptionBroadcastListener::eventOccured(const QList<QVariant>& values)
+void SubscriptionBroadcastListener::eventOccurred(
+        const QList<QVariant>& values,
+        const QList<QSharedPointer<IBroadcastFilter>>& filters)
 {
-    publicationManager.eventOccured(subscriptionId, values);
+    publicationManager.eventOccurred(subscriptionId, values, filters);
 }
 
 } // namespace joynr

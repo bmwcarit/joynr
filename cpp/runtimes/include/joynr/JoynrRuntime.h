@@ -100,8 +100,6 @@ public:
         return builder;
     }
 
-    void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
-
     static JoynrRuntime* createRuntime(const QString& pathToLibjoynrSettings,
                                        const QString& pathToMessagingSettings = "");
 

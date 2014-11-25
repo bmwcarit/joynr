@@ -691,14 +691,13 @@ void PublicationManager::removeOnChangePublication(const QString& subscriptionId
 
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(const QString& subscriptionId,
-                                            const QList<QVariant>& eventValues)
+                                            const QList<QVariant>& eventValues,
+                                            const QList<QSharedPointer<IBroadcastFilter>>& filters)
 {
 
     BroadcastSubscriptionRequestInformation* subscriptionRequest =
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
-    QList<QSharedPointer<IBroadcastFilter>> filters =
-            broadcastFilters.value(subscriptionRequest->getSubscribeToName());
 
     bool success = true;
 
@@ -879,10 +878,12 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     }
 }
 
-void PublicationManager::eventOccured(const QString& subscriptionId, const QList<QVariant>& values)
+void PublicationManager::eventOccurred(const QString& subscriptionId,
+                                       const QList<QVariant>& values,
+                                       const QList<QSharedPointer<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
-              QString("eventOccured for broadcast subscription %1. Number of values: %2")
+              QString("eventOccurred for broadcast subscription %1. Number of values: %2")
                       .arg(subscriptionId)
                       .arg(values.size()));
 
@@ -891,7 +892,7 @@ void PublicationManager::eventOccured(const QString& subscriptionId, const QList
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
         LOG_ERROR(logger,
-                  QString("eventOccured called for non-existing subscription %1")
+                  QString("eventOccurred called for non-existing subscription %1")
                           .arg(subscriptionId));
         return;
     }
@@ -905,7 +906,7 @@ void PublicationManager::eventOccured(const QString& subscriptionId, const QList
 
     if (timeUntilNextPublication == 0) {
         // Execute broadcast filters
-        if (processFilterChain(subscriptionId, values)) {
+        if (processFilterChain(subscriptionId, values, filters)) {
             // Send the publication
             QVariant value = QVariant::fromValue(values);
             sendPublication(subscriptionId,
@@ -922,21 +923,6 @@ void PublicationManager::eventOccured(const QString& subscriptionId, const QList
                                         : " error.")
                         .arg(subscriptionId)
                         .arg(timeUntilNextPublication));
-    }
-}
-
-void PublicationManager::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
-{
-    QWriteLocker locker(&broadcastFilterLock);
-
-    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
-            broadcastFilters.find(filter->getName());
-
-    if (it != broadcastFilters.end()) {
-        it.value().append(filter);
-    } else {
-        broadcastFilters.insert(
-                filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
     }
 }
 

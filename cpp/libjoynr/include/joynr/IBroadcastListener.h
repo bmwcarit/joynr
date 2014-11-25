@@ -25,8 +25,13 @@ template <typename T>
 class QList;
 class QVariant;
 
+template <typename T>
+class QSharedPointer;
+
 namespace joynr
 {
+
+class IBroadcastFilter;
 
 class JOYNR_EXPORT IBroadcastListener
 {
@@ -34,7 +39,8 @@ public:
     virtual ~IBroadcastListener()
     {
     }
-    virtual void eventOccured(const QList<QVariant>& values) = 0;
+    virtual void eventOccurred(const QList<QVariant>& values,
+                               const QList<QSharedPointer<IBroadcastFilter>>& filters) = 0;
 };
 
 } // namespace joynr

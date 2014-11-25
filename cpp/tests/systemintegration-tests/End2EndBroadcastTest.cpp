@@ -216,7 +216,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     // before the subscription has started.
     QThreadSleep::msleep(50);
 
-    testProvider->locationUpdateEventOccured(
+    testProvider->locationUpdateEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -237,7 +237,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateEventOccured(
+    testProvider->locationUpdateEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -257,7 +257,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateEventOccured(
+    testProvider->locationUpdateEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -366,7 +366,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Change the location 3 times
 
-    testProvider->locationUpdateWithSpeedEventOccured(
+    testProvider->locationUpdateWithSpeedEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -387,7 +387,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateWithSpeedEventOccured(
+    testProvider->locationUpdateWithSpeedEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -407,7 +407,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateWithSpeedEventOccured(
+    testProvider->locationUpdateWithSpeedEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -477,12 +477,12 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                     mockListener);
 
     ON_CALL(*filter, filter(_,_)).WillByDefault(Return(true));
-    runtime1->addBroadcastFilter(filter);
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    testProvider->addBroadcastFilter(filter);
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -522,7 +522,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Change the location 3 times
 
-    testProvider->locationUpdateSelectiveEventOccured(
+    testProvider->locationUpdateSelectiveEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -543,7 +543,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccured(
+    testProvider->locationUpdateSelectiveEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -564,7 +564,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccured(
+    testProvider->locationUpdateSelectiveEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -596,12 +596,12 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                     mockListener);
 
     ON_CALL(*filter, filter(_,_)).WillByDefault(Return(false));
-    runtime1->addBroadcastFilter(filter);
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    testProvider->addBroadcastFilter(filter);
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -641,7 +641,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Change the location 3 times
 
-    testProvider->locationUpdateSelectiveEventOccured(
+    testProvider->locationUpdateSelectiveEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -662,7 +662,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccured(
+    testProvider->locationUpdateSelectiveEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -683,7 +683,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccured(
+    testProvider->locationUpdateSelectiveEventOccurred(
                 types::GpsLocation(
                     9.0,
                     51.0,

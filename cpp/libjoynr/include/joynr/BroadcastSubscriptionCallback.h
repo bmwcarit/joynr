@@ -56,7 +56,7 @@ public:
         listener->publicationMissed();
     }
 
-    void eventOccured(const T value, const Ts... values)
+    void eventOccurred(const T value, const Ts... values)
     {
         listener->receive(value, values...);
     }

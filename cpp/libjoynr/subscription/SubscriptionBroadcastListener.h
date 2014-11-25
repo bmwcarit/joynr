@@ -28,6 +28,7 @@ namespace joynr
 {
 
 class PublicationManager;
+class IBroadcastFilter;
 
 /**
  * An attribute listener used for broadcast subscriptions
@@ -41,8 +42,9 @@ public:
     SubscriptionBroadcastListener(const QString& subscriptionId,
                                   PublicationManager& publicationManager);
 
-    // Implementation of IBroadcastListener::eventOccured
-    void eventOccured(const QList<QVariant>& values);
+    // Implementation of IBroadcastListener::eventOccurred
+    void eventOccurred(const QList<QVariant>& values,
+                       const QList<QSharedPointer<IBroadcastFilter>>& filters);
 
 private:
     QString subscriptionId;

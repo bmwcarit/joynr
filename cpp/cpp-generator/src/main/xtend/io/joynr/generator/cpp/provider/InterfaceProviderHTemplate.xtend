@@ -90,11 +90,11 @@ class InterfaceProviderHTemplate {
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
 			/**
-			* @brief «broadcastName»EventOccured must be called by a concrete provider to signal an occured
+			* @brief «broadcastName»EventOccurred must be called by a concrete provider to signal an occured
 			* event. It is used to implement broadcast publications.
 			* @param «broadcastName» the new attribute value
 			*/
-			void «broadcastName»EventOccured(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
+			void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
 		«ENDFOR»
 
 	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);

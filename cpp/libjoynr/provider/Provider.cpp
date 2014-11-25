@@ -28,7 +28,7 @@
 namespace joynr
 {
 
-Provider::Provider() : lock(), attributeListeners(), broadcastListeners()
+Provider::Provider() : lock(), attributeListeners(), broadcastListeners(), broadcastFilters()
 {
 }
 
@@ -94,7 +94,7 @@ void Provider::unregisterBroadcastListener(const QString& broadcastName,
     delete listeners.takeAt(listenerIndex);
 }
 
-void Provider::onEventOccured(const QString& broadcastName, const QList<QVariant>& values)
+void Provider::onEventOccurred(const QString& broadcastName, const QList<QVariant>& values)
 {
     QReadLocker locker(&lock);
 
@@ -102,7 +102,20 @@ void Provider::onEventOccured(const QString& broadcastName, const QList<QVariant
 
     // Inform all the broadcast listeners for this attribute
     foreach (IBroadcastListener* listener, listeners) {
-        listener->eventOccured(values);
+        listener->eventOccurred(values, broadcastFilters.value(broadcastName));
+    }
+}
+
+void Provider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
+{
+    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
+            broadcastFilters.find(filter->getName());
+
+    if (it != broadcastFilters.end()) {
+        it.value().append(filter);
+    } else {
+        broadcastFilters.insert(
+                filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
     }
 }
 

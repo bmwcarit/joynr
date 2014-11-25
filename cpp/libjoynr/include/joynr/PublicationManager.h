@@ -145,9 +145,9 @@ public:
       * @param subscriptionId A subscription that was listening on the event
       * @param values The new event values
       */
-    virtual void eventOccured(const QString& subscriptionId, const QList<QVariant>& values);
-
-    void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
+    virtual void eventOccurred(const QString& subscriptionId,
+                               const QList<QVariant>& values,
+                               const QList<QSharedPointer<IBroadcastFilter>>& filters);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
@@ -264,7 +264,9 @@ private:
                                    SubscriptionRequestInformation* request,
                                    Publication* publication);
 
-    bool processFilterChain(const QString& subscriptionId, const QList<QVariant>& eventValues);
+    bool processFilterChain(const QString& subscriptionId,
+                            const QList<QVariant>& eventValues,
+                            const QList<QSharedPointer<IBroadcastFilter>>& filters);
 };
 
 } // namespace joynr

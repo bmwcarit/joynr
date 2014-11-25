@@ -23,6 +23,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IParticipant.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/IBroadcastFilter.h"
 
 #include <QReadWriteLock>
 #include <QMap>
@@ -83,7 +84,9 @@ public:
     /**
      * Called by subclasses when an event occurs
      */
-    void onEventOccured(const QString& broadcastName, const QList<QVariant>& values);
+    void onEventOccurred(const QString& broadcastName, const QList<QVariant>& values);
+
+    void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Provider);
@@ -91,6 +94,7 @@ private:
     QReadWriteLock lock;
     QMap<QString, QList<IAttributeListener*>> attributeListeners;
     QMap<QString, QList<IBroadcastListener*>> broadcastListeners;
+    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>> broadcastFilters;
 };
 
 } // namespace joynr
