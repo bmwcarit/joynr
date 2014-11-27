@@ -42,6 +42,7 @@ import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.runtime.PropertyLoader;
 
 import java.io.IOException;
@@ -117,7 +118,8 @@ public class RpcStubbingTest {
 
     @Mock
     private RequestReplyDispatcher dispatcher;
-
+    @Mock
+    private SubscriptionManager subscriptionManager;
     @Mock
     private RequestReplySender messageSender;
 
@@ -181,6 +183,7 @@ public class RpcStubbingTest {
 
         MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
         connector = JoynrMessagingConnectorFactory.create(dispatcher,
+                                                          subscriptionManager,
                                                           messageSender,
                                                           fromParticipantId,
                                                           toParticipantId,

@@ -243,7 +243,12 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
      *            from the previously invoked arbitration
      */
     public void createConnector(ArbitrationResult result) {
-        connector = ConnectorFactory.create(dispatcher, messageSender, proxyParticipantId, result, qosSettings);
+        connector = ConnectorFactory.create(dispatcher,
+                                            subscriptionManager,
+                                            messageSender,
+                                            proxyParticipantId,
+                                            result,
+                                            qosSettings);
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;

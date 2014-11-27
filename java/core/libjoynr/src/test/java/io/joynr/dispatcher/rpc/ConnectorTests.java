@@ -32,6 +32,7 @@ import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -53,6 +54,8 @@ public class ConnectorTests {
 
     @Mock
     private RequestReplyDispatcher dispatcher;
+    @Mock
+    private SubscriptionManager subscriptionManager;
     @Mock
     private RequestReplySender messageSender;
 
@@ -138,6 +141,7 @@ public class ConnectorTests {
         arbitrationResult.setEndpointAddress(endpointAddresses);
         arbitrationResult.setParticipantId(toParticipantId);
         ConnectorInvocationHandler connector = ConnectorFactory.create(dispatcher,
+                                                                       subscriptionManager,
                                                                        messageSender,
                                                                        fromParticipantId,
                                                                        arbitrationResult,

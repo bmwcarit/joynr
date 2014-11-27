@@ -32,6 +32,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -70,7 +71,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplySender messageSender,
-                                             RequestReplyDispatcher dispatcher) {
+                                             RequestReplyDispatcher dispatcher,
+                                             SubscriptionManager subscriptionManager) {
         this.toParticipantId = toParticipantId;
         this.endpointAddress = endpointAddress;
         this.fromParticipantId = fromParticipantId;
@@ -84,11 +86,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future executeAsyncMethod(Method method, Object[] params, Future<?> future)
-                                                                                      throws JoynrSendBufferFullException,
-                                                                                      JoynrMessageNotSentException,
-                                                                                      JsonGenerationException,
-                                                                                      JsonMappingException, IOException {
+    public Future<?> executeAsyncMethod(Method method, Object[] params, Future<?> future)
+                                                                                         throws JoynrSendBufferFullException,
+                                                                                         JoynrMessageNotSentException,
+                                                                                         JsonGenerationException,
+                                                                                         JsonMappingException,
+                                                                                         IOException {
 
         if (method == null) {
             throw new IllegalArgumentException("method cannot be null");
