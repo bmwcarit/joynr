@@ -34,6 +34,7 @@ import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
+import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.dispatcher.rpc.RpcUtils;
@@ -73,7 +74,6 @@ import com.google.inject.Guice;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyTest {
-    private ProxyBuilder<TestInterface> proxyBuilder;
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     @Mock
@@ -119,6 +119,7 @@ public class ProxyTest {
         });
 
         Mockito.doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
                 ArrayList<CapabilityEntry> fakeCapabilitiesResult = new ArrayList<CapabilityEntry>();
@@ -136,14 +137,18 @@ public class ProxyTest {
                                            Mockito.<CapabilitiesCallback> any());
 
         domain = "TestDomain";
-        proxyBuilder = new ProxyBuilderDefaultImpl<TestInterface>(capabilitiesClient,
-                                                                  domain,
-                                                                  TestInterface.class,
-                                                                  joynrMessageSender1,
-                                                                  dispatcher1,
-                                                                  subscriptionManager1);
+
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
+    }
+
+    private <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final Class<T> interfaceClass) {
+        return new ProxyBuilderDefaultImpl<T>(capabilitiesClient,
+                                              domain,
+                                              interfaceClass,
+                                              joynrMessageSender1,
+                                              dispatcher1,
+                                              subscriptionManager1);
     }
 
     @Test
@@ -157,6 +162,7 @@ public class ProxyTest {
                                                          Mockito.anyLong())).thenReturn(new Reply(requestReplyId,
                                                                                                   "Answer"));
 
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         String result = proxy.method1();
         Assert.assertEquals("Answer", result);
@@ -167,11 +173,13 @@ public class ProxyTest {
     public void createProxyAndCallAsyncMethodSuccess() throws Exception {
 
         try {
+            ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
             TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
             // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
             // messageCallback on it.
             Mockito.doAnswer(new Answer<Object>() {
+                @Override
                 public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
                                                                  IOException {
                     // capture the replyCaller passed into the dispatcher for calling later
@@ -215,11 +223,13 @@ public class ProxyTest {
         final JoynrCommunicationException expectedException = new JoynrCommunicationException();
         // final JoynCommunicationException expectedException = null;
 
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
         // messageCallback on it.
         Mockito.doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
