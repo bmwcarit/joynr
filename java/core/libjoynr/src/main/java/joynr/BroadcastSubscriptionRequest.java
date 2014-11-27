@@ -37,12 +37,16 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
     }
 
     public BroadcastSubscriptionRequest(String subscriptionId,
-                                        String subscribedToName,
+                                        String broadcastName,
                                         Map<String, Object> filterParameters,
                                         SubscriptionQos qos) {
-        super(subscriptionId, subscribedToName, qos);
+        super(subscriptionId, broadcastName, qos);
         this.filterParameters = filterParameters;
 
+    }
+
+    public BroadcastSubscriptionRequest(String subscriptionId, String broadcastName, SubscriptionQos qos) {
+        super(subscriptionId, broadcastName, qos);
     }
 
     public Map<String, Object> getFilterParameters() {
@@ -51,7 +55,7 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
     @Override
     public String toString() {
-        return "BroadcastSubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", subscribedToName="
+        return "BroadcastSubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", broadcastName="
                 + subscribedToName + ", filterParameters=" + filterParameters + "]";
     }
 }
