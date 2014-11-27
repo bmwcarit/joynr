@@ -18,8 +18,6 @@ under the License.
 This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
-  Apache XBean :: Reflect under The Apache Software License, Version 2.0
-  Backport of JSR 166 under Public Domain
   codegen under Eclipse Public License - v 1.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
@@ -27,43 +25,19 @@ This project has dependencies to:
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
-  google-collect under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   io.joynr.cpp:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.java:java-generator under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
-  io.joynr.tools:build-resources under The Apache Software License, Version 2.0
-  io.joynr.tools:generator under The Apache Software License, Version 2.0
-  io.joynr.tools:license-check under The Apache Software License, Version 2.0
-  io.joynr:tools under The Apache Software License, Version 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
-  Logging under The Apache Software License, Version 2.0
-  Maven Artifact under The Apache Software License, Version 2.0
-  Maven Artifact Manager under The Apache Software License, Version 2.0
-  Maven Local Settings Model under The Apache Software License, Version 2.0
-  Maven Model under The Apache Software License, Version 2.0
-  Maven Plugin API under The Apache Software License, Version 2.0
-  Maven Plugin Registry Model under The Apache Software License, Version 2.0
-  Maven Profile Model under The Apache Software License, Version 2.0
-  Maven Project Builder under The Apache Software License, Version 2.0
-  Maven Repository Metadata Model under The Apache Software License, Version 2.0
-  Maven Wagon API under The Apache Software License, Version 2.0
-  Mockito under The MIT License
-  Objenesis under MIT License
   org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  Plexus :: Default Container under The Apache Software License, Version 2.0
-  Plexus Classworlds under The Apache Software License, Version 2.0
-  Plexus Common Utilities under The Apache Software License, Version 2.0
-  Plexus Interpolation API under The Apache Software License, Version 2.0
   Reflections under WTFPL
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
 
