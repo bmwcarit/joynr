@@ -191,8 +191,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
             SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
 
-            MessagingQos clonedMessagingQos = new MessagingQos(qosSettings);
-
+            MessagingQos clonedMessagingQos = new MessagingQos();
             if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
                 clonedMessagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
             } else {
@@ -212,7 +211,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                toParticipantId,
                                                endpointAddress,
                                                subscriptionStop,
-                                               qosSettings);
+                                               new MessagingQos(qosSettings));
             return;
         } else {
             throw new JoynrIllegalStateException("Called unknown method in subscription interface.");
