@@ -48,4 +48,9 @@ public interface ConnectorInvocationHandler {
                                                                                                          JsonMappingException,
                                                                                                          IOException;
 
+    void executeBroadcastSubscriptionMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
+                                                                         JoynrMessageNotSentException,
+                                                                         JsonGenerationException, JsonMappingException,
+                                                                         IOException;
+
 }

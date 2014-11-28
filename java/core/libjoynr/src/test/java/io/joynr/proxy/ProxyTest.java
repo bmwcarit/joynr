@@ -19,8 +19,12 @@ package io.joynr.proxy;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.arbitration.ArbitrationStrategy;
@@ -45,14 +49,20 @@ import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
 import joynr.types.ProviderQos;
+import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
+import joynr.vehicle.NavigationProxy;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -131,10 +141,12 @@ public class ProxyTest {
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
-                                           Mockito.<String> any(),
-                                           Mockito.<DiscoveryQos> any(),
-                                           Mockito.<CapabilitiesCallback> any());
+        })
+               .when(capabilitiesClient)
+               .lookup(Mockito.<String> any(),
+                       Mockito.<String> any(),
+                       Mockito.<DiscoveryQos> any(),
+                       Mockito.<CapabilitiesCallback> any());
 
         domain = "TestDomain";
 
@@ -192,11 +204,13 @@ public class ProxyTest {
                                      .messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                     return null;
                 }
-            }).when(joynrMessageSender1).sendRequest(Mockito.<String> any(),
-                                                     Mockito.<String> any(),
-                                                     Mockito.<EndpointAddressBase> any(),
-                                                     Mockito.<Request> any(),
-                                                     Mockito.anyLong());
+            })
+                   .when(joynrMessageSender1)
+                   .sendRequest(Mockito.<String> any(),
+                                Mockito.<String> any(),
+                                Mockito.<EndpointAddressBase> any(),
+                                Mockito.<Request> any(),
+                                Mockito.anyLong());
             final Future<String> future = proxy.asyncMethod(callback);
 
             // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -240,11 +254,13 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }
-        }).when(joynrMessageSender1).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
-                                                 Mockito.<EndpointAddressBase> any(),
-                                                 Mockito.<Request> any(),
-                                                 Mockito.anyLong());
+        })
+               .when(joynrMessageSender1)
+               .sendRequest(Mockito.<String> any(),
+                            Mockito.<String> any(),
+                            Mockito.<EndpointAddressBase> any(),
+                            Mockito.<Request> any(),
+                            Mockito.anyLong());
 
         boolean exceptionThrown = false;
         String reply = "";
@@ -260,5 +276,44 @@ public class ProxyTest {
         verifyNoMoreInteractions(callback);
         Assert.assertEquals(RequestStatusCode.ERROR, future.getStatus().getCode());
         Assert.assertEquals("", reply);
+    }
+
+    @Test
+    public void createProxySubscribeToBroadcast() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + 30000;
+        long publicationTtl_ms = 5000;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+
+        proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
+
+        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionRequest(any(String.class),
+                                                                      any(String.class),
+                                                                      any(EndpointAddressBase.class),
+                                                                      subscriptionRequest.capture(),
+                                                                      any(MessagingQos.class));
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscribedToName());
+    }
+
+    @Test
+    public void createProxyUnSubscribeFromBroadcast() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        String subscriptionId = "subscriptionId";
+        proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
+
+        ArgumentCaptor<SubscriptionStop> subscriptionStop = ArgumentCaptor.forClass(SubscriptionStop.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionStop(any(String.class),
+                                                                   any(String.class),
+                                                                   any(EndpointAddressBase.class),
+                                                                   subscriptionStop.capture(),
+                                                                   any(MessagingQos.class));
+        assertEquals(subscriptionId, subscriptionStop.getValue().getSubscriptionId());
     }
 }

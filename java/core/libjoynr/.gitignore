@@ -5,6 +5,7 @@ target
 gen
 bin
 src/main/generated*
+src/test/generated
 joynr.properties
 /logs
 joynr_participantIds.properties

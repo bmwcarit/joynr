@@ -293,13 +293,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
 
             return subscriptionId;
         } else if (method.getName().startsWith("unsubscribeFrom")) {
-            if (args[0] == null || !String.class.isAssignableFrom(args[0].getClass())) {
-                throw new JoynrIllegalStateException("First parameter of unsubscribe... has to be a String containing the subscriptionId");
-            }
-            String subscriptionId = (String) args[0];
-            subscriptionManager.unregisterSubscription(subscriptionId);
-            sendSubscriptionMethod(method, args, subscriptionId);
-            return null;
+            return unsubscribe(method, args);
         } else {
             throw new JoynrIllegalStateException("Called unknown method in subscription interface.");
         }
@@ -341,6 +335,26 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
     }
 
     @Override
+    protected void executeBroadcastSubscriptionMethod(Method method, Object[] args)
+                                                                                   throws JoynrSendBufferFullException,
+                                                                                   JoynrMessageNotSentException,
+                                                                                   JsonGenerationException,
+                                                                                   JsonMappingException, IOException {
+
+        try {
+            if (waitForConnectorFinished()) {
+                if (connector == null) {
+                    throw new IllegalStateException("connector was null although arbitration finished successfully");
+                }
+
+                connector.executeBroadcastSubscriptionMethod(method, args);
+            }
+        } catch (InterruptedException e) {
+            // shutdown
+        }
+    }
+
+    @Override
     protected <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Throwable {
         Future<T> future = new Future<T>();
         connectorStatusLock.lock();
@@ -356,5 +370,15 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
 
         // arbitration already successfully finished -> send request
         return connector.executeAsyncMethod(method, args, future);
+    }
+
+    private Object unsubscribe(Method method, Object[] args) {
+        if (args[0] == null || !String.class.isAssignableFrom(args[0].getClass())) {
+            throw new JoynrIllegalStateException("First parameter of unsubscribe... has to be a String containing the subscriptionId");
+        }
+        String subscriptionId = (String) args[0];
+        subscriptionManager.unregisterSubscription(subscriptionId);
+        sendSubscriptionMethod(method, args, subscriptionId);
+        return null;
     }
 }

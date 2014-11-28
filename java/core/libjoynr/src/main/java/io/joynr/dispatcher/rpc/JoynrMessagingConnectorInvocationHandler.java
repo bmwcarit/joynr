@@ -22,6 +22,7 @@ package io.joynr.dispatcher.rpc;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -32,13 +33,16 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import javax.annotation.CheckForNull;
 
+import joynr.BroadcastSubscriptionRequest;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.Request;
@@ -66,6 +70,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     private JoynrMessagingEndpointAddress endpointAddress;
 
+    private SubscriptionManager subscriptionManager;
+
     JoynrMessagingConnectorInvocationHandler(String toParticipantId,
                                              JoynrMessagingEndpointAddress endpointAddress,
                                              String fromParticipantId,
@@ -81,6 +87,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         this.messageSender = messageSender;
         this.dispatcher = dispatcher;
+        this.subscriptionManager = subscriptionManager;
 
     }
 
@@ -217,4 +224,57 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("Called unknown method in subscription interface.");
         }
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void executeBroadcastSubscriptionMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
+                                                                                JoynrMessageNotSentException,
+                                                                                JsonGenerationException,
+                                                                                JsonMappingException, IOException {
+
+        if (method.getName().startsWith("subscribeTo")) {
+            JoynrRpcBroadcast broadcastAnnotation = method.getAnnotation(JoynrRpcBroadcast.class);
+            String broadcastName = broadcastAnnotation.broadcastName();
+
+            BroadcastSubscriptionListener broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[0];
+            SubscriptionQos qos = (SubscriptionQos) args[1];
+
+            Map<String, Object> filterParameters = null;
+            if (args.length > 2 && args[2] instanceof Map) {
+                filterParameters = (Map<String, Object>) args[2];
+            }
+            String subscriptionId = subscriptionManager.registerBroadcastSubscription(broadcastName,
+                                                                                      filterParameters,
+                                                                                      broadcastSubscriptionListener,
+                                                                                      qos);
+
+            SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(subscriptionId,
+                                                                                       broadcastName,
+                                                                                       qos);
+
+            MessagingQos messagingQos = new MessagingQos();
+            if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
+                messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+            } else {
+                messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
+            }
+
+            messageSender.sendSubscriptionRequest(fromParticipantId,
+                                                  toParticipantId,
+                                                  endpointAddress,
+                                                  subscriptionRequest,
+                                                  messagingQos);
+        } else if (method.getName().startsWith("unsubscribeFrom")) {
+            String subscriptionId = (String) args[0];
+            SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
+            messageSender.sendSubscriptionStop(fromParticipantId,
+                                               toParticipantId,
+                                               endpointAddress,
+                                               subscriptionStop,
+                                               qosSettings);
+        } else {
+            throw new JoynrIllegalStateException("Called unknown method in subscription interface.");
+        }
+    }
+
 }

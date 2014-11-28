@@ -44,6 +44,13 @@ public abstract class JoynrInvocationHandler implements InvocationHandler {
                                                                                      JsonMappingException, IOException,
                                                                                      IllegalAccessException, Throwable;
 
+    protected abstract void executeBroadcastSubscriptionMethod(Method method, Object[] args)
+                                                                                            throws JoynrSendBufferFullException,
+                                                                                            JoynrMessageNotSentException,
+                                                                                            JsonGenerationException,
+                                                                                            JsonMappingException,
+                                                                                            IOException;
+
     protected abstract Object executeSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
                                                                              JoynrSendBufferFullException,
                                                                              JoynrMessageNotSentException,
@@ -67,6 +74,9 @@ public abstract class JoynrInvocationHandler implements InvocationHandler {
         Class<?> methodInterfaceClass = method.getDeclaringClass();
         if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeSubscriptionMethod(method, args);
+        } else if (JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
+            executeBroadcastSubscriptionMethod(method, args);
+            return null;
         } else if (JoynrSyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeSyncMethod(method, args);
         } else if (JoynrAsyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
