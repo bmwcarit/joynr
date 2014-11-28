@@ -23,6 +23,7 @@ import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,6 +43,7 @@ import com.google.inject.name.Named;
 public class SubscriptionManagerImpl implements SubscriptionManager {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
+    private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
     private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
@@ -57,6 +59,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         super();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
+        this.broadcastSubscriptionListenerDirectory = Maps.newConcurrentMap();
         this.subscriptionStates = Maps.newConcurrentMap();
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
@@ -65,6 +68,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
+                                   ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
                                    ConcurrentMap<String, PubSubState> subscriptionStates,
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
@@ -72,6 +76,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                    ScheduledExecutorService cleanupScheduler) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
+        this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
         this.subscriptionStates = subscriptionStates;
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
@@ -131,6 +136,17 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             }
         }
 
+        return subscriptionId;
+    }
+
+    @Override
+    public String registerBroadcastSubscription(String broadcastName,
+                                                Map<String, Object> filterParameters,
+                                                BroadcastSubscriptionListener broadcastSubscriptionListener,
+                                                SubscriptionQos qos) {
+        String subscriptionId = registerSubscription(qos);
+        logger.info("Attribute subscription registered with Id: " + subscriptionId);
+        broadcastSubscriptionListenerDirectory.put(subscriptionId, broadcastSubscriptionListener);
         return subscriptionId;
     }
 
@@ -206,4 +222,5 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     public void shutdown() {
 
     }
+
 }

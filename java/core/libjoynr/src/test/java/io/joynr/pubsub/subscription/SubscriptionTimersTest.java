@@ -24,7 +24,6 @@ import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import io.joynr.pubsub.PubSubState;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -42,15 +41,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionTimersTest.class);
 
     private SubscriptionManager subscriptionManager;
-    private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory;
-    private ConcurrentMap<String, PubSubState> subscriptionStates;
+
     private ScheduledExecutorService subscriptionEndScheduler;
     ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
@@ -59,8 +56,6 @@ public class SubscriptionTimersTest {
     @Mock
     private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
-    @Mock
-    private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
     private String subscriptionId;
 
     private int period = 100;
@@ -73,20 +68,9 @@ public class SubscriptionTimersTest {
 
     @Before
     public void setUp() {
-        attributeSubscriptionDirectory = Maps.newConcurrentMap();
-        subscriptionStates = Maps.newConcurrentMap();
-        missedPublicationTimers = Maps.newConcurrentMap();
-        subscriptionEndFutures = Maps.newConcurrentMap();
         subscriptionEndScheduler = Executors.newScheduledThreadPool(10);
-        subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
-                                                          subscriptionStates,
-                                                          missedPublicationTimers,
-                                                          subscriptionEndFutures,
-                                                          subscriptionAttributeTypes,
-                                                          subscriptionEndScheduler);
-
+        subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler);
         attributeName = "testAttribute";
-
     }
 
     @Test(timeout = 3000)

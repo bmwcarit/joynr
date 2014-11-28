@@ -19,11 +19,13 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,6 +56,7 @@ public class SubscriptionManagerTest {
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory = spy(new ConcurrentHashMap<String, AttributeSubscriptionListener<?>>());
+    private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory = spy(new ConcurrentHashMap<String, BroadcastSubscriptionListener>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
 
@@ -71,8 +74,8 @@ public class SubscriptionManagerTest {
 
     @Before
     public void setUp() {
-
         subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
+                                                          broadcastSubscriptionDirectory,
                                                           subscriptionStates,
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
@@ -121,6 +124,27 @@ public class SubscriptionManagerTest {
 
         Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
                                                            Mockito.eq(attributeSubscriptionCallback));
+        Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+
+        Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
+                                                  Mockito.eq(qos.getExpiryDate()),
+                                                  Mockito.eq(TimeUnit.MILLISECONDS));
+        Mockito.verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
+                                                                     Mockito.any(ScheduledFuture.class));
+    }
+
+    @Test
+    public void registerBroadcastSubscription() {
+        String broadcastName = "broadcastName";
+        Map<String, Object> filterParameters = null;
+        BroadcastSubscriptionListener broadcastSubscriptionCallback = mock(BroadcastSubscriptionListener.class);
+        subscriptionId = subscriptionManager.registerBroadcastSubscription(broadcastName,
+                                                                           filterParameters,
+                                                                           broadcastSubscriptionCallback,
+                                                                           qos);
+
+        Mockito.verify(broadcastSubscriptionDirectory).put(Mockito.anyString(),
+                                                           Mockito.eq(broadcastSubscriptionCallback));
         Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
