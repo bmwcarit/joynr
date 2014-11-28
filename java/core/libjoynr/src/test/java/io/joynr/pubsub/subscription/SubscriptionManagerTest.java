@@ -20,9 +20,11 @@ package io.joynr.pubsub.subscription;
  */
 
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -49,16 +51,11 @@ public class SubscriptionManagerTest {
     private SubscriptionQos qosWithoutExpiryDate;
 
     @Mock
-    private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory;
-
-    @Mock
-    private ConcurrentMap<String, PubSubState> subscriptionStates;
-
-    @Mock
-    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
-
-    @Mock
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
+
+    private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory = spy(new ConcurrentHashMap<String, AttributeSubscriptionListener<?>>());
+    private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
+    private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
 
     @Mock
     private PubSubState subscriptionState;
@@ -74,6 +71,7 @@ public class SubscriptionManagerTest {
 
     @Before
     public void setUp() {
+
         subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
                                                           subscriptionStates,
                                                           missedPublicationTimers,
