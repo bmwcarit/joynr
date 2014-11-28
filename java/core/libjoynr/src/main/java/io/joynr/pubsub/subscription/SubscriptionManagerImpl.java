@@ -79,25 +79,40 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.cleanupScheduler = cleanupScheduler;
     }
 
-    @Override
-    public String registerAttributeSubscription(final String attributeName,
-                                                Class<? extends TypeReference<?>> attributeTypeReference,
-                                                AttributeSubscriptionListener<?> attributeSubscriptionCallback,
-                                                final SubscriptionQos qos) {
-
+    private String registerSubscription(final SubscriptionQos qos) {
         String uuid = UUID.randomUUID().toString();
         String subscriptionId = uuid;
-        logger.info("Attribute subscription registered with Id: " + subscriptionId);
-        subscriptionAttributeTypes.put(subscriptionId, attributeTypeReference);
-        subscriptionListenerDirectory.put(subscriptionId, attributeSubscriptionCallback);
 
         PubSubState subState = new PubSubState();
         subState.updateTimeOfLastPublication();
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDate();
-        logger.info("####################### expiryDate in: "
-                + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate - System.currentTimeMillis()));
+        logger.info("subscription: {} expiryDate: "
+                            + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
+                                    - System.currentTimeMillis()),
+                    subscriptionId);
+
+        if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
+            SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
+                                                                                 expiryDate,
+                                                                                 TimeUnit.MILLISECONDS);
+            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        }
+        return subscriptionId;
+    }
+
+    @Override
+    public String registerAttributeSubscription(final String attributeName,
+                                                Class<? extends TypeReference<?>> attributeTypeReference,
+                                                AttributeSubscriptionListener<?> attributeSubscriptionCallback,
+                                                final SubscriptionQos qos) {
+
+        String subscriptionId = registerSubscription(qos);
+        logger.info("Attribute subscription registered with Id: " + subscriptionId);
+        subscriptionAttributeTypes.put(subscriptionId, attributeTypeReference);
+        subscriptionListenerDirectory.put(subscriptionId, attributeSubscriptionCallback);
 
         if (qos instanceof HeartbeatSubscriptionInformation) {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
@@ -108,19 +123,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                 logger.info("Will notify if updates are missed.");
 
                 missedPublicationTimers.put(subscriptionId,
-                                            new MissedPublicationTimer(expiryDate,
+                                            new MissedPublicationTimer(qos.getExpiryDate(),
                                                                        heartbeat.getHeartbeat(),
                                                                        heartbeat.getAlertAfterInterval(),
                                                                        attributeSubscriptionCallback,
-                                                                       subState));
+                                                                       subscriptionStates.get(subscriptionId)));
             }
-        }
-        if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
-            SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
-            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
-                                                                                 expiryDate,
-                                                                                 TimeUnit.MILLISECONDS);
-            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
         }
 
         return subscriptionId;
