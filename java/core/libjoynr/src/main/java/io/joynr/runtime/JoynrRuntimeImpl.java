@@ -34,6 +34,7 @@ import io.joynr.subtypes.JoynrType;
 
 import java.util.Set;
 
+import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
@@ -72,11 +73,12 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
 
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
-                SubscriptionStop.class, SubscriptionPublication.class };
+                SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
 
     }
 
+    @Override
     public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
 
         if (domain == null || domain.isEmpty()) {
