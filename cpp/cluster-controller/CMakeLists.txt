@@ -188,7 +188,7 @@ else()
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/
+        DESTINATION ${INSTALL_BIN_DIR}/resources/
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
