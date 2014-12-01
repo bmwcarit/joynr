@@ -88,7 +88,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
 public class ProviderProxyEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(ProviderProxyEnd2EndTest.class);
 
@@ -768,8 +767,6 @@ public class ProviderProxyEnd2EndTest {
         proxy.methodStringDoubleParameters("text", 42d);
     }
 
-    // Currently causes an NPE, see bug 1029
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMethodWithNullEnumInputReturnsSomethingSensible() throws JoynrArbitrationException,
                                                                      JoynrIllegalStateException, InterruptedException {
