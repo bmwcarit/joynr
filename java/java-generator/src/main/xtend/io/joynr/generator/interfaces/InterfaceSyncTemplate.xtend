@@ -52,7 +52,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 
 import io.joynr.exceptions.JoynrArbitrationException;
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false)»
 	import «datatype»;
 «ENDFOR»
 

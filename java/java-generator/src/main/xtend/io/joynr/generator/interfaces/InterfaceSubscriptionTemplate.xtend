@@ -52,7 +52,7 @@ import io.joynr.pubsub.SubscriptionQos;
 «ENDIF»
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, true)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 

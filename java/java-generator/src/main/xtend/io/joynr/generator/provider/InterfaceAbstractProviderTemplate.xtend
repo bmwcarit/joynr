@@ -45,7 +45,7 @@ class InterfaceAbstractProviderTemplate {
 		import «joynTypePackagePrefix».types.ProviderQos;
 		
 		
-		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, true)»
 			import «datatype»;
 		«ENDFOR»
 			
