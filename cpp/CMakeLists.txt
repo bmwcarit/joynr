@@ -68,6 +68,14 @@ option(
 )
 message(STATUS "option ENABLE_GCOV=" ${ENABLE_GCOV})
 
+option(
+    ENABLE_CLANG_FORMATTER
+    "Use clang-formatter to format source code?"
+    ON
+)
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+
 message(STATUS "############ VARIABLES ############")
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")

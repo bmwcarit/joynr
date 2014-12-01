@@ -14,6 +14,15 @@ set(
 )
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
+
+option(
+    ENABLE_CLANG_FORMATTER
+    "Use clang-formatter to format source code?"
+    ON
+)
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
@@ -199,23 +208,25 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-set(COMMENT "running C++ code formatter: clang-format")
-set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS};${radio-app-consumer_HEADERS}")
-set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES};${radio-app-consumer_SOURCES}")
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS};${radio-app-consumer_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES};${radio-app-consumer_SOURCES}")
 
-add_custom_command(
-    TARGET radio-app
-    PRE_BUILD
-    COMMAND clang-format -i
-        ${radio-app-provider_HEADERS}
-        ${radio-app-consumer_HEADERS}
-        ${radio-app-provider_SOURCES}
-        ${radio-app-consumer_SOURCES}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "${COMMENT}"
-    VERBATIM
-)
+    add_custom_command(
+        TARGET radio-app
+        PRE_BUILD
+        COMMAND clang-format -i
+            ${radio-app-provider_HEADERS}
+            ${radio-app-consumer_HEADERS}
+            ${radio-app-provider_SOURCES}
+            ${radio-app-consumer_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
 
 # Set Visual Studio to do parallel builds
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
