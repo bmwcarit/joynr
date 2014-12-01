@@ -76,6 +76,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @return alertAfterInterval_ms If more than alertAfterInterval_ms Milliseconds pass without receiving a message,
      *         the subscriptionManager will issue a publicationMissed. If set to 0 never alert.
      */
+    @Override
     public long getAlertAfterInterval() {
         return alertAfterInterval;
     }
@@ -168,6 +169,31 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     @JsonIgnore
     public long getHeartbeat() {
         return period;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + (int) (alertAfterInterval ^ (alertAfterInterval >>> 32));
+        result = prime * result + (int) (period ^ (period >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PeriodicSubscriptionQos other = (PeriodicSubscriptionQos) obj;
+        if (alertAfterInterval != other.alertAfterInterval)
+            return false;
+        if (period != other.period)
+            return false;
+        return true;
     }
 
 }

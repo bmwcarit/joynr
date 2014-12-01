@@ -58,4 +58,30 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
         return "BroadcastSubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", broadcastName="
                 + subscribedToName + ", filterParameters=" + filterParameters + "]";
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((filterParameters == null) ? 0 : filterParameters.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        BroadcastSubscriptionRequest other = (BroadcastSubscriptionRequest) obj;
+        if (filterParameters == null) {
+            if (other.filterParameters != null)
+                return false;
+        } else if (!filterParameters.equals(other.filterParameters))
+            return false;
+        return true;
+    }
+
 }

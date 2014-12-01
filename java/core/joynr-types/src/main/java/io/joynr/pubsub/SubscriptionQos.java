@@ -138,4 +138,30 @@ public abstract class SubscriptionQos implements JoynrType {
     public void clearExpiryDate() {
         this.expiryDate = NO_EXPIRY_DATE;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (expiryDate ^ (expiryDate >>> 32));
+        result = prime * result + (int) (publicationTtl ^ (publicationTtl >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SubscriptionQos other = (SubscriptionQos) obj;
+        if (expiryDate != other.expiryDate)
+            return false;
+        if (publicationTtl != other.publicationTtl)
+            return false;
+        return true;
+    }
+
 }

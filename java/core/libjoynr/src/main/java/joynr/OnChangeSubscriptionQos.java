@@ -84,4 +84,27 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
         this.minInterval = minInterval_ms;
 
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (minInterval ^ (minInterval >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        OnChangeSubscriptionQos other = (OnChangeSubscriptionQos) obj;
+        if (minInterval != other.minInterval)
+            return false;
+        return true;
+    }
+
 }
