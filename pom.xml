@@ -175,7 +175,7 @@
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.4</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
@@ -691,12 +691,12 @@
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
 				<artifactId>core</artifactId>
-				<version>2.1.2</version>
+				<version>2.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
 				<artifactId>dbus</artifactId>
-				<version>2.1.2</version>
+				<version>2.1.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
