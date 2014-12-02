@@ -229,6 +229,9 @@ public class PublicationManagerImpl implements PublicationManager {
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     RequestCaller requestCaller) {
         logger.info("adding broadcast publication: " + subscriptionRequest.toString());
+        BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
+        String broadcastName = subscriptionRequest.getSubscribedToName();
+        requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
 
     }
 
