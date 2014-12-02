@@ -68,7 +68,7 @@ public class SubscriptionManagerTest {
     private MissedPublicationTimer missedPublicationTimer;
 
     @Mock
-    private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
+    private ConcurrentMap<String, Class<?>> subscriptionAttributeTypes;
     @Mock
     private ScheduledExecutorService cleanupScheduler;
 

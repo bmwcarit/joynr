@@ -36,6 +36,7 @@ import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
@@ -302,17 +303,22 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         try {
             publication = objectMapper.readValue(message.getPayload(), SubscriptionPublication.class);
             String subscriptionId = publication.getSubscriptionId();
-            Class<? extends TypeReference<?>> attributeType = subscriptionManager.getAttributeTypeReference(subscriptionId);
+            Class<?> receivedType = subscriptionManager.getType(subscriptionId);
 
-            TypeReference<?> typeRef = attributeType.newInstance();
-            Object receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
-            @SuppressWarnings("unchecked")
-            AttributeSubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
-            if (listener == null) {
-                logger.error("No subscription listener found for incoming publication!");
+            Object receivedObject;
+            if (TypeReference.class.isAssignableFrom(receivedType)) {
+                TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
+                receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
             } else {
-                subscriptionManager.touchSubscriptionState(subscriptionId);
-                listener.receive(receivedObject);
+                receivedObject = objectMapper.convertValue(publication.getResponse(), receivedType);
+            }
+
+            subscriptionManager.touchSubscriptionState(subscriptionId);
+
+            if (subscriptionManager.isBroadcast(subscriptionId)) {
+                callBroadcastListener(subscriptionId, receivedObject);
+            } else {
+                callSubscriptionListener(subscriptionId, receivedObject);
             }
 
         } catch (Exception e) {
@@ -320,6 +326,19 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
+    private void callSubscriptionListener(String subscriptionId, Object receivedObject) {
+        @SuppressWarnings("unchecked")
+        AttributeSubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
+        if (listener == null) {
+            logger.error("No subscription listener found for incoming publication!");
+        } else {
+            listener.receive(receivedObject);
+        }
+    }
+    private void callBroadcastListener(String subscriptionId, Object receivedObject) throws NoSuchMethodException,
+                                                                                    IllegalAccessException,
+                                                                                    InvocationTargetException {
+    }
     private void handleSubscriptionStopReceived(JoynrMessage message) {
         logger.info("Subscription stop received");
         try {

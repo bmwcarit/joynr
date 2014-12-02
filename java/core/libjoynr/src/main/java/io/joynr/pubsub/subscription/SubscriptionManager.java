@@ -46,7 +46,11 @@ public interface SubscriptionManager {
     @CheckForNull
     AttributeSubscriptionListener<?> getSubscriptionListener(final String subscriptionId);
 
-    Class<? extends TypeReference<?>> getAttributeTypeReference(String subscriptionId);
+    Class<?> getType(String subscriptionId);
 
     void shutdown();
+
+    boolean isBroadcast(String subscriptionId);
+
+    BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId);
 }
