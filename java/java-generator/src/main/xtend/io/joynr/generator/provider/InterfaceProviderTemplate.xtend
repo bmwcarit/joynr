@@ -31,29 +31,29 @@ class InterfaceProviderTemplate {
 		val className = interfaceName + "Provider"
 		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		
-		
+
+
 		'''
-		
+
 		«warning()»
 		package «packagePath»;
-		
+
 		import java.util.List;
 		import java.util.ArrayList;
 		import java.util.Map;
-		
+
 		import io.joynr.provider.JoynrProvider;
 
-		
+
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
 		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the fibex. 
 		@SuppressWarnings("unused")
-			
+
 		public interface «className» extends «syncClassName» {
-			
-			«FOR attribute: getAttributes(serviceInterface)»
+
+		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
 			«IF isReadable(attribute)»
@@ -71,10 +71,13 @@ class InterfaceProviderTemplate {
 			«ENDIF»
 		«ENDFOR»
 
+		«FOR broadcast: serviceInterface.broadcasts SEPARATOR '\n'»
+			«val broadcastName = broadcast.joynrName»
+			public void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
+		«ENDFOR»
+
 		}
-		
-		'''	
-	}	
-	
-			
+
+		'''
+	}
 }
