@@ -436,14 +436,19 @@ public class PublicationManagerImpl implements PublicationManager {
     private boolean processFilterChain(PublicationInformation publicationInformation,
                                        List<BroadcastFilter> filters,
                                        Object[] values) {
-        boolean filterResult = true;
-        BroadcastSubscriptionRequest subscriptionRequest = (BroadcastSubscriptionRequest) publicationInformation.subscriptionRequest;
-        Map<String, Object> filterParameters = subscriptionRequest.getFilterParameters();
 
-        for (BroadcastFilter filter : filters) {
-            filterResult &= filter.filter(values, filterParameters);
+        if (filters != null && filters.size() > 0) {
+            boolean filterResult = true;
+            BroadcastSubscriptionRequest subscriptionRequest = (BroadcastSubscriptionRequest) publicationInformation.subscriptionRequest;
+            Map<String, Object> filterParameters = subscriptionRequest.getFilterParameters();
+
+            for (BroadcastFilter filter : filters) {
+                filterResult &= filter.filter(values, filterParameters);
+            }
+            return filterResult;
+        } else {
+            return true;
         }
-        return filterResult;
     }
 
     private void sendPublication(Object value, PublicationInformation publicationInformation) {
