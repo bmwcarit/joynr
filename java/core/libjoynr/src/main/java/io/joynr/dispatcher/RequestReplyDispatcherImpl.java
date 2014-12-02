@@ -34,11 +34,15 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
-import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -245,7 +249,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 }
             } catch (IOException e) {
                 logger.error("Error extracting payload for message " + message.getId() + ", raw payload: "
-                        + message.getPayload(), e.getMessage());
+                                     + message.getPayload(),
+                             e.getMessage());
             }
         }
 
@@ -335,10 +340,30 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             listener.receive(receivedObject);
         }
     }
+
     private void callBroadcastListener(String subscriptionId, Object receivedObject) throws NoSuchMethodException,
                                                                                     IllegalAccessException,
                                                                                     InvocationTargetException {
+        BroadcastSubscriptionListener broadcastSubscriptionListener = subscriptionManager.getBroadcastSubscriptionListener(subscriptionId);
+
+        List<?> receivedList = (List<?>) receivedObject;
+        Object[] broadcastValues = receivedList.toArray(new Object[receivedList.size()]);
+        Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
+        Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("receive", broadcastTypes);
+        if (!receive.isAccessible()) {
+            receive.setAccessible(true);
+        }
+        receive.invoke(broadcastSubscriptionListener, broadcastValues);
     }
+
+    private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {
+        List<Class<?>> parameterTypes = new ArrayList<Class<?>>(broadcastValues.length);
+        for (int i = 0; i < broadcastValues.length; i++) {
+            parameterTypes.add(broadcastValues[i].getClass());
+        }
+        return parameterTypes.toArray(new Class<?>[parameterTypes.size()]);
+    }
+
     private void handleSubscriptionStopReceived(JoynrMessage message) {
         logger.info("Subscription stop received");
         try {
