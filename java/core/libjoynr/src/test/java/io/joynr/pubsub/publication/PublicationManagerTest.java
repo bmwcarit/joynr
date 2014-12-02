@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -336,9 +337,9 @@ public class PublicationManagerTest {
                                                           publicationCaptured.capture(),
                                                           qosCaptured.capture());
 
-        Object[] response = (Object[]) publicationCaptured.getValue().getResponse();
-        assertEquals(eventValues[0], response[0]);
-        assertEquals(eventValues[1], response[1]);
+        List<?> response = (List<?>) publicationCaptured.getValue().getResponse();
+        assertEquals(eventValues[0], response.get(0));
+        assertEquals(eventValues[1], response.get(1));
         assertEquals(ttl, qosCaptured.getValue().getRoundTripTtl_ms());
 
     }
@@ -432,9 +433,9 @@ public class PublicationManagerTest {
                                                           publicationCaptured.capture(),
                                                           qosCaptured.capture());
 
-        Object[] response = (Object[]) publicationCaptured.getValue().getResponse();
-        assertEquals(eventValues[0], response[0]);
-        assertEquals(eventValues[1], response[1]);
+        List<?> response = (List<?>) publicationCaptured.getValue().getResponse();
+        assertEquals(eventValues[0], response.get(0));
+        assertEquals(eventValues[1], response.get(1));
 
     }
 

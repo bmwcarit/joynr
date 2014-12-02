@@ -30,6 +30,7 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -421,9 +422,8 @@ public class PublicationManagerImpl implements PublicationManager {
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (processFilterChain(publicationInformation, filters, values)) {
-                sendPublication(values, publicationInformation);
-                logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
-                            subscriptionId);
+                sendPublication(Arrays.asList(values), publicationInformation);
+                logger.info("event occured changed for subscription id: {} sending publication: ", subscriptionId);
             }
 
         } else {
