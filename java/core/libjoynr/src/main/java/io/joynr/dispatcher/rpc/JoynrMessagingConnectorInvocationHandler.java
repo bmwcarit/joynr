@@ -33,12 +33,12 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.publication.BroadcastFilterParameters;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import javax.annotation.CheckForNull;
 
@@ -239,17 +239,17 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             BroadcastSubscriptionListener broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[0];
             SubscriptionQos qos = (SubscriptionQos) args[1];
 
-            Map<String, Object> filterParameters = null;
-            if (args.length > 2 && args[2] instanceof Map) {
-                filterParameters = (Map<String, Object>) args[2];
+            BroadcastFilterParameters filterParameters = null;
+            if (args.length > 2 && args[2] instanceof BroadcastFilterParameters) {
+                filterParameters = (BroadcastFilterParameters) args[2];
             }
             String subscriptionId = subscriptionManager.registerBroadcastSubscription(broadcastName,
-                                                                                      filterParameters,
                                                                                       broadcastSubscriptionListener,
                                                                                       qos);
 
             SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                        broadcastName,
+                                                                                       filterParameters,
                                                                                        qos);
 
             MessagingQos messagingQos = new MessagingQos();

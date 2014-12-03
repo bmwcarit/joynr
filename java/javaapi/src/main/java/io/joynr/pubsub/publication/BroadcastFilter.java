@@ -19,8 +19,6 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 
-import java.util.Map;
-
 public abstract class BroadcastFilter {
 
     private String name;
@@ -33,6 +31,6 @@ public abstract class BroadcastFilter {
         return name;
     }
 
-    abstract boolean filter(Object[] values, Map<String, Object> filterParameters);
+    abstract boolean filter(Object[] values, BroadcastFilterParameters filterParameters);
 
 }

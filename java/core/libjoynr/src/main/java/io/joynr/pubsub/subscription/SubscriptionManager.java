@@ -21,8 +21,6 @@ package io.joynr.pubsub.subscription;
 
 import io.joynr.pubsub.SubscriptionQos;
 
-import java.util.Map;
-
 import javax.annotation.CheckForNull;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,7 +33,6 @@ public interface SubscriptionManager {
                                          final SubscriptionQos qos);
 
     String registerBroadcastSubscription(final String broadcastName,
-                                         final Map<String, Object> filterParameters,
                                          BroadcastSubscriptionListener broadcastSubscriptionCallback,
                                          final SubscriptionQos qos);
 

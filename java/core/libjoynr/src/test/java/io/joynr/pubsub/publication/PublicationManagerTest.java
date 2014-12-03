@@ -40,9 +40,7 @@ import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -53,6 +51,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProvider;
 
 import org.junit.After;
@@ -62,7 +61,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -311,7 +309,7 @@ public class PublicationManagerTest {
 
         long minInterval_ms = 0;
         long ttl = 1000;
-        Map<String, Object> filterParameters = new HashMap<String, Object>();
+        testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
         SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
@@ -354,9 +352,10 @@ public class PublicationManagerTest {
 
         long minInterval_ms = 0;
         long ttl = 1000;
-        Map<String, Object> filterParameters = new HashMap<String, Object>();
-        filterParameters.put("filterParam1", "filterValue1");
-        filterParameters.put("filterParam2", "filterValue2");
+
+        testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters();
+        filterParameters.addCountryFilterParameter("Germany");
+        filterParameters.addStartTimeFilterParameter("4:00");
 
         SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
 
@@ -373,11 +372,13 @@ public class PublicationManagerTest {
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
         BroadcastFilter filter1 = mock(BroadcastFilter.class);
-        when(filter1.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        when(filter1.filter(any(Object[].class),
+                            any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filter1);
 
         BroadcastFilter filter2 = mock(BroadcastFilter.class);
-        when(filter2.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        when(filter2.filter(any(Object[].class),
+                            any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filter2);
 
         publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
@@ -404,7 +405,7 @@ public class PublicationManagerTest {
 
         long minInterval_ms = 0;
         long ttl = 1000;
-        Map<String, Object> filterParameters = new HashMap<String, Object>();
+        testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
         SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
@@ -420,7 +421,8 @@ public class PublicationManagerTest {
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
         BroadcastFilter filterTrue = mock(BroadcastFilter.class);
-        when(filterTrue.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        when(filterTrue.filter(any(Object[].class),
+                               any(testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filterTrue);
 
         publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
@@ -448,7 +450,7 @@ public class PublicationManagerTest {
 
         long minInterval_ms = 0;
         long ttl = 1000;
-        Map<String, Object> filterParameters = new HashMap<String, Object>();
+        testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters();
         SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
 
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(SUBSCRIPTION_ID,
@@ -464,11 +466,13 @@ public class PublicationManagerTest {
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
         BroadcastFilter filterTrue = mock(BroadcastFilter.class);
-        when(filterTrue.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(true);
+        when(filterTrue.filter(any(Object[].class),
+                               any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filterTrue);
 
         BroadcastFilter filterFalse = mock(BroadcastFilter.class);
-        when(filterFalse.filter(any(Object[].class), Matchers.<Map<String, Object>> any())).thenReturn(false);
+        when(filterFalse.filter(any(Object[].class),
+                                any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(false);
         filters.add(filterFalse);
 
         publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);

@@ -23,9 +23,8 @@ import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -142,7 +141,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public String registerBroadcastSubscription(String broadcastName,
-                                                Map<String, Object> filterParameters,
                                                 BroadcastSubscriptionListener broadcastSubscriptionListener,
                                                 SubscriptionQos qos) {
         String subscriptionId = registerSubscription(qos);

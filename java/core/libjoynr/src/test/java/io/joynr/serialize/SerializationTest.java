@@ -31,9 +31,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -48,6 +46,7 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.TestEnum;
+import joynr.tests.testBroadcastInterface;
 import joynr.types.CapabilityInformation;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
@@ -346,9 +345,9 @@ public class SerializationTest {
 
         String subscriptionId = "1234";
         String subscribedToName = "myEvent";
-        Map<String, Object> filterParameters = new HashMap<String, Object>();
-        filterParameters.put("filter1", 1);
-        filterParameters.put("filter2", "myfilterValue");
+        testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
+        filterParameters.addCountryFilterParameter("Germany");
+        filterParameters.addStartTimeFilterParameter("4:00");
         SubscriptionQos qos = new OnChangeSubscriptionQos(0, System.currentTimeMillis() + 60000, 1000);
         BroadcastSubscriptionRequest broadcastSubscription = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                               subscribedToName,

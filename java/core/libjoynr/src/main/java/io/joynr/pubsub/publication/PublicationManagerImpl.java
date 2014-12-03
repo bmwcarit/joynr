@@ -33,7 +33,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -443,7 +442,7 @@ public class PublicationManagerImpl implements PublicationManager {
         if (filters != null && filters.size() > 0) {
             boolean filterResult = true;
             BroadcastSubscriptionRequest subscriptionRequest = (BroadcastSubscriptionRequest) publicationInformation.subscriptionRequest;
-            Map<String, Object> filterParameters = subscriptionRequest.getFilterParameters();
+            BroadcastFilterParameters filterParameters = subscriptionRequest.getFilterParameters();
 
             for (BroadcastFilter filter : filters) {
                 filterResult &= filter.filter(values, filterParameters);

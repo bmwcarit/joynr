@@ -1,5 +1,7 @@
 package io.joynr.pubsub.publication;
 
+import io.joynr.subtypes.JoynrType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,11 +25,50 @@ import javax.annotation.Nonnull;
  * limitations under the License.
  * #L%
  */
-public class BroadcastFilterParameters {
+public class BroadcastFilterParameters implements JoynrType {
+
     Map<String, Object> filterParameters = new HashMap<String, Object>();
+
+    public Map<String, Object> getFilterParameters() {
+        return filterParameters;
+    }
+
+    public void setFilterParameters(Map<String, Object> filterParameters) {
+        this.filterParameters = filterParameters;
+    }
 
     protected void addFilterParameter(@Nonnull String key, Object value) {
         filterParameters.put(key, value);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((filterParameters == null) ? 0 : filterParameters.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        BroadcastFilterParameters other = (BroadcastFilterParameters) obj;
+        if (filterParameters == null) {
+            if (other.filterParameters != null)
+                return false;
+        } else if (!filterParameters.equals(other.filterParameters))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "BroadcastFilterParameters [filterParameters=" + filterParameters + "]";
     }
 
 }

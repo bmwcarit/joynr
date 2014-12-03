@@ -25,7 +25,6 @@ import static org.mockito.Mockito.spy;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -136,10 +135,8 @@ public class SubscriptionManagerTest {
     @Test
     public void registerBroadcastSubscription() {
         String broadcastName = "broadcastName";
-        Map<String, Object> filterParameters = null;
         BroadcastSubscriptionListener broadcastSubscriptionCallback = mock(BroadcastSubscriptionListener.class);
         subscriptionId = subscriptionManager.registerBroadcastSubscription(broadcastName,
-                                                                           filterParameters,
                                                                            broadcastSubscriptionCallback,
                                                                            qos);
 

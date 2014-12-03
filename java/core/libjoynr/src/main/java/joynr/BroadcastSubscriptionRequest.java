@@ -20,12 +20,11 @@ package joynr;
  */
 
 import io.joynr.pubsub.SubscriptionQos;
-
-import java.util.Map;
+import io.joynr.pubsub.publication.BroadcastFilterParameters;
 
 public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
-    private Map<String, Object> filterParameters;
+    private BroadcastFilterParameters filterParameters;
 
     /**
      * \class BroadcastSubscriptionRequest \brief BroadcastSubscriptionRequest stores the information that is necessary
@@ -37,25 +36,21 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
     }
 
     public BroadcastSubscriptionRequest(String subscriptionId,
-                                        String broadcastName,
-                                        Map<String, Object> filterParameters,
+                                        String subscribedToName,
+                                        BroadcastFilterParameters filterParameters,
                                         SubscriptionQos qos) {
-        super(subscriptionId, broadcastName, qos);
+        super(subscriptionId, subscribedToName, qos);
         this.filterParameters = filterParameters;
 
     }
 
-    public BroadcastSubscriptionRequest(String subscriptionId, String broadcastName, SubscriptionQos qos) {
-        super(subscriptionId, broadcastName, qos);
-    }
-
-    public Map<String, Object> getFilterParameters() {
+    public BroadcastFilterParameters getFilterParameters() {
         return filterParameters;
     }
 
     @Override
     public String toString() {
-        return "BroadcastSubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", broadcastName="
+        return "BroadcastSubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", subscribedToName="
                 + subscribedToName + ", filterParameters=" + filterParameters + "]";
     }
 
