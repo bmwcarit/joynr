@@ -30,6 +30,7 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -444,8 +445,31 @@ public class PublicationManagerImpl implements PublicationManager {
             BroadcastSubscriptionRequest subscriptionRequest = (BroadcastSubscriptionRequest) publicationInformation.subscriptionRequest;
             BroadcastFilterParameters filterParameters = subscriptionRequest.getFilterParameters();
 
+            List<Class<?>> parameterTypes = new ArrayList<Class<?>>(values.length + 1);
+            for (int i = 0; i < values.length; i++) {
+                parameterTypes.add(values[i].getClass());
+            }
+            parameterTypes.add(filterParameters.getClass());
+
+            Class<?>[] types = parameterTypes.toArray(new Class<?>[parameterTypes.size()]);
+
             for (BroadcastFilter filter : filters) {
-                filterResult &= filter.filter(values, filterParameters);
+                Method filterMethod;
+                try {
+                    filterMethod = filter.getClass().getDeclaredMethod("filter", types);
+
+                    if (!filterMethod.isAccessible()) {
+                        filterMethod.setAccessible(true);
+                    }
+
+                    Object[] args = Arrays.copyOf(values, values.length + 1);
+                    args[args.length - 1] = filterParameters;
+
+                    filterResult &= (Boolean) filterMethod.invoke(filter, args);
+                } catch (Exception e) {
+                    logger.error("processFilterChain error: {}", e.getMessage());
+                    throw new IllegalStateException("processFilterChain: Error in reflection calling filters.", e);
+                }
             }
             return filterResult;
         } else {

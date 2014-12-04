@@ -52,7 +52,11 @@ import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.tests.testBroadcastInterface;
+import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
+import joynr.tests.testLocationUpdateWithSpeedSelectiveBroadcastFilter;
 import joynr.tests.testProvider;
+import joynr.types.GpsFixEnum;
+import joynr.types.GpsLocation;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -321,11 +325,13 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        Object[] eventValues = { "value1", "value2" };
+        GpsLocation location = new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 9l, 10l, 11);
+        double speed = 100;
 
         publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(),
                                          new ArrayList<BroadcastFilter>(),
-                                         eventValues);
+                                         location,
+                                         speed);
 
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
@@ -336,8 +342,8 @@ public class PublicationManagerTest {
                                                           qosCaptured.capture());
 
         List<?> response = (List<?>) publicationCaptured.getValue().getResponse();
-        assertEquals(eventValues[0], response.get(0));
-        assertEquals(eventValues[1], response.get(1));
+        assertEquals(location, response.get(0));
+        assertEquals(speed, response.get(1));
         assertEquals(ttl, qosCaptured.getValue().getRoundTripTtl_ms());
 
     }
@@ -368,20 +374,20 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        Object[] eventValues = { "value1", "value2" };
+        GpsLocation eventValue = new GpsLocation();
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
-        BroadcastFilter filter1 = mock(BroadcastFilter.class);
-        when(filter1.filter(any(Object[].class),
+        testLocationUpdateSelectiveBroadcastFilter filter1 = mock(testLocationUpdateSelectiveBroadcastFilter.class);
+        when(filter1.filter(any(GpsLocation.class),
                             any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filter1);
 
-        BroadcastFilter filter2 = mock(BroadcastFilter.class);
-        when(filter2.filter(any(Object[].class),
+        testLocationUpdateSelectiveBroadcastFilter filter2 = mock(testLocationUpdateSelectiveBroadcastFilter.class);
+        when(filter2.filter(any(GpsLocation.class),
                             any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filter2);
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
 
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
@@ -391,8 +397,8 @@ public class PublicationManagerTest {
                                                           publicationCaptured.capture(),
                                                           qosCaptured.capture());
 
-        verify(filter1).filter(eventValues, filterParameters);
-        verify(filter2).filter(eventValues, filterParameters);
+        verify(filter1).filter(eventValue, filterParameters);
+        verify(filter2).filter(eventValue, filterParameters);
 
     }
 
@@ -417,15 +423,17 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        Object[] eventValues = { "value1", "value2" };
+        GpsLocation location = new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 9l, 10l, 11);
+        double speed = 100;
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
-        BroadcastFilter filterTrue = mock(BroadcastFilter.class);
-        when(filterTrue.filter(any(Object[].class),
+        testLocationUpdateWithSpeedSelectiveBroadcastFilter filterTrue = mock(testLocationUpdateWithSpeedSelectiveBroadcastFilter.class);
+        when(filterTrue.filter(any(GpsLocation.class),
+                               any(Double.class),
                                any(testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filterTrue);
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, location, speed);
 
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
@@ -436,8 +444,8 @@ public class PublicationManagerTest {
                                                           qosCaptured.capture());
 
         List<?> response = (List<?>) publicationCaptured.getValue().getResponse();
-        assertEquals(eventValues[0], response.get(0));
-        assertEquals(eventValues[1], response.get(1));
+        assertEquals(location, response.get(0));
+        assertEquals(speed, response.get(1));
 
     }
 
@@ -462,20 +470,20 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        Object[] eventValues = { "value1", "value2" };
+        GpsLocation eventValue = new GpsLocation();
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
-        BroadcastFilter filterTrue = mock(BroadcastFilter.class);
-        when(filterTrue.filter(any(Object[].class),
+        testLocationUpdateSelectiveBroadcastFilter filterTrue = mock(testLocationUpdateSelectiveBroadcastFilter.class);
+        when(filterTrue.filter(any(GpsLocation.class),
                                any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filterTrue);
 
-        BroadcastFilter filterFalse = mock(BroadcastFilter.class);
-        when(filterFalse.filter(any(Object[].class),
+        testLocationUpdateSelectiveBroadcastFilter filterFalse = mock(testLocationUpdateSelectiveBroadcastFilter.class);
+        when(filterFalse.filter(any(GpsLocation.class),
                                 any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(false);
         filters.add(filterFalse);
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValues);
+        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
 
         verify(messageSender, never()).sendSubscriptionPublication(any(String.class),
                                                                    any(String.class),

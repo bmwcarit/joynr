@@ -149,21 +149,44 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
 	}
 
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
+	def getCommaSeperatedTypedOutputParameterList(
+		Iterable<FArgument> arguments,
+		boolean linebreak
+	) {
 		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
+		for(FArgument argument : arguments){
+
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
-			returnStringBuilder.append("& ");
+			returnStringBuilder.append(" ");
 			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
+			returnStringBuilder.append(",");
+
+			if (linebreak) {
+				returnStringBuilder.append("\n");
+			}
+			else {
+				returnStringBuilder.append(" ");
+			}
 		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
+        val returnString = returnStringBuilder.toString();
+        if (returnString.length() == 0) {
+            return "";
+        }
+        else{
+	        return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
+        }
+	}
+	
+	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false)
+	}
+
+	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false)
+	}
+
+	def getCommaSeperatedTypedOutputParameterListLinebreak(FBroadcast broadcast) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true)
 	}
 
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {

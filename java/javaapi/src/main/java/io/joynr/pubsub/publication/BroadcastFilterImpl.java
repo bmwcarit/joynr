@@ -19,6 +19,16 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 
-public interface BroadcastFilter {
+public class BroadcastFilterImpl implements BroadcastFilter {
+
+    private String name;
+
+    public BroadcastFilterImpl(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 
 }

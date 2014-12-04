@@ -38,6 +38,7 @@ import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
 import static org.eclipse.xtext.util.Files.*
+import io.joynr.generator.filter.FilterGenerator
 
 class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
@@ -48,6 +49,8 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	ProxyGenerator proxyGenerator
 	@Inject
 	ProviderGenerator providerGenerator
+	@Inject
+	FilterGenerator filterGenerator
 	
 	@Inject extension JoynrJavaGeneratorExtensions
 	
@@ -74,6 +77,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 			interfacesGenerator.doGenerate(fInterface, fsa)
 			proxyGenerator.doGenerate(fInterface, fsa)
 			providerGenerator.doGenerate(fInterface, fsa)
+			filterGenerator.doGenerate(fInterface, fsa);
 		}
 		//cleanDirectory(containerpath)
 		communicationModelGenerator.doGenerate(fModel, fsa)
