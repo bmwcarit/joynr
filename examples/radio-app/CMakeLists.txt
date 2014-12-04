@@ -180,6 +180,14 @@ target_link_libraries(radio-app-consumer-ws
     ${JOYNR_LIB_WS_LIBRARIES}
 )
 
+install(TARGETS
+            radio-app-provider-ws
+            radio-app-consumer-ws
+            radio-app-provider-cc
+            radio-app-consumer-cc
+        RUNTIME DESTINATION bin COMPONENT bin
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application (requires: Dbus and running cluster controller)
     # Communicates via Dbus with cluster controller
@@ -206,6 +214,13 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         radio-app
         ${JOYNR_LIB_DBUS_LIBRARIES}
     )
+
+    install(TARGETS
+                radio-app-provider-dbus
+                radio-app-consumer-dbus
+            RUNTIME DESTINATION bin COMPONENT bin
+    )
+
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 if(${ENABLE_CLANG_FORMATTER})
