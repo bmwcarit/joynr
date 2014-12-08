@@ -176,6 +176,10 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
+					<webAppSourceDirectory>src/main/resources</webAppSourceDirectory>
+					<webApp>
+						<contextPath>/discovery</contextPath>
+					</webApp>
 					<!--
 					Don't define system properties here, because it will override system
 					properties defined in plugin management in super POM.
@@ -184,10 +188,6 @@
 						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
 							<war>${project.build.directory}/bounceproxy.war</war>
 							<contextPath>/bounceproxy</contextPath>
-						</contextHandler>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/discovery-directory-servlet.war</war>
-							<contextPath>/discovery</contextPath>
 						</contextHandler>
 					</contextHandlers>
 				</configuration>
