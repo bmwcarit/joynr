@@ -702,3 +702,134 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     delete testProxyBuilder;
 }
+
+TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
+
+    MockGpsSubscriptionListener* mockListenerAttribute = new MockGpsSubscriptionListener();
+    MockGpsSubscriptionListener* mockListenerBroadcast = new MockGpsSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+
+    // Expect initial attribute publication with default value
+    EXPECT_CALL(*mockListenerAttribute, receive(Eq(types::GpsLocation()))).
+            WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockListenerAttribute, receive(Eq(types::GpsLocation(
+                                                                  9.0,
+                                                                  51.0,
+                                                                  508.0,
+                                                                  types::GpsFixEnum::MODE2D,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  444,
+                                                                  444,
+                                                                  2)))).
+            WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockListenerBroadcast, receive(Eq(types::GpsLocation(
+                                                                  9.0,
+                                                                  51.0,
+                                                                  508.0,
+                                                                  types::GpsFixEnum::MODE2D,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  444,
+                                                                  444,
+                                                                  3)))).
+            WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListenerAttribute(
+                    mockListenerAttribute);
+
+    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListenerBroadcast(
+                    mockListenerBroadcast);
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(2);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
+
+    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    // before the register has finished.
+    QThreadSleep::msleep(100);
+
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQos.setDiscoveryTimeout(1000);
+
+    qlonglong qosRoundTripTTL = 500;
+    qlonglong qosCacheDataFreshnessMs = 400000;
+
+    // Send a message and expect to get a result
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+                                               ->setCached(false)
+                                               ->setDiscoveryQos(discoveryQos)
+                                               ->build());
+
+    qint64 minInterval_ms = 50;
+    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos(
+                                    500000,   // validity_ms
+                                    minInterval_ms));  // minInterval_ms
+
+    testProxy->subscribeToLocation(
+                subscriptionListenerAttribute,
+                subscriptionQos);
+
+    testProxy->subscribeToLocationBroadcast(
+                subscriptionListenerBroadcast,
+                subscriptionQos);
+
+    // This wait is necessary, because subcriptions are async, and an event could occur
+    // before the subscription has started.
+    QThreadSleep::msleep(500);
+
+    // Initial attribute publication
+    ASSERT_TRUE(semaphore.tryAcquire(1, 50));
+
+    // Change attribute
+    testProvider->locationChanged(
+                types::GpsLocation(
+                    9.0,
+                    51.0,
+                    508.0,
+                    types::GpsFixEnum::MODE2D,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    444,
+                    444,
+                    2));
+
+    // Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.tryAcquire(1, 50));
+
+    // Emit broadcast
+    testProvider->locationEventOccurred(
+                types::GpsLocation(
+                    9.0,
+                    51.0,
+                    508.0,
+                    types::GpsFixEnum::MODE2D,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    444,
+                    444,
+                    3));
+
+    // Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.tryAcquire(1, 50));
+
+    delete testProxyBuilder;
+}

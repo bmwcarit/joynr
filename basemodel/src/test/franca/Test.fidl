@@ -342,6 +342,13 @@ interface test{
 		}
 	}
 
+	// Broadcast which has the same name as an attribute for testing possible conflicts.
+	broadcast location {
+		out {
+			GpsLocation location
+		}
+	}
+
 	broadcast locationUpdate {
 		out {
 			GpsLocation location
