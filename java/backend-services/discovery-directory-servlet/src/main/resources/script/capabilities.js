@@ -24,6 +24,9 @@ function init() {
     
     var aoColumns = [
     {
+        "sTitle": ""
+    },
+    {
         "sTitle": "Channel"
     },
 
@@ -94,6 +97,7 @@ function update() {
 			}
 			
             var row = [];
+            row.push(trash(participant));
             row.push(channel);
             row.push(participant);
             row.push(domain);
@@ -145,3 +149,13 @@ function difference (referenceArray, differentArray) {
     return returnArray;
 }
 
+function removeCapability(participantId) {
+    $.ajax({
+        url: "capabilities/?participantId=" + participantId,
+        type: "DELETE"
+    });
+}
+
+function trash(participantId) {
+    return "<img onclick=\"javascript:removeCapability('" + participantId  + "')\" src=\"img/trash.png\" height=\"20px\">";
+}
