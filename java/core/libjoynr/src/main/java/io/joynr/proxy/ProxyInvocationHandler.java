@@ -45,6 +45,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.CheckForNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -62,8 +65,11 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
     private SubscriptionManager subscriptionManager;
     private ConcurrentLinkedQueue<QueuedRPC> queuedRpcList = new ConcurrentLinkedQueue<QueuedRPC>();
     private ConcurrentLinkedQueue<QueuedSubscription> queuedSubscriptionsList = new ConcurrentLinkedQueue<QueuedSubscription>();
+    private ConcurrentLinkedQueue<QueuedRPC> queuedBroadcastSubscriptionsList = new ConcurrentLinkedQueue<QueuedRPC>();
     private String interfaceName;
     private String domain;
+
+    private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
 
     // CHECKSTYLE:OFF
     public ProxyInvocationHandler(String domain,
@@ -198,6 +204,36 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
         }
     }
 
+    private void sendQueuedBroadcastSubscriptionRequests() {
+        while (true) {
+            QueuedRPC currentSubscription = queuedBroadcastSubscriptionsList.poll();
+            if (currentSubscription == null) {
+                return;
+            }
+
+            try {
+                // TODO how to react on failures. Setting the failure state in the future is useless as the future is
+                // not passed to the app for subscriptions
+                connector.executeBroadcastSubscriptionMethod(currentSubscription.getMethod(),
+                                                             currentSubscription.getArgs());
+            } catch (JoynrSendBufferFullException e) {
+                currentSubscription.getFuture().onFailure(e);
+
+            } catch (JoynrMessageNotSentException e) {
+                currentSubscription.getFuture().onFailure(e);
+
+            } catch (JsonGenerationException e) {
+                currentSubscription.getFuture().onFailure(new JoynrException(e));
+
+            } catch (JsonMappingException e) {
+                currentSubscription.getFuture().onFailure(new JoynrException(e));
+
+            } catch (IOException e) {
+                currentSubscription.getFuture().onFailure(new JoynrException(e));
+            }
+        }
+    }
+
     private void setFutureErrorState(Future<?> future, JoynrException e) {
         future.onFailure(e);
 
@@ -257,6 +293,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
             if (connector != null) {
                 sendQueuedRequests();
                 sendQueuedSubscriptionRequests();
+                sendQueuedBroadcastSubscriptionRequests();
             }
         } finally {
             connectorStatusLock.unlock();
@@ -341,16 +378,35 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
                                                                                    JsonGenerationException,
                                                                                    JsonMappingException, IOException {
 
+        Future<String> future = new Future<String>();
+        connectorStatusLock.lock();
         try {
-            if (waitForConnectorFinished()) {
-                if (connector == null) {
-                    throw new IllegalStateException("connector was null although arbitration finished successfully");
-                }
-
-                connector.executeBroadcastSubscriptionMethod(method, args);
+            if (!isConnectorReady()) {
+                // waiting for arbitration -> queue request
+                queuedBroadcastSubscriptionsList.offer(new QueuedRPC(method, args, future));
+                return;
             }
-        } catch (InterruptedException e) {
-            // shutdown
+        } finally {
+            connectorStatusLock.unlock();
+        }
+
+        try {
+            connector.executeBroadcastSubscriptionMethod(method, args);
+        } catch (JoynrSendBufferFullException e) {
+            logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+            setFutureErrorState(future, e);
+        } catch (JoynrMessageNotSentException e) {
+            logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+            setFutureErrorState(future, e);
+        } catch (JsonGenerationException e) {
+            logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+            setFutureErrorState(future, new JoynrException(e));
+        } catch (JsonMappingException e) {
+            logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+            setFutureErrorState(future, new JoynrException(e));
+        } catch (IOException e) {
+            logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+            setFutureErrorState(future, new JoynrException(e));
         }
     }
 

@@ -373,8 +373,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void setListOfStrings(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "listOfStrings",
-                                                    deserialisationType = ListStringToken.class) List<String> listOfStrings) {
+                                     @JoynrRpcParam(value = "listOfStrings", deserialisationType = ListStringToken.class) List<String> listOfStrings) {
             this.listOfStrings = listOfStrings;
             callback.onSuccess(null);
         }
@@ -398,8 +397,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void setComplexTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam(value = "complexTestAttribute",
-                                                           deserialisationType = GpsLocationToken.class) GpsLocation complexTestAttribute) {
+                                            @JoynrRpcParam(value = "complexTestAttribute", deserialisationType = GpsLocationToken.class) GpsLocation complexTestAttribute) {
             this.complexTestAttribute = complexTestAttribute;
             callback.onSuccess(null);
         }
@@ -410,8 +408,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void setReadWriteAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                          @JoynrRpcParam(value = "readWriteAttribute",
-                                                         deserialisationType = IntegerToken.class) Integer readWriteAttribute) {
+                                          @JoynrRpcParam(value = "readWriteAttribute", deserialisationType = IntegerToken.class) Integer readWriteAttribute) {
         }
 
         @Override
@@ -433,8 +430,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void setNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                       @JoynrRpcParam(value = "notifyWriteOnly",
-                                                      deserialisationType = IntegerToken.class) Integer notifyWriteOnly) {
+                                       @JoynrRpcParam(value = "notifyWriteOnly", deserialisationType = IntegerToken.class) Integer notifyWriteOnly) {
         }
 
         @Override
@@ -447,8 +443,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void setNotifyReadWrite(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                       @JoynrRpcParam(value = "notifyReadWrite",
-                                                      deserialisationType = IntegerToken.class) Integer notifyReadWrite) {
+                                       @JoynrRpcParam(value = "notifyReadWrite", deserialisationType = IntegerToken.class) Integer notifyReadWrite) {
         }
 
         @Override
@@ -466,8 +461,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void setATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                   @JoynrRpcParam(value = "aTTRIBUTEWITHCAPITALLETTERS",
-                                                                  deserialisationType = IntegerToken.class) Integer aTTRIBUTEWITHCAPITALLETTERS) {
+                                                   @JoynrRpcParam(value = "aTTRIBUTEWITHCAPITALLETTERS", deserialisationType = IntegerToken.class) Integer aTTRIBUTEWITHCAPITALLETTERS) {
         }
 
         @Override
@@ -493,8 +487,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void methodWithEnumListParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                                                @JoynrRpcParam(value = "input",
-                                                               deserialisationType = ListTestEnumToken.class) List<TestEnum> input) {
+                                                @JoynrRpcParam(value = "input", deserialisationType = ListTestEnumToken.class) List<TestEnum> input) {
         }
 
         @Override
@@ -544,23 +537,19 @@ public class ProviderProxyEnd2EndTest {
         @Override
         public void methodStringDoubleListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
                                                      @JoynrRpcParam("stringParam") String stringParam,
-                                                     @JoynrRpcParam(value = "doubleListParam",
-                                                                    deserialisationType = ListDoubleToken.class) List<Double> doubleListParam) {
+                                                     @JoynrRpcParam(value = "doubleListParam", deserialisationType = ListDoubleToken.class) List<Double> doubleListParam) {
         }
 
         @Override
         public void methodCustomCustomListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
                                                      @JoynrRpcParam("customParam") ComplexTestType customParam,
-                                                     @JoynrRpcParam(
-                                                                    value = "customListParam",
-                                                                    deserialisationType = ListComplexTestType2Token.class) List<ComplexTestType2> customListParam) {
+                                                     @JoynrRpcParam(value = "customListParam", deserialisationType = ListComplexTestType2Token.class) List<ComplexTestType2> customListParam) {
         }
 
         @Override
         public void customTypeAndListParameter(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
                                                @JoynrRpcParam("complexTestType") ComplexTestType complexTestType,
-                                               @JoynrRpcParam(value = "complexArray",
-                                                              deserialisationType = ListBaseStructToken.class) List<BaseStruct> complexArray) {
+                                               @JoynrRpcParam(value = "complexArray", deserialisationType = ListBaseStructToken.class) List<BaseStruct> complexArray) {
         }
 
         @Override
@@ -630,8 +619,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void optimizeLocationList(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
-                                         @JoynrRpcParam(value = "inputList",
-                                                        deserialisationType = ListGpsLocationToken.class) List<GpsLocation> inputList) {
+                                         @JoynrRpcParam(value = "inputList", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> inputList) {
         }
 
     }
@@ -851,8 +839,8 @@ public class ProviderProxyEnd2EndTest {
             }
         }, subscriptionQos);
 
-        // wait a little to allow the subscription request to arrive at the provider
-        Thread.sleep(100);
+        // wait a little to allow arbitration to finish, and to allow the subscription request to arrive at the provider
+        Thread.sleep(300);
         provider.onEventOccurred("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
         broadcastReceived.acquire();
 
