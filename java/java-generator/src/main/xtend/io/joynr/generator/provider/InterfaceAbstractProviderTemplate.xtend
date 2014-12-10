@@ -94,7 +94,7 @@ class InterfaceAbstractProviderTemplate {
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
 			public void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
-			    onEventOccurred("«broadcastName»", broadcastFilters, «getOutputParametersCommaSeparated(broadcast)»);
+			    onEventOccurred("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
 			}
 			
 		«ENDFOR»

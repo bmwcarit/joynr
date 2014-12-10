@@ -21,6 +21,7 @@ package io.joynr.provider;
 
 import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.ArrayList;
@@ -36,12 +37,12 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
 
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
     ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
-    protected List<BroadcastFilter> broadcastFilters;
+    protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
 
     public AbstractJoynrProvider() {
         attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
         broadcastListeners = new ConcurrentHashMap<String, List<BroadcastListener>>();
-        broadcastFilters = new ArrayList<BroadcastFilter>();
+        broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
     }
 
     public void onAttributeValueChanged(String attributeName, Object value) {
@@ -122,12 +123,22 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
-    public void addBroadcastFilter(BroadcastFilter filter) {
-        broadcastFilters.add(filter);
+    public void addBroadcastFilter(BroadcastFilterImpl filter) {
+        if (broadcastFilters.containsKey(filter.getName())) {
+            broadcastFilters.get(filter.getName()).add(filter);
+        } else {
+            ArrayList<BroadcastFilter> list = new ArrayList<BroadcastFilter>();
+            list.add(filter);
+            broadcastFilters.put(filter.getName(), list);
+        }
     }
 
-    public void addBroadcastFilter(BroadcastFilter... filters) {
-        broadcastFilters.addAll(Arrays.asList(filters));
+    public void addBroadcastFilter(BroadcastFilterImpl... filters) {
+        List<BroadcastFilterImpl> filtersList = Arrays.asList(filters);
+
+        for (BroadcastFilterImpl filter : filtersList) {
+            addBroadcastFilter(filter);
+        }
     }
 
 }
