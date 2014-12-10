@@ -20,6 +20,7 @@ package io.joynr.integration;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -40,11 +41,15 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
+import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastListener;
+import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
@@ -170,18 +175,29 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public void receive(GpsLocation location) {
-                assertEquals(location, new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
+                assertEquals(location,
+                             new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
                 broadcastReceived.release();
             }
         }, subscriptionQos);
 
         Thread.sleep(300);
 
-        provider.locationUpdateEventOccurred(new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
+        provider.locationUpdateEventOccurred(new GpsLocation(1.0,
+                                                             2.0,
+                                                             3.0,
+                                                             GpsFixEnum.MODE2D,
+                                                             4.0,
+                                                             5.0,
+                                                             6.0,
+                                                             7.0,
+                                                             8l,
+                                                             9l,
+                                                             23));
         broadcastReceived.acquire();
     }
 
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToBroadcastMultipleOutputs() throws InterruptedException {
 
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -194,7 +210,8 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public void receive(GpsLocation location, Double currentSpeed) {
-                assertEquals(location, new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
+                assertEquals(location,
+                             new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
                 assertEquals(currentSpeed, (Double) 100.0);
                 broadcastReceived.release();
             }
@@ -202,7 +219,151 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateWithSpeedEventOccurred(new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23), 100.0);
+        provider.locationUpdateWithSpeedEventOccurred(new GpsLocation(1.0,
+                                                                      2.0,
+                                                                      3.0,
+                                                                      GpsFixEnum.MODE2D,
+                                                                      4.0,
+                                                                      5.0,
+                                                                      6.0,
+                                                                      7.0,
+                                                                      8l,
+                                                                      9l,
+                                                                      23), 100.0);
         broadcastReceived.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeToSelectiveBroadcast_FilterTrue() throws InterruptedException {
+
+        final Semaphore broadcastReceived = new Semaphore(0);
+
+        testLocationUpdateSelectiveBroadcastFilter filter1 = new testLocationUpdateSelectiveBroadcastFilter() {
+
+            @Override
+            public boolean filter(GpsLocation location,
+                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                return true;
+            }
+        };
+        testLocationUpdateSelectiveBroadcastFilter filter2 = new testLocationUpdateSelectiveBroadcastFilter() {
+
+            @Override
+            public boolean filter(GpsLocation location,
+                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                return true;
+            }
+        };
+
+        provider.addBroadcastFilter(filter1);
+        provider.addBroadcastFilter(filter2);
+
+        long minInterval = 0;
+        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
+        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastListener() {
+
+                                                              @Override
+                                                              public void receive(GpsLocation location) {
+                                                                  assertEquals(location,
+                                                                               new GpsLocation(1.0,
+                                                                                               2.0,
+                                                                                               3.0,
+                                                                                               GpsFixEnum.MODE2D,
+                                                                                               4.0,
+                                                                                               5.0,
+                                                                                               6.0,
+                                                                                               7.0,
+                                                                                               8l,
+                                                                                               9l,
+                                                                                               23));
+                                                                  broadcastReceived.release();
+                                                              }
+                                                          },
+                                                          subscriptionQos,
+                                                          new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters());
+
+        Thread.sleep(300);
+
+        provider.locationUpdateSelectiveEventOccurred(new GpsLocation(1.0,
+                                                                      2.0,
+                                                                      3.0,
+                                                                      GpsFixEnum.MODE2D,
+                                                                      4.0,
+                                                                      5.0,
+                                                                      6.0,
+                                                                      7.0,
+                                                                      8l,
+                                                                      9l,
+                                                                      23));
+        broadcastReceived.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeToSelectiveBroadcast_FilterFalse() throws InterruptedException {
+
+        final Semaphore broadcastReceived = new Semaphore(0);
+
+        testLocationUpdateSelectiveBroadcastFilter filter1 = new testLocationUpdateSelectiveBroadcastFilter() {
+
+            @Override
+            public boolean filter(GpsLocation location,
+                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                return true;
+            }
+        };
+        testLocationUpdateSelectiveBroadcastFilter filter2 = new testLocationUpdateSelectiveBroadcastFilter() {
+
+            @Override
+            public boolean filter(GpsLocation location,
+                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                return false;
+            }
+        };
+
+        provider.addBroadcastFilter(filter1);
+        provider.addBroadcastFilter(filter2);
+
+        long minInterval = 0;
+        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
+        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastListener() {
+
+                                                              @Override
+                                                              public void receive(GpsLocation location) {
+                                                                  assertEquals(location,
+                                                                               new GpsLocation(1.0,
+                                                                                               2.0,
+                                                                                               3.0,
+                                                                                               GpsFixEnum.MODE2D,
+                                                                                               4.0,
+                                                                                               5.0,
+                                                                                               6.0,
+                                                                                               7.0,
+                                                                                               8l,
+                                                                                               9l,
+                                                                                               23));
+                                                                  broadcastReceived.release();
+                                                              }
+                                                          },
+                                                          subscriptionQos,
+                                                          new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters());
+
+        Thread.sleep(300);
+
+        provider.locationUpdateSelectiveEventOccurred(new GpsLocation(1.0,
+                                                                      2.0,
+                                                                      3.0,
+                                                                      GpsFixEnum.MODE2D,
+                                                                      4.0,
+                                                                      5.0,
+                                                                      6.0,
+                                                                      7.0,
+                                                                      8l,
+                                                                      9l,
+                                                                      23));
+        assertFalse(broadcastReceived.tryAcquire(500, TimeUnit.MILLISECONDS));
     }
 }
