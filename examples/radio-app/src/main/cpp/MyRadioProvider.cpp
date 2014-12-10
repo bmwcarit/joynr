@@ -29,9 +29,10 @@ joynr_logging::Logger* MyRadioProvider::logger =
 MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos)
         : RadioProvider(providerQos), currentStationIndex(0), stationsList(), mutex()
 {
-    stationsList << QString("Triple J") << QString("FM 4") << QString("Radio ABC");
-    isOn = false;
-    numberOfStations = stationsList.size();
+    stationsList << vehicle::RadioStation("ABC Trible J", false, vehicle::Country::AUSTRALIA)
+                 << vehicle::RadioStation("Radio Popolare", true, vehicle::Country::ITALY)
+                 << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)
+                 << vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY);
     currentStation = stationsList.at(currentStationIndex);
 }
 
@@ -39,12 +40,12 @@ MyRadioProvider::~MyRadioProvider()
 {
 }
 
-void MyRadioProvider::getCurrentStation(RequestStatus& status, QString& result)
+void MyRadioProvider::getCurrentStation(RequestStatus& status, vehicle::RadioStation& result)
 {
     QMutexLocker locker(&mutex);
 
     result = currentStation;
-    MyRadioHelper::prettyLog(logger, QString("getCurrentStation -> %1").arg(result));
+    MyRadioHelper::prettyLog(logger, QString("getCurrentStation -> %1").arg(result.toString()));
     status.setCode(RequestStatusCode::OK);
 }
 
@@ -52,29 +53,30 @@ void MyRadioProvider::shuffleStations(RequestStatus& status)
 {
     QMutexLocker locker(&mutex);
 
-    QString oldStation = currentStation;
+    vehicle::RadioStation oldStation = currentStation;
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
     currentStationChanged(stationsList.at(currentStationIndex));
-    MyRadioHelper::prettyLog(
-            logger, QString("shuffleStations: %1 -> %2").arg(oldStation).arg(currentStation));
+    MyRadioHelper::prettyLog(logger,
+                             QString("shuffleStations: %1 -> %2").arg(oldStation.toString()).arg(
+                                     currentStation.toString()));
     status.setCode(RequestStatusCode::OK);
 }
 
 void MyRadioProvider::addFavouriteStation(RequestStatus& status,
                                           bool& returnValue,
-                                          QString radioStation)
+                                          vehicle::RadioStation radioStation)
 {
     QMutexLocker locker(&mutex);
 
-    MyRadioHelper::prettyLog(logger, QString("addFavouriteStation(%1)").arg(radioStation));
+    MyRadioHelper::prettyLog(
+            logger, QString("addFavouriteStation(%1)").arg(radioStation.toString()));
     stationsList.append(radioStation);
-    numberOfStationsChanged(stationsList.size());
     returnValue = true;
     status.setCode(RequestStatusCode::OK);
 }
 
-void MyRadioProvider::setCurrentStation(RequestStatus& status, QString currentStation)
+void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioStation currentStation)
 {
     QMutexLocker locker(&mutex);
 
@@ -84,20 +86,11 @@ void MyRadioProvider::setCurrentStation(RequestStatus& status, QString currentSt
         // the station is not known
         stationsList.append(currentStation);
         index = stationsList.indexOf(currentStation);
-        numberOfStationsChanged(stationsList.size());
     }
 
     currentStationIndex = index;
     currentStationChanged(stationsList.at(currentStationIndex));
-    MyRadioHelper::prettyLog(logger, QString("setCurrentStation(%1)").arg(currentStation));
+    MyRadioHelper::prettyLog(
+            logger, QString("setCurrentStation(%1)").arg(currentStation.toString()));
     status.setCode(RequestStatusCode::OK);
-}
-
-void MyRadioProvider::addFavouriteStationList(RequestStatus& status,
-                                              bool& returnValue,
-                                              QList<QString> radioStationList)
-{
-    foreach (const QString& station, radioStationList) {
-        addFavouriteStation(status, returnValue, station);
-    }
 }

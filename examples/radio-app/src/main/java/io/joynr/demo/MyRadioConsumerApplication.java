@@ -33,11 +33,12 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Properties;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.vehicle.Country;
 import joynr.vehicle.RadioProxy;
+import joynr.vehicle.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private String providerDomain;
     private String subscriptionIdCurrentStation;
     private RadioProxy radioProxy;
-    private String subscriptionIdIsOn;
 
     /**
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
@@ -133,9 +133,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         if (radioProxy != null) {
-            if (subscriptionIdIsOn != null) {
-                radioProxy.unsubscribeFromIsOn(subscriptionIdIsOn);
-            }
             if (subscriptionIdCurrentStation != null) {
                 radioProxy.unsubscribeFromCurrentStation(subscriptionIdCurrentStation);
             }
@@ -205,71 +202,43 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
         ProxyBuilder<RadioProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, RadioProxy.class);
 
-        // reading an attribute value
-
         try {
-
+            // getting an attribute
             radioProxy = proxyBuilder.setMessagingQos(new MessagingQos()).setDiscoveryQos(discoveryQos).build();
-            boolean isOn = radioProxy.getIsOn();
-            LOG.info(PRINT_BORDER + "Is the radio on? " + isOn + PRINT_BORDER);
+            RadioStation currentStation = radioProxy.getCurrentStation();
+            LOG.info(PRINT_BORDER + "ATTRIBUTE GET: current station: " + currentStation + PRINT_BORDER);
 
-            subscriptionIdIsOn = radioProxy.subscribeToIsOn(new AttributeSubscriptionListener<Boolean>() {
-
-                @Override
-                public void receive(Boolean value) {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: isOn: " + value + PRINT_BORDER);
-                }
-
-                @Override
-                public void publicationMissed() {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: isOn, publication missed " + PRINT_BORDER);
-                }
-            }, subscriptionQos);
-            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<String>() {
+            // subscribe to an attribute
+            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<RadioStation>() {
 
                                                                                     @Override
-                                                                                    public void receive(String value) {
+                                                                                    public void receive(RadioStation value) {
                                                                                         LOG.info(PRINT_BORDER
-                                                                                                + "SUBSCRIPTION: current station: "
+                                                                                                + "ATTRIBUTE SUBSCRIPTION: current station: "
                                                                                                 + value + PRINT_BORDER);
                                                                                     }
 
                                                                                     @Override
                                                                                     public void publicationMissed() {
                                                                                         LOG.info(PRINT_BORDER
-                                                                                                + "SUBSCRIPTION: publication missed "
+                                                                                                + "ATTRIBUTE SUBSCRIPTION: publication missed "
                                                                                                 + PRINT_BORDER);
                                                                                     }
                                                                                 },
                                                                                 subscriptionQos);
 
-            // setting an attribute value
-            radioProxy.setIsOn(true);
-            isOn = radioProxy.getIsOn();
-            LOG.info(PRINT_BORDER + "The radio should be on: " + isOn + PRINT_BORDER);
-
-            // calling an operation
-            String currentStation = radioProxy.getCurrentStation();
-            LOG.info(PRINT_BORDER + "The current radio station is: " + currentStation + PRINT_BORDER);
-
             boolean success;
 
             // add favorite radio station
-            success = radioProxy.addFavouriteStation("asdf");
-            LOG.info(PRINT_BORDER + "added favourite station: " + success + PRINT_BORDER);
-
-            // add favorite radio stations
-            success = radioProxy.addFavouriteStationList(Arrays.asList("asdf", "asdf", "asdf"));
-            LOG.info(PRINT_BORDER + "added favourite stations: " + success + PRINT_BORDER);
+            RadioStation favouriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
+            success = radioProxy.addFavouriteStation(favouriteStation);
+            LOG.info(PRINT_BORDER + "METHOD: added favourite station: " + favouriteStation + ": " + success
+                    + PRINT_BORDER);
 
             // shuffle the stations
             radioProxy.shuffleStations();
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
-
-            // // play custom radio on audio device
-            // radioProxy.playCustomAudio(new Radio.Byte[]{ new Radio.Byte() });
-            // LOG.info(PRINT_BORDER + "played custom audio" + PRINT_BORDER);
 
         } catch (JoynrArbitrationException e) {
             LOG.error("No provider found", e);

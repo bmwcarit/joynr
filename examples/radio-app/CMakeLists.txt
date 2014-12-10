@@ -74,7 +74,7 @@ set(radio-app-provider_HEADERS
     ${GENERATED_HEADERS}
     "src/main/cpp/MyRadioProvider.h"
     "src/main/cpp/MyRadioHelper.h"
-    "src/main/cpp/MyRadioNewStationFoundBroadcastFilter.h"
+    "src/main/cpp/TrafficServiceBroadcastFilter.h"
 )
 
 # Use the generated source files for the provider application
@@ -82,7 +82,7 @@ set(radio-app-provider_SOURCES
     "src/main/cpp/MyRadioProvider.cpp"
     "src/main/cpp/MyRadioHelper.cpp"
     "src/main/cpp/MyRadioProviderApplication.cpp"
-    "src/main/cpp/MyRadioNewStationFoundBroadcastFilter.cpp"
+    "src/main/cpp/TrafficServiceBroadcastFilter.cpp"
 )
 
 # Link with the joynr libraries

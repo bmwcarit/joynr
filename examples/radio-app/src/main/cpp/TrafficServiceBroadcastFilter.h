@@ -16,18 +16,22 @@
  * limitations under the License.
  * #L%
  */
-#include "MyRadioNewStationFoundBroadcastFilter.h"
+#ifndef MYRADIONEWSTATIONFOUNDFILTER_H
+#define MYRADIONEWSTATIONFOUNDFILTER_H
 
-MyRadioNewStationFoundBroadcastFilter::MyRadioNewStationFoundBroadcastFilter()
+#include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilter.h"
+
+using namespace joynr;
+
+class TrafficServiceBroadcastFilter : public vehicle::RadioNewStationDiscoveredBroadcastFilter
 {
-}
+public:
+    TrafficServiceBroadcastFilter();
 
-bool MyRadioNewStationFoundBroadcastFilter::filter(
-        const vehicle::RadioStation& radioStation,
-        const bool& hasTrafficInfo,
-        const vehicle::RadioNewStationFoundBroadcastFilterParameters& filterParameters)
-{
+    virtual bool filter(
+            const joynr::vehicle::RadioStation& discoveredStation,
+            const joynr::vehicle::GeoPosition& geoPosition,
+            const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters);
+};
 
-    return radioStation.getSource() == vehicle::Country::GERMANY &&
-           filterParameters.getLanguage() == "German";
-}
+#endif // MYRADIONEWSTATIONFOUNDFILTER_H

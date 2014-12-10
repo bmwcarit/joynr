@@ -18,102 +18,112 @@
  */
 package vehicle
 
-typeCollection radiotypes {
+<**
+	@description: Contains the user-defined datatypes used in the radio
+		interface.
+**>
+typeCollection RadioTypes {
 	enumeration Country {
 		AUSTRALIA
-		AUSTRIA
 		CANADA
 		GERMANY
 		ITALY
-		UNITED_KINGDOM
 	}
-	
+
 	struct RadioStation {
 		String name 
-		String station
-		Country source
+		Boolean trafficService
+		Country country
+	}
+
+	struct GeoPosition {
+		Double latitude
+		Double longitude
 	}
 }
 
-<** @description : "This is a description about the radio interface" **>
-interface Radio  {
-	/**
-	 * This attribute is subscribe-able and a getIsOn() and setIsOn(bool on) 
-	 * is generated.
+<**
+	@description: This is an example interface to demonstrate features
+		and usage of the joynr communication framework.
+**>
+interface Radio {
+	/*
+	 * NOTE: Currently Franca only allows definitions of elements in the
+	 * following sequence: attributes, methods and broadcasts. Other
+	 * sequences or mixed definitions are currently not possible.
+	 * This is probably a bug in the Franca tooling.
 	 */
-	attribute Boolean isOn
-	
-	attribute Int32 numberOfStations
-	
-	/**
-	 * This attribute is subscribe-able and a getCurrentStation()
-	 * method is generated.
-	 */
-	attribute String currentStation readonly
-	
-	/**
-	 * An operation with no return value or parameters.
-	 */
+	<**
+		@description: Represents the station that is currently
+			playing in the radio.
+			This attribute is subscribe-able and a getter
+			method is generated.
+	**>
+	attribute RadioTypes.RadioStation currentStation readonly
+
+	<**
+		@description: Chooses a new radio station randomly and
+			activates it.
+			This method has no return value or parameter.
+	**>
 	method shuffleStations {}
-	
-	/**
-	 * An operation with return value and parameters.
-	 */
+
+	<**
+		@description: Adds a radio station to the favourites and
+			returns whether it could be added successfully.
+			This method has a boolean return value and a parameter
+			with user-defined type.
+	**>
 	method addFavouriteStation {
 		in {
-			String radioStation
+			RadioTypes.RadioStation newFavouriteStation
 		}
 		out {
-			Boolean returnValue
-		}
-	}
-	
-	/**
-	 * An operation with return value and parameters.
-	 */
-	method addFavouriteStationList {
-		in {
-			String [] radioStationList
-		}
-		out {
-			Boolean returnValue
-		}
-	}
-	
-//	method playCustomAudio {
-//		in {
-//			ByteBuffer buf
-//		}
-//	}
-	
-	/**
-	 * When this event is triggered, details about the radio 
-	 * station will be included. 
-	 */
-	broadcast weakSignal {
-		out {
-		  radiotypes.RadioStation radioStation
-		}
-	}
-	
-	<**
-	 @description: Selective broadcast with predefined filter parameters.
-	 @param: genre Restrict on stations of this music genre
-	 @param: language Language Restrict on stations of this language
-	**>
-	broadcast newStationFound selective {
-		out {
-			radiotypes.RadioStation radioStation
-			Boolean hasTrafficInfo
+			Boolean success
 		}
 	}
 
-	/**
-	 * Selective broadcast without predefined filter parameters.
-	 */
-	broadcast stationLost selective {
+	<**
+		@description: Event that is fired when radio stations have
+			weak signal strength. 
+	**>
+	broadcast weakSignal {
 		out {
-			radiotypes.RadioStation radioStation
+			RadioTypes.RadioStation weakSignalStation
+		}
+	}
+
+	<**
+		@description: Event that is fired when new radio stations
+			are discovered. The event includes information obout
+			the discovered station and the geo position where the
+			station was discovered.
+			The interface provider offers a geocast and a traffic
+			service filter for this selective broadcast.
+			The geocast filter filters events based on position of
+			interest and radius of interest area filter parameters
+			or does no filtering if these parameters are not set.
+			The traffic service filter filters events based on the
+			has traffic service filter parameter or does no filtering
+			if this parameter is not set.
+			NOTE: The joynr middleware calls all filters that are 
+			registered for the broadcast. Whether a filter actually
+			does any filtering or not must be defined on application
+			layer (e.g. by interpreting the absence of filter
+			parameters as filter deactivation).
+		@param: positionOfInterest (RadioTypes.GeoPosition) filter
+			parameter that is used by the geocast filter and defines
+			the position of interest
+		@param: radiusOfInterestArea (Integer) filter parameter that
+			is used by the geocast filter and defines the area of
+			interest around the position of interest
+		@param: hasTrafficService (Boolean) filter parameter that is
+			used by the traffic service filter
+	**>
+	broadcast newStationDiscovered selective {
+		out {
+			RadioTypes.RadioStation discoveredStation
+			RadioTypes.GeoPosition geoPosition
 		}
 	}
 }
