@@ -249,8 +249,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 }
             } catch (IOException e) {
                 logger.error("Error extracting payload for message " + message.getId() + ", raw payload: "
-                                     + message.getPayload(),
-                             e.getMessage());
+                        + message.getPayload(), e.getMessage());
             }
         }
 

@@ -227,16 +227,21 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             }, subscriptionQos);
             subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<String>() {
 
-                @Override
-                public void receive(String value) {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: current station: " + value + PRINT_BORDER);
-                }
+                                                                                    @Override
+                                                                                    public void receive(String value) {
+                                                                                        LOG.info(PRINT_BORDER
+                                                                                                + "SUBSCRIPTION: current station: "
+                                                                                                + value + PRINT_BORDER);
+                                                                                    }
 
-                @Override
-                public void publicationMissed() {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: publication missed " + PRINT_BORDER);
-                }
-            }, subscriptionQos);
+                                                                                    @Override
+                                                                                    public void publicationMissed() {
+                                                                                        LOG.info(PRINT_BORDER
+                                                                                                + "SUBSCRIPTION: publication missed "
+                                                                                                + PRINT_BORDER);
+                                                                                    }
+                                                                                },
+                                                                                subscriptionQos);
 
             // setting an attribute value
             radioProxy.setIsOn(true);

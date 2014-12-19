@@ -141,12 +141,10 @@ public class ProxyTest {
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(capabilitiesClient)
-               .lookup(Mockito.<String> any(),
-                       Mockito.<String> any(),
-                       Mockito.<DiscoveryQos> any(),
-                       Mockito.<CapabilitiesCallback> any());
+        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
+                                           Mockito.<String> any(),
+                                           Mockito.<DiscoveryQos> any(),
+                                           Mockito.<CapabilitiesCallback> any());
 
         domain = "TestDomain";
 
@@ -204,13 +202,11 @@ public class ProxyTest {
                                      .messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                     return null;
                 }
-            })
-                   .when(joynrMessageSender1)
-                   .sendRequest(Mockito.<String> any(),
-                                Mockito.<String> any(),
-                                Mockito.<EndpointAddressBase> any(),
-                                Mockito.<Request> any(),
-                                Mockito.anyLong());
+            }).when(joynrMessageSender1).sendRequest(Mockito.<String> any(),
+                                                     Mockito.<String> any(),
+                                                     Mockito.<EndpointAddressBase> any(),
+                                                     Mockito.<Request> any(),
+                                                     Mockito.anyLong());
             final Future<String> future = proxy.asyncMethod(callback);
 
             // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -254,13 +250,11 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }
-        })
-               .when(joynrMessageSender1)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<String> any(),
-                            Mockito.<EndpointAddressBase> any(),
-                            Mockito.<Request> any(),
-                            Mockito.anyLong());
+        }).when(joynrMessageSender1).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<EndpointAddressBase> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.anyLong());
 
         boolean exceptionThrown = false;
         String reply = "";

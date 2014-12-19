@@ -242,7 +242,7 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public boolean filter(GpsLocation location,
-                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                                  LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
                 return true;
             }
         };
@@ -250,7 +250,7 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public boolean filter(GpsLocation location,
-                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                                  LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
                 return true;
             }
         };
@@ -309,7 +309,7 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public boolean filter(GpsLocation location,
-                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                                  LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
                 return true;
             }
         };
@@ -317,7 +317,7 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public boolean filter(GpsLocation location,
-                    LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                                  LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
                 return false;
             }
         };
