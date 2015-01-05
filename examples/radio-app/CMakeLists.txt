@@ -226,16 +226,30 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
     set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS};${radio-app-consumer_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES};${radio-app-consumer_SOURCES}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES}")
 
     add_custom_command(
-        TARGET radio-app
+        TARGET radio-app-provider-cc
         PRE_BUILD
         COMMAND clang-format -i
             ${radio-app-provider_HEADERS}
-            ${radio-app-consumer_HEADERS}
             ${radio-app-provider_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-consumer_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-consumer_SOURCES}")
+
+    add_custom_command(
+        TARGET radio-app-consumer-cc
+        PRE_BUILD
+        COMMAND clang-format -i
+            ${radio-app-consumer_HEADERS}
             ${radio-app-consumer_SOURCES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "${COMMENT}"
