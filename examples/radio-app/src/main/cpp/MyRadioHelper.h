@@ -35,6 +35,8 @@ public:
      */
     static void pressQToContinue();
 
+    static int getch();
+
     /**
      * Output a prominent log message at level INFO
      */
