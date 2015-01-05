@@ -69,7 +69,25 @@ int main(int argc, char* argv[])
             providerDomain, provider, authenticationToken);
 
     // Run until the user hits q
-    MyRadioHelper::pressQToContinue();
+    int key;
+    while ((key = MyRadioHelper::getch()) != 'q') {
+        joynr::RequestStatus status;
+        switch (key) {
+        case 's':
+            provider->shuffleStations(status);
+            break;
+        case 'w':
+            provider->fireWeakSignalEvent();
+            break;
+        default:
+            MyRadioHelper::prettyLog(logger,
+                                     QString("USAGE press\n"
+                                             " q\tto quit\n"
+                                             " s\tto shuffle stations\n"
+                                             " w\tto fire weak signal event"));
+            break;
+        }
+    }
 
     // Unregister the provider
     runtime->unregisterCapability<vehicle::RadioProvider>(

@@ -76,6 +76,13 @@ void MyRadioProvider::addFavouriteStation(RequestStatus& status,
     status.setCode(RequestStatusCode::OK);
 }
 
+void MyRadioProvider::fireWeakSignalEvent()
+{
+    MyRadioHelper::prettyLog(
+            logger, QString("fire weakSignalEvent: %1").arg(currentStation.toString()));
+    weakSignalEventOccurred(currentStation);
+}
+
 void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioStation currentStation)
 {
     QMutexLocker locker(&mutex);

@@ -58,6 +58,8 @@ public:
                              bool& returnValue,
                              joynr::vehicle::RadioStation radioStation);
 
+    void fireWeakSignalEvent();
+
 private:
     // Disallow copy and assign
     MyRadioProvider(const MyRadioProvider&);
