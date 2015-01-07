@@ -19,6 +19,7 @@
 
 #include "MyRadioHelper.h"
 #include "MyRadioProvider.h"
+#include "TrafficServiceBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
 
 #include <QString>
@@ -62,8 +63,13 @@ int main(int argc, char* argv[])
     types::ProviderQos providerQos;
     providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-    // Register the provider
+    // create provider instance
     QSharedPointer<MyRadioProvider> provider(new MyRadioProvider(providerQos));
+    // add broadcast filters
+    QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
+            new TrafficServiceBroadcastFilter());
+    provider->addBroadcastFilter(trafficServiceBroadcastFilter);
+    // Register the provider
     QString authenticationToken("MyRadioProvider_authToken");
     runtime->registerCapability<vehicle::RadioProvider>(
             providerDomain, provider, authenticationToken);

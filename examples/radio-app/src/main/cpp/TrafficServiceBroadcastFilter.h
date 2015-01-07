@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef MYRADIONEWSTATIONFOUNDFILTER_H
-#define MYRADIONEWSTATIONFOUNDFILTER_H
+#ifndef TRAFFICSERVICEBROADCASTFILTER_H
+#define TRAFFICSERVICEBROADCASTFILTER_H
 
 #include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilter.h"
 
@@ -34,4 +34,4 @@ public:
             const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters);
 };
 
-#endif // MYRADIONEWSTATIONFOUNDFILTER_H
+#endif // TRAFFICSERVICEBROADCASTFILTER_H
