@@ -28,6 +28,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <cassert>
 #include <limits>
+#include "joynr/JsonSerializer.h"
 
 using namespace joynr;
 using joynr_logging::Logger;
@@ -329,10 +330,13 @@ int main(int argc, char* argv[])
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
+    vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
+    QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
+    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
+    newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
     proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFilterParams,
                                                     newStationDiscoveredBroadcastListener,
                                                     newStationDiscoveredBroadcastSubscriptionQos);
-
     // add favorite radio station
     vehicle::RadioStation favouriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;

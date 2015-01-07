@@ -33,8 +33,8 @@ MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos)
           stationsGeoPositionList(),
           mutex()
 {
-    stationsList << vehicle::RadioStation("ABC Trible J", false, vehicle::Country::AUSTRALIA)
-                 << vehicle::RadioStation("Radio Popolare", true, vehicle::Country::ITALY)
+    stationsList << vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA)
+                 << vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY)
                  << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)
                  << vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY);
     stationsGeoPositionList << vehicle::GeoPosition(-37.8141070, 144.9632800) // Melbourne
