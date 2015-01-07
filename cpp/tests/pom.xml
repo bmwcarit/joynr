@@ -58,6 +58,10 @@
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<configuration>
+					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+					<outputPath>${basedir}/gen</outputPath>
+				</configuration>
 				<executions>
 					<execution>
 						<id>generate-common-test-classes</id>
@@ -67,8 +71,6 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/../../basemodel/src/test/franca</model>
-							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-							<outputPath>${basedir}/gen</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -79,8 +81,6 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/model</model>
-							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-							<outputPath>${basedir}/gen</outputPath>
 						</configuration>
 					</execution>
 				</executions>
@@ -101,8 +101,6 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
 					<filesets>
-						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
-							<include>**</include> </includes> </fileset> -->
 						<fileset>
 							<directory>${basedir}</directory>
 							<includes>

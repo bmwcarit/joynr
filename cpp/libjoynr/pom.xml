@@ -35,6 +35,11 @@
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<configuration>
+					<model>${basedir}/../../basemodel/src/main/franca</model>
+					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+					<outputPath>${basedir}</outputPath>
+				</configuration>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
@@ -42,11 +47,13 @@
 						<goals>
 							<goal>generate</goal>
 						</goals>
-						<configuration>
-							<model>${basedir}/../../basemodel/src/main/franca</model>
-							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-							<outputPath>${basedir}</outputPath>
-						</configuration>
+					</execution>
+					<execution>
+						<phase>clean</phase>
+						<id>clean</id>
+						<goals>
+							<goal>clean</goal>
+						</goals>
 					</execution>
 				</executions>
 				<dependencies>
