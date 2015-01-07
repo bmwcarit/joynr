@@ -247,7 +247,22 @@ int main(int argc, char* argv[])
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
     proxy->shuffleStations(status);
 
-    MyRadioHelper::pressQToContinue();
+    // Run until the user hits q
+    int key;
+    while ((key = MyRadioHelper::getch()) != 'q') {
+        joynr::RequestStatus status;
+        switch (key) {
+        case 's':
+            proxy->shuffleStations(status);
+            break;
+        default:
+            MyRadioHelper::prettyLog(logger,
+                                     QString("USAGE press\n"
+                                             " q\tto quit\n"
+                                             " s\tto shuffle stations\n"));
+            break;
+        }
+    }
 
     // unsubscribe
     proxy->unsubscribeFromCurrentStation(subscriptionId);
