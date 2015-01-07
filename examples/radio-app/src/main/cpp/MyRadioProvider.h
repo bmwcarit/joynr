@@ -59,6 +59,7 @@ public:
                              joynr::vehicle::RadioStation radioStation);
 
     void fireWeakSignalEvent();
+    void fireNewStationDiscoveredEvent();
 
 private:
     // Disallow copy and assign
@@ -67,7 +68,8 @@ private:
 
     int currentStationIndex;                          // Index to the current station
     QList<joynr::vehicle::RadioStation> stationsList; // List of possible stations
-    QMutex mutex;                                     // Providers need to be threadsafe
+    QList<joynr::vehicle::GeoPosition> stationsGeoPositionList;
+    QMutex mutex; // Providers need to be threadsafe
 
     static joynr::joynr_logging::Logger* logger;
 };

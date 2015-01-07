@@ -85,12 +85,16 @@ int main(int argc, char* argv[])
         case 'w':
             provider->fireWeakSignalEvent();
             break;
+        case 'n':
+            provider->fireNewStationDiscoveredEvent();
+            break;
         default:
             MyRadioHelper::prettyLog(logger,
                                      QString("USAGE press\n"
                                              " q\tto quit\n"
                                              " s\tto shuffle stations\n"
-                                             " w\tto fire weak signal event"));
+                                             " w\tto fire weak signal event\n"
+                                             " n\tto fire new station discovered event"));
             break;
         }
     }

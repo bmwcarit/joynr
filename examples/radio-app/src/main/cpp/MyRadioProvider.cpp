@@ -27,12 +27,20 @@ joynr_logging::Logger* MyRadioProvider::logger =
         joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
 
 MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos)
-        : RadioProvider(providerQos), currentStationIndex(0), stationsList(), mutex()
+        : RadioProvider(providerQos),
+          currentStationIndex(0),
+          stationsList(),
+          stationsGeoPositionList(),
+          mutex()
 {
     stationsList << vehicle::RadioStation("ABC Trible J", false, vehicle::Country::AUSTRALIA)
                  << vehicle::RadioStation("Radio Popolare", true, vehicle::Country::ITALY)
                  << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)
                  << vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY);
+    stationsGeoPositionList << vehicle::GeoPosition(-37.8141070, 144.9632800) // Melbourne
+                            << vehicle::GeoPosition(46.4982950, 11.3547580)   // Bolzano
+                            << vehicle::GeoPosition(53.5443890, -113.4909270) // Edmonton
+                            << vehicle::GeoPosition(48.1351250, 11.5819810);  // Munich
     currentStation = stationsList.at(currentStationIndex);
 }
 
@@ -72,6 +80,7 @@ void MyRadioProvider::addFavouriteStation(RequestStatus& status,
     MyRadioHelper::prettyLog(
             logger, QString("addFavouriteStation(%1)").arg(radioStation.toString()));
     stationsList.append(radioStation);
+    stationsGeoPositionList.append(vehicle::GeoPosition(48.1351250, 11.5819810)); // Munich
     returnValue = true;
     status.setCode(RequestStatusCode::OK);
 }
@@ -81,6 +90,17 @@ void MyRadioProvider::fireWeakSignalEvent()
     MyRadioHelper::prettyLog(
             logger, QString("fire weakSignalEvent: %1").arg(currentStation.toString()));
     weakSignalEventOccurred(currentStation);
+}
+
+void MyRadioProvider::fireNewStationDiscoveredEvent()
+{
+    vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
+    vehicle::GeoPosition geoPosition(stationsGeoPositionList.at(currentStationIndex));
+    MyRadioHelper::prettyLog(logger,
+                             QString("fire newStationDiscoveredEvent: %1 at %2")
+                                     .arg(discoveredStation.toString())
+                                     .arg(geoPosition.toString()));
+    newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
 }
 
 void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioStation currentStation)
