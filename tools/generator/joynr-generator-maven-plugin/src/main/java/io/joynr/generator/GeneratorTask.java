@@ -3,7 +3,7 @@ package io.joynr.generator;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package io.joynr.generator;
 
 import io.joynr.generator.util.InvocationArguments;
 
-import java.io.IOException;
 import java.util.Set;
 
 import org.apache.maven.plugin.logging.Log;
@@ -37,9 +36,8 @@ public class GeneratorTask {
         this.executor = new Executor(arguments);
     }
 
-    public void generate(Log log) throws IOException, ClassNotFoundException, InstantiationException,
-                                 IllegalAccessException {
-        executor.execute(prepareGenerator());
+    public void generate(Log log) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        executor.generate(prepareGenerator());
     }
 
     public void printHelp(Log log) throws ClassNotFoundException, InstantiationException, IllegalAccessException {

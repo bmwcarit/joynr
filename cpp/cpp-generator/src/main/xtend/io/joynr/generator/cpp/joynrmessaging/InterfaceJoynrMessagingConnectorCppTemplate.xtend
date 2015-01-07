@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,15 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceJoynrMessagingConnectorCppTemplate {
+class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-
 
 	def produceParameterSetters(FMethod method)
 	'''
@@ -53,9 +53,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 	«ENDFOR»
 	'''
 
-
-	def generate(FInterface serviceInterface){
-        val interfaceName = serviceInterface.joynrName
+	override generate(FInterface serviceInterface){
+		val interfaceName = serviceInterface.joynrName
 	'''
 		«warning()»
 

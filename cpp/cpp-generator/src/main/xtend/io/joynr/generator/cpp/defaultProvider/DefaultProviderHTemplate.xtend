@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.defaultProvider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,17 @@ import com.google.inject.Inject
 import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class DefaultProviderHTemplate {
-	
+class DefaultProviderHTemplate implements InterfaceTemplate{
+
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-		
-	def generate(FInterface serviceInterface){
+
+	override generate(FInterface serviceInterface){
 		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_Default"+interfaceName+"Provider_h").toUpperCase
 		'''

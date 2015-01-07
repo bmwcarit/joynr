@@ -2,7 +2,7 @@ package io.joynr.generator.filter
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package io.joynr.generator.filter
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.filter.FilterTemplate
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
@@ -35,14 +35,15 @@ class FilterGenerator {
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 		for (broadcast : fInterface.broadcasts) {
-
 			if (isSelective(broadcast)) {
-				fsa.generateFile(
-					path + fInterface.joynrName + broadcast.joynrName.toFirstUpper + "BroadcastFilter.java",
-					filterTemplate.generate(fInterface, broadcast).toString
-				);
+				val fileName = path + fInterface.joynrName + broadcast.joynrName.toFirstUpper + "BroadcastFilter.java"
+				generateFile(
+					fsa,
+					fileName,
+					filterTemplate,
+					fInterface,
+					broadcast);
 			}
 		}
-
 	}
 }

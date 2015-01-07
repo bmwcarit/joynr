@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
+import org.franca.core.franca.FCompoundType
+import io.joynr.generator.util.CompoundTypeTemplate
 
-class TypeCppTemplate {
+class TypeCppTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension TemplateBase
@@ -31,7 +31,7 @@ class TypeCppTemplate {
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	def generate(FType type) {
+	override generate(FCompoundType type) {
 		val typeName = type.joynrName
 		'''
 		«warning»
@@ -47,11 +47,11 @@ class TypeCppTemplate {
 
 		void «typeName»::registerMetatypes() {
 			qRegisterMetaType<«getMappedDatatype(type)»>("«getMappedDatatype(type)»");
-			«FOR complexMember: getComplexMembers(type as FCompoundType)»
+			«FOR complexMember: getComplexMembers(type)»
 				qRegisterMetaType<«getMappedDatatype(complexMember)»>("«getMappedDatatype(complexMember)»");
 				qRegisterMetaType<«getMappedDatatype(complexMember).replace('::','__')»>("«getMappedDatatype(complexMember).replace('::','__')»");
 			«ENDFOR»
-			«FOR enumMember: getEnumMembers(type as FCompoundType)»
+			«FOR enumMember: getEnumMembers(type)»
 				{
 					qRegisterMetaType<«getEnumContainer(enumMember.type.derived)»>();
 					int id = qRegisterMetaType<«getMappedDatatype(enumMember)»>();
@@ -61,12 +61,12 @@ class TypeCppTemplate {
 		}
 
 		«typeName»::«typeName»() :
-			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«getExtendedType(type as FCompoundType).joynrName»()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+			«IF hasExtendsDeclaration(type)»
+				«getExtendedType(type).joynrName»()«IF !getMembers(type).empty»,«ENDIF»
 			«ELSE»
-				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+				QObject()«IF !getMembers(type).empty»,«ENDIF»
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
+			«FOR member: getMembers(type) SEPARATOR ','»
 				m_«member.joynrName»(«getDefaultValue(member)»)
 			«ENDFOR»
 		{
@@ -79,17 +79,17 @@ class TypeCppTemplate {
 				«getMappedDatatypeOrList(member)» new_«member.joynrName»
 			«ENDFOR»
 			):
-			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«val extendedType = getExtendedType(type as FCompoundType)»
+			«IF hasExtendsDeclaration(type)»
+				«val extendedType = getExtendedType(type)»
 				«extendedType.joynrName»(
 				«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 					new_«member.joynrName»
 				«ENDFOR»
-				)«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+				)«IF !getMembers(type).empty»,«ENDIF»
 			«ELSE»
-				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+				QObject()«IF !getMembers(type).empty»,«ENDIF»
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
+			«FOR member: getMembers(type) SEPARATOR ','»
 				m_«member.joynrName»(new_«member.joynrName»)
 			«ENDFOR»
 		{
@@ -99,12 +99,12 @@ class TypeCppTemplate {
 
 		//CopyConstructor
 		«typeName»::«typeName»(const «typeName»& other) :
-			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«getExtendedType(type as FCompoundType).joynrName»(other),
+			«IF hasExtendsDeclaration(type)»
+				«getExtendedType(type).joynrName»(other),
 			«ELSE»
-				QObject()«IF !getMembers(type as FCompoundType).empty»,«ENDIF»
+				QObject()«IF !getMembers(type).empty»,«ENDIF»
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType) SEPARATOR ','»
+			«FOR member: getMembers(type) SEPARATOR ','»
 				m_«member.joynrName»(other.m_«member.joynrName»)
 			«ENDFOR»
 		{
@@ -117,7 +117,7 @@ class TypeCppTemplate {
 		«typeName»::~«typeName»() {
 		}
 
-		«FOR member: getMembers(type as FCompoundType)»
+		«FOR member: getMembers(type)»
 			«val joynrName = member.joynrName»
 			«IF isArray(member)»
 				QList<QVariant> «typeName»::get«joynrName.toFirstUpper»Internal() const {
@@ -189,11 +189,11 @@ class TypeCppTemplate {
 			«IF getMembersRecursive(type).empty»
 			Q_UNUSED(other);
 			«ENDIF»
-			«IF hasExtendsDeclaration(type as FCompoundType)»
-				«val base = getExtendedType(type as FCompoundType)»
+			«IF hasExtendsDeclaration(type)»
+				«val base = getExtendedType(type)»
 				«getMappedDatatype(base)»::operator=(other);
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType)»
+			«FOR member: getMembers(type)»
 				this->m_«member.joynrName» = other.m_«member.joynrName»;
 			«ENDFOR»
 			return *this;
@@ -204,11 +204,11 @@ class TypeCppTemplate {
 			Q_UNUSED(other);
 			«ENDIF»
 			return
-				«FOR member: getMembers(type as FCompoundType)»
+				«FOR member: getMembers(type)»
 					this->m_«member.joynrName» == other.m_«member.joynrName» &&
 				«ENDFOR»
-				«IF hasExtendsDeclaration(type as FCompoundType)»
-					«getMappedDatatype(getExtendedType(type as FCompoundType))»::operator==(other);
+				«IF hasExtendsDeclaration(type)»
+					«getMappedDatatype(getExtendedType(type))»::operator==(other);
 				«ELSE»
 					true;
 				«ENDIF»
@@ -219,15 +219,15 @@ class TypeCppTemplate {
 		}
 
 		uint «typeName»::hashCode() const {
-			«IF hasExtendsDeclaration(type as FCompoundType)»
-			uint hashCode = «getMappedDatatype(getExtendedType(type as FCompoundType))»::hashCode();
+			«IF hasExtendsDeclaration(type)»
+			uint hashCode = «getMappedDatatype(getExtendedType(type))»::hashCode();
 			«ELSE»
 			uint hashCode = 0;
 			«ENDIF»
-			«IF !getMembers(type as FCompoundType).empty»
+			«IF !getMembers(type).empty»
 			int prime = 31;
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType)»
+			«FOR member: getMembers(type)»
 			hashCode = prime * hashCode + qHash(m_«member.joynrName»);
 			«ENDFOR»
 			return hashCode;
@@ -235,13 +235,13 @@ class TypeCppTemplate {
 
 		QString «typeName»::toString() const {
 			QString result("«typeName»{");
-			«IF hasExtendsDeclaration(type as FCompoundType)»
-				result += «getMappedDatatype(getExtendedType(type as FCompoundType))»::toString();
-				«IF !getMembers(type as FCompoundType).empty»
+			«IF hasExtendsDeclaration(type)»
+				result += «getMappedDatatype(getExtendedType(type))»::toString();
+				«IF !getMembers(type).empty»
 				result += ", ";
 				«ENDIF»
 			«ENDIF»
-			«FOR member: getMembers(type as FCompoundType) SEPARATOR "\nresult += \", \";"»
+			«FOR member: getMembers(type) SEPARATOR "\nresult += \", \";"»
 				«val memberName = member.joynrName»
 				«IF isArray(member)»
 					result += " unprinted List «memberName»  ";

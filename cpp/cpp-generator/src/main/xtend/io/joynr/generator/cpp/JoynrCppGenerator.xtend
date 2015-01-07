@@ -2,7 +2,7 @@ package io.joynr.generator.cpp
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,24 +71,18 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	private Map<String, String> parameters;
 
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
-		var headerFSA = fsa;
-		if (outputHeaderPath != null){
-			FileSystemAccessUtil::createFileSystemAccess(outputHeaderFileSystem, outputHeaderPath);
-			headerFSA = outputHeaderFileSystem;
-		}
-
-		doGenerate(input, fsa, headerFSA);
+		doGenerate(input, fsa, getHeaderFileSystemAccess(fsa));
 	}
 
 	override getLanguageId() {
 		return "cpp"
 	}
 
+	/*
+	 * Triggers the generation. In case the parameter "generate" is set to false, the generator is cleaning the generation folder
+	 */
 	def doGenerate(Resource input, IFileSystemAccess sourceFileSystem, IFileSystemAccess headerFileSystem) {
-		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
-		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
-
-		val fModel = input.contents.get(0) as FModel;
+		val fModel = getModel(input);
 
 		filterGenerator.doGenerate(fModel, sourceFileSystem, headerFileSystem,
 			getSourceContainerPath(sourceFileSystem, "filter"), 
@@ -159,4 +153,18 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		return result
 	}
 
+	def getHeaderFileSystemAccess(IFileSystemAccess fsa) {
+		var headerFSA = fsa;
+		if (outputHeaderPath != null){
+			FileSystemAccessUtil::createFileSystemAccess(outputHeaderFileSystem, outputHeaderPath);
+			headerFSA = outputHeaderFileSystem;
+		}
+		headerFSA
+	}
+
+	def getModel(Resource input) {
+		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
+		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
+		return input.contents.get(0) as FModel;
+	}
 }

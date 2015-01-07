@@ -27,13 +27,13 @@ import java.io.IOException;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
- * Goal which generates the joynr interfaces and implementations.
+ * Goal which deletes previously generated joynr interfaces and implementations.
  *
- * @goal generate
- * 
- * @phase process-sources
+ * @goal clean
+ *
+ * @phase clean
  */
-public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
+public class JoynGeneratorCleanupMojo extends AbstractJoynGeneratorMojo {
     public void execute() throws MojoExecutionException {
         int executionHashCode = getParameterHashCode();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
@@ -58,7 +58,7 @@ public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
     @Override
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments result = super.createInvocationArguments();
-        result.setGenerate(true);
+        result.setGenerate(false);
         return result;
     }
 }

@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import com.google.common.collect.Collections2
 import java.util.HashSet
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceSubscriptionTemplate {	
+class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase	
-	
-	def generate(FInterface serviceInterface) {
+
+	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")

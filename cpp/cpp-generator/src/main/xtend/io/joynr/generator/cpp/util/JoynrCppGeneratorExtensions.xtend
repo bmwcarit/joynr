@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,24 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import com.google.inject.Inject
+import com.google.inject.name.Named
+import java.io.File
 import java.util.Collections
-
 import java.util.HashMap
 import java.util.Iterator
 import java.util.Map
 import java.util.TreeSet
+import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
-import org.franca.core.franca.FArgument
-import com.google.inject.Inject
-import com.google.inject.name.Named
-import org.franca.core.franca.FModelElement
-import java.io.File
-import org.franca.core.franca.FBroadcast
-import javax.sound.sampled.BooleanControl.Type
 
 class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	
@@ -331,7 +329,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 
 	// Get the class that encloses a known enum
 	def String getEnumContainer(FTypeRef enumeration) {
-        return getEnumContainer(enumeration.derived);
+		return getEnumContainer(enumeration.derived);
 	}
 
 	// Get the name of enum types that are nested in an Enum wrapper class
@@ -367,7 +365,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	def String getDllExportMacro() {
 		if (!dllExportName.isEmpty()) {
 			return dllExportName.toUpperCase() + "_EXPORT";
-		} 
+		}
 		return "";
 	}
 
@@ -393,7 +391,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	}
 
 	def getPackageSourceDirectory(FModelElement fModelElement) {
-    	return super.getPackageName(fModelElement).replace('.', File::separator)
+		return super.getPackageName(fModelElement).replace('.', File::separator)
 	}
-
 }

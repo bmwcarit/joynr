@@ -2,7 +2,7 @@ package io.joynr.generator.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
+import javax.inject.Inject
+import javax.inject.Named
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
+import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FArrayType
@@ -51,6 +54,11 @@ import org.franca.core.franca.FUnionType
 
 abstract class JoynrGeneratorExtensions {
 
+	public final static String JOYNR_GENERATOR_GENERATE = "JOYNR_GENERATOR_GENERATE";
+	@Inject
+	@Named(JOYNR_GENERATOR_GENERATE)
+	private boolean generate = true;
+	
 	def Iterable<FInterface> getInterfaces(FModel model) {
 		return model.interfaces
 	}
@@ -887,5 +895,65 @@ abstract class JoynrGeneratorExtensions {
 
 	def isSelective(FBroadcast broadcast) {
 		return broadcast.selective != null
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		InterfaceTemplate generator,
+		FInterface serviceInterface
+	) {
+		if (generate) {
+			fsa.generateFile(path, generator.generate(serviceInterface).toString);
+		}
+		else {
+			fsa.deleteFile(path);
+		}
+	}
+
+	def generateFile(IFileSystemAccess fsa,
+		String path,
+		BroadcastTemplate generator,
+		FInterface serviceInterface,
+		FBroadcast broadcast
+	) {
+		if (generate) {
+			fsa.generateFile(path, generator.generate(serviceInterface, broadcast).toString);
+		}
+		else {
+			fsa.deleteFile(path);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		EnumTemplate generator,
+		FEnumerationType enumType
+	) {
+		if (generate) {
+			fsa.generateFile(path, generator.generate(enumType).toString);
+		}
+		else {
+			fsa.deleteFile(path);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		CompoundTypeTemplate generator,
+		FCompoundType compoundType
+	) {
+		if (generate) {
+			fsa.generateFile(path, generator.generate(compoundType).toString);
+		}
+		else {
+			fsa.deleteFile(path);
+		}
+	}
+	
+	def shallGenerate() {
+		generate
 	}
 }

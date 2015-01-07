@@ -24,7 +24,7 @@ import static org.eclipse.xtext.util.Files.cleanFolder;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class GenerationBase {
+public class GenerationUtil {
     protected void createFolder(String path) {
         File dir = new File(path);
         if (!dir.exists()) {

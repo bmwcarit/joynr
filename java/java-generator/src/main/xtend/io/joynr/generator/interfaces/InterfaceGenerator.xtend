@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class InterfaceGenerator {
-	
+
 	@Inject
 	extension JoynrJavaGeneratorExtensions	
-
 
 	@Inject
 	InterfacesTemplate interfaces
@@ -40,10 +39,9 @@ class InterfaceGenerator {
 
 	@Inject
 	InterfaceSubscriptionTemplate interfaceSubscription
-	
+
 	@Inject
 	InterfaceBroadcastTemplate interfaceBroadcast
-	
 
 	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa){
 
@@ -51,32 +49,42 @@ class InterfaceGenerator {
 
 		var serviceName =  serviceInterface.joynrName
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + ".java",
-			interfaces.generate(serviceInterface).toString
+			interfaces,
+			serviceInterface
 		);
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + "Sync.java",
-			interfaceSync.generate(serviceInterface).toString
+			interfaceSync,
+			serviceInterface
 		);
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + "Async.java",
-			interfaceAsync.generate(serviceInterface).toString
+			interfaceAsync,
+			serviceInterface
 		);
 
 		if (serviceInterface.attributes.size>0){
-			fsa.generateFile(
+			generateFile(
+				fsa,
 				path + serviceName + "SubscriptionInterface.java",
-				interfaceSubscription.generate(serviceInterface).toString
+				interfaceSubscription,
+				serviceInterface
 			);
 		}
 		
 		if (serviceInterface.broadcasts.size>0){
-			fsa.generateFile(
+			generateFile(
+				fsa,
 				path + serviceName + "BroadcastInterface.java",
-				interfaceBroadcast.generate(serviceInterface).toString
+				interfaceBroadcast,
+				serviceInterface
 			);
 		}
 	}

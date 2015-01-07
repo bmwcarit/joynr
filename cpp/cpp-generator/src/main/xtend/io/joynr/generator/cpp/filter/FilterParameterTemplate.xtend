@@ -22,12 +22,13 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
+import io.joynr.generator.util.BroadcastTemplate
 
-class FilterParameterTemplate  {
+class FilterParameterTemplate implements BroadcastTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface serviceInterface, FBroadcast broadcast) {
+	override generate(FInterface serviceInterface, FBroadcast broadcast) {
 		val broadcastName =  broadcast.joynrName
 		val className = serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilterParameters"
 		val headerGuard = ("GENERATED_FILTER_PARAMETERS_"+getPackagePathWithJoynrPrefix(broadcast, "_")+"_"+broadcastName+"_H").toUpperCase

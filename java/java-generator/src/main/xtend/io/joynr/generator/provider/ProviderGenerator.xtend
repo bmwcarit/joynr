@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,24 +45,32 @@ class ProviderGenerator {
 
 		var serviceName =  fInterface.joynrName
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + "Provider.java",
-			interfaceProvider.generate(fInterface).toString
-		);			
+			interfaceProvider,
+			fInterface
+		);
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + "ProviderAsync.java",
-			interfaceProviderAsync.generate(fInterface).toString
+			interfaceProviderAsync,
+			fInterface
 		);
 
-		fsa.generateFile(
-		    path + "Default" + serviceName + "Provider.java",
-			interfaceProviderImpl.generate(fInterface).toString
+		generateFile(
+			fsa,
+			path + "Default" + serviceName + "Provider.java",
+			interfaceProviderImpl,
+			fInterface
 		);
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + "AbstractProvider.java",
-			interfaceAbstractProvider.generate(fInterface).toString
+			interfaceAbstractProvider,
+			fInterface
 		);
 	}
 }

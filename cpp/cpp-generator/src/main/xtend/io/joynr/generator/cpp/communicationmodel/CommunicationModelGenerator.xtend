@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,28 +26,28 @@ import org.franca.core.franca.FCompoundType
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class CommunicationModelGenerator {
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-	
+
 	@Inject
 	InterfaceHTemplate interfaceH;
-	
+
 	@Inject
 	InterfaceCppTemplate interfaceCpp;
 
 	@Inject
 	EnumHTemplate enumh;
-	
+
 	@Inject
 	TypeHTemplate typeH;
 
 	@Inject
 	TypeCppTemplate typeCpp;
-	
-	def doGenerate(FModel fModel, 
-		IFileSystemAccess sourceFileSystem, 
-		IFileSystemAccess headerFileSystem, 
+
+	def doGenerate(FModel fModel,
+		IFileSystemAccess sourceFileSystem,
+		IFileSystemAccess headerFileSystem,
 		String sourceContainerPath,
 		String headerContainerPath
 	){
@@ -57,30 +57,36 @@ class CommunicationModelGenerator {
 				headerContainerPath + "datatypes" + File::separator
 			else
 				headerContainerPath
-		
+
 		for( type: getComplexDataTypes(fModel)){
 			if(type instanceof FCompoundType) {
 				val sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 				val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-				
-				headerFileSystem.generateFile(
+
+				generateFile(
+					headerFileSystem,
 					headerpath + type.joynrName + ".h",
-					typeH.generate(type).toString
+					typeH,
+					type
 				)
-	
-				sourceFileSystem.generateFile(
+
+				generateFile(
+					sourceFileSystem,
 					sourcepath + type.joynrName + ".cpp",
-					typeCpp.generate(type).toString
+					typeCpp,
+					type
 				)
 			}
 		}
-		
+
 		for( type: getEnumDataTypes(fModel)){
 			val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			
-			headerFileSystem.generateFile(
+			generateFile(
+				headerFileSystem,
 				headerpath + type.joynrName + ".h",
-				enumh.generate(type as FEnumerationType).toString
+				enumh,
+				type as FEnumerationType
 			)
 		}
 
@@ -95,14 +101,18 @@ class CommunicationModelGenerator {
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
 
-			headerFileSystem.generateFile(
+			generateFile(
+				headerFileSystem,
 				headerpath + "I" + serviceInterface.joynrName + ".h",
-				interfaceH.generate(serviceInterface).toString
+				interfaceH,
+				serviceInterface
 			);
 			
-			sourceFileSystem.generateFile(
+			generateFile(
+				sourceFileSystem,
 				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
-				interfaceCpp.generate(serviceInterface).toString
+				interfaceCpp,
+				serviceInterface
 			);
 		}
 		

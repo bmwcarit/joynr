@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
+import org.franca.core.franca.FInterface
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceSyncProxyCppTemplate {
+class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface fInterface) {
+	override generate(FInterface fInterface) {
 		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val syncClassName = interfaceName + "SyncProxy"

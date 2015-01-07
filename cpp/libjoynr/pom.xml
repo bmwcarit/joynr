@@ -38,6 +38,7 @@
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
+						<id>generate</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
@@ -65,8 +66,6 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
 					<filesets>
-						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
-							<include>**</include> </includes> </fileset> -->
 						<fileset>
 							<directory>${basedir}</directory>
 							<includes>

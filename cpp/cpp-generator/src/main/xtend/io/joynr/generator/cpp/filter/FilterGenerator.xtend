@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.filter
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ package io.joynr.generator.cpp.filter
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
+import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FModel
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class FilterGenerator {
 
@@ -40,27 +41,39 @@ class FilterGenerator {
 		String sourceContainerPath,
 		String headerContainerPath
 	) {
-
-        for(fInterface: model.interfaces){
-        	val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
+		for(fInterface: model.interfaces){
+			val headerPath = headerContainerPath + 
+				getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 			var serviceName = fInterface.joynrName
 
 			for (broadcast : fInterface.broadcasts) {
 				if (isSelective(broadcast)) {
-					val filterParameterLocation = headerPath + serviceName.toFirstUpper + broadcast.name.toFirstUpper + "BroadcastFilterParameters.h"
-					headerFileSystem.generateFile(
-						filterParameterLocation,
-						filterParameterTemplate.generate(fInterface, broadcast).toString
-					);
+					val filterParameterLocation = getFilterParameterLocation(headerPath, serviceName, broadcast)
 
-					val filterLocation = headerPath + serviceName.toFirstUpper + broadcast.name.toFirstUpper + "BroadcastFilter.h"
-					headerFileSystem.generateFile(
+					generateFile(
+						headerFileSystem,
+						filterParameterLocation,
+						filterParameterTemplate,
+						fInterface,
+						broadcast);
+
+					val filterLocation = getFilterLocation(headerPath, serviceName, broadcast)
+					generateFile(
+						headerFileSystem,
 						filterLocation,
-						filterTemplate.generate(fInterface, broadcast).toString
-					);
+						filterTemplate,
+						fInterface,
+						broadcast);
 				}
 			}
-        }
+		}
+	}
 
+	def getFilterLocation(String headerPath, String serviceName, FBroadcast broadcast) {
+		headerPath + serviceName.toFirstUpper + broadcast.name.toFirstUpper + "BroadcastFilter.h"
+	}
+
+	def getFilterParameterLocation(String headerPath, String serviceName, FBroadcast broadcast) {
+		headerPath + serviceName.toFirstUpper + broadcast.name.toFirstUpper + "BroadcastFilterParameters.h"
 	}
 }

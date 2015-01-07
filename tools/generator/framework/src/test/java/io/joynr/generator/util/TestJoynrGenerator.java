@@ -34,7 +34,6 @@ public class TestJoynrGenerator implements IJoynrGenerator {
     @Override
     public void doGenerate(Resource input, IFileSystemAccess fsa) {
         // TODO Auto-generated method stub
-
     }
 
     @Override

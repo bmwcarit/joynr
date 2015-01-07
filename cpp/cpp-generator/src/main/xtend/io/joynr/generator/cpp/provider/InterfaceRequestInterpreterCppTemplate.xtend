@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,17 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceRequestInterpreterCppTemplate {
+class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	def generate(FInterface serviceInterface){
+	override generate(FInterface serviceInterface){
 		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»

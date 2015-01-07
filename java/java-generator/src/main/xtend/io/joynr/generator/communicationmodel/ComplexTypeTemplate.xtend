@@ -2,7 +2,7 @@ package io.joynr.generator.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import com.google.inject.Inject
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FCompoundType
+import io.joynr.generator.util.CompoundTypeTemplate
 
-class ComplexTypeTemplate {
+class ComplexTypeTemplate implements CompoundTypeTemplate{
 
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
-	
-	def generate(FCompoundType complexType) {
+
+	override generate(FCompoundType complexType) {
 		val typeName = complexType.joynrName
 		val complexTypePackageName = getPackagePathWithJoynrPrefix(complexType, ".")
 		'''

@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import org.franca.core.franca.FMethod
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceProviderAsyncTemplate {
+class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface serviceInterface) {
+	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "ProviderAsync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")

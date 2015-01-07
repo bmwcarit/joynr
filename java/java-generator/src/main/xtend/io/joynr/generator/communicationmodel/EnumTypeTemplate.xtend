@@ -2,7 +2,7 @@ package io.joynr.generator.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@ package io.joynr.generator.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.EnumTemplate
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FEnumerationType
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
-class EnumTemplate {
+class EnumTypeTemplate implements EnumTemplate{
 
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
-	
-	def generate(FEnumerationType enumType) {
+
+	override generate(FEnumerationType enumType) {
 		val typeName = enumType.joynrName
 		val packagePath = getPackagePathWithJoynrPrefix(enumType, ".")
 		'''

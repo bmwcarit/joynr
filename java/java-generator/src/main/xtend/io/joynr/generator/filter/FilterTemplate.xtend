@@ -2,7 +2,7 @@ package io.joynr.generator.filter
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
+import io.joynr.generator.util.BroadcastTemplate
 
-class FilterTemplate  {
+class FilterTemplate implements BroadcastTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface serviceInterface, FBroadcast broadcast) {
+	override generate(FInterface serviceInterface, FBroadcast broadcast) {
 		val broadcastName =  broadcast.joynrName
 		val className = serviceInterface.joynrName + broadcastName.toFirstUpper + "BroadcastFilter"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")

@@ -3,7 +3,7 @@ package io.joynr.generator;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAcces
 import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
+import io.joynr.generator.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.TemplatesLoader;
 
 import java.util.logging.Logger;
@@ -65,6 +66,8 @@ public class Executor {
                     // Guice does not allow null binding - use an empty string to show there is no generationId
                     bindConstant().annotatedWith(Names.named("generationId")).to("");
                 }
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
+                                   .toInstance(arguments.shallGenerate());
             }
         });
     }
@@ -98,22 +101,25 @@ public class Executor {
 
     }
 
-    public void execute(IGenerator generator) {
+    private ModelLoader prepareGeneratorEnvironment(IGenerator generator) {
         String outputPath = arguments.getOutputPath();
         String modelPath = arguments.getModelpath();
 
         createFileSystemAccess(outputFileSystem, outputPath);
 
-        ModelLoader modelLoader = new ModelLoader(modelPath);
-
         // This is a normal generator
         if (generator instanceof IJoynrGenerator) {
             ((IJoynrGenerator) generator).setParameters(arguments.getParameter());
         }
+
+        return new ModelLoader(modelPath);
+    }
+
+    public void generate(IGenerator generator) {
+        ModelLoader modelLoader = prepareGeneratorEnvironment(generator);
         for (URI foundUri : modelLoader.getURIs()) {
             final Resource r = modelLoader.getResource(foundUri);
             generator.doGenerate(r, outputFileSystem);
         }
     }
-
 }

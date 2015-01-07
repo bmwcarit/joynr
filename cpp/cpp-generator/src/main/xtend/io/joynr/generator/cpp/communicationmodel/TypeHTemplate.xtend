@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package io.joynr.generator.cpp.communicationmodel
  * limitations under the License.
  */
 
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.CompoundTypeTemplate
 
-class TypeHTemplate {
+class TypeHTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -31,9 +31,8 @@ class TypeHTemplate {
 	@Inject
 	private extension TemplateBase
 
-	def generate(FType type)
+	override generate(FCompoundType type)
 	'''
-	«val complexType = type as FCompoundType»
 	«val typeName = type.joynrName»
 	«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
 	«warning()»
@@ -49,16 +48,16 @@ class TypeHTemplate {
 
 
 	//include complex Datatype headers.
-	«FOR member: getRequiredIncludesFor(complexType)»
+	«FOR member: getRequiredIncludesFor(type)»
 		#include "«member»"
 	«ENDFOR»
 
 	«getNamespaceStarter(type)»
 
-	class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(complexType)»«getExtendedType(complexType).joynrName»«ELSE»QObject«ENDIF»{
+	class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(type)»«getExtendedType(type).joynrName»«ELSE»QObject«ENDIF»{
 		Q_OBJECT
 
-		«FOR member: getMembers(complexType)»
+		«FOR member: getMembers(type)»
 			«val membername = member.joynrName»
 			«IF isArray(member)»
 				Q_PROPERTY(QList<QVariant> «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
@@ -77,9 +76,9 @@ class TypeHTemplate {
 	public:
 		//general methods
 		«typeName»();
-		«IF !getMembersRecursive(complexType).empty»
+		«IF !getMembersRecursive(type).empty»
 		«typeName»(
-			«FOR member: getMembersRecursive(complexType) SEPARATOR","»
+			«FOR member: getMembersRecursive(type) SEPARATOR","»
 				«getMappedDatatypeOrList(member)» «member.joynrName»
 			«ENDFOR»
 		);
@@ -95,7 +94,7 @@ class TypeHTemplate {
 		virtual uint hashCode() const;
 
 		//getters
-		«FOR member: getMembers(complexType)»
+		«FOR member: getMembers(type)»
 			«val joynrName = member.joynrName»
 			«IF isArray(member)»
 				QList<QVariant> get«joynrName.toFirstUpper»Internal() const;
@@ -110,7 +109,7 @@ class TypeHTemplate {
 		«ENDFOR»
 
 		//setters
-		«FOR member: getMembers(complexType)»
+		«FOR member: getMembers(type)»
 			«val joynrName = member.joynrName»
 			«IF isArray(member)»
 				void set«joynrName.toFirstUpper»Internal(const QList<QVariant>& «joynrName») ;
@@ -126,7 +125,7 @@ class TypeHTemplate {
 
 	private:
 		//members
-		«FOR member: getMembers(complexType)»
+		«FOR member: getMembers(type)»
 			 «getMappedDatatypeOrList(member)» m_«member.joynrName»;
 		«ENDFOR»
 		void registerMetatypes();

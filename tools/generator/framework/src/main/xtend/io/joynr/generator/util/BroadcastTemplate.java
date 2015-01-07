@@ -1,8 +1,7 @@
-package io.joynr.generator;
+package io.joynr.generator.util;
 
 /*
  * #%L
- * io.joynr.tools.generator:generator-framework
  * %%
  * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
@@ -20,16 +19,13 @@ package io.joynr.generator;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Set;
+import org.franca.core.franca.FBroadcast;
+import org.franca.core.franca.FInterface;
 
-import org.eclipse.xtext.generator.IGenerator;
+/*
+ * This interface shall be used by all generation templates which process a Franca broadcast type
+ */
+public interface BroadcastTemplate {
 
-public interface IJoynrGenerator extends IGenerator {
-
-    public String getLanguageId();
-
-    public void setParameters(Map<String, String> parameter);
-
-    public Set<String> supportedParameters();
+    public CharSequence generate(FInterface serviceInterface, FBroadcast broadcast);
 }
