@@ -323,6 +323,9 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 			    joynr::BroadcastSubscriptionCallback<«returnTypes»>* subscriptionCallback =
 			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener);
 			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
+			    «IF isSelective(broadcast)»
+			    subscriptionRequest.setFilterParameters(filterParameters);
+			    «ENDIF»
 			    subscriptionManager->registerSubscription(
 			                broadcastName,
 			                subscriptionCallback,

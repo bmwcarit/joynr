@@ -499,6 +499,9 @@ class InterfaceInProcessConnectorCPPTemplate {
 			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener);
 			    joynr::BroadcastSubscriptionRequest* subscriptionRequest =
 			                new joynr::BroadcastSubscriptionRequest();//ownership goes to PublicationManager
+			    «IF isSelective(broadcast)»
+			    subscriptionRequest->setFilterParameters(filterParameters);
+			    «ENDIF»
 			    subscriptionManager->registerSubscription(
 			                broadcastName,
 			                subscriptionCallback,

@@ -99,6 +99,9 @@ public:
                     QString("test-resources/libjoynrSystemIntegration2.settings"),
                     settings_2);
         runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
+
+        filterParameters.setCountry("Germany");
+        filterParameters.setStartTime("4.00 pm");
     }
 
     void SetUp() {
@@ -476,7 +479,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    ON_CALL(*filter, filter(_,_)).WillByDefault(Return(true));
+    ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
@@ -595,7 +598,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    ON_CALL(*filter, filter(_,_)).WillByDefault(Return(false));
+    ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
