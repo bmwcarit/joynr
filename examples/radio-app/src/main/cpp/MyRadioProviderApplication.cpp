@@ -20,6 +20,7 @@
 #include "MyRadioHelper.h"
 #include "MyRadioProvider.h"
 #include "TrafficServiceBroadcastFilter.h"
+#include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
 
 #include <QString>
@@ -69,6 +70,9 @@ int main(int argc, char* argv[])
     QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
             new TrafficServiceBroadcastFilter());
     provider->addBroadcastFilter(trafficServiceBroadcastFilter);
+    QSharedPointer<GeocastBroadcastFilter> geocastBroadcastFilter(new GeocastBroadcastFilter());
+    provider->addBroadcastFilter(geocastBroadcastFilter);
+
     // Register the provider
     QString authenticationToken("MyRadioProvider_authToken");
     runtime->registerCapability<vehicle::RadioProvider>(
