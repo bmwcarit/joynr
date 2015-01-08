@@ -38,8 +38,8 @@ package «packagePath»;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import io.joynr.pubsub.publication.BroadcastFilterParameters;
 import io.joynr.pubsub.SubscriptionQos;
+import joynr.BroadcastFilterParameters;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true)»
 	import «datatype»;

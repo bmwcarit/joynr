@@ -238,11 +238,17 @@ public class BroadcastEnd2EndTest {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
+        final LocationUpdateSelectiveBroadcastFilterParameters testFilterParameters = new LocationUpdateSelectiveBroadcastFilterParameters();
+        testFilterParameters.addCountryFilterParameter("Germany");
+        testFilterParameters.addStartTimeFilterParameter("4.00 pm");
+
         testLocationUpdateSelectiveBroadcastFilter filter1 = new testLocationUpdateSelectiveBroadcastFilter() {
 
             @Override
             public boolean filter(GpsLocation location,
                                   LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+
+                assertEquals(testFilterParameters, filterParameters);
                 return true;
             }
         };
@@ -251,6 +257,7 @@ public class BroadcastEnd2EndTest {
             @Override
             public boolean filter(GpsLocation location,
                                   LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                assertEquals(testFilterParameters, filterParameters);
                 return true;
             }
         };
@@ -282,7 +289,7 @@ public class BroadcastEnd2EndTest {
                                                               }
                                                           },
                                                           subscriptionQos,
-                                                          new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters());
+                                                          testFilterParameters);
 
         Thread.sleep(300);
 
@@ -305,11 +312,16 @@ public class BroadcastEnd2EndTest {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
+        final LocationUpdateSelectiveBroadcastFilterParameters testFilterParameters = new LocationUpdateSelectiveBroadcastFilterParameters();
+        testFilterParameters.addCountryFilterParameter("Germany");
+        testFilterParameters.addStartTimeFilterParameter("4.00 pm");
+
         testLocationUpdateSelectiveBroadcastFilter filter1 = new testLocationUpdateSelectiveBroadcastFilter() {
 
             @Override
             public boolean filter(GpsLocation location,
                                   LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                assertEquals(testFilterParameters, filterParameters);
                 return true;
             }
         };
@@ -318,6 +330,7 @@ public class BroadcastEnd2EndTest {
             @Override
             public boolean filter(GpsLocation location,
                                   LocationUpdateSelectiveBroadcastFilterParameters filterParameters) {
+                assertEquals(testFilterParameters, filterParameters);
                 return false;
             }
         };
@@ -349,7 +362,7 @@ public class BroadcastEnd2EndTest {
                                                               }
                                                           },
                                                           subscriptionQos,
-                                                          new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters());
+                                                          testFilterParameters);
 
         Thread.sleep(300);
 

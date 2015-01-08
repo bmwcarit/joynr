@@ -33,7 +33,6 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.publication.BroadcastFilterParameters;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
@@ -42,6 +41,7 @@ import java.lang.reflect.Method;
 
 import javax.annotation.CheckForNull;
 
+import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
@@ -243,6 +243,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             BroadcastFilterParameters filterParameters = null;
             if (args.length > 2 && args[2] instanceof BroadcastFilterParameters) {
                 filterParameters = (BroadcastFilterParameters) args[2];
+            } else {
+                filterParameters = new BroadcastFilterParameters();
             }
             String subscriptionId = subscriptionManager.registerBroadcastSubscription(broadcastName,
                                                                                       broadcastSubscriptionListener,

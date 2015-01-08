@@ -1,4 +1,4 @@
-package io.joynr.pubsub.publication;
+package joynr;
 
 import io.joynr.subtypes.JoynrType;
 

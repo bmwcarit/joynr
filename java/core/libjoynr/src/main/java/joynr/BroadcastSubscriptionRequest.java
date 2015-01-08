@@ -20,7 +20,6 @@ package joynr;
  */
 
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.publication.BroadcastFilterParameters;
 
 public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
