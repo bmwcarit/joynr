@@ -84,10 +84,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.cleanupScheduler = cleanupScheduler;
     }
 
-    private String registerSubscription(final SubscriptionQos qos) {
-        String uuid = UUID.randomUUID().toString();
-        String subscriptionId = uuid;
-
+    private void registerSubscription(final SubscriptionQos qos, String subscriptionId) {
         PubSubState subState = new PubSubState();
         subState.updateTimeOfLastPublication();
         subscriptionStates.put(subscriptionId, subState);
@@ -105,7 +102,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                  TimeUnit.MILLISECONDS);
             subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
         }
-        return subscriptionId;
     }
 
     @Override
@@ -113,8 +109,20 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                 Class<? extends TypeReference<?>> attributeTypeReference,
                                                 AttributeSubscriptionListener<?> attributeSubscriptionCallback,
                                                 final SubscriptionQos qos) {
+        return registerAttributeSubscription(attributeName,
+                                             attributeTypeReference,
+                                             attributeSubscriptionCallback,
+                                             qos,
+                                             UUID.randomUUID().toString());
+    }
 
-        String subscriptionId = registerSubscription(qos);
+    @Override
+    public String registerAttributeSubscription(final String attributeName,
+                                                Class<? extends TypeReference<?>> attributeTypeReference,
+                                                AttributeSubscriptionListener<?> attributeSubscriptionCallback,
+                                                final SubscriptionQos qos,
+                                                String subscriptionId) {
+        registerSubscription(qos, subscriptionId);
         logger.info("Attribute subscription registered with Id: " + subscriptionId);
         subscriptionTypes.put(subscriptionId, attributeTypeReference);
         subscriptionListenerDirectory.put(subscriptionId, attributeSubscriptionCallback);
@@ -135,7 +143,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                        subscriptionStates.get(subscriptionId)));
             }
         }
-
         return subscriptionId;
     }
 
@@ -143,7 +150,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     public String registerBroadcastSubscription(String broadcastName,
                                                 BroadcastSubscriptionListener broadcastSubscriptionListener,
                                                 SubscriptionQos qos) {
-        String subscriptionId = registerSubscription(qos);
+        String subscriptionId = UUID.randomUUID().toString();
+        registerSubscription(qos, subscriptionId);
         logger.info("Attribute subscription registered with Id: " + subscriptionId);
         subscriptionTypes.put(subscriptionId, List.class);
         broadcastSubscriptionListenerDirectory.put(subscriptionId, broadcastSubscriptionListener);

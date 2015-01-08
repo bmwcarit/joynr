@@ -32,6 +32,12 @@ public interface SubscriptionManager {
                                          AttributeSubscriptionListener<?> attributeSubscriptionCallback,
                                          final SubscriptionQos qos);
 
+    String registerAttributeSubscription(final String attributeName,
+                                         Class<? extends TypeReference<?>> attributeTypeReference,
+                                         AttributeSubscriptionListener<?> attributeSubscriptionCallback,
+                                         final SubscriptionQos qos,
+                                         final String subscriptionId);
+
     String registerBroadcastSubscription(final String broadcastName,
                                          BroadcastSubscriptionListener broadcastSubscriptionCallback,
                                          final SubscriptionQos qos);

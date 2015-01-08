@@ -318,12 +318,28 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
             if (args[1] == null || !SubscriptionQos.class.isAssignableFrom(args[1].getClass())) {
                 throw new JoynrIllegalStateException("Second parameter of subscribeTo... has to be of type SubscriptionQos");
             }
+
             SubscriptionQos qos = (SubscriptionQos) args[1];
 
-            String subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                                      attributeTypeReference,
-                                                                                      attributeSubscriptionListener,
-                                                                                      qos);
+            String subscriptionId;
+
+            if (args[2] == null) {
+                subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
+                                                                                   attributeTypeReference,
+                                                                                   attributeSubscriptionListener,
+                                                                                   qos);
+            } else {
+                if (args[2] instanceof String) {
+                    subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
+                                                                                       attributeTypeReference,
+                                                                                       attributeSubscriptionListener,
+                                                                                       qos,
+                                                                                       (String) args[2]);
+                } else {
+                    throw new JoynrIllegalStateException("Third parameter of subscribeTo... has to be of type String");
+                }
+            }
+
             // TODO how to react on failures / what to do with the future which is returned from sendSubscriptionMethod
             @SuppressWarnings("unused")
             Object sendSubscriptionMethodFuture = sendSubscriptionMethod(method, args, subscriptionId);
