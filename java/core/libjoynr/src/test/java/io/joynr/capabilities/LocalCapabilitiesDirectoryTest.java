@@ -28,6 +28,7 @@ import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Future;
@@ -83,6 +84,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Spy
     protected CapabilitiesStore globalCapabilitiesCacheSpy = new CapabilitiesStoreImpl();
 
+    private String channelId;
     private CapabilityEntry capabilityEntry;
     private CapabilityInformation capabilityInformation;
 
@@ -96,7 +98,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Before
     public void setUp() {
 
-        String channelId = "testChannelId";
+        channelId = "testChannelId";
 
         Answer<Void> answer = new Answer<Void>() {
 
@@ -127,7 +129,7 @@ public class LocalCapabilitiesDirectoryTest {
                                   .toInstance("capDir_participantId");
                 bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID))
                                   .toInstance("dirchannelId");
-                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance("channelId");
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance(channelId);
                 bind(Properties.class).annotatedWith(Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES))
                                       .toInstance(new Properties());
             }
@@ -189,6 +191,76 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.never()).add(capabilityInformation);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void addGlobalCapSucceeds_NextAddShallNotAddGlobalAgain() throws InterruptedException {
+
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.GLOBAL);
+
+        String participantId = LocalCapabilitiesDirectoryTest.class.getName()
+                + ".addGlobalCapSucceeds_NextAddShallNotAddGlobalAgain";
+        String domain = "testDomain";
+        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
+                                                              TestInterface.INTERFACE_NAME,
+                                                              providerQos,
+                                                              participantId);
+        capabilityInformation = new CapabilityInformation(domain,
+                                                          TestInterface.INTERFACE_NAME,
+                                                          providerQos,
+                                                          channelId,
+                                                          participantId);
+
+        RegistrationFuture future = localCapabilitiesDirectory.add(capabilityEntry);
+        future.waitForFullRegistration(200);
+
+        Mockito.doAnswer(createAddAnswerWithSuccess())
+               .when(globalCapabilitiesClient)
+               .add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+
+        Mockito.verify(globalCapabilitiesCacheSpy).add(Mockito.eq(capabilityEntry));
+        Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+        Mockito.reset(globalCapabilitiesClient);
+        future = localCapabilitiesDirectory.add(capabilityEntry);
+        future.waitForFullRegistration(200);
+        Mockito.verify(globalCapabilitiesClient, Mockito.never()).add(Mockito.any(Callback.class),
+                                                                      Mockito.eq(capabilityInformation));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void addGlobalCapFails_NextAddShallAddGlobalAgain() throws InterruptedException {
+
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.GLOBAL);
+
+        String participantId = LocalCapabilitiesDirectoryTest.class.getName() + ".addLocalAndThanGlobalShallWork";
+        String domain = "testDomain";
+        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
+                                                              TestInterface.INTERFACE_NAME,
+                                                              providerQos,
+                                                              participantId);
+        capabilityInformation = new CapabilityInformation(domain,
+                                                          TestInterface.INTERFACE_NAME,
+                                                          providerQos,
+                                                          channelId,
+                                                          participantId);
+
+        Mockito.doAnswer(createAddAnswerWithError())
+               .when(globalCapabilitiesClient)
+               .add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+
+        RegistrationFuture future = localCapabilitiesDirectory.add(capabilityEntry);
+        future.waitForFullRegistration(200);
+
+        Mockito.verify(globalCapabilitiesCacheSpy, Mockito.never()).add(Mockito.eq(capabilityEntry));
+        Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+        Mockito.reset(globalCapabilitiesClient);
+        future = localCapabilitiesDirectory.add(capabilityEntry);
+        future.waitForFullRegistration(200);
+        Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+    }
+
     private Answer<Future<List<CapabilityInformation>>> createAnswer(final List<CapabilityInformation> caps) {
         return new Answer<Future<List<CapabilityInformation>>>() {
 
@@ -199,6 +271,36 @@ public class LocalCapabilitiesDirectoryTest {
                 Object[] args = invocation.getArguments();
                 ((Callback<List<CapabilityInformation>>) args[0]).onSuccess(caps);
                 result.onSuccess(caps);
+                return result;
+            }
+        };
+    }
+
+    private Answer<Future<Void>> createAddAnswerWithSuccess() {
+        return new Answer<Future<Void>>() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                Object[] args = invocation.getArguments();
+                ((Callback<Void>) args[0]).onSuccess(null);
+                result.onSuccess(null);
+                return result;
+            }
+        };
+    }
+
+    private Answer<Future<Void>> createAddAnswerWithError() {
+        return new Answer<Future<Void>>() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                Object[] args = invocation.getArguments();
+                ((Callback<Void>) args[0]).onFailure(new JoynrException("Simulating a JoynrException on callback"));
+                result.onSuccess(null);
                 return result;
             }
         };
@@ -471,12 +573,14 @@ public class LocalCapabilitiesDirectoryTest {
         return new MyCollectionMatcher(n);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void removeCapabilities() throws InterruptedException {
         RegistrationFuture future = localCapabilitiesDirectory.add(capabilityEntry);
         future.waitForLocalRegistration(10000);
         localCapabilitiesDirectory.remove(capabilityEntry);
-        Mockito.verify(globalCapabilitiesClient).remove(Mockito.eq(capabilityInformation.getParticipantId()));
+        Mockito.verify(globalCapabilitiesClient).remove(Mockito.any(Callback.class),
+                                                        Mockito.eq(capabilityInformation.getParticipantId()));
     }
 
 }

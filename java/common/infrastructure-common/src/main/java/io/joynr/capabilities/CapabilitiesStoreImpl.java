@@ -49,7 +49,6 @@ import com.google.inject.Inject;
 public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesStoreImpl.class);
-    private static final int NO_MAX_AGE = -1;
 
     // private ConcurrentLinkedQueue<CapabilityEntry> registeredCapabilities =
     // new
@@ -311,7 +310,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      */
     @Override
     public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint) {
-        return findCapabilitiesForEndpointAddress(endpoint, NO_MAX_AGE);
+        return findCapabilitiesForEndpointAddress(endpoint, DiscoveryQos.NO_MAX_AGE);
     }
 
     /*
@@ -350,8 +349,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     }
 
     private boolean checkAge(Long timeStamp, long maxAcceptedAge) {
-        return maxAcceptedAge == NO_MAX_AGE
-                || ((timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge)));
+        return timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge);
     }
 
     /*
@@ -363,7 +361,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      */
     @Override
     public Collection<CapabilityEntry> lookup(final String domain, final String interfaceName) {
-        return lookup(domain, interfaceName, NO_MAX_AGE);
+        return lookup(domain, interfaceName, DiscoveryQos.NO_MAX_AGE);
     }
 
     /*

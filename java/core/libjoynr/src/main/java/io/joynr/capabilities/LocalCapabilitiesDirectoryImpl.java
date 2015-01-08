@@ -108,7 +108,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
      * @return
      */
     @Override
-    public RegistrationFuture add(CapabilityEntry capabilityEntry) {
+    public RegistrationFuture add(final CapabilityEntry capabilityEntry) {
         JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
         capabilityEntry.endpointAddresses.add(joynrMessagingEndpointAddress);
 
@@ -117,11 +117,17 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         final RegistrationFuture ret = new RegistrationFuture(capabilityEntry.getParticipantId());
 
         if (localCapabilitiesStore.hasCapability(capabilityEntry)) {
-            ret.setStatus(RegistrationStatus.DONE);
-            return ret;
+            DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, DiscoveryQos.NO_MAX_AGE);
+            if (capabilityEntry.getProviderQos().getScope().equals(ProviderScope.LOCAL)
+                    || globalCapabilitiesCache.lookup(capabilityEntry.getParticipantId(), discoveryQos) != null) {
+                // in this case, no further need for global registration is required. Registration completed.
+                ret.setStatus(RegistrationStatus.DONE);
+                return ret;
+            }
+            // in the other case, the global registration needs to be done
+        } else {
+            localCapabilitiesStore.add(capabilityEntry);
         }
-
-        localCapabilitiesStore.add(capabilityEntry);
 
         // Register globally
         if (capabilityEntry.providerQos.getScope().equals(ProviderScope.GLOBAL)) {
@@ -141,7 +147,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                         logger.info("global registration for " + capabilityInformation.getDomain() + " : "
                                 + capabilityInformation.getInterfaceName() + " completed");
                         ret.setStatus(RegistrationStatus.DONE);
-
+                        globalCapabilitiesCache.add(capabilityEntry);
                     }
 
                     @Override
@@ -158,7 +164,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     }
 
     @Override
-    public void remove(CapabilityEntry capEntry) {
+    public void remove(final CapabilityEntry capEntry) {
         localCapabilitiesStore.remove(capEntry.getParticipantId());
 
         // Remove from the global capabilities directory if needed
@@ -171,7 +177,19 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
             CapabilityInformation capabilityInformation = capabilityEntry2Information(capEntry);
             if (capabilityInformation != null) {
-                globalCapabilitiesClient.remove(capabilityInformation.getParticipantId());
+                Callback<Void> callback = new Callback<Void>() {
+
+                    @Override
+                    public void onSuccess(Void result) {
+                        globalCapabilitiesCache.remove(capEntry.getParticipantId());
+                    }
+
+                    @Override
+                    public void onFailure(JoynrException error) {
+                        //do nothing
+                    }
+                };
+                globalCapabilitiesClient.remove(callback, capabilityInformation.getParticipantId());
             }
         }
 
@@ -223,7 +241,11 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         case LOCAL_AND_GLOBAL:
             globalCapabilities = globalCapabilitiesCache.lookup(domain, interfaceName, discoveryQos.getCacheMaxAge());
             if (globalCapabilities.size() > 0) {
-                globalCapabilities.addAll(localCapabilities);
+                for (CapabilityEntry capabilityEntry : localCapabilities) {
+                    if (!globalCapabilities.contains(capabilityEntry)) {
+                        globalCapabilities.add(capabilityEntry);
+                    }
+                }
                 capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
             } else {
                 // in this case, no global only caps are included in the cache --> call glob cap dir

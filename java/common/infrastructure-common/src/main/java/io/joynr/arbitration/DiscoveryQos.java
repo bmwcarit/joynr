@@ -38,7 +38,8 @@ public class DiscoveryQos {
     private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.HighestPriority;
 
     long cacheMaxAge;
-    private static final long DEFAULT_CACHEMAXAGE = 0;
+    private static final long DEFAULT_CACHEMAXAGE = 0L;
+    public static final long NO_MAX_AGE = Long.MAX_VALUE;
 
     private boolean providerMustSupportOnChange;
     private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
