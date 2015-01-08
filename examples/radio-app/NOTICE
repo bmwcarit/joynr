@@ -44,6 +44,7 @@ This project has dependencies to:
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
+  JLine under The BSD License
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL

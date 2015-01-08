@@ -26,8 +26,10 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
+import java.io.IOException;
 import java.util.Properties;
 
+import jline.console.ConsoleReader;
 import joynr.vehicle.RadioProvider;
 
 import org.slf4j.Logger;
@@ -125,8 +127,6 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                                                                                                                                         appConfig));
         joynrApplication.run();
 
-        MyRadioHelper.pressQEnterToContinue();
-
         joynrApplication.shutdown();
     }
 
@@ -134,6 +134,24 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     public void run() {
         provider = new MyRadioProvider();
         runtime.registerCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+
+        ConsoleReader console;
+        try {
+            console = new ConsoleReader();
+            int key;
+            while ((key = console.readCharacter()) != 'q') {
+                switch (key) {
+                case 's':
+                    provider.shuffleStations();
+                    break;
+                default:
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            LOG.error("error reading input from console", e);
+        }
     }
 
     @Override
