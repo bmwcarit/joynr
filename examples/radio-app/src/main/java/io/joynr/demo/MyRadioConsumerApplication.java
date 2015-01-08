@@ -36,8 +36,10 @@ import java.io.IOException;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
+import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.vehicle.Country;
+import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastListener;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
 
@@ -225,6 +227,39 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                                                                                     }
                                                                                 },
                                                                                 subscriptionQos);
+
+            // broadcast subscription
+
+            // The provider will send a notification whenever the value changes. The number of sent
+            // notifications may be limited by the min interval QoS.
+            // NOTE: The provider must support on-change notifications in order to use this feature by
+            // calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
+            // the <broadcast> should be triggered.
+            OnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
+            // The provider will maintain at least a minimum interval idle time in milliseconds between
+            // successive notifications, even if on-change notifications are enabled and the value changes
+            // more often. This prevents the consumer from being flooded by updated values. The filtering
+            // happens on the provider's side, thus also preventing excessive network traffic.
+            int wsbMinInterval = 1 * 1000;
+            // The provider will send notifications until the end date is reached. The consumer will not receive any
+            // notifications (neither value notifications nor missed publication notifications) after
+            // this date.
+            long wsbExpiryDate = System.currentTimeMillis() + 60 * 1000;
+            // Notification messages will be sent with this time-to-live. If a notification message can not be
+            // delivered within its TTL, it will be deleted from the system.
+            // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
+            // missed publication notification (depending on the value of the alert interval QoS).
+            int wsbPublicationTtl = 5 * 1000;
+            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos(wsbMinInterval,
+                                                                             wsbExpiryDate,
+                                                                             wsbPublicationTtl);
+            radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastListener() {
+                @Override
+                public void receive(RadioStation weakSignalStation) {
+                    LOG.info(PRINT_BORDER + "BROADCAST SUBSCRIPTION: weak signal: " + weakSignalStation + PRINT_BORDER);
+                }
+            },
+                                                      weakSignalBroadcastSubscriptionQos);
 
             boolean success;
 
