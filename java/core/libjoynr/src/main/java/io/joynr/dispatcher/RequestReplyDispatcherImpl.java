@@ -283,7 +283,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                     handleRequestMessageReceived(message);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                     handleOneWayMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)) {
+                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                        || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
                     handleSubscriptionRequestReceived(message);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                     handleSubscriptionStopReceived(message);

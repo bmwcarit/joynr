@@ -114,10 +114,11 @@ public interface RequestReplySender {
                                                  String toParticipantId,
                                                  EndpointAddressBase endpointAddress,
                                                  SubscriptionRequest subscriptionRequest,
-                                                 MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                          JoynrMessageNotSentException,
-                                                                          JsonGenerationException,
-                                                                          JsonMappingException, IOException;
+                                                 MessagingQos qosSettings,
+                                                 boolean broadcast) throws JoynrSendBufferFullException,
+                                                                   JoynrMessageNotSentException,
+                                                                   JsonGenerationException, JsonMappingException,
+                                                                   IOException;
 
     public abstract void sendSubscriptionPublication(String fromParticipantId,
                                                      String toParticipantId,

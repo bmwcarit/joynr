@@ -19,6 +19,7 @@ package io.joynr.messaging;
  * #L%
  */
 
+import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -105,7 +106,8 @@ public class MessageSenderImpl implements MessageSender {
         }
 
         if (message.getType().equals(MESSAGE_TYPE_REQUEST)
-                || message.getType().equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)) {
+                || message.getType().equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                || message.getType().equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)) {
             message.setReplyTo(getReplyToChannelId());
         }
 

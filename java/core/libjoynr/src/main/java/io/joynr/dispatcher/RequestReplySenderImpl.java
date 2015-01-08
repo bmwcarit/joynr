@@ -199,14 +199,16 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                         String toParticipantId,
                                         EndpointAddressBase endpointAddress,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                 JoynrMessageNotSentException, JsonGenerationException,
-                                                                 JsonMappingException, IOException {
+                                        MessagingQos qosSettings,
+                                        boolean broadcast) throws JoynrSendBufferFullException,
+                                                          JoynrMessageNotSentException, JsonGenerationException,
+                                                          JsonMappingException, IOException {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
                                                                              messageSender.getReplyToChannelId(),
-                                                                             DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
+                                                                             DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
+                                                                             broadcast);
 
         routeMessageByEndpointAddress(toParticipantId, message, endpointAddress);
     }

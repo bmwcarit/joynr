@@ -126,7 +126,8 @@ public class ConnectorTests {
                                                                             Mockito.eq(toParticipantId),
                                                                             Mockito.eq(endpointAddress),
                                                                             Mockito.any(SubscriptionRequest.class),
-                                                                            Mockito.any(MessagingQos.class));
+                                                                            Mockito.any(MessagingQos.class),
+                                                                            Mockito.anyBoolean());
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             Assert.fail("Calling a subscription method with no expiry date throws an exception.");

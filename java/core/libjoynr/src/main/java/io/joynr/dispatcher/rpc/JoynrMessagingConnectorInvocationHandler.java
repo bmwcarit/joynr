@@ -210,7 +210,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                   toParticipantId,
                                                   endpointAddress,
                                                   subscriptionRequest,
-                                                  clonedMessagingQos);
+                                                  clonedMessagingQos,
+                                                  false);
             return;
         } else if (method.getName().startsWith("unsubscribeFrom")) {
             SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
@@ -263,7 +264,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                   toParticipantId,
                                                   endpointAddress,
                                                   subscriptionRequest,
-                                                  messagingQos);
+                                                  messagingQos,
+                                                  true);
         } else if (method.getName().startsWith("unsubscribeFrom")) {
             String subscriptionId = (String) args[0];
             SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);

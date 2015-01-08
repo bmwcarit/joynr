@@ -358,7 +358,7 @@ public class SerializationTest {
         System.out.println(writeValueAsString);
 
         JoynrMessage message = new JoynrMessage();
-        String type = JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+        String type = JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
         message.setFrom(UUID.randomUUID().toString());
         message.setTo(UUID.randomUUID().toString());
         message.setType(type);
