@@ -68,4 +68,9 @@ public class MyRadioProvider extends RadioAbstractProvider {
         stationsList.add(radioStation);
         return true;
     }
+
+    public void fireWeakSignalEvent() {
+        LOG.info(PRINT_BORDER + "fire weakSignalEvent: " + currentStation + PRINT_BORDER);
+        weakSignalEventOccurred(currentStation);
+    }
 }
