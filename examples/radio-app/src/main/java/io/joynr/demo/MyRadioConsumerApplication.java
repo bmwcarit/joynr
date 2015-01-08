@@ -35,6 +35,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.io.IOException;
 import java.util.Properties;
 
+import jline.console.ConsoleReader;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.vehicle.Country;
 import joynr.vehicle.RadioProxy;
@@ -123,8 +124,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
                                                                                                                                  appConfig));
         myRadioConsumerApp.run();
-
-        MyRadioHelper.pressQEnterToContinue();
 
         myRadioConsumerApp.shutdown();
     }
@@ -239,6 +238,24 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             radioProxy.shuffleStations();
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
+
+            ConsoleReader console;
+            try {
+                console = new ConsoleReader();
+                int key;
+                while ((key = console.readCharacter()) != 'q') {
+                    switch (key) {
+                    case 's':
+                        radioProxy.shuffleStations();
+                        break;
+                    default:
+                        LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                LOG.error("error reading input from console", e);
+            }
 
         } catch (JoynrArbitrationException e) {
             LOG.error("No provider found", e);
