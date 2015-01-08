@@ -10,3 +10,6 @@ bounceproxy.build-.log
 THIRD-PARTY.properties
 *-build
 .DS_Store
+.idea/
+*.iml
+
