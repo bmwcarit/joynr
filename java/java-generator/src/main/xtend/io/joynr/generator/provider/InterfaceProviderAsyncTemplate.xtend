@@ -52,7 +52,7 @@ class InterfaceProviderAsyncTemplate {
 
 		import io.joynr.provider.JoynrProviderAsync;
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false)»
 			import «datatype»;
 		«ENDFOR»
 		public interface «className» extends «interfaceName», JoynrProviderAsync, JoynrAsyncInterface {
