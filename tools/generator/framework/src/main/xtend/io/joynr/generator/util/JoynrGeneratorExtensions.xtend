@@ -27,6 +27,7 @@ import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FArrayType
 import org.franca.core.franca.FAttribute
@@ -34,6 +35,7 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
+import org.franca.core.franca.FEnumerator
 import org.franca.core.franca.FField
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMapType
@@ -46,10 +48,6 @@ import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
-import org.franca.core.franca.FEnumerator
-import org.franca.core.franca.FAnnotation
-import java.util.List
-import org.franca.core.franca.FAnnotationType
 
 abstract class JoynrGeneratorExtensions {
 
@@ -306,11 +304,7 @@ abstract class JoynrGeneratorExtensions {
 
 		if (broadcasts) {
 			for (broadcast : fInterface.broadcasts) {
-				for (outParameter : getOutputParameters(broadcast)) {
-					if (outParameter != null && (isComplex(outParameter.type) || isEnum(outParameter.type))) {
-						typeList.add(getDatatype(outParameter.type));
-					}
-				}
+				typeList.addAll(getAllComplexAndEnumTypes(broadcast));
 			}
 		}
 
@@ -322,6 +316,16 @@ abstract class JoynrGeneratorExtensions {
 		else{
 			return typeList;
 		}
+	}
+
+	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
+		val typeList = new HashSet<Object>();
+		for (outParameter : getOutputParameters(broadcast)) {
+			if (outParameter != null && (isComplex(outParameter.type) || isEnum(outParameter.type))) {
+				typeList.add(getDatatype(outParameter.type));
+			}
+		}
+		return typeList;
 	}
 
 	def private getAllReferredDatatypes(HashSet<Object> list, HashSet<Object> cache) {

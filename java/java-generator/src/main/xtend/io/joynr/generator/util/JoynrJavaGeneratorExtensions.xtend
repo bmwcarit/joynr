@@ -349,6 +349,16 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return includeSet;
 	}
 
+	def Iterable<String> getRequiredIncludesFor(FBroadcast broadcast) {
+		val includeSet = new TreeSet<String>();
+		for(datatype: getAllComplexAndEnumTypes(broadcast)) {
+			if (datatype instanceof FType) {
+				includeSet.add(getIncludeOf(datatype));
+			}
+		}
+		return includeSet;
+	}
+
 	def String getIncludeOf(FType dataType) {
 		return getPackagePathWithJoynrPrefix(dataType, ".") + "." + dataType.joynrName;
 	}

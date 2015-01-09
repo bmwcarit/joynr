@@ -37,7 +37,7 @@ class FilterTemplate  {
 		package «packagePath»;
 
 		import io.joynr.pubsub.publication.BroadcastFilterImpl;
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true)»
+		«FOR datatype: getRequiredIncludesFor(broadcast)»
 			import «datatype»;
 		«ENDFOR»
 
