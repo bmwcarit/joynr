@@ -65,6 +65,8 @@ public:
     QSemaphore semaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     QSharedPointer<MockLocationUpdatedSelectiveFilter> filter;
+    unsigned long registerCapabilityWait;
+    unsigned long subscribeToBroadcastWait;
 
     End2EndBroadcastTest() :
         qRegisterMetaTypeQos(),
@@ -79,7 +81,9 @@ public:
         uuid( "_" + baseUuid.mid(1,baseUuid.length()-2 )),
         domainName(QString("cppCombinedEnd2EndTest_Domain") + uuid),
         semaphore(0),
-        filter(new MockLocationUpdatedSelectiveFilter)
+        filter(new MockLocationUpdatedSelectiveFilter),
+        registerCapabilityWait(1000),
+        subscribeToBroadcastWait(50)
 
     {
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
@@ -189,7 +193,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(registerCapabilityWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->getProxyBuilder<tests::testProxy>(domainName);
@@ -217,7 +221,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     // This wait is necessary, because subcriptions are async, and an event could occur
     // before the subscription has started.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(subscribeToBroadcastWait);
 
     testProvider->locationUpdateEventOccurred(
                 types::GpsLocation(
@@ -337,7 +341,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(registerCapabilityWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->getProxyBuilder<tests::testProxy>(domainName);
@@ -365,7 +369,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     //This wait is necessary, because subcriptions are async, and an event could occur could be
     // changed before before the subscription has started.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(subscribeToBroadcastWait);
 
     // Change the location 3 times
 
@@ -490,7 +494,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(registerCapabilityWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->getProxyBuilder<tests::testProxy>(domainName);
@@ -521,7 +525,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // This wait is necessary, because subcriptions are async, and an event could occur
     // before the subscription has started.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(subscribeToBroadcastWait);
 
     // Change the location 3 times
 
@@ -609,7 +613,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(registerCapabilityWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->getProxyBuilder<tests::testProxy>(domainName);
@@ -640,7 +644,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // This wait is necessary, because subcriptions are async, and an event could occur
     // before the subscription has started.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(subscribeToBroadcastWait);
 
     // Change the location 3 times
 
@@ -759,7 +763,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(registerCapabilityWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->getProxyBuilder<tests::testProxy>(domainName);
@@ -793,7 +797,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     // This wait is necessary, because subcriptions are async, and an event could occur
     // before the subscription has started.
-    QThreadSleep::msleep(50);
+    QThreadSleep::msleep(subscribeToBroadcastWait);
 
     // Initial attribute publication
     ASSERT_TRUE(semaphore.tryAcquire(1, 50));
