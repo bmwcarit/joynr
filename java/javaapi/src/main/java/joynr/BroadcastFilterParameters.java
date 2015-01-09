@@ -27,18 +27,22 @@ import javax.annotation.Nonnull;
  */
 public class BroadcastFilterParameters implements JoynrType {
 
-    Map<String, Object> filterParameters = new HashMap<String, Object>();
+    Map<String, String> filterParameters = new HashMap<String, String>();
 
-    public Map<String, Object> getFilterParameters() {
+    public Map<String, String> getFilterParameters() {
         return filterParameters;
     }
 
-    public void setFilterParameters(Map<String, Object> filterParameters) {
+    public void setFilterParameters(Map<String, String> filterParameters) {
         this.filterParameters = filterParameters;
     }
 
-    protected void addFilterParameter(@Nonnull String key, Object value) {
+    protected void setFilterParameter(@Nonnull String key, String value) {
         filterParameters.put(key, value);
+    }
+
+    protected String getFilterParameter(@Nonnull String key) {
+        return filterParameters.get(key);
     }
 
     @Override

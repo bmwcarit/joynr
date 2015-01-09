@@ -239,8 +239,8 @@ public class BroadcastEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
 
         final LocationUpdateSelectiveBroadcastFilterParameters testFilterParameters = new LocationUpdateSelectiveBroadcastFilterParameters();
-        testFilterParameters.addCountryFilterParameter("Germany");
-        testFilterParameters.addStartTimeFilterParameter("4.00 pm");
+        testFilterParameters.setCountry("Germany");
+        testFilterParameters.setStartTime("4.00 pm");
 
         testLocationUpdateSelectiveBroadcastFilter filter1 = new testLocationUpdateSelectiveBroadcastFilter() {
 
@@ -313,8 +313,8 @@ public class BroadcastEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
 
         final LocationUpdateSelectiveBroadcastFilterParameters testFilterParameters = new LocationUpdateSelectiveBroadcastFilterParameters();
-        testFilterParameters.addCountryFilterParameter("Germany");
-        testFilterParameters.addStartTimeFilterParameter("4.00 pm");
+        testFilterParameters.setCountry("Germany");
+        testFilterParameters.setStartTime("4.00 pm");
 
         testLocationUpdateSelectiveBroadcastFilter filter1 = new testLocationUpdateSelectiveBroadcastFilter() {
 

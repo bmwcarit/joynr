@@ -360,8 +360,8 @@ public class PublicationManagerTest {
         long ttl = 1000;
 
         testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters();
-        filterParameters.addCountryFilterParameter("Germany");
-        filterParameters.addStartTimeFilterParameter("4:00");
+        filterParameters.setCountry("Germany");
+        filterParameters.setStartTime("4:00");
 
         SubscriptionQos qos = new OnChangeSubscriptionQos(minInterval_ms, SubscriptionQos.NO_EXPIRY_DATE, ttl);
 

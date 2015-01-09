@@ -224,7 +224,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	def getCommaSeperatedTypedFilterParameterList(FBroadcast broadcast) {
 		val returnStringBuilder = new StringBuilder();
 		for (filterParameter : getFilterParameters(broadcast)) {
-			returnStringBuilder.append("Object ");
+			returnStringBuilder.append("String ");
 			returnStringBuilder.append(filterParameter);
 			returnStringBuilder.append(", ");
 		}

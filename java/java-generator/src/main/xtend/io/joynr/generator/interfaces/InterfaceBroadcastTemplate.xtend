@@ -63,14 +63,17 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 				
 				«IF filterParameters.size > 0»
 				public «filterParameterType»(«getCommaSeperatedTypedFilterParameterList(broadcast)») {
-				«FOR filterPrameter : filterParameters»
-					super.addFilterParameter("«filterPrameter»", «filterPrameter»);
-				«ENDFOR»
+					«FOR filterPrameter : filterParameters»
+					super.setFilterParameter("«filterPrameter»", «filterPrameter»);
+					«ENDFOR»
 				}
 				«ENDIF»
 				«FOR filterPrameter : filterParameters»
-					public void add«filterPrameter.toFirstUpper»FilterParameter(Object «filterPrameter») {
-						super.addFilterParameter("«filterPrameter»", «filterPrameter»);
+					public void set«filterPrameter.toFirstUpper»(String «filterPrameter») {
+						super.setFilterParameter("«filterPrameter»", «filterPrameter»);
+					}
+					public String get«filterPrameter.toFirstUpper»(String «filterPrameter») {
+						return super.getFilterParameter("«filterPrameter»");
 					}
 				«ENDFOR»
 			}
