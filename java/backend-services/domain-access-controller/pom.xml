@@ -93,7 +93,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>io.joynr.accesscontrol.global.DomainAccessControllerLauncher</mainClass>
+                            <mainClass>io.joynr.accesscontrol.global.GlobalDomainAccessControllerLauncher</mainClass>
                         </manifest>
                     </archive>
                     <outputDirectory>${deploymentdirectory}</outputDirectory>
