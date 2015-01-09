@@ -62,15 +62,15 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		Logger* «interfaceName»InProcessConnector::logger = Logging::getInstance()->getLogger("MSG", "«interfaceName»InProcessConnector");
 
 		«interfaceName»InProcessConnector::«interfaceName»InProcessConnector(
-					joynr::SubscriptionManager* subscriptionManager,
-					joynr::PublicationManager* publicationManager,
-					joynr::InProcessPublicationSender* inProcessPublicationSender,
-					const QString& proxyParticipantId,
-					const QString& providerParticipantId,
-					QSharedPointer<joynr::InProcessAddress> address
+		            joynr::SubscriptionManager* subscriptionManager,
+		            joynr::PublicationManager* publicationManager,
+		            joynr::InProcessPublicationSender* inProcessPublicationSender,
+		            const QString& proxyParticipantId,
+		            const QString& providerParticipantId,
+		            QSharedPointer<joynr::InProcessAddress> address
 		) :
-			proxyParticipantId(proxyParticipantId),
-			providerParticipantId(providerParticipantId),
+		    proxyParticipantId(proxyParticipantId),
+		    providerParticipantId(providerParticipantId),
 		    address(address),
 		    subscriptionManager(subscriptionManager),
 		    publicationManager(publicationManager),
@@ -79,14 +79,15 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		}
 
 		bool «interfaceName»InProcessConnector::usesClusterController() const{
-			return false;
+		    return false;
 		}
 
 		«FOR attribute : getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
-			«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 			«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
+			«IF attribute.readable»
+			«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 			void «interfaceName»InProcessConnector::«getAttributeName»(
 					joynr::RequestStatus& status,
 					«returnType»& result
@@ -102,8 +103,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			}
 
 			void «interfaceName»InProcessConnector::«getAttributeName»(
-					QSharedPointer<joynr::Future<«returnType»> > future,
-					QSharedPointer< joynr::ICallback<«returnType»> > callBack
+			        QSharedPointer<joynr::Future<«returnType»> > future,
+			        QSharedPointer< joynr::ICallback<«returnType»> > callBack
 			) {
 			    assert(!future.isNull());
 			    assert(!address.isNull());
@@ -126,7 +127,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			}
 
 			void «interfaceName»InProcessConnector::«getAttributeName»(
-					QSharedPointer<joynr::Future<«returnType»> > future
+			        QSharedPointer<joynr::Future<«returnType»> > future
 			) {
 			    assert(!future.isNull());
 			    assert(!address.isNull());
@@ -142,12 +143,12 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    if (status.getCode()== joynr::RequestStatusCode::OK){
 			        future->onSuccess(status, result);
 			    } else {
-			    	future->onFailure(status);
+			        future->onFailure(status);
 			    }
 			}
 
 			void «interfaceName»InProcessConnector::«getAttributeName»(
-					QSharedPointer< joynr::ICallback<«returnType»> > callBack
+			        QSharedPointer< joynr::ICallback<«returnType»> > callBack
 			) {
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -165,11 +166,12 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			        callBack->onFailure(status);
 			    }
 			}
-
+			«ENDIF»
+			«IF attribute.writable»
 
 			void «interfaceName»InProcessConnector::«setAttributeName»(
-					QSharedPointer< joynr::ICallback<void> > callBack,
-					«returnType» input
+			        QSharedPointer< joynr::ICallback<void> > callBack,
+			        «returnType» input
 			) {
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -181,7 +183,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    joynr::RequestStatus status;
 			    «serviceInterface.interfaceCaller»->«setAttributeName»(status, input);
 			    if (status.getCode()== joynr::RequestStatusCode::OK){
-			    	callBack->onSuccess(status);
+			        callBack->onSuccess(status);
 			    } else {
 			        callBack->onFailure(status);
 			    }
@@ -189,9 +191,9 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			}
 
 			void «interfaceName»InProcessConnector::«setAttributeName»(
-					QSharedPointer< joynr::Future<void> > future,
-					QSharedPointer< joynr::ICallback<void> > callBack,
-					«returnType» input
+			        QSharedPointer< joynr::Future<void> > future,
+			        QSharedPointer< joynr::ICallback<void> > callBack,
+			        «returnType» input
 			) {
 			    assert(!future.isNull());
 			    assert(!address.isNull());
@@ -213,8 +215,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			}
 
 			void «interfaceName»InProcessConnector::«setAttributeName»(
-					QSharedPointer<joynr::Future<void> > future,
-					«returnType» input
+			        QSharedPointer<joynr::Future<void> > future,
+			        «returnType» input
 			) {
 			    assert(!future.isNull());
 			    assert(!address.isNull());
@@ -229,13 +231,13 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    if (status.getCode()== joynr::RequestStatusCode::OK){
 			        future->onSuccess(status);
 			    } else {
-			    	future->onFailure(status);
+			        future->onFailure(status);
 			    }
 			}
 
 			void «interfaceName»InProcessConnector::«setAttributeName»(
-					joynr::RequestStatus& status,
-					const «returnType»& input
+			        joynr::RequestStatus& status,
+			        const «returnType»& input
 			) {
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -243,9 +245,12 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
 			    //see header for more information
-			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«getAttributeName»(Future) is synchronous.");
+			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
 			    «serviceInterface.interfaceCaller»->«setAttributeName»(status, input);
 			}
+			«ENDIF»
+			«IF attribute.notifiable»
+
 
 			QString «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
@@ -278,22 +283,22 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    QString subscriptionId = subscriptionRequest->getSubscriptionId();
 
 			    if(caller.isNull()) {
-			    	assert(publicationManager != NULL);
-			    	/**
-			    	* Provider not registered yet
-			    	* Dispatcher will call publicationManger->restore when a new provider is added to activate
-			    	* subscriptions for that provider
-			    	*/
-			    	publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
+			        assert(publicationManager != NULL);
+			        /**
+			        * Provider not registered yet
+			        * Dispatcher will call publicationManger->restore when a new provider is added to activate
+			        * subscriptions for that provider
+			        */
+			        publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
 			    } else {
-			    	publicationManager->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
+			        publicationManager->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 			    }
 			    return subscriptionId;
 			    «ENDIF»
 			}
 
 			void «interfaceName»InProcessConnector::unsubscribeFrom«attributeName.toFirstUpper»(
-					QString& subscriptionId
+			        QString& subscriptionId
 			) {
 			    «IF isEnum(attribute.type)»
 			    Q_UNUSED(subscriptionId);
@@ -310,6 +315,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    subscriptionManager->unregisterSubscription(subscriptionId);
 			    «ENDIF»
 			}
+			«ENDIF»
 		«ENDFOR»
 
 		«FOR method: getMethods(serviceInterface)»

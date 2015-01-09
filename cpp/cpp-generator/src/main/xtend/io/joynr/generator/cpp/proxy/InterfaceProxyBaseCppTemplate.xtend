@@ -80,7 +80,7 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 		    joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, connection);
 		}
 
-		«FOR attribute: getAttributes(fInterface)»
+		«FOR attribute: getAttributes(fInterface).filter[attribute | attribute.notifiable]»
 			«var attributeName = attribute.joynrName»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			void «className»::unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId)

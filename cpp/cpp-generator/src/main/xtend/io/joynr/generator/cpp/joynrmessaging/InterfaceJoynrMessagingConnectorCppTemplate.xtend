@@ -102,6 +102,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
+			«IF attribute.readable»
 			void «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatypeOrList(attribute)»& «attributeName») {
 			    QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future = QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> >(new joynr::Future<«getMappedDatatypeOrList(attribute)»>());
 			    QSharedPointer<joynr::IReplyCaller> replyCaller = QSharedPointer<joynr::IReplyCaller>(new joynr::ReplyCaller<«getMappedDatatypeOrList(attribute)»>(future));
@@ -139,7 +140,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			    // check cache here
 				attributeRequest<«getMappedDatatypeOrList(attribute)»>(QString("get«attributeName.toFirstUpper»"), status, replyCaller);
 			}
-
+			«ENDIF»
+			«IF attribute.writable»
 
 			void «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(QSharedPointer< joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName») {
 			    joynr::Request internalRequestObject;
@@ -200,6 +202,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			    operationRequest(status, replyCaller, internalRequestObject);
 			    status = future->waitForFinished();
 			}
+			«ENDIF»
+			«IF attribute.notifiable»
 
 			QString «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
 			        QSharedPointer<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
@@ -245,6 +249,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			                subscriptionStop
 			    );
 			}
+			«ENDIF»
 
 		«ENDFOR»
 

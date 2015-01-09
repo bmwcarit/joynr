@@ -68,7 +68,7 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 		            bool cached
 		    );
 
-			«FOR attribute: getAttributes(serviceInterface)»
+			«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 				«var attributeName = attribute.joynrName»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
@@ -113,11 +113,14 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 			// attributes
 			«FOR attribute: getAttributes(serviceInterface)»
 				«var attributeName = attribute.joynrName»
+				«IF attribute.readable»
 				using «asyncClassName»::get«attributeName.toFirstUpper»;
-				using «asyncClassName»::set«attributeName.toFirstUpper»;
 				using «syncClassName»::get«attributeName.toFirstUpper»;
+				«ENDIF»
+				«IF attribute.writable»
+				using «asyncClassName»::set«attributeName.toFirstUpper»;
 				using «syncClassName»::set«attributeName.toFirstUpper»;
-
+				«ENDIF»
 			«ENDFOR»
 
 		    // operations

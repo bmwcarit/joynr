@@ -26,11 +26,11 @@ class InterfaceSubscriptionUtil {
 
 	def produceSubscribeUnsubscribeMethods(FInterface serviceInterface, boolean pure)
 	'''
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			virtual QString subscribeTo«attribute.joynrName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
 			virtual void unsubscribeFrom«attribute.joynrName.toFirstUpper»(QString& subscriptionId)«IF pure» = 0«ENDIF»;
-	    «ENDFOR»
+		«ENDFOR»
 
 		«FOR broadcast: serviceInterface.broadcasts»
 			«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»

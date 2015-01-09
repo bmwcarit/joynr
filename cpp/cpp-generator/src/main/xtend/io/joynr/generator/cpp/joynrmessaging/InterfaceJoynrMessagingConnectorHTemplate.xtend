@@ -70,26 +70,32 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		        bool cached,
 		        qint64 reqCacheDataFreshness_ms);
 
+		    virtual bool usesClusterController() const;
 
-			virtual bool usesClusterController() const;
-
-			virtual ~«interfaceName»JoynrMessagingConnector(){}
+		    virtual ~«interfaceName»JoynrMessagingConnector(){}
 
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				«val attributeName = attribute.joynrName»
+				«IF attribute.readable»
+
 				virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatypeOrList(attribute)»& «attributeName»);
 				virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future, QSharedPointer< joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
 				virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future);
 				virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
+				«ENDIF»
+				«IF attribute.writable»
 
 				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName»);
 				virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus &status, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName»);
 				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, «getMappedDatatypeOrList(attribute)» «attributeName»);
+				«ENDIF»
+				«IF attribute.notifiable»
 
 				virtual QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
 				virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
+				«ENDIF»
 			«ENDFOR»
 
 			«FOR method: getMethods(serviceInterface)»

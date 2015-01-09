@@ -26,30 +26,30 @@ import io.joynr.generator.util.InterfaceTemplate
 class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	
+
 	override generate(FInterface fInterface) {
 		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "AsyncProxy"
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«asyncClassName».h"
 		«FOR datatype: getRequiredIncludesFor(fInterface)»
 			#include "«datatype»"
 		«ENDFOR»
-		
+
 		#include "joynr/exceptions.h"
 		#include "joynr/Request.h"
 		#include "joynr/Reply.h"
 		#include <cassert>
-		
+
 		«getNamespaceStarter(fInterface)» 
 		«asyncClassName»::«asyncClassName»(
-				QSharedPointer<joynr::system::Address> messagingAddress,
-				joynr::ConnectorFactory* connectorFactory,
-				joynr::IClientCache *cache,
-				const QString &domain,
+		        QSharedPointer<joynr::system::Address> messagingAddress,
+		        joynr::ConnectorFactory* connectorFactory,
+		        joynr::IClientCache *cache,
+		        const QString &domain,
 		        const joynr::ProxyQos& proxyQos,
 		        const joynr::MessagingQos &qosSettings,
 		        bool cached
@@ -58,12 +58,13 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		    «className»Base(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
 		{
 		}
-		
+
 		«FOR attribute: getAttributes(fInterface)»
 			«var attributeName = attribute.joynrName»
-			«var attributeType = getMappedDatatypeOrList(attribute)» 
-            «var getAttribute = "get" + attributeName.toFirstUpper» 
-            «var setAttribute = "set" + attributeName.toFirstUpper» 
+			«var attributeType = getMappedDatatypeOrList(attribute)»
+
+			«IF attribute.readable»
+			«var getAttribute = "get" + attributeName.toFirstUpper»
 			/*
 			 * «getAttribute»
 			 */
@@ -78,7 +79,6 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«getAttribute»(future, callback);
 			    }
 			}
-			
 			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::Future< «attributeType» > > future)
 			{
 			    assert (!future.isNull());
@@ -89,7 +89,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«getAttribute»(future);
 			    }
 			}
-			
+
 			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::ICallback< «attributeType» > > callback)
 			{
 			    if (connector==NULL){
@@ -99,11 +99,14 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«getAttribute»(callback);
 			    }
 			}
-			
+			«ENDIF»
+
+			«IF attribute.writable»
+			«var setAttribute = "set" + attributeName.toFirstUpper» 
 			/*
 			 * «setAttribute»
 			 */
-			
+
 			void «asyncClassName»::«setAttribute»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callback, «attributeType» attributeValue) {
 			    assert (!future.isNull());
 			    if (connector==NULL){
@@ -113,7 +116,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«setAttribute»(future, callback, attributeValue);
 			    }
 			}
-			
+
 			void «asyncClassName»::«setAttribute»(QSharedPointer<joynr::Future<void> > future, «attributeType» attributeValue) {
 			    assert (!future.isNull());
 			    if (connector==NULL){
@@ -123,7 +126,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«setAttribute»(future, attributeValue);
 			    }
 			}
-			
+
 			void «asyncClassName»::«setAttribute»(QSharedPointer< joynr::ICallback<void> > callBack, «attributeType» attributeValue) {
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
@@ -132,6 +135,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«setAttribute»(callBack, attributeValue);
 			    }
 			}
+			«ENDIF»
 
 		«ENDFOR»
 		«FOR method: getMethods(fInterface)»
@@ -139,11 +143,11 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			«var outType = getMappedOutputParameter(method).head»
 			«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
-			
+
 			/*
 			 * «methodName»
 			 */
-			
+
 			void «asyncClassName»::«methodName»(QSharedPointer<joynr::Future<«outType»> > future, QSharedPointer< joynr::ICallback<«outType»> > callback «paramsSignature»)
 			{
 			    assert (!future.isNull());
@@ -154,7 +158,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«methodName»(future, callback «params»);
 			    }
 			}
-			
+
 			void «asyncClassName»::«methodName»(QSharedPointer<joynr::Future<«outType»> > future «paramsSignature») {
 			    assert (!future.isNull());
 			    if (connector==NULL){
@@ -164,7 +168,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«methodName»(future «params»);
 			    }
 			}
-			
+
 			void «asyncClassName»::«methodName»(QSharedPointer<joynr::ICallback<«outType»> > callback «paramsSignature») { 
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
@@ -173,11 +177,9 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			        connector->«methodName»(callback «params»);
 			    }
 			}
-			
+
 		«ENDFOR»
 		«getNamespaceEnder(fInterface)»
-		'''	
-	}	
-	
-			
+		'''
+	}
 }

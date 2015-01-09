@@ -68,6 +68,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 			«var attributeType = getMappedDatatypeOrList(attribute)» 
 			«var getAttribute = "get" + attributeName.toFirstUpper» 
 			«var setAttribute = "set" + attributeName.toFirstUpper» 
+			«IF attribute.readable»
 			void «syncClassName»::«getAttribute»(joynr::RequestStatus& status, «attributeType»& result)
 			{
 			    if (connector==NULL){
@@ -77,7 +78,9 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 			        connector->«getAttribute»(status, result);
 			    }
 			}
+			«ENDIF»
 
+			«IF attribute.writable»
 			void «syncClassName»::«setAttribute»(joynr::RequestStatus& status, const «attributeType»& value)
 			{
 			    if (connector==NULL){
@@ -87,6 +90,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 			        connector->«setAttribute»(status, value);
 			    }
 			}
+			«ENDIF»
 			
 		«ENDFOR»
 		«FOR method: getMethods(fInterface)»

@@ -62,14 +62,13 @@ class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 			«FOR attribute: getAttributes(serviceInterface)»
 				«var attributeName = attribute.joynrName»
 				«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
-				«var getAttribute = "get" + attributeName.toFirstUpper»
-				«var setAttribute = "set" + attributeName.toFirstUpper»
 				«IF isReadable(attribute)»
+					«var getAttribute = "get" + attributeName.toFirstUpper»
 
 					void «getAttribute»(@JoynrRpcCallback(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
 				«ENDIF»
 				«IF isWritable(attribute)»
-
+				«var setAttribute = "set" + attributeName.toFirstUpper»
 					void «setAttribute»(
 							@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
 							@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName»);

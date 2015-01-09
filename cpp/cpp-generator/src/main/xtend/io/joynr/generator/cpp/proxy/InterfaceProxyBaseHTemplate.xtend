@@ -64,7 +64,7 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 		            const QString &participantId,
 		            const joynr::system::CommunicationMiddleware::Enum& connection
 		    );
-			«FOR attribute: getAttributes(serviceInterface)»
+			«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				«var attributeName = attribute.joynrName»
 				QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);

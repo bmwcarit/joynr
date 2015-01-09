@@ -284,7 +284,6 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void voidOperation() {
-            // TODO Auto-generated method stub
             super.voidOperation();
         }
     }
@@ -314,14 +313,10 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            // TODO Auto-generated method stub
-
         }
 
         @Override
         public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            // TODO Auto-generated method stub
-
         }
 
         @Override
@@ -620,6 +615,18 @@ public class ProviderProxyEnd2EndTest {
         @Override
         public void optimizeLocationList(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
                                          @JoynrRpcParam(value = "inputList", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> inputList) {
+        }
+
+        @Override
+        public void setLocation(Callback<Void> callback, GpsLocation location) {
+        }
+
+        @Override
+        public void setFirstPrime(Callback<Void> callback, Integer firstPrime) {
+        }
+
+        @Override
+        public void setListOfInts(Callback<Void> callback, List<Integer> listOfInts) {
         }
 
     }
