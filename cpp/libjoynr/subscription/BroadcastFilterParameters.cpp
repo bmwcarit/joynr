@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/BroadcastFilterParameters.h"
+#include <QMapIterator>
 
 namespace joynr
 {
@@ -27,14 +28,14 @@ BroadcastFilterParameters::BroadcastFilterParameters() : filterParameters(QMap<Q
 
 BroadcastFilterParameters::BroadcastFilterParameters(
         const BroadcastFilterParameters& filterParameters)
-        : QObject(), filterParameters(filterParameters.getFilterParameters())
+        : QObject(), filterParameters(filterParameters.filterParameters)
 {
 }
 
 BroadcastFilterParameters& BroadcastFilterParameters::operator=(
         const BroadcastFilterParameters& filterParameters)
 {
-    this->filterParameters = filterParameters.getFilterParameters();
+    this->filterParameters = filterParameters.filterParameters;
     return *this;
 }
 
@@ -44,43 +45,55 @@ BroadcastFilterParameters::~BroadcastFilterParameters()
 
 bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& filterParameters) const
 {
-    bool equal = this->filterParameters.keys() == filterParameters.getFilterParameters().keys();
+    bool equal = this->filterParameters.keys() == filterParameters.filterParameters.keys();
 
     QList<QVariant> values1 = this->filterParameters.values();
     QList<QVariant> values2 = this->filterParameters.values();
 
     if (equal) {
         for (int i = 0; i < values1.size(); i++) {
-            if (!(equal = equal && (values1[i].toString()) == values2[i].toString()))
+            if (!(equal = equal && values1[i].toString() == values2[i].toString())) {
                 break;
+            }
         }
     }
 
     return equal;
 }
 
-void BroadcastFilterParameters::setFilterParameter(QString parameter, QString value)
+void BroadcastFilterParameters::setFilterParameter(const QString& parameter, const QString& value)
 {
     filterParameters.insert(parameter, value);
 }
 
-QMap<QString, QVariant> BroadcastFilterParameters::getFilterParameters() const
+QMap<QString, QString> BroadcastFilterParameters::getFilterParameters() const
 {
-    return filterParameters;
+    QMap<QString, QString> stringParams;
+    QMapIterator<QString, QVariant> i(filterParameters);
+    while (i.hasNext()) {
+        i.next();
+        stringParams.insert(i.key(), i.value().toString());
+    }
+    return stringParams;
 }
 
-QString BroadcastFilterParameters::getFilterParameter(QString parameter) const
+QString BroadcastFilterParameters::getFilterParameter(const QString& parameter) const
 {
     if (filterParameters.contains(parameter)) {
-        return filterParameters.value(parameter).value<QString>();
+        return filterParameters.value(parameter).toString();
     } else {
         return QString();
     }
 }
 
-void BroadcastFilterParameters::setFilterParameters(const QMap<QString, QVariant>& value)
+void BroadcastFilterParameters::setFilterParameters(const QMap<QString, QString>& value)
 {
-    filterParameters = value;
+    filterParameters.clear();
+    QMapIterator<QString, QString> i(value);
+    while (i.hasNext()) {
+        i.next();
+        filterParameters.insert(i.key(), QVariant(i.value()));
+    }
 }
 
 bool BroadcastFilterParameters::equals(const QObject& other) const

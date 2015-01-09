@@ -21,8 +21,8 @@
 
 #include <QMap>
 #include <QString>
-#include <QObject>
 #include <QVariant>
+#include <QObject>
 #include <QSharedPointer>
 #include <QMetaType>
 
@@ -40,7 +40,7 @@ class JOYNRCOMMON_EXPORT BroadcastFilterParameters : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QMap filterParameters READ getFilterParameters WRITE setFilterParameters)
+    Q_PROPERTY(QMap filterParameters MEMBER filterParameters)
 
 public:
     BroadcastFilterParameters();
@@ -49,13 +49,13 @@ public:
     ~BroadcastFilterParameters();
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
-    void setFilterParameter(QString parameter, QString value);
-    void setFilterParameters(const QMap<QString, QVariant>& value);
+    void setFilterParameter(const QString& parameter, const QString& value);
+    void setFilterParameters(const QMap<QString, QString>& value);
 
     virtual bool equals(const QObject& other) const;
 
-    QMap<QString, QVariant> getFilterParameters() const;
-    QString getFilterParameter(QString parameter) const;
+    QMap<QString, QString> getFilterParameters() const;
+    QString getFilterParameter(const QString& parameter) const;
 
 private:
     QMap<QString, QVariant> filterParameters;
