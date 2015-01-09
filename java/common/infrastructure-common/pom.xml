@@ -37,6 +37,10 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>

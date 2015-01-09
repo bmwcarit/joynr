@@ -16,7 +16,8 @@
   limitations under the License.
   #L%
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<groupId>io.joynr.java</groupId>
 	<artifactId>backend-services</artifactId>
 	<modelVersion>4.0.0</modelVersion>
@@ -35,5 +36,5 @@
 		<module>discovery-directory-servlet</module>
 		<module>capabilities-directory</module>
 		<module>channel-url-directory</module>
-  </modules>
+	</modules>
 </project>
