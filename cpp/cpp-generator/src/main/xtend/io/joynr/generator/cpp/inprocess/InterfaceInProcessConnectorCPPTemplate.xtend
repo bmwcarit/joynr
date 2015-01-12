@@ -251,10 +251,28 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			«ENDIF»
 			«IF attribute.notifiable»
 
+			QString «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QString& subscriptionId)
+			{
+			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
+			    subscriptionRequest->setSubscriptionId(subscriptionId);
+			    return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
+			}
 
 			QString «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos)
+			        QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos)
+			{
+			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
+			    return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
+			}
+
+			QString «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        joynr::SubscriptionRequest* subscriptionRequest)
 			{
 			    «IF isEnum(attribute.type)»
 			    Q_UNUSED(subscriptionListener);
@@ -269,12 +287,11 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    assert(subscriptionManager != NULL);
 			    QString attributeName = "«attributeName»";
 			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
-			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
 			    subscriptionManager->registerSubscription(
-			    			attributeName,
-			    			subscriptionCallback,
-			    			subscriptionQos,
-			    			*subscriptionRequest);
+			            attributeName,
+			            subscriptionCallback,
+			            subscriptionQos,
+			            *subscriptionRequest);
 			    logger->log(DEBUG, "Registered subscription: " + subscriptionRequest->toQString());
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();

@@ -47,6 +47,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 		#include "joynr/AbstractJoynrMessagingConnector.h"
 		#include "joynr/JoynrMessagingConnectorFactory.h"
+		#include "joynr/SubscriptionRequest.h"
 
 		namespace joynr {
 			class MessagingQos;
@@ -58,6 +59,17 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
 
 		class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
+		private:
+		    «FOR attribute: getAttributes(serviceInterface)»
+		    «val returnType = getMappedDatatypeOrList(attribute)»
+		    «val attributeName = attribute.joynrName»
+		    «IF attribute.notifiable»
+		    	QString subscribeTo«attributeName.toFirstUpper»(
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            SubscriptionRequest& subscriptionRequest);
+		    «ENDIF»
+		    «ENDFOR»
 		public:
 		    «interfaceName»JoynrMessagingConnector(
 		        joynr::IJoynrMessageSender* messageSender,
@@ -92,8 +104,13 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 				virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, «getMappedDatatypeOrList(attribute)» «attributeName»);
 				«ENDIF»
 				«IF attribute.notifiable»
-
-				virtual QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+				virtual QString subscribeTo«attributeName.toFirstUpper»(
+				            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+				virtual QString subscribeTo«attributeName.toFirstUpper»(
+				            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+				            QString& subscriptionId);
 				virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
 				«ENDIF»
 			«ENDFOR»

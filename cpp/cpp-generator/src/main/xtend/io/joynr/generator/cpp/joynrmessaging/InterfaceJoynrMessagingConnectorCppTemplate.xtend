@@ -209,6 +209,25 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			        QSharedPointer<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
 			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos
 			) {
+			    joynr::SubscriptionRequest subscriptionRequest;
+			    return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
+			}
+
+			QString «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QString& subscriptionId
+			) {
+			    joynr::SubscriptionRequest subscriptionRequest;
+			    subscriptionRequest.setSubscriptionId(subscriptionId);
+			    return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
+			}
+
+			QString «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        SubscriptionRequest& subscriptionRequest
+			) {
 			    LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			    QString attributeName = "«attributeName»";
 			    joynr::MessagingQos clonedMessagingQos(qosSettings);
@@ -219,7 +238,6 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			        clonedMessagingQos.setTtl(subscriptionQos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
 			    }
 			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
-			    joynr::SubscriptionRequest subscriptionRequest;
 			    subscriptionManager->registerSubscription(
 			                attributeName,
 			                subscriptionCallback,

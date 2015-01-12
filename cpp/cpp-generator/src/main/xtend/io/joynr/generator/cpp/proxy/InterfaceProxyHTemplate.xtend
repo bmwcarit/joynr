@@ -72,11 +72,25 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 				«var attributeName = attribute.joynrName»
 				«val returnType = getMappedDatatypeOrList(attribute)»
 				void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
-					«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
+				    «className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 				}
 
-				QString subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
-					return «className»Base::subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos);
+				QString subscribeTo«attributeName.toFirstUpper»(
+				            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+				    return «className»Base::subscribeTo«attributeName.toFirstUpper»(
+				                subscriptionListener,
+				                subscriptionQos);
+				}
+
+				QString subscribeTo«attributeName.toFirstUpper»(
+				            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+				            QString& subscriptionId){
+				    return «className»Base::subscribeTo«attributeName.toFirstUpper»(
+				                subscriptionListener,
+				                subscriptionQos,
+				                subscriptionId);
 				}
 			«ENDFOR»
 

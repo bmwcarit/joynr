@@ -44,54 +44,62 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"InProcessConnector_h").toUpperCase
 		'''
 		«warning()»
-		
+
 		#ifndef «headerGuard»
 		#define «headerGuard»
-		
+
 		#include "joynr/PrivateCopyAssign.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 		#include "joynr/InProcessPublicationSender.h"
 		#include "joynr/InProcessConnectorFactory.h"
-		
+		#include "joynr/SubscriptionRequest.h"
+
 		#include <QString>
 		#include <QSharedPointer>
 
 		namespace joynr {
-			class RequestStatus;
-			class InProcessAddress;
-			class SubscriptionManager;
-			class PublicationManager;
+		    class RequestStatus;
+		    class InProcessAddress;
+		    class SubscriptionManager;
+		    class PublicationManager;
 		}
 
 		«getNamespaceStarter(serviceInterface)»
-		
+
 		class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
+		private:
+		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+		«val returnType = getMappedDatatypeOrList(attribute)»
+		    QString subscribeTo«attribute.joynrName.toFirstUpper»(
+		                QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+		                QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		                SubscriptionRequest* subscriptionRequest);
+		«ENDFOR»
 		public:
-		
+
 		    «interfaceName»InProcessConnector(
-		    			joynr::SubscriptionManager* subscriptionManager,
-		    			joynr::PublicationManager* publicationManager,
-		    			joynr::InProcessPublicationSender* inProcessPublicationSender,
-		    			const QString& proxyParticipantId,
-		    			const QString& providerParticipantId,
+		                joynr::SubscriptionManager* subscriptionManager,
+		                joynr::PublicationManager* publicationManager,
+		                joynr::InProcessPublicationSender* inProcessPublicationSender,
+		                const QString& proxyParticipantId,
+		                const QString& providerParticipantId,
 		                QSharedPointer<joynr::InProcessAddress> address
 		    );
-		
-			virtual bool usesClusterController() const;
-			
-			«produceSyncGetters(serviceInterface, false)»
-			«produceSyncSetters(serviceInterface, false)»
-			«produceSyncMethods(serviceInterface, false)»
-			«produceAsyncGetters(serviceInterface, false)»
-			«produceAsyncSetters(serviceInterface, false)»
-			«produceAsyncMethods(serviceInterface, false)»
-		
-			«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
-		    
-		
+
+		    virtual bool usesClusterController() const;
+
+		    «produceSyncGetters(serviceInterface, false)»
+		    «produceSyncSetters(serviceInterface, false)»
+		    «produceSyncMethods(serviceInterface, false)»
+		    «produceAsyncGetters(serviceInterface, false)»
+		    «produceAsyncSetters(serviceInterface, false)»
+		    «produceAsyncMethods(serviceInterface, false)»
+
+		    «produceSubscribeUnsubscribeMethods(serviceInterface, false)»
+
 		private:
 		    static joynr::joynr_logging::Logger* logger;
-		
+
 		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
 		    QString proxyParticipantId;
 		    QString providerParticipantId;
@@ -103,28 +111,28 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		«getNamespaceEnder(serviceInterface)»
 
 		namespace joynr {
-			
+
 		«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
-		
+
 		// Helper class for use by the InProcessConnectorFactory
 		// This class creates instances of «interfaceName»InProcessConnector
 		template <>
 		class InProcessConnectorFactoryHelper <«packagePrefix»::I«interfaceName»Connector> {
 		public:
 		    «packagePrefix»::«interfaceName»InProcessConnector* create(
-		    		SubscriptionManager* subscriptionManager,
-		    		PublicationManager* publicationManager,
-		    		InProcessPublicationSender* inProcessPublicationSender,
-		    		const QString& proxyParticipantId,
-		    		const QString& providerParticipantId,
+		            SubscriptionManager* subscriptionManager,
+		            PublicationManager* publicationManager,
+		            InProcessPublicationSender* inProcessPublicationSender,
+		            const QString& proxyParticipantId,
+		            const QString& providerParticipantId,
 		            QSharedPointer<InProcessAddress> address
-			   	) {
+		        ) {
 		        return new «packagePrefix»::«interfaceName»InProcessConnector(
-		        		subscriptionManager,
-		        		publicationManager,
-		        		inProcessPublicationSender,
-		        		proxyParticipantId,
-		        		providerParticipantId,
+		                subscriptionManager,
+		                publicationManager,
+		                inProcessPublicationSender,
+		                proxyParticipantId,
+		                providerParticipantId,
 		                address
 		        );
 		    }
@@ -134,5 +142,4 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		#endif // «headerGuard»
 		'''
 	}
-	
 }

@@ -86,21 +86,43 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 			void «className»::unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId)
 			{
 			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», because the communication end partner is not (yet) known");
-			        return;
+			        LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName» \
+			                     , because the communication end partner is not (yet) known");
 			    }
 			    else{
 			        connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 			    }
 			}
 
-			QString «className»::subscribeTo«attributeName.toFirstUpper»(QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener, QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			QString «className»::subscribeTo«attributeName.toFirstUpper»(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId) {
 			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», because the communication end partner is not (yet) known");
+			        LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName» \
+			                     , because the communication end partner is not (yet) known");
 			        return "";
 			    }
 			    else{
-			        return connector->subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos);
+			        return connector->subscribeTo«attributeName.toFirstUpper»(
+			                    subscriptionListener,
+			                    subscriptionQos,
+			                    subscriptionId);
+			    }
+			}
+
+			QString «className»::subscribeTo«attributeName.toFirstUpper»(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			    if (connector==NULL){
+			        LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName» \
+			                     , because the communication end partner is not (yet) known");
+			        return "";
+			    }
+			    else{
+			        return connector->subscribeTo«attributeName.toFirstUpper»(
+			                    subscriptionListener,
+			                    subscriptionQos);
 			    }
 			}
 
