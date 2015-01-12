@@ -1,9 +1,9 @@
-package io.joynr.proxy;
+package io.joynr.proxy.invocation;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,47 +19,31 @@ package io.joynr.proxy;
  * #L%
  */
 
+import io.joynr.proxy.Future;
+
 import java.lang.reflect.Method;
 
 /**
- * QueuedRPC stores a method call for a proxy while the arbitration is running.
+ * MethodInvocation contains the queuable information for a proxy method call
  */
 
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "QueuedRPC is only accessed by trusted code.")
-public class QueuedRPC {
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "MethodInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
+public class MethodInvocation extends Invocation {
 
-    private Method method;
-    private Object[] args;
-    private Future<?> future;
+    private final Method method;
+    private final Object[] args;
 
-    public QueuedRPC(Method method, Object[] args, Future<?> future) {
-        super();
+    public MethodInvocation(Method method, Object[] args, Future<?> future) {
+        super(future);
         this.method = method;
         this.args = args;
-        this.setFuture(future);
     }
 
     public Method getMethod() {
         return method;
     }
 
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
     public Object[] getArgs() {
         return args;
-    }
-
-    public void setArgs(Object[] args) {
-        this.args = args;
-    }
-
-    public Future<?> getFuture() {
-        return future;
-    }
-
-    public void setFuture(Future<?> future) {
-        this.future = future;
     }
 }

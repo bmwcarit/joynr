@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ package io.joynr.pubsub.subscription;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -116,10 +118,13 @@ public class SubscriptionManagerTest {
         class IntegerReference extends TypeReference<Integer> {
         }
 
-        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                           IntegerReference.class,
-                                                                           attributeSubscriptionCallback,
-                                                                           qos);
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
 
         Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
                                                            Mockito.eq(attributeSubscriptionCallback));
@@ -136,9 +141,12 @@ public class SubscriptionManagerTest {
     public void registerBroadcastSubscription() {
         String broadcastName = "broadcastName";
         BroadcastSubscriptionListener broadcastSubscriptionCallback = mock(BroadcastSubscriptionListener.class);
-        subscriptionId = subscriptionManager.registerBroadcastSubscription(broadcastName,
-                                                                           broadcastSubscriptionCallback,
-                                                                           qos);
+        BroadcastSubscribeInvocation subscriptionRequest = new BroadcastSubscribeInvocation(broadcastName,
+                                                                                            broadcastSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerBroadcastSubscription(subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
 
         Mockito.verify(broadcastSubscriptionDirectory).put(Mockito.anyString(),
                                                            Mockito.eq(broadcastSubscriptionCallback));
@@ -156,10 +164,13 @@ public class SubscriptionManagerTest {
         class IntegerReference extends TypeReference<Integer> {
         }
 
-        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                           IntegerReference.class,
-                                                                           attributeSubscriptionCallback,
-                                                                           qosWithoutExpiryDate);
+        AttributeSubscribeInvocation request = new AttributeSubscribeInvocation(attributeName,
+                                                                                IntegerReference.class,
+                                                                                attributeSubscriptionCallback,
+                                                                                qosWithoutExpiryDate,
+                                                                                null);
+        subscriptionId = request.getSubscriptionId();
+        subscriptionManager.registerAttributeSubscription(request);
 
         Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
                                                            Mockito.eq(attributeSubscriptionCallback));

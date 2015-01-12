@@ -80,23 +80,33 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 			}
 
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-			abstract void subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			        «listenerInterface» broadcastListener,
 			        SubscriptionQos subscriptionQos,
 			        «filterParameterType» filterParameters);
+
+			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			        «listenerInterface» broadcastListener,
+			        SubscriptionQos subscriptionQos,
+			        «filterParameterType» filterParameters,
+			        String subscriptionId);
 			«ELSE»
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-			abstract void subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			        «listenerInterface» subscriptionListener,
 			        SubscriptionQos subscriptionQos);
+
+			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			        «listenerInterface» subscriptionListener,
+			        SubscriptionQos subscriptionQos,
+			        String subscriptionId);
 			«ENDIF»
 
 			abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);
 		«ENDFOR»
-
-
 }
 '''
 	}
-
 }

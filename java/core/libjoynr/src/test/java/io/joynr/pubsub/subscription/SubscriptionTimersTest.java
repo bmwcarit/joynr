@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -83,11 +84,13 @@ public class SubscriptionTimersTest {
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
 
         // register a subscription
-        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                           IntegerReference.class,
-                                                                           attributeSubscriptionCallback,
-                                                                           qos);
-
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
         verify(attributeSubscriptionCallback, times(numberOfPublications)).publicationMissed();
 
@@ -119,10 +122,13 @@ public class SubscriptionTimersTest {
         qos.setPublicationTtl(1000);
 
         // register a subscription
-        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                           IntegerReference.class,
-                                                                           attributeSubscriptionCallback,
-                                                                           qos);
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
 
         boolean lastPublicationIsMissedPublication = false;
         int missedPublicationsCounter = 0;

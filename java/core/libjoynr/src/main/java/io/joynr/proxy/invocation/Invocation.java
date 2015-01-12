@@ -1,9 +1,9 @@
-package io.joynr.proxy;
+package io.joynr.proxy.invocation;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,21 @@ package io.joynr.proxy;
  * #L%
  */
 
-import java.lang.reflect.Method;
+import io.joynr.proxy.Future;
 
-public class QueuedSubscription extends QueuedRPC {
-    private String subscriptionId;
+/**
+ * Invocation contains the generic, queuable information for a proxy call
+ */
 
-    public QueuedSubscription(Method method, Object[] args, Future<?> future, String subscriptionId) {
-        super(method, args, future);
-        this.setSubscriptionId(subscriptionId);
+public class Invocation {
+
+    private final Future<?> future;
+
+    public Invocation(Future<?> future) {
+        this.future = future;
     }
 
-    public String getSubscriptionId() {
-        return subscriptionId;
+    public Future<?> getFuture() {
+        return future;
     }
-
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
 }

@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -33,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -105,27 +106,15 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public String registerAttributeSubscription(final String attributeName,
-                                                Class<? extends TypeReference<?>> attributeTypeReference,
-                                                AttributeSubscriptionListener<?> attributeSubscriptionCallback,
-                                                final SubscriptionQos qos) {
-        return registerAttributeSubscription(attributeName,
-                                             attributeTypeReference,
-                                             attributeSubscriptionCallback,
-                                             qos,
-                                             UUID.randomUUID().toString());
-    }
-
-    @Override
-    public String registerAttributeSubscription(final String attributeName,
-                                                Class<? extends TypeReference<?>> attributeTypeReference,
-                                                AttributeSubscriptionListener<?> attributeSubscriptionCallback,
-                                                final SubscriptionQos qos,
-                                                String subscriptionId) {
-        registerSubscription(qos, subscriptionId);
-        logger.info("Attribute subscription registered with Id: " + subscriptionId);
-        subscriptionTypes.put(subscriptionId, attributeTypeReference);
-        subscriptionListenerDirectory.put(subscriptionId, attributeSubscriptionCallback);
+    public void registerAttributeSubscription(AttributeSubscribeInvocation request) {
+        if (!request.hasSubscriptionId()) {
+            request.setSubscriptionId(UUID.randomUUID().toString());
+        }
+        SubscriptionQos qos = request.getQos();
+        registerSubscription(qos, request.getSubscriptionId());
+        logger.info("Attribute subscription registered with Id: " + request.getSubscriptionId());
+        subscriptionTypes.put(request.getSubscriptionId(), request.getAttributeTypeReference());
+        subscriptionListenerDirectory.put(request.getSubscriptionId(), request.getAttributeSubscriptionListener());
 
         if (qos instanceof HeartbeatSubscriptionInformation) {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
@@ -135,27 +124,27 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
                 logger.info("Will notify if updates are missed.");
 
-                missedPublicationTimers.put(subscriptionId,
+                missedPublicationTimers.put(request.getSubscriptionId(),
                                             new MissedPublicationTimer(qos.getExpiryDate(),
                                                                        heartbeat.getHeartbeat(),
                                                                        heartbeat.getAlertAfterInterval(),
-                                                                       attributeSubscriptionCallback,
-                                                                       subscriptionStates.get(subscriptionId)));
+                                                                       request.getAttributeSubscriptionListener(),
+                                                                       subscriptionStates.get(request.getSubscriptionId())));
             }
         }
-        return subscriptionId;
     }
 
     @Override
-    public String registerBroadcastSubscription(String broadcastName,
-                                                BroadcastSubscriptionListener broadcastSubscriptionListener,
-                                                SubscriptionQos qos) {
-        String subscriptionId = UUID.randomUUID().toString();
-        registerSubscription(qos, subscriptionId);
+    public void registerBroadcastSubscription(BroadcastSubscribeInvocation subscriptionRequest) {
+        if (!subscriptionRequest.hasSubscriptionId()) {
+            subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
+        }
+        String subscriptionId = subscriptionRequest.getSubscriptionId();
+        registerSubscription(subscriptionRequest.getQos(), subscriptionId);
         logger.info("Attribute subscription registered with Id: " + subscriptionId);
         subscriptionTypes.put(subscriptionId, List.class);
-        broadcastSubscriptionListenerDirectory.put(subscriptionId, broadcastSubscriptionListener);
-        return subscriptionId;
+        broadcastSubscriptionListenerDirectory.put(subscriptionId,
+                                                   subscriptionRequest.getBroadcastSubscriptionListener());
     }
 
     @Override

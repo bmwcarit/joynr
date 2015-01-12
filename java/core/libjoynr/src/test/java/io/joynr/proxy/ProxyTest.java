@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,11 +50,15 @@ import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
@@ -63,6 +67,8 @@ import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.types.ProviderQos;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
+import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
+import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
 import joynr.vehicle.NavigationProxy;
 
 import org.junit.Assert;
@@ -146,6 +152,30 @@ public class ProxyTest {
                                            Mockito.<String> any(),
                                            Mockito.<DiscoveryQos> any(),
                                            Mockito.<CapabilitiesCallback> any());
+
+        Mockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                AttributeSubscribeInvocation request = (AttributeSubscribeInvocation) args[0];
+                if (request.getSubscriptionId() == null) {
+                    request.setSubscriptionId(UUID.randomUUID().toString());
+                }
+                return null;
+            }
+        }).when(subscriptionManager1).registerAttributeSubscription(Mockito.any(AttributeSubscribeInvocation.class));
+
+        Mockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[0];
+                if (request.getSubscriptionId() == null) {
+                    request.setSubscriptionId(UUID.randomUUID().toString());
+                }
+                return null;
+            }
+        }).when(subscriptionManager1).registerBroadcastSubscription(Mockito.any(BroadcastSubscribeInvocation.class));
 
         domain = "TestDomain";
 
@@ -296,11 +326,166 @@ public class ProxyTest {
     }
 
     @Test
+    public void createProxySubscribeAndUnsubscribeFromSelectiveBroadcast() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + 30000;
+        long publicationTtl_ms = 5000;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+
+        LocationUpdateSelectiveBroadcastFilterParameters filterParameter = new LocationUpdateSelectiveBroadcastFilterParameters();
+        String subscriptionId = proxy.subscribeToLocationUpdateSelectiveBroadcast(mock(LocationUpdateSelectiveBroadcastListener.class),
+                                                                                  subscriptionQos,
+                                                                                  filterParameter);
+
+        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionRequest(any(String.class),
+                                                                      any(String.class),
+                                                                      any(EndpointAddressBase.class),
+                                                                      subscriptionRequest.capture(),
+                                                                      any(MessagingQos.class),
+                                                                      anyBoolean());
+        assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getSubscribedToName());
+
+        //now, let's remove the previous subscriptionRequest
+        proxy.unsubscribeFromGuidanceActive(subscriptionId);
+        verify(joynrMessageSender1, times(1)).sendSubscriptionStop(any(String.class),
+                                                                   any(String.class),
+                                                                   any(EndpointAddressBase.class),
+                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                                                   any(MessagingQos.class));
+    }
+
+    @Test
+    public void createProxySubscribeAndUnsubscribeFromBroadcast() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + 30000;
+        long publicationTtl_ms = 5000;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+
+        String subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
+                                                                         subscriptionQos);
+
+        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionRequest(any(String.class),
+                                                                      any(String.class),
+                                                                      any(EndpointAddressBase.class),
+                                                                      subscriptionRequest.capture(),
+                                                                      any(MessagingQos.class),
+                                                                      anyBoolean());
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscribedToName());
+
+        //now, let's remove the previous subscriptionRequest
+        proxy.unsubscribeFromGuidanceActive(subscriptionId);
+        verify(joynrMessageSender1, times(1)).sendSubscriptionStop(any(String.class),
+                                                                   any(String.class),
+                                                                   any(EndpointAddressBase.class),
+                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                                                   any(MessagingQos.class));
+    }
+
+    @Test
+    public void createProxySubscribeToBroadcastWithSubscriptionId() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + 30000;
+        long publicationTtl_ms = 5000;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+
+        String subscriptionId = UUID.randomUUID().toString();
+        String subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
+                                                                          subscriptionQos,
+                                                                          subscriptionId);
+
+        assertEquals(subscriptionId, subscriptionId2);
+
+        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionRequest(any(String.class),
+                                                                      any(String.class),
+                                                                      any(EndpointAddressBase.class),
+                                                                      subscriptionRequest.capture(),
+                                                                      any(MessagingQos.class),
+                                                                      anyBoolean());
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscribedToName());
+    }
+
+    @Test
+    public void createProxySubscribeAndUnsubscribeFromAttribute() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + 30000;
+        long publicationTtl_ms = 5000;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+
+        abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
+        }
+        ;
+        String subscriptionId = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
+                                                                subscriptionQos);
+
+        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionRequest(any(String.class),
+                                                                      any(String.class),
+                                                                      any(EndpointAddressBase.class),
+                                                                      subscriptionRequest.capture(),
+                                                                      any(MessagingQos.class),
+                                                                      anyBoolean());
+        assertEquals("guidanceActive", subscriptionRequest.getValue().getSubscribedToName());
+
+        //now, let's remove the previous subscriptionRequest
+        proxy.unsubscribeFromGuidanceActive(subscriptionId);
+        verify(joynrMessageSender1, times(1)).sendSubscriptionStop(any(String.class),
+                                                                   any(String.class),
+                                                                   any(EndpointAddressBase.class),
+                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                                                   any(MessagingQos.class));
+    }
+
+    @Test
+    public void createProxySubscribeToAttributeWithSubscriptionId() throws Exception {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + 30000;
+        long publicationTtl_ms = 5000;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+
+        abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
+        }
+        ;
+        String subscriptionId = UUID.randomUUID().toString();
+        String subscriptionId2 = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
+                                                                 subscriptionQos,
+                                                                 subscriptionId);
+
+        assertEquals(subscriptionId, subscriptionId2);
+
+        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+
+        verify(joynrMessageSender1, times(1)).sendSubscriptionRequest(any(String.class),
+                                                                      any(String.class),
+                                                                      any(EndpointAddressBase.class),
+                                                                      subscriptionRequest.capture(),
+                                                                      any(MessagingQos.class),
+                                                                      anyBoolean());
+        assertEquals("guidanceActive", subscriptionRequest.getValue().getSubscribedToName());
+    }
+
+    @Test
     public void createProxyUnSubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
-        String subscriptionId = "subscriptionId";
+        String subscriptionId = UUID.randomUUID().toString();
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
         ArgumentCaptor<SubscriptionStop> subscriptionStop = ArgumentCaptor.forClass(SubscriptionStop.class);

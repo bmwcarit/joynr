@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,18 @@ public class BroadcastEnd2EndTest {
     private static DummyJoynrApplication consumingApplication;
 
     private static Server server;
+    private static GpsLocation expectedLocation = new GpsLocation(1.0,
+                                                                  2.0,
+                                                                  3.0,
+                                                                  GpsFixEnum.MODE2D,
+                                                                  4.0,
+                                                                  5.0,
+                                                                  6.0,
+                                                                  7.0,
+                                                                  8l,
+                                                                  9l,
+                                                                  23);
+    private static Double expectedSpeed = 100.0;
 
     @BeforeClass
     public static void setupEndpoints() throws Exception {
@@ -175,31 +187,19 @@ public class BroadcastEnd2EndTest {
 
             @Override
             public void receive(GpsLocation location) {
-                assertEquals(location,
-                             new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
+                assertEquals(expectedLocation, location);
                 broadcastReceived.release();
             }
         }, subscriptionQos);
 
         Thread.sleep(300);
 
-        provider.locationUpdateEventOccurred(new GpsLocation(1.0,
-                                                             2.0,
-                                                             3.0,
-                                                             GpsFixEnum.MODE2D,
-                                                             4.0,
-                                                             5.0,
-                                                             6.0,
-                                                             7.0,
-                                                             8l,
-                                                             9l,
-                                                             23));
+        provider.locationUpdateEventOccurred(expectedLocation);
         broadcastReceived.acquire();
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToBroadcastMultipleOutputs() throws InterruptedException {
-
         final Semaphore broadcastReceived = new Semaphore(0);
 
         long minInterval = 0;
@@ -209,28 +209,56 @@ public class BroadcastEnd2EndTest {
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
 
             @Override
-            public void receive(GpsLocation location, Double currentSpeed) {
-                assertEquals(location,
-                             new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 8l, 9l, 23));
-                assertEquals(currentSpeed, (Double) 100.0);
+            public void receive(GpsLocation location, Double speed) {
+                assertEquals(expectedLocation, location);
+                assertEquals(expectedSpeed, speed);
                 broadcastReceived.release();
             }
         }, subscriptionQos);
 
         Thread.sleep(300);
 
-        provider.locationUpdateWithSpeedEventOccurred(new GpsLocation(1.0,
-                                                                      2.0,
-                                                                      3.0,
-                                                                      GpsFixEnum.MODE2D,
-                                                                      4.0,
-                                                                      5.0,
-                                                                      6.0,
-                                                                      7.0,
-                                                                      8l,
-                                                                      9l,
-                                                                      23), 100.0);
+        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
         broadcastReceived.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeAndUnsubscribeFromBroadcast() throws InterruptedException {
+
+        final Semaphore broadcastReceived = new Semaphore(0);
+
+        long minInterval = 0;
+        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
+        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        String subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
+
+                                                                                      @Override
+                                                                                      public void receive(GpsLocation location,
+                                                                                                          Double speed) {
+                                                                                          assertEquals(expectedLocation,
+                                                                                                       location);
+                                                                                          assertEquals(expectedSpeed,
+                                                                                                       speed);
+                                                                                          broadcastReceived.release();
+                                                                                      }
+                                                                                  },
+                                                                                  subscriptionQos);
+
+        Thread.sleep(300);
+
+        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        broadcastReceived.acquire();
+
+        //unsubscribe correct subscription -> now, no more broadcast shall be received
+        proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(UUID.randomUUID().toString());
+        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        broadcastReceived.acquire();
+
+        //unsubscribe correct subscription -> now, no more broadcast shall be received
+        proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId);
+        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -273,18 +301,7 @@ public class BroadcastEnd2EndTest {
 
                                                               @Override
                                                               public void receive(GpsLocation location) {
-                                                                  assertEquals(location,
-                                                                               new GpsLocation(1.0,
-                                                                                               2.0,
-                                                                                               3.0,
-                                                                                               GpsFixEnum.MODE2D,
-                                                                                               4.0,
-                                                                                               5.0,
-                                                                                               6.0,
-                                                                                               7.0,
-                                                                                               8l,
-                                                                                               9l,
-                                                                                               23));
+                                                                  assertEquals(expectedLocation, location);
                                                                   broadcastReceived.release();
                                                               }
                                                           },
@@ -293,17 +310,7 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateSelectiveEventOccurred(new GpsLocation(1.0,
-                                                                      2.0,
-                                                                      3.0,
-                                                                      GpsFixEnum.MODE2D,
-                                                                      4.0,
-                                                                      5.0,
-                                                                      6.0,
-                                                                      7.0,
-                                                                      8l,
-                                                                      9l,
-                                                                      23));
+        provider.locationUpdateSelectiveEventOccurred(expectedLocation);
         broadcastReceived.acquire();
     }
 
@@ -346,18 +353,7 @@ public class BroadcastEnd2EndTest {
 
                                                               @Override
                                                               public void receive(GpsLocation location) {
-                                                                  assertEquals(location,
-                                                                               new GpsLocation(1.0,
-                                                                                               2.0,
-                                                                                               3.0,
-                                                                                               GpsFixEnum.MODE2D,
-                                                                                               4.0,
-                                                                                               5.0,
-                                                                                               6.0,
-                                                                                               7.0,
-                                                                                               8l,
-                                                                                               9l,
-                                                                                               23));
+                                                                  assertEquals(expectedLocation, location);
                                                                   broadcastReceived.release();
                                                               }
                                                           },
@@ -366,17 +362,7 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateSelectiveEventOccurred(new GpsLocation(1.0,
-                                                                      2.0,
-                                                                      3.0,
-                                                                      GpsFixEnum.MODE2D,
-                                                                      4.0,
-                                                                      5.0,
-                                                                      6.0,
-                                                                      7.0,
-                                                                      8l,
-                                                                      9l,
-                                                                      23));
+        provider.locationUpdateSelectiveEventOccurred(expectedLocation);
         assertFalse(broadcastReceived.tryAcquire(500, TimeUnit.MILLISECONDS));
     }
 }
