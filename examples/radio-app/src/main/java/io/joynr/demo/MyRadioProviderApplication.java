@@ -148,6 +148,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                 case 'w':
                     provider.fireWeakSignalEvent();
                     break;
+                case 'n':
+                    provider.fireNewStationDiscoveredEvent();
+                    break;
                 default:
                     LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
                     break;
