@@ -73,7 +73,7 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 					public void set«filterPrameter.toFirstUpper»(String «filterPrameter») {
 						super.setFilterParameter("«filterPrameter»", «filterPrameter»);
 					}
-					public String get«filterPrameter.toFirstUpper»(String «filterPrameter») {
+					public String get«filterPrameter.toFirstUpper»() {
 						return super.getFilterParameter("«filterPrameter»");
 					}
 				«ENDFOR»
