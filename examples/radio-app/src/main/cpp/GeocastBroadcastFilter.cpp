@@ -39,7 +39,7 @@ bool GeocastBroadcastFilter::filter(
     joynr::vehicle::GeoPosition* positionOfInterest =
             JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
                     filterParameters.getPositionOfInterest().toLatin1());
-    int radiusOfInteresArea = filterParameters.getRadiusOfInterestArea().toInt();
+    int radiusOfInterestArea = filterParameters.getRadiusOfInterestArea().toInt();
 
     // calculate distance between two geo positions using the haversine formula
     // (cf. http://en.wikipedia.org/wiki/Haversine_formula)
@@ -59,5 +59,5 @@ bool GeocastBroadcastFilter::filter(
     double distance = 2 * earthRadius * qAsin(help);
 
     delete positionOfInterest;
-    return distance < radiusOfInteresArea;
+    return distance < radiusOfInterestArea;
 }
