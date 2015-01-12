@@ -122,6 +122,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         sb.append(generationLanguage);
         sb.append(generationId);
         sb.append(outputPath);
+        sb.append(getSupportedGoal());
         if (parameter != null) {
             for (String paramKey : parameter.keySet()) {
                 sb.append(paramKey);
@@ -195,4 +196,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         }
         return arguments;
     }
+
+    protected abstract String getSupportedGoal();
 }

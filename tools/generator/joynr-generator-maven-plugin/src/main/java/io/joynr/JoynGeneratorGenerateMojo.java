@@ -59,6 +59,12 @@ public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments result = super.createInvocationArguments();
         result.setGenerate(true);
+        result.setClean(false);
         return result;
+    }
+
+    @Override
+    protected String getSupportedGoal() {
+        return "generate";
     }
 }

@@ -62,6 +62,8 @@ public class InvocationArguments {
 
     private boolean generate = true;
 
+    private boolean clean = false;
+
     public InvocationArguments() {
     }
 
@@ -139,12 +141,19 @@ public class InvocationArguments {
                 setParameterElement("outputHeaderPath", args[i + 1].replace("\"", ""));
                 i++;
             } else if (args[i].equals("-clean")) {
-                setGenerate(false);
+                setClean(true);
+            } else if (args[i].equals("-generate")) {
+                setGenerate(args[i + 1].equalsIgnoreCase("true"));
+                i++;
             }
         }
         if (!isValid()) {
             System.out.println(getErrorMessage());
         }
+    }
+
+    public void setClean(boolean clean) {
+        this.clean = clean;
     }
 
     public void setGenerate(boolean generate) {
@@ -160,8 +169,12 @@ public class InvocationArguments {
 
     }
 
-    public boolean shallGenerate() {
+    public boolean generate() {
         return generate;
+    }
+
+    public boolean clean() {
+        return clean;
     }
 
     public boolean isValid() {

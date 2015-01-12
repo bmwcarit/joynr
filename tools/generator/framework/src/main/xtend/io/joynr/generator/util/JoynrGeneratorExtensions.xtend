@@ -26,8 +26,6 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
-import javax.inject.Inject
-import javax.inject.Named
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FAnnotationType
@@ -51,14 +49,22 @@ import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
+import com.google.inject.Inject
+import com.google.inject.name.Named
 
 abstract class JoynrGeneratorExtensions {
 
 	public final static String JOYNR_GENERATOR_GENERATE = "JOYNR_GENERATOR_GENERATE";
-	@Inject
+	public final static String JOYNR_GENERATOR_CLEAN = "JOYNR_GENERATOR_CLEAN";
+
+	@Inject(optional = true)
 	@Named(JOYNR_GENERATOR_GENERATE)
-	private boolean generate = true;
-	
+	public boolean generate = true;
+
+	@Inject(optional = true)
+	@Named(JOYNR_GENERATOR_CLEAN)
+	public boolean clean = false;
+
 	def Iterable<FInterface> getInterfaces(FModel model) {
 		return model.interfaces
 	}
@@ -903,11 +909,11 @@ abstract class JoynrGeneratorExtensions {
 		InterfaceTemplate generator,
 		FInterface serviceInterface
 	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(serviceInterface).toString);
-		}
-		else {
-			fsa.deleteFile(path);
 		}
 	}
 
@@ -917,11 +923,11 @@ abstract class JoynrGeneratorExtensions {
 		FInterface serviceInterface,
 		FBroadcast broadcast
 	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(serviceInterface, broadcast).toString);
-		}
-		else {
-			fsa.deleteFile(path);
 		}
 	}
 
@@ -931,11 +937,11 @@ abstract class JoynrGeneratorExtensions {
 		EnumTemplate generator,
 		FEnumerationType enumType
 	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(enumType).toString);
-		}
-		else {
-			fsa.deleteFile(path);
 		}
 	}
 
@@ -945,15 +951,11 @@ abstract class JoynrGeneratorExtensions {
 		CompoundTypeTemplate generator,
 		FCompoundType compoundType
 	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
 		}
-		else {
-			fsa.deleteFile(path);
-		}
-	}
-	
-	def shallGenerate() {
-		generate
 	}
 }

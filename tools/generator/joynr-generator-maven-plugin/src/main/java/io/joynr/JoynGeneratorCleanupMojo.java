@@ -59,6 +59,12 @@ public class JoynGeneratorCleanupMojo extends AbstractJoynGeneratorMojo {
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments result = super.createInvocationArguments();
         result.setGenerate(false);
+        result.setClean(true);
         return result;
+    }
+
+    @Override
+    protected String getSupportedGoal() {
+        return "clean";
     }
 }

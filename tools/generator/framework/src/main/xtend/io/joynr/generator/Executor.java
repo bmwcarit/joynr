@@ -67,7 +67,9 @@ public class Executor {
                     bindConstant().annotatedWith(Names.named("generationId")).to("");
                 }
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
-                                   .toInstance(arguments.shallGenerate());
+                                   .toInstance(arguments.generate());
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
+                                   .toInstance(arguments.clean());
             }
         });
     }
