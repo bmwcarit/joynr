@@ -3,7 +3,7 @@ package io.joynr.demo;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ import joynr.vehicle.RadioStation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -65,6 +67,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private String providerDomain;
     private String subscriptionIdCurrentStation;
     private RadioProxy radioProxy;
+    @Inject
+    private ObjectMapper objectMapper;
 
     /**
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
@@ -275,6 +279,15 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                                                                                        nsdbPublicationTtl);
             NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
             newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
+            GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
+            String positionOfInterestJson = null;
+            try {
+                positionOfInterestJson = objectMapper.writeValueAsString(positionOfInterest);
+            } catch (JsonProcessingException e1) {
+                LOG.error("Unable to write position of interest filter parameter to JSON", e1);
+            }
+            newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
+            newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
             radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastListener() {
                                                                     @Override
                                                                     public void receive(RadioStation discoveredStation,
