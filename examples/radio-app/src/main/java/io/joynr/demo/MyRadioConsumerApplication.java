@@ -39,7 +39,10 @@ import jline.console.ConsoleReader;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.vehicle.Country;
+import joynr.vehicle.RadioBroadcastInterface;
+import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastListener;
+import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
 
@@ -260,6 +263,30 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 }
             },
                                                       weakSignalBroadcastSubscriptionQos);
+
+            // selective broadcast subscription
+
+            OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
+            int nsdbMinInterval = 2 * 1000;
+            long nsdbExpiryDate = System.currentTimeMillis() + 180 * 1000;
+            int nsdbPublicationTtl = 5 * 1000;
+            newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinInterval,
+                                                                                       nsdbExpiryDate,
+                                                                                       nsdbPublicationTtl);
+            NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
+            newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
+            radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastListener() {
+                                                                    @Override
+                                                                    public void receive(RadioStation discoveredStation,
+                                                                                        GeoPosition geoPosition) {
+                                                                        LOG.info(PRINT_BORDER
+                                                                                + "BROADCAST SUBSCRIPTION: new station discovered: "
+                                                                                + discoveredStation + " at "
+                                                                                + geoPosition + PRINT_BORDER);
+                                                                    }
+                                                                },
+                                                                newStationDiscoveredBroadcastSubscriptionQos,
+                                                                newStationDiscoveredBroadcastFilterParams);
 
             boolean success;
 
