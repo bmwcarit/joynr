@@ -35,6 +35,8 @@ import joynr.vehicle.RadioProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 import com.google.inject.Module;
 
 public class MyRadioProviderApplication extends AbstractJoynrApplication {
@@ -43,6 +45,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
 
     private MyRadioProvider provider = null;
+    @Inject
+    private ObjectMapper jsonSerializer;
 
     public static void main(String[] args) {
         // run application from cmd line using Maven:
@@ -134,6 +138,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     public void run() {
         provider = new MyRadioProvider();
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
+        provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
         runtime.registerCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
 
         ConsoleReader console;

@@ -3,7 +3,7 @@ package io.joynr.demo;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@ public class MyRadioProvider extends RadioAbstractProvider {
 
     public MyRadioProvider() {
         providerQos.setPriority(System.currentTimeMillis());
-        stationsList.add(new RadioStation("ABC Trible J", false, Country.AUSTRALIA));
-        stationsList.add(new RadioStation("Radio Popolare", true, Country.ITALY));
+        stationsList.add(new RadioStation("ABC Trible J", true, Country.AUSTRALIA));
+        stationsList.add(new RadioStation("Radio Popolare", false, Country.ITALY));
         stationsList.add(new RadioStation("JAZZ.FM91", false, Country.CANADA));
         stationsList.add(new RadioStation("Bayern 3", true, Country.GERMANY));
         countryGeoPositionMap.put(Country.AUSTRALIA, new GeoPosition(-37.8141070, 144.9632800)); // Melbourne
