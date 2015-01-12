@@ -22,6 +22,7 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/joynrlogging.h"
 
+#include <QtGlobal>
 #include <QByteArray>
 #include <QList>
 #include <QMetaEnum>
@@ -224,7 +225,7 @@ struct Util::ExpandTupleIntoFunctionArguments<0>
                                                         Arguments&... args)
             -> decltype(func(funcClass, args...))
     {
-
+        Q_UNUSED(tuple);
         return func(funcClass, args...);
     }
 };
