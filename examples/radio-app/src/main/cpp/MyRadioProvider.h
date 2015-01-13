@@ -21,9 +21,11 @@
 
 #include "joynr/vehicle/RadioProvider.h"
 #include "joynr/vehicle/RadioStation.h"
+#include "joynr/vehicle/Country.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/joynrlogging.h"
 #include <QList>
+#include <QMap>
 #include <QMutex>
 
 /**
@@ -68,7 +70,7 @@ private:
 
     int currentStationIndex;                          // Index to the current station
     QList<joynr::vehicle::RadioStation> stationsList; // List of possible stations
-    QList<joynr::vehicle::GeoPosition> stationsGeoPositionList;
+    QMap<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition> countryGeoPositionMap;
     QMutex mutex; // Providers need to be threadsafe
 
     static joynr::joynr_logging::Logger* logger;
