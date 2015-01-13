@@ -323,7 +323,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
 
             String subscriptionId;
 
-            if (args[2] == null) {
+            if (args.length < 3 || args[2] == null) {
                 subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
                                                                                    attributeTypeReference,
                                                                                    attributeSubscriptionListener,
