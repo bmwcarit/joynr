@@ -77,24 +77,24 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 		    	void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
 		    «ENDFOR»
 
-			«FOR broadcast: serviceInterface.broadcasts»
-				«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
-				«var broadcastName = broadcast.joynrName»
-				«IF isSelective(broadcast)»
-				QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-				            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-				            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-				«ELSE»
-				QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-				            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-				            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-				«ENDIF»
-				void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
-			«ENDFOR»
+		    «FOR broadcast: serviceInterface.broadcasts»
+		    	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		    	«var broadcastName = broadcast.joynrName»
+		    	«IF isSelective(broadcast)»
+		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		    	«ELSE»
+		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		    	«ENDIF»
+		    	void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
+		    «ENDFOR»
 
 		protected:
-			QSharedPointer<joynr::system::Address> messagingAddress; 
+		    QSharedPointer<joynr::system::Address> messagingAddress;
 		    I«interfaceName»Connector* connector;
 
 		private:

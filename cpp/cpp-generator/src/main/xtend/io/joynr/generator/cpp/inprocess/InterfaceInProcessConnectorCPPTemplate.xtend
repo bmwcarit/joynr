@@ -55,7 +55,6 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		#include "joynr/BroadcastSubscriptionRequest.h"
 		#include "joynr/Future.h"
 
-
 		«getNamespaceStarter(serviceInterface)»
 
 		using namespace joynr::joynr_logging;
@@ -89,8 +88,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			«IF attribute.readable»
 			«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 			void «interfaceName»InProcessConnector::«getAttributeName»(
-					joynr::RequestStatus& status,
-					«returnType»& result
+			            joynr::RequestStatus& status,
+			            «returnType»& result
 			) {
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -99,7 +98,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    assert(!«serviceInterface.interfaceCaller».isNull());
 			    //see header for more information
 			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«getAttributeName»(Future) is synchronous.");
-			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);	
+			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);
 			}
 
 			void «interfaceName»InProcessConnector::«getAttributeName»(
@@ -161,7 +160,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    «returnType» result;
 			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);
 			    if (status.getCode()== joynr::RequestStatusCode::OK){
-			    	callBack->onSuccess(status, result);
+			        callBack->onSuccess(status, result);
 			    } else {
 			        callBack->onFailure(status);
 			    }
@@ -336,168 +335,161 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		«ENDFOR»
 
 		«FOR method: getMethods(serviceInterface)»
-			«var methodname = method.joynrName»
-			«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			«var outputParameter = getMappedOutputParameter(method)»
-			«var inputParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
-			«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
-			«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
-
-
-
-			«IF outputParameter.head =="void"»
-				void «interfaceName»InProcessConnector::«methodname»(
-						joynr::RequestStatus& status«parameterList»
-				) {
-					assert(!address.isNull());
-					QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-					assert(!caller.isNull());
-					QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-					assert(!«serviceInterface.interfaceCaller».isNull());
-					«serviceInterface.interfaceCaller»->«methodname»(status «inputParamList» );
-				}
-			«ELSE»
-				void «interfaceName»InProcessConnector::«methodname»(
-						joynr::RequestStatus& status«outputTypedParamList»«parameterList»
-				) {
-					assert(!address.isNull());
-					QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-					assert(!caller.isNull());
-					QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-					assert(!«serviceInterface.interfaceCaller».isNull());
-					«serviceInterface.interfaceCaller»->«methodname»(status«outputUntypedParamList» «inputParamList»);
-				}
-			«ENDIF»
-
-
-
-			«IF outputParameter.head =="void"»
-			void «interfaceName»InProcessConnector::«methodname»(
-					QSharedPointer<joynr::Future<«outputParameter.head»> > future,
-					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
-			) {
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-				assert(!«serviceInterface.interfaceCaller».isNull());
-				joynr::RequestStatus status;
-
-			    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList»);
-
-			    if (status.getCode() == joynr::RequestStatusCode::OK) {
-			        future->onSuccess(status);
-			        callBack->onSuccess(status);
-			    } else {
-			        future->onFailure(status);
-			        callBack->onFailure(status);
-			    }	
-			}
-			«ELSE»
-			void «interfaceName»InProcessConnector::«methodname»(
-					QSharedPointer<joynr::Future<«outputParameter.head»> > future,
-					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
-			) {
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-				assert(!«serviceInterface.interfaceCaller».isNull());
-				joynr::RequestStatus status;
-				«outputParameter.head» result;
-			    «serviceInterface.interfaceCaller»->«methodname»(status, result «inputParamList»);
-
-			    if (status.getCode() == joynr::RequestStatusCode::OK) {
-			        future->onSuccess(status, result);
-			        callBack->onSuccess(status, result);
-			    } else {
-			        future->onFailure(status);
-			        callBack->onFailure(status);
-			    }
-			}
-			«ENDIF»
-
-
-			«IF outputParameter.head =="void"»
-			void «interfaceName»InProcessConnector::«methodname»(
-					QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
-			) {
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-				assert(!«serviceInterface.interfaceCaller».isNull());
-				joynr::RequestStatus status;
-
-			    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList»);
-
-			    if (status.getCode() == joynr::RequestStatusCode::OK) {
-			        future->onSuccess(status);
-			    } else {
-			        future->onFailure(status);
-			    }
-			}
-			«ELSE»
-			void «interfaceName»InProcessConnector::«methodname»(
-					QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
-			) {
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-				assert(!«serviceInterface.interfaceCaller».isNull());
-				joynr::RequestStatus status;
-				«outputParameter.head» result;
-			    «serviceInterface.interfaceCaller»->«methodname»(status, result «inputParamList»);
-
-			    if (status.getCode() == joynr::RequestStatusCode::OK) {
-			        future->onSuccess(status, result);
-			    } else {
-			        future->onFailure(status);
-			    }
-			}
-			«ENDIF»
-
-
+		«var methodname = method.joynrName»
+		«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+		«var outputParameter = getMappedOutputParameter(method)»
+		«var inputParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
+		«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
+		«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 
 		«IF outputParameter.head =="void"»
-			void «interfaceName»InProcessConnector::«methodname»(
-					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
-			) {
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-				assert(!«serviceInterface.interfaceCaller».isNull());
-				joynr::RequestStatus status;
-
-			    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList»);
-
-			    if (status.getCode() == joynr::RequestStatusCode::OK) {
-			        callBack->onSuccess(status);
-			    } else {
-			        callBack->onFailure(status);
-			    }	
-			}
+		void «interfaceName»InProcessConnector::«methodname»(
+		            joynr::RequestStatus& status«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList» );
+		}
 		«ELSE»
-			void «interfaceName»InProcessConnector::«methodname»(
-					QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
-			) {
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-				assert(!«serviceInterface.interfaceCaller».isNull());
-				joynr::RequestStatus status;
-				«outputParameter.head» result;
-			    «serviceInterface.interfaceCaller»->«methodname»(status, result «inputParamList»);
+		void «interfaceName»InProcessConnector::«methodname»(
+		            joynr::RequestStatus& status«outputTypedParamList»«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    «serviceInterface.interfaceCaller»->«methodname»(status«outputUntypedParamList» «inputParamList»);
+		}
+		«ENDIF»
 
-			    if (status.getCode() == joynr::RequestStatusCode::OK) {
-			        callBack->onSuccess(status, result);
-			    } else {
-			        callBack->onFailure(status);
-			    }
-			}
+		«IF outputParameter.head =="void"»
+		void «interfaceName»InProcessConnector::«methodname»(
+		            QSharedPointer<joynr::Future<«outputParameter.head»> > future,
+		            QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    joynr::RequestStatus status;
+
+		    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList»);
+
+		    if (status.getCode() == joynr::RequestStatusCode::OK) {
+		        future->onSuccess(status);
+		        callBack->onSuccess(status);
+		    } else {
+		        future->onFailure(status);
+		        callBack->onFailure(status);
+		    }
+		}
+		«ELSE»
+		void «interfaceName»InProcessConnector::«methodname»(
+		            QSharedPointer<joynr::Future<«outputParameter.head»> > future,
+		            QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    joynr::RequestStatus status;
+		    «outputParameter.head» result;
+		    «serviceInterface.interfaceCaller»->«methodname»(status, result «inputParamList»);
+
+		    if (status.getCode() == joynr::RequestStatusCode::OK) {
+		        future->onSuccess(status, result);
+		        callBack->onSuccess(status, result);
+		    } else {
+		        future->onFailure(status);
+		        callBack->onFailure(status);
+		    }
+		}
+		«ENDIF»
+
+		«IF outputParameter.head =="void"»
+		void «interfaceName»InProcessConnector::«methodname»(
+		            QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    joynr::RequestStatus status;
+
+		    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList»);
+
+		    if (status.getCode() == joynr::RequestStatusCode::OK) {
+		        future->onSuccess(status);
+		    } else {
+		        future->onFailure(status);
+		    }
+		}
+		«ELSE»
+		void «interfaceName»InProcessConnector::«methodname»(
+		            QSharedPointer<joynr::Future<«outputParameter.head»> > future«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    joynr::RequestStatus status;
+		    «outputParameter.head» result;
+		    «serviceInterface.interfaceCaller»->«methodname»(status, result «inputParamList»);
+
+		    if (status.getCode() == joynr::RequestStatusCode::OK) {
+		        future->onSuccess(status, result);
+		    } else {
+		        future->onFailure(status);
+		    }
+		}
+		«ENDIF»
+
+		«IF outputParameter.head =="void"»
+		void «interfaceName»InProcessConnector::«methodname»(
+		            QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    joynr::RequestStatus status;
+
+		    «serviceInterface.interfaceCaller»->«methodname»(status «inputParamList»);
+
+		    if (status.getCode() == joynr::RequestStatusCode::OK) {
+		        callBack->onSuccess(status);
+		    } else {
+		        callBack->onFailure(status);
+		    }
+		}
+		«ELSE»
+		void «interfaceName»InProcessConnector::«methodname»(
+		            QSharedPointer< joynr::ICallback<«outputParameter.head»> > callBack«parameterList»
+		) {
+		    assert(!address.isNull());
+		    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
+		    assert(!caller.isNull());
+		    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
+		    assert(!«serviceInterface.interfaceCaller».isNull());
+		    joynr::RequestStatus status;
+		    «outputParameter.head» result;
+		    «serviceInterface.interfaceCaller»->«methodname»(status, result «inputParamList»);
+
+		    if (status.getCode() == joynr::RequestStatusCode::OK) {
+		        callBack->onSuccess(status, result);
+		    } else {
+		        callBack->onFailure(status);
+		    }
+		}
 		«ENDIF»
 		«ENDFOR»
 
@@ -576,5 +568,4 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 	def getInterfaceCaller(FInterface serviceInterface){
 	   serviceInterface.joynrName.toFirstLower + "Caller"
 	}
-
 }
