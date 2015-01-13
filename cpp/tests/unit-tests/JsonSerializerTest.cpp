@@ -121,12 +121,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     BroadcastSubscriptionRequest request;
     QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(5000, 2000));
     request.setQos(subscriptionQos);
-    BroadcastFilterParameters filter;
-    filter.setFilterParameter("MyFilter", "MyFilterValue");
-    request.setFilterParameters(filter);
-    QByteArray result = JsonSerializer::serialize(request);
-    LOG_DEBUG(logger, QString(result));
-    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(result);
+    BroadcastFilterParameters filterParams;
+    filterParams.setFilterParameter("MyFilter", "MyFilterValue");
+    request.setFilterParameters(filterParams);
+    QByteArray requestJson = JsonSerializer::serialize(request);
+    LOG_DEBUG(logger, QString(requestJson));
+    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
     EXPECT_TRUE(request == *desRequest);
 }
 
