@@ -39,7 +39,8 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
                                         BroadcastFilterParameters filterParameters,
                                         SubscriptionQos qos) {
         super(subscriptionId, subscribedToName, qos);
-        this.filterParameters = filterParameters;
+        this.filterParameters = new BroadcastFilterParameters();
+        this.filterParameters.setFilterParameters(filterParameters.getFilterParameters());
 
     }
 

@@ -30,7 +30,6 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -446,25 +445,30 @@ public class PublicationManagerImpl implements PublicationManager {
             BroadcastSubscriptionRequest subscriptionRequest = (BroadcastSubscriptionRequest) publicationInformation.subscriptionRequest;
             BroadcastFilterParameters filterParameters = subscriptionRequest.getFilterParameters();
 
-            List<Class<?>> parameterTypes = new ArrayList<Class<?>>(values.length + 1);
-            for (int i = 0; i < values.length; i++) {
-                parameterTypes.add(values[i].getClass());
-            }
-            parameterTypes.add(filterParameters.getClass());
-
-            Class<?>[] types = parameterTypes.toArray(new Class<?>[parameterTypes.size()]);
-
             for (BroadcastFilter filter : filters) {
-                Method filterMethod;
+                Method filterMethod = null;
                 try {
-                    filterMethod = filter.getClass().getDeclaredMethod("filter", types);
+                    Method[] methodsOfFilterClass = filter.getClass().getMethods();
+                    for (Method method : methodsOfFilterClass) {
+                        if (method.getName().equals("filter")) {
+                            filterMethod = method;
+                            break;
+                        }
+                    }
+                    if (filterMethod == null) {
+                        // no filtering
+                        return true;
+                    }
 
                     if (!filterMethod.isAccessible()) {
                         filterMethod.setAccessible(true);
                     }
 
+                    Class<?> filterParametersType = filterMethod.getParameterTypes()[values.length];
+                    BroadcastFilterParameters filterParametersDerived = (BroadcastFilterParameters) filterParametersType.newInstance();
+                    filterParametersDerived.setFilterParameters(filterParameters.getFilterParameters());
                     Object[] args = Arrays.copyOf(values, values.length + 1);
-                    args[args.length - 1] = filterParameters;
+                    args[args.length - 1] = filterParametersDerived;
 
                     filterResult &= (Boolean) filterMethod.invoke(filter, args);
                 } catch (Exception e) {
