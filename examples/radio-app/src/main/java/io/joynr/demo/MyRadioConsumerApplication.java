@@ -159,6 +159,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
+    @SuppressWarnings("checkstyle:methodlength")
     @Override
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();

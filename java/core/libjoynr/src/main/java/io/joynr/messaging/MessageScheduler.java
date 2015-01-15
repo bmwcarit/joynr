@@ -89,6 +89,7 @@ public class MessageScheduler {
     private HttpRequestFactory httpRequestFactory;
     private Properties hosts;
 
+    @SuppressWarnings("checkstyle:parameternumber")
     @Inject
     public MessageScheduler(CloseableHttpClient httpclient,
                             @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,

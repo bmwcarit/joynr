@@ -73,6 +73,7 @@ public class PublicationTimer extends PubSubTimerBase {
      * @param attributePollInterpreter
      * @throws NoSuchMethodException
      */
+    @SuppressWarnings("checkstyle:parameternumber")
     public PublicationTimer(String providerParticipantId,
                             String proxyParticipantId,
                             Method method,

@@ -151,6 +151,7 @@ public class PublicationManagerImpl implements PublicationManager {
 
     }
 
+    @SuppressWarnings("checkstyle:parameternumber")
     PublicationManagerImpl(Multimap<String, PublicationInformation> queuedSubscriptionRequests,
                            ConcurrentMap<String, PublicationInformation> subscriptionId2SubscriptionRequest,
                            ConcurrentMap<String, PubSubState> publicationStates,
