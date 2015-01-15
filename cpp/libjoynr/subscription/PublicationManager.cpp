@@ -455,35 +455,42 @@ void PublicationManager::restore(const QString& providerId,
 {
     LOG_DEBUG(logger, "restore: entering ...");
 
-    QList<SubscriptionRequestInformation*> subscriptions =
-            queuedSubscriptionRequests.values(providerId);
-
-    foreach (SubscriptionRequestInformation* requestInfo, subscriptions) {
-        if (!isSubscriptionExpired(requestInfo->getQos())) {
-            LOG_DEBUG(logger,
-                      QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
-                              requestInfo->toQString()));
-            add(requestInfo->getProxyId(),
-                requestInfo->getProviderId(),
-                requestCaller,
-                requestInfo,
-                publicationSender);
+    {
+        QMutexLocker locker(&queuedSubscriptionRequestsMutex);
+        while (queuedSubscriptionRequests.contains(providerId)) {
+            SubscriptionRequestInformation* requestInfo = queuedSubscriptionRequests.take(providerId);
+            if (!isSubscriptionExpired(requestInfo->getQos())) {
+                LOG_DEBUG(logger,
+                          QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
+                                  requestInfo->toQString()));
+                add(requestInfo->getProxyId(),
+                    requestInfo->getProviderId(),
+                    requestCaller,
+                    requestInfo,
+                    publicationSender);
+            } else {
+                delete requestInfo;
+            }
         }
     }
 
-    QList<BroadcastSubscriptionRequestInformation*> broadcasts =
-            queuedBroadcastSubscriptionRequests.values(providerId);
-
-    foreach (BroadcastSubscriptionRequestInformation* requestInfo, broadcasts) {
-        if (!isSubscriptionExpired(requestInfo->getQos())) {
-            LOG_DEBUG(logger,
-                      QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
-                              requestInfo->toQString()));
-            add(requestInfo->getProxyId(),
-                requestInfo->getProviderId(),
-                requestCaller,
-                requestInfo,
-                publicationSender);
+    {
+        QMutexLocker locker(&queuedBroadcastSubscriptionRequestsMutex);
+        while (queuedBroadcastSubscriptionRequests.contains(providerId)) {
+            BroadcastSubscriptionRequestInformation* requestInfo =
+                    queuedBroadcastSubscriptionRequests.take(providerId);
+            if (!isSubscriptionExpired(requestInfo->getQos())) {
+                LOG_DEBUG(logger,
+                          QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
+                                  requestInfo->toQString()));
+                add(requestInfo->getProxyId(),
+                    requestInfo->getProviderId(),
+                    requestCaller,
+                    requestInfo,
+                    publicationSender);
+            } else {
+                delete requestInfo;
+            }
         }
     }
 }
