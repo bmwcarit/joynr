@@ -51,18 +51,21 @@ public:
     DelayedScheduler(const QString& eventThreadName, int delay_ms = 0);
     virtual ~DelayedScheduler();
 
+    static quint32 INVALID_RUNNABLE_HANDLE();
+
     /**
       * Schedules a runnable to be executed after delay_ms has passed.
       * If no delay is supplied the default delay specified in the constructor is used.
       */
-    virtual void schedule(QRunnable* runnable, int delay_ms = -1);
+    virtual quint32 schedule(QRunnable* runnable, int delay_ms = -1);
+    virtual void unschedule(quint32& runnableHandle);
 
 protected:
     virtual void executeRunnable(QRunnable* runnable) = 0;
     void shutdown();
 
 private slots:
-    void scheduleUsingTimer(void* runnable, int delay_ms);
+    void scheduleUsingTimer(void* runnable, quint32 runnableHandle, int delay_ms);
     void run();
 
 private:
@@ -75,9 +78,11 @@ private:
     };
 
     int delay_ms;
+    quint32 runnableHandle;
 
     EventThread eventThread;
-    QHash<QTimer*, QRunnable*> runnables;
+    QHash<quint32, QRunnable*> runnables;
+    QHash<QTimer*, quint32> timers;
     QMutex mutex;
     bool stoppingScheduler;
     static joynr_logging::Logger* logger;

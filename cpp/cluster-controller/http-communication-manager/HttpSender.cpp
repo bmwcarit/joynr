@@ -165,7 +165,7 @@ void HttpSender::SendMessageRunnable::run()
     LOG_TRACE(logger,
               "messageRunnableCounter: + " +
                       QString::number(SendMessageRunnable::messageRunnableCounter) +
-                      "SMR existing. ");
+                      " SMR existing. ");
 
     assert(messageSender->channelUrlCache != NULL);
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing

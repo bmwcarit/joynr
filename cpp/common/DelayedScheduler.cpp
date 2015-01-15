@@ -21,10 +21,9 @@
 #include <QtCore>
 #include <QSignalMapper>
 #include <QCoreApplication>
-#include <QTimer>
 #include "joynr/joynrlogging.h"
-
-#include <iostream>
+#include "QMutableHashIterator"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -34,8 +33,10 @@ Logger* DelayedScheduler::logger = Logging::getInstance()->getLogger("MSG", "Del
 
 DelayedScheduler::DelayedScheduler(const QString& eventThreadName, int delay_ms)
         : delay_ms(delay_ms),
+          runnableHandle(INVALID_RUNNABLE_HANDLE()),
           eventThread(),
           runnables(),
+          timers(),
           mutex(QMutex::Recursive),
           stoppingScheduler(false)
 {
@@ -58,6 +59,12 @@ DelayedScheduler::~DelayedScheduler()
     }
 }
 
+quint32 DelayedScheduler::INVALID_RUNNABLE_HANDLE()
+{
+    static const quint32 value(0);
+    return value;
+}
+
 void DelayedScheduler::shutdown()
 {
     // LOG_TRACE(logger, "shutdown: entering...");
@@ -65,57 +72,81 @@ void DelayedScheduler::shutdown()
     // LOG_TRACE(logger, "shutdown: locked mutex...");
     stoppingScheduler = true;
     // LOG_TRACE(logger, "shutdown: stopping running timers");
-    QList<QTimer*> runnableTimers = runnables.keys();
-    foreach (QTimer* timer, runnableTimers) {
-        // LOG_TRACE(logger, "shutdown: stop timer");
-        QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
-        QRunnable* runnable = runnables.take(timer);
+
+    QMutableHashIterator<QTimer*, quint32> iterator(timers);
+
+    while (iterator.hasNext()) {
+        iterator.next();
+        QTimer* timer = iterator.key();
+        QRunnable* runnable = runnables.take(iterator.value());
+
+        assert(runnable != NULL);
         if (runnable->autoDelete()) {
-            // LOG_TRACE(logger, "shutdown: delete runnable");
             delete runnable;
         }
-        // LOG_TRACE(logger, "shutdown: delete timer");
-        //            QMetaObject::invokeMethod(
-        //                        timer,
-        //                        "deleteLater",
-        //                        Qt::QueuedConnection);
 
+        assert(timer != NULL);
+        QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
+        iterator.remove();
         timer->deleteLater();
+    }
+
+    assert(runnables.size() == 0);
+}
+
+void DelayedScheduler::unschedule(quint32& runnableHandle)
+{
+    QMutexLocker locker(&mutex);
+    if (runnables.contains(runnableHandle)) {
+        QRunnable* runnable = runnables.take(runnableHandle);
+        QMutableHashIterator<QTimer*, quint32> iterator(timers);
+        if (iterator.findNext(runnableHandle)) {
+            QTimer* timer = iterator.key();
+            timers.remove(timer);
+            timer->deleteLater();
+            QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
+        }
+
+        if (runnable->autoDelete()) {
+            delete runnable;
+        }
+    } else {
+        LOG_TRACE(logger,
+                  "unschedule did not succeed. Provided runnableHandle " + QString(runnableHandle) +
+                          " could not be found by the scheduler");
     }
 }
 
-void DelayedScheduler::schedule(QRunnable* runnable, int delay_ms /* = -1*/)
+quint32 DelayedScheduler::schedule(QRunnable* runnable, int delay_ms /* = -1*/)
 {
     LOG_DEBUG(logger, QString("schedule: entering with delay %1").arg(delay_ms));
     if (delay_ms == -1) {
         delay_ms = this->delay_ms;
     }
 
-    {
-        QMutexLocker locker(&mutex);
-        if (stoppingScheduler) {
-            // LOG_TRACE(logger, "schedule: deleting runnable...");
-            delete (QRunnable*)runnable;
-            return;
-        }
+    QMutexLocker locker(&mutex);
+    runnableHandle++;
+    if (stoppingScheduler) {
+        delete runnable;
+        return runnableHandle;
     }
-
     /* Scheduling should be done in the eventThread
       to ensure that the timer is created in that thread. */
     QMetaObject::invokeMethod(this,
                               "scheduleUsingTimer",
                               Qt::QueuedConnection,
                               Q_ARG(void*, runnable),
+                              Q_ARG(quint32, runnableHandle),
                               Q_ARG(int, delay_ms));
+    return runnableHandle;
 }
 
-void DelayedScheduler::scheduleUsingTimer(void* runnable, int delay_ms)
+void DelayedScheduler::scheduleUsingTimer(void* runnable, quint32 runnableHandle, int delay_ms)
 {
     LOG_TRACE(logger, QString("scheduleUsingTimer: entering with delay %1").arg(delay_ms));
     QMutexLocker locker(&mutex);
 
     if (stoppingScheduler) {
-        // LOG_TRACE(logger, "scheduleUsingTimer: deleting runnable...");
         delete (QRunnable*)runnable;
         return;
     }
@@ -125,7 +156,8 @@ void DelayedScheduler::scheduleUsingTimer(void* runnable, int delay_ms)
     timer->setSingleShot(true);
 
     // Make note of the runnable that will be executed
-    runnables.insert(timer, (QRunnable*)runnable);
+    runnables.insert(runnableHandle, (QRunnable*)runnable);
+    timers.insert(timer, runnableHandle);
 
     // Connect the timer to call run()
     connect(timer, SIGNAL(timeout()), this, SLOT(run()));
@@ -138,7 +170,6 @@ void DelayedScheduler::scheduleUsingTimer(void* runnable, int delay_ms)
 
 void DelayedScheduler::run()
 {
-    // LOG_TRACE(logger, "run: entering...");
     QRunnable* runnable = NULL;
     {
         QMutexLocker locker(&mutex);
@@ -148,14 +179,17 @@ void DelayedScheduler::run()
             return;
         }
         QTimer* timer = reinterpret_cast<QTimer*>(sender());
-        runnable = runnables.take(timer);
         timer->deleteLater();
+
+        if (timers.contains(timer)) {
+            runnable = runnables.take(timers.take(timer));
+        }
     }
 
-    // executeRunnable does not require a mutex lock
-    executeRunnable(runnable);
-
-    // LOG_TRACE(logger, "run: leaving...");
+    if (runnable != NULL) {
+        // executeRunnable does not require a mutex lock
+        executeRunnable(runnable);
+    }
 }
 
 ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(QThreadPool& threadPool,

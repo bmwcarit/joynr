@@ -138,7 +138,8 @@ class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
 public:
     MockDelayedScheduler(QString name) : SingleThreadedDelayedScheduler(name){};
     MOCK_METHOD1(executeRunnable, void(QRunnable* runnable));
-    MOCK_METHOD2(schedule, void(QRunnable* runnable, int delay_ms));
+    MOCK_METHOD1(stopRunnable, void(QRunnable* runnable));
+    MOCK_METHOD2(schedule, quint32(QRunnable* runnable, int delay_ms));
 };
 
 class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
