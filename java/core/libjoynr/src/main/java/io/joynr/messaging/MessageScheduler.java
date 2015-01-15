@@ -218,38 +218,31 @@ public class MessageScheduler {
                 logger.debug("SEND to ChannelId: {} messageId: {} completed successfully", channelId, messageId);
                 break;
             case HttpURLConnection.HTTP_BAD_REQUEST:
-                try {
-                    HttpEntity entity = response.getEntity();
-                    if (entity == null) {
-                        logger.error("SEND to ChannelId: {} messageId: {} completed in error. No further reason found in message body",
-                                     channelId,
-                                     messageId);
-                        return;
-                    }
-                    String body = EntityUtils.toString(entity, "UTF-8");
-
-                    JoynrMessagingError error = objectMapper.readValue(body, JoynrMessagingError.class);
-                    JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynrMessagingErrorCode(error.getCode());
-                    logger.error(error.toString());
-                    switch (joynrMessagingErrorCode) {
-                    case JOYNRMESSAGINGERROR_CHANNELNOTFOUND:
-                        failureAction.execute(new JoynrChannelMissingException("Channel does not exist. Status: "
-                                + statusCode + " error: " + error.getCode() + "reason:" + error.getReason()));
-                        break;
-                    default:
-                        logger.error("SEND error channelId: {}, messageId: {} error: {} code: {} reason: {} ",
-                                     new Object[]{ channelId, messageId, statusText, error.getCode(), error.getReason() });
-                        failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
-                                + statusText + body + " error: " + error.getCode() + "reason:" + error.getReason()));
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId,
-                            messageId, e.getMessage() });
-                    failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
-                            + statusText));
-
+                HttpEntity entity = response.getEntity();
+                if (entity == null) {
+                    logger.error("SEND to ChannelId: {} messageId: {} completed in error. No further reason found in message body",
+                                 channelId,
+                                 messageId);
+                    return;
                 }
+                String body = EntityUtils.toString(entity, "UTF-8");
+
+                JoynrMessagingError error = objectMapper.readValue(body, JoynrMessagingError.class);
+                JoynrMessagingErrorCode joynrMessagingErrorCode = JoynrMessagingErrorCode.getJoynrMessagingErrorCode(error.getCode());
+                logger.error(error.toString());
+                switch (joynrMessagingErrorCode) {
+                case JOYNRMESSAGINGERROR_CHANNELNOTFOUND:
+                    failureAction.execute(new JoynrChannelMissingException("Channel does not exist. Status: "
+                            + statusCode + " error: " + error.getCode() + "reason:" + error.getReason()));
+                    break;
+                default:
+                    logger.error("SEND error channelId: {}, messageId: {} error: {} code: {} reason: {} ",
+                                 new Object[]{ channelId, messageId, statusText, error.getCode(), error.getReason() });
+                    failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
+                            + statusText + body + " error: " + error.getCode() + "reason:" + error.getReason()));
+                    break;
+                }
+                break;
             default:
                 logger.error("SEND to ChannelId: {} messageId: {} - unexpected response code: {} reason: {}",
                              new Object[]{ channelId, messageId, statusCode, statusText });
