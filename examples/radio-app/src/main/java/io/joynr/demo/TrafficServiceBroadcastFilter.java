@@ -34,7 +34,7 @@ public class TrafficServiceBroadcastFilter extends RadioNewStationDiscoveredBroa
             // filter parameter not set, so we do no filtering
             return true;
         }
-        Boolean hasTrafficService = new Boolean(filterParameters.getHasTrafficService());
+        Boolean hasTrafficService = Boolean.valueOf(filterParameters.getHasTrafficService());
         return discoveredStation.getTrafficService().equals(hasTrafficService);
     }
 
