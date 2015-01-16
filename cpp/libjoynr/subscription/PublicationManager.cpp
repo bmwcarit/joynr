@@ -58,6 +58,7 @@ public:
     QSharedPointer<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
     SubscriptionBroadcastListener* broadcastListener;
+    QMutex mutex;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Publication);
@@ -101,21 +102,29 @@ Logger* PublicationManager::logger = Logging::getInstance()->getLogger("MSG", "P
 PublicationManager::~PublicationManager()
 {
     LOG_DEBUG(logger, "Destructor, saving subscriptionsMap...");
-    saveAttributeSubscriptionRequestsMap();
-    saveBroadcastSubscriptionRequestsMap();
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+
+    saveAttributeSubscriptionRequestsMap(
+            subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    saveBroadcastSubscriptionRequestsMap(
+            subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
 
     // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we
     // call it first then set shuttingDown to true
     {
-        QMutexLocker locker(&shutDownMutex);
+        QMutexLocker shutDownLocker(&shutDownMutex);
         shuttingDown = true;
     }
+
+    subscriptionLocker.unlock();
 
     LOG_DEBUG(logger, "Destructor, waiting for thread pool ...");
     publishingThreadPool.waitForDone();
 
     LOG_DEBUG(logger, "Destructor, deleting scheduler ...");
     delete delayedScheduler;
+
+    subscriptionLocker.relock();
 
     // Remove all publications
     LOG_DEBUG(logger, "Destructor: removing publications");
@@ -127,13 +136,16 @@ PublicationManager::~PublicationManager()
              subscriptionId2BroadcastSubscriptionRequest) {
         removeBroadcastPublication(request->getSubscriptionId());
     }
+
+    subscriptionLocker.unlock();
 }
 
 PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThreads)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
-          subscriptionLock(),
+          subscriptionLock(QReadWriteLock::Recursive),
+          fileWriteLock(),
           publishingThreadPool(),
           delayedScheduler(scheduler),
           shutDownMutex(),
@@ -163,7 +175,8 @@ PublicationManager::PublicationManager(int maxThreads)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
-          subscriptionLock(),
+          subscriptionLock(QReadWriteLock::Recursive),
+          fileWriteLock(),
           publishingThreadPool(),
           delayedScheduler(NULL),
           shutDownMutex(),
@@ -214,22 +227,33 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         QSharedPointer<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    if (publicationExists(requestInfo->getSubscriptionId())) {
+    QString subscriptionId = requestInfo->getSubscriptionId();
+
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the subscriptionList created
+    // within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+
+    if (publicationExists(subscriptionId)) {
         LOG_WARN(logger,
                  "Publication with id: " + requestInfo->getSubscriptionId() + " already exists.");
         return;
     }
 
+    subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
+    QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
+    // Make note of the publication
+    publications.insert(subscriptionId, publication);
+
+    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+
+    // writing to subscriptions data structure done
+    subscriptionLocker.unlock();
+
+    LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
+
     {
-        QWriteLocker locker(&subscriptionLock);
-        QString subscriptionId = requestInfo->getSubscriptionId();
-        subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
-
-        // Make note of the publication
-        QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
-        publications.insert(subscriptionId, publication);
-        LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
-
+        QMutexLocker publicationLocker(&(publication->mutex));
         // Add an onChange publication if needed
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
@@ -255,7 +279,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             LOG_WARN(logger, QString("publication end is in the past"));
         }
     }
-    saveAttributeSubscriptionRequestsMap();
+    saveAttributeSubscriptionRequestsMap(subscriptionList);
 }
 
 void PublicationManager::addOnChangePublication(
@@ -263,6 +287,7 @@ void PublicationManager::addOnChangePublication(
         QSharedPointer<SubscriptionRequestInformation> request,
         QSharedPointer<Publication> publication)
 {
+    QMutexLocker publicationLocker(&(publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos().data())) {
         LOG_TRACE(logger, QString("adding onChange subscription: %1").arg(subscriptionId));
 
@@ -272,7 +297,8 @@ void PublicationManager::addOnChangePublication(
 
         // Register the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
+        requestCaller->registerAttributeListener(
+                request->getSubscribeToName(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
@@ -285,6 +311,8 @@ void PublicationManager::addBroadcastPublication(
         QSharedPointer<PublicationManager::Publication> publication)
 {
     LOG_TRACE(logger, QString("adding broadcast subscription: %1").arg(subscriptionId));
+
+    QMutexLocker publicationLocker(&(publication->mutex));
 
     // Create a broadcast listener to listen for broadcast events
     SubscriptionBroadcastListener* broadcastListener =
@@ -308,14 +336,19 @@ void PublicationManager::add(const QString& proxyParticipantId,
     QSharedPointer<SubscriptionRequestInformation> requestInfo(new SubscriptionRequestInformation(
             proxyParticipantId, providerParticipantId, subscriptionRequest));
     {
-        QMutexLocker locker(&queuedSubscriptionRequestsMutex);
+        QMutexLocker queueLocker(&queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(requestInfo->getProviderId(), requestInfo);
     }
-    {
-        QWriteLocker locker(&subscriptionLock);
-        subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
-    }
-    saveAttributeSubscriptionRequestsMap();
+
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the subscriptionList created
+    // within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+    subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
+    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    subscriptionLocker.unlock();
+
+    saveAttributeSubscriptionRequestsMap(subscriptionList);
 }
 
 void PublicationManager::add(const QString& proxyParticipantId,
@@ -338,22 +371,34 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         IPublicationSender* publicationSender)
 {
 
-    if (publicationExists(requestInfo->getSubscriptionId())) {
+    QString subscriptionId = requestInfo->getSubscriptionId();
+
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the subscriptionList created
+    // within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+
+    if (publicationExists(subscriptionId)) {
         LOG_WARN(logger,
                  "Publication with id: " + requestInfo->getSubscriptionId() + " already exists.");
         return;
     }
 
+    subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
+
+    // Make note of the publication
+    QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
+    publications.insert(subscriptionId, publication);
+    LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
+
+    QList<QVariant> subscriptionList(
+            subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
+
+    // writing to subscriptions data structure done
+    subscriptionLocker.unlock();
+
     {
-        QWriteLocker locker(&subscriptionLock);
-        QString subscriptionId = requestInfo->getSubscriptionId();
-        subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
-
-        // Make note of the publication
-        QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
-        publications.insert(subscriptionId, publication);
-        LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
-
+        QMutexLocker publicationLocker(&(publication->mutex));
         // Add an onChange publication if needed
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
@@ -373,7 +418,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
             LOG_WARN(logger, QString("publication end is in the past"));
         }
     }
-    saveBroadcastSubscriptionRequestsMap();
+    saveBroadcastSubscriptionRequestsMap(subscriptionList);
 }
 
 void PublicationManager::add(const QString& proxyParticipantId,
@@ -387,15 +432,21 @@ void PublicationManager::add(const QString& proxyParticipantId,
             new BroadcastSubscriptionRequestInformation(
                     proxyParticipantId, providerParticipantId, subscriptionRequest));
     {
-        QMutexLocker locker(&queuedBroadcastSubscriptionRequestsMutex);
+        QMutexLocker queueLocker(&queuedBroadcastSubscriptionRequestsMutex);
         queuedBroadcastSubscriptionRequests.insert(requestInfo->getProviderId(), requestInfo);
     }
-    {
-        QWriteLocker locker(&subscriptionLock);
-        subscriptionId2BroadcastSubscriptionRequest.insert(
-                requestInfo->getSubscriptionId(), requestInfo);
-    }
-    saveBroadcastSubscriptionRequestsMap();
+
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the subscriptionList created
+    // within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+    subscriptionId2BroadcastSubscriptionRequest.insert(
+            requestInfo->getSubscriptionId(), requestInfo);
+    QList<QVariant> subscriptionList(
+            subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
+    subscriptionLocker.unlock();
+
+    saveBroadcastSubscriptionRequestsMap(subscriptionList);
 }
 
 void PublicationManager::removeAllSubscriptions(const QString& providerId)
@@ -407,7 +458,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
 
     QList<QString> publicationsToRemove;
     {
-        QReadLocker locker(&subscriptionLock);
+        QReadLocker subscriptionLocker(&subscriptionLock);
 
         foreach (QSharedPointer<SubscriptionRequestInformation> requestInfo,
                  subscriptionId2SubscriptionRequest) {
@@ -421,7 +472,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
 
     QList<QString> broadcastsToRemove;
     {
-        QReadLocker locker(&subscriptionLock);
+        QReadLocker subscriptionLocker(&subscriptionLock);
 
         foreach (QSharedPointer<BroadcastSubscriptionRequestInformation> requestInfo,
                  subscriptionId2BroadcastSubscriptionRequest) {
@@ -470,7 +521,7 @@ void PublicationManager::restore(const QString& providerId,
     LOG_DEBUG(logger, "restore: entering ...");
 
     {
-        QMutexLocker locker(&queuedSubscriptionRequestsMutex);
+        QMutexLocker queueLocker(&queuedSubscriptionRequestsMutex);
         while (queuedSubscriptionRequests.contains(providerId)) {
             QSharedPointer<SubscriptionRequestInformation> requestInfo(
                     queuedSubscriptionRequests.take(providerId));
@@ -484,7 +535,7 @@ void PublicationManager::restore(const QString& providerId,
     }
 
     {
-        QMutexLocker locker(&queuedBroadcastSubscriptionRequestsMutex);
+        QMutexLocker queueLocker(&queuedBroadcastSubscriptionRequestsMutex);
         while (queuedBroadcastSubscriptionRequests.contains(providerId)) {
             QSharedPointer<BroadcastSubscriptionRequestInformation> requestInfo(
                     queuedBroadcastSubscriptionRequests.take(providerId));
@@ -498,13 +549,13 @@ void PublicationManager::restore(const QString& providerId,
     }
 }
 
-// This function assumes that no lock is held
-void PublicationManager::saveAttributeSubscriptionRequestsMap()
+// This function assumes that subscriptionList is a copy that is exclusively used by this function
+void PublicationManager::saveAttributeSubscriptionRequestsMap(
+        const QList<QVariant>& subscriptionList)
 {
     LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap<SubscriptionRequestInformation>(
-            subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap(subscriptionList, subscriptionRequestStorageFileName);
 }
 
 void PublicationManager::loadSavedAttributeSubscriptionRequestsMap()
@@ -516,13 +567,13 @@ void PublicationManager::loadSavedAttributeSubscriptionRequestsMap()
             queuedSubscriptionRequests);
 }
 
-void PublicationManager::saveBroadcastSubscriptionRequestsMap()
+// This function assumes that subscriptionList is a copy that is exclusively used by this function
+void PublicationManager::saveBroadcastSubscriptionRequestsMap(
+        const QList<QVariant>& subscriptionList)
 {
     LOG_DEBUG(logger, "Saving active broadcastSubscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
-            subscriptionId2BroadcastSubscriptionRequest,
-            broadcastSubscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap(subscriptionList, broadcastSubscriptionRequestStorageFileName);
 }
 
 void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
@@ -535,52 +586,54 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
             queuedBroadcastSubscriptionRequests);
 }
 
+// Returns a list containing copies of the values of map
 template <class RequestInformationType>
-void PublicationManager::saveSubscriptionRequestsMap(
-        const QMap<QString, QSharedPointer<RequestInformationType>>& map,
-        const QString& storageFilename)
+QList<QVariant> PublicationManager::subscriptionMapToListCopy(
+        const QMap<QString, QSharedPointer<RequestInformationType>>& map)
 {
-
-    static_assert(
-            std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
-            "saveSubscriptionRequestsMap can only be used for subclasses of SubscriptionRequest");
-
-    if (isShuttingDown()) {
-        LOG_DEBUG(logger, "Abort saving, because we are already shutting down.");
-        return;
-    }
-
-    QFile file(storageFilename);
-    if (!file.open(QIODevice::WriteOnly)) {
-        LOG_ERROR(logger,
-                  QString("Could not open subscription request storage file: %1")
-                          .arg(file.errorString()));
-        return;
-    }
-
-    // Write the subscription information as a json list
-    file.resize(0);
-
-    QDateTime now = QDateTime::currentDateTime();
-
     QList<QVariant> subscriptionList;
     {
-        QReadLocker locker(&subscriptionLock);
-
         foreach (QSharedPointer<RequestInformationType> requestInfo, map) {
             if (!isSubscriptionExpired(requestInfo->getQos())) {
                 subscriptionList.append(QVariant::fromValue(*requestInfo));
             }
         }
     }
-    QString json = JsonSerializer::serialize(subscriptionList);
-    file.write(json.toUtf8().constData());
+    return subscriptionList;
+}
+
+// This function assumes that subscriptionList is a copy that is exclusively used by this function
+void PublicationManager::saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
+                                                     const QString& storageFilename)
+{
+
+    if (isShuttingDown()) {
+        LOG_DEBUG(logger, "Abort saving, because we are already shutting down.");
+        return;
+    }
+
+    {
+        QMutexLocker fileWritelocker(&fileWriteLock);
+        QFile file(storageFilename);
+        if (!file.open(QIODevice::WriteOnly)) {
+            LOG_ERROR(logger,
+                      QString("Could not open subscription request storage file: %1")
+                              .arg(file.errorString()));
+            return;
+        }
+
+        // Write the subscription information as a json list
+        file.resize(0);
+
+        QString json = JsonSerializer::serialize(subscriptionList);
+        file.write(json.toUtf8().constData());
+    }
 }
 
 template <class RequestInformationType>
 void PublicationManager::loadSavedSubscriptionRequestsMap(
         const QString& storageFilename,
-        QMutex& mutex,
+        QMutex& queueMutex,
         QMultiMap<QString, QSharedPointer<RequestInformationType>>& queuedSubscriptions)
 {
 
@@ -603,7 +656,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
 
     // Loop through the saved subscriptions
     QDateTime now = QDateTime::currentDateTime();
-    QMutexLocker locker(&mutex);
+    QMutexLocker queueLocker(&queueMutex);
 
     while (!subscriptionList.isEmpty()) {
         QSharedPointer<RequestInformationType> requestInfo(subscriptionList.takeFirst());
@@ -617,73 +670,84 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                               requestInfo->toQString()));
         }
     }
+
+    queueLocker.unlock();
 }
 
 void PublicationManager::removeAttributePublication(const QString& subscriptionId)
 {
     LOG_DEBUG(logger, QString("removePublication: %1").arg(subscriptionId));
 
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the subscriptionList created
+    // within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+
+    if (!publicationExists(subscriptionId)) {
+        LOG_DEBUG(logger,
+                  QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+        return;
+    }
+
+    QSharedPointer<Publication> publication(publications.take(subscriptionId));
+    QSharedPointer<SubscriptionRequestInformation> request(
+            subscriptionId2SubscriptionRequest.take(subscriptionId));
+
+    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    subscriptionLocker.unlock();
+
     {
-        QWriteLocker locker(&subscriptionLock);
-
-        if (!publicationExists(subscriptionId)) {
-            LOG_DEBUG(
-                    logger,
-                    QString("publication %1 does not exist - will not remove").arg(subscriptionId));
-            return;
-        }
-
-        QSharedPointer<Publication> publication(publications.take(subscriptionId));
-        QSharedPointer<SubscriptionRequestInformation> request(
-                subscriptionId2SubscriptionRequest.value(subscriptionId));
-
+        QMutexLocker publicationLocker(&(publication->mutex));
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
-
-        // Remove the publication
-        subscriptionId2SubscriptionRequest.remove(subscriptionId);
     }
-    saveAttributeSubscriptionRequestsMap();
+
+    saveAttributeSubscriptionRequestsMap(subscriptionList);
 }
 
 void PublicationManager::removeBroadcastPublication(const QString& subscriptionId)
 {
     LOG_DEBUG(logger, QString("removeBroadcast: %1").arg(subscriptionId));
 
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the subscriptionList created
+    // within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
+
+    if (!publicationExists(subscriptionId)) {
+        LOG_DEBUG(logger,
+                  QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+        return;
+    }
+
+    QSharedPointer<Publication> publication(publications.value(subscriptionId));
+    QSharedPointer<BroadcastSubscriptionRequestInformation> request(
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+
+    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    subscriptionLocker.unlock();
+
     {
-        QWriteLocker locker(&subscriptionLock);
-
-        if (!publicationExists(subscriptionId)) {
-            LOG_DEBUG(
-                    logger,
-                    QString("publication %1 does not exist - will not remove").arg(subscriptionId));
-            return;
-        }
-
-        QSharedPointer<Publication> publication(publications.value(subscriptionId));
-        QSharedPointer<BroadcastSubscriptionRequestInformation> request(
-                subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-
+        QMutexLocker publicationLocker(&(publication->mutex));
         // Remove listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
                 request->getSubscribeToName(), publication->broadcastListener);
         publication->broadcastListener = NULL;
-
-        // Remove the publication
-        subscriptionId2BroadcastSubscriptionRequest.remove(subscriptionId);
     }
-    saveBroadcastSubscriptionRequestsMap();
+
+    saveBroadcastSubscriptionRequestsMap(subscriptionList);
 }
 
-// This function assumes that a write lock is already held
 void PublicationManager::removeOnChangePublication(
         const QString& subscriptionId,
         QSharedPointer<SubscriptionRequestInformation> request,
         QSharedPointer<Publication> publication)
 {
+    QMutexLocker publicationLocker(&(publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos().data())) {
-        LOG_DEBUG(logger, QString("Removing onChange publication for id = %1").arg(subscriptionId));
+        LOG_DEBUG(logger,
+                  QString("Removing onChange publication for id = %1").arg(subscriptionId));
 
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
@@ -698,12 +762,12 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
                                             const QList<QVariant>& eventValues,
                                             const QList<QSharedPointer<IBroadcastFilter>>& filters)
 {
+    bool success = true;
 
+    QReadLocker subscriptionLocker(&subscriptionLock);
     QSharedPointer<BroadcastSubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
-
-    bool success = true;
 
     foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
         success = success && filter->filter(eventValues, filterParameters);
@@ -714,7 +778,7 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
 
 bool PublicationManager::isShuttingDown()
 {
-    QMutexLocker locker(&shutDownMutex);
+    QMutexLocker shuwDownLocker(&shutDownMutex);
     return shuttingDown;
 }
 
@@ -724,33 +788,23 @@ qint64 PublicationManager::getPublicationTtl(
     return subscriptionRequest->getQos()->getPublicationTtl();
 }
 
-// This function assumes that a lock is held
 void PublicationManager::sendPublication(
-        const QString& subscriptionId,
+        QSharedPointer<Publication> publication,
         QSharedPointer<SubscriptionInformation> subscriptionInformation,
-        qint64 ttl,
+        QSharedPointer<SubscriptionRequest> request,
         const QVariant& value)
 {
     LOG_DEBUG(logger, "sending subscriptionreply");
     MessagingQos mQos;
 
+    QMutexLocker publicationLocker(&(publication->mutex));
     // Set the TTL
-    mQos.setTtl(ttl);
-
-    // Get publication information
-    if (!publications.contains(subscriptionId)) {
-        LOG_FATAL(logger,
-                  QString("Publication for subscriptionId %1 not found but should exist.")
-                          .arg(subscriptionId));
-        return;
-    }
-
-    QSharedPointer<Publication> publication(publications.value(subscriptionId));
+    mQos.setTtl(getPublicationTtl(request));
 
     IPublicationSender* publicationSender = publication->sender;
 
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionId);
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     subscriptionPublication.setResponse(value);
     publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
                                                    subscriptionInformation->getProxyId(),
@@ -763,9 +817,8 @@ void PublicationManager::sendPublication(
 
     {
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
-        currentScheduledPublications.removeAll(subscriptionId);
+        currentScheduledPublications.removeAll(request->getSubscriptionId());
     }
-
     LOG_TRACE(logger, QString("sent subscriptionreply @ %1").arg(now));
 }
 
@@ -773,77 +826,77 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
 {
     LOG_TRACE(logger, QString("pollSubscription %1").arg(subscriptionId));
 
-    QWriteLocker locker(&subscriptionLock);
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the publication and
+    // subscriptionRequest object within the locked code is used after the unlock.
+    QWriteLocker subscriptionLocker(&subscriptionLock);
 
     // Check that the subscription has not been removed and that we are not shutting down
-    if (isShuttingDown() || !publicationExists(subscriptionId)) {
+    if (isShuttingDown() || !publicationExists(subscriptionId) ||
+        !subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
         return;
     }
 
     // Get the subscription details
     QSharedPointer<Publication> publication(publications.value(subscriptionId));
+    QSharedPointer<SubscriptionRequestInformation> subscriptionRequest(
+            subscriptionId2SubscriptionRequest.value(subscriptionId));
 
-    QSharedPointer<SubscriptionRequest> subscriptionRequest;
+    subscriptionLocker.unlock();
 
-    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
-        subscriptionRequest = subscriptionId2SubscriptionRequest.value(subscriptionId);
-    } else {
-        subscriptionRequest = subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
-    }
+    {
+        QMutexLocker publicationLocker(&(publication->mutex));
+        // See if the publication is needed
+        QSharedPointer<SubscriptionQos> qos(subscriptionRequest->getQos());
+        qint64 now = QDateTime::currentMSecsSinceEpoch();
+        qint64 publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
 
-    // See if the publication is needed
-    QSharedPointer<SubscriptionQos> qos = subscriptionRequest->getQos();
-    qint64 now = QDateTime::currentMSecsSinceEpoch();
-    qint64 publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
+        // check if the subscription qos needs a periodic publication
+        if (publicationInterval > 0) {
+            qint64 timeSinceLast = now - publication->timeOfLastPublication;
+            // publish only if not published in the current interval
+            if (timeSinceLast < publicationInterval) {
+                LOG_DEBUG(logger,
+                          QString("no publication necessary. publicationInterval: %1, "
+                                  "timeSinceLast %2")
+                                  .arg(publicationInterval)
+                                  .arg(timeSinceLast));
 
-    // check if the subscription qos needs a periodic publication
-    if (publicationInterval > 0) {
-        qint64 timeSinceLast = now - publication->timeOfLastPublication;
-        // publish only if not published in the current interval
-        if (timeSinceLast < publicationInterval) {
-            LOG_DEBUG(logger,
-                      QString("no publication necessary. publicationInterval: %1, timeSinceLast %2")
-                              .arg(publicationInterval)
-                              .arg(timeSinceLast));
-
-            qint64 delayUntilNextPublication = publicationInterval - timeSinceLast;
-            assert(delayUntilNextPublication >= 0);
-            delayedScheduler->schedule(
-                    new PublisherRunnable(*this, subscriptionId), delayUntilNextPublication);
-            return;
+                qint64 delayUntilNextPublication = publicationInterval - timeSinceLast;
+                assert(delayUntilNextPublication >= 0);
+                delayedScheduler->schedule(
+                        new PublisherRunnable(*this, subscriptionId), delayUntilNextPublication);
+                return;
+            }
         }
-    }
 
-    // Get the value of the attribute
-    QString attributeGetter =
-            Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName());
-    QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-    QSharedPointer<IRequestInterpreter> requestInterpreter =
-            InterfaceRegistrar::instance().getRequestInterpreter(requestCaller->getInterfaceName());
+        // Get the value of the attribute
+        QString attributeGetter(
+                Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
+        QSharedPointer<RequestCaller> requestCaller(publication->requestCaller);
+        QSharedPointer<IRequestInterpreter> requestInterpreter(
+                InterfaceRegistrar::instance().getRequestInterpreter(
+                        requestCaller->getInterfaceName()));
 
-    LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
-    QVariant response = requestInterpreter->execute(
-            requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>());
+        LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
+        QVariant response(requestInterpreter->execute(
+                requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>()));
 
-    QSharedPointer<SubscriptionInformation> subscriptionInformation(
-            qSharedPointerDynamicCast<SubscriptionInformation>(subscriptionRequest));
+        sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
 
-    sendPublication(subscriptionId,
-                    subscriptionInformation,
-                    getPublicationTtl(subscriptionRequest),
-                    response);
-
-    // Reschedule the next poll
-    if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
-        LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(publicationInterval));
-        delayedScheduler->schedule(
-                new PublisherRunnable(*this, subscriptionId), publicationInterval);
+        // Reschedule the next poll
+        if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
+            LOG_DEBUG(logger,
+                      QString("rescheduling runnable with delay: %1").arg(publicationInterval));
+            delayedScheduler->schedule(
+                    new PublisherRunnable(*this, subscriptionId), publicationInterval);
+        }
     }
 }
 
 void PublicationManager::removePublication(const QString& subscriptionId)
 {
-
+    QWriteLocker subscriptionLocker(&subscriptionLock);
     if (subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
         removeAttributePublication(subscriptionId);
     } else {
@@ -856,7 +909,10 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     LOG_DEBUG(logger,
               QString("attributeValueChanged for onChange subscription %1").arg(subscriptionId));
 
-    QReadLocker locker(&subscriptionLock);
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the publication and
+    // subscriptionRequest object is used after the unlock.
+    QReadLocker subscriptionLocker(&subscriptionLock);
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
@@ -869,18 +925,21 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     QSharedPointer<SubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2SubscriptionRequest.value(subscriptionId));
 
-    if (!isPublicationAlreadyScheduled(subscriptionId)) {
-        qint64 timeUntilNextPublication =
-                getTimeUntilNextPublication(subscriptionId, subscriptionRequest->getQos());
+    QSharedPointer<Publication> publication(publications.value(subscriptionId));
+    subscriptionLocker.unlock();
 
-        if (timeUntilNextPublication == 0) {
-            // Send the publication
-            sendPublication(subscriptionId,
-                            subscriptionRequest,
-                            getPublicationTtl(subscriptionRequest),
-                            value);
-        } else {
-            reschedulePublication(subscriptionId, timeUntilNextPublication);
+    {
+        QMutexLocker publicationLocker(&(publication->mutex));
+        if (!isPublicationAlreadyScheduled(subscriptionId)) {
+            qint64 timeUntilNextPublication =
+                    getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+
+            if (timeUntilNextPublication == 0) {
+                // Send the publication
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+            } else {
+                reschedulePublication(subscriptionId, timeUntilNextPublication);
+            }
         }
     }
 }
@@ -894,7 +953,10 @@ void PublicationManager::eventOccurred(const QString& subscriptionId,
                       .arg(subscriptionId)
                       .arg(values.size()));
 
-    QReadLocker locker(&subscriptionLock);
+    // lock the access to the subscriptions data structure
+    // we don't use a separate block for locking/unlocking, because the publication and
+    // subscriptionRequest object is used after the unlock.
+    QReadLocker subscriptionLocker(&subscriptionLock);
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
@@ -906,58 +968,48 @@ void PublicationManager::eventOccurred(const QString& subscriptionId,
 
     QSharedPointer<BroadcastSubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+    QSharedPointer<Publication> publication(publications.value(subscriptionId));
+    subscriptionLocker.unlock();
 
-    // Only proceed if publication can immediately be sent
-    qint64 timeUntilNextPublication =
-            getTimeUntilNextPublication(subscriptionId, subscriptionRequest->getQos());
+    {
+        QMutexLocker publicationLocker(&(publication->mutex));
+        // Only proceed if publication can immediately be sent
+        qint64 timeUntilNextPublication =
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
-    if (timeUntilNextPublication == 0) {
-        // Execute broadcast filters
-        if (processFilterChain(subscriptionId, values, filters)) {
-            // Send the publication
-            QVariant value = QVariant::fromValue(values);
-            sendPublication(subscriptionId,
-                            subscriptionRequest,
-                            getPublicationTtl(subscriptionRequest),
-                            value);
+        if (timeUntilNextPublication == 0) {
+            // Execute broadcast filters
+            if (processFilterChain(subscriptionId, values, filters)) {
+                // Send the publication
+                QVariant value = QVariant::fromValue(values);
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+            }
+        } else {
+            LOG_DEBUG(
+                    logger,
+                    QString("Omitting broadcast publication for subscription %1 because of ")
+                            .append(timeUntilNextPublication > 0 ? "too short interval. Next "
+                                                                   "publication possible in %2 ms."
+                                                                 : " error.")
+                            .arg(subscriptionId)
+                            .arg(timeUntilNextPublication));
         }
-    } else {
-        LOG_DEBUG(
-                logger,
-                QString("Omitting broadcast publication for subscription %1 because of ")
-                        .append(timeUntilNextPublication > 0
-                                        ? "too short interval. Next publication possible in %2 ms."
-                                        : " error.")
-                        .arg(subscriptionId)
-                        .arg(timeUntilNextPublication));
     }
 }
 
 bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscriptionId)
 {
     QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
-    if (currentScheduledPublications.contains(subscriptionId)) {
-        return true;
-    }
-
-    return false;
+    return currentScheduledPublications.contains(subscriptionId);
 }
 
-qint64 PublicationManager::getTimeUntilNextPublication(const QString& subscriptionId,
+qint64 PublicationManager::getTimeUntilNextPublication(QSharedPointer<Publication> publication,
                                                        QSharedPointer<SubscriptionQos> qos)
 {
+    QMutexLocker publicationLocker(&(publication->mutex));
     // Check the last publication time against the min interval
     qint64 now = QDateTime::currentMSecsSinceEpoch();
     qint64 minInterval = SubscriptionUtil::getMinInterval(qos.data());
-
-    if (!publications.contains(subscriptionId)) {
-        LOG_FATAL(logger,
-                  QString("Publication for subscriptionId %1 not found but should exist.")
-                          .arg(subscriptionId));
-        return -1;
-    }
-
-    QSharedPointer<Publication> publication(publications.value(subscriptionId));
 
     qint64 timeSinceLast = now - publication->timeOfLastPublication;
 
@@ -968,7 +1020,6 @@ qint64 PublicationManager::getTimeUntilNextPublication(const QString& subscripti
     return 0;
 }
 
-// This functions assumes that a lock is held
 void PublicationManager::reschedulePublication(const QString& subscriptionId,
                                                qint64 nextPublication)
 {
@@ -998,7 +1049,8 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
           sender(publicationSender),
           requestCaller(requestCaller),
           attributeListener(NULL),
-          broadcastListener(NULL)
+          broadcastListener(NULL),
+          mutex(QMutex::RecursionMode::Recursive)
 {
 }
 

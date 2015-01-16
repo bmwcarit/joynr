@@ -165,6 +165,7 @@ private:
     // .. and protected with a read/write lock
     mutable QReadWriteLock subscriptionLock;
 
+    QMutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
     QThreadPool publishingThreadPool;
     DelayedScheduler* delayedScheduler;
@@ -218,9 +219,9 @@ private:
     // Helper functions
     bool publicationExists(const QString& subscriptionId) const;
     void createPublishRunnable(const QString& subscriptionId);
-    void saveAttributeSubscriptionRequestsMap();
+    void saveAttributeSubscriptionRequestsMap(const QList<QVariant>& subscriptionList);
     void loadSavedAttributeSubscriptionRequestsMap();
-    void saveBroadcastSubscriptionRequestsMap();
+    void saveBroadcastSubscriptionRequestsMap(const QList<QVariant>& subscriptionList);
     void loadSavedBroadcastSubscriptionRequestsMap();
 
     void reschedulePublication(const QString& subscriptionId, qint64 nextPublication);
@@ -236,13 +237,11 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    qint64 getTimeUntilNextPublication(const QString& subscriptionId,
+    qint64 getTimeUntilNextPublication(QSharedPointer<Publication> publication,
                                        QSharedPointer<SubscriptionQos> qos);
 
-    template <class RequestInformationType>
-    void saveSubscriptionRequestsMap(
-            const QMap<QString, QSharedPointer<RequestInformationType>>& map,
-            const QString& storageFilename);
+    void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
+                                     const QString& storageFilename);
 
     template <class RequestInformationType>
     void loadSavedSubscriptionRequestsMap(
@@ -250,11 +249,15 @@ private:
             QMutex& mutex,
             QMultiMap<QString, QSharedPointer<RequestInformationType>>& queuedSubscriptions);
 
+    template <class RequestInformationType>
+    QList<QVariant> subscriptionMapToListCopy(
+            const QMap<QString, QSharedPointer<RequestInformationType>>& map);
+
     bool isShuttingDown();
     qint64 getPublicationTtl(QSharedPointer<SubscriptionRequest> subscriptionRequest) const;
-    void sendPublication(const QString& subscriptionId,
+    void sendPublication(QSharedPointer<Publication> publication,
                          QSharedPointer<SubscriptionInformation> subscriptionInformation,
-                         qint64 ttl,
+                         QSharedPointer<SubscriptionRequest> subscriptionRequest,
                          const QVariant& value);
     void handleAttributeSubscriptionRequest(
             QSharedPointer<SubscriptionRequestInformation> requestInfo,
