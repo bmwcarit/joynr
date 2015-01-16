@@ -152,7 +152,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // TODO currently there is a bug preventing all threads being stopped
         // WORKAROUND
         try {
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             // do nothing; exiting application
         }

@@ -39,6 +39,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 public class MyRadioProviderApplication extends AbstractJoynrApplication {
     private static final String AUTH_TOKEN = "MyRadioProvider_authToken";
     private static final Logger LOG = LoggerFactory.getLogger(MyRadioProviderApplication.class);
@@ -157,7 +159,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                     provider.fireNewStationDiscoveredEvent();
                     break;
                 default:
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
+                            + " w\tto fire weak signal event\n" + " n\tto fire station discovered event\n");
                     break;
                 }
             }
@@ -167,7 +170,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     }
 
     @Override
+    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
+        LOG.info("shutting down");
         if (provider != null) {
             try {
                 runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
@@ -176,5 +181,13 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             }
         }
         runtime.shutdown(true);
+        // TODO currently there is a bug preventing all threads being stopped
+        // WORKAROUND
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // do nothing; exiting application
+        }
+        System.exit(0);
     }
 }

@@ -40,7 +40,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
     private List<RadioStation> stationsList = new ArrayList<RadioStation>();
     private Map<Country, GeoPosition> countryGeoPositionMap = new HashMap<Country, GeoPosition>();
 
-    private int notSoRandomCounter = 0;
+    private int currentStationIndex = 0;
 
     public MyRadioProvider() {
         providerQos.setPriority(System.currentTimeMillis());
@@ -52,27 +52,27 @@ public class MyRadioProvider extends RadioAbstractProvider {
         countryGeoPositionMap.put(Country.ITALY, new GeoPosition(46.4982950, 11.3547580)); // Bolzano
         countryGeoPositionMap.put(Country.CANADA, new GeoPosition(53.5443890, -113.4909270)); // Edmonton
         countryGeoPositionMap.put(Country.GERMANY, new GeoPosition(48.1351250, 11.5819810)); // Munich
-        currentStation = stationsList.get(notSoRandomCounter);
+        currentStation = stationsList.get(currentStationIndex);
     }
 
     @Override
     public RadioStation getCurrentStation() throws JoynrArbitrationException {
-        LOG.debug(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
+        LOG.info(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
         return currentStation;
     }
 
     @Override
     public void shuffleStations() throws JoynrArbitrationException {
         RadioStation oldStation = currentStation;
-        notSoRandomCounter++;
-        notSoRandomCounter = notSoRandomCounter % stationsList.size();
-        currentStationChanged(stationsList.get(notSoRandomCounter));
-        LOG.debug(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
+        currentStationIndex++;
+        currentStationIndex = currentStationIndex % stationsList.size();
+        currentStationChanged(stationsList.get(currentStationIndex));
+        LOG.info(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
     }
 
     @Override
     public Boolean addFavouriteStation(RadioStation radioStation) throws JoynrArbitrationException {
-        LOG.debug(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
+        LOG.info(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
         stationsList.add(radioStation);
         return true;
     }
@@ -83,7 +83,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
     }
 
     public void fireNewStationDiscoveredEvent() {
-        RadioStation discoveredStation = stationsList.get(notSoRandomCounter);
+        RadioStation discoveredStation = stationsList.get(currentStationIndex);
         GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
         LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
                 + PRINT_BORDER);
