@@ -73,7 +73,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		    QString subscribeTo«attribute.joynrName.toFirstUpper»(
 		                QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 		                QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		                SubscriptionRequest* subscriptionRequest);
+		                SubscriptionRequest& subscriptionRequest);
 		«ENDFOR»
 		public:
 

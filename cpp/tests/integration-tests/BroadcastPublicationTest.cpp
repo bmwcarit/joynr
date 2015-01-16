@@ -47,7 +47,7 @@ public:
         subscriptionId("subscriptionId"),
         publicationManager(NULL),
         publicationSender(NULL),
-        request(NULL),
+        request(),
         provider(new MockTestProvider),
         requestCaller(new testRequestCaller(provider)),
         filter1(new MockLocationUpdatedSelectiveFilter),
@@ -62,10 +62,9 @@ public:
         subscriptionBroadcastListener =
                 new SubscriptionBroadcastListener(subscriptionId, *publicationManager);
         publicationSender = new MockPublicationSender();
-        request = new BroadcastSubscriptionRequest();
 
-        request->setSubscribeToName("locationUpdateSelective");
-        request->setSubscriptionId(subscriptionId);
+        request.setSubscribeToName("locationUpdateSelective");
+        request.setSubscriptionId(subscriptionId);
 
         auto subscriptionQos =
                 QSharedPointer<OnChangeSubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
@@ -74,8 +73,8 @@ public:
                     200, // maxInterval_ms
                     80 // alertInterval_ms
         ));
-        request->setQos(subscriptionQos);
-        request->setFilterParameters(filterParameters);
+        request.setQos(subscriptionQos);
+        request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",
@@ -105,7 +104,7 @@ protected:
     QString subscriptionId;
     PublicationManager* publicationManager;
     MockPublicationSender* publicationSender;
-    BroadcastSubscriptionRequest* request;
+    BroadcastSubscriptionRequest request;
     SubscriptionBroadcastListener* subscriptionBroadcastListener;
 
     QSharedPointer<MockTestProvider> provider;

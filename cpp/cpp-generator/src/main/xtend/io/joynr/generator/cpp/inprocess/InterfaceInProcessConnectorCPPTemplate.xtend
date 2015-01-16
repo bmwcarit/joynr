@@ -255,8 +255,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
 			        QString& subscriptionId)
 			{
-			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
-			    subscriptionRequest->setSubscriptionId(subscriptionId);
+			    joynr::SubscriptionRequest subscriptionRequest;
+			    subscriptionRequest.setSubscriptionId(subscriptionId);
 			    return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 			}
 
@@ -264,14 +264,14 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			        QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos)
 			{
-			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
+			    joynr::SubscriptionRequest subscriptionRequest;
 			    return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 			}
 
 			QString «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
 			        QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-			        joynr::SubscriptionRequest* subscriptionRequest)
+			        joynr::SubscriptionRequest& subscriptionRequest)
 			{
 			    «IF isEnum(attribute.type)»
 			    Q_UNUSED(subscriptionListener);
@@ -290,13 +290,13 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			            attributeName,
 			            subscriptionCallback,
 			            subscriptionQos,
-			            *subscriptionRequest);
-			    logger->log(DEBUG, "Registered subscription: " + subscriptionRequest->toQString());
+			            subscriptionRequest);
+			    logger->log(DEBUG, "Registered subscription: " + subscriptionRequest.toQString());
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
-			    QString subscriptionId = subscriptionRequest->getSubscriptionId();
+			    QString subscriptionId(subscriptionRequest.getSubscriptionId());
 
 			    if(caller.isNull()) {
 			        assert(publicationManager != NULL);
@@ -513,22 +513,21 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    QString broadcastName = "«broadcastName»";
 			    joynr::BroadcastSubscriptionCallback<«returnTypes»>* subscriptionCallback =
 			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener);
-			    joynr::BroadcastSubscriptionRequest* subscriptionRequest =
-			                new joynr::BroadcastSubscriptionRequest();//ownership goes to PublicationManager
+			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			    «IF isSelective(broadcast)»
-			    subscriptionRequest->setFilterParameters(filterParameters);
+			    subscriptionRequest.setFilterParameters(filterParameters);
 			    «ENDIF»
 			    subscriptionManager->registerSubscription(
 			                broadcastName,
 			                subscriptionCallback,
 			                subscriptionQos,
-			                *subscriptionRequest);
-			    logger->log(DEBUG, "Registered broadcast subscription: " + subscriptionRequest->toQString());
+			                subscriptionRequest);
+			    logger->log(DEBUG, "Registered broadcast subscription: " + subscriptionRequest.toQString());
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
-			    QString subscriptionId = subscriptionRequest->getSubscriptionId();
+			    QString subscriptionId(subscriptionRequest.getSubscriptionId());
 
 			    if(caller.isNull()) {
 			        assert(publicationManager != NULL);

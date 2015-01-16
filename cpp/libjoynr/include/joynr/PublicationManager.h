@@ -68,7 +68,7 @@ public:
     void add(const QString& proxyParticipantId,
              const QString& providerParticipantId,
              QSharedPointer<RequestCaller> requestCaller,
-             SubscriptionRequest* subscriptionRequest,
+             SubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
 
     /**
@@ -79,7 +79,7 @@ public:
      */
     void add(const QString& proxyParticipantId,
              const QString& providerParticipantId,
-             SubscriptionRequest* subscriptionRequest);
+             SubscriptionRequest& subscriptionRequest);
 
     /**
      * @brief Adds the BroadcastSubscriptionRequest and starts runnable to poll attributes.
@@ -90,7 +90,7 @@ public:
     void add(const QString& proxyParticipantId,
              const QString& providerParticipantId,
              QSharedPointer<RequestCaller> requestCaller,
-             BroadcastSubscriptionRequest* subscriptionRequest,
+             BroadcastSubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
 
     /**
@@ -101,7 +101,7 @@ public:
      */
     void add(const QString& proxyParticipantId,
              const QString& providerParticipantId,
-             BroadcastSubscriptionRequest* subscriptionRequest);
+             BroadcastSubscriptionRequest& subscriptionRequest);
 
     /**
      * @brief Stops the sending of publications
@@ -156,9 +156,10 @@ private:
     class Publication;
 
     // Information for each publication is keyed by subcriptionId
-    QMap<QString, Publication*> publications;
-    QMap<QString, SubscriptionRequestInformation*> subscriptionId2SubscriptionRequest;
-    QMap<QString, BroadcastSubscriptionRequestInformation*>
+    QMap<QString, QSharedPointer<Publication>> publications;
+    QMap<QString, QSharedPointer<SubscriptionRequestInformation>>
+            subscriptionId2SubscriptionRequest;
+    QMap<QString, QSharedPointer<BroadcastSubscriptionRequestInformation>>
             subscriptionId2BroadcastSubscriptionRequest;
 
     // .. and protected with a read/write lock
@@ -179,13 +180,13 @@ private:
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, SubscriptionRequestInformation*> queuedSubscriptionRequests;
+    QMultiMap<QString, QSharedPointer<SubscriptionRequestInformation>> queuedSubscriptionRequests;
     QMutex queuedSubscriptionRequestsMutex;
 
     // Queues all broadcast subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, BroadcastSubscriptionRequestInformation*>
+    QMultiMap<QString, QSharedPointer<BroadcastSubscriptionRequestInformation>>
             queuedBroadcastSubscriptionRequests;
     QMutex queuedBroadcastSubscriptionRequestsMutex;
 
@@ -239,30 +240,41 @@ private:
                                        QSharedPointer<SubscriptionQos> qos);
 
     template <class RequestInformationType>
-    void saveSubscriptionRequestsMap(const QMap<QString, RequestInformationType*>& map,
-                                     const QString& storageFilename);
+    void saveSubscriptionRequestsMap(
+            const QMap<QString, QSharedPointer<RequestInformationType>>& map,
+            const QString& storageFilename);
 
     template <class RequestInformationType>
     void loadSavedSubscriptionRequestsMap(
             const QString& storageFilename,
             QMutex& mutex,
-            QMultiMap<QString, RequestInformationType*>& queuedSubscriptions);
+            QMultiMap<QString, QSharedPointer<RequestInformationType>>& queuedSubscriptions);
 
     bool isShuttingDown();
-    qint64 getPublicationTtl(SubscriptionRequest* subscriptionRequest) const;
+    qint64 getPublicationTtl(QSharedPointer<SubscriptionRequest> subscriptionRequest) const;
     void sendPublication(const QString& subscriptionId,
-                         SubscriptionInformation* subscriptionInformation,
+                         QSharedPointer<SubscriptionInformation> subscriptionInformation,
                          qint64 ttl,
                          const QVariant& value);
+    void handleAttributeSubscriptionRequest(
+            QSharedPointer<SubscriptionRequestInformation> requestInfo,
+            QSharedPointer<RequestCaller> requestCaller,
+            IPublicationSender* publicationSender);
+
+    void handleBroadcastSubscriptionRequest(
+            QSharedPointer<BroadcastSubscriptionRequestInformation> requestInfo,
+            QSharedPointer<RequestCaller> requestCaller,
+            IPublicationSender* publicationSender);
+
     void addOnChangePublication(const QString& subscriptionId,
-                                SubscriptionRequestInformation* request,
-                                Publication* publication);
+                                QSharedPointer<SubscriptionRequestInformation> request,
+                                QSharedPointer<Publication> publication);
     void addBroadcastPublication(const QString& subscriptionId,
-                                 BroadcastSubscriptionRequestInformation* request,
-                                 Publication* publication);
+                                 QSharedPointer<BroadcastSubscriptionRequestInformation> request,
+                                 QSharedPointer<Publication> publication);
     void removeOnChangePublication(const QString& subscriptionId,
-                                   SubscriptionRequestInformation* request,
-                                   Publication* publication);
+                                   QSharedPointer<SubscriptionRequestInformation> request,
+                                   QSharedPointer<Publication> publication);
 
     bool processFilterChain(const QString& subscriptionId,
                             const QList<QVariant>& eventValues,

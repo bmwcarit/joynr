@@ -25,6 +25,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
@@ -237,14 +238,15 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
         publicationManager->add(
-                message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
+                message.getHeaderFrom(), message.getHeaderTo(), *subscriptionRequest);
     } else {
         publicationManager->add(message.getHeaderFrom(),
                                 message.getHeaderTo(),
                                 caller,
-                                subscriptionRequest,
+                                *subscriptionRequest,
                                 messageSender);
     }
+    delete subscriptionRequest;
 }
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message)
@@ -269,14 +271,15 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
         publicationManager->add(
-                message.getHeaderFrom(), message.getHeaderTo(), subscriptionRequest);
+                message.getHeaderFrom(), message.getHeaderTo(), *subscriptionRequest);
     } else {
         publicationManager->add(message.getHeaderFrom(),
                                 message.getHeaderTo(),
                                 caller,
-                                subscriptionRequest,
+                                *subscriptionRequest,
                                 messageSender);
     }
+    delete subscriptionRequest;
 }
 
 void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
