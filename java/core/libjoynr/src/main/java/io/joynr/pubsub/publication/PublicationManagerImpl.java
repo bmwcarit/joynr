@@ -70,8 +70,8 @@ public class PublicationManagerImpl implements PublicationManager {
     private final ConcurrentMap<String, PublicationTimer> publicationTimers;
     // Map SubscriptionId -> ScheduledFuture
     private final ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
-    // Map SubscriptionId -> UnregisterOnChange
-    private final ConcurrentMap<String, UnregisterOnChange> unregisterOnChange;
+    // Map SubscriptionId -> UnregisterAttributeListener
+    private final ConcurrentMap<String, UnregisterAttributeListener> unregisterAttributeListeners;
 
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
@@ -146,7 +146,7 @@ public class PublicationManagerImpl implements PublicationManager {
         this.publicationStates = Maps.newConcurrentMap();
         this.publicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
-        this.unregisterOnChange = Maps.newConcurrentMap();
+        this.unregisterAttributeListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
 
     }
@@ -170,7 +170,7 @@ public class PublicationManagerImpl implements PublicationManager {
         this.requestReplySender = requestReplySender;
         this.cleanupScheduler = cleanupScheduler;
 
-        this.unregisterOnChange = Maps.newConcurrentMap();
+        this.unregisterAttributeListeners = Maps.newConcurrentMap();
     }
 
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
@@ -209,9 +209,10 @@ public class PublicationManagerImpl implements PublicationManager {
                 AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
                 String attributeName = subscriptionRequest.getSubscribedToName();
                 requestCaller.registerAttributeListener(attributeName, attributeListener);
-                unregisterOnChange.putIfAbsent(subscriptionId, new UnregisterOnChange(requestCaller,
-                                                                                      attributeName,
-                                                                                      attributeListener));
+                unregisterAttributeListeners.putIfAbsent(subscriptionId,
+                                                         new UnregisterAttributeListener(requestCaller,
+                                                                                         attributeName,
+                                                                                         attributeListener));
             }
         } catch (NoSuchMethodException e) {
             cancelPublicationCreation(subscriptionId);
@@ -345,19 +346,21 @@ public class PublicationManagerImpl implements PublicationManager {
             future.cancel(true);
         }
 
-        UnregisterOnChange onChange = unregisterOnChange.remove(subscriptionId);
-        if (onChange != null) {
-            onChange.unregister();
+        UnregisterAttributeListener unregisterAttributeListener = unregisterAttributeListeners.remove(subscriptionId);
+        if (unregisterAttributeListener != null) {
+            unregisterAttributeListener.unregister();
         }
     }
 
-    // Class that holds information needed to unregister an onChange subscription
-    static class UnregisterOnChange {
+    // Class that holds information needed to unregister attribute listener
+    static class UnregisterAttributeListener {
         final RequestCaller requestCaller;
         final String attributeName;
         final AttributeListener attributeListener;
 
-        public UnregisterOnChange(RequestCaller requestCaller, String attributeName, AttributeListener attributeListener) {
+        public UnregisterAttributeListener(RequestCaller requestCaller,
+                                           String attributeName,
+                                           AttributeListener attributeListener) {
             this.requestCaller = requestCaller;
             this.attributeName = attributeName;
             this.attributeListener = attributeListener;
