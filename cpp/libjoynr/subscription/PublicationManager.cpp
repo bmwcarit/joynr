@@ -59,6 +59,7 @@ public:
     SubscriptionAttributeListener* attributeListener;
     SubscriptionBroadcastListener* broadcastListener;
     QMutex mutex;
+    quint32 publicationEndRunnableHandle;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Publication);
@@ -228,6 +229,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         IPublicationSender* publicationSender)
 {
     QString subscriptionId = requestInfo->getSubscriptionId();
+    QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
 
     // lock the access to the subscriptions data structure
     // we don't use a separate block for locking/unlocking, because the subscriptionList created
@@ -235,13 +237,15 @@ void PublicationManager::handleAttributeSubscriptionRequest(
     QWriteLocker subscriptionLocker(&subscriptionLock);
 
     if (publicationExists(subscriptionId)) {
-        LOG_WARN(logger,
-                 "Publication with id: " + requestInfo->getSubscriptionId() + " already exists.");
-        return;
+        LOG_DEBUG(logger,
+                  "Publication with id: " + requestInfo->getSubscriptionId() +
+                          " already exists. Updating...");
+        publication->timeOfLastPublication =
+                publications.value(subscriptionId)->timeOfLastPublication;
+        removeAttributePublication(subscriptionId);
     }
 
     subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
-    QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
     // Make note of the publication
     publications.insert(subscriptionId, publication);
 
@@ -264,7 +268,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-                delayedScheduler->schedule(
+                publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
                         logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
@@ -376,17 +380,20 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
     // we don't use a separate block for locking/unlocking, because the subscriptionList created
     // within the locked code is used after the unlock.
     QWriteLocker subscriptionLocker(&subscriptionLock);
+    QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
 
     if (publicationExists(subscriptionId)) {
-        LOG_WARN(logger,
-                 "Publication with id: " + requestInfo->getSubscriptionId() + " already exists.");
-        return;
+        LOG_DEBUG(logger,
+                  "Publication with id: " + requestInfo->getSubscriptionId() +
+                          " already exists. Updating...");
+        publication->timeOfLastPublication =
+                publications.value(subscriptionId)->timeOfLastPublication;
+        removeBroadcastPublication(subscriptionId);
     }
 
     subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
 
     // Make note of the publication
-    QSharedPointer<Publication> publication(new Publication(publicationSender, requestCaller));
     publications.insert(subscriptionId, publication);
     LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
 
@@ -408,7 +415,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-                delayedScheduler->schedule(
+                publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
                         logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
@@ -733,6 +740,8 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         requestCaller->unregisterBroadcastListener(
                 request->getSubscribeToName(), publication->broadcastListener);
         publication->broadcastListener = NULL;
+
+        removePublicationEndRunnable(publication);
     }
 
     saveBroadcastSubscriptionRequestsMap(subscriptionList);
@@ -752,6 +761,20 @@ void PublicationManager::removeOnChangePublication(
         requestCaller->unregisterAttributeListener(
                 request->getSubscribeToName(), publication->attributeListener);
         publication->attributeListener = NULL;
+    }
+    removePublicationEndRunnable(publication);
+}
+
+// This function assumes a write lock is alrady held for the publication}
+void PublicationManager::removePublicationEndRunnable(QSharedPointer<Publication> publication)
+{
+    if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE() &&
+        !isShuttingDown()) {
+        LOG_DEBUG(logger,
+                  QString("Unscheduling PublicationEndRunnable with handle: %1")
+                          .arg(publication->publicationEndRunnableHandle));
+        delayedScheduler->unschedule(publication->publicationEndRunnableHandle);
+        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE();
     }
 }
 
@@ -1048,7 +1071,8 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
           requestCaller(requestCaller),
           attributeListener(NULL),
           broadcastListener(NULL),
-          mutex(QMutex::RecursionMode::Recursive)
+          mutex(QMutex::RecursionMode::Recursive),
+          publicationEndRunnableHandle(DelayedScheduler::INVALID_RUNNABLE_HANDLE())
 {
 }
 

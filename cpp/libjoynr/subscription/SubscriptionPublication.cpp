@@ -61,7 +61,7 @@ void SubscriptionPublication::setResponse(QVariant response)
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId() && response == other.getResponse();
+    return subscriptionId == other.getSubscriptionId();
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const

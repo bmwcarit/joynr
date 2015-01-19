@@ -103,13 +103,14 @@ void DelayedScheduler::unschedule(quint32& runnableHandle)
         if (iterator.findNext(runnableHandle)) {
             QTimer* timer = iterator.key();
             timers.remove(timer);
-            timer->deleteLater();
             QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
+            timer->deleteLater();
         }
 
         if (runnable->autoDelete()) {
             delete runnable;
         }
+        LOG_TRACE(logger, QString("runnable with handle %1 unscheduled").arg(runnableHandle));
     } else {
         LOG_TRACE(logger,
                   "unschedule did not succeed. Provided runnableHandle " + QString(runnableHandle) +

@@ -278,6 +278,7 @@ private:
     void removeOnChangePublication(const QString& subscriptionId,
                                    QSharedPointer<SubscriptionRequestInformation> request,
                                    QSharedPointer<Publication> publication);
+    void removePublicationEndRunnable(QSharedPointer<Publication> publication);
 
     bool processFilterChain(const QString& subscriptionId,
                             const QList<QVariant>& eventValues,

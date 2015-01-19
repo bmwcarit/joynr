@@ -658,7 +658,9 @@ public:
     MockTestRequestCaller() : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {}
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
     MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(registerBroadcastListener, void(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(unregisterBroadcastListener, void(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener));
 };
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
