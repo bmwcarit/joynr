@@ -78,6 +78,7 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 		    «ENDFOR»
 
 		    «FOR broadcast: serviceInterface.broadcasts»
+
 		    	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 		    	«var broadcastName = broadcast.joynrName»
 		    	«IF isSelective(broadcast)»
@@ -85,11 +86,23 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+
+		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QString& subscriptionId);
 		    	«ELSE»
 		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+
+		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QString& subscriptionId);
 		    	«ENDIF»
+
 		    	void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
 		    «ENDFOR»
 
@@ -104,5 +117,4 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 		#endif // «headerGuard»
 		'''
 	}
-
 }

@@ -165,6 +165,37 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 			    }
 			}
 
+			«IF isSelective(broadcast)»
+			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId) {
+			«ELSE»
+			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId) {
+			«ENDIF»
+			    if (connector==NULL){
+			        LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, because the communication end partner is not (yet) known");
+			        return "";
+			    }
+			    else{
+			        «IF isSelective(broadcast)»
+			        return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			                    filterParameters,
+			                    subscriptionListener,
+			                    subscriptionQos,
+			                    subscriptionId);
+			        «ELSE»
+			        return connector->subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			                    subscriptionListener,
+			                    subscriptionQos,
+			                    subscriptionId);
+			        «ENDIF»
+			    }
+			}
 		«ENDFOR»
 
 		«className»::~«className»(){

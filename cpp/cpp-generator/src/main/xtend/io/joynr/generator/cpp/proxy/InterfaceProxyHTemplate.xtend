@@ -111,6 +111,18 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 		    	                subscriptionListener,
 		    	                subscriptionQos);
 		    	}
+
+		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QString& subscriptionId){
+		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	                filterParameters,
+		    	                subscriptionListener,
+		    	                subscriptionQos,
+		    	                subscriptionId);
+		    	}
 		    	«ELSE»
 		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
@@ -118,6 +130,15 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	                subscriptionListener,
 		    	                subscriptionQos);
+		    	}
+		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QString& subscriptionId){
+		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	                subscriptionListener,
+		    	                subscriptionQos,
+		    	                subscriptionId);
 		    	}
 		    	«ENDIF»
 		    «ENDFOR»

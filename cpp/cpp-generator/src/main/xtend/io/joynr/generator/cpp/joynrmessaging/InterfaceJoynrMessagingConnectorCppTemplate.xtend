@@ -333,6 +333,39 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos
 			«ENDIF»
 			) {
+			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
+			    «IF isSelective(broadcast)»
+			    subscriptionRequest.setFilterParameters(filterParameters);
+			    «ENDIF»
+			    return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
+			}
+
+			«IF isSelective(broadcast)»
+			QString «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId
+			«ELSE»
+			QString «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId
+			«ENDIF»
+			) {
+			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
+			    «IF isSelective(broadcast)»
+			    subscriptionRequest.setFilterParameters(filterParameters);
+			    «ENDIF»
+			    subscriptionRequest.setSubscriptionId(subscriptionId);
+			    return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
+			}
+
+			QString «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            BroadcastSubscriptionRequest& subscriptionRequest
+			) {
 			    LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 			    QString broadcastName = "«broadcastName»";
 			    joynr::MessagingQos clonedMessagingQos(qosSettings);
@@ -344,10 +377,6 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			    }
 			    QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypes»>> subscriptionCallback(
 			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener));
-			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
-			    «IF isSelective(broadcast)»
-			    subscriptionRequest.setFilterParameters(filterParameters);
-			    «ENDIF»
 			    subscriptionManager->registerSubscription(
 			                broadcastName,
 			                subscriptionCallback,

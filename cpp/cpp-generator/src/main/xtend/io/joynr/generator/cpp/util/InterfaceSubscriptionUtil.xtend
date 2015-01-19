@@ -27,6 +27,7 @@ class InterfaceSubscriptionUtil {
 	def produceSubscribeUnsubscribeMethods(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			virtual QString subscribeTo«attribute.joynrName.toFirstUpper»(
 			            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
@@ -39,16 +40,26 @@ class InterfaceSubscriptionUtil {
 		«ENDFOR»
 
 		«FOR broadcast: serviceInterface.broadcasts»
+
 			«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 			«IF isSelective(broadcast)»
 			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 			            «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters filterParameters,
 			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
+			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			            «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId)«IF pure» = 0«ENDIF»;
 			«ELSE»
 			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
+			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QString& subscriptionId)«IF pure» = 0«ENDIF»;
 			«ENDIF»
 			virtual void unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(QString& subscriptionId)«IF pure» = 0«ENDIF»;
 	    «ENDFOR»

@@ -53,6 +53,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		#include "joynr/InProcessPublicationSender.h"
 		#include "joynr/InProcessConnectorFactory.h"
 		#include "joynr/SubscriptionRequest.h"
+		#include "joynr/BroadcastSubscriptionRequest.h"
 
 		#include <QString>
 		#include <QSharedPointer>
@@ -74,6 +75,14 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		                QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 		                QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
 		                SubscriptionRequest& subscriptionRequest);
+		«ENDFOR»
+		«FOR broadcast: serviceInterface.broadcasts»
+		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val broadcastName = broadcast.joynrName»
+		    QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+		            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		            BroadcastSubscriptionRequest& subscriptionRequest);
 		«ENDFOR»
 		public:
 

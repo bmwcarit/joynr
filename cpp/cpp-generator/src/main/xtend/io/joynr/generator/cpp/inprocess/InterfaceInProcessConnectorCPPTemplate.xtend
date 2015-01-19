@@ -282,7 +282,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    // Visual C++ requires a return value
 			    return QString();
 				«ELSE»
-			    logger->log(DEBUG, "Subscribing to «attributeName».");
+			    LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			    assert(subscriptionManager != NULL);
 			    QString attributeName = "«attributeName»";
 			    QSharedPointer<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
@@ -291,7 +291,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			            subscriptionCallback,
 			            subscriptionQos,
 			            subscriptionRequest);
-			    logger->log(DEBUG, "Registered subscription: " + subscriptionRequest.toQString());
+			    LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
@@ -322,12 +322,12 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 			    assert(false);
 				«ELSE»
-			    logger->log(DEBUG, "Unsubscribing. Id=" +subscriptionId);
+			    LOG_DEBUG(logger, "Unsubscribing. Id=" +subscriptionId);
 			    assert(publicationManager != NULL);
-			    logger->log(DEBUG, "Stopping publications by publication manager.");
+			    LOG_DEBUG(logger, "Stopping publications by publication manager.");
 			    publicationManager->stopPublication(subscriptionId);
 			    assert(subscriptionManager != NULL);
-			    logger->log(DEBUG, "Unregistering attribute subscription.");
+			    LOG_DEBUG(logger, "Unregistering attribute subscription.");
 			    subscriptionManager->unregisterSubscription(subscriptionId);
 			    «ENDIF»
 			}
@@ -508,21 +508,59 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos
 			«ENDIF»
 			) {
-			    logger->log(DEBUG, "Subscribing to «broadcastName».");
+			    LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 			    assert(subscriptionManager != NULL);
 			    QString broadcastName = "«broadcastName»";
-			    QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypes»>> subscriptionCallback(
-			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener));
 			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			    «IF isSelective(broadcast)»
 			    subscriptionRequest.setFilterParameters(filterParameters);
 			    «ENDIF»
+			    return subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			                subscriptionListener,
+			                subscriptionQos,
+			                subscriptionRequest);
+			}
+
+			«IF isSelective(broadcast)»
+			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			    «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QString& subscriptionId
+			«ELSE»
+			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QString& subscriptionId
+			«ENDIF»
+			) {
+			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
+			    «IF isSelective(broadcast)»
+			    subscriptionRequest.setFilterParameters(filterParameters);
+			    «ENDIF»
+			    subscriptionRequest.setSubscriptionId(subscriptionId);
+			    return subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			                subscriptionListener,
+			                subscriptionQos,
+			                subscriptionRequest);
+			}
+
+			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        joynr::BroadcastSubscriptionRequest& subscriptionRequest
+			) {
+			    LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+			    assert(subscriptionManager != NULL);
+			    QString broadcastName = "«broadcastName»";
+			    QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypes»>> subscriptionCallback(
+			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener));
 			    subscriptionManager->registerSubscription(
 			                broadcastName,
 			                subscriptionCallback,
 			                subscriptionQos,
 			                subscriptionRequest);
-			    logger->log(DEBUG, "Registered broadcast subscription: " + subscriptionRequest.toQString());
+			    LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
@@ -551,12 +589,12 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			void «interfaceName»InProcessConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			        QString& subscriptionId
 			) {
-			    logger->log(DEBUG, "Unsubscribing broadcast. Id=" +subscriptionId);
+			    LOG_DEBUG(logger, "Unsubscribing broadcast. Id=" +subscriptionId);
 			    assert(publicationManager != NULL);
-			    logger->log(DEBUG, "Stopping publications by publication manager.");
+			    LOG_DEBUG(logger, "Stopping publications by publication manager.");
 			    publicationManager->stopPublication(subscriptionId);
 			    assert(subscriptionManager != NULL);
-			    logger->log(DEBUG, "Unregistering broadcast subscription.");
+			    LOG_DEBUG(logger, "Unregistering broadcast subscription.");
 			    subscriptionManager->unregisterSubscription(subscriptionId);
 			}
 		«ENDFOR»

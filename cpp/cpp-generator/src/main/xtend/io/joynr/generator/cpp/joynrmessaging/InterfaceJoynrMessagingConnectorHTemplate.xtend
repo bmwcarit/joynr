@@ -48,6 +48,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		#include "joynr/AbstractJoynrMessagingConnector.h"
 		#include "joynr/JoynrMessagingConnectorFactory.h"
 		#include "joynr/SubscriptionRequest.h"
+		#include "joynr/BroadcastSubscriptionRequest.h"
 
 		namespace joynr {
 		    class MessagingQos;
@@ -60,16 +61,24 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
 		class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 		private:
-		    «FOR attribute: getAttributes(serviceInterface)»
-		    «val returnType = getMappedDatatypeOrList(attribute)»
-		    «val attributeName = attribute.joynrName»
+		«FOR attribute: getAttributes(serviceInterface)»
+		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val attributeName = attribute.joynrName»
 		    «IF attribute.notifiable»
-		    	QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		    	            SubscriptionRequest& subscriptionRequest);
+		    QString subscribeTo«attributeName.toFirstUpper»(
+		            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+		            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		            SubscriptionRequest& subscriptionRequest);
 		    «ENDIF»
-		    «ENDFOR»
+		«ENDFOR»
+		«FOR broadcast: serviceInterface.broadcasts»
+		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val broadcastName = broadcast.joynrName»
+		    QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+		            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		            BroadcastSubscriptionRequest& subscriptionRequest);
+		«ENDFOR»
 		public:
 		    «interfaceName»JoynrMessagingConnector(
 		        joynr::IJoynrMessageSender* messageSender,
@@ -128,6 +137,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		    «ENDFOR»
 
 		    «FOR broadcast: serviceInterface.broadcasts»
+
 		    	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 		    	«val broadcastName = broadcast.joynrName»
 		    	«IF isSelective(broadcast)»
@@ -135,10 +145,19 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QString& subscriptionId);
 		    	«ELSE»
 		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QString& subscriptionId);
 		    	«ENDIF»
 		    	virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
 		    «ENDFOR»
