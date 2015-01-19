@@ -72,6 +72,8 @@ public class PublicationManagerImpl implements PublicationManager {
     private final ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
     // Map SubscriptionId -> UnregisterAttributeListener
     private final ConcurrentMap<String, UnregisterAttributeListener> unregisterAttributeListeners;
+    // Map SubscriptionId -> UnregisterBroadcastListener
+    private final ConcurrentMap<String, UnregisterBroadcastListener> unregisterBroadcastListeners;
 
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
@@ -147,6 +149,7 @@ public class PublicationManagerImpl implements PublicationManager {
         this.publicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.unregisterAttributeListeners = Maps.newConcurrentMap();
+        this.unregisterBroadcastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
 
     }
@@ -171,6 +174,7 @@ public class PublicationManagerImpl implements PublicationManager {
         this.cleanupScheduler = cleanupScheduler;
 
         this.unregisterAttributeListeners = Maps.newConcurrentMap();
+        this.unregisterBroadcastListeners = Maps.newConcurrentMap();
     }
 
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
@@ -234,7 +238,10 @@ public class PublicationManagerImpl implements PublicationManager {
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
         requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
-
+        unregisterBroadcastListeners.putIfAbsent(subscriptionRequest.getSubscriptionId(),
+                                                 new UnregisterBroadcastListener(requestCaller,
+                                                                                 broadcastName,
+                                                                                 broadcastListener));
     }
 
     @Override
@@ -350,6 +357,10 @@ public class PublicationManagerImpl implements PublicationManager {
         if (unregisterAttributeListener != null) {
             unregisterAttributeListener.unregister();
         }
+        UnregisterBroadcastListener unregisterBroadcastListener = unregisterBroadcastListeners.remove(subscriptionId);
+        if (unregisterBroadcastListener != null) {
+            unregisterBroadcastListener.unregister();
+        }
     }
 
     // Class that holds information needed to unregister attribute listener
@@ -368,6 +379,25 @@ public class PublicationManagerImpl implements PublicationManager {
 
         public void unregister() {
             requestCaller.unregisterAttributeListener(attributeName, attributeListener);
+        }
+    }
+
+    // Class that holds information needed to unregister broadcast listener
+    static class UnregisterBroadcastListener {
+        final RequestCaller requestCaller;
+        final String broadcastName;
+        final BroadcastListener broadcastListener;
+
+        public UnregisterBroadcastListener(RequestCaller requestCaller,
+                                           String broadcastName,
+                                           BroadcastListener broadcastListener) {
+            this.requestCaller = requestCaller;
+            this.broadcastName = broadcastName;
+            this.broadcastListener = broadcastListener;
+        }
+
+        public void unregister() {
+            requestCaller.unregisterBroadcastListener(broadcastName, broadcastListener);
         }
     }
 
