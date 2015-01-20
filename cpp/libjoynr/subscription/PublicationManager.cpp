@@ -1110,7 +1110,18 @@ PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
 
 void PublicationManager::PublicationEndRunnable::run()
 {
+    QWriteLocker subscriptionsLocker(&publicationManager.subscriptionLock);
+    if (!publicationManager.publicationExists(subscriptionId)) {
+        return;
+    }
+    QSharedPointer<Publication> publication(publicationManager.publications.value(subscriptionId));
     publicationManager.removePublication(subscriptionId);
+    subscriptionsLocker.unlock();
+
+    {
+        QMutexLocker locker(&(publication->mutex));
+        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE();
+    }
 }
 
 } // namespace joynr
