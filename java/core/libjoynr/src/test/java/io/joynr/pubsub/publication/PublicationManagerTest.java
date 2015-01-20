@@ -21,9 +21,12 @@ package io.joynr.pubsub.publication;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
@@ -38,6 +41,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,6 +69,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -88,6 +93,15 @@ public class PublicationManagerTest {
     private static final String SUBSCRIPTION_ID = "PublicationTest_id";
 
     PublicationManager publicationManager;
+
+    @Captor
+    ArgumentCaptor<String> sentProviderParticipantId;
+    @Captor
+    ArgumentCaptor<String> sentProxyParticipantId;
+    @Captor
+    ArgumentCaptor<SubscriptionPublication> sentPublication;
+    @Captor
+    ArgumentCaptor<MessagingQos> sentMessagingQos;
 
     @Mock
     Multimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -133,6 +147,8 @@ public class PublicationManagerTest {
     @Mock
     private PublicationInformation subscriptionRequest2;
 
+    Object valueToPublish = "valuePublished";
+
     @Before
     public void setUp() {
         publicationInformation = new PublicationInformation(PROVIDER_PARTICIPANT_ID,
@@ -150,6 +166,9 @@ public class PublicationManagerTest {
         subscriptionQosWithoutExpiryDate = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider, testProvider.class);
+
+        when(cleanupScheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenReturn(scheduledFuture);
+        when(attributePollInterpreter.execute(eq(requestCaller), any(Method.class))).thenReturn(valueToPublish);
     }
 
     @After
@@ -215,16 +234,16 @@ public class PublicationManagerTest {
     }
 
     private void verifyPublicationIsAdded(boolean expectCleanupTask) {
-        verify(subscriptionId2SubscriptionRequest).putIfAbsent(eq(SUBSCRIPTION_ID), eq(publicationInformation));
-        verify(publicationStates).putIfAbsent(eq(SUBSCRIPTION_ID), any(PubSubState.class));
-        verify(publicationTimers).putIfAbsent(eq(SUBSCRIPTION_ID), any(PublicationTimer.class));
+        verify(subscriptionId2SubscriptionRequest).put(eq(SUBSCRIPTION_ID), eq(publicationInformation));
+        verify(publicationStates).put(eq(SUBSCRIPTION_ID), any(PubSubState.class));
+        verify(publicationTimers).put(eq(SUBSCRIPTION_ID), any(PublicationTimer.class));
         if (expectCleanupTask) {
             verify(cleanupScheduler).schedule(any(Runnable.class),
                                               AdditionalMatchers.leq(DURATION_MS),
                                               eq(TimeUnit.MILLISECONDS));
-            verify(subscriptionEndFutures).putIfAbsent(eq(SUBSCRIPTION_ID), any(ScheduledFuture.class));
+            verify(subscriptionEndFutures).put(eq(SUBSCRIPTION_ID), any(ScheduledFuture.class));
         } else {
-            verify(subscriptionEndFutures, never()).putIfAbsent(Mockito.anyString(), any(ScheduledFuture.class));
+            verify(subscriptionEndFutures, never()).put(Mockito.anyString(), any(ScheduledFuture.class));
             verify(cleanupScheduler, never()).schedule(any(Runnable.class), Mockito.anyLong(), any(TimeUnit.class));
         }
     }
@@ -490,5 +509,43 @@ public class PublicationManagerTest {
                                                                    any(SubscriptionPublication.class),
                                                                    any(MessagingQos.class));
 
+    }
+
+    @Test(timeout = 3000)
+    public void modifySubscriptionTypeForExistingSubscription() throws JoynrSendBufferFullException,
+                                                               JoynrMessageNotSentException, JsonGenerationException,
+                                                               JsonMappingException, IOException {
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        int period = 200;
+        int testLengthMax = 3000;
+        long expiryDate = System.currentTimeMillis() + testLengthMax;
+        long publicationTtl = testLengthMax;
+        SubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        verify(messageSender, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                        eq(PROXY_PARTICIPANT_ID),
+                                                                                        any(SubscriptionPublication.class),
+                                                                                        any(MessagingQos.class));
+
+        qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+        subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        reset(messageSender);
+        publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
+
+        verify(messageSender, timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                           eq(PROXY_PARTICIPANT_ID),
+                                                                                           any(SubscriptionPublication.class),
+                                                                                           any(MessagingQos.class));
     }
 }

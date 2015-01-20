@@ -85,7 +85,17 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.cleanupScheduler = cleanupScheduler;
     }
 
+    private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
+        ScheduledFuture<?> scheduledFuture = subscriptionEndFutures.get(subscriptionId);
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(false);
+        }
+    }
+
     private void registerSubscription(final SubscriptionQos qos, String subscriptionId) {
+
+        cancelExistingSubscriptionEndRunnable(subscriptionId);
+
         PubSubState subState = new PubSubState();
         subState.updateTimeOfLastPublication();
         subscriptionStates.put(subscriptionId, subState);

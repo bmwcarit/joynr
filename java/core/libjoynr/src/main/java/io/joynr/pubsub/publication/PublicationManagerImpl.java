@@ -182,6 +182,7 @@ public class PublicationManagerImpl implements PublicationManager {
                                            RequestCaller requestCaller) {
 
         final String subscriptionId = subscriptionRequest.getSubscriptionId();
+
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
 
         try {
@@ -205,7 +206,7 @@ public class PublicationManagerImpl implements PublicationManager {
                                                                     attributePollInterpreter);
 
                 timer.startTimer();
-                publicationTimers.putIfAbsent(subscriptionId, timer);
+                publicationTimers.put(subscriptionId, timer);
             }
 
             // Handle onChange subscriptions
@@ -213,10 +214,9 @@ public class PublicationManagerImpl implements PublicationManager {
                 AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
                 String attributeName = subscriptionRequest.getSubscribedToName();
                 requestCaller.registerAttributeListener(attributeName, attributeListener);
-                unregisterAttributeListeners.putIfAbsent(subscriptionId,
-                                                         new UnregisterAttributeListener(requestCaller,
-                                                                                         attributeName,
-                                                                                         attributeListener));
+                unregisterAttributeListeners.put(subscriptionId, new UnregisterAttributeListener(requestCaller,
+                                                                                                 attributeName,
+                                                                                                 attributeListener));
             }
         } catch (NoSuchMethodException e) {
             cancelPublicationCreation(subscriptionId);
@@ -238,10 +238,10 @@ public class PublicationManagerImpl implements PublicationManager {
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
         requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
-        unregisterBroadcastListeners.putIfAbsent(subscriptionRequest.getSubscriptionId(),
-                                                 new UnregisterBroadcastListener(requestCaller,
-                                                                                 broadcastName,
-                                                                                 broadcastListener));
+        unregisterBroadcastListeners.put(subscriptionRequest.getSubscriptionId(),
+                                         new UnregisterBroadcastListener(requestCaller,
+                                                                         broadcastName,
+                                                                         broadcastListener));
     }
 
     @Override
@@ -263,26 +263,17 @@ public class PublicationManagerImpl implements PublicationManager {
         // See if the publications for this subscription are already handled
         final String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
-            logger.info("Publication with id: " + subscriptionId + " already exists.");
-            // TODO update subscription
-            return;
+            logger.info("updating publication: " + subscriptionRequest.toString());
+            removePublication(subscriptionId);
+        } else {
+            logger.info("adding publication: " + subscriptionRequest.toString());
         }
 
-        logger.info("adding publication: " + subscriptionRequest.toString());
         PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                    proxyParticipantId,
                                                                                    subscriptionRequest);
-        PublicationInformation existingSubscriptionRequest = subscriptionId2PublicationInformation.putIfAbsent(subscriptionId,
-                                                                                                               publicationInformation);
-        if (existingSubscriptionRequest != null) {
-            // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
-            logger.debug("there already was a SubscriptionRequest with that subscriptionId in the map");
-        }
-        PubSubState existingPubSubState = publicationStates.putIfAbsent(subscriptionId, publicationInformation.pubState);
-        if (existingPubSubState != null) {
-            // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
-            logger.debug("there already was a pubState with that subscriptionId in the map");
-        }
+        subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
+        publicationStates.put(subscriptionId, publicationInformation.pubState);
 
         if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
             handleBroadcastSubscriptionRequest(proxyParticipantId,
@@ -304,7 +295,7 @@ public class PublicationManagerImpl implements PublicationManager {
                 }
 
             }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
-            subscriptionEndFutures.putIfAbsent(subscriptionId, subscriptionEndFuture);
+            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
         }
         logger.info("publication added: " + subscriptionRequest.toString());
     }
@@ -328,8 +319,7 @@ public class PublicationManagerImpl implements PublicationManager {
                                                                                    proxyParticipantId,
                                                                                    subscriptionRequest);
         queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-        subscriptionId2PublicationInformation.putIfAbsent(subscriptionRequest.getSubscriptionId(),
-                                                          publicationInformation);
+        subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(), publicationInformation);
     }
 
     protected void removePublication(String subscriptionId) {
