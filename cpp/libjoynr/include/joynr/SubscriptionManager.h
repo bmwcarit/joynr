@@ -28,6 +28,7 @@
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/MessagingQos.h"
+#include <QReadWriteLock>
 #include <QThreadPool>
 #include <QString>
 #include <QSharedPointer>
@@ -100,6 +101,8 @@ private:
     class Subscription;
 
     QMap<QString, QSharedPointer<Subscription>> subscriptions;
+
+    QReadWriteLock subscriptionsLock;
 
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
