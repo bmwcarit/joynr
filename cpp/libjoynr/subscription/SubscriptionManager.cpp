@@ -87,6 +87,11 @@ void SubscriptionManager::registerSubscription(
     // required after the subscription unlock
     QWriteLocker subscriptionsLocker(&subscriptionsLock);
 
+    if (subscriptions.contains(subscriptionId)) {
+        // pre-existing subscription: remove it first from the internal data structure
+        unregisterSubscription(subscriptionId);
+    }
+
     if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
         qos->getExpiryDate() < QDateTime::currentMSecsSinceEpoch()) {
         LOG_DEBUG(logger, "Expiry date is in the past: no subscription created");
@@ -235,7 +240,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
 {
     QMutexLocker subscriptionLocker(&(subscription->mutex));
 
-    if (!subscription->isStopped) {
+    if (!isExpired() && !subscription->isStopped) {
         LOG_DEBUG(
                 logger, "Running MissedPublicationRunnable for subscription id= " + subscriptionId);
         qint64 delay = 0;
