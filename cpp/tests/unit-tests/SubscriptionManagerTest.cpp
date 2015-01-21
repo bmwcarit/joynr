@@ -32,6 +32,7 @@
 #include "joynr/Directory.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/Util.h"
 
 
 using ::testing::A;
@@ -46,7 +47,8 @@ using namespace joynr;
 TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect) {
     SubscriptionManager subscriptionManager;
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > mockGpsSubscriptionListener(new MockGpsSubscriptionListener());
-    SubscriptionCallback<types::GpsLocation>* gpslocationCallback = new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation> > gpslocationCallback(
+                new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener));
     auto qos = QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos());
     qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 10000);
     SubscriptionRequest subscriptionRequest;
@@ -66,8 +68,8 @@ TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWork
     EXPECT_CALL(*mockGpsSubscriptionListener,
                 publicationMissed())
             .Times(AtLeast(4));
-    SubscriptionCallback<types::GpsLocation>* gpslocationCallback =
-            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation> > gpslocationCallback(
+            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener));
     SubscriptionManager subscriptionManager;
     auto qos = QSharedPointer<PeriodicSubscriptionQos>(new PeriodicSubscriptionQos(QDateTime::currentMSecsSinceEpoch() + 1100, 100, 200));
     SubscriptionRequest subscriptionRequest;
@@ -83,8 +85,8 @@ TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWork
 TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     QSharedPointer<MockGpsSubscriptionListener> mockGpsSubscriptionListener(
                 new MockGpsSubscriptionListener());
-    SubscriptionCallback<types::GpsLocation>* gpslocationCallback =
-            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation>> gpslocationCallback(
+            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener));
     MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(_,_))
@@ -100,15 +102,22 @@ TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     );
 }
 
+quint32 internalRunnableHandle = 1;
+
+quint32 runnableHandle()
+{
+    return internalRunnableHandle++;
+}
+
 TEST(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     QSharedPointer<MockGpsSubscriptionListener> mockGpsSubscriptionListener(
                 new MockGpsSubscriptionListener());
-    SubscriptionCallback<types::GpsLocation>* gpslocationCallback =
-            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation>> gpslocationCallback(
+            new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener));
     MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(A<QRunnable*>(),_))
-            .Times(1);
+            .Times(1).WillRepeatedly(::testing::Return(runnableHandle()));
     SubscriptionManager subscriptionManager(mockDelayedScheduler);
     auto qos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeSubscriptionQos(QDateTime::currentMSecsSinceEpoch() + 1000, 100));
     SubscriptionRequest subscriptionRequest;
@@ -127,7 +136,8 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
                 publicationMissed())
             .Times(Between(2,3));
     SubscriptionManager subscriptionManager;
-    SubscriptionCallback<types::GpsLocation>* gpslocationCallback = new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation>> gpslocationCallback(
+                new SubscriptionCallback<types::GpsLocation>(mockGpsSubscriptionListener));
     auto qos = QSharedPointer<PeriodicSubscriptionQos>(new PeriodicSubscriptionQos(
                 QDateTime::currentMSecsSinceEpoch() + 2000, // expiry date
                 100,                                        // period

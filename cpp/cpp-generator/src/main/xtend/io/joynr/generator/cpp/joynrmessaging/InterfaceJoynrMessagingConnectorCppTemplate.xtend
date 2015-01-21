@@ -237,7 +237,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			    else{
 			        clonedMessagingQos.setTtl(subscriptionQos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
 			    }
-			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
+			    QSharedPointer<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
 			    subscriptionManager->registerSubscription(
 			                attributeName,
 			                subscriptionCallback,
@@ -342,8 +342,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 			    else{
 			        clonedMessagingQos.setTtl(subscriptionQos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
 			    }
-			    joynr::BroadcastSubscriptionCallback<«returnTypes»>* subscriptionCallback =
-			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener);
+			    QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypes»>> subscriptionCallback(
+			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener));
 			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			    «IF isSelective(broadcast)»
 			    subscriptionRequest.setFilterParameters(filterParameters);

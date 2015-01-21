@@ -134,8 +134,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     response.setValue(responseList);
     subscriptionPublication.setResponse(response);
 
-    BroadcastSubscriptionCallback<types::GpsLocation>* subscriptionCallback =
-            new BroadcastSubscriptionCallback<types::GpsLocation>(mockSubscriptionListenerOne);
+    QSharedPointer<BroadcastSubscriptionCallback<types::GpsLocation>> subscriptionCallback(
+            new BroadcastSubscriptionCallback<types::GpsLocation>(mockSubscriptionListenerOne));
 
 
     // subscriptionRequest is an out param
@@ -192,8 +192,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     response.setValue(responseList);
     subscriptionPublication.setResponse(response);
 
-    BroadcastSubscriptionCallback<types::GpsLocation, double>* subscriptionCallback =
-            new BroadcastSubscriptionCallback<types::GpsLocation, double>(mockSubscriptionListenerTwo);
+    QSharedPointer<BroadcastSubscriptionCallback<types::GpsLocation, double>> subscriptionCallback(
+            new BroadcastSubscriptionCallback<types::GpsLocation, double>(mockSubscriptionListenerTwo));
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

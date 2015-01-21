@@ -188,8 +188,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
     response.setValue(gpsLocation1);
     subscriptionPublication.setResponse(response);
 
-    SubscriptionCallback<types::GpsLocation>* subscriptionCallback =
-            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListener));
 
 
     // subscriptionRequest is an out param

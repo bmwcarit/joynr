@@ -26,19 +26,16 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
-#include "joynr/Directory.h"
 #include "joynr/ObjectWithDecayTime.h"
-#include "joynr/ThreadSafeMap.h"
 #include "joynr/MessagingQos.h"
-
+#include <QThreadPool>
 #include <QString>
 #include <QSharedPointer>
 
 namespace joynr
 {
 
-class PubSubState;
-
+class DelayedScheduler;
 /**
   * \class SubscriptionManager
   * \brief The subscription manager is used by the proxy (via the appropriate connector)
@@ -68,11 +65,10 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    void registerSubscription(
-            const QString& subscribeToName,
-            ISubscriptionCallback* subscriptionCaller, // SubMgr gets ownership of ptr
-            QSharedPointer<SubscriptionQos> qos,
-            SubscriptionRequest& subscriptionRequest);
+    void registerSubscription(const QString& subscribeToName,
+                              QSharedPointer<ISubscriptionCallback> subscriptionCaller,
+                              QSharedPointer<SubscriptionQos> qos,
+                              SubscriptionRequest& subscriptionRequest);
 
     /**
      * @brief Stop the subscription. Removes the callback and stops the notifications
@@ -101,10 +97,10 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
-    void subscriptionEnded(const QString& subscriptionId);
+    class Subscription;
 
-    Directory<QString, ISubscriptionCallback> subscriptionDirectory;
-    ThreadSafeMap<QString, PubSubState*>* subscriptionStates;
+    QMap<QString, QSharedPointer<Subscription>> subscriptions;
+
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
     /**
@@ -117,6 +113,7 @@ private:
         MissedPublicationRunnable(const QDateTime& expiryDate,
                                   const qint64& expectedIntervalMSecs,
                                   const QString& subscriptionId,
+                                  QSharedPointer<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
                                   const qint64& alertAfterInterval);
 
@@ -130,23 +127,22 @@ private:
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
         qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
-        QSemaphore stoppedSemaphore;
         qint64 expectedIntervalMSecs;
-        QString subscriptionId;
+        QSharedPointer<Subscription> subscription;
+        const QString subscriptionId;
         qint64 alertAfterInterval;
         SubscriptionManager& subscriptionManager;
-        PubSubState* state;
         static joynr_logging::Logger* logger;
     };
     /**
-      * \class SubscriptionManager::ExpiredSubscriptionRunnable
+      * \class SubscriptionManager::SubscriptionEndRunnable
       * \brief
       */
-    class ExpiredSubscriptionRunnable : public QRunnable
+    class SubscriptionEndRunnable : public QRunnable
     {
     public:
-        ExpiredSubscriptionRunnable(const QString& subscriptionId,
-                                    SubscriptionManager& subscriptionManager);
+        SubscriptionEndRunnable(const QString& subscriptionId,
+                                SubscriptionManager& subscriptionManager);
 
         /**
          * @brief removes subscription once running.
@@ -155,7 +151,7 @@ private:
         void run();
 
     private:
-        DISALLOW_COPY_AND_ASSIGN(ExpiredSubscriptionRunnable);
+        DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
         QString subscriptionId;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;

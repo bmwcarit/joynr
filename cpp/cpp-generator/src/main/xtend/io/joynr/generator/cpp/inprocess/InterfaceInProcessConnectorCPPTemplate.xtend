@@ -285,7 +285,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    logger->log(DEBUG, "Subscribing to «attributeName».");
 			    assert(subscriptionManager != NULL);
 			    QString attributeName = "«attributeName»";
-			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
+			    QSharedPointer<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
 			    subscriptionManager->registerSubscription(
 			            attributeName,
 			            subscriptionCallback,
@@ -511,8 +511,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    logger->log(DEBUG, "Subscribing to «broadcastName».");
 			    assert(subscriptionManager != NULL);
 			    QString broadcastName = "«broadcastName»";
-			    joynr::BroadcastSubscriptionCallback<«returnTypes»>* subscriptionCallback =
-			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener);
+			    QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypes»>> subscriptionCallback(
+			                new joynr::BroadcastSubscriptionCallback<«returnTypes»>(subscriptionListener));
 			    joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			    «IF isSelective(broadcast)»
 			    subscriptionRequest.setFilterParameters(filterParameters);
