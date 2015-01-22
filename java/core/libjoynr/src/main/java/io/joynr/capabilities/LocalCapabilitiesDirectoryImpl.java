@@ -29,6 +29,7 @@ import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.proxy.Future;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -259,6 +260,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     }
 
     @Override
+    @CheckForNull
     public void lookup(final String participantId,
                        final DiscoveryQos discoveryQos,
                        final CapabilityCallback capabilityCallback) {
@@ -286,6 +288,32 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         }
     }
 
+    @Override
+    @CheckForNull
+    public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
+        final Future<CapabilityEntry> lookupFuture = new Future<CapabilityEntry>();
+        lookup(participantId, discoveryQos, new CapabilityCallback() {
+
+            @Override
+            public void processCapabilityReceived(CapabilityEntry capability) {
+                lookupFuture.onSuccess(capability);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                lookupFuture.onFailure(new JoynrException(e));
+            }
+        });
+        CapabilityEntry retrievedCapabilitiyEntry = null;
+
+        try {
+            retrievedCapabilitiyEntry = lookupFuture.getReply();
+        } catch (InterruptedException e1) {
+            logger.error("interrupted while retrieving capability entry by participant ID", e1);
+        }
+        return retrievedCapabilitiyEntry;
+    }
+
     private void registerIncomingEndpoints(Collection<CapabilityEntry> caps) {
         for (CapabilityEntry ce : caps) {
             // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
@@ -299,10 +327,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
     /**
      * mixes in the localCapabilities to global capabilities found by domain/interface
-     * 
-     * @param localCapabilities
-     * @param capabilitiesCallback
-     * @param participantId
      */
     private void asyncGetGlobalCapabilitity(final String participantId, final CapabilityCallback capabilitiesCallback) {
 
@@ -327,10 +351,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
     /**
      * mixes in the localCapabilities to global capabilities found by participantId
-     * 
-     * @param localCapabilities
-     * @param capabilitiesCallback
-     * @param participantId
      */
     private void asyncGetGlobalCapabilitities(final String domain,
                                               final String interfaceName,

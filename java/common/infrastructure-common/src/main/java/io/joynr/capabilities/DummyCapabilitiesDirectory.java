@@ -24,6 +24,8 @@ import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.util.ArrayList;
 
+import javax.annotation.CheckForNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,9 +75,23 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     }
 
     @Override
+    @CheckForNull
     public void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
+    }
 
+    @Override
+    @CheckForNull
+    public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
+        logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
+        CapabilityEntry retrievedCapabilityEntry = null;
+        for (CapabilityEntry entry : registeredCapabilities) {
+            if (entry.getParticipantId().equals(participantId)) {
+                retrievedCapabilityEntry = entry;
+                break;
+            }
+        }
+        return retrievedCapabilityEntry;
     }
 
     @Override

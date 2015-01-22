@@ -48,6 +48,7 @@ import joynr.types.ProviderScope;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -478,6 +479,26 @@ public class LocalCapabilitiesDirectoryTest {
                                                                           Mockito.eq(interfaceName1));
         Mockito.reset(globalCapabilitiesClient);
         Mockito.reset(capabilitiesCallback);
+    }
+
+    @Test
+    public void lookupByParticipantIdWithScopeLocalSync() throws InterruptedException {
+        String domain1 = "domain1";
+        String interfaceName1 = "interfaceName1";
+        String participantId1 = "participantId1";
+        DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_ONLY, 10000);
+
+        //add local entry
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
+
+        CapabilityEntry expectedCapabilityEntry = new CapabilityEntry(domain1,
+                                                                      interfaceName1,
+                                                                      providerQos,
+                                                                      participantId1);
+        localCapabilitiesDirectory.add(expectedCapabilityEntry);
+        CapabilityEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
+        Assert.assertEquals(expectedCapabilityEntry, retrievedCapabilityEntry);
     }
 
     @SuppressWarnings("unchecked")
