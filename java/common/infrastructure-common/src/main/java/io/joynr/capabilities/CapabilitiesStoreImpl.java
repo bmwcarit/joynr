@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +41,6 @@ import com.google.inject.Inject;
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
  * they offer.
- * 
- * 
  * Capability informations are stored in a concurrentHashMap. Using a in memory
  * database could be possible optimization.
  */
@@ -76,7 +74,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see io.joynr.capabilities.CapabilitiesStore#add(io.joynr.
      * capabilities .CapabilityEntry)
      */
@@ -186,7 +183,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#add(java.util
      * .Collection)
@@ -202,7 +198,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see io.joynr.capabilities.CapabilitiesStore#remove(String)
      */
     @Override
@@ -290,7 +285,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#remove(java.util.Collection)
      */
@@ -303,7 +297,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
      * (io.joynr.capabilities.EndpointAddressBase)
@@ -315,7 +308,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
      * (io.joynr.capabilities.EndpointAddressBase, long)
@@ -354,7 +346,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, java.lang.String)
@@ -366,7 +357,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, java.lang.String, long)
@@ -400,14 +390,13 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, io.joynr.arbitration.DiscoveryQos)
      */
     @Override
-    @Nullable
-    public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
+    @CheckForNull
+    public CapabilityEntry lookup(String participantId, long cacheMaxAge) {
 
         synchronized (capsLock) {
             String capabilityEntryId = participantIdToCapabilityMapping.get(participantId);
@@ -417,7 +406,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
             CapabilityEntry capabilityEntry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
             logger.debug("Capability for participantId {} found: {}", participantId, capabilityEntry);
-            if (checkAge(registeredCapabilitiesTime.get(capabilityEntryId), discoveryQos.getCacheMaxAge())) {
+            if (checkAge(registeredCapabilitiesTime.get(capabilityEntryId), cacheMaxAge)) {
                 return capabilityEntry;
             }
 
@@ -427,7 +416,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see io.joynr.capabilities.CapabilitiesStore#getAllCapabilities()
      */
     @Override
@@ -467,7 +455,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#hasCapability(io.joynr.capabilities
      * .CapabilityEntry)

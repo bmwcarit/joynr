@@ -120,7 +120,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         if (localCapabilitiesStore.hasCapability(capabilityEntry)) {
             DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, DiscoveryQos.NO_MAX_AGE);
             if (capabilityEntry.getProviderQos().getScope().equals(ProviderScope.LOCAL)
-                    || globalCapabilitiesCache.lookup(capabilityEntry.getParticipantId(), discoveryQos) != null) {
+                    || globalCapabilitiesCache.lookup(capabilityEntry.getParticipantId(), discoveryQos.getCacheMaxAge()) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
                 ret.setStatus(RegistrationStatus.DONE);
                 return ret;
@@ -265,7 +265,8 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                        final DiscoveryQos discoveryQos,
                        final CapabilityCallback capabilityCallback) {
 
-        final CapabilityEntry localCapability = localCapabilitiesStore.lookup(participantId, discoveryQos);
+        final CapabilityEntry localCapability = localCapabilitiesStore.lookup(participantId,
+                                                                              discoveryQos.getCacheMaxAge());
 
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {

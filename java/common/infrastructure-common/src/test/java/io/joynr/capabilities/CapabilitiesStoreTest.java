@@ -331,7 +331,7 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos);
+        CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
         Assert.assertEquals(capabilityEntry1, newEnteredCapability);
 
         CapabilityEntry capEntryFake = new CapabilityEntry(domain, GpsAsync.class, providerQos, participantId + "Fake");
@@ -362,7 +362,7 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry2, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry newlyEnteredCapability = store.lookup(participantId, discoveryQos);
+        CapabilityEntry newlyEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
         Assert.assertEquals(capabilityEntry2, newlyEnteredCapability);
     }
 }

@@ -39,8 +39,6 @@ import com.google.inject.Singleton;
 
 /**
  * The capabilities directory implementation for server-side capabilities querying.
- * 
- * 
  * Capability informations are stored in a concurrentHashMap. Using a in memory database could be possible optimization.
  */
 
@@ -111,7 +109,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public CapabilityInformation lookup(String forParticipantId) {
         logger.debug("Searching capabilities for participantId: {}", forParticipantId);
-        CapabilityEntry capEntry = capabiltiesStore.lookup(forParticipantId, DiscoveryQos.NO_FILTER);
+        CapabilityEntry capEntry = capabiltiesStore.lookup(forParticipantId, DiscoveryQos.NO_FILTER.getCacheMaxAge());
         if (capEntry == null) {
             return null;
         } else {

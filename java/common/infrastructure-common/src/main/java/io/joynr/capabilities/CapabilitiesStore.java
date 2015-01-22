@@ -19,12 +19,13 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.endpoints.EndpointAddressBase;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+
+import javax.annotation.CheckForNull;
 
 public interface CapabilitiesStore {
 
@@ -45,7 +46,8 @@ public interface CapabilitiesStore {
 
     public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName);
 
-    public abstract CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos);
+    @CheckForNull
+    public abstract CapabilityEntry lookup(String participantId, long cacheMaxAge);
 
     public abstract HashSet<CapabilityEntry> getAllCapabilities();
 
