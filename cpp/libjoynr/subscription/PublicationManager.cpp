@@ -720,9 +720,9 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         return;
     }
 
-    QSharedPointer<Publication> publication(publications.value(subscriptionId));
+    QSharedPointer<Publication> publication(publications.take(subscriptionId));
     QSharedPointer<BroadcastSubscriptionRequestInformation> request(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
 
     QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
     subscriptionLocker.unlock();
