@@ -25,7 +25,7 @@ namespace joynr
 using namespace joynr_logging;
 
 Logger* ReceivedMessageRunnable::logger =
-        Logging::getInstance()->getLogger("MSG", "ReceiverRunnable ");
+        Logging::getInstance()->getLogger("MSG", "ReceivedMessageRunnable");
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
                                                  Dispatcher& dispatcher)

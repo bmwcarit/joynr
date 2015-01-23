@@ -22,6 +22,7 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <QThreadPool>
+#include <QRunnable>
 #include <QHash>
 #include <QAtomicInt>
 #include <QMutex>
@@ -102,11 +103,18 @@ public:
                                int delay_ms = 0);
     virtual ~ThreadPoolDelayedScheduler();
 
+    void reportRunnableStarted();
+
 protected:
     void executeRunnable(QRunnable* runnable);
 
 private:
+    static joynr_logging::Logger* logger;
     QThreadPool& threadPool;
+    int waitingRunnablesCount;
+    QMutex waitingRunnablesCountMutex;
+
+    class ThreadPoolRunnable;
 };
 
 /**

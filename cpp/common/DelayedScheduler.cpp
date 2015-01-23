@@ -24,6 +24,7 @@
 #include "joynr/joynrlogging.h"
 #include "QMutableHashIterator"
 #include "joynr/Util.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -193,17 +194,67 @@ void DelayedScheduler::run()
     }
 }
 
+class ThreadPoolDelayedScheduler::ThreadPoolRunnable : public QRunnable
+{
+public:
+    ThreadPoolRunnable(QRunnable* runnable, ThreadPoolDelayedScheduler& scheduler);
+    virtual ~ThreadPoolRunnable();
+    virtual void run();
+
+private:
+    QRunnable* runnable;
+    ThreadPoolDelayedScheduler& scheduler;
+
+    DISALLOW_COPY_AND_ASSIGN(ThreadPoolRunnable);
+};
+
+ThreadPoolDelayedScheduler::ThreadPoolRunnable::ThreadPoolRunnable(
+        QRunnable* runnable,
+        ThreadPoolDelayedScheduler& scheduler)
+        : QRunnable(), runnable(runnable), scheduler(scheduler)
+{
+    // auto-deletion is enabled by default
+}
+
+ThreadPoolDelayedScheduler::ThreadPoolRunnable::~ThreadPoolRunnable()
+{
+    if (runnable->autoDelete()) {
+        delete runnable;
+    }
+}
+
+void ThreadPoolDelayedScheduler::ThreadPoolRunnable::run()
+{
+    scheduler.reportRunnableStarted();
+    runnable->run();
+}
+
+Logger* ThreadPoolDelayedScheduler::logger =
+        Logging::getInstance()->getLogger("MSG", "ThreadPoolDelayedScheduler");
+
 ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(QThreadPool& threadPool,
                                                        const QString& eventThreadName,
                                                        int delay_ms)
-        : DelayedScheduler(eventThreadName, delay_ms), threadPool(threadPool)
+        : DelayedScheduler(eventThreadName, delay_ms),
+          threadPool(threadPool),
+          waitingRunnablesCount(0),
+          waitingRunnablesCountMutex()
 {
     threadPool.setObjectName(eventThreadName + QString("-ThreadPool"));
 }
 
 void ThreadPoolDelayedScheduler::executeRunnable(QRunnable* runnable)
 {
-    threadPool.start(runnable);
+    {
+        QMutexLocker locker(&waitingRunnablesCountMutex);
+        waitingRunnablesCount++;
+    }
+    threadPool.start(new ThreadPoolRunnable(runnable, *this));
+    LOG_TRACE(logger,
+              QString("scheduler waiting runnables (active threads/max threads): %1 (%2/%3)")
+                      .arg(waitingRunnablesCount)
+                      .arg(threadPool.activeThreadCount())
+                      .arg(threadPool.maxThreadCount()));
 }
 
 Logger* SingleThreadedDelayedScheduler::logger =
@@ -235,6 +286,19 @@ ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler()
 {
     shutdown();
     threadPool.waitForDone();
+}
+
+void ThreadPoolDelayedScheduler::reportRunnableStarted()
+{
+    {
+        QMutexLocker locker(&waitingRunnablesCountMutex);
+        waitingRunnablesCount--;
+    }
+    LOG_TRACE(logger,
+              QString("scheduler waiting runnables (active threads/max threads): %1 (%2/%3)")
+                      .arg(waitingRunnablesCount)
+                      .arg(threadPool.activeThreadCount())
+                      .arg(threadPool.maxThreadCount()));
 }
 
 DelayedScheduler::EventThread::EventThread()
