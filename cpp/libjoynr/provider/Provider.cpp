@@ -119,4 +119,14 @@ void Provider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
     }
 }
 
+bool Provider::hasAttributeListeners(const QString& attributeName)
+{
+    return !attributeListeners.value(attributeName).isEmpty();
+}
+
+bool Provider::hasBroadcastListeners(const QString& broadcastName)
+{
+    return !broadcastListeners.value(broadcastName).isEmpty();
+}
+
 } // namespace joynr

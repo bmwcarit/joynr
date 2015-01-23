@@ -83,7 +83,7 @@ public:
         semaphore(0),
         filter(new MockLocationUpdatedSelectiveFilter),
         registerCapabilityWait(1000),
-        subscribeToBroadcastWait(50)
+        subscribeToBroadcastWait(2000)
 
     {
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
@@ -123,6 +123,23 @@ public:
 
         // Delete the persisted participant ids so that each test uses different participant ids
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    }
+
+    /*
+     *  This wait is necessary, because subcriptions are async, and an event could occur
+     * before the subscription has started.
+     */
+    void waitForBroadcastSubscriptionArrivedAtProvider(
+            QSharedPointer<tests::testProvider> testProvider,
+            const QString& broadcastName)
+    {
+        unsigned long delay = 0;
+
+        while (!(testProvider->hasBroadcastListeners(broadcastName)) && delay <= subscribeToBroadcastWait) {
+            QThreadSleep::msleep(50);
+            delay+=50;
+        }
+        assert(testProvider->hasBroadcastListeners(broadcastName));
     }
 
     ~End2EndBroadcastTest(){
@@ -219,9 +236,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and an event could occur
-    // before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
 
     testProvider->locationUpdateEventOccurred(
                 types::GpsLocation(
@@ -367,9 +382,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     testProxy->subscribeToLocationUpdateWithSpeedBroadcast(subscriptionListener, subscriptionQos);
 
-    //This wait is necessary, because subcriptions are async, and an event could occur could be
-    // changed before before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdateWithSpeed");
 
     // Change the location 3 times
 
@@ -523,9 +536,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                 subscriptionListener,
                 subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and an event could occur
-    // before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdateSelective");
 
     // Change the location 3 times
 
@@ -642,9 +653,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                 subscriptionListener,
                 subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and an event could occur
-    // before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdateSelective");
 
     // Change the location 3 times
 
@@ -795,9 +804,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                 subscriptionListenerBroadcast,
                 subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and an event could occur
-    // before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "location");
 
     // Initial attribute publication
     ASSERT_TRUE(semaphore.tryAcquire(1, 50));

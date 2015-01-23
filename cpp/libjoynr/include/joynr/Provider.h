@@ -88,6 +88,18 @@ public:
 
     void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
+    /**
+     * @brief hasAttributeListeners returns true, if there is at least one listener registered
+     *        for the submitted attributeName
+     */
+    bool hasAttributeListeners(const QString& attributeName);
+
+    /**
+     * @brief hasBroadcastListeners returns true, if there is at least one listener registered
+     *        for the submitted broadcastName
+     */
+    bool hasBroadcastListeners(const QString& broadcastName);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Provider);
 

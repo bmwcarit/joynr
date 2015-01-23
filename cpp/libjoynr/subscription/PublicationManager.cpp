@@ -297,8 +297,7 @@ void PublicationManager::addOnChangePublication(
 
         // Register the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->registerAttributeListener(
-                request->getSubscribeToName(), attributeListener);
+        requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
@@ -746,8 +745,7 @@ void PublicationManager::removeOnChangePublication(
 {
     QMutexLocker publicationLocker(&(publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos().data())) {
-        LOG_DEBUG(logger,
-                  QString("Removing onChange publication for id = %1").arg(subscriptionId));
+        LOG_DEBUG(logger, QString("Removing onChange publication for id = %1").arg(subscriptionId));
 
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
