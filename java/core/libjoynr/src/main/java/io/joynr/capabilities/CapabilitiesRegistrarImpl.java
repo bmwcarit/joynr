@@ -73,7 +73,6 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
         dispatcher.addRequestCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
-        // TODO write a test for subscription restoration
         publicationManager.restoreQueuedSubscription(participantId, requestCaller);
         return ret;
     }
@@ -92,7 +91,6 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                               participantId);
         localCapabilitiesDirectory.remove(capabilityEntry);
         dispatcher.removeRequestCaller(participantId);
-        // TODO write a test for stop publications for providerId
         publicationManager.stopPublicationByProviderId(participantId);
     }
 

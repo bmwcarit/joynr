@@ -260,8 +260,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         synchronized (requestCallerDirectory) {
             requestCallerDirectory.remove(participantId);
         }
-        publicationManager.stopPublicationByProviderId(participantId);
-
     }
 
     @Override
