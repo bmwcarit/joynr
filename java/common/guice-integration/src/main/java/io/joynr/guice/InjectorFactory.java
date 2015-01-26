@@ -3,7 +3,7 @@ package io.joynr.guice;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 
 /**
- * @author christoph.ainhauser
- *
  * @param <T> the kind of application module expected by the InjectorFactory. The application module provides the required information of the runtime environment
  * @param <S> the kind of application which shall be created by this InjectorFactoryF
  */
@@ -60,7 +58,7 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
     }
 
     /**
-     * @param applicationModule the mandadtory applicaiton properties binded via this module
+     * @param applicationModule the mandatory application properties binded via this module
      * @param applicationSpecificModules modules allowing to further configure the application specific injector used for the creation of the application 
      * @return a new instance of <S extends IApplication>
      */
