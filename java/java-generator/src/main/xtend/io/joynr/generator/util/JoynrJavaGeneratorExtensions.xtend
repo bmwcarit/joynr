@@ -260,6 +260,10 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	override getDefaultValue(FTypedElement element) {
+		getDefaultValue(element, "");
+	}
+
+	def getDefaultValue(FTypedElement element, String constructorParams) {
 		//default values are not supported (currently) by the Franca IDL 
 /*		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
 			if (isEnum(member)){
@@ -282,14 +286,14 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 		} else */ if (isComplex(element.type)) {
 			if ((isArray(element))){
-				return "new ArrayList<" + element.type.complexType.joynrName + ">()";
+				return "new ArrayList<" + element.type.complexType.joynrName + ">(" + constructorParams + ")";
 			}
 			else{
-				return "new " + element.type.complexType.joynrName + "()";
+				return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
 			}
 		} else if (isEnum(element.type)){
 			if ((isArray(element))){
-				return "new ArrayList<" + element.type.enumType.joynrName + ">()";
+				return "new ArrayList<" + element.type.enumType.joynrName + ">(" + constructorParams + ")";
 			}
 			else{
 				return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
@@ -298,7 +302,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
  			return "NaN";
  		} else if (isPrimitive(element.type)) {
 			if ((isArray(element))){
-				return "new ArrayList<" + getPrimitiveTypeName(getPrimitive(element.type)) + ">()";
+				return "new ArrayList<" + getPrimitiveTypeName(getPrimitive(element.type)) + ">(" + constructorParams + ")";
 			}
 			else{
 				return primitiveDataTypeDefaultMap.get(element.type.predefined);

@@ -71,6 +71,32 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 	}
 
+	«val copyObjName = typeName.toFirstLower + "Obj"»
+	public «typeName»(«typeName» «copyObjName») {
+		«FOR member : getMembers(complexType)»
+		«IF isArray(member)»
+			«IF isComplex(member.type)»
+			«val memberType = getMappedDatatype(member.type)»
+			this.«member.joynrName» = «getDefaultValue(member)»;
+			if («copyObjName».«member.joynrName» != null){
+				for («memberType» element : «copyObjName».«member.joynrName») {
+					this.«member.joynrName».add(new «memberType»(element));
+				}
+			}
+			«ELSE»
+			this.«member.joynrName» = «getDefaultValue(member, copyObjName + "." + member.joynrName)»;
+			«ENDIF»
+		«ELSE»
+			«IF isComplex(member.type)»
+			«val memberType = getMappedDatatype(member.type)»
+			this.«member.joynrName» = new «memberType»(«copyObjName».«member.joynrName»);
+			«ELSE»
+			this.«member.joynrName» = «copyObjName».«member.joynrName»;
+			«ENDIF»
+		«ENDIF»
+		«ENDFOR»
+	}
+
 	«IF !getMembersRecursive(complexType).empty»
 	public «typeName»(
 		«FOR member : getMembersRecursive(complexType) SEPARATOR ','»
