@@ -26,7 +26,7 @@ import io.joynr.generator.util.InterfaceTemplate
 class InterfaceProviderImplTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject	extension TemplateBase
-	
+
 	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val className = "Default" + interfaceName + "Provider"
@@ -59,11 +59,11 @@ class InterfaceProviderImplTemplate implements InterfaceTemplate{
 		public class «className» extends «abstractProviderName» {
 			private static final Logger logger = LoggerFactory.getLogger(«className».class);
 
-			public «className»() {				
+			public «className»() {
 				// default uses a priority that is the current time, causing arbitration to the last started instance
 				//providerQos.put(ArbitrationConstants.PRIORITY_PARAMETER, "" + System.currentTimeMillis());
 				providerQos.setPriority(System.currentTimeMillis());
-			}	
+			}
 
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val attributeName = attribute.joynrName»
@@ -95,7 +95,7 @@ class InterfaceProviderImplTemplate implements InterfaceTemplate{
 			public «outputParameterType» «methodName»(«getCommaSeperatedTypedParameterList(method)») {
 				logger.warn("**********************************************");
 				logger.warn("* «interfaceName».«methodName» called");
-				logger.warn("**********************************************");	
+				logger.warn("**********************************************");
 
 			«IF outputParameterType=="void"»
 			«ELSEIF outputParameterType=="String"»
@@ -105,17 +105,17 @@ class InterfaceProviderImplTemplate implements InterfaceTemplate{
 			«ELSEIF outputParameterType=="Integer"»
 				return 42;
 			«ELSEIF outputParameterType=="Double"»
-			    return 3.1415;
+				return 3.1415;
 			«ELSEIF outputParameterType=="Long"»
-			    return (long) 42;
+				return (long) 42;
 			«ELSEIF outputParameterType=="Byte"»
-			    return (byte) 42;
+				return (byte) 42;
 			«ELSEIF outputParameterType.startsWith("List<")»
 				return new Array«outputParameterType»();
 			«ELSEIF isEnum(outputParameter.type)»
 				return «outputParameterType».«getEnumElements(getEnumType(outputParameter.type)).iterator.next.joynrName»;
 			«ELSE»
-				return new «outputParameterType»();	
+				return new «outputParameterType»();
 			«ENDIF»
 
 			}
@@ -123,9 +123,9 @@ class InterfaceProviderImplTemplate implements InterfaceTemplate{
 
 			@Override
 			public ProviderQos getProviderQos() {
-			    return providerQos;
-			}	
+				return providerQos;
+			}
 		}
-		'''	
+		'''
 	}
 }

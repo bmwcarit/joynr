@@ -57,6 +57,4 @@ class FilterTemplate implements BroadcastTemplate{
 
 		'''
 	}
-
-
 }

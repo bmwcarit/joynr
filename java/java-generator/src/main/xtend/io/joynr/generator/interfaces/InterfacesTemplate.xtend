@@ -52,17 +52,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.TreeSet;
 @SuppressWarnings("unused")
 public interface «className»  {
-    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
-    
+	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
+
 	«FOR type : filterTypesByToken(getAllTypes(serviceInterface))»
 		public static class «if (type.typeName==null) "Typename not found" else getTokenTypeForArrayType(type.typeName)»Token extends TypeReference<«getTokenTypeForArrayType(type.typeName)»> {}	
 		public static class List«getTokenTypeForArrayType(type.typeName)»Token extends TypeReference<List<«getTokenTypeForArrayType(type.typeName)»> > {}	
 	«ENDFOR»
-	
+
 }
-		'''	
+'''	
 	}
-	
+
 	def filterTypesByToken(Collection<Object> objects) {
 		val result = new ArrayList<Object>()
 		val tokens = new ArrayList<String>();
@@ -70,10 +70,8 @@ public interface «className»  {
 			if (object!=null && !tokens.contains(getTokenTypeForArrayType(object.typeName))){
 				result.add(object)
 				tokens.add(getTokenTypeForArrayType(object.typeName))
-			}			
+			}
 		}
 		return result;
 	}
-	
-	
 }

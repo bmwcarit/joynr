@@ -35,52 +35,51 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
 		'''
-«warning()»
-package «packagePath»;
+		«warning()»
+		package «packagePath»;
 
-«IF needsListImport(serviceInterface, false, true)»
-import java.util.List;
+		«IF needsListImport(serviceInterface, false, true)»
+		import java.util.List;
 
-«ENDIF»
-import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
+		«ENDIF»
+		import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 
-«IF getAttributes(serviceInterface).size > 0»
-import com.fasterxml.jackson.core.type.TypeReference;
-«IF hasReadAttribute(serviceInterface)»
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import io.joynr.pubsub.SubscriptionQos;
-«ENDIF»
-«ENDIF»
+		«IF getAttributes(serviceInterface).size > 0»
+		import com.fasterxml.jackson.core.type.TypeReference;
+		«IF hasReadAttribute(serviceInterface)»
+		import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
+		import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+		import io.joynr.pubsub.SubscriptionQos;
+		«ENDIF»
+		«ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, false)»
-	import «datatype»;
-«ENDFOR»
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, false)»
+			import «datatype»;
+		«ENDFOR»
 
-public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
+		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.getMappedDatatypeOrList()]))»
+		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.getMappedDatatypeOrList()]))»
 
-«FOR attributeType: attrTypeset»
-		public static class «getTokenTypeForArrayType(attributeType)»Reference extends TypeReference<«attributeType»> {}
-«ENDFOR»
+			«FOR attributeType: attrTypeset»
+			public static class «getTokenTypeForArrayType(attributeType)»Reference extends TypeReference<«attributeType»> {}
+			«ENDFOR»
 
-«FOR attribute: getAttributes(serviceInterface)»
-«var attributeName = attribute.joynrName»
-«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
-	«IF isReadable(attribute)»	
-		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
-		public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
+		«FOR attribute: getAttributes(serviceInterface)»
+		«var attributeName = attribute.joynrName»
+		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
+			«IF isReadable(attribute)»
 
-		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
-		public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
+				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
-		public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
-	«ENDIF»
-«ENDFOR»
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
+				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
 
-}
+				public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
+			«ENDIF»
+		«ENDFOR»
+		}
 '''
 	}
-
 }

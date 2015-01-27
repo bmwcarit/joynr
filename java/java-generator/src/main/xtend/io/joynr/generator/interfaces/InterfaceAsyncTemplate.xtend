@@ -62,7 +62,7 @@ import io.joynr.exceptions.JoynrArbitrationException;
 «FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false)»
 	import «datatype»;
 «ENDFOR»
-	
+
 public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
 
 	public static class VoidToken extends TypeReference<Void> {
@@ -70,17 +70,17 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	}
 	«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
-		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
+		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
 		«var getAttribute = "get" + attributeName.toFirstUpper»
 		«var setAttribute = "set" + attributeName.toFirstUpper»
-		«IF isReadable(attribute)»			
+		«IF isReadable(attribute)»
 
 			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
 
 			Future<Void> «setAttribute»(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
-		«ENDIF»	
+		«ENDIF»
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
 		«var methodName = method.joynrName»
@@ -128,5 +128,4 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 			return "@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback"
 		}
 	}
-
 }

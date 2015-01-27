@@ -44,11 +44,10 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 
 		import io.joynr.provider.JoynrProvider;
 
-
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
-		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the fibex. 
+		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the franca model. 
 		@SuppressWarnings("unused")
 
 		public interface «className» extends «syncClassName» {
@@ -77,7 +76,6 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 		«ENDFOR»
 
 		}
-
 		'''
 	}
 }

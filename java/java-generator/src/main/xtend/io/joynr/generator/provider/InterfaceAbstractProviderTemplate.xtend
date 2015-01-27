@@ -43,14 +43,12 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 
 		import io.joynr.provider.AbstractJoynrProvider;
 		import «joynTypePackagePrefix».types.ProviderQos;
-		
-		
+
 		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, true)»
 			import «datatype»;
 		«ENDFOR»
-			
-			
-		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the fibex. 
+
+		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the franca model.
 		@SuppressWarnings("unused")
 
 		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
@@ -62,9 +60,9 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
-				protected «attributeType» «attributeName»;	
+				protected «attributeType» «attributeName»;
 		«ENDFOR»
-		
+
 		«IF getAttributes(serviceInterface).size() > 0»
 		 	//setter & abstract getter
 		«ENDIF»
@@ -90,21 +88,21 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 				public abstract void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
 			«ENDIF»
 		«ENDFOR»
-		
+
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
 			public void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
-			    onEventOccurred("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
+				onEventOccurred("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
 			}
-			
+
 		«ENDFOR»
-		
+
 			@Override
 			public ProviderQos getProviderQos() {
 				return providerQos;
 			}
-		
+
 			}
-		'''	
-	}		
+		'''
+	}
 }

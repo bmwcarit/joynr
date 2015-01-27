@@ -168,15 +168,15 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 				returnStringBuilder.append(" ");
 			}
 		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
-        }
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
+		}
 	}
-	
+
 	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false)
 	}
@@ -320,7 +320,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 
 			typeList.addAll(getRequiredIncludesFor(getExtendedType(datatype), false))
-
 		}
 
 		for (member : members) {
@@ -434,7 +433,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			case FBasicTypeId::BYTE_BUFFER: "byte[]"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.joynrName)
 		}
-		// francaExtensions.getPrimitiveTypeName(basicType)
 	}
 
 	def String getObjectDataTypeForPlainType(String plainType) {
@@ -455,7 +453,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
 			case "void": type = "Void"
 			default :  type = plainType
-
 		}
 
 		return type

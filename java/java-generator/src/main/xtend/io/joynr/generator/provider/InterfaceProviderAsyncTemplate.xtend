@@ -63,15 +63,15 @@ class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 				«var attributeName = attribute.joynrName»
 				«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
 				«IF isReadable(attribute)»
-					«var getAttribute = "get" + attributeName.toFirstUpper»
+				«var getAttribute = "get" + attributeName.toFirstUpper»
 
-					void «getAttribute»(@JoynrRpcCallback(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
+				void «getAttribute»(@JoynrRpcCallback(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
 				«ENDIF»
 				«IF isWritable(attribute)»
 				«var setAttribute = "set" + attributeName.toFirstUpper»
-					void «setAttribute»(
-							@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-							@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName»);
+				void «setAttribute»(
+						@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+						@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName»);
 				«ENDIF»
 			«ENDFOR»
 			«FOR method: getMethods(serviceInterface)»
@@ -89,7 +89,6 @@ class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 			«ENDFOR»
 
 		}
-
 		'''
 	}
 
@@ -107,5 +106,4 @@ class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 			return "@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback"
 		}
 	}
-
 }

@@ -64,13 +64,12 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	private «memberType» «member.joynrName»;
 	«ENDIF»
 	«ENDFOR»
-	
+
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
 		this.«member.joynrName» = «getDefaultValue(member)»;
 		«ENDFOR»
 	}
-	
 
 	«IF !getMembersRecursive(complexType).empty»
 	public «typeName»(
@@ -90,7 +89,6 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 	}
 	«ENDIF»
-	
 
 	«FOR member : getMembers(complexType)»
 	«val memberType = getMappedDatatypeOrList(member).replace("::","__")»
@@ -98,13 +96,13 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	public «memberType» get«memberName.toFirstUpper»() {
 		return this.«member.joynrName»;
 	}
-	
+
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		this.«member.joynrName» = «member.joynrName»;
 	}
-	
+
 	«ENDFOR»
-	
+
 	@Override
 	public String toString() {
 		return "«typeName» ["
@@ -116,7 +114,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 		+ "]";
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -149,7 +147,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 		return true;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		«IF hasExtendsDeclaration(complexType)»

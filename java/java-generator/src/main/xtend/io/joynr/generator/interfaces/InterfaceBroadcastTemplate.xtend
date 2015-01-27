@@ -61,7 +61,7 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 			«IF isSelective(broadcast)»
 			public class «filterParameterType» extends BroadcastFilterParameters {
 				public «filterParameterType»() {};
-				
+
 				«IF filterParameters.size > 0»
 				public «filterParameterType»(«getCommaSeperatedTypedFilterParameterList(broadcast)») {
 					«FOR filterPrameter : filterParameters»
@@ -81,27 +81,27 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			        «listenerInterface» broadcastListener,
-			        SubscriptionQos subscriptionQos,
-			        «filterParameterType» filterParameters);
+					«listenerInterface» broadcastListener,
+					SubscriptionQos subscriptionQos,
+					«filterParameterType» filterParameters);
 
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			        «listenerInterface» broadcastListener,
-			        SubscriptionQos subscriptionQos,
-			        «filterParameterType» filterParameters,
-			        String subscriptionId);
+					«listenerInterface» broadcastListener,
+					SubscriptionQos subscriptionQos,
+					«filterParameterType» filterParameters,
+					String subscriptionId);
 			«ELSE»
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			        «listenerInterface» subscriptionListener,
-			        SubscriptionQos subscriptionQos);
+					«listenerInterface» subscriptionListener,
+					SubscriptionQos subscriptionQos);
 
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			        «listenerInterface» subscriptionListener,
-			        SubscriptionQos subscriptionQos,
-			        String subscriptionId);
+					«listenerInterface» subscriptionListener,
+					SubscriptionQos subscriptionQos,
+					String subscriptionId);
 			«ENDIF»
 
 			abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);
