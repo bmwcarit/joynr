@@ -142,7 +142,7 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
     QWriteLocker subscriptionsLocker(&subscriptionsLock);
     if (subscriptions.contains(subscriptionId)) {
         QSharedPointer<Subscription> subscription = subscriptions.take(subscriptionId);
-        logger->log(DEBUG, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
+        LOG_DEBUG(logger, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
         QMutexLocker subscriptionLocker(&(subscription->mutex));
         subscription->isStopped = true;
         if (subscription->subscriptionEndRunnableHandle !=
@@ -158,9 +158,9 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
                     DelayedScheduler::INVALID_RUNNABLE_HANDLE();
         }
     } else {
-        logger->log(DEBUG,
-                    "Called unregister on a non/no longer existent subscription, used id= " +
-                            subscriptionId);
+        LOG_DEBUG(logger,
+                  "Called unregister on a non/no longer existent subscription, used id= " +
+                          subscriptionId);
     }
 }
 
