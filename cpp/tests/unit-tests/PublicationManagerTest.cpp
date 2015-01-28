@@ -41,6 +41,16 @@ using ::testing::MakeMatcher;
 
 using namespace joynr;
 
+class PublicationManagerTest : public testing::Test {
+public:
+    PublicationManagerTest() :
+        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "PublicationManagerTest"))
+    {}
+
+protected:
+    joynr_logging::Logger* logger;
+};
+
 // New matcher definition that works with the latest Google Mock.
 class GpsAttributeMatcherInterface : public MatcherInterface<const joynr::SubscriptionPublication&> {
  public:
@@ -59,8 +69,7 @@ inline Matcher<const SubscriptionPublication&> GpsAttributeMatcher() {
   return MakeMatcher(new GpsAttributeMatcherInterface());
 }
 
-TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnables) {
-    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
+TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnables) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
@@ -106,7 +115,7 @@ TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnab
 }
 
 
-TEST(PublicationManagerTest, stop_publications) {
+TEST_F(PublicationManagerTest, stop_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
@@ -154,7 +163,7 @@ TEST(PublicationManagerTest, stop_publications) {
     QThreadSleep::msleep(300);
 }
 
-TEST(PublicationManagerTest, remove_all_publications) {
+TEST_F(PublicationManagerTest, remove_all_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
@@ -196,7 +205,7 @@ TEST(PublicationManagerTest, remove_all_publications) {
     QThreadSleep::msleep(300);
 }
 
-TEST(PublicationManagerTest, restore_publications) {
+TEST_F(PublicationManagerTest, restore_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     qRegisterMetaType<PeriodicSubscriptionQos>("PeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
@@ -252,8 +261,7 @@ TEST(PublicationManagerTest, restore_publications) {
     delete publicationManager2;
 }
 
-TEST(PublicationManagerTest, add_onChangeSubscription) {
-    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
+TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
@@ -321,8 +329,7 @@ TEST(PublicationManagerTest, add_onChangeSubscription) {
     QThreadSleep::msleep(500);
 }
 
-TEST(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
-    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
+TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
@@ -391,8 +398,7 @@ TEST(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 }
 
 
-TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
-    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
+TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
@@ -461,8 +467,7 @@ TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
 }
 
 
-TEST(PublicationManagerTest, remove_onChangeSubscription) {
-    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("TEST", "PublicationManagerTest");
+TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
