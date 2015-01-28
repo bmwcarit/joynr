@@ -953,18 +953,6 @@
 						<!-- suppressionsLocation is resolved from classpath and extracted
 							to ${project.build.directory}/checkstyle-suppressions.xml -->
 						<suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-						<!-- suppression property is incorrectly set if suppressions file is
-							on classpath, cf. http://jira.codehaus.org/browse/MCHECKSTYLE-169 
-							WORKAROUND:
-							change the suppression property name to noop using the suppressionsFileExpression
-							config and set the original suppression property manually by using 
-							the propertyExpansion
-							config -->
-						<suppressionsFileExpression>checkstyle.suppressions.file.noop</suppressionsFileExpression>
-						<propertyExpansion>checkstyle.suppressions.file=${project.build.directory}/checkstyle-suppressions.xml</propertyExpansion>
-						<!-- Automatic eclipse configuration through m2e-code-quality doesn't
-							work since windows paths (in ${project.build.directory}) are not handled
-							correctly, cf. https://github.com/m2e-code-quality/m2e-code-quality/issues/7 -->
 					</configuration>
 					<executions>
 						<execution>
