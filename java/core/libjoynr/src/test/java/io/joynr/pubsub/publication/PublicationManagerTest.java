@@ -21,7 +21,6 @@ package io.joynr.pubsub.publication;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -41,8 +40,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
@@ -74,6 +72,7 @@ public class PublicationManagerTest {
 
     private static final String SUBSCRIPTION_ID = "PublicationTest_id";
 
+    ScheduledExecutorService cleanupScheduler;
     PublicationManager publicationManager;
 
     @Captor
@@ -86,8 +85,6 @@ public class PublicationManagerTest {
     ArgumentCaptor<MessagingQos> sentMessagingQos;
 
     @Mock
-    ScheduledExecutorService cleanupScheduler;
-    @Mock
     AttributePollInterpreter attributePollInterpreter;
 
     private RequestCaller requestCaller;
@@ -98,26 +95,55 @@ public class PublicationManagerTest {
     @Mock
     private JoynrProvider provider;
 
-    @Mock
-    private ScheduledFuture scheduledFuture;
-
     Object valueToPublish = "valuePublished";
 
     @Before
     public void setUp() {
 
+        cleanupScheduler = new ScheduledThreadPoolExecutor(1);
         publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
 
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider, testProvider.class);
 
-        when(cleanupScheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenReturn(scheduledFuture);
         when(attributePollInterpreter.execute(eq(requestCaller), any(Method.class))).thenReturn(valueToPublish);
     }
 
     @After
     public void tearDown() {
         publicationManager.shutdown();
+    }
+
+    @Test(timeout = 3000)
+    public void addPublicationWithExpiryDate() throws Exception {
+        long pubicationActiveForMs = 300;
+        long expiryDate = System.currentTimeMillis() + pubicationActiveForMs;
+        long publicationTtl = 1000;
+        SubscriptionQos qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
+                                                  PROVIDER_PARTICIPANT_ID,
+                                                  subscriptionRequest,
+                                                  requestCaller);
+
+        publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
+
+        // sending initial value plus the attributeValueChanged
+        verify(messageSender, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                    eq(PROXY_PARTICIPANT_ID),
+                                                                    any(SubscriptionPublication.class),
+                                                                    any(MessagingQos.class));
+
+        Thread.sleep(pubicationActiveForMs);
+        reset(messageSender);
+
+        publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
+
+        verify(messageSender, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                                 any(SubscriptionPublication.class),
+                                                                                 any(MessagingQos.class));
     }
 
     @Test(timeout = 3000)
