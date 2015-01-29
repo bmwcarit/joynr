@@ -1034,8 +1034,8 @@
 					<version>2.3.2</version>
 					<configuration>
 						<compilerId>eclipse</compilerId>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.7</source>
+						<target>1.7</target>
 						<debug>true</debug>
 						<debuglevel>lines,vars,source</debuglevel>
 					</configuration>
@@ -1162,7 +1162,7 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>enforce-maven-version</id>
+						<id>enforce-maven-and-java-version</id>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
@@ -1172,6 +1172,10 @@
 									<version>[3.0,3.3)</version>
 									<message>Wrong Maven version. You must use Maven 3.0.x, 3.1.x or 3.2.x to build joynr.</message>
 								</requireMavenVersion>
+								<requireJavaVersion>
+									<version>1.7.0</version>
+									<message>Wrong java version. You must use Java 1.7.0 to build joynr.</message>
+								</requireJavaVersion>
 							</rules>
 						</configuration>
 					</execution>
