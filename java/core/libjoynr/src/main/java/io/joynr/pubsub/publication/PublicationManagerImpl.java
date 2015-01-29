@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -152,29 +153,6 @@ public class PublicationManagerImpl implements PublicationManager {
         this.unregisterBroadcastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
 
-    }
-
-    @SuppressWarnings("checkstyle:parameternumber")
-    PublicationManagerImpl(Multimap<String, PublicationInformation> queuedSubscriptionRequests,
-                           ConcurrentMap<String, PublicationInformation> subscriptionId2SubscriptionRequest,
-                           ConcurrentMap<String, PubSubState> publicationStates,
-                           ConcurrentMap<String, PublicationTimer> publicationTimers,
-                           ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
-                           AttributePollInterpreter attributePollInterpreter,
-                           RequestReplySender requestReplySender,
-                           ScheduledExecutorService cleanupScheduler) {
-        super();
-        this.queuedSubscriptionRequests = queuedSubscriptionRequests;
-        this.subscriptionId2PublicationInformation = subscriptionId2SubscriptionRequest;
-        this.publicationStates = publicationStates;
-        this.publicationTimers = publicationTimers;
-        this.subscriptionEndFutures = subscriptionEndFutures;
-        this.attributePollInterpreter = attributePollInterpreter;
-        this.requestReplySender = requestReplySender;
-        this.cleanupScheduler = cleanupScheduler;
-
-        this.unregisterAttributeListeners = Maps.newConcurrentMap();
-        this.unregisterBroadcastListeners = Maps.newConcurrentMap();
     }
 
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
@@ -408,14 +386,17 @@ public class PublicationManagerImpl implements PublicationManager {
     @Override
     public void restoreQueuedSubscription(String providerId, RequestCaller requestCaller) {
         Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
-        for (PublicationInformation publicInformation : queuedRequests) {
-            if (System.currentTimeMillis() < publicInformation.subscriptionRequest.getQos().getExpiryDate()) {
+        Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
+        while (queuedRequestsIterator.hasNext()) {
+            PublicationInformation publicInformation = queuedRequestsIterator.next();
+            long expiryDate = publicInformation.subscriptionRequest.getQos().getExpiryDate();
+            if (expiryDate == SubscriptionQos.NO_EXPIRY_DATE || System.currentTimeMillis() < expiryDate) {
                 addSubscriptionRequest(publicInformation.getProxyParticipantId(),
                                        publicInformation.getProviderParticipantId(),
                                        publicInformation.subscriptionRequest,
                                        requestCaller);
             }
-            queuedSubscriptionRequests.remove(providerId, publicInformation);
+            queuedRequestsIterator.remove();
         }
     }
 
