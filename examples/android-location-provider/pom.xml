@@ -29,8 +29,13 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<properties>
-		<platform.version>4.0.1.2</platform.version>
-		<platform.level>15</platform.level>
+		<platform.version>4.1.1.4</platform.version>
+		<!--
+			ATTENTION:
+			If the platform level is changed here, the target property
+			inside ${basedir}/project.properties must be changed accordingly.
+		-->
+		<platform.level>19</platform.level>
 	</properties>
 
 	<dependencies>
