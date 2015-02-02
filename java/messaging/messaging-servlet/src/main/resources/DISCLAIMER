@@ -33,20 +33,18 @@ The software listed below included in some products is licensed under the "Apach
   License file: WEB-INF/lib/httpcore-4.3.jar:META-INF/LICENSE
 - org.eclipse.jetty.orbit:javax.servlet:3.0.0.v201112011016
   About file: WEB-INF/lib/javax.servlet-3.0.0.v201112011016.jar:about.html
-- org.eclipse.jetty:jetty-continuation:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-continuation-8.1.7.v20120910.jar:about.html
-- org.eclipse.jetty:jetty-http:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-http-8.1.7.v20120910.jar:about.html
-- org.eclipse.jetty:jetty-io:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-io-8.1.7.v20120910.jar:about.html
-- org.eclipse.jetty:jetty-security:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-security-8.1.7.v20120910.jar:about.html
-- org.eclipse.jetty:jetty-server:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-server-8.1.7.v20120910.jar:about.html
-- org.eclipse.jetty:jetty-servlet:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-servlet-8.1.7.v20120910.jar:about.html
-- org.eclipse.jetty:jetty-util:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-util-8.1.7.v20120910.jar:about.html
+- org.eclipse.jetty:jetty-http:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-http-9.2.2.v20140723.jar:about.html
+- org.eclipse.jetty:jetty-io:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-io-9.2.2.v20140723.jar:about.html
+- org.eclipse.jetty:jetty-security:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-security-9.2.2.v20140723.jar:about.html
+- org.eclipse.jetty:jetty-server:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-server-9.2.2.v20140723.jar:about.html
+- org.eclipse.jetty:jetty-servlet:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-servlet-9.2.2.v20140723.jar:about.html
+- org.eclipse.jetty:jetty-util:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-util-9.2.2.v20140723.jar:about.html
 - xml-apis:xml-apis:1.0.b2
   Readme file: WEB-INF/lib/xml-apis-1.0.b2.jar:/license/README.txt
 

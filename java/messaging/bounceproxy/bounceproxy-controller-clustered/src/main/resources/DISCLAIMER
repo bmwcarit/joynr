@@ -33,8 +33,8 @@ The software listed below included in some products is licensed under the "Apach
 - org.atmosphere:atmosphere-annotations:2.0.8
 - org.atmosphere:atmosphere-jersey:2.0.8
 - org.atmosphere:atmosphere-runtime:2.0.8
-- org.eclipse.jetty:jetty-util:8.1.7.v20120910
-  About file: WEB-INF/lib/jetty-util-8.1.7.v20120910.jar:about.html
+- org.eclipse.jetty:jetty-util:9.2.2.v20140723
+  About file: WEB-INF/lib/jetty-util-9.2.2.v20140723.jar:about.html
 
 The software listed below included in some products is licensed under the "BSD 3-clause". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
 - asm:asm:3.1
