@@ -3,7 +3,7 @@ package io.joynr.dispatcher;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -329,8 +329,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void callSubscriptionListener(String subscriptionId, Object receivedObject) {
-        @SuppressWarnings("unchecked")
         AttributeSubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
