@@ -3,7 +3,7 @@ package io.joynr.pubsub.publication;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.PubSubTimerBase;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -35,7 +35,6 @@ import java.util.TimerTask;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,42 +49,33 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class PublicationTimer extends PubSubTimerBase {
 
     private static final Logger logger = LoggerFactory.getLogger(PublicationTimer.class);
-    private final SubscriptionRequest subscriptionRequest;
+    private final PublicationInformation publicationInformation;
     private final RequestCaller requestCaller;
     private final RequestReplySender requestReplySender;
     private final AttributePollInterpreter attributePollInterpreter;
     public Method method;
-    private final String providerParticipantId;
-    private final String proxyParticipantId;
 
     private final long publicationTtl;
     private final long minInterval;
     private final long period;
 
     /**
-     * 
-     * @param providerParticipantId
-     * @param proxyParticipantId
-     * @param state
-     * @param subscriptionRequest
+     * @param publicationInformation
+     * @param method
      * @param requestCaller
-     * @param messageSender
+     * @param requestReplySender
      * @param attributePollInterpreter
-     * @throws NoSuchMethodException
      */
-    @SuppressWarnings("checkstyle:parameternumber")
-    public PublicationTimer(String providerParticipantId,
-                            String proxyParticipantId,
+    public PublicationTimer(PublicationInformation publicationInformation,
                             Method method,
-                            PubSubState state,
-                            SubscriptionRequest subscriptionRequest,
                             RequestCaller requestCaller,
-                            RequestReplySender messageSender,
-                            AttributePollInterpreter attributePollInterpreter) throws NoSuchMethodException {
-        super(subscriptionRequest.getQos().getExpiryDate(), state);
+                            RequestReplySender requestReplySender,
+                            AttributePollInterpreter attributePollInterpreter) {
+        super(publicationInformation.getQos().getExpiryDate(), publicationInformation.getState());
 
-        SubscriptionQos qos = subscriptionRequest.getQos();
+        SubscriptionQos qos = publicationInformation.getQos();
 
+        this.publicationInformation = publicationInformation;
         this.publicationTtl = qos.getPublicationTtl();
 
         boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
@@ -94,14 +84,10 @@ public class PublicationTimer extends PubSubTimerBase {
         this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getHeartbeat() : 0;
         this.minInterval = isKeepAliveSubscription ? ((OnChangeWithKeepAliveSubscriptionQos) qos).getMinInterval() : 0;
 
-        this.proxyParticipantId = proxyParticipantId;
-        this.providerParticipantId = providerParticipantId;
-        this.subscriptionRequest = subscriptionRequest;
         this.requestCaller = requestCaller;
-        this.requestReplySender = messageSender;
+        this.requestReplySender = requestReplySender;
         this.attributePollInterpreter = attributePollInterpreter;
         this.method = method;
-
     }
 
     class PublicationTask extends TimerTask {
@@ -121,7 +107,7 @@ public class PublicationTimer extends PubSubTimerBase {
 
                 } else {
                     logger.debug("run: executing attributePollInterpreter for attribute "
-                            + subscriptionRequest.getSubscribedToName());
+                            + publicationInformation.getSubscribedToName());
 
                     sendPublication();
                     delayUntilNextPublication = period;
@@ -141,7 +127,7 @@ public class PublicationTimer extends PubSubTimerBase {
     protected void sendPublication() {
         SubscriptionPublication publication = new SubscriptionPublication(attributePollInterpreter.execute(requestCaller,
                                                                                                            method),
-                                                                          subscriptionRequest.getSubscriptionId());
+                                                                          publicationInformation.getSubscriptionId());
         sendPublication(publication);
     }
 
@@ -156,8 +142,8 @@ public class PublicationTimer extends PubSubTimerBase {
             messagingQos.setTtl_ms(publicationTtl);
 
             try {
-                requestReplySender.sendSubscriptionPublication(providerParticipantId,
-                                                               proxyParticipantId,
+                requestReplySender.sendSubscriptionPublication(publicationInformation.getProviderParticipantId(),
+                                                               publicationInformation.getProxyParticipantId(),
                                                                publication,
                                                                messagingQos);
                 // TODO handle exceptions during publication
@@ -204,7 +190,7 @@ public class PublicationTimer extends PubSubTimerBase {
         }
 
         SubscriptionPublication publication = new SubscriptionPublication(value,
-                                                                          subscriptionRequest.getSubscriptionId());
+                                                                          publicationInformation.getSubscriptionId());
         sendPublication(publication);
 
     }

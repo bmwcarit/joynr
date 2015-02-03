@@ -3,7 +3,7 @@ package io.joynr.pubsub.publication;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,8 +65,6 @@ public class PublicationManagerImpl implements PublicationManager {
     private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
     // Map SubscriptionId -> SubscriptionRequest
     private final ConcurrentMap<String, PublicationInformation> subscriptionId2PublicationInformation;
-    // Map SubscriptionId -> PubSubState
-    private final ConcurrentMap<String, PubSubState> publicationStates;
     // Map SubscriptionId -> PublicationTimer
     private final ConcurrentMap<String, PublicationTimer> publicationTimers;
     // Map SubscriptionId -> ScheduledFuture
@@ -84,7 +82,7 @@ public class PublicationManagerImpl implements PublicationManager {
         private String providerParticipantId;
         private String proxyParticipantId;
         private SubscriptionRequest subscriptionRequest;
-        public PubSubState pubState;
+        private PubSubState pubState;
 
         PublicationInformation(String providerParticipantId,
                                String proxyParticipantId,
@@ -115,6 +113,14 @@ public class PublicationManagerImpl implements PublicationManager {
             return subscriptionRequest.getSubscriptionId();
         }
 
+        public PubSubState getState() {
+            return pubState;
+        }
+
+        public SubscriptionQos getQos() {
+            return subscriptionRequest.getQos();
+        }
+
         @Override
         public boolean equals(Object arg0) {
             if (!(arg0 instanceof PublicationInformation)) {
@@ -135,6 +141,10 @@ public class PublicationManagerImpl implements PublicationManager {
             result = prime * result + ((subscriptionRequest == null) ? 0 : subscriptionRequest.hashCode());
             return result;
         }
+
+        public String getSubscribedToName() {
+            return subscriptionRequest.getSubscribedToName();
+        }
     }
 
     @Inject
@@ -146,7 +156,6 @@ public class PublicationManagerImpl implements PublicationManager {
         this.cleanupScheduler = cleanupScheduler;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
-        this.publicationStates = Maps.newConcurrentMap();
         this.publicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.unregisterAttributeListeners = Maps.newConcurrentMap();
@@ -174,11 +183,8 @@ public class PublicationManagerImpl implements PublicationManager {
             boolean isKeepAliveSubscription = subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos;
 
             if (hasSubscriptionHeartBeat || isKeepAliveSubscription) {
-                final PublicationTimer timer = new PublicationTimer(publicationInformation.providerParticipantId,
-                                                                    publicationInformation.proxyParticipantId,
+                final PublicationTimer timer = new PublicationTimer(publicationInformation,
                                                                     method,
-                                                                    publicationInformation.pubState,
-                                                                    subscriptionRequest,
                                                                     requestCaller,
                                                                     requestReplySender,
                                                                     attributePollInterpreter);
@@ -251,7 +257,6 @@ public class PublicationManagerImpl implements PublicationManager {
                                                                                    proxyParticipantId,
                                                                                    subscriptionRequest);
         subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
-        publicationStates.put(subscriptionId, publicationInformation.pubState);
 
         if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
             handleBroadcastSubscriptionRequest(proxyParticipantId,
@@ -280,12 +285,11 @@ public class PublicationManagerImpl implements PublicationManager {
 
     private void cancelPublicationCreation(String subscriptionId) {
         subscriptionId2PublicationInformation.remove(subscriptionId);
-        publicationStates.remove(subscriptionId);
         logger.error("Subscription request rejected. Removing publication.");
     }
 
     private boolean publicationExists(String subscriptionId) {
-        return publicationStates.containsKey(subscriptionId);
+        return subscriptionId2PublicationInformation.containsKey(subscriptionId);
     }
 
     @Override
@@ -311,8 +315,6 @@ public class PublicationManagerImpl implements PublicationManager {
         if (publicationTimer != null) {
             publicationTimer.cancel();
         }
-
-        publicationStates.remove(subscriptionId);
 
         ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionId);
         if (future != null) {
