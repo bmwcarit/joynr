@@ -3,7 +3,7 @@ package io.joynr.messaging.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class Utilities {
      * @return url without session id information or url, if no session was
      *         encoded into the URL
      */
-    public static String getUrlWithoutJsessionId(String url, String sessionIdName) {
+    public static String getUrlWithoutSessionId(String url, String sessionIdName) {
 
         if (isSessionEncodedInUrl(url, sessionIdName)) {
             return url.substring(0, url.indexOf(getSessionIdSubstring(sessionIdName)));

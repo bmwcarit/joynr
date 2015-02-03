@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
-        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
+        RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, SESSIONID_NAME);
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
 
         // open long polling channel
@@ -140,7 +140,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
-        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
+        RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, SESSIONID_NAME);
 
         // post messages to long polling channel before opening channel
         String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, "message-123", "message-123");
@@ -199,7 +199,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
-        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
+        RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, SESSIONID_NAME);
 
         // post messages to long polling channel before opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
@@ -263,7 +263,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         assertThat(channelUrl, isChannelUrlwithJsessionId(bpUrl, channelId, SESSIONID_NAME));
 
         String sessionId = Utilities.getSessionId(channelUrl, SESSIONID_NAME);
-        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, SESSIONID_NAME);
+        RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, SESSIONID_NAME);
 
         // open long polling channel first in separate thread
         Future<?> longPollingChannelFuture = Executors.newSingleThreadExecutor().submit(new Callable<Response>() {

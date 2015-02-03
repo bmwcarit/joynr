@@ -74,7 +74,7 @@ import com.google.inject.name.Named;
  * executor is blocked until one of the connections is closed. Resend attempts are scheduled by a cached thread pool
  * executor.
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that now new messages are scheduled when scheduler is shuting down")
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
 public class MessageScheduler {
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final long TERMINATION_TIMEOUT = 5000;
@@ -323,8 +323,8 @@ public class MessageScheduler {
     private String encodeSendUrl(String encodedChannelUrl) {
 
         if (Utilities.isSessionEncodedInUrl(encodedChannelUrl, httpConstants.getHTTP_SESSION_ID_NAME())) {
-            String channelUrlWithoutSessionId = Utilities.getUrlWithoutJsessionId(encodedChannelUrl,
-                                                                                  httpConstants.getHTTP_SESSION_ID_NAME());
+            String channelUrlWithoutSessionId = Utilities.getUrlWithoutSessionId(encodedChannelUrl,
+                                                                                 httpConstants.getHTTP_SESSION_ID_NAME());
             String sessionId = Utilities.getSessionId(encodedChannelUrl, httpConstants.getHTTP_SESSION_ID_NAME());
 
             return Utilities.getSessionEncodedUrl(channelUrlWithoutSessionId + "message/",
