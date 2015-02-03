@@ -1,9 +1,9 @@
-package io.joynr.messaging.httpoperation;
+package io.joynr.messaging.http.operation;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,7 @@ package io.joynr.messaging.httpoperation;
  * #L%
  */
 
-public interface FailureAction {
-    public void execute(Throwable error);
+import org.apache.http.client.methods.HttpUriRequest;
 
-    static final FailureAction noAction = new FailureAction() {
-        @Override
-        public void execute(Throwable error) {
-        }
-    };
+public interface HttpDelete extends HttpUriRequest {
 }

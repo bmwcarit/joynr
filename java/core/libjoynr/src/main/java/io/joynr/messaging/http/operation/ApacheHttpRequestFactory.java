@@ -1,9 +1,9 @@
-package io.joynr.messaging.httpoperation;
+package io.joynr.messaging.http.operation;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,18 @@ package io.joynr.messaging.httpoperation;
  * #L%
  */
 
-import org.apache.http.client.methods.HttpUriRequest;
+import java.net.URI;
 
-public interface HttpDelete extends HttpUriRequest {
+public class ApacheHttpRequestFactory implements HttpRequestFactory {
+    public HttpDelete createHttpDelete(URI uri) {
+        return new ApacheHttpDelete(uri);
+    }
+
+    public HttpGet createHttpGet(URI uri) {
+        return new ApacheHttpGet(uri);
+    }
+
+    public HttpPost createHttpPost(URI uri) {
+        return new ApacheHttpPost(uri);
+    }
 }

@@ -1,11 +1,9 @@
-package io.joynr.messaging.httpoperation;
-
-import java.net.URI;
+package io.joynr.messaging.http.operation;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +19,20 @@ import java.net.URI;
  * #L%
  */
 
-public class ApacheHttpDelete extends org.apache.http.client.methods.HttpDelete implements HttpDelete {
-    public ApacheHttpDelete(URI uri) {
-        super(uri);
-    }
+import java.net.URI;
+
+import org.apache.http.Header;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpUriRequest;
+
+public interface HttpGet extends HttpUriRequest {
+    URI getURI();
+
+    void abort() throws UnsupportedOperationException;
+
+    void setHeader(Header header);
+
+    void reset();
+
+    void setConfig(final RequestConfig config);
 }

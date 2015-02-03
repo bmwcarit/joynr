@@ -1,9 +1,10 @@
-package io.joynr.messaging.httpoperation;
+@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
+package io.joynr.messaging.http.operation;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +20,3 @@ package io.joynr.messaging.httpoperation;
  * #L%
  */
 
-import java.net.URI;
-
-import org.apache.http.Header;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
-
-public interface HttpGet extends HttpUriRequest {
-    URI getURI();
-
-    void abort() throws UnsupportedOperationException;
-
-    void setHeader(Header header);
-
-    void reset();
-
-    void setConfig(final RequestConfig config);
-}

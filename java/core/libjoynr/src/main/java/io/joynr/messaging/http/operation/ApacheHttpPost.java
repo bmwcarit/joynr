@@ -1,10 +1,11 @@
-@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
-package io.joynr.messaging.httpoperation;
+package io.joynr.messaging.http.operation;
+
+import java.net.URI;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,3 +21,8 @@ package io.joynr.messaging.httpoperation;
  * #L%
  */
 
+public class ApacheHttpPost extends org.apache.http.client.methods.HttpPost implements HttpPost {
+    public ApacheHttpPost(URI uri) {
+        super(uri);
+    }
+}

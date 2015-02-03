@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
-import io.joynr.messaging.httpoperation.FailureAction;
-import io.joynr.messaging.httpoperation.HttpConstants;
-import io.joynr.messaging.httpoperation.HttpPost;
-import io.joynr.messaging.httpoperation.HttpRequestFactory;
+import io.joynr.messaging.http.operation.FailureAction;
+import io.joynr.messaging.http.operation.HttpConstants;
+import io.joynr.messaging.http.operation.HttpPost;
+import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.messaging.util.Utilities;
 import io.joynr.runtime.PropertyLoader;
 

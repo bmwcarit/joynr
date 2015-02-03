@@ -1,9 +1,12 @@
-package io.joynr.messaging.httpoperation;
+package io.joynr.messaging.http.operation;
+
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +22,12 @@ package io.joynr.messaging.httpoperation;
  * #L%
  */
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
+public interface SuccessAction {
+    public void execute(Map<String, List<String>> responseHeaders, String responseBody);
 
-public interface HttpPost extends HttpUriRequest {
-    void addHeader(final Header header);
-
-    void setConfig(final RequestConfig config);
-
-    void setEntity(final HttpEntity entity);
+    static final SuccessAction noAction = new SuccessAction() {
+        @Override
+        public void execute(Map<String, List<String>> responseHeaders, String responseBody) {
+        }
+    };
 }

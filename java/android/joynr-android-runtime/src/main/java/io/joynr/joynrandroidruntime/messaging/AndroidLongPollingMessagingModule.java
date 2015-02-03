@@ -3,7 +3,7 @@ package io.joynr.joynrandroidruntime.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingModule;
-import io.joynr.messaging.httpoperation.HttpRequestFactory;
-import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
+import io.joynr.messaging.http.operation.HttpRequestFactory;
+import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 public class AndroidLongPollingMessagingModule extends MessagingModule {
 

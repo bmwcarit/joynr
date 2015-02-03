@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.httpoperation.FailureAction;
-import io.joynr.messaging.httpoperation.HttpConstants;
-import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
+import io.joynr.messaging.http.operation.FailureAction;
+import io.joynr.messaging.http.operation.HttpConstants;
+import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 import java.io.IOException;
 import java.text.DateFormat;
