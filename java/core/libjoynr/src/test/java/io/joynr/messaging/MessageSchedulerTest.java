@@ -19,7 +19,6 @@ package io.joynr.messaging;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
 import io.joynr.messaging.http.operation.FailureAction;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -125,26 +124,6 @@ public class MessageSchedulerTest {
     public void testSendMessageWithResponseCodeCreated() {
         sendMessageResponseCode = HttpStatus.SC_CREATED;
         testSendMessage();
-    }
-
-    @Test
-    public void testMapDomainName() throws Exception {
-        String uri = "http://myhost.com:80/x/y/z/index.html?name=xyz";
-        String mapHost = messageScheduler.mapHost(uri);
-        assertEquals(mapHost, "http://localhost:9096/x/y/z/index.html?name=xyz");
-
-        uri = "https://myhost.com:80/x/y/z/index.html?name=xyz#XYZ";
-        mapHost = messageScheduler.mapHost(uri);
-        assertEquals(mapHost, "https://localhost:9096/x/y/z/index.html?name=xyz");
-
-        uri = "https://myhost2.com:80/x/y/z/index.html?name=xyz#XYZ";
-        mapHost = messageScheduler.mapHost(uri);
-        assertEquals(mapHost, "https://localhost:9096/z/index.html?name=xyz");
-
-        uri = "https://myhost3.com:80/x/y/z/index.html?name=xyz#XYZ";
-        mapHost = messageScheduler.mapHost(uri);
-        assertEquals(mapHost, "https://localhost:9096/a/z/index.html?name=xyz");
-
     }
 
     @Test
