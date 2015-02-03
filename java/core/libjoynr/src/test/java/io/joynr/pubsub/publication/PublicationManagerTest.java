@@ -63,7 +63,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationManagerTest {
 
@@ -267,6 +266,25 @@ public class PublicationManagerTest {
                                                                                          eq(PROXY_PARTICIPANT_ID),
                                                                                          any(SubscriptionPublication.class),
                                                                                          any(MessagingQos.class));
+    }
+
+    @Test(timeout = 3000)
+    public void removeQueuedSubscriptionsProperly() throws Exception {
+        int period = 200;
+        String subscriptionId1 = "subscriptionid_removeQueuedSubscriptionsProperly";
+        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
+        SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosNoExpiry);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
+
+        publicationManager.stopPublication(subscriptionId1);
+
+        publicationManager.restoreQueuedSubscription(PROVIDER_PARTICIPANT_ID, requestCaller);
+        Thread.sleep(period);
+        verify(messageSender, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                    eq(PROXY_PARTICIPANT_ID),
+                                                                    any(SubscriptionPublication.class),
+                                                                    any(MessagingQos.class));
     }
 
     @Test

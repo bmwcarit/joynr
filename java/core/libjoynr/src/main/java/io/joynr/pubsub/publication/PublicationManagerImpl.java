@@ -268,7 +268,7 @@ public class PublicationManagerImpl implements PublicationManager {
 
                 @Override
                 public void run() {
-                    logger.info("Publication expired...");
+                    logger.info("Publication with Id " + subscriptionId + " expired...");
                     removePublication(subscriptionId);
                 }
 
@@ -301,19 +301,17 @@ public class PublicationManagerImpl implements PublicationManager {
     }
 
     protected void removePublication(String subscriptionId) {
+        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
 
-        if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
-            PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
-            String providerParticipantId = publicationInformation.getProviderParticipantId();
-            if (providerParticipantId != null && queuedSubscriptionRequests.containsKey(providerParticipantId)) {
-                queuedSubscriptionRequests.removeAll(providerParticipantId);
-            }
+        // Remove (eventually) queued susbcriptionRequest
+        queuedSubscriptionRequests.get(publicationInformation.getProviderParticipantId())
+                                  .remove(publicationInformation);
+
+        PublicationTimer publicationTimer = publicationTimers.remove(subscriptionId);
+        if (publicationTimer != null) {
+            publicationTimer.cancel();
         }
-        subscriptionId2PublicationInformation.remove(subscriptionId);
-        if (publicationTimers.containsKey(subscriptionId)) {
-            publicationTimers.get(subscriptionId).cancel();
-            publicationTimers.remove(subscriptionId);
-        }
+
         publicationStates.remove(subscriptionId);
 
         ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionId);
@@ -375,12 +373,22 @@ public class PublicationManagerImpl implements PublicationManager {
     }
 
     @Override
-    public void stopPublicationByProviderId(String providerId) {
-        for (PublicationInformation publcationInformation : subscriptionId2PublicationInformation.values()) {
-            if (publcationInformation.getProviderParticipantId().equals(providerId)) {
-                removePublication(publcationInformation.getSubscriptionId());
+    public void stopPublicationByProviderId(String providerParticipantId) {
+        for (PublicationInformation publicationInformation : subscriptionId2PublicationInformation.values()) {
+            if (publicationInformation.getProviderParticipantId().equals(providerParticipantId)) {
+                removePublication(publicationInformation.getSubscriptionId());
             }
         }
+
+        if (providerParticipantId != null && queuedSubscriptionRequests.containsKey(providerParticipantId)) {
+            queuedSubscriptionRequests.removeAll(providerParticipantId);
+        }
+    }
+
+    private boolean isExpired(PublicationInformation publicationInformation) {
+        long expiryDate = publicationInformation.subscriptionRequest.getQos().getExpiryDate();
+        logger.debug("ExpiryDate - System.currentTimeMillis: " + (expiryDate - System.currentTimeMillis()));
+        return (expiryDate != SubscriptionQos.NO_EXPIRY_DATE && expiryDate <= System.currentTimeMillis());
     }
 
     @Override
@@ -389,14 +397,13 @@ public class PublicationManagerImpl implements PublicationManager {
         Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
         while (queuedRequestsIterator.hasNext()) {
             PublicationInformation publicInformation = queuedRequestsIterator.next();
-            long expiryDate = publicInformation.subscriptionRequest.getQos().getExpiryDate();
-            if (expiryDate == SubscriptionQos.NO_EXPIRY_DATE || System.currentTimeMillis() < expiryDate) {
+            queuedRequestsIterator.remove();
+            if (!isExpired(publicInformation)) {
                 addSubscriptionRequest(publicInformation.getProxyParticipantId(),
                                        publicInformation.getProviderParticipantId(),
                                        publicInformation.subscriptionRequest,
                                        requestCaller);
             }
-            queuedRequestsIterator.remove();
         }
     }
 
@@ -406,16 +413,20 @@ public class PublicationManagerImpl implements PublicationManager {
         if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
-            PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
-            if (publicationTimer != null) {
-                // used by OnChangedWithKeepAlive
-                publicationTimer.sendPublicationNow(value);
+            if (isExpired(publicationInformation)) {
+                stopPublication(subscriptionId);
             } else {
-                sendPublication(value, publicationInformation);
-            }
+                PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
+                if (publicationTimer != null) {
+                    // used by OnChangedWithKeepAlive
+                    publicationTimer.sendPublicationNow(value);
+                } else {
+                    sendPublication(value, publicationInformation);
+                }
 
-            logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
-                        subscriptionId);
+                logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                            subscriptionId);
+            }
 
         } else {
             logger.error("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
