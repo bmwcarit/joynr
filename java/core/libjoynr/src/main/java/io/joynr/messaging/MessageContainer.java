@@ -19,8 +19,6 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.messaging.http.operation.HttpConstants;
-
 import javax.annotation.Nullable;
 
 import joynr.JoynrMessage;
@@ -50,18 +48,14 @@ public class MessageContainer {
 
     private JoynrMessage message;
 
-    private HttpConstants httpConstants;
-
     private int tries = 0;
 
     public MessageContainer(final String channelId,
                             final JoynrMessage message,
                             final long expiryDate,
-                            HttpConstants httpConstants,
                             ObjectMapper objectMapper) throws JsonProcessingException {
         this.channelId = channelId;
         this.message = message;
-        this.httpConstants = httpConstants;
         this.serializedMessage = objectMapper.writeValueAsString(message); // jsonConverter.toJson(message);
         this.expiryDate = expiryDate;
         this.messageId = message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID);
@@ -87,14 +81,6 @@ public class MessageContainer {
     @Nullable
     public String getMessageId() {
         return messageId;
-    }
-
-    public HttpConstants getHttpConstants() {
-        return httpConstants;
-    }
-
-    public void setHttpConstants(HttpConstants httpConstants) {
-        this.httpConstants = httpConstants;
     }
 
     @Override

@@ -26,7 +26,6 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.http.operation.FailureAction;
-import io.joynr.messaging.http.operation.HttpConstants;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 import java.io.IOException;
@@ -65,21 +64,17 @@ public class MessageSenderImpl implements MessageSender {
 
     private final IMessageReceivers messageReceivers;
 
-    private HttpConstants httpConstants;
-
     @Inject
     public MessageSenderImpl(MessageScheduler sendRequestScheduler,
                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
                              MessagingSettings settings,
                              ObjectMapper objectMapper,
-                             IMessageReceivers messageReceivers,
-                             HttpConstants httpConstants) {
+                             IMessageReceivers messageReceivers) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
         this.settings = settings;
         this.objectMapper = objectMapper;
         this.messageReceivers = messageReceivers;
-        this.httpConstants = httpConstants;
     }
 
     /*
@@ -152,7 +147,6 @@ public class MessageSenderImpl implements MessageSender {
         final MessageContainer messageContainer = new MessageContainer(channelId,
                                                                        message,
                                                                        ttlExpirationDate_ms,
-                                                                       httpConstants,
                                                                        objectMapper);
 
         final FailureAction failureAction = new FailureAction() {
