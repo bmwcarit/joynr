@@ -300,7 +300,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         deliverPublication(message);
     }
 
-    @SuppressWarnings("unchecked")
     private void deliverPublication(JoynrMessage message) {
         SubscriptionPublication publication;
         try {
@@ -329,13 +328,12 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void callSubscriptionListener(String subscriptionId, Object receivedObject) {
-        AttributeSubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
+    private <T> void callSubscriptionListener(String subscriptionId, T attributeValue) {
+        AttributeSubscriptionListener<T> listener = subscriptionManager.getSubscriptionListener(subscriptionId);
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
-            listener.receive(receivedObject);
+            listener.receive(attributeValue);
         }
     }
 

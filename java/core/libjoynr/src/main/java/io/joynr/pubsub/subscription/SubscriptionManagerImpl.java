@@ -179,13 +179,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionState.updateTimeOfLastPublication();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public AttributeSubscriptionListener<?> getSubscriptionListener(final String subscriptionId) {
+    public <T> AttributeSubscriptionListener<T> getSubscriptionListener(final String subscriptionId) {
         if (!subscriptionStates.containsKey(subscriptionId)
                 || !subscriptionListenerDirectory.containsKey(subscriptionId)) {
             logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);
         }
-        return subscriptionListenerDirectory.get(subscriptionId);
+        return (AttributeSubscriptionListener<T>) subscriptionListenerDirectory.get(subscriptionId);
 
     }
 
