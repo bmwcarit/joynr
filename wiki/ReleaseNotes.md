@@ -1,6 +1,29 @@
+## joynr 0.8.0
+
+### API relevant changes
+* Java/C++	Support of broadcast: it is now possible to subscribe to broadcasts on proxy side. Providers are able to fire broadcast events, which are then forwarded to subscribed proxies. See the [Broadcast Tutorial](Broadcast-Tutorial.md) for more information.
+* Java/C++	Support to stop/update an existing subscription: the creation of a new subscription returns a unique subscription ID. Supplying this id to the proxy API allows to stop or update an existing subscription.
+* Java/C++ 	Generate proxy API according to modifier flags in Franca model: only generate setters/getters/subscribeTo methods on proxy side, if respective flags are defined in the Franca model (e.g. readOnly implies no setters)
+* Java/C++	Names defined in Franca are taken 1:1 into code: the joynr generator framework reuses the upper and lower case as defined in the Franca model where possible
+* Java	Add copy constructor to complex types of Franca model: for each complex data structure in the Franca model, a copy constructor is created in the respective Java class
+
+### Other changes
+* Tooling	Enable cleanup capability of joynr generator framework: it is now possible to trigger the joynr generator with the "clean" goal, meaning that previously generated files are deleted
+* Tooling	Create standalone joynr generator: joynr provides now a standalone joynr generator, which can be used independent of maven as build environment
+* Tooling	The joynr generator framework migrates to xtend 2.7.2
+* Tooling	Update Java version from 1.6 to 1.7
+* Java/C++	Added ability to radio-app example to apply geocast broadcast filters: the example shows how broadcasts can be used to implement a geocast
+* C++	Update to CommonAPI version 2.1.4
+* C++	C++ cluster controller offers WebSocket messaging interface: the C++ cluster controller provides now a WebSocket API to be accessed by joynr applications. The C++ libjoynr version supports WebSocket communication with the cluster controller
+* C++	Implement message queue: in case the destination address of the joynr message cannot be resolved, the message router is now able to queue messages for later delivery
+* Android	Now supporting platform version 19.
+* Android	AsyncTask from the Android SDK went from being executed in parallel in API 10, to sequential handling
+in later Android versions. Since there is no clean way to support the old
+and new semantics without wrapping the class, we are now bumping up support API 19. Prior versions are no longer supported.
 ## joynr 0.7.0
 
 ### API relevant changes
+* Java	SubscriptionListener is now called AttributeSubscriptionListener, and unregisterSubscription renamed unregisterAttributeSubcription (change required to differentiate from broadcasts)
 * Java	The hostPath property can now be set as joynr.servlet.hostPath.
 * SSL support for C++ and Java
 
