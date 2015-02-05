@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 ######## Project settings ########
-project(radio-app-0.8.0)
+project(radio-app-0.9.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -26,7 +26,7 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.8.0 REQUIRED)
+find_package(Joynr 0.9.0 REQUIRED)
 message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIB_DBUS_INCLUDE_DIRS=${JOYNR_LIB_DBUS_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIB_WS_INCLUDE_DIRS=${JOYNR_LIB_WS_INCLUDE_DIRS}")
