@@ -444,3 +444,9 @@ This consumer will make a call to the joynr runtime to find a provider with the 
 
 ## Summary
 In this tutorial, you have seen a communication interface, generated joynr code from it, adapted a provider and consumer, and seen the communication between the two in action.  The next step is to create your own interface entirely and create more providers and consumers yourself.  Use this project as a template for your further investigations!
+
+# Further Reading
+* **[Using selective broadcast to implement a geocast](Broadcast-Tutorial.md):**
+In this tutorial [RadioApp example](Tutorial.md) is extended by a selective broadcast and filter
+logics that implements a [geocast](http://en.wikipedia.org/wiki/Geocast).
+
