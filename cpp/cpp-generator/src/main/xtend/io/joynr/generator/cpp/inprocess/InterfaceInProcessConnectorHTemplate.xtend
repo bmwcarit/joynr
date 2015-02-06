@@ -81,7 +81,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 		«val broadcastName = broadcast.joynrName»
 		    QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-		            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 		            BroadcastSubscriptionRequest& subscriptionRequest);
 		«ENDFOR»
 		public:

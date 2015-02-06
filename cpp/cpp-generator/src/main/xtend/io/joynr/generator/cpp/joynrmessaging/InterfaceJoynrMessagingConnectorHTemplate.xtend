@@ -76,7 +76,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		«val broadcastName = broadcast.joynrName»
 		    QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-		            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 		            BroadcastSubscriptionRequest& subscriptionRequest);
 		«ENDFOR»
 		public:
@@ -144,19 +144,19 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
 		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 		    	            QString& subscriptionId);
 		    	«ELSE»
 		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
 		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 		    	            QString& subscriptionId);
 		    	«ENDIF»
 		    	virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);

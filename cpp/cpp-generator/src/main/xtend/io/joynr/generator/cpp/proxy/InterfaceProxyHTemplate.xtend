@@ -105,7 +105,7 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
 		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	                filterParameters,
 		    	                subscriptionListener,
@@ -115,7 +115,7 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 		    	            QString& subscriptionId){
 		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	                filterParameters,
@@ -126,14 +126,14 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 		    	«ELSE»
 		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
 		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	                subscriptionListener,
 		    	                subscriptionQos);
 		    	}
 		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 		    	            QString& subscriptionId){
 		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 		    	                subscriptionListener,
