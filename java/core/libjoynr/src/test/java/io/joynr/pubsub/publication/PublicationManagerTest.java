@@ -309,10 +309,10 @@ public class PublicationManagerTest {
         GpsLocation location = new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 9l, 10l, 11);
         double speed = 100;
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(),
-                                         new ArrayList<BroadcastFilter>(),
-                                         location,
-                                         speed);
+        publicationManager.broadcastOccurred(subscriptionRequest.getSubscriptionId(),
+                                             new ArrayList<BroadcastFilter>(),
+                                             location,
+                                             speed);
 
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
@@ -365,7 +365,7 @@ public class PublicationManagerTest {
                             any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filter2);
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
+        publicationManager.broadcastOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
 
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
@@ -409,7 +409,7 @@ public class PublicationManagerTest {
                                any(testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filterTrue);
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, location, speed);
+        publicationManager.broadcastOccurred(subscriptionRequest.getSubscriptionId(), filters, location, speed);
 
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
@@ -457,7 +457,7 @@ public class PublicationManagerTest {
                                 any(testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters.class))).thenReturn(false);
         filters.add(filterFalse);
 
-        publicationManager.eventOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
+        publicationManager.broadcastOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
 
         verify(messageSender, never()).sendSubscriptionPublication(any(String.class),
                                                                    any(String.class),

@@ -438,7 +438,7 @@ public class PublicationManagerImpl implements PublicationManager {
     }
 
     @Override
-    public void eventOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values) {
+    public void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values) {
         if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 

@@ -64,7 +64,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         List<BroadcastListener> listeners = broadcastListeners.get(broadcastName);
         synchronized (listeners) {
             for (BroadcastListener listener : listeners) {
-                listener.eventOccurred(broadcastFilters, values);
+                listener.broadcastOccurred(broadcastFilters, values);
             }
         }
     }

@@ -22,5 +22,5 @@ import java.util.List;
  */
 
 public interface BroadcastListener {
-    void eventOccurred(List<BroadcastFilter> filters, Object... value);
+    void broadcastOccurred(List<BroadcastFilter> filters, Object... value);
 }

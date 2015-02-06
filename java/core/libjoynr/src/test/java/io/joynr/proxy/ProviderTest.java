@@ -68,7 +68,7 @@ public class ProviderTest {
 
         provider.onEventOccurred(broadcastName, broadcastFilters, value1, value2);
 
-        verify(broadcastListener).eventOccurred(eq(broadcastFilters), eq(value1), eq(value2));
+        verify(broadcastListener).broadcastOccurred(eq(broadcastFilters), eq(value1), eq(value2));
 
     }
 
@@ -89,7 +89,7 @@ public class ProviderTest {
 
         provider.onEventOccurred(broadcastName, broadcastFilters, value1, value2);
 
-        verify(broadcastListener, never()).eventOccurred(eq(broadcastFilters), eq(value1), eq(value2));
+        verify(broadcastListener, never()).broadcastOccurred(eq(broadcastFilters), eq(value1), eq(value2));
     }
 
 }
