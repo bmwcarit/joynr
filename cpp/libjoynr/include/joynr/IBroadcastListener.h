@@ -39,8 +39,8 @@ public:
     virtual ~IBroadcastListener()
     {
     }
-    virtual void eventOccurred(const QList<QVariant>& values,
-                               const QList<QSharedPointer<IBroadcastFilter>>& filters) = 0;
+    virtual void broadcastOccurred(const QList<QVariant>& values,
+                                   const QList<QSharedPointer<IBroadcastFilter>>& filters) = 0;
 };
 
 } // namespace joynr

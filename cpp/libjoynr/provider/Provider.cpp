@@ -94,15 +94,15 @@ void Provider::unregisterBroadcastListener(const QString& broadcastName,
     delete listeners.takeAt(listenerIndex);
 }
 
-void Provider::onEventOccurred(const QString& broadcastName, const QList<QVariant>& values)
+void Provider::fireBroadcast(const QString& broadcastName, const QList<QVariant>& values)
 {
     QReadLocker locker(&lock);
 
     const QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
-    // Inform all the broadcast listeners for this attribute
+    // Inform all the broadcast listeners for this broadcast
     foreach (IBroadcastListener* listener, listeners) {
-        listener->eventOccurred(values, broadcastFilters.value(broadcastName));
+        listener->broadcastOccurred(values, broadcastFilters.value(broadcastName));
     }
 }
 

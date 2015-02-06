@@ -118,10 +118,10 @@ private:
 };
 
 /**
-  * Trigger:    An event occurs.
+  * Trigger:    A broadcast occurs.
   * Expected:   The registered filter objects are called correctly.
   */
-TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnEventTriggered) {
+TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered) {
 
     // It's only guaranteed that all filters are executed when they return true
     // (When not returning true, filter chain execution is interrupted)
@@ -131,11 +131,11 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnEventTriggered) {
     EXPECT_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters)));
     EXPECT_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters)));
 
-    provider->locationUpdateSelectiveEventOccurred(gpsLocation1);
+    provider->fireLocationUpdateSelective(gpsLocation1);
 }
 
 /**
-  * Trigger:    An event occurs. The filter chain has a positive result.
+  * Trigger:    A broadcast occurs. The filter chain has a positive result.
   * Expected:   A broadcast publication is triggered
   */
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
@@ -152,11 +152,11 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
                         Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
                     ));
 
-    provider->locationUpdateSelectiveEventOccurred(gpsLocation1);
+    provider->fireLocationUpdateSelective(gpsLocation1);
 }
 
 /**
-  * Trigger:    An event occurs. The filter chain has a negative result.
+  * Trigger:    A broadcast occurs. The filter chain has a negative result.
   * Expected:   A broadcast publication is triggered
   */
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
@@ -174,6 +174,6 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
                     ))
             .Times(Exactly(0));
 
-    provider->locationUpdateSelectiveEventOccurred(gpsLocation1);
+    provider->fireLocationUpdateSelective(gpsLocation1);
 }
 

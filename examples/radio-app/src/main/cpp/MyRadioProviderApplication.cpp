@@ -87,18 +87,18 @@ int main(int argc, char* argv[])
             provider->shuffleStations(status);
             break;
         case 'w':
-            provider->fireWeakSignalEvent();
+            provider->fireWeakSignalBroadcast();
             break;
         case 'n':
-            provider->fireNewStationDiscoveredEvent();
+            provider->fireNewStationDiscoveredBroadcast();
             break;
         default:
             MyRadioHelper::prettyLog(logger,
                                      QString("USAGE press\n"
                                              " q\tto quit\n"
                                              " s\tto shuffle stations\n"
-                                             " w\tto fire weak signal event\n"
-                                             " n\tto fire new station discovered event"));
+                                             " w\tto fire weak signal broadcast\n"
+                                             " n\tto fire new station discovered broadcast"));
             break;
         }
     }

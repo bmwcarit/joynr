@@ -82,9 +82,9 @@ public:
                                      IBroadcastListener* broadcastListener);
 
     /**
-     * Called by subclasses when an event occurs
+     * Called by subclasses when a broadcast occurs
      */
-    void onEventOccurred(const QString& broadcastName, const QList<QVariant>& values);
+    void fireBroadcast(const QString& broadcastName, const QList<QVariant>& values);
 
     void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 

@@ -128,7 +128,7 @@ public:
     }
 
     /*
-     *  This wait is necessary, because subcriptions are async, and an event could occur
+     *  This wait is necessary, because subcriptions are async, and a broadcast could occur
      * before the subscription has started.
      */
     void waitForBroadcastSubscriptionArrivedAtProvider(
@@ -210,11 +210,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     QString subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and an event could occur
+    // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
     QThreadSleep::msleep(subscribeToBroadcastWait);
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -231,11 +231,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between   occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -257,7 +257,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
     QThreadSleep::msleep(subscribeToBroadcastWait);
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -273,12 +273,12 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    //now, the next event shall not be received, as the minInterval has been updated
-    testProvider->locationUpdateEventOccurred(
+    //now, the next broadcast shall not be received, as the minInterval has been updated
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -370,11 +370,11 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     QString subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
-    // This wait is necessary, because subcriptions are async, and an event could occur
+    // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
     QThreadSleep::msleep(subscribeToBroadcastWait);
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -391,14 +391,14 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
 
     testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -501,7 +501,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -518,11 +518,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -538,11 +538,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -649,7 +649,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Change the location 3 times
 
-    testProvider->locationUpdateWithSpeedEventOccurred(
+    testProvider->fireLocationUpdateWithSpeed(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -666,11 +666,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateWithSpeedEventOccurred(
+    testProvider->fireLocationUpdateWithSpeed(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -686,11 +686,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateWithSpeedEventOccurred(
+    testProvider->fireLocationUpdateWithSpeed(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -803,7 +803,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Change the location 3 times
 
-    testProvider->locationUpdateSelectiveEventOccurred(
+    testProvider->fireLocationUpdateSelective(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -820,11 +820,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccurred(
+    testProvider->fireLocationUpdateSelective(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -841,11 +841,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccurred(
+    testProvider->fireLocationUpdateSelective(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -920,7 +920,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Change the location 3 times
 
-    testProvider->locationUpdateSelectiveEventOccurred(
+    testProvider->fireLocationUpdate(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -937,11 +937,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccurred(
+    testProvider->fireLocationUpdateSelective(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -958,11 +958,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
 
-    // Waiting between event occurences for at least the minInterval is neccessary because
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->locationUpdateSelectiveEventOccurred(
+    testProvider->fireLocationUpdateSelective(
                 types::GpsLocation(
                     9.0,
                     51.0,
@@ -1091,7 +1091,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     ASSERT_TRUE(semaphore.tryAcquire(1, 50));
 
     // Emit broadcast
-    testProvider->locationEventOccurred(
+    testProvider->fireLocation(
                 types::GpsLocation(
                     9.0,
                     51.0,

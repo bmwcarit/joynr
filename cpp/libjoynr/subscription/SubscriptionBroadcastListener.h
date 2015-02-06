@@ -42,9 +42,9 @@ public:
     SubscriptionBroadcastListener(const QString& subscriptionId,
                                   PublicationManager& publicationManager);
 
-    // Implementation of IBroadcastListener::eventOccurred
-    void eventOccurred(const QList<QVariant>& values,
-                       const QList<QSharedPointer<IBroadcastFilter>>& filters);
+    // Implementation of IBroadcastListener::receive
+    void broadcastOccurred(const QList<QVariant>& values,
+                           const QList<QSharedPointer<IBroadcastFilter>>& filters);
 
 private:
     QString subscriptionId;
