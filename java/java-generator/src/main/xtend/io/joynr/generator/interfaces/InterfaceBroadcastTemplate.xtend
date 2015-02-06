@@ -39,7 +39,7 @@ package «packagePath»;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import io.joynr.pubsub.SubscriptionQos;
+import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true)»
@@ -82,25 +82,25 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					«listenerInterface» broadcastListener,
-					SubscriptionQos subscriptionQos,
+					OnChangeSubscriptionQos subscriptionQos,
 					«filterParameterType» filterParameters);
 
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					«listenerInterface» broadcastListener,
-					SubscriptionQos subscriptionQos,
+					OnChangeSubscriptionQos subscriptionQos,
 					«filterParameterType» filterParameters,
 					String subscriptionId);
 			«ELSE»
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					«listenerInterface» subscriptionListener,
-					SubscriptionQos subscriptionQos);
+					OnChangeSubscriptionQos subscriptionQos);
 
 			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
 			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					«listenerInterface» subscriptionListener,
-					SubscriptionQos subscriptionQos,
+					OnChangeSubscriptionQos subscriptionQos,
 					String subscriptionId);
 			«ENDIF»
 

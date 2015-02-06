@@ -834,7 +834,9 @@ public class ProviderProxyEnd2EndTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
 
             @Override

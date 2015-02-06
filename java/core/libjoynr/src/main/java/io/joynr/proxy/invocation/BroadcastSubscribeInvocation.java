@@ -22,12 +22,12 @@ package io.joynr.proxy.invocation;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
 import java.lang.reflect.Method;
 
 import joynr.BroadcastFilterParameters;
+import joynr.OnChangeSubscriptionQos;
 
 /**
  * BroadcastSubscribeInvocation contains the queuable information for a subscribeTo<broadcast> call
@@ -36,7 +36,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     private String subscriptionId = "";
     private final BroadcastSubscriptionListener broadcastSubscriptionListener;
     private final String broadcastName;
-    private final SubscriptionQos qos;
+    private final OnChangeSubscriptionQos qos;
     private final BroadcastFilterParameters filterParameters;
 
     public BroadcastSubscribeInvocation(Method method, Object[] args, Future<?> future) {
@@ -46,7 +46,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         int argumentCounter = 0;
 
         broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[argumentCounter++];
-        qos = (SubscriptionQos) args[argumentCounter++];
+        qos = (OnChangeSubscriptionQos) args[argumentCounter++];
 
         if (args.length > argumentCounter) {
             if (args[argumentCounter] instanceof BroadcastFilterParameters) {
@@ -68,7 +68,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
 
     public BroadcastSubscribeInvocation(String broadcastName,
                                         BroadcastSubscriptionListener broadcastSubscriptionListener,
-                                        SubscriptionQos qos,
+                                        OnChangeSubscriptionQos qos,
                                         Future<?> future) {
         super(future);
         this.broadcastName = broadcastName;
@@ -90,7 +90,7 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         return broadcastSubscriptionListener;
     }
 
-    public SubscriptionQos getQos() {
+    public OnChangeSubscriptionQos getQos() {
         return qos;
     }
 

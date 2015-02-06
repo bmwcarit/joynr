@@ -348,7 +348,7 @@ public class SerializationTest {
         testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4:00");
-        SubscriptionQos qos = new OnChangeSubscriptionQos(0, System.currentTimeMillis() + 60000, 1000);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(0, System.currentTimeMillis() + 60000, 1000);
         BroadcastSubscriptionRequest broadcastSubscription = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                               subscribedToName,
                                                                                               filterParameters,

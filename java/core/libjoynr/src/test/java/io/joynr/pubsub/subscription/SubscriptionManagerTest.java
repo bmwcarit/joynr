@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 
 import org.junit.Before;
@@ -51,6 +52,8 @@ public class SubscriptionManagerTest {
     private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
     private SubscriptionQos qos;
+    private OnChangeSubscriptionQos onChangeQos;
+
     private SubscriptionQos qosWithoutExpiryDate;
 
     @Mock
@@ -97,11 +100,14 @@ public class SubscriptionManagerTest {
 
             }
         };
+        long minInterval_ms = 100;
         long maxInterval_ms = 5000;
         long endDate_ms = System.currentTimeMillis() + 20000;
         long alertInterval_ms = 6000;
         long publicationTtl_ms = 1000;
         qos = new PeriodicSubscriptionQos(maxInterval_ms, endDate_ms, alertInterval_ms, publicationTtl_ms);
+
+        onChangeQos = new OnChangeSubscriptionQos(minInterval_ms, endDate_ms, publicationTtl_ms);
         qosWithoutExpiryDate = new PeriodicSubscriptionQos(maxInterval_ms,
                                                            SubscriptionQos.NO_EXPIRY_DATE,
                                                            alertInterval_ms,
@@ -143,7 +149,7 @@ public class SubscriptionManagerTest {
         BroadcastSubscriptionListener broadcastSubscriptionCallback = mock(BroadcastSubscriptionListener.class);
         BroadcastSubscribeInvocation subscriptionRequest = new BroadcastSubscribeInvocation(broadcastName,
                                                                                             broadcastSubscriptionCallback,
-                                                                                            qos,
+                                                                                            onChangeQos,
                                                                                             null);
         subscriptionManager.registerBroadcastSubscription(subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
