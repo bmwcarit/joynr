@@ -44,7 +44,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -834,7 +833,9 @@ public class ProviderProxyEnd2EndTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
 
             @Override

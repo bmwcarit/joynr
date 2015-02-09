@@ -32,7 +32,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -182,7 +181,7 @@ public class BroadcastEnd2EndTest {
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
         proxy.subscribeToLocationUpdateBroadcast(new LocationUpdateBroadcastListener() {
 
             @Override
@@ -205,7 +204,7 @@ public class BroadcastEnd2EndTest {
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
 
             @Override
@@ -230,7 +229,7 @@ public class BroadcastEnd2EndTest {
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
         String subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
 
                                                                                       @Override
@@ -296,7 +295,7 @@ public class BroadcastEnd2EndTest {
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
         proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastListener() {
 
                                                               @Override
@@ -348,7 +347,7 @@ public class BroadcastEnd2EndTest {
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
         proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastListener() {
 
                                                               @Override

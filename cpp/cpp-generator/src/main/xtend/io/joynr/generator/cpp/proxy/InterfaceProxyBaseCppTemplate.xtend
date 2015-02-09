@@ -146,11 +146,11 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			            «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos) {
 			«ELSE»
 			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos) {
+			            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos) {
 			«ENDIF»
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, because the communication end partner is not (yet) known");
@@ -169,12 +169,12 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			            «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			            QString& subscriptionId) {
 			«ELSE»
 			QString «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-			            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			            QString& subscriptionId) {
 			«ENDIF»
 			    if (connector==NULL){

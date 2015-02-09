@@ -34,9 +34,6 @@ public interface SubscriptionManager {
 
     void touchSubscriptionState(final String subscriptionId);
 
-    @CheckForNull
-    AttributeSubscriptionListener<?> getSubscriptionListener(final String subscriptionId);
-
     Class<?> getType(String subscriptionId);
 
     void shutdown();
@@ -44,4 +41,7 @@ public interface SubscriptionManager {
     boolean isBroadcast(String subscriptionId);
 
     BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId);
+
+    @CheckForNull
+    <T> AttributeSubscriptionListener<T> getSubscriptionListener(String subscriptionId);
 }

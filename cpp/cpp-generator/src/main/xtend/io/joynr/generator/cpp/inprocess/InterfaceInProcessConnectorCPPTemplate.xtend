@@ -501,11 +501,11 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			    «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos
+			        QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos
 			«ELSE»
 			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos
+			        QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos
 			«ENDIF»
 			) {
 			    LOG_DEBUG(logger, "Subscribing to «broadcastName».");
@@ -525,12 +525,12 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			    «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			        QString& subscriptionId
 			«ELSE»
 			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			        QString& subscriptionId
 			«ENDIF»
 			) {
@@ -547,7 +547,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 			QString «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			        QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			        QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+			        QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			        joynr::BroadcastSubscriptionRequest& subscriptionRequest
 			) {
 			    LOG_DEBUG(logger, "Subscribing to «broadcastName».");

@@ -19,8 +19,6 @@ package joynr;
  * #L%
  */
 
-import io.joynr.pubsub.SubscriptionQos;
-
 public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
     private BroadcastFilterParameters filterParameters;
@@ -37,7 +35,7 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
     public BroadcastSubscriptionRequest(String subscriptionId,
                                         String subscribedToName,
                                         BroadcastFilterParameters filterParameters,
-                                        SubscriptionQos qos) {
+                                        OnChangeSubscriptionQos qos) {
         super(subscriptionId, subscribedToName, qos);
         this.filterParameters = new BroadcastFilterParameters();
         this.filterParameters.setFilterParameters(filterParameters.getFilterParameters());

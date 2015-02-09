@@ -310,7 +310,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
 
         proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
 
@@ -332,7 +334,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
 
         LocationUpdateSelectiveBroadcastFilterParameters filterParameter = new LocationUpdateSelectiveBroadcastFilterParameters();
         String subscriptionId = proxy.subscribeToLocationUpdateSelectiveBroadcast(mock(LocationUpdateSelectiveBroadcastListener.class),
@@ -365,7 +369,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
                                                                          subscriptionQos);
@@ -396,7 +402,9 @@ public class ProxyTest {
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
 
         String subscriptionId = UUID.randomUUID().toString();
         String subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
