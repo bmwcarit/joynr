@@ -482,7 +482,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         return removeResult;
     }
 
-    private Cache getCache(CacheId cacheId) {
+    protected Cache getCache(CacheId cacheId) {
         Cache cache = cacheManager.getCache(cacheId.getIdAsString());
         if (cache == null) {
             switch (cacheId) {

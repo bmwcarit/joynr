@@ -19,6 +19,16 @@ package io.joynr.runtime;
  * #L%
  */
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Injector;
+import com.google.inject.Scopes;
+import com.google.inject.Guice;
+import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.util.Modules;
+import com.sun.jersey.guice.JerseyServletModule;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
@@ -29,29 +39,17 @@ import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
 import io.joynr.servlet.JoynrWebServlet;
-
-import java.util.Properties;
-import java.util.Set;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.http.HttpServlet;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.servlet.GuiceServletContextListener;
-import com.google.inject.util.Modules;
-import com.sun.jersey.guice.JerseyServletModule;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.http.HttpServlet;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * 
@@ -133,6 +131,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // see: https://code.google.com/p/reflections/wiki/UseCases
         Reflections reflections = new Reflections("io.joynr.runtime", "io.joynr.discovery", appPackages);
         final Set<Class<?>> classesAnnotatedWithWebServlet = reflections.getTypesAnnotatedWith(JoynrWebServlet.class);
+        final Set<Class<?>> classesAnnotatedWithProvider = reflections.getTypesAnnotatedWith(javax.ws.rs.ext.Provider.class);
 
         // The jerseyServletModule injects the servicing classes using guice,
         // instead of letting jersey do it natively
@@ -145,6 +144,10 @@ public class MessagingServletConfig extends GuiceServletContextListener {
                 bind(JacksonJsonProvider.class).asEagerSingleton();
 
                 bind(MessagingService.class);
+                //get all classes annotated with @Provider and bind them
+                for (Class<?> providerClass : classesAnnotatedWithProvider) {
+                    bind(providerClass).in(Scopes.SINGLETON);
+                }
 
                 for (Class<?> webServletClass : classesAnnotatedWithWebServlet) {
                     if (!HttpServlet.class.isAssignableFrom(webServletClass)) {

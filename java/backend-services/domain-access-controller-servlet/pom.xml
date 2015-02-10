@@ -20,9 +20,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.joynr.java.backend-services</groupId>
-	<artifactId>discovery-directory-servlet</artifactId>
+	<artifactId>domain-access-controller-servlet</artifactId>
 	<packaging>war</packaging>
-
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
@@ -31,6 +30,10 @@
 		<version>0.9.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<properties>
+		<jslint-plugin.version>2.0.3</jslint-plugin.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -48,16 +51,12 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery</artifactId>
+			<artifactId>domain-access-controller</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.logstash.log4j</groupId>
-			<artifactId>jsonevent-layout</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey.jersey-test-framework</groupId>
@@ -70,10 +69,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- 
+		<!--
 			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
 			It is pulled in as transitive dependency:
-			io.joynr.java.messaging:messaging-servlet:jar:classes:0.9.0-SNAPSHOT:compile
+			io.joynr.java.messaging:messaging-servlet:jar:classes:0.6.0-SNAPSHOT:compile
 			+- org.reflections:reflections:jar:0.9.8:compile
 			|  +- javassist:javassist:jar:3.12.1.GA:compile
 			Please double check the correct version if these dependencies change.
@@ -84,8 +83,21 @@
 			<version>${javaassist.version}</version>
 			<classifier>sources</classifier>
 		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-servlet</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -95,7 +107,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<!-- <webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml> -->
-					<!-- warName>discovery</warName -->
+					<!-- warName>acl</warName -->
 					<warSourceDirectory>src/main/resources</warSourceDirectory>
 					<configuration>
 						<!-- no default value -->
@@ -146,6 +158,14 @@
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>bounceproxy.war</destFileName>
 								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>discovery-directory-servlet</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>discovery.war</destFileName>
+								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
@@ -178,7 +198,7 @@
 				<configuration>
 					<webAppSourceDirectory>src/main/resources</webAppSourceDirectory>
 					<webApp>
-						<contextPath>/discovery</contextPath>
+						<contextPath>/accesscontrol</contextPath>
 					</webApp>
 					<!--
 					Don't define system properties here, because it will override system
@@ -189,13 +209,80 @@
 							<war>${project.build.directory}/bounceproxy.war</war>
 							<contextPath>/bounceproxy</contextPath>
 						</contextHandler>
+						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+							<war>${project.build.directory}/discovery.war</war>
+							<contextPath>/discovery</contextPath>
+						</contextHandler>
 					</contextHandlers>
+				</configuration>
+			</plugin>
+
+			<!-- jslint-ing src/main/webapp/js -->
+			<plugin>
+				<groupId>com.googlecode.jslint4java</groupId>
+				<artifactId>jslint4java-maven-plugin</artifactId>
+				<version>${jslint-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>lint-project</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>lint</goal>
+						</goals>
+						<configuration>
+							<options>
+								<predef>define,log4javascript,angular,WebSocket,$,console</predef>
+							</options>
+							<sourceFolders>
+								<sourceFolder>src/main/webapp/js</sourceFolder>
+							</sourceFolders>
+						</configuration>
+					</execution>
+					<execution>
+						<id>lint-testsrc</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>lint</goal>
+						</goals>
+						<configuration>
+							<options>
+								<predef>beforeEach, afterEach, describe, expect, it, runs,
+									waitsFor, jasmine, spyOn, log4javascript, angular
+								</predef>
+							</options>
+							<sourceFolders>
+								<sourceFolder>${project.build.testSourceDirectory}/js</sourceFolder>
+							</sourceFolders>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<excludes>
+						<exclude>**/webapp/libs/*.js</exclude>
+					</excludes>
+					<failOnError>true</failOnError>
+					<options>
+						<!--  If multiple var statements per function should be allowed -->
+						<vars>true</vars>
+						<!--  If sloppy whitespace is tolerated -->
+						<white>true</white>
+						<!-- predefine define and require functions used with AMD module loading -->
+						<predef>log4javascript,angular</predef>
+						<!-- allow not using "pragma strict" -->
+						<sloppy>true</sloppy>
+						<!-- Allow accessing browser globals like Window, setTimeout, etc. without defining them ecplicitely -->
+						<browser>true</browser>
+						<!-- Allow using ++ and -->
+						<plusplus>true</plusplus>
+						<!-- Allow TODO comments -->
+						<todo>true</todo>
+					</options>
 				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>

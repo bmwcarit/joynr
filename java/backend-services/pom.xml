@@ -31,11 +31,16 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<properties>
+			<javaassist.version>3.12.1.GA</javaassist.version>
+	</properties>
+
 	<modules>
 		<module>discovery</module>
 		<module>discovery-directory-servlet</module>
 		<module>capabilities-directory</module>
 		<module>channel-url-directory</module>
 		<module>domain-access-controller</module>
+		<module>domain-access-controller-servlet</module>
 	</modules>
 </project>

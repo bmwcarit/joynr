@@ -51,6 +51,19 @@
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
+		<!-- This dependency is needed to ensure the correct build order.
+			Some artifacts is needed by the maven-dependency-plugin, which
+			copies them to the currrent build directory.
+		-->
+		<!-- This is commented out because Jenkins jobs will fail until 
+			the servlet becomes available in the Nexus
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>domain-access-controller-servlet</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+		-->
 	</dependencies>
 
 	<build>
@@ -143,6 +156,18 @@
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>discovery.war</destFileName>
 								</artifactItem>
+
+								<!-- This is commented out because Jenkins jobs will fail until 
+									the servlet becomes available in the Nexus
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>domain-access-controller-servlet</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>accesscontrol.war</destFileName>
+								</artifactItem>
+								-->
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>

@@ -1002,6 +1002,10 @@
 								<war>${project.build.directory}/discovery.war</war>
 								<contextPath>/discovery</contextPath>
 							</contextHandler>
+							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+								<war>${project.build.directory}/accesscontrol.war</war>
+								<contextPath>/accesscontrol</contextPath>
+							</contextHandler>
 						</contextHandlers>
 						<systemProperties>
 							<systemProperty>

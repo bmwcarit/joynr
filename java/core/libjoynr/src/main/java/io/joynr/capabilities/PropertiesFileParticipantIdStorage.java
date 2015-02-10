@@ -32,7 +32,7 @@ import java.util.UUID;
 
 import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-
+import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,17 +47,20 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     private String persistenceFileName;
     private Properties joynrProperties;
     private String channelUrlDirectoryParticipantId;
-    private String capabiliitesDirectoryParticipantId;
+    private String capabilitiesDirectoryParticipantId;
+    private String domainAccessControllerParticipantId;;
 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE) String persistenceFileName,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
-                                              @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabiliitesDirectoryParticipantId) {
+                                              @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
+                                              @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId) {
         this.joynrProperties = joynrProperties;
         this.persistenceFileName = persistenceFileName;
         this.channelUrlDirectoryParticipantId = channelUrlDirectoryParticipantId;
-        this.capabiliitesDirectoryParticipantId = capabiliitesDirectoryParticipantId;
+        this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
+        this.domainAccessControllerParticipantId = domainAccessControllerParticipantId;
         File persistenceFile = new File(persistenceFileName);
         persistedParticipantIds = new LowerCaseProperties(PropertyLoader.loadProperties(persistenceFile));
     }
@@ -89,7 +92,9 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (ChannelUrlDirectoryProvider.class.isAssignableFrom(providedInterface)) {
             participantId = channelUrlDirectoryParticipantId;
         } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)) {
-            participantId = capabiliitesDirectoryParticipantId;
+            participantId = capabilitiesDirectoryParticipantId;
+        } else if (GlobalDomainAccessControllerProvider.class.isAssignableFrom(providedInterface)) {
+            participantId = domainAccessControllerParticipantId;
         } else {
 
             participantId = UUID.randomUUID().toString();
