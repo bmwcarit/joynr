@@ -73,6 +73,9 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 
 	«val copyObjName = typeName.toFirstLower + "Obj"»
 	public «typeName»(«typeName» «copyObjName») {
+		«IF complexType.hasExtendsDeclaration»
+		super(«copyObjName»);
+		«ENDIF»
 		«FOR member : getMembers(complexType)»
 		«IF isArray(member)»
 			«IF isComplex(member.type)»
