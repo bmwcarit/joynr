@@ -54,48 +54,48 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
 			protected ProviderQos providerQos = new ProviderQos();
 
-		«IF getAttributes(serviceInterface).size() > 0»
+			«IF getAttributes(serviceInterface).size() > 0»
 			//attributes
-		«ENDIF»
-		«FOR attribute: getAttributes(serviceInterface)»
+			«ENDIF»
+			«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
 				protected «attributeType» «attributeName»;
-		«ENDFOR»
+			«ENDFOR»
 
-		«IF getAttributes(serviceInterface).size() > 0»
-		 	//setter & abstract getter
-		«ENDIF»
-		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.joynrName»
-			«val attributeType = getMappedDatatypeOrList(attribute)»
-
-			«IF isReadable(attribute)»
-				@Override
-				public abstract «attributeType» get«attributeName.toFirstUpper»();
+			«IF getAttributes(serviceInterface).size() > 0»
+				//setter & abstract getter
 			«ENDIF»
+			«FOR attribute: getAttributes(serviceInterface)»
+				«val attributeName = attribute.joynrName»
+				«val attributeType = getMappedDatatypeOrList(attribute)»
 
-			«IF isNotifiable(attribute)»
-				@Override
-				public final void «attributeName»Changed(«attributeType» «attributeName») {
-					this.«attributeName» = «attributeName»;
-					onAttributeValueChanged("«attributeName»", this.«attributeName»);
-				}
-			«ENDIF»
+				«IF isReadable(attribute)»
+					@Override
+					public abstract «attributeType» get«attributeName.toFirstUpper»();
+				«ENDIF»
 
-			«IF isWritable(attribute)»
-				@Override
-				public abstract void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
-			«ENDIF»
-		«ENDFOR»
+				«IF isNotifiable(attribute)»
+					@Override
+					public final void «attributeName»Changed(«attributeType» «attributeName») {
+						this.«attributeName» = «attributeName»;
+						onAttributeValueChanged("«attributeName»", this.«attributeName»);
+					}
+				«ENDIF»
 
-		«FOR broadcast: serviceInterface.broadcasts»
+				«IF isWritable(attribute)»
+					@Override
+					public abstract void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
+				«ENDIF»
+			«ENDFOR»
+
+			«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
 			public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
 				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
 			}
 
-		«ENDFOR»
+			«ENDFOR»
 
 			@Override
 			public ProviderQos getProviderQos() {

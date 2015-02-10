@@ -47,33 +47,33 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
-		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the franca model. 
+		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the Franca model.
 		@SuppressWarnings("unused")
 
 		public interface «className» extends «syncClassName» {
 
-		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.joynrName»
-			«val attributeType = getMappedDatatypeOrList(attribute)»
-			«IF isReadable(attribute)»
-				@Override
-				public «attributeType» get«attributeName.toFirstUpper»();
-			«ENDIF»
+			«FOR attribute: getAttributes(serviceInterface)»
+				«val attributeName = attribute.joynrName»
+				«val attributeType = getMappedDatatypeOrList(attribute)»
+				«IF isReadable(attribute)»
+					@Override
+					public «attributeType» get«attributeName.toFirstUpper»();
+				«ENDIF»
 
-			«IF isNotifiable(attribute)»
-				public void «attributeName»Changed(«attributeType» «attributeName»);
-			«ENDIF»
+				«IF isNotifiable(attribute)»
+					public void «attributeName»Changed(«attributeType» «attributeName»);
+				«ENDIF»
 
-			«IF isWritable(attribute)»
-				@Override
-				public void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
-			«ENDIF»
-		«ENDFOR»
+				«IF isWritable(attribute)»
+					@Override
+					public void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
+				«ENDIF»
+			«ENDFOR»
 
-		«FOR broadcast: serviceInterface.broadcasts SEPARATOR '\n'»
-			«val broadcastName = broadcast.joynrName»
-			public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
-		«ENDFOR»
+			«FOR broadcast: serviceInterface.broadcasts SEPARATOR '\n'»
+				«val broadcastName = broadcast.joynrName»
+				public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
+			«ENDFOR»
 
 		}
 		'''
