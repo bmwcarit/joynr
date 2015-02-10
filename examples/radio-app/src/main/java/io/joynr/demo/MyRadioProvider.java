@@ -79,7 +79,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
 
     public void fireWeakSignalEvent() {
         LOG.info(PRINT_BORDER + "fire weakSignalEvent: " + currentStation + PRINT_BORDER);
-        weakSignalEventOccurred(currentStation);
+        fireWeakSignal(currentStation);
     }
 
     public void fireNewStationDiscoveredEvent() {
@@ -87,6 +87,6 @@ public class MyRadioProvider extends RadioAbstractProvider {
         GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
         LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
                 + PRINT_BORDER);
-        newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
+        fireNewStationDiscovered(discoveredStation, geoPosition);
     }
 }

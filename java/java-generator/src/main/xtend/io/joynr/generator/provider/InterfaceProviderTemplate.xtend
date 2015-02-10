@@ -72,7 +72,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 
 		«FOR broadcast: serviceInterface.broadcasts SEPARATOR '\n'»
 			«val broadcastName = broadcast.joynrName»
-			public void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
+			public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
 		«ENDFOR»
 
 		}

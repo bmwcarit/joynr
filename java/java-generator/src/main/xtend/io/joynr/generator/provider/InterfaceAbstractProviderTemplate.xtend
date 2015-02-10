@@ -91,8 +91,8 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
-			public void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
-				onEventOccurred("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
+			public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
+				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
 			}
 
 		«ENDFOR»

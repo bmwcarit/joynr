@@ -66,7 +66,7 @@ public class ProviderTest {
         BroadcastFilter broadcastFilter = mock(BroadcastFilter.class);
         broadcastFilters.add(broadcastFilter);
 
-        provider.onEventOccurred(broadcastName, broadcastFilters, value1, value2);
+        provider.fireBroadcast(broadcastName, broadcastFilters, value1, value2);
 
         verify(broadcastListener).broadcastOccurred(eq(broadcastFilters), eq(value1), eq(value2));
 
@@ -87,7 +87,7 @@ public class ProviderTest {
         BroadcastFilter broadcastFilter = mock(BroadcastFilter.class);
         broadcastFilters.add(broadcastFilter);
 
-        provider.onEventOccurred(broadcastName, broadcastFilters, value1, value2);
+        provider.fireBroadcast(broadcastName, broadcastFilters, value1, value2);
 
         verify(broadcastListener, never()).broadcastOccurred(eq(broadcastFilters), eq(value1), eq(value2));
     }
