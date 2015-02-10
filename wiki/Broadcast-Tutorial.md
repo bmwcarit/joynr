@@ -25,6 +25,7 @@ define broadcast arguments. In the following example, the `weakSignal` broadcast
 quality.
 
 **[\<RADIO_HOME\>/src/main/model/radio.fidl](/examples/radio-app/src/main/model/radio.fidl)**
+
 ```
 ...
 <**
@@ -48,6 +49,7 @@ arguments: the discovered radio station and the geo position describing where th
 discovered.
 
 **[\<RADIO_HOME\>/src/main/model/radio.fidl](/examples/radio-app/src/main/model/radio.fidl)**
+
 ```
 ...
 <**
@@ -104,6 +106,7 @@ concrete filter parameters).
 
 **Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/GeocastBroadcastFilter.java]
 (/examples/radio-app/src/main/java/io/joynr/demo/GeocastBroadcastFilter.java)**
+
 ```java
 ...
 public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFilter {
@@ -128,6 +131,7 @@ public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFi
 
 **C++: [\<RADIO_HOME\>/src/main/cpp/GeocastBroadcastFilter.h]
 (/examples/radio-app/src/main/cpp/GeocastBroadcastFilter.h)**
+
 ```c++
 ...
 class GeocastBroadcastFilter : public vehicle::RadioNewStationDiscoveredBroadcastFilter
@@ -144,6 +148,7 @@ public:
 
 **C++: [\<RADIO_HOME\>/src/main/cpp/GeocastBroadcastFilter.cpp]
 (/examples/radio-app/src/main/cpp/GeocastBroadcastFilter.cpp)**
+
 ```c++
 ...
 bool GeocastBroadcastFilter::filter(
@@ -169,6 +174,7 @@ Filters must be registered with the provider object.
 
 **Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProviderApplication.java]
 (/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProviderApplication.java)**
+
 ```java
 ...
 provider = new MyRadioProvider();
@@ -179,6 +185,7 @@ provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
 
 **C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProviderApplication.cpp]
 (/examples/radio-app/src/main/cpp/MyRadioProviderApplication.cpp)**
+
 ```c++
 ...
 // create provider instance
@@ -203,6 +210,7 @@ returning true).
 
 **Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioConsumerApplication.java]
 (/examples/radio-app/src/main/java/io/joynr/demo/MyRadioConsumerApplication.java)**
+
 ```java
 ...
 OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
@@ -267,7 +275,9 @@ interface by calling `<broadcast name>EventOccured` methods defined in
 `<Interface name>AbstractProvider`. They must supply the broadcast arguments that are delivered to
 the consumers.
 
-**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProvider.java](/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProvider.java)**
+**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProvider.java]
+(/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProvider.java)**
+
 ```java
 ...
 RadioStation discoveredStation = stationsList.get(currentStationIndex);
@@ -276,7 +286,9 @@ newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
 ...
 ```
 
-**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProvider.cpp](/examples/radio-app/src/main/cpp/MyRadioProvider.cpp)**
+**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProvider.cpp]
+(/examples/radio-app/src/main/cpp/MyRadioProvider.cpp)**
+
 ```c++
 ...
 vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
