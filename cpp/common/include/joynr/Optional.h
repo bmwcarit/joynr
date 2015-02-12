@@ -68,9 +68,9 @@ Optional<T> Optional<T>::createNull()
 }
 
 template <typename T>
-operator bool() const
+Optional<T>::operator bool() const
 {
-    return invalid;
+    return !invalid;
 }
 
 template <typename T>
