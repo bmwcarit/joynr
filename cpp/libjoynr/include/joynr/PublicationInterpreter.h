@@ -164,7 +164,7 @@ public:
                 callback.dynamicCast<BroadcastSubscriptionCallback<Ts...>>();
 
         std::tuple<Ts...> values = Util::toValueTuple<Ts...>(value);
-        auto func = std::mem_fn(&BroadcastSubscriptionCallback<Ts...>::eventOccurred);
+        auto func = std::mem_fn(&BroadcastSubscriptionCallback<Ts...>::receive);
 
         Util::expandTupleIntoFunctionArguments(func, typedCallbackQsp, values);
     }

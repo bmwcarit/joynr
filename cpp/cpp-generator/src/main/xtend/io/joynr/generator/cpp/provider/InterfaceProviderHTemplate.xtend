@@ -91,11 +91,11 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
 			/**
-			* @brief «broadcastName»EventOccurred must be called by a concrete provider to signal an occured
+			* @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
 			* event. It is used to implement broadcast publications.
-			* @param «broadcastName» the new attribute value
+			* @param «broadcastName» the new broadcast value
 			*/
-			void «broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
+			void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
 		«ENDFOR»
 
 	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);

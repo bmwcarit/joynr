@@ -1,6 +1,7 @@
 target/
 .classpath
 .project
+.checkstyle
 .settings/
 .externalToolBuilders/
 /gen

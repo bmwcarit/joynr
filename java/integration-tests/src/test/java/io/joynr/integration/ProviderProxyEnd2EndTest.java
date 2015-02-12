@@ -849,7 +849,7 @@ public class ProviderProxyEnd2EndTest {
 
         // wait a little to allow arbitration to finish, and to allow the subscription request to arrive at the provider
         Thread.sleep(300);
-        provider.onEventOccurred("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
+        provider.fireBroadcast("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
         broadcastReceived.acquire();
 
     }

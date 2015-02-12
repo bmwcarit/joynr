@@ -32,7 +32,7 @@ public class BroadcastListenerImpl implements BroadcastListener {
     }
 
     @Override
-    public void eventOccurred(List<BroadcastFilter> filters, Object... values) {
-        publicationManagerImpl.eventOccurred(subscriptionId, filters, values);
+    public void broadcastOccurred(List<BroadcastFilter> filters, Object... values) {
+        publicationManagerImpl.broadcastOccurred(subscriptionId, filters, values);
     }
 }

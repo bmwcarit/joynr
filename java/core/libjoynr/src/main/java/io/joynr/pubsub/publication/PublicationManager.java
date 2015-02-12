@@ -78,7 +78,7 @@ public interface PublicationManager {
      */
     void attributeValueChanged(String subscriptionId, Object value);
 
-    void eventOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
+    void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
 
     void shutdown();
 

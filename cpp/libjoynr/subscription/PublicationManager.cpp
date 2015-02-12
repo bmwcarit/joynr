@@ -780,7 +780,7 @@ void PublicationManager::removePublicationEndRunnable(QSharedPointer<Publication
 
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(const QString& subscriptionId,
-                                            const QList<QVariant>& eventValues,
+                                            const QList<QVariant>& broadcastValues,
                                             const QList<QSharedPointer<IBroadcastFilter>>& filters)
 {
     bool success = true;
@@ -791,7 +791,7 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
     foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
-        success = success && filter->filter(eventValues, filterParameters);
+        success = success && filter->filter(broadcastValues, filterParameters);
     }
 
     return success;
@@ -965,12 +965,12 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     }
 }
 
-void PublicationManager::eventOccurred(const QString& subscriptionId,
-                                       const QList<QVariant>& values,
-                                       const QList<QSharedPointer<IBroadcastFilter>>& filters)
+void PublicationManager::broadcastOccurred(const QString& subscriptionId,
+                                           const QList<QVariant>& values,
+                                           const QList<QSharedPointer<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
-              QString("eventOccurred for broadcast subscription %1. Number of values: %2")
+              QString("broadcastOccurred for subscription %1. Number of values: %2")
                       .arg(subscriptionId)
                       .arg(values.size()));
 
@@ -982,7 +982,7 @@ void PublicationManager::eventOccurred(const QString& subscriptionId,
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
         LOG_ERROR(logger,
-                  QString("eventOccurred called for non-existing subscription %1")
+                  QString("broadcastOccurred called for non-existing subscription %1")
                           .arg(subscriptionId));
         return;
     }

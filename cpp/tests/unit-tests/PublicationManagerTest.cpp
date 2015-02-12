@@ -873,7 +873,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Fake broadcast
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     QThreadSleep::msleep(50);
 
@@ -881,7 +881,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     QThreadSleep::msleep(minInterval_ms);
 
     // Fake broadcast
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     qint64 newMinInterval = minInterval_ms + 500;
     QThreadSleep::msleep(50 + newMinInterval);
@@ -895,7 +895,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Fake broadcast
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // sleep, waiting for the async publication (which shouldn't come)
     QThreadSleep::msleep(50);
@@ -904,7 +904,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     QThreadSleep::msleep(minInterval_ms + 50);
 
     // Fake broadcast. This change shall not result in a new broadcast to the client
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // Wait for the subscription to finish
     QThreadSleep::msleep(500);
@@ -976,7 +976,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
     // exceed the minInterval
     QThreadSleep::msleep(minInterval_ms+50);
 
@@ -991,7 +991,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     //now, exceed the original expiryDate, and make a broadcast
     QThreadSleep::msleep(testRelExpiryDate);
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // wait for the async publication
     QThreadSleep::msleep(50);
@@ -1065,7 +1065,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
     QThreadSleep::msleep(50);
 
     // now, we expect that one publications have been performed
@@ -1081,7 +1081,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     QThreadSleep::msleep(testRelExpiryDate - testExpiryDate_shift);
     // now, the subscription should be death
 
-    broadcastListener->eventOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // wait for the async publication (which shouldn't arrive)
     QThreadSleep::msleep(50);

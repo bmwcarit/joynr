@@ -60,8 +60,8 @@ public:
                              bool& returnValue,
                              joynr::vehicle::RadioStation radioStation);
 
-    void fireWeakSignalEvent();
-    void fireNewStationDiscoveredEvent();
+    void fireWeakSignalBroadcast();
+    void fireNewStationDiscoveredBroadcast();
 
 private:
     // Disallow copy and assign

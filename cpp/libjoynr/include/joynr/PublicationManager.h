@@ -139,15 +139,15 @@ public:
     virtual void attributeValueChanged(const QString& subscriptionId, const QVariant& value);
 
     /**
-      * @brief Publishes an event publication message when an event occurs
+      * @brief Publishes an broadcast publication message when a broadcast occurs
       *
       * This method is virtual so that it can be overridden by a mock object.
-      * @param subscriptionId A subscription that was listening on the event
-      * @param values The new event values
+      * @param subscriptionId A subscription that was listening on the broadcast
+      * @param values The new broadcast values
       */
-    virtual void eventOccurred(const QString& subscriptionId,
-                               const QList<QVariant>& values,
-                               const QList<QSharedPointer<IBroadcastFilter>>& filters);
+    virtual void broadcastOccurred(const QString& subscriptionId,
+                                   const QList<QVariant>& values,
+                                   const QList<QSharedPointer<IBroadcastFilter>>& filters);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
@@ -281,7 +281,7 @@ private:
     void removePublicationEndRunnable(QSharedPointer<Publication> publication);
 
     bool processFilterChain(const QString& subscriptionId,
-                            const QList<QVariant>& eventValues,
+                            const QList<QVariant>& broadcastValues,
                             const QList<QSharedPointer<IBroadcastFilter>>& filters);
 };
 

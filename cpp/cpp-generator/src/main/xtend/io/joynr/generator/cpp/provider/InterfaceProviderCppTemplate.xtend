@@ -99,12 +99,12 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
-			void «interfaceName»Provider::«broadcastName»EventOccurred(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
-				QList<QVariant> eventValues;
+			void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
+			    QList<QVariant> broadcastValues;
 				«FOR parameter: getOutputParameters(broadcast)»
-					eventValues.append(QVariant::fromValue(«parameter.name»));
+				    broadcastValues.append(QVariant::fromValue(«parameter.name»));
 				«ENDFOR»
-			    onEventOccurred("«broadcastName»", eventValues);
+			    fireBroadcast("«broadcastName»", broadcastValues);
 			}
 		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»

@@ -88,22 +88,22 @@ void MyRadioProvider::addFavouriteStation(RequestStatus& status,
     status.setCode(RequestStatusCode::OK);
 }
 
-void MyRadioProvider::fireWeakSignalEvent()
+void MyRadioProvider::fireWeakSignalBroadcast()
 {
     MyRadioHelper::prettyLog(
-            logger, QString("fire weakSignalEvent: %1").arg(currentStation.toString()));
-    weakSignalEventOccurred(currentStation);
+            logger, QString("fire weakSignalBroadacst: %1").arg(currentStation.toString()));
+    fireWeakSignal(currentStation);
 }
 
-void MyRadioProvider::fireNewStationDiscoveredEvent()
+void MyRadioProvider::fireNewStationDiscoveredBroadcast()
 {
     vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
     vehicle::GeoPosition geoPosition(countryGeoPositionMap.value(discoveredStation.getCountry()));
     MyRadioHelper::prettyLog(logger,
-                             QString("fire newStationDiscoveredEvent: %1 at %2")
+                             QString("fire newStationDiscoveredBroadcast: %1 at %2")
                                      .arg(discoveredStation.toString())
                                      .arg(geoPosition.toString()));
-    newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
+    fireNewStationDiscovered(discoveredStation, geoPosition);
 }
 
 void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioStation currentStation)

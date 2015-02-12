@@ -193,7 +193,7 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateEventOccurred(expectedLocation);
+        provider.fireLocationUpdate(expectedLocation);
         broadcastReceived.acquire();
     }
 
@@ -217,7 +217,7 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         broadcastReceived.acquire();
     }
 
@@ -246,17 +246,17 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         broadcastReceived.acquire();
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
         proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(UUID.randomUUID().toString());
-        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         broadcastReceived.acquire();
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
         proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId);
-        provider.locationUpdateWithSpeedEventOccurred(expectedLocation, expectedSpeed);
+        provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
     }
 
@@ -309,7 +309,7 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateSelectiveEventOccurred(expectedLocation);
+        provider.fireLocationUpdateSelective(expectedLocation);
         broadcastReceived.acquire();
     }
 
@@ -361,7 +361,7 @@ public class BroadcastEnd2EndTest {
 
         Thread.sleep(300);
 
-        provider.locationUpdateSelectiveEventOccurred(expectedLocation);
+        provider.fireLocationUpdateSelective(expectedLocation);
         assertFalse(broadcastReceived.tryAcquire(500, TimeUnit.MILLISECONDS));
     }
 }

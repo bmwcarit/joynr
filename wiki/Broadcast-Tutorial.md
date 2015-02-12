@@ -271,9 +271,8 @@ proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFil
 
 ## Triggering Broadcasts
 Providers of a communication interface trigger broadcasts that are defined in the communication
-interface by calling `<broadcast name>EventOccured` methods defined in
-`<Interface name>AbstractProvider`. They must supply the broadcast arguments that are delivered to
-the consumers.
+interface by calling `fire<Broadcast name>` methods defined in `<Interface name>AbstractProvider`.
+They must supply the broadcast arguments that are delivered to the consumers.
 
 **Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProvider.java]
 (/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProvider.java)**
@@ -282,7 +281,7 @@ the consumers.
 ...
 RadioStation discoveredStation = stationsList.get(currentStationIndex);
 GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
-newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
+fireNewStationDiscovered(discoveredStation, geoPosition);
 ...
 ```
 
@@ -293,6 +292,6 @@ newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
 ...
 vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
 vehicle::GeoPosition geoPosition(countryGeoPositionMap.value(discoveredStation.getCountry()));
-newStationDiscoveredEventOccurred(discoveredStation, geoPosition);
+fireNewStationDiscovered(discoveredStation, geoPosition);
 ...
 ```

@@ -57,14 +57,14 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
-    public void onEventOccurred(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+    public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
         if (!broadcastListeners.containsKey(broadcastName)) {
             return;
         }
         List<BroadcastListener> listeners = broadcastListeners.get(broadcastName);
         synchronized (listeners) {
             for (BroadcastListener listener : listeners) {
-                listener.eventOccurred(broadcastFilters, values);
+                listener.broadcastOccurred(broadcastFilters, values);
             }
         }
     }
