@@ -21,15 +21,18 @@ package io.joynr.accesscontrol;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.Permission;
 import joynr.infrastructure.TrustLevel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +52,24 @@ public class AccessControllerImpl implements AccessController {
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.localDomainAccessController = localDomainAccessController;
         this.objectMapper = objectMapper;
+
+        defineAndRegisterCapabilityListener();
+    }
+
+    private void defineAndRegisterCapabilityListener() {
+        localCapabilitiesDirectory.addCapabilityListener(new CapabilityListener() {
+
+            @Override
+            public void capabilityRemoved(CapabilityEntry removedCapability) {
+                localDomainAccessController.unsubscribeFromAceChanges(removedCapability.getDomain(),
+                                                                      removedCapability.getInterfaceName());
+            }
+
+            @Override
+            public void capabilityAdded(CapabilityEntry addedCapability) {
+                // NOOP
+            }
+        });
     }
 
     @Override

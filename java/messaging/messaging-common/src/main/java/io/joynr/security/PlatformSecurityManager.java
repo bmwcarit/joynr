@@ -19,9 +19,35 @@ package io.joynr.security;
  * #L%
  */
 
+import joynr.JoynrMessage;
+
 public interface PlatformSecurityManager {
     /**
      * @return the platform user ID of the running Java process.
      */
     String getCurrentProcessUserId();
+
+    /**
+     * @param message
+     * @return signed JoynrMessage
+     */
+    JoynrMessage sign(JoynrMessage message);
+
+    /**
+     * @param message
+     * @return if message is valid returns true
+     */
+    boolean validate(JoynrMessage message);
+
+    /**
+     * @param message
+     * @return encrypted JoynrMessage
+     */
+    JoynrMessage encrypt(JoynrMessage message);
+
+    /**
+     * @param message
+     * @return decrypted JoynrMessage
+     */
+    JoynrMessage decrypt(JoynrMessage message);
 }

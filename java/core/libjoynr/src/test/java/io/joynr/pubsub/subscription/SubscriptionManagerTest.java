@@ -86,7 +86,7 @@ public class SubscriptionManagerTest {
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
-                                                          Maps.<String, Class<?>[]>newConcurrentMap(),
+                                                          Maps.<String, Class<?>[]> newConcurrentMap(),
                                                           cleanupScheduler);
         subscriptionId = "testSubscription";
 

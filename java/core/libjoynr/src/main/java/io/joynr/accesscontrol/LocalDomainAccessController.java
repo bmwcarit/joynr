@@ -19,12 +19,14 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.Role;
+import io.joynr.dispatcher.rpc.Callback;
+import io.joynr.proxy.Future;
 import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Permission;
 import joynr.infrastructure.MasterRegistrationControlEntry;
+import joynr.infrastructure.OwnerAccessControlEntry;
 import joynr.infrastructure.OwnerRegistrationControlEntry;
+import joynr.infrastructure.Permission;
+import joynr.infrastructure.Role;
 import joynr.infrastructure.TrustLevel;
 
 import javax.annotation.CheckForNull;
@@ -78,6 +80,7 @@ public interface LocalDomainAccessController {
     /**
      * Returns a list of entries that apply to user uid, i.e. the entries that define the access rights of the user uid.
      * Used by an Master ACL GUI to show access rights of a user.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the caller.
      * @return A list of master ACEs for specified uid.
@@ -85,7 +88,46 @@ public interface LocalDomainAccessController {
     List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid);
 
     /**
-     * Updates an existing entry (according to primary key) or adds a new entry if not already existent.
+     * Returns a list of entries that apply to user uid, i.e. the entries that define the access rights of the user uid.
+     * Used by an Master ACL GUI to show access rights of a user.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of master ACEs for specified uid.
+     */
+    Future<List<MasterAccessControlEntry>> getMasterAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
+                                                                         String uid);
+
+    /**
+     * Returns a list of editable master access control entries that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Master ACL GUI to show access rights of a user.
+     * Calling this function blocks the calling thread until the update operation is finished.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of editable master ACEs for specified uid.
+     */
+    List<MasterAccessControlEntry> getEditableMasterAccessControlEntries(String uid);
+
+    /**
+     * Returns a list of editable master access control entries that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Master ACL GUI to show access rights of a user.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of editable master ACEs for specified uid.
+     */
+    Future<List<MasterAccessControlEntry>> getEditableMasterAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
+                                                                                 String uid);
+
+    /**
+     * Updates an existing entry (according to primary key), or adds a new entry if not already existent.
+     * Calling this function blocks calling thread until update operation finish.
      *
      * @param updatedMasterAce The master ACE that has to be updated/added to the ACL store.
      * @return true if update succeeded.
@@ -93,7 +135,20 @@ public interface LocalDomainAccessController {
     boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce);
 
     /**
+     * Updates an existing entry (according to primary key), or adds a new entry if not already existent.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param updatedMasterAce The master ACE that has to be updated/added to the ACL store.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is true if update succeeded.
+     */
+    public Future<Boolean> updateMasterAccessControlEntry(Callback<Boolean> callback,
+                                                          final MasterAccessControlEntry updatedMasterAce);
+
+    /**
      * Removes an existing entry (according to primary key).
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the control entry.
      * @param domain The domain of the control entry.
@@ -104,8 +159,27 @@ public interface LocalDomainAccessController {
     boolean removeMasterAccessControlEntry(String uid, String domain, String interfaceName, String operation);
 
     /**
+     * Removes an existing entry (according to primary key).
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param callback function result handler
+     * @param uid The userId of the control entry.
+     * @param domain The domain of the control entry.
+     * @param interfaceName The interfaceName of the control entry.
+     * @param operation The operation of the control entry.
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is true if remove succeeded.
+     */
+    public Future<Boolean> removeMasterAccessControlEntry(Callback<Boolean> callback,
+                                                          String uid,
+                                                          String domain,
+                                                          String interfaceName,
+                                                          String operation);
+
+    /**
      * Returns a list of entries that apply to user uid, i.e. the entries that define the access rights of the user uid.
      * Used by an Mediator ACL GUI to show access rights of a user.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the caller.
      * @return A list of mediator ACEs for specified uid.
@@ -113,7 +187,46 @@ public interface LocalDomainAccessController {
     List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid);
 
     /**
-     * Updates an existing entry (according to primary key) or adds a new entry if not already existent.
+     * Returns a list of entries that apply to user uid, i.e. the entries that define the access rights of the user uid.
+     * Used by an Mediator ACL GUI to show access rights of a user.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of mediator ACEs for specified uid.
+     */
+    Future<List<MasterAccessControlEntry>> getMediatorAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
+                                                                           String uid);
+
+    /**
+     * Returns a list of editable mediator access control entries that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Mediator ACL GUI to show access rights of a user.
+     * Calling this function blocks the calling thread until the update operation is finished.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of editable mediator ACEs for specified uid.
+     */
+    List<MasterAccessControlEntry> getEditableMediatorAccessControlEntries(String uid);
+
+    /**
+     * Returns a list of editable mediator access control entries that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Mediator ACL GUI to show access rights of a user.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of editable mediator ACEs for specified uid.
+     */
+    Future<List<MasterAccessControlEntry>> getEditableMediatorAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
+                                                                                   String uid);
+
+    /**
+     * Updates an existing entry (according to primary key), or adds a new entry if not already existent.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param updatedMediatorAce The mediator ACE that has to be updated/added to the ACL store.
      * @return true if update succeeded.
@@ -121,7 +234,20 @@ public interface LocalDomainAccessController {
     boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce);
 
     /**
+     * Updates an existing entry (according to primary key), or adds a new entry if not already existent.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param updatedMediatorAce The mediator ACE that has to be updated/added to the ACL store.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is true if update succeeded.
+     */
+    public Future<Boolean> updateMediatorAccessControlEntry(Callback<Boolean> callback,
+                                                            final MasterAccessControlEntry updatedMediatorAce);
+
+    /**
      * Removes an existing entry (according to primary key).
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the control entry.
      * @param domain The domain of the control entry.
@@ -132,8 +258,27 @@ public interface LocalDomainAccessController {
     boolean removeMediatorAccessControlEntry(String uid, String domain, String interfaceName, String operation);
 
     /**
+     * Removes an existing entry (according to primary key).
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param callback function result handler
+     * @param uid The userId of the control entry.
+     * @param domain The domain of the control entry.
+     * @param interfaceName The interfaceName of the control entry.
+     * @param operation The operation of the control entry.
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is true if remove succeeded.
+     */
+    public Future<Boolean> removeMediatorAccessControlEntry(Callback<Boolean> callback,
+                                                            String uid,
+                                                            String domain,
+                                                            String interfaceName,
+                                                            String operation);
+
+    /**
      * Returns a list of entries that apply to user uid, i.e. the entries that define the access rights of the user uid.
      * Used by an Owner ACL GUI to show access rights of a user.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the caller.
      * @return A list of owner ACEs for specified uid.
@@ -141,7 +286,46 @@ public interface LocalDomainAccessController {
     List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid);
 
     /**
-     * Updates an existing entry (according to primary key) or adds a new entry if not already existent.
+     * Returns a list of entries that apply to user uid, i.e. the entries that define the access rights of the user uid.
+     * Used by an Owner ACL GUI to show access rights of a user.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of owner ACEs for specified uid.
+     */
+    Future<List<OwnerAccessControlEntry>> getOwnerAccessControlEntries(Callback<List<OwnerAccessControlEntry>> callback,
+                                                                       String uid);
+
+    /**
+     * Returns a list of editable owner access control entries that apply to user uid,
+     * i.e. the entries for which uid has role OWNER.
+     * Used by an Owner ACL GUI to show access rights of a user.
+     * Calling this function blocks the calling thread until the update operation is finished.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of editable owner ACEs for specified uid.
+     */
+    List<OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(String uid);
+
+    /**
+     * Returns a list of editable owner access control entries that apply to user uid,
+     * i.e. the entries for which uid has role OWNER.
+     * Used by an Owner ACL GUI to show access rights of a user.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of editable owner ACEs for specified uid.
+     */
+    Future<List<OwnerAccessControlEntry>> getEditableOwnerAccessControlEntries(Callback<List<OwnerAccessControlEntry>> callback,
+                                                                               String uid);
+
+    /**
+     * Updates an existing entry (according to primary key), or adds a new entry if not already existent.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param updatedOwnerAce The owner ACE that has to be updated/added to the ACL store.
      * @return true if update succeeded.
@@ -149,7 +333,20 @@ public interface LocalDomainAccessController {
     boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce);
 
     /**
+     * Updates an existing entry (according to primary key), or adds a new entry if not already existent.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param updatedOwnerAce The owner ACE that has to be updated/added to the ACL store.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is true if update succeeded.
+     */
+    public Future<Boolean> updateOwnerAccessControlEntry(Callback<Boolean> callback,
+                                                         final OwnerAccessControlEntry updatedOwnerAce);
+
+    /**
      * Removes an existing entry (according to primary key).
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the control entry.
      * @param domain The domain of the control entry.
@@ -158,6 +355,24 @@ public interface LocalDomainAccessController {
      * @return true if remove succeeded.
      */
     boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param callback function result handler
+     * @param uid The userId of the control entry.
+     * @param domain The domain of the control entry.
+     * @param interfaceName The interfaceName of the control entry.
+     * @param operation The operation of the control entry.
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is true if remove succeeded.
+     */
+    public Future<Boolean> removeOwnerAccessControlEntry(Callback<Boolean> callback,
+                                                         String uid,
+                                                         String domain,
+                                                         String interfaceName,
+                                                         String operation);
 
     /**
      * Get provider permission to expose an interface
@@ -170,13 +385,52 @@ public interface LocalDomainAccessController {
     Permission getProviderPermission(String uid, String domain, String interfaceName, TrustLevel trustLevel);
 
     /**
-     * Returns a list of editable master registration entries applying to domains the user uid has role Master,
-     * i.e. the entries the user uid is allowed to edit. Used by an Master ACL editor app.
+     * Returns a list of master registration control entries that apply to provider uid, i.e. the entries that define the registration rights of the provider uid.
+     * Used by an Master RCL GUI to show registration rights of a provider.
+     * Calling this function blocks the calling thread until the update operation is finished.
+     *
+     * @param uid The provider userId.
+     * @return A list of master RCEs for specified uid.
+     */
+    List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of master registration control entries that apply to provider uid, i.e. the entries that define the registration rights of the provider uid.
+     * Used by an Master RCL GUI to show registration rights of a provider.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The provider userId.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of master RCEs for specified uid.
+     */
+    Future<List<MasterRegistrationControlEntry>> getMasterRegistrationControlEntries(Callback<List<MasterRegistrationControlEntry>> callback,
+                                                                                     String uid);
+
+    /**
+     * Returns a list of editable master registration control entries that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Master RCL GUI to show registration rights of a provider.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the caller.
-     * @return A list of entries applying to domains the user uid has role Master.
+     * @return A list of editable master RCEs for specified uid.
      */
-    List<MasterAccessControlEntry> getEditableMasterRegistrationControlEntries(String uid);
+    List<MasterRegistrationControlEntry> getEditableMasterRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of editable master registration control entries  that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Master RCL GUI to show registration rights of a provider.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of editable master RCEs for specified uid.
+     */
+    Future<List<MasterRegistrationControlEntry>> getEditableMasterRegistrationControlEntries(Callback<List<MasterRegistrationControlEntry>> callback,
+                                                                                             String uid);
 
     /**
      * Updates an existing entry (according to primary key) or adds a new entry if not already existent.
@@ -197,13 +451,52 @@ public interface LocalDomainAccessController {
     boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName);
 
     /**
-     * Returns a list of editable mediator registration entries applying to domains the user uid has role Master,
-     * i.e. the entries the user uid is allowed to edit. Used by an Mediator ACL editor app.
+     * Returns a list of mediator registration control entries that apply to provider uid, i.e. the entries that define the registration rights of the provider uid.
+     * Used by an Mediator RCL GUI to show registration rights of a provider.
+     * Calling this function blocks the calling thread until the update operation is finished.
+     *
+     * @param uid The provider userId.
+     * @return A list of mediator RCEs for specified uid.
+     */
+    List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of mediator registration control entries that apply to provider uid, i.e. the entries that define the registration rights of the provider uid.
+     * Used by an Mediator RCL GUI to show registration rights of a provider.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The provider userId.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of mediator RCEs for specified uid.
+     */
+    Future<List<MasterRegistrationControlEntry>> getMediatorRegistrationControlEntries(Callback<List<MasterRegistrationControlEntry>> callback,
+                                                                                       String uid);
+
+    /**
+     * Returns a list of editable mediator registration control entries that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Mediator RCL GUI to show registration rights of a provider.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the caller.
-     * @return A list of entries applying to domains the user uid has role Master.
+     * @return A list of editable mediator RCEs for specified uid.
      */
-    List<MasterAccessControlEntry> getEditableMediatorRegistrationControlEntries(String uid);
+    List<MasterRegistrationControlEntry> getEditableMediatorRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of editable mediator registration control entries  that apply to user uid,
+     * i.e. the entries for which uid has role MASTER.
+     * Used by an Mediator RCL GUI to show registration rights of a provider.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of editable mediator RCEs for specified uid.
+     */
+    Future<List<MasterRegistrationControlEntry>> getEditableMediatorRegistrationControlEntries(Callback<List<MasterRegistrationControlEntry>> callback,
+                                                                                               String uid);
 
     /**
      * Updates an existing entry (according to primary key) or adds a new entry if not already existent.
@@ -224,13 +517,52 @@ public interface LocalDomainAccessController {
     boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName);
 
     /**
-     * Returns a list of editable owner registration entries applying to domains the user uid has role Owner,
-     * i.e. the entries the user uid is allowed to edit. Used by an Owner ACL editor app.
+     * Returns a list of owner registration control entries that apply to provider uid, i.e. the entries that define the registration rights of the provider uid.
+     * Used by an Owner RCL GUI to show registration rights of a provider.
+     * Calling this function blocks the calling thread until the update operation is finished.
+     *
+     * @param uid The provider userId.
+     * @return A list of owner RCEs for specified uid.
+     */
+    List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of owner registration control entries that apply to provider uid, i.e. the entries that define the registration rights of the provider uid.
+     * Used by an Owner RCL GUI to show registration rights of a provider.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The provider userId.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of owner RCEs for specified uid.
+     */
+    Future<List<OwnerRegistrationControlEntry>> getOwnerRegistrationControlEntries(Callback<List<OwnerRegistrationControlEntry>> callback,
+                                                                                   String uid);
+
+    /**
+     * Returns a list of editable owner registration control entries that apply to user uid,
+     * i.e. the entries for which uid has role OWNER.
+     * Used by an Owner RCL GUI to show registration rights of a provider.
+     * Calling this function blocks the calling thread until the update operation is finished.
      *
      * @param uid The userId of the caller.
-     * @return A list of entries applying to domains the user uid has role Owner.
+     * @return A list of editable owner RCEs for specified uid.
      */
-    List<OwnerAccessControlEntry> getEditableOwnerRegistrationControlEntries(String uid);
+    List<OwnerRegistrationControlEntry> getEditableOwnerRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of editable owner registration control entries  that apply to user uid,
+     * i.e. the entries for which uid has role OWNER.
+     * Used by an Owner RCL GUI to show registration rights of a provider.
+     * Calling this function doesn't block the calling thread.
+     *
+     * @param uid The userId of the caller.
+     * @param callback function result handler
+     * @return Future object whose shared state is made ready when the execution of the function ends.
+     * Shared state is a list of editable owner RCEs for specified uid.
+     */
+    Future<List<OwnerRegistrationControlEntry>> getEditableOwnerRegistrationControlEntries(Callback<List<OwnerRegistrationControlEntry>> callback,
+                                                                                           String uid);
 
     /**
      * Updates an existing entry (according to primary key) or adds a new entry if not already existent.
@@ -249,4 +581,11 @@ public interface LocalDomainAccessController {
      * @return true if remove succeeded.
      */
     boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName);
+
+    /**
+     * Unsuscribe from ACE changes for the given domain and interface.
+     * @param domain The domain to unregister
+     * @param interfaceName The interface to unregister
+     */
+    public void unsubscribeFromAceChanges(String domain, String interfaceName);
 }

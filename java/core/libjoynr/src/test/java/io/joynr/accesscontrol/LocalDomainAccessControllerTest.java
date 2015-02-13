@@ -19,24 +19,43 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
-import net.sf.ehcache.CacheManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.ProxyInvocationHandler;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import joynr.OnChangeSubscriptionQos;
+import joynr.infrastructure.DomainRoleEntry;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
+import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainAccessControllerProxy;
+import joynr.infrastructure.MasterAccessControlEntry;
+import joynr.infrastructure.OwnerAccessControlEntry;
+import joynr.infrastructure.Permission;
+import joynr.infrastructure.Role;
+import joynr.infrastructure.TrustLevel;
+import net.sf.ehcache.CacheManager;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
 public class LocalDomainAccessControllerTest {
     private static final String WILDCARD = "*";
     private static final String UID1 = "uid1";
@@ -44,25 +63,37 @@ public class LocalDomainAccessControllerTest {
     private static final String INTERFACE1 = "interface1";
     private static final String OPEARATION1 = "operation1";
 
-    private static CacheManager cacheManager;
-    private static DomainAccessControlStore store;
-    private static AccessControlAlgorithm accessControlAlgorithm;
-    private static LocalDomainAccessController localDomainAccessController;
+    private CacheManager cacheManager;
+    private DomainAccessControlStore domainAccessControlStore;
+    private LocalDomainAccessController localDomainAccessController;
     private MasterAccessControlEntry masterAce;
     private OwnerAccessControlEntry ownerAce;
     private DomainRoleEntry userDre;
     private DomainRoleEntry dummyUserDre;
 
-    @BeforeClass
-    public static void initialize() {
-        cacheManager = CacheManager.create();
-        store = new DomainAccessControlStoreEhCache(cacheManager);
-        accessControlAlgorithm = new AccessControlAlgorithm();
-        localDomainAccessController = new LocalDomainAccessControllerImpl(store, accessControlAlgorithm);
-    }
+    @Mock
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
+    @Mock
+    private ProxyInvocationHandler proxyInvocationHandlerMock;
+    @Mock
+    private LocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
 
     @Before
     public void setup() {
+        cacheManager = CacheManager.create();
+        domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager);
+
+        String accessControlDomain = "accessControlDomain";
+        when(proxyInvocationHandlerFactoryMock.create(any(String.class),
+                                                      any(String.class),
+                                                      any(String.class),
+                                                      any(DiscoveryQos.class),
+                                                      any(MessagingQos.class))).thenReturn(proxyInvocationHandlerMock);
+        localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
+                                                                          domainAccessControlStore,
+                                                                          localCapabilitiesDirectoryMock,
+                                                                          proxyInvocationHandlerFactoryMock);
+
         // instantiate some template objects
         userDre = new DomainRoleEntry(UID1, Arrays.asList(DOMAIN1), Role.OWNER);
         masterAce = new MasterAccessControlEntry(UID1,
@@ -94,19 +125,25 @@ public class LocalDomainAccessControllerTest {
     }
 
     @Test
-    public void testHasRole() throws Exception {
-        store.updateDomainRole(userDre);
+    public void testHasRole() throws Throwable {
+        domainAccessControlStore.updateDomainRole(userDre);
 
         assertTrue("UID1 should have role OWNER in DRT", localDomainAccessController.hasRole(UID1, DOMAIN1, Role.OWNER));
         assertFalse("UID1 should not have role MASTER in DRT", localDomainAccessController.hasRole(UID1,
                                                                                                    DOMAIN1,
                                                                                                    Role.MASTER));
+
+        Method method = GlobalDomainAccessControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
+                                                                          DomainRoleEntryChangedBroadcastListener.class,
+                                                                          OnChangeSubscriptionQos.class,
+                                                                          DomainRoleEntryChangedBroadcastFilterParameters.class);
+        verify(proxyInvocationHandlerMock, times(1)).invoke(any(Object.class), eq(method), any(Object[].class));
     }
 
     @Test
     public void testConsumerPermission() throws Exception {
-        store.updateDomainRole(dummyUserDre);
-        store.updateOwnerAccessControlEntry(ownerAce);
+        domainAccessControlStore.updateDomainRole(dummyUserDre);
+        domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
 
         assertEquals("UID1 should have Permission YES",
                      Permission.YES,
@@ -120,13 +157,13 @@ public class LocalDomainAccessControllerTest {
     @Test
     public void testConsumerPermissionInvalidOwnerAce() throws Exception {
         masterAce.setDefaultConsumerPermission(Permission.ASK);
-        store.updateDomainRole(dummyUserDre);
-        store.updateOwnerAccessControlEntry(ownerAce);
+        domainAccessControlStore.updateDomainRole(dummyUserDre);
+        domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
         DomainRoleEntry dummyUserDomainRoleEntryMaster = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
                                                                              Arrays.asList(DOMAIN1),
                                                                              Role.MASTER);
-        store.updateDomainRole(dummyUserDomainRoleEntryMaster);
-        store.updateMasterAccessControlEntry(masterAce);
+        domainAccessControlStore.updateDomainRole(dummyUserDomainRoleEntryMaster);
+        domainAccessControlStore.updateMasterAccessControlEntry(masterAce);
 
         assertEquals("UID1 should have Permission NO",
                      Permission.NO,
@@ -139,15 +176,15 @@ public class LocalDomainAccessControllerTest {
 
     @Test
     public void testConsumerPermissionOwnerAceOverrulesMaster() throws Exception {
-        store.updateDomainRole(dummyUserDre);
+        domainAccessControlStore.updateDomainRole(dummyUserDre);
         ownerAce.setRequiredTrustLevel(TrustLevel.MID);
         ownerAce.setConsumerPermission(Permission.ASK);
-        store.updateOwnerAccessControlEntry(ownerAce);
+        domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
         DomainRoleEntry dummyUserDomainRoleEntryMaster = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
                                                                              Arrays.asList(DOMAIN1),
                                                                              Role.MASTER);
-        store.updateDomainRole(dummyUserDomainRoleEntryMaster);
-        store.updateMasterAccessControlEntry(masterAce);
+        domainAccessControlStore.updateDomainRole(dummyUserDomainRoleEntryMaster);
+        domainAccessControlStore.updateMasterAccessControlEntry(masterAce);
 
         assertEquals("UID1 should have Permission ASK",
                      Permission.ASK,
@@ -167,9 +204,9 @@ public class LocalDomainAccessControllerTest {
 
     @Test
     public void testConsumerPermissionOperationWildcard() throws Exception {
-        store.updateDomainRole(dummyUserDre);
+        domainAccessControlStore.updateDomainRole(dummyUserDre);
         ownerAce.setOperation(WILDCARD);
-        store.updateOwnerAccessControlEntry(ownerAce);
+        domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
         assertEquals("UID1 should have Permission YES",
                      Permission.YES,
                      localDomainAccessController.getConsumerPermission(UID1,

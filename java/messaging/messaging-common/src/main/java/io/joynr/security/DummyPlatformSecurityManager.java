@@ -19,11 +19,33 @@ package io.joynr.security;
  * #L%
  */
 
+import joynr.JoynrMessage;
+
 public class DummyPlatformSecurityManager implements PlatformSecurityManager {
 
     @Override
     public String getCurrentProcessUserId() {
         return System.getProperty("user.name");
+    }
+
+    @Override
+    public JoynrMessage sign(JoynrMessage message) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public boolean validate(JoynrMessage message) {
+        return true;
+    }
+
+    @Override
+    public JoynrMessage encrypt(JoynrMessage message) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public JoynrMessage decrypt(JoynrMessage message) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
 }

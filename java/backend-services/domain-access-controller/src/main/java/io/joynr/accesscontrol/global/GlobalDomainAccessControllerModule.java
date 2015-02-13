@@ -25,8 +25,11 @@ import com.google.inject.name.Named;
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.accesscontrol.DomainAccessControlStoreEhCache;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.config.Configuration;
 
 public class GlobalDomainAccessControllerModule extends AbstractModule {
 
@@ -39,7 +42,20 @@ public class GlobalDomainAccessControllerModule extends AbstractModule {
 
     @Provides
     @Named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)
-    String provideAccessControlDomain(@Named(ConfigurableMessagingSettings.PROPERTY_ACCESSCONTROL_DOMAIN) String aclDomain) {
+    String provideAccessControlDomain(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String aclDomain) {
         return aclDomain;
+    }
+
+    @Provides
+    @Named(MessagingPropertyKeys.CHANNELID)
+    String provideAccessControlChannelId(@Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String accessControlChannelId) {
+        return accessControlChannelId;
+    }
+
+    @Provides
+    CacheManager provideCacheManager() {
+        Configuration configuration = new Configuration();
+        configuration.setName("GDACEhCacheManager");
+        return CacheManager.create(configuration);
     }
 }

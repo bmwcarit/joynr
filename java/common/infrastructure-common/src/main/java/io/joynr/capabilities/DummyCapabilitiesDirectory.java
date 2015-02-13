@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
+public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
     private static final DummyCapabilitiesDirectory instance = new DummyCapabilitiesDirectory();
     private ArrayList<CapabilityEntry> registeredCapabilities = Lists.newArrayList();
@@ -50,6 +50,7 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     public RegistrationFuture add(CapabilityEntry capabilityEntry) {
         capabilityEntry.addEndpoint(new JoynrMessagingEndpointAddress(myChannelId));
         registeredCapabilities.add(capabilityEntry);
+        notifyCapabilityAdded(capabilityEntry);
         return new RegistrationFuture(RegistrationStatus.DONE, capabilityEntry.getParticipantId());
     }
 
@@ -98,5 +99,4 @@ public class DummyCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
         registeredCapabilities.clear();
     }
-
 }

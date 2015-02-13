@@ -56,7 +56,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     private static final String WILDCARD = "*";
     private final CacheManager cacheManager;
 
-    enum CacheId {
+    public enum CacheId {
 
         MASTER_ACL("io.joynr.MasterACL"), OWNER_ACL("io.joynr.OwnerACL"), MEDIATOR_ACL("io.joynr.MediatorACL"), DOMAIN_ROLES(
                 "io.joynr.DomainRoleTable");

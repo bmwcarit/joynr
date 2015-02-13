@@ -42,6 +42,7 @@ import javax.annotation.CheckForNull;
 
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -57,7 +58,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirectory {
+public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -68,12 +69,14 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     private CapabilitiesStore globalCapabilitiesCache;
 
     @Inject
-    // CHECKSTYLE:OFF
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
                                           MessagingEndpointDirectory messagingEndpointDirectory,
                                           CapabilitiesStore localCapabilitiesStore,
@@ -98,6 +101,13 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                                                  System.currentTimeMillis(),
                                                                  new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId)));
 
+        this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
+                                                                 GlobalDomainAccessController.INTERFACE_NAME,
+                                                                 new ProviderQos(),
+                                                                 domainAccessControllerParticipantId,
+                                                                 System.currentTimeMillis(),
+                                                                 new JoynrMessagingEndpointAddress(domainAccessControllerChannelId)));
+
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
                                                                          this,
                                                                          proxyInvocationHandlerFactory);
@@ -105,8 +115,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
     /**
      * Adds local capability to local and (depending on SCOPE) the global directory
-     *
-     * @return
      */
     @Override
     public RegistrationFuture add(final CapabilityEntry capabilityEntry) {
@@ -128,6 +136,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             // in the other case, the global registration needs to be done
         } else {
             localCapabilitiesStore.add(capabilityEntry);
+            notifyCapabilityAdded(capabilityEntry);
         }
 
         // Register globally
@@ -167,6 +176,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     @Override
     public void remove(final CapabilityEntry capEntry) {
         localCapabilitiesStore.remove(capEntry.getParticipantId());
+        notifyCapabilityRemoved(capEntry);
 
         // Remove from the global capabilities directory if needed
         if (capEntry.getProviderQos().getScope() != ProviderScope.LOCAL) {

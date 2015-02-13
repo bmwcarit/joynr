@@ -22,6 +22,7 @@ package io.joynr.accesscontrol.global;
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.provider.Promise;
 import joynr.infrastructure.DomainRoleEntry;
+import joynr.infrastructure.ChangeType;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
 import joynr.infrastructure.MasterAccessControlEntry;
 import joynr.infrastructure.MasterRegistrationControlEntry;
@@ -53,14 +54,25 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateDomainRoleDeferred> updateDomainRole(DomainRoleEntry updatedEntry) {
         UpdateDomainRoleDeferred deferred = new UpdateDomainRoleDeferred();
-        deferred.resolve(domainAccessStore.updateDomainRole(updatedEntry));
+        boolean updateSuccess = domainAccessStore.updateDomainRole(updatedEntry);
+        if (updateSuccess) {
+            fireDomainRoleEntryChanged(ChangeType.UPDATE, updatedEntry);
+        }
+        deferred.resolve(updateSuccess);
         return new Promise<UpdateDomainRoleDeferred>(deferred);
     }
 
     @Override
     public Promise<RemoveDomainRoleDeferred> removeDomainRole(String uid, Role role) {
         RemoveDomainRoleDeferred deferred = new RemoveDomainRoleDeferred();
-        deferred.resolve(domainAccessStore.removeDomainRole(uid, role));
+        boolean removeSuccess = domainAccessStore.removeDomainRole(uid, role);
+        if (removeSuccess) {
+            // To notify DRE removal only primary keys (user ID and role) must
+            // be set. All other fields are undefined.
+            DomainRoleEntry removedEntry = new DomainRoleEntry(uid, null, role);
+            fireDomainRoleEntryChanged(ChangeType.REMOVE, removedEntry);
+        }
+        deferred.resolve(removeSuccess);
         return new Promise<RemoveDomainRoleDeferred>(deferred);
     }
 
@@ -89,7 +101,11 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateMasterAccessControlEntryDeferred> updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAccessControlEntry) {
         UpdateMasterAccessControlEntryDeferred deferred = new UpdateMasterAccessControlEntryDeferred();
-        deferred.resolve(domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry));
+        boolean updateSuccess = domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry);
+        if (updateSuccess) {
+            fireMasterAccessControlEntryChanged(ChangeType.UPDATE, updatedMasterAccessControlEntry);
+        }
+        deferred.resolve(updateSuccess);
         return new Promise<UpdateMasterAccessControlEntryDeferred>(deferred);
     }
 
@@ -99,7 +115,21 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
                                                                                           String interfaceName,
                                                                                           String operation) {
         RemoveMasterAccessControlEntryDeferred deferred = new RemoveMasterAccessControlEntryDeferred();
-        deferred.resolve(domainAccessStore.removeMasterAccessControlEntry(uid, domain, interfaceName, operation));
+        boolean removeSuccess = domainAccessStore.removeMasterAccessControlEntry(uid, domain, interfaceName, operation);
+        if (removeSuccess) {
+            MasterAccessControlEntry removedEntry = new MasterAccessControlEntry(uid,
+                                                                                 domain,
+                                                                                 interfaceName,
+                                                                                 null,
+                                                                                 null,
+                                                                                 null,
+                                                                                 null,
+                                                                                 operation,
+                                                                                 null,
+                                                                                 null);
+            fireMasterAccessControlEntryChanged(ChangeType.REMOVE, removedEntry);
+        }
+        deferred.resolve(removeSuccess);
         return new Promise<RemoveMasterAccessControlEntryDeferred>(deferred);
     }
 
@@ -128,7 +158,11 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateMediatorAccessControlEntryDeferred> updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAccessControlEntry) {
         UpdateMediatorAccessControlEntryDeferred deferred = new UpdateMediatorAccessControlEntryDeferred();
-        deferred.resolve(domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry));
+        boolean updateSuccess = domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry);
+        if (updateSuccess) {
+            fireMediatorAccessControlEntryChanged(ChangeType.UPDATE, updatedMediatorAccessControlEntry);
+        }
+        deferred.resolve(updateSuccess);
         return new Promise<UpdateMediatorAccessControlEntryDeferred>(deferred);
     }
 
@@ -138,7 +172,24 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
                                                                                               String interfaceName,
                                                                                               String operation) {
         RemoveMediatorAccessControlEntryDeferred deferred = new RemoveMediatorAccessControlEntryDeferred();
-        deferred.resolve(domainAccessStore.removeMediatorAccessControlEntry(uid, domain, interfaceName, operation));
+        boolean removeSuccess = domainAccessStore.removeMediatorAccessControlEntry(uid,
+                                                                                   domain,
+                                                                                   interfaceName,
+                                                                                   operation);
+        if (removeSuccess) {
+            MasterAccessControlEntry removedEntry = new MasterAccessControlEntry(uid,
+                                                                                 domain,
+                                                                                 interfaceName,
+                                                                                 null,
+                                                                                 null,
+                                                                                 null,
+                                                                                 null,
+                                                                                 operation,
+                                                                                 null,
+                                                                                 null);
+            fireMediatorAccessControlEntryChanged(ChangeType.REMOVE, removedEntry);
+        }
+        deferred.resolve(removeSuccess);
         return new Promise<RemoveMediatorAccessControlEntryDeferred>(deferred);
     }
 
@@ -167,7 +218,11 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateOwnerAccessControlEntryDeferred> updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAccessControlEntry) {
         UpdateOwnerAccessControlEntryDeferred deferred = new UpdateOwnerAccessControlEntryDeferred();
-        deferred.resolve(domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry));
+        boolean updateSuccess = domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry);
+        if (updateSuccess) {
+            fireOwnerAccessControlEntryChanged(ChangeType.UPDATE, updatedOwnerAccessControlEntry);
+        }
+        deferred.resolve(updateSuccess);
         return new Promise<UpdateOwnerAccessControlEntryDeferred>(deferred);
     }
 
@@ -177,7 +232,18 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
                                                                                         String interfaceName,
                                                                                         String operation) {
         RemoveOwnerAccessControlEntryDeferred deferred = new RemoveOwnerAccessControlEntryDeferred();
-        deferred.resolve(domainAccessStore.removeOwnerAccessControlEntry(uid, domain, interfaceName, operation));
+        boolean removeSuccess = domainAccessStore.removeOwnerAccessControlEntry(uid, domain, interfaceName, operation);
+        if (removeSuccess) {
+            OwnerAccessControlEntry removedEntry = new OwnerAccessControlEntry(uid,
+                                                                               domain,
+                                                                               interfaceName,
+                                                                               null,
+                                                                               null,
+                                                                               operation,
+                                                                               null);
+            fireOwnerAccessControlEntryChanged(ChangeType.REMOVE, removedEntry);
+        }
+        deferred.resolve(removeSuccess);
         return new Promise<RemoveOwnerAccessControlEntryDeferred>(deferred);
     }
 

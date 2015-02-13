@@ -40,6 +40,18 @@ public interface LocalCapabilitiesDirectory {
     void remove(CapabilityEntry capabilityEntry);
 
     /**
+     * Adds a listener for capability changes to the directory.
+     * @param listener the listener to add.
+     */
+    void addCapabilityListener(CapabilityListener listener);
+
+    /**
+     * Removes a listener for capability changes from the directory.
+     * @param listener the listener to remove.
+     */
+    void removeCapabilityListener(CapabilityListener listener);
+
+    /**
      * Searches for capabilities by domain and interface name.
      *
      * @param domain

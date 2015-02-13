@@ -107,12 +107,16 @@ public class LocalCapabilitiesDirectoryTest {
         String channelUrlDirectoryChannelId = "dirchannelId";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
         String capabiltitiesDirectoryChannelId = "dirchannelId";
+        String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
+        String domainAccessControllerChannelId = "domainAccessControllerChannelId";
 
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
                                                                         channelUrlDirectoryParticipantId,
                                                                         channelUrlDirectoryChannelId,
                                                                         capabilitiesDirectoryParticipantId,
                                                                         capabiltitiesDirectoryChannelId,
+                                                                        domainAccessControllerParticipantId,
+                                                                        domainAccessControllerChannelId,
                                                                         channelId,
                                                                         messagingEndpointDirectoryMock,
                                                                         localCapabilitiesStoreMock,

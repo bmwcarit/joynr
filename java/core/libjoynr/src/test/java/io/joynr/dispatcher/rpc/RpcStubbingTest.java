@@ -27,6 +27,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doReturn;
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.DispatcherTestModule;
 import io.joynr.dispatcher.RequestCaller;
@@ -72,14 +73,15 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
  * Simulates consumer-side call to JoynMessagingConnectorInvocationHandler, with the request being
- * 
+ *
  * @author david.katz
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RpcStubbingTest {
@@ -99,6 +101,8 @@ public class RpcStubbingTest {
             new GpsLocation(3.0d, 4.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) });
 
     private static final long DEFAULT_TTL = 2000L;
+    @Mock
+    private AccessController accessControllerMock;
 
     public static interface TestSync extends JoynrSyncInterface {
         public GpsLocation returnsGpsLocation();
@@ -164,7 +168,13 @@ public class RpcStubbingTest {
         // required to inject static members of JoynMessagingConnectorFactory
         injector = Guice.createInjector(new MessagingModule(),
                                         new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
-                                        new DispatcherTestModule());
+                                        new DispatcherTestModule(),
+                                        new AbstractModule() {
+                                            @Override
+                                            protected void configure() {
+                                                bind(AccessController.class).toInstance(accessControllerMock);
+                                            }
+                                        });
 
         final RequestInterpreter requestInterpreter = injector.getInstance(RequestInterpreter.class);
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);

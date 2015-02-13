@@ -19,6 +19,17 @@ package io.joynr.dispatcher;
  * #L%
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestInterpreter;
@@ -36,6 +47,16 @@ import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.security.PlatformSecurityManager;
+import joynr.JoynrMessage;
+import joynr.Reply;
+import joynr.Request;
+
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -48,26 +69,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import joynr.JoynrMessage;
-import joynr.Reply;
-import joynr.Request;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  * Default implementation of the Dispatcher interface.
@@ -101,6 +102,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private boolean registering = false;
     private ScheduledExecutorService cleanupScheduler;
+    private AccessController accessController;
+    private PlatformSecurityManager securityManager;
 
     @Inject
     // CHECKSTYLE:OFF
@@ -114,7 +117,9 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
                                       RequestInterpreter requestInterpreter,
-                                      @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
+                                      @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                      AccessController accessController,
+                                      PlatformSecurityManager securityManager) {
         // CHECKSTYLE:ON
         this.messageSender = messageSender;
         this.messageReceiver = messageReceiver;
@@ -126,6 +131,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.subscriptionManager = subscriptionManager;
         this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
+        this.accessController = accessController;
+        this.securityManager = securityManager;
 
         // TODO would be better not to have this in the constructor to prevent
         // any race condition issues with messages being
@@ -271,27 +278,33 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     @Override
     public void messageArrived(final JoynrMessage message) {
-        if (message != null) {
-            long incomingExpiryDate = message.getExpiryDate();
-            if (!DispatcherUtils.isExpired(incomingExpiryDate)) {
-                String type = message.getType();
-                if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
-                    handleReplyMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-                    handleRequestMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-                    handleOneWayMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
-                        || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
-                    handleSubscriptionRequestReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
-                    handleSubscriptionStopReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
-                    handlePublicationReceived(message);
-                }
-            } else {
-                logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
-            }
+        if (message == null) {
+            logger.error("received messaage was null");
+            return;
+        }
+        if (!securityManager.validate(message)) {
+            logger.error("unable to validate received message, discarding message: {}", message.toLogMessage());
+            return;
+        }
+        if (DispatcherUtils.isExpired(message.getExpiryDate())) {
+            logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
+            return;
+        }
+
+        String type = message.getType();
+        if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
+            handleReplyMessageReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
+            handleRequestMessageReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
+            handleOneWayMessageReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
+            handleSubscriptionRequestReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
+            handleSubscriptionStopReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
+            handlePublicationReceived(message);
         }
     }
 
@@ -445,22 +458,25 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     }
 
     private void handleRequestMessageReceived(final JoynrMessage message) {
+        // handle only if this message creator (userId) has permissions
+        if (accessController.hasConsumerPermission(message)) {
+            String fromParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
+            String toParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
+            String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+            if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
+                messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyToChannelId));
+            }
 
-        String fromParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
-        String toParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
-        String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-        if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
-            messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyToChannelId));
-        }
-        // TODO make sure that all requests (ie not one-way) also have replyTo
-        // set, otherwise log an error
+            // TODO make sure that all requests (ie not one-way) also have replyTo
+            // set, otherwise log an error
 
-        if (requestCallerDirectory.containsKey(toParticipantId)) {
-            executeRequestAndReply(requestCallerDirectory.get(toParticipantId), message);
+            if (requestCallerDirectory.containsKey(toParticipantId)) {
+                executeRequestAndReply(requestCallerDirectory.get(toParticipantId), message);
 
-        } else {
-            putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
-            logger.info("No requestCaller found for participantId: {} queuing request message.", toParticipantId);
+            } else {
+                putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
+                logger.info("No requestCaller found for participantId: {} queuing request message.", toParticipantId);
+            }
         }
     }
 
