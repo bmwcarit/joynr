@@ -51,12 +51,12 @@ public:
 
     void publicationMissed()
     {
-        listener->publicationMissed();
+        listener->onError();
     }
 
     void attributeChanged(const T& value)
     {
-        listener->receive(value);
+        listener->onReceive(value);
     }
 
     void timeOut()

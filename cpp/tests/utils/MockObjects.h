@@ -290,28 +290,28 @@ public:
 template <typename T>
 class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T> {
 public:
-     MOCK_METHOD1_T(receive, void( T value));
-     MOCK_METHOD0(publicationMissed, void());
+     MOCK_METHOD1_T(onReceive, void( T value));
+     MOCK_METHOD0(onError, void());
 };
 
 template <typename T1, typename T2, typename... Ts>
 class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
 public:
-     MOCK_METHOD2_T(receive, void( T1 value1, T2 value2, Ts... values));
-     MOCK_METHOD0(publicationMissed, void());
+     MOCK_METHOD2_T(onReceive, void( T1 value1, T2 value2, Ts... values));
+     MOCK_METHOD0(onError, void());
 };
 
 class MockGpsSubscriptionListener : public joynr::ISubscriptionListener<joynr::types::GpsLocation> {
 public:
-    MOCK_METHOD1(receive, void(joynr::types::GpsLocation value));
-    MOCK_METHOD0(publicationMissed, void());
+    MOCK_METHOD1(onReceive, void(joynr::types::GpsLocation value));
+    MOCK_METHOD0(onError, void());
 };
 
 class MockGpsDoubleSubscriptionListener
         : public joynr::ISubscriptionListener<joynr::types::GpsLocation, double> {
 public:
-    MOCK_METHOD2(receive, void(joynr::types::GpsLocation value, double));
-    MOCK_METHOD0(publicationMissed, void());
+    MOCK_METHOD2(onReceive, void(joynr::types::GpsLocation value, double));
+    MOCK_METHOD0(onError, void());
 };
 
 class MockPublicationSender : public joynr::IPublicationSender {

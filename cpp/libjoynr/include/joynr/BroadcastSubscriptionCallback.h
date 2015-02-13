@@ -53,12 +53,12 @@ public:
 
     void publicationMissed()
     {
-        listener->publicationMissed();
+        listener->onError();
     }
 
     void receive(const T value, const Ts... values)
     {
-        listener->receive(value, values...);
+        listener->onReceive(value, values...);
     }
 
     void timeOut()

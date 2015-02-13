@@ -161,12 +161,12 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener2 = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(_))
+    EXPECT_CALL(*mockListener, onReceive(_))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener2, receive(_))
+    EXPECT_CALL(*mockListener2, onReceive(_))
             .WillRepeatedly(ReleaseSemaphore(&altSemaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -305,7 +305,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -319,7 +319,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                            2))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -420,7 +420,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -434,7 +434,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                            2))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -448,7 +448,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                            3))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -566,7 +566,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     MockGpsDoubleSubscriptionListener* mockListener = new MockGpsDoubleSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -580,7 +580,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                            2)), Eq(100)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -594,7 +594,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                            3)), Eq(200)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -714,7 +714,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -728,7 +728,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                            2))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -742,7 +742,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                            3))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
@@ -870,7 +870,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(A<types::GpsLocation>())).
+    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>())).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -990,10 +990,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     // Use a semaphore to count and wait on calls to the mock listener
 
     // Expect initial attribute publication with default value
-    EXPECT_CALL(*mockListenerAttribute, receive(Eq(types::GpsLocation()))).
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::GpsLocation()))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerAttribute, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::GpsLocation(
                                                                   9.0,
                                                                   51.0,
                                                                   508.0,
@@ -1007,7 +1007,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                                   2)))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerBroadcast, receive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(types::GpsLocation(
                                                                   9.0,
                                                                   51.0,
                                                                   508.0,
