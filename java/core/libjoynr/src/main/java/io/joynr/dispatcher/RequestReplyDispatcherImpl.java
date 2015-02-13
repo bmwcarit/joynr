@@ -333,7 +333,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         if (listener == null) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
-            listener.receive(attributeValue);
+            listener.onReceive(attributeValue);
         }
     }
 
@@ -345,7 +345,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         List<?> receivedList = (List<?>) receivedObject;
         Object[] broadcastValues = receivedList.toArray(new Object[receivedList.size()]);
         Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
-        Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("receive", broadcastTypes);
+        Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("onReceive", broadcastTypes);
         if (!receive.isAccessible()) {
             receive.setAccessible(true);
         }

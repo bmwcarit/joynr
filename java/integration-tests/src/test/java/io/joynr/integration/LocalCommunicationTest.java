@@ -144,11 +144,11 @@ public class LocalCommunicationTest {
         }, period, period);
 
         Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).publicationMissed();
+        verify(listener, times(0)).onError();
         // verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
         for (int i = 42; i < 42 + times; i++) {
-            verify(listener, times(1)).receive(eq(i));
+            verify(listener, times(1)).onReceive(eq(i));
         }
         verifyNoMoreInteractions(listener);
     }
@@ -182,11 +182,11 @@ public class LocalCommunicationTest {
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
 
         Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).publicationMissed();
-        verify(listener, times(times)).receive(anyInt());
+        verify(listener, times(0)).onError();
+        verify(listener, times(times)).onReceive(anyInt());
         // TODO verify publications shipped correct data
         for (int i = 42; i < 42 + times; i++) {
-            verify(listener, times(1)).receive(eq(i));
+            verify(listener, times(1)).onReceive(eq(i));
         }
         verifyNoMoreInteractions(listener);
     }

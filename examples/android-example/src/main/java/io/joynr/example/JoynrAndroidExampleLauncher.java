@@ -122,13 +122,13 @@ public class JoynrAndroidExampleLauncher {
         AttributeSubscriptionListener<GpsLocation> listener = new AttributeSubscriptionListener<GpsLocation>() {
 
             @Override
-            public void receive(GpsLocation value) {
+            public void onReceive(GpsLocation value) {
                 // TODO handle incoming updates
                 logToOutput("Received subscription update: " + value.toString());
             }
 
             @Override
-            public void publicationMissed() {
+            public void onError() {
                 // TODO Handle missed updates
 
             }

@@ -213,12 +213,12 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         subscriptionIdLocation = gpsProxy.subscribeToLocation(new AttributeSubscriptionListener<GpsLocation>() {
 
             @Override
-            public void receive(GpsLocation value) {
+            public void onReceive(GpsLocation value) {
                 LOG.info(PRINT_BORDER + "SUBSCRIPTION: location: " + value + PRINT_BORDER);
             }
 
             @Override
-            public void publicationMissed() {
+            public void onError() {
                 LOG.info(PRINT_BORDER + "SUBSCRIPTION: location, publication missed " + PRINT_BORDER);
             }
         }, subscriptionQos);

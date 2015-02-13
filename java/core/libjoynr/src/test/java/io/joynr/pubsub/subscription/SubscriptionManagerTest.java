@@ -90,12 +90,12 @@ public class SubscriptionManagerTest {
         attributeName = "testAttribute";
         attributeSubscriptionCallback = new AttributeSubscriptionListener<Integer>() {
             @Override
-            public void publicationMissed() {
+            public void onError() {
                 // TODO Auto-generated method stub
             }
 
             @Override
-            public void receive(Integer value) {
+            public void onReceive(Integer value) {
                 // TODO Auto-generated method stub
 
             }

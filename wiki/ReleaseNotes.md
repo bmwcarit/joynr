@@ -14,7 +14,7 @@
   reuses the upper and lower case as defined in the Franca model where possible
 * **[Java]** Add copy constructor to complex types of Franca model: for each complex data structure
   in the Franca model, a copy constructor is created in the respective Java class
-* **[C++]** Rename subscription listener methods
+* **[Java, C++]** Rename subscription listener methods
   * onReceive: Gets called on every received publication
   * onError: Gets called on every error that is detected on the subscription
 

@@ -60,7 +60,7 @@ public class MissedPublicationTimer extends PubSubTimerBase {
                 } else {
                     logger.info("Missed publication!");
                     delay = alertAfterInterval_ms - timeSinceLastExpectedPublication(timeSinceLastPublication);
-                    callback.publicationMissed();
+                    callback.onError();
                 }
                 logger.info("Rescheduling MissedPublicationTimer with delay: " + delay);
                 rescheduleTimer(delay);

@@ -45,9 +45,7 @@ import java.util.concurrent.TimeUnit;
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testBroadcastInterface;
-import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
-import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastListener;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
@@ -182,10 +180,10 @@ public class BroadcastEnd2EndTest {
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
-        proxy.subscribeToLocationUpdateBroadcast(new LocationUpdateBroadcastListener() {
+        proxy.subscribeToLocationUpdateBroadcast(new testBroadcastInterface.LocationUpdateBroadcastAdapter() {
 
             @Override
-            public void receive(GpsLocation location) {
+            public void onReceive(GpsLocation location) {
                 assertEquals(expectedLocation, location);
                 broadcastReceived.release();
             }
@@ -205,15 +203,16 @@ public class BroadcastEnd2EndTest {
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
-        proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
+        proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
-            @Override
-            public void receive(GpsLocation location, Double speed) {
-                assertEquals(expectedLocation, location);
-                assertEquals(expectedSpeed, speed);
-                broadcastReceived.release();
-            }
-        }, subscriptionQos);
+                                                              @Override
+                                                              public void onReceive(GpsLocation location, Double speed) {
+                                                                  assertEquals(expectedLocation, location);
+                                                                  assertEquals(expectedSpeed, speed);
+                                                                  broadcastReceived.release();
+                                                              }
+                                                          },
+                                                          subscriptionQos);
 
         Thread.sleep(300);
 
@@ -230,11 +229,11 @@ public class BroadcastEnd2EndTest {
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
-        String subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
+        String subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
                                                                                       @Override
-                                                                                      public void receive(GpsLocation location,
-                                                                                                          Double speed) {
+                                                                                      public void onReceive(GpsLocation location,
+                                                                                                            Double speed) {
                                                                                           assertEquals(expectedLocation,
                                                                                                        location);
                                                                                           assertEquals(expectedSpeed,
@@ -296,10 +295,10 @@ public class BroadcastEnd2EndTest {
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
-        proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastListener() {
+        proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastAdapter() {
 
                                                               @Override
-                                                              public void receive(GpsLocation location) {
+                                                              public void onReceive(GpsLocation location) {
                                                                   assertEquals(expectedLocation, location);
                                                                   broadcastReceived.release();
                                                               }
@@ -348,10 +347,10 @@ public class BroadcastEnd2EndTest {
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
         long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
-        proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastListener() {
+        proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastAdapter() {
 
                                                               @Override
-                                                              public void receive(GpsLocation location) {
+                                                              public void onReceive(GpsLocation location) {
                                                                   assertEquals(expectedLocation, location);
                                                                   broadcastReceived.release();
                                                               }

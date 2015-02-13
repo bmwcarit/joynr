@@ -122,11 +122,11 @@ public class ConnectorTests {
             PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(1000, 0, 1000);
             AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionListener<GpsPosition>() {
                 @Override
-                public void receive(GpsPosition value) {
+                public void onReceive(GpsPosition value) {
                 }
 
                 @Override
-                public void publicationMissed() {
+                public void onError() {
                 }
             };
             Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };
