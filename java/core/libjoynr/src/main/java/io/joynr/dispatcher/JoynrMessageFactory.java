@@ -20,6 +20,7 @@ package io.joynr.dispatcher;
  */
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.security.PlatformSecurityManager;
 
 import java.io.IOException;
 import java.util.Map;
@@ -41,12 +42,14 @@ import com.google.inject.Inject;
 public class JoynrMessageFactory {
 
     private ObjectMapper objectMapper;
+    private PlatformSecurityManager securityManager;
 
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessageFactory.class);
 
     @Inject
-    public JoynrMessageFactory(ObjectMapper objectMapper) {
+    public JoynrMessageFactory(ObjectMapper objectMapper, PlatformSecurityManager securityManager) {
         this.objectMapper = objectMapper;
+        this.securityManager = securityManager;
 
     }
 
@@ -146,6 +149,7 @@ public class JoynrMessageFactory {
 
     private Map<String, String> createHeader(final String fromParticipantId, final String toParticipantId) {
         Map<String, String> header = Maps.newHashMap();
+        header.put(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, securityManager.getCurrentProcessUserId());
         header.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, fromParticipantId);
         header.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, toParticipantId);
         header.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_APPLICATION_JSON);

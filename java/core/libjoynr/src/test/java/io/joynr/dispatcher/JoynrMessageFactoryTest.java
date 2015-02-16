@@ -19,6 +19,7 @@ package io.joynr.dispatcher;
  * #L%
  */
 
+import static org.junit.Assert.assertNotNull;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.pubsub.SubscriptionQos;
@@ -110,6 +111,7 @@ public class JoynrMessageFactoryTest {
         Assert.assertEquals(String.valueOf(expiryDate.getValue()),
                             message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
         Assert.assertTrue(message.getPayload() != null);
+        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
@@ -126,6 +128,7 @@ public class JoynrMessageFactoryTest {
                             message.getHeaderValue(JoynrMessage.HEADER_NAME_CONTENT_TYPE));
 
         Assert.assertTrue(message.getPayload() != null);
+        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
@@ -143,7 +146,7 @@ public class JoynrMessageFactoryTest {
         Assert.assertEquals(replyToChannelId, message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID));
 
         Assert.assertTrue(message.getPayload() != null);
-
+        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
@@ -157,6 +160,6 @@ public class JoynrMessageFactoryTest {
         Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
 
         Assert.assertTrue(message.getPayload() != null);
-
+        assertNotNull(message.getCreatorUserId());
     }
 }
