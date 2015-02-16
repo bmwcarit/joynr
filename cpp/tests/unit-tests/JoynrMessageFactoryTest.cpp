@@ -69,7 +69,8 @@ public:
     void TearDown(){
 
     }
-    void checkParticipantIDs(const JoynrMessage& joynrMessage){
+    void checkHeaderCreatorFromTo(const JoynrMessage& joynrMessage){
+        EXPECT_TRUE(joynrMessage.containsHeaderCreatorUserId());
         EXPECT_QSTREQ(senderID, joynrMessage.getHeaderFrom());
         EXPECT_QSTREQ(receiverID, joynrMessage.getHeaderTo());
     }
@@ -126,8 +127,7 @@ TEST_F(JoynrMessageFactoryTest, createRequest_withContentType) {
                 qos,
                 request
     );
-    EXPECT_QSTREQ(senderID, joynrMessage.getHeaderFrom());
-    EXPECT_QSTREQ(receiverID, joynrMessage.getHeaderTo());
+    checkHeaderCreatorFromTo(joynrMessage);
 }
 
 TEST_F(JoynrMessageFactoryTest, createRequest){
@@ -150,7 +150,7 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
               .arg(expectedExpiryDate.toString())
               .arg(expectedExpiryDate.toMSecsSinceEpoch()));
 
-    checkParticipantIDs(joynrMessage);
+    checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);
     EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST, joynrMessage.getType());
 }
@@ -162,7 +162,7 @@ TEST_F(JoynrMessageFactoryTest, createReply){
                 qos,
                 reply
     );
-    checkParticipantIDs(joynrMessage);
+    checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
     EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
 }
@@ -174,7 +174,7 @@ TEST_F(JoynrMessageFactoryTest, createOneWay){
                 qos,
                 reply
     );
-    checkParticipantIDs(joynrMessage);
+    checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
     EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
 }
@@ -182,7 +182,7 @@ TEST_F(JoynrMessageFactoryTest, createOneWay){
 //TEST_F(JoynrMessageFactoryTest, createSubscriptionReply){
 //    QString subscriptionId("subscriptionTestId");
 //    JoynrMessage joynrMessage = JoynrMessageFactory::prepareSubscriptionReply(senderID, receiverID, payload, subscriptionId);
-//    checkParticipantIDs(joynrMessage);
+//    checkHeaderCreatorFromTo(joynrMessage);
 //    checkPayload(joynrMessage);
 //    EXPECT_QSTREQ(subscriptionId, joynrMessage.getHeader<QString>(JoynrMessage::HEADER_NAME_SUBSCRIPTION_ID));
 //    EXPECT_QSTREQ(JoynrMessage::MESSAGE_TYPE_SUBSCRIPTION_REPLY, joynrMessage.getType());
@@ -195,7 +195,7 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
                 qos,
                 subscriptionPublication
     );
-    checkParticipantIDs(joynrMessage);
+    checkHeaderCreatorFromTo(joynrMessage);
     checkSubscriptionPublication(joynrMessage);
     EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
 }
@@ -212,7 +212,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
                 qos,
                 subscriptionRequest
     );
-    checkParticipantIDs(joynrMessage);
+    checkHeaderCreatorFromTo(joynrMessage);
     EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
 
@@ -226,7 +226,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
                 qos,
                 subscriptionStop
     );
-    checkParticipantIDs(joynrMessage);
+    checkHeaderCreatorFromTo(joynrMessage);
     EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, joynrMessage.getType());
 }
 

@@ -46,6 +46,13 @@ const QString& JoynrMessage::HEADER_MESSAGE_ID()
     static const QString headerMessageId("msgId");
     return headerMessageId;
 }
+
+const QString& JoynrMessage::HEADER_CREATOR_USER_ID()
+{
+    static const QString headerCreatorUserId("creator");
+    return headerCreatorUserId;
+}
+
 const QString& JoynrMessage::HEADER_TO()
 {
     static const QString headerTo("to");
@@ -191,6 +198,21 @@ QString JoynrMessage::getHeaderMessageId() const
 void JoynrMessage::setHeaderMessageId(const QString& msgId)
 {
     setHeader<QString>(HEADER_MESSAGE_ID(), msgId);
+}
+
+bool JoynrMessage::containsHeaderCreatorUserId() const
+{
+    return containsHeader(HEADER_CREATOR_USER_ID());
+}
+
+QString JoynrMessage::getHeaderCreatorUserId() const
+{
+    return getHeader<QString>(HEADER_CREATOR_USER_ID());
+}
+
+void JoynrMessage::setHeaderCreatorUserId(const QString& creatorUserId)
+{
+    setHeader<QString>(HEADER_CREATOR_USER_ID(), creatorUserId);
 }
 
 bool JoynrMessage::containsHeaderTo() const
