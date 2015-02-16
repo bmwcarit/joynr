@@ -23,6 +23,8 @@ import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.serialize.NumberSerializer;
+import io.joynr.security.DummyPlatformSecurityManager;
+import io.joynr.security.PlatformSecurityManager;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -72,7 +74,7 @@ public class MessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-
+        bind(PlatformSecurityManager.class).to(DummyPlatformSecurityManager.class);
     }
 
     @Provides
