@@ -71,6 +71,7 @@
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
 #include "joynr/MessageRouter.h"
 
@@ -680,6 +681,126 @@ public:
                  bool(
                      const joynr::types::GpsLocation &location,
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
+};
+
+class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
+public:
+    MockGlobalDomainAccessControllerProxy() :
+        GlobalDomainAccessControllerProxy(
+                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                NULL,
+                NULL,
+                "domain",
+                joynr::ProxyQos(),
+                joynr::MessagingQos(),
+                false),
+        joynr::ProxyBase(
+                NULL,
+                NULL,
+                "domain",
+                "INTERFACE_NAME",
+                joynr::ProxyQos(),
+                joynr::MessagingQos(),
+                false),
+        GlobalDomainAccessControllerProxyBase(
+                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                NULL,
+                NULL,
+                "domain",
+                joynr::ProxyQos(),
+                joynr::MessagingQos(),
+                false),
+        GlobalDomainAccessControllerSyncProxy(
+                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                NULL,
+                NULL,
+                "domain",
+                joynr::ProxyQos(),
+                joynr::MessagingQos(),
+                false),
+        GlobalDomainAccessControllerAsyncProxy(
+                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                NULL,
+                NULL,
+                "domain",
+                joynr::ProxyQos(),
+                joynr::MessagingQos(),
+                false)
+    {
+    }
+
+    MOCK_METHOD2(
+            getDomainRoles,
+            QSharedPointer<joynr::Future<QList<joynr::infrastructure::DomainRoleEntry>>>(
+                    QString uid,
+                    std::function<void(
+                        const joynr::RequestStatus& status,
+                        const QList<joynr::infrastructure::DomainRoleEntry>& domainRoleEntries
+                    )> callbackFct
+            )
+    );
+
+    MOCK_METHOD3(
+            getMasterAccessControlEntries,
+            QSharedPointer<joynr::Future<QList<joynr::infrastructure::MasterAccessControlEntry>>>(
+                    QString domain,
+                    QString interfaceName,
+                    std::function<void(
+                        const joynr::RequestStatus& status,
+                        const QList<joynr::infrastructure::MasterAccessControlEntry>& masterAces
+                    )> callbackFct
+            )
+    );
+
+    MOCK_METHOD3(
+            getMediatorAccessControlEntries,
+            QSharedPointer<joynr::Future<QList<joynr::infrastructure::MasterAccessControlEntry>>>(
+                    QString domain,
+                    QString interfaceName,
+                    std::function<void(
+                        const joynr::RequestStatus& status,
+                        const QList<joynr::infrastructure::MasterAccessControlEntry>& mediatorAces
+                    )> callbackFct
+            )
+    );
+
+    MOCK_METHOD3(
+            getOwnerAccessControlEntries,
+            QSharedPointer<joynr::Future<QList<joynr::infrastructure::OwnerAccessControlEntry>>>(
+                    QString domain,
+                    QString interfaceName,
+                    std::function<void(
+                        const joynr::RequestStatus& status,
+                        const QList<joynr::infrastructure::OwnerAccessControlEntry>& ownerAces
+                    )> callbackFct
+            )
+    );
+
+    MOCK_METHOD3(subscribeToDomainRoleEntryChangedBroadcast,
+                 QString(
+                     joynr::infrastructure::GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters,
+                     QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::DomainRoleEntry,
+                                                                 joynr::infrastructure::ChangeType::Enum>>,
+                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+    MOCK_METHOD3(subscribeToOwnerAccessControlEntryChangedBroadcast,
+                 QString(
+                     joynr::infrastructure::GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters,
+                     QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::OwnerAccessControlEntry,
+                                                                 joynr::infrastructure::ChangeType::Enum>>,
+                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+    MOCK_METHOD3(subscribeToMediatorAccessControlEntryChangedBroadcast,
+                 QString(
+                     joynr::infrastructure::GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters,
+                     QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::ChangeType::Enum,
+                                                                 joynr::infrastructure::MasterAccessControlEntry>>,
+                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+    MOCK_METHOD3(subscribeToMasterAccessControlEntryChangedBroadcast,
+                 QString(
+                     joynr::infrastructure::GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters,
+                     QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::ChangeType::Enum,
+                                                                 joynr::infrastructure::MasterAccessControlEntry>>,
+                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+
 };
 
 #ifdef _MSC_VER
