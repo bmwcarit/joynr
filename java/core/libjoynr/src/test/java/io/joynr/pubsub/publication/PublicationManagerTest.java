@@ -195,7 +195,7 @@ public class PublicationManagerTest {
     private void addPublicationMockBehaviour(SubscriptionQos subscriptionQos) {
         when(subscriptionRequest.getSubscriptionId()).thenReturn(SUBSCRIPTION_ID);
         when(subscriptionRequest.getQos()).thenReturn(subscriptionQos);
-        when(subscriptionRequest.getAttributeName()).thenReturn("testAttribute");
+        when(subscriptionRequest.getSubscribedToName()).thenReturn("testAttribute");
     }
 
     @Test

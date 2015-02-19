@@ -214,7 +214,7 @@ public class PublicationManagerImpl implements PublicationManager {
             // Handle onChange subscriptions
             if (subscriptionQos instanceof OnChangeSubscriptionQos) {
                 AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
-                String attributeName = subscriptionRequest.getAttributeName();
+                String attributeName = subscriptionRequest.getSubscribedToName();
                 requestCaller.registerAttributeListener(attributeName, attributeListener);
                 unregisterOnChange.putIfAbsent(subscriptionId, new UnregisterOnChange(requestCaller,
                                                                                       attributeName,

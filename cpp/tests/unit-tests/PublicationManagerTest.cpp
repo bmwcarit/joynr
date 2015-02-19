@@ -98,7 +98,7 @@ TEST(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnab
 
     // will be deleted by the publication manager
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -139,7 +139,7 @@ TEST(PublicationManagerTest, stop_publications) {
                         alertInterval_ms));
 
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
 
     // NOTE: we hand over ownership of the subscription request to the publication manager when adding
@@ -191,7 +191,7 @@ TEST(PublicationManagerTest, remove_all_publications) {
                         alertInterval_ms));
 
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
 
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -240,7 +240,7 @@ TEST(PublicationManagerTest, restore_publications) {
 
     // will be delete by the publication manager (destructor PublicationState)
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
 
     publicationManager->add(senderId, receiverId,requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -314,7 +314,7 @@ TEST(PublicationManagerTest, add_onChangeSubscription) {
 
     // will be deleted by the publication manager
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -376,7 +376,7 @@ TEST(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     // will be deleted by the publication manager
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -446,7 +446,7 @@ TEST(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     // will be deleted by the publication manager
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -512,7 +512,7 @@ TEST(PublicationManagerTest, remove_onChangeSubscription) {
 
     // will be deleted by the publication manager
     SubscriptionRequest* subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest->setAttributeName(attributeName);
+    subscriptionRequest->setSubscribeToName(attributeName);
     subscriptionRequest->setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);

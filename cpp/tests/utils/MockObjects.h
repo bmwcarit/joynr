@@ -675,12 +675,12 @@ typedef MockDirectory<QString, joynr::system::Address> MockMessagingEndpointDire
 class MockSubscriptionManager : joynr::SubscriptionManager {
 public:
     MOCK_METHOD1(getSubscriptionCallback,QSharedPointer<joynr::ISubscriptionCallback>(const QString& subscriptionId));
-    MOCK_METHOD6(registerAttributeSubscription,void(const QString &proxyId,const QString &providerId,
+    MOCK_METHOD6(registerSubscription,void(const QString &proxyId,const QString &providerId,
                                                     const QString &attributeName,
                                                     joynr::ISubscriptionCallback * attributeSubscriptionCaller, // SubMgr gets ownership of ptr
                                                     const joynr::SubscriptionQos &qos,
                                                     joynr::SubscriptionRequest& subscriptionReques));
-    MOCK_METHOD1(unregisterAttributeSubscription, void(const QString& subscriptionId));
+    MOCK_METHOD1(unregisterSubscription, void(const QString& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const QString& subscriptionId));
 };
 

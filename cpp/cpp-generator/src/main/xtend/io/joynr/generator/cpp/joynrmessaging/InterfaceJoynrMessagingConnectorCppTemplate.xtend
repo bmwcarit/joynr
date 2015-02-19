@@ -215,7 +215,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 			    }
 			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
 			    joynr::SubscriptionRequest subscriptionRequest;
-			    subscriptionManager->registerAttributeSubscription(
+			    subscriptionManager->registerSubscription(
 			                attributeName,
 			                subscriptionCallback,
 			                subscriptionQos,
@@ -236,7 +236,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate {
 			    joynr::SubscriptionStop subscriptionStop;
 			    subscriptionStop.setSubscriptionId(subscriptionId);
 			    
-			    subscriptionManager->unregisterAttributeSubscription(subscriptionId);
+			    subscriptionManager->unregisterSubscription(subscriptionId);
 			    joynrMessageSender->sendSubscriptionStop(
 			                proxyParticipantId,
 			                providerParticipantId,

@@ -174,7 +174,7 @@ class InterfaceRequestInterpreterCppTemplate {
 							);
 
 							«IF outputParameterType == "void"»
-								QVariant returnValue("void");
+								QVariant returnValue(QVariant::Invalid);
 								return returnValue;
 							«ELSEIF isArray(getOutputParameters(method).head) && isEnum(getOutputParameters(method).head.type)»
 								QList<QVariant> returnValue = joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue);

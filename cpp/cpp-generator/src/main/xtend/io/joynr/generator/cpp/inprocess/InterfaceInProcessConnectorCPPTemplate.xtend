@@ -262,7 +262,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    QString attributeName = "«attributeName.toFirstUpper»";
 			    joynr::SubscriptionCallback<«returnType»>* subscriptionCallback = new joynr::SubscriptionCallback<«returnType»>(subscriptionListener);
 			    joynr::SubscriptionRequest* subscriptionRequest = new joynr::SubscriptionRequest();//ownership goes to PublicationManager
-			    subscriptionManager->registerAttributeSubscription(
+			    subscriptionManager->registerSubscription(
 			    			attributeName,
 			    			subscriptionCallback,
 			    			subscriptionQos,
@@ -304,7 +304,7 @@ class InterfaceInProcessConnectorCPPTemplate {
 			    publicationManager->stopPublication(subscriptionId);
 			    assert(subscriptionManager != NULL);
 			    logger->log(DEBUG, "Unregistering attribute subscription.");
-			    subscriptionManager->unregisterAttributeSubscription(subscriptionId);
+			    subscriptionManager->unregisterSubscription(subscriptionId);
 			    «ENDIF»
 			}
 		«ENDFOR»
