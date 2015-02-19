@@ -53,6 +53,22 @@ public class DiscoveryInformationServlet extends HttpServlet {
         out.println(gson.toJson(capabilitiesStore.getAllCapabilities()));
     }
 
+    public void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String queryString = request.getQueryString();
+        String[] query = queryString.split("=");
+        boolean removed = false;
+        if (query.length > 1) {
+            removed = capabilitiesStore.remove(query[1]);
+        }
+        response.setStatus(200);
+        PrintWriter out = response.getWriter();
+        if (removed) {
+            out.println("OK");
+        } else {
+            out.println("NOK");
+        }
+    }
+
     public void destroy() {
         // do nothing.
     }
