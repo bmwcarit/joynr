@@ -1,12 +1,24 @@
-**ATTENTION** If you haven't set up the [joynr build environment and infrastructure services]
-(Home.md) yet, please do so first.
-
 This tutorial will guide you through a simple joynr radio application, explaining three essential
 joynr concepts:
 
 * A simple radio **communication interface**
 * A **consumer** interested in knowing about radio information
 * A **provider**, that provides the radio information
+
+# Prerequisites
+If you haven't set up the [joynr build environment and infrastructure services]
+(Home.md) yet, please do so first.
+
+**ATTENTION** Unfortunately [Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/)
+dependencies are currently not available from [Maven Central Repository](http://search.maven.org/).
+Since Franca is needed for joynr code generation, we ship Franca dependencies together with the
+joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory. Install them into
+your local Maven repository by executing the following command:
+
+```bash
+~$ cd <JOYNR>/tools/generator/dependency-libs/
+<JOYNR>$ mvn install
+```
 
 # Exploring the demo
 To walk though the radio application, set up the project in your workspace. The example project
