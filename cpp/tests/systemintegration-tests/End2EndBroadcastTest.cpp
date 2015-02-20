@@ -331,7 +331,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                            444,
                                            444,
                                            3))))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .Times(0);
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                     mockListener);
