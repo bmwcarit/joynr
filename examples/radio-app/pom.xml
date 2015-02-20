@@ -198,8 +198,12 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-integration-test-dependencies</id>
-						<phase>pre-integration-test</phase>
+						<id>copy-backend-services</id>
+						<!--
+							NOTE: jetty:run runs in phase test-compile. Hence, backend services
+							must be copied at latest in the process-test-resources phase.
+						-->
+						<phase>process-test-resources</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>

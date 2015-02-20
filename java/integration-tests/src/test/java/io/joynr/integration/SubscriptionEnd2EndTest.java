@@ -183,12 +183,12 @@ public class SubscriptionEnd2EndTest {
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListener, times(0)).publicationMissed();
+        verify(integerListener, times(0)).onError();
         // TODO verify publications shipped correct data
-        verify(integerListener, times(1)).receive(eq(42));
-        verify(integerListener, times(1)).receive(eq(43));
-        verify(integerListener, times(1)).receive(eq(44));
-        verify(integerListener, times(1)).receive(eq(45));
+        verify(integerListener, times(1)).onReceive(eq(42));
+        verify(integerListener, times(1)).onReceive(eq(43));
+        verify(integerListener, times(1)).onReceive(eq(44));
+        verify(integerListener, times(1)).onReceive(eq(45));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
     }
@@ -205,8 +205,8 @@ public class SubscriptionEnd2EndTest {
         String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
         // 100 2100 4100 6100
-        verify(gpsListener, times(0)).publicationMissed();
-        verify(gpsListener, atLeast(4)).receive(eq(provider.getComplexTestAttribute()));
+        verify(gpsListener, times(0)).onError();
+        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttribute()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
     }
@@ -223,11 +223,11 @@ public class SubscriptionEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToListOfInts(integerListListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListListener, times(0)).publicationMissed();
+        verify(integerListListener, times(0)).onError();
 
-        verify(integerListListener, times(1)).receive(eq(Arrays.asList(42)));
-        verify(integerListListener, times(1)).receive(eq(Arrays.asList(42, 43)));
-        verify(integerListListener, times(1)).receive(eq(Arrays.asList(42, 43, 44)));
+        verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42)));
+        verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42, 43)));
+        verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42, 43, 44)));
         verifyNoMoreInteractions(integerListListener);
 
         proxy.unsubscribeFromListOfInts(subscriptionId);
@@ -243,8 +243,8 @@ public class SubscriptionEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListener, times(0)).publicationMissed();
-        verify(integerListener, atLeast(2)).receive(anyInt());
+        verify(integerListener, times(0)).onError();
+        verify(integerListener, atLeast(2)).onReceive(anyInt());
 
         reset(integerListener);
         Thread.sleep(subscriptionDuration);
@@ -273,18 +273,18 @@ public class SubscriptionEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).publicationMissed();
+        verify(integerListener, times(0)).onError();
         Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
-        verify(integerListener, times(1)).receive(anyInt());
+        verify(integerListener, times(1)).onReceive(anyInt());
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
         Thread.sleep(expected_latency_ms);
         // expect the onChangeSubscription to have arrived
-        verify(integerListener, times(2)).receive(anyInt());
+        verify(integerListener, times(2)).onReceive(anyInt());
 
         Thread.sleep(subscriptionDuration);
         // expect no more publications to arrive
@@ -318,18 +318,18 @@ public class SubscriptionEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).publicationMissed();
+        verify(integerListener, times(0)).onError();
         Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
-        verify(integerListener, times(1)).receive(anyInt());
+        verify(integerListener, times(1)).onReceive(anyInt());
 
         for (int i = 1; i <= numberExpectedKeepAlives; i++) {
 
             Thread.sleep(maxInterval_ms + expected_latency_ms);
             // expect the next keep alive notification to have now arrived (plus the original one at subscription start)
-            verify(integerListener, times(i + 1)).receive(anyInt());
+            verify(integerListener, times(i + 1)).onReceive(anyInt());
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
@@ -356,23 +356,23 @@ public class SubscriptionEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).publicationMissed();
+        verify(integerListener, times(0)).onError();
         Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
-        verify(integerListener, times(1)).receive(anyInt());
+        verify(integerListener, times(1)).onReceive(anyInt());
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
         Thread.sleep(expected_latency_ms);
         // expect the onChangeSubscription to have arrived
-        verify(integerListener, times(2)).receive(anyInt());
+        verify(integerListener, times(2)).onReceive(anyInt());
 
         Thread.sleep(maxInterval_ms + 50);
         // expect a keep alive notification to have now arrived
-        verify(integerListener, atLeast(3)).receive(anyInt());
+        verify(integerListener, atLeast(3)).onReceive(anyInt());
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
 
@@ -391,15 +391,15 @@ public class SubscriptionEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(expected_latency_ms);
-        verify(integerListener, times(0)).publicationMissed();
+        verify(integerListener, times(0)).onError();
         // when subscribing, we automatically get 1 publication. This might not
         // be the case in java?
-        verify(integerListener, times(1)).receive(anyInt());
+        verify(integerListener, times(1)).onReceive(anyInt());
 
         provider.setTestAttribute(5);
         Thread.sleep(expected_latency_ms);
 
-        verify(integerListener, times(2)).receive(anyInt());
+        verify(integerListener, times(2)).onReceive(anyInt());
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
 
@@ -424,7 +424,7 @@ public class SubscriptionEnd2EndTest {
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(expected_latency_ms);
         // There should have only been one call - the automatic publication when a subscription is made
-        verify(integerListener, times(1)).receive(anyInt());
+        verify(integerListener, times(1)).onReceive(anyInt());
 
         Thread.sleep(duration + expected_latency_ms);
         // We should now have an expired onChange subscription

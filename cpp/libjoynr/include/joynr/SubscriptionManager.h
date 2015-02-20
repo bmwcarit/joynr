@@ -88,8 +88,8 @@ public:
     void touchSubscriptionState(const QString& subscriptionId);
 
     /**
-     * @brief Get a shared pointer to the subscription callback - ownership remains with the
-     *subscription manager.
+     * @brief Get a shared pointer to the subscription callback. The shared pointer points to null
+     * if the subscription ID does not exist.
      *
      * @param subscriptionId
      * @return QSharedPointer<ISubscriptionCallback>

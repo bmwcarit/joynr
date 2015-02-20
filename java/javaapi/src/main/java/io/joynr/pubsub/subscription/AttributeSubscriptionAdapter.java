@@ -19,8 +19,15 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
-public interface AttributeSubscriptionListener<T> {
-    void onReceive(T value);
+public class AttributeSubscriptionAdapter<T> implements AttributeSubscriptionListener<T> {
 
-    void onError();
+    @Override
+    public void onReceive(T value) {
+        // empty implementation
+    }
+
+    @Override
+    public void onError() {
+        // empty implementation
+    }
 }

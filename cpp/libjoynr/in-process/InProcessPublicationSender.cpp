@@ -62,7 +62,12 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     subscriptionManager->touchSubscriptionState(subscriptionId);
     QSharedPointer<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
-    assert(!callback.isNull());
+    if (callback.isNull()) {
+        LOG_ERROR(logger,
+                  "Dropping reply for non/no more existing subscription with id=" + subscriptionId);
+        return;
+    }
+
     int typeId = callback->getTypeId();
 
     // Get the publication interpreter - this has to be a reference to support

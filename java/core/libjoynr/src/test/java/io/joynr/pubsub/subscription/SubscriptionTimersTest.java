@@ -92,7 +92,7 @@ public class SubscriptionTimersTest {
         subscriptionManager.registerAttributeSubscription(subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
-        verify(attributeSubscriptionCallback, times(numberOfPublications)).publicationMissed();
+        verify(attributeSubscriptionCallback, times(numberOfPublications)).onError();
 
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
@@ -165,8 +165,8 @@ public class SubscriptionTimersTest {
 
         int missedPublicationAlerts = (lastPublicationIsMissedPublication) ? missedPublicationsCounter - 1
                 : missedPublicationsCounter;
-        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).publicationMissed();
-        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).publicationMissed();
+        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).onError();
+        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).onError();
         // verify callback is not called
         verifyNoMoreInteractions(attributeSubscriptionCallback);
         LOG.trace("finishing test.");

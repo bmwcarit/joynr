@@ -65,7 +65,7 @@ import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
-import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastListener;
+import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProviderAsync;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
@@ -836,10 +836,10 @@ public class ProviderProxyEnd2EndTest {
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
                                                                               expiryDate,
                                                                               publicationTtl_ms);
-        proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastListener() {
+        proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
 
             @Override
-            public void receive(GpsLocation receivedGpsLocation, Double receivedCurrentSpeed) {
+            public void onReceive(GpsLocation receivedGpsLocation, Double receivedCurrentSpeed) {
                 assertEquals(gpsLocation, receivedGpsLocation);
                 assertEquals(currentSpeed, receivedCurrentSpeed);
                 broadcastReceived.release();

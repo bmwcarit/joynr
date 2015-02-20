@@ -253,7 +253,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
-    EXPECT_CALL(*mockSubscriptionListener, receive(gpsLocation))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(Between(1, 2));
 
 
@@ -322,7 +322,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
-    EXPECT_CALL(*mockSubscriptionListener, receive(gpsLocation))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtMost(3));
 
     QSharedPointer<SubscriptionQos> subscriptionQos = QSharedPointer<SubscriptionQos>(

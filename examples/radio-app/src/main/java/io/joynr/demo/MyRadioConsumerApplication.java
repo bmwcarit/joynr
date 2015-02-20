@@ -26,7 +26,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
@@ -39,10 +39,10 @@ import jline.console.ConsoleReader;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.vehicle.Country;
+import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
-import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastListener;
-import joynr.vehicle.GeoPosition;
+import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
 
@@ -218,17 +218,17 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             LOG.info(PRINT_BORDER + "ATTRIBUTE GET: current station: " + currentStation + PRINT_BORDER);
 
             // subscribe to an attribute
-            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionListener<RadioStation>() {
+            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionAdapter<RadioStation>() {
 
                                                                                     @Override
-                                                                                    public void receive(RadioStation value) {
+                                                                                    public void onReceive(RadioStation value) {
                                                                                         LOG.info(PRINT_BORDER
                                                                                                 + "ATTRIBUTE SUBSCRIPTION: current station: "
                                                                                                 + value + PRINT_BORDER);
                                                                                     }
 
                                                                                     @Override
-                                                                                    public void publicationMissed() {
+                                                                                    public void onError() {
                                                                                         LOG.info(PRINT_BORDER
                                                                                                 + "ATTRIBUTE SUBSCRIPTION: publication missed "
                                                                                                 + PRINT_BORDER);
@@ -261,9 +261,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos(wsbMinInterval,
                                                                              wsbExpiryDate,
                                                                              wsbPublicationTtl);
-            radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastListener() {
+            radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
                 @Override
-                public void receive(RadioStation weakSignalStation) {
+                public void onReceive(RadioStation weakSignalStation) {
                     LOG.info(PRINT_BORDER + "BROADCAST SUBSCRIPTION: weak signal: " + weakSignalStation + PRINT_BORDER);
                 }
             },
@@ -289,10 +289,10 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             }
             newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
             newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-            radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastListener() {
+            radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastAdapter() {
                                                                     @Override
-                                                                    public void receive(RadioStation discoveredStation,
-                                                                                        GeoPosition geoPosition) {
+                                                                    public void onReceive(RadioStation discoveredStation,
+                                                                                          GeoPosition geoPosition) {
                                                                         LOG.info(PRINT_BORDER
                                                                                 + "BROADCAST SUBSCRIPTION: new station discovered: "
                                                                                 + discoveredStation + " at "

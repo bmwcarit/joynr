@@ -240,8 +240,6 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         LOG_DEBUG(logger,
                   "Publication with id: " + requestInfo->getSubscriptionId() +
                           " already exists. Updating...");
-        publication->timeOfLastPublication =
-                publications.value(subscriptionId)->timeOfLastPublication;
         removeAttributePublication(subscriptionId);
     }
 
@@ -386,8 +384,6 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         LOG_DEBUG(logger,
                   "Publication with id: " + requestInfo->getSubscriptionId() +
                           " already exists. Updating...");
-        publication->timeOfLastPublication =
-                publications.value(subscriptionId)->timeOfLastPublication;
         removeBroadcastPublication(subscriptionId);
     }
 

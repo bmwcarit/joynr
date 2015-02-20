@@ -186,6 +186,7 @@ QSharedPointer<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallba
     if (!subscriptions.contains(subscriptionId)) {
         LOG_DEBUG(logger,
                   "Trying to acces a non existing subscription callback for id=" + subscriptionId);
+        return QSharedPointer<ISubscriptionCallback>();
     }
 
     QSharedPointer<Subscription> subscription(subscriptions.value(subscriptionId));

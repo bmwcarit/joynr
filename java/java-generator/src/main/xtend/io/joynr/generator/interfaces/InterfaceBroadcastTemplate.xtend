@@ -55,7 +55,17 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 			«val listenerInterface = broadcastName.toFirstUpper + "BroadcastListener"»
 
 			public interface «listenerInterface» extends BroadcastSubscriptionListener {
-				public void receive(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
+				public void onReceive(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
+				public void onError();
+			}
+
+			public class «broadcastName.toFirstUpper»BroadcastAdapter implements «listenerInterface» {
+				public void onReceive(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
+					// empty implementation
+				}
+				public void onError() {
+					// empty implementation
+				}
 			}
 
 			«IF isSelective(broadcast)»

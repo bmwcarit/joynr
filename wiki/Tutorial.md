@@ -1,12 +1,24 @@
-**ATTENTION** If you haven't set up the [joynr build environment and infrastructure services]
-(Home.md) yet, please do so first.
-
 This tutorial will guide you through a simple joynr radio application, explaining three essential
 joynr concepts:
 
 * A simple radio **communication interface**
 * A **consumer** interested in knowing about radio information
 * A **provider**, that provides the radio information
+
+# Prerequisites
+If you haven't set up the [joynr build environment and infrastructure services]
+(Home.md) yet, please do so first.
+
+**ATTENTION** Unfortunately [Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/)
+dependencies are currently not available from [Maven Central Repository](http://search.maven.org/).
+Since Franca is needed for joynr code generation, we ship Franca dependencies together with the
+joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory. Install them into
+your local Maven repository by executing the following command:
+
+```bash
+~$ cd <JOYNR>/tools/generator/dependency-libs/
+<JOYNR>$ mvn install
+```
 
 # Exploring the demo
 To walk though the radio application, set up the project in your workspace. The example project
@@ -460,6 +472,16 @@ The following keyboard commands can be used to control the consumer application:
 The radio app can be run in all combinations of consumer and provider: java-java, cpp-cpp, java-cpp,
 and cpp-java.
 
+### Starting the Backend
+First we need to start the backend services: [Bounceproxy](Home.md#bounceproxy) and
+[Discovery](Home.md#discovery-directories). The following Maven command will start a
+[Jetty Server](http://eclipse.org/jetty/) on `localhost:8080` and automatically deploy Bounceproxy
+and Discovery services:
+
+```bash
+<RADIO_HOME>$ mvn jetty:run-war
+```
+
 ### Java
 
 After importing `<RADIO_HOME>/pom.xml` into Eclipse using the M2E plugin, Eclipse will automatically
@@ -469,6 +491,12 @@ Now to run the example, first start the provider, open the **MyRadioProviderLaun
 click and **Run as Java Application**. The application will fail to run because the provider domain
 must be set on the command line. Right click again and select **Run Configurations...** Go to the
 **Arguments** tab and enter the provider domain. Then press **Apply** and then **Run**.
+
+Alternatively, run the provider from the command line by executing the following Maven command:
+
+```bash
+<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<my provider domain>"
+```
 
 >**Note:**
 >The provider domain is used to register the MyRadioProvider on this domain. Consumers must specify
@@ -481,6 +509,12 @@ to the joynr runtime to find a provider with the domain.  If there are several p
 type registered on the same domain, then the ArbitrationStrategy (see in the run method of
 MyRadioConsumerApplication class) is used to work out which provider to take. In the console, you
 should be able to see log output.
+
+Alternatively, run the consumer from the command line by executing the following Maven command:
+
+```bash
+<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<my provider domain>"
+```
 
 ### C++
 
@@ -501,7 +535,7 @@ project and go to the bin directory:
 **Running the Provider**
 
 ```bash
-<RADIO_HOME>/cpp-build/bin$ ./radio-app-provider-cc chosen-provider-domain
+<RADIO_HOME>/cpp-build/bin$ ./radio-app-provider-cc <my provider domain>
 ```
 
 In another terminal window execute:
@@ -509,7 +543,7 @@ In another terminal window execute:
 **Running the Consumer**
 
 ```bash
-<RADIO_HOME>/cpp-build/bin$ ./radio-app-consumer-cc chosen-provider-domain
+<RADIO_HOME>/cpp-build/bin$ ./radio-app-consumer-cc <my provider domain>
 ```
 
 This consumer will make a call to the joynr runtime to find a provider with the domain. If there are
