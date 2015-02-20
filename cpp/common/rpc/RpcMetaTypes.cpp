@@ -20,13 +20,14 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 
-namespace joynr {
+namespace joynr
+{
 
-
-void registerRpcMetaTypes(){
+void registerRpcMetaTypes()
+{
     qRegisterMetaType<Request>("Request");
     qRegisterMetaType<Reply>("Reply");
-    qRegisterMetaType<QSharedPointer<Reply> >("QSharedPointerJsonReply");
+    qRegisterMetaType<QSharedPointer<Reply>>("QSharedPointerJsonReply");
 }
 
 } // namespace joynr

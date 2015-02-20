@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ package io.joynr.proxy;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -41,11 +44,21 @@ public interface ConnectorInvocationHandler {
                                                           JsonGenerationException, JsonMappingException, IOException,
                                                           InstantiationException, IllegalAccessException;
 
-    void executeSubscriptionMethod(Method method, Object[] args, Future<?> future, String subscriptionId)
-                                                                                                         throws JoynrSendBufferFullException,
-                                                                                                         JoynrMessageNotSentException,
-                                                                                                         JsonGenerationException,
-                                                                                                         JsonMappingException,
-                                                                                                         IOException;
+    void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription)
+                                                                                      throws JoynrSendBufferFullException,
+                                                                                      JoynrMessageNotSentException,
+                                                                                      JsonGenerationException,
+                                                                                      JsonMappingException, IOException;
+
+    void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation) throws JoynrSendBufferFullException,
+                                                                               JoynrMessageNotSentException,
+                                                                               JsonGenerationException,
+                                                                               JsonMappingException, IOException;
+
+    void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription)
+                                                                                      throws JoynrSendBufferFullException,
+                                                                                      JoynrMessageNotSentException,
+                                                                                      JsonGenerationException,
+                                                                                      JsonMappingException, IOException;
 
 }

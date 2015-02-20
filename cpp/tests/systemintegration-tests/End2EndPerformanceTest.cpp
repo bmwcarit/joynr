@@ -22,7 +22,7 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/types/Trip.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -103,14 +103,14 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    runtime1->registerCapability<tests::TestProvider>(domain,testProvider, QString());
+    runtime1->registerCapability<tests::testProvider>(domain,testProvider, QString());
 
     QThreadSleep::msleep(2000);
 
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -119,7 +119,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)

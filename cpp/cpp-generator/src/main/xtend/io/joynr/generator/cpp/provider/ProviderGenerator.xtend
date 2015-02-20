@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.franca.core.franca.FModel
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class ProviderGenerator {
-		
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
@@ -33,7 +33,7 @@ class ProviderGenerator {
 
 	@Inject
 	InterfaceRequestCallerCppTemplate interfaceRequestCallerCpp;
-	
+
 	@Inject
 	InterfaceRequestInterpreterHTemplate interfaceRequestInterpreterH;
 
@@ -45,11 +45,11 @@ class ProviderGenerator {
 
 	@Inject
 	InterfaceProviderHTemplate interfaceProviderHTemplate;
-	
+
 	def doGenerate(
-		FModel model, 
-		IFileSystemAccess sourceFileSystem, 
-		IFileSystemAccess headerFileSystem, 
+		FModel model,
+		IFileSystemAccess sourceFileSystem,
+		IFileSystemAccess headerFileSystem,
 		String sourceContainerPath,
 		String headerContainerPath
 	){
@@ -58,36 +58,47 @@ class ProviderGenerator {
 			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator;
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator;
 			var serviceName = serviceInterface.joynrName
-				
-			headerFileSystem.generateFile(
+
+			generateFile(headerFileSystem,
 				headerPath + serviceName + "RequestInterpreter.h",
-				interfaceRequestInterpreterH.generate(serviceInterface).toString
+				interfaceRequestInterpreterH,
+				serviceInterface
 			);
 
-			sourceFileSystem.generateFile (
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "RequestInterpreter.cpp",
-				interfaceRequestInterpreterCpp.generate(serviceInterface).toString
-			);
-			
-			headerFileSystem.generateFile(
-				headerPath + serviceName + "RequestCaller.h",
-				interfaceRequestCallerH.generate(serviceInterface).toString
+				interfaceRequestInterpreterCpp,
+				serviceInterface
 			);
 
-			sourceFileSystem.generateFile(
+			generateFile(
+				headerFileSystem,
+				headerPath + serviceName + "RequestCaller.h",
+				interfaceRequestCallerH,
+				serviceInterface
+			);
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "RequestCaller.cpp",
-				interfaceRequestCallerCpp.generate(serviceInterface).toString
+				interfaceRequestCallerCpp,
+				serviceInterface
 			);
-			
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "Provider.cpp",
-				interfaceProviderCppTemplate.generate(serviceInterface).toString
+				interfaceProviderCppTemplate,
+				serviceInterface
 			);
-			
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "Provider.h",
-				interfaceProviderHTemplate.generate(serviceInterface).toString
+				interfaceProviderHTemplate,
+				serviceInterface
 			);
-		}		
+		}
 	}
 }

@@ -20,17 +20,20 @@
 #define THREADSAFEMAP_H
 #include "joynr/PrivateCopyAssign.h"
 
-
 #include <QMap>
 #include <QReadWriteLock>
 
-namespace joynr {
+namespace joynr
+{
 
 template <class Key, class T>
-class ThreadSafeMap {
+class ThreadSafeMap
+{
 public:
     ThreadSafeMap();
-    virtual ~ThreadSafeMap() {}
+    virtual ~ThreadSafeMap()
+    {
+    }
     void insert(const Key& key, const T& value);
     void remove(const Key& key);
     T value(const Key& key);
@@ -38,32 +41,38 @@ public:
     bool contains(const Key& key);
     void deleteAll();
     int size();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
-    QMap<Key,T> map;
+    QMap<Key, T> map;
     QReadWriteLock lock;
 };
 
 template <class Key, class T>
-ThreadSafeMap<Key, T>::ThreadSafeMap(): map(), lock() {}
-
+ThreadSafeMap<Key, T>::ThreadSafeMap()
+        : map(), lock()
+{
+}
 
 template <class Key, class T>
-void ThreadSafeMap<Key, T>::insert(const Key& key, const T& value) {
+void ThreadSafeMap<Key, T>::insert(const Key& key, const T& value)
+{
     lock.lockForWrite();
     map.insert(key, value);
     lock.unlock();
 }
 
 template <class Key, class T>
-void ThreadSafeMap<Key, T>::remove(const Key& key) {
+void ThreadSafeMap<Key, T>::remove(const Key& key)
+{
     lock.lockForWrite();
     map.remove(key);
     lock.unlock();
 }
 
 template <class Key, class T>
-T ThreadSafeMap<Key, T>::value(const Key& key) {
+T ThreadSafeMap<Key, T>::value(const Key& key)
+{
     T aValue;
     lock.lockForRead();
     aValue = map.value(key);
@@ -72,7 +81,8 @@ T ThreadSafeMap<Key, T>::value(const Key& key) {
 }
 
 template <class Key, class T>
-T ThreadSafeMap<Key, T>::take(const Key& key) {
+T ThreadSafeMap<Key, T>::take(const Key& key)
+{
     T aValue;
     lock.lockForWrite();
     aValue = map.take(key);
@@ -81,19 +91,20 @@ T ThreadSafeMap<Key, T>::take(const Key& key) {
 }
 
 template <class Key, class T>
-bool ThreadSafeMap<Key, T>::contains(const Key& key) {
+bool ThreadSafeMap<Key, T>::contains(const Key& key)
+{
     bool aValue;
     lock.lockForRead();
-    aValue =  map.contains(key);
+    aValue = map.contains(key);
     lock.unlock();
     return aValue;
 }
 
-
 template <class Key, class T>
-void ThreadSafeMap<Key, T>::deleteAll() {
+void ThreadSafeMap<Key, T>::deleteAll()
+{
     lock.lockForWrite();
-    foreach (const QString &str, map.keys()) {
+    foreach (const QString& str, map.keys()) {
         T value = map.take(str);
         delete value;
         value = NULL;
@@ -102,11 +113,10 @@ void ThreadSafeMap<Key, T>::deleteAll() {
 }
 
 template <class Key, class T>
-int ThreadSafeMap<Key, T>::size() {
+int ThreadSafeMap<Key, T>::size()
+{
     return map.size();
 }
-
-
 
 } // namespace joynr
 

@@ -19,26 +19,25 @@
 
 #include "joynr/InProcessConnectorFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
 InProcessConnectorFactory::InProcessConnectorFactory(
         SubscriptionManager* subscriptionManager,
         PublicationManager* publicationManager,
         InProcessPublicationSender* inProcessPublicationSender,
-        IRequestCallerDirectory* requestCallerDirectory
-) :
-    subscriptionManager(subscriptionManager),
-    publicationManager(publicationManager),
-    inProcessPublicationSender(inProcessPublicationSender),
-    requestCallerDirectory(requestCallerDirectory)
+        IRequestCallerDirectory* requestCallerDirectory)
+        : subscriptionManager(subscriptionManager),
+          publicationManager(publicationManager),
+          inProcessPublicationSender(inProcessPublicationSender),
+          requestCallerDirectory(requestCallerDirectory)
 {
 }
 
 bool InProcessConnectorFactory::canBeCreated(
-        const joynr::system::CommunicationMiddleware::Enum& connection
-) {
+        const joynr::system::CommunicationMiddleware::Enum& connection)
+{
     return connection == joynr::system::CommunicationMiddleware::IN_PROCESS;
 }
-
 
 } // namespace joynr

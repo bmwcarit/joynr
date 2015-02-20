@@ -19,6 +19,9 @@ package io.joynr.channel;
  * #L%
  */
 
+import io.joynr.dispatcher.rpc.Callback;
+import io.joynr.exceptions.JoynrException;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -37,62 +40,109 @@ public class ChannelUrlDirectoryTest {
         fixture = new ChannelUrlDirectoyImpl(500);
     }
 
+    private abstract class TestCallback implements Callback<ChannelUrlInformation> {
+
+        @Override
+        public void onFailure(JoynrException error) {
+            Assert.assertFalse(error.getLocalizedMessage(), true);
+        }
+
+    }
+
     @Test
     public void testDelayedCleanup() throws Exception {
 
-        String testChannelId = "testDelayedCleanup" + UUID.randomUUID().toString();
-        String[] urls = { "http://testurl.com/" + testChannelId + "/" };
+        final String testChannelId = "testDelayedCleanup" + UUID.randomUUID().toString();
+        final String[] urls = { "http://testurl.com/" + testChannelId + "/" };
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(urls));
 
-        fixture.registerChannelUrls(testChannelId, channelUrlInformation);
+        fixture.registerChannelUrls(null, testChannelId, channelUrlInformation);
 
-        ChannelUrlInformation urlsForChannelId = fixture.getUrlsForChannel(testChannelId);
+        Callback<ChannelUrlInformation> callback = new TestCallback() {
 
-        List<String> urlsFromServer = urlsForChannelId.getUrls();
-        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
-        fixture.unregisterChannelUrls(testChannelId);
-        /* after deletion, url shall still be a valid channelurl, as the unregistration shall only affect after
-         * fixture.channelurInactiveTimeInMS
-         */
+            @Override
+            public void onSuccess(ChannelUrlInformation result) {
 
-        urlsForChannelId = fixture.getUrlsForChannel(testChannelId);
-        urlsFromServer = urlsForChannelId.getUrls();
-        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                List<String> urlsFromServer = result.getUrls();
+                Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                fixture.unregisterChannelUrls(null, testChannelId);
+                /* after deletion, url shall still be a valid channelurl, as the unregistration shall only affect after
+                 * fixture.channelurInactiveTimeInMS
+                 */
 
-        synchronized (this) {
-            this.wait(fixture.channelurInactiveTimeInMS * 2);
-        }
-        urlsForChannelId = fixture.getUrlsForChannel(testChannelId);
-        urlsFromServer = urlsForChannelId.getUrls();
-        Assert.assertEquals(0, urlsForChannelId.getUrls().size());
+                Callback<ChannelUrlInformation> callback2 = new TestCallback() {
 
+                    @Override
+                    public void onSuccess(ChannelUrlInformation result) {
+                        List<String> urlsFromServer = result.getUrls();
+                        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+
+                        synchronized (this) {
+                            try {
+                                this.wait(fixture.channelurInactiveTimeInMS * 2);
+                            } catch (InterruptedException e) {
+                                Assert.assertFalse(e.getMessage(), true);
+                            }
+                        }
+
+                        Callback<ChannelUrlInformation> callback3 = new TestCallback() {
+
+                            @Override
+                            public void onSuccess(ChannelUrlInformation result) {
+                                Assert.assertEquals(0, result.getUrls().size());
+                            }
+                        };
+                        fixture.getUrlsForChannel(callback3, testChannelId);
+                    }
+                };
+                fixture.getUrlsForChannel(callback2, testChannelId);
+            }
+        };
+        fixture.getUrlsForChannel(callback, testChannelId);
     }
 
     @Test
     public void testDelayedCleanupWithReactivate() throws Exception {
 
-        String testChannelId = "testDelayedCleanupWithReactivate" + UUID.randomUUID().toString();
-        String[] urls = { "http://testurl.com/" + testChannelId + "/" };
-        ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
+        final String testChannelId = "testDelayedCleanupWithReactivate" + UUID.randomUUID().toString();
+        final String[] urls = { "http://testurl.com/" + testChannelId + "/" };
+        final ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(urls));
 
-        fixture.registerChannelUrls(testChannelId, channelUrlInformation);
+        fixture.registerChannelUrls(null, testChannelId, channelUrlInformation);
 
-        fixture.unregisterChannelUrls(testChannelId);
-        ChannelUrlInformation urlsForChannelId = fixture.getUrlsForChannel(testChannelId);
-        List<String> urlsFromServer = urlsForChannelId.getUrls();
-        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
-        Assert.assertEquals(1, fixture.inactiveChannelIds.size());
-        Assert.assertNotNull(fixture.inactiveChannelIds.get(testChannelId));
-        fixture.registerChannelUrls(testChannelId, channelUrlInformation);
-        Assert.assertEquals(0, fixture.inactiveChannelIds.size());
-        synchronized (this) {
-            this.wait(fixture.channelurInactiveTimeInMS * 2);
-        }
-        urlsForChannelId = fixture.getUrlsForChannel(testChannelId);
-        urlsFromServer = urlsForChannelId.getUrls();
-        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+        fixture.unregisterChannelUrls(null, testChannelId);
+        Callback<ChannelUrlInformation> callback = new TestCallback() {
+
+            @Override
+            public void onSuccess(ChannelUrlInformation urlsForChannelId) {
+                List<String> urlsFromServer = urlsForChannelId.getUrls();
+                Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                Assert.assertEquals(1, fixture.inactiveChannelIds.size());
+                Assert.assertNotNull(fixture.inactiveChannelIds.get(testChannelId));
+                fixture.registerChannelUrls(null, testChannelId, channelUrlInformation);
+                Assert.assertEquals(0, fixture.inactiveChannelIds.size());
+                synchronized (this) {
+                    try {
+                        this.wait(fixture.channelurInactiveTimeInMS * 2);
+                    } catch (InterruptedException e) {
+                        Assert.assertFalse(e.getMessage(), true);
+                    }
+                }
+                Callback<ChannelUrlInformation> callback2 = new TestCallback() {
+
+                    @Override
+                    public void onSuccess(ChannelUrlInformation urlsForChannelId) {
+                        List<String> urlsFromServer = urlsForChannelId.getUrls();
+                        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                    }
+                };
+                fixture.getUrlsForChannel(callback2, testChannelId);
+
+            }
+        };
+        fixture.getUrlsForChannel(callback, testChannelId);
 
     }
 }

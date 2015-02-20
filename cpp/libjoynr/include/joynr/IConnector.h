@@ -21,14 +21,17 @@
 
 #include "joynr/JoynrExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNR_EXPORT IConnector {
+class JOYNR_EXPORT IConnector
+{
 public:
-    virtual ~IConnector (){}
+    virtual ~IConnector()
+    {
+    }
     virtual bool usesClusterController() const = 0;
 };
 
-
 } // namespace joynr
-#endif //ICONNECTOR_H
+#endif // ICONNECTOR_H

@@ -21,21 +21,24 @@
 
 #include <curl/curl.h>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 Logger* DefaultHttpRequest::logger = Logging::getInstance()->getLogger("MSG", "DefaultHttpRequest");
 
-size_t DefaultHttpRequest::writeToQByteArray(void *buffer, size_t size, size_t nmemb, void *userp) {
+size_t DefaultHttpRequest::writeToQByteArray(void* buffer, size_t size, size_t nmemb, void* userp)
+{
     QByteArray* data = reinterpret_cast<QByteArray*>(userp);
     size_t numBytes = size * nmemb;
-    if(size > 0) {
+    if (size > 0) {
         data->append(reinterpret_cast<char*>(buffer), numBytes);
     }
     return numBytes;
 }
 
-size_t DefaultHttpRequest::writeToQMultiMap(void *buffer, size_t size, size_t nmemb, void *userp) {
+size_t DefaultHttpRequest::writeToQMultiMap(void* buffer, size_t size, size_t nmemb, void* userp)
+{
     QMultiMap<QString, QString>* headers = reinterpret_cast<QMultiMap<QString, QString>*>(userp);
     size_t numBytes = size * nmemb;
     QString header = QString::fromUtf8(reinterpret_cast<char*>(buffer), numBytes);
@@ -47,31 +50,31 @@ size_t DefaultHttpRequest::writeToQMultiMap(void *buffer, size_t size, size_t nm
 }
 
 DefaultHttpRequest::DefaultHttpRequest(void* handle, const QByteArray& content, curl_slist* headers)
-    : handle(handle),
-      headers(headers),
-      content(content)
+        : handle(handle), headers(headers), content(content)
 {
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeToQByteArray);
     curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, writeToQMultiMap);
 
-    if(headers != 0) {
+    if (headers != 0) {
         curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
     }
 
-    if(!this->content.isEmpty()) {
+    if (!this->content.isEmpty()) {
         curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->content.data());
         curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, this->content.size());
     }
 }
 
-DefaultHttpRequest::~DefaultHttpRequest() {
-    if(headers != 0) {
+DefaultHttpRequest::~DefaultHttpRequest()
+{
+    if (headers != 0) {
         curl_slist_free_all(headers);
     }
     HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);
 }
 
-HttpResult DefaultHttpRequest::execute() {
+HttpResult DefaultHttpRequest::execute()
+{
     QByteArray* body = new QByteArray;
     curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, body);

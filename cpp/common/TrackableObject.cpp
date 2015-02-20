@@ -19,12 +19,12 @@
 #include "joynr/TrackableObject.h"
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 Logger* TrackableObject::logger = Logging::getInstance()->getLogger("MSG", "TrackableObject");
-
 
 int TrackableObject::instances = 0;
 
@@ -33,11 +33,9 @@ TrackableObject::TrackableObject()
     ++instances;
     QString address;
     address.sprintf("%p", this);
-    LOG_TRACE(logger, "Creating Traceable Object at Address " +
-              address +
-              " Now we have " +
-              QString::number(instances) + " instances."
-             );
+    LOG_TRACE(logger,
+              "Creating Traceable Object at Address " + address + " Now we have " +
+                      QString::number(instances) + " instances.");
 }
 
 TrackableObject::~TrackableObject()
@@ -45,11 +43,9 @@ TrackableObject::~TrackableObject()
     --instances;
     QString address;
     address.sprintf("%p", this);
-    LOG_TRACE(logger, "Deleting Traceable Object at Address " +
-              address +
-              " Now we have " +
-              QString::number(instances) + " instances."
-             );
+    LOG_TRACE(logger,
+              "Deleting Traceable Object at Address " + address + " Now we have " +
+                      QString::number(instances) + " instances.");
 }
 
 int TrackableObject::getInstances()

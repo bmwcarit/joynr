@@ -24,24 +24,25 @@
 #include <QString>
 
 #ifdef WIN32
-  #ifdef ERROR
-    // QT5.1 leaks this global definition from windows.h
-    // Because Joynr does not use windows.h directly it is safe to 
-    // undefine this macro
-    #undef ERROR
-  #endif
+#ifdef ERROR
+// QT5.1 leaks this global definition from windows.h
+// Because Joynr does not use windows.h directly it is safe to
+// undefine this macro
+#undef ERROR
+#endif
 #endif
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * @brief This class contains all the possible status codes that a
  * RequestStatus could be set to for a request.
  *
  */
-class JOYNR_EXPORT RequestStatusCode {
+class JOYNR_EXPORT RequestStatusCode
+{
 public:
-
     // signals that the request has been successfully processed
     static RequestStatusCode OK;
 
@@ -75,13 +76,10 @@ public:
     bool operator!=(const RequestStatusCode& requestStatusCode) const;
 
 private:
-
     RequestStatusCode(long id, QString description);
     long id;
     QString description;
 };
 
-
 } // namespace joynr
 #endif // REQUESTSTATUSCODE_H
-

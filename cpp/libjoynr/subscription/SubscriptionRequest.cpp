@@ -25,16 +25,18 @@
 
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
-Logger* SubscriptionRequest::logger = Logging::getInstance()->getLogger("MSG", "SubscriptionRequest");
+Logger* SubscriptionRequest::logger =
+        Logging::getInstance()->getLogger("MSG", "SubscriptionRequest");
 
-SubscriptionRequest::SubscriptionRequest():
-    QObject(),
-    subscriptionId(),
-    subscribedToName(),
-    qos(QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos()))
+SubscriptionRequest::SubscriptionRequest()
+        : QObject(),
+          subscriptionId(),
+          subscribedToName(),
+          qos(QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos()))
 {
     subscriptionId = Util::createUuid();
     qRegisterMetaType<SubscriptionQos>("SubscriptionQos");
@@ -50,67 +52,75 @@ SubscriptionRequest::SubscriptionRequest():
     qRegisterMetaType<QSharedPointer<PeriodicSubscriptionQos>>();
 }
 
-SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest) :
-    QObject(),
-    subscriptionId(subscriptionRequest.getSubscriptionId()),
-    subscribedToName(subscriptionRequest.getSubscribeToName()),
-    qos(subscriptionRequest.getQos())
+SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)
+        : QObject(),
+          subscriptionId(subscriptionRequest.getSubscriptionId()),
+          subscribedToName(subscriptionRequest.getSubscribeToName()),
+          qos(subscriptionRequest.getQos())
 {
-
 }
 
-QString SubscriptionRequest::getSubscriptionId() const {
+QString SubscriptionRequest::getSubscriptionId() const
+{
     return subscriptionId;
 }
 
-QString SubscriptionRequest::getSubscribeToName() const {
+QString SubscriptionRequest::getSubscribeToName() const
+{
     return subscribedToName;
 }
 
-QSharedPointer<SubscriptionQos> SubscriptionRequest::getQos() const {
+QSharedPointer<SubscriptionQos> SubscriptionRequest::getQos() const
+{
     return qos;
 }
 
-QVariant SubscriptionRequest::getQosData() const {
+QVariant SubscriptionRequest::getQosData() const
+{
     int typeId = QMetaType::type(qos->metaObject()->className());
     return QVariant(typeId, qos.data());
 }
 
-SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest) {
+SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest)
+{
     subscriptionId = subscriptionRequest.getSubscriptionId();
     subscribedToName = subscriptionRequest.getSubscribeToName();
     qos = subscriptionRequest.getQos();
     return *this;
 }
 
-bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const {
+bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
+{
     bool equal = getQos()->equals(*subscriptionRequest.getQos());
-    return
-            subscriptionId == subscriptionRequest.getSubscriptionId()
-            && subscribedToName == subscriptionRequest.getSubscribeToName()
-            && equal;
+    return subscriptionId == subscriptionRequest.getSubscriptionId() &&
+           subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-void SubscriptionRequest::setSubscriptionId(const QString &id) {
+void SubscriptionRequest::setSubscriptionId(const QString& id)
+{
     this->subscriptionId = id;
 }
 
-void SubscriptionRequest::setSubscribeToName(const QString &attributeName) {
+void SubscriptionRequest::setSubscribeToName(const QString& attributeName)
+{
     this->subscribedToName = attributeName;
 }
 
-void SubscriptionRequest::setQos(QSharedPointer<SubscriptionQos> qos) {
+void SubscriptionRequest::setQos(QSharedPointer<SubscriptionQos> qos)
+{
     this->qos = qos;
 }
 
-void SubscriptionRequest::setQosData(QVariant qos) {
+void SubscriptionRequest::setQosData(QVariant qos)
+{
     // copy the object
     QMetaType type(qos.userType());
     auto newQos = static_cast<SubscriptionQos*>(type.create(qos.constData()));
     this->qos = QSharedPointer<SubscriptionQos>(newQos);
 }
 
-QString SubscriptionRequest::toQString() const {
+QString SubscriptionRequest::toQString() const
+{
     return JsonSerializer::serialize(*this);
 }
 

@@ -45,6 +45,7 @@ public class JoynrMessage implements JoynrType {
     public static final String MESSAGE_TYPE_REQUEST = "request";
     public static final String MESSAGE_TYPE_REPLY = "reply";
     public static final String MESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
+    public static final String MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "broadcastSubscriptionRequest";
     public static final String MESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
     public static final String MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
     public static final String MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";

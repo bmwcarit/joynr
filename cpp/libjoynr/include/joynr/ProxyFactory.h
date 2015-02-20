@@ -19,7 +19,6 @@
 
 #ifndef PROXYFACTORY_H
 #define PROXYFACTORY_H
-	
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
@@ -30,36 +29,44 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class IClientCache;
 class MessagingQos;
 class JoynrMessageSender;
 
-class JOYNR_EXPORT ProxyFactory {
+class JOYNR_EXPORT ProxyFactory
+{
 public:
-    ProxyFactory(
-            QSharedPointer<joynr::system::Address> messagingEndpointAddress,
-            ConnectorFactory* connectorFactory,
-            IClientCache* cache
-    );
+    ProxyFactory(QSharedPointer<joynr::system::Address> messagingEndpointAddress,
+                 ConnectorFactory* connectorFactory,
+                 IClientCache* cache);
 
     ~ProxyFactory();
 
     // Create a proxy of type T
-    template<class T>
-    T* createProxy(const QString& domain,const ProxyQos& proxyQos, const MessagingQos& qosSettings, bool cached) {
-        return new T(messagingEndpointAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached);
+    template <class T>
+    T* createProxy(const QString& domain,
+                   const ProxyQos& proxyQos,
+                   const MessagingQos& qosSettings,
+                   bool cached)
+    {
+        return new T(messagingEndpointAddress,
+                     connectorFactory,
+                     cache,
+                     domain,
+                     proxyQos,
+                     qosSettings,
+                     cached);
     }
 
 private:
-	DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
+    DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
     QSharedPointer<joynr::system::Address> messagingEndpointAddress;
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
 };
 
-
-
 } // namespace joynr
-#endif //PROXYFACTORY_H
+#endif // PROXYFACTORY_H

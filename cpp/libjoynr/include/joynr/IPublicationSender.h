@@ -22,7 +22,8 @@
 #include "joynr/JoynrExport.h"
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class SubscriptionPublication;
 class MessagingQos;
@@ -31,20 +32,19 @@ class MessagingQos;
   * \class IPublicationSender
   * \brief
   */
-class JOYNR_EXPORT IPublicationSender {
+class JOYNR_EXPORT IPublicationSender
+{
 public:
-    virtual ~IPublicationSender() {}
+    virtual ~IPublicationSender()
+    {
+    }
 
     virtual void sendSubscriptionPublication(
             const QString& senderParticipantId,
             const QString& receiverParticipantId,
             const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication
-    ) = 0;
+            const SubscriptionPublication& subscriptionPublication) = 0;
 };
 
-
-
-
 } // namespace joynr
-#endif //IPUBLICATIONSENDER_H
+#endif // IPUBLICATIONSENDER_H

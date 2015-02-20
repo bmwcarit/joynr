@@ -24,21 +24,25 @@
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/IDispatcher.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class MessagingQos;
 class JoynrMessage;
 
-
-class JOYNR_EXPORT InProcessLibJoynrMessagingSkeleton : public InProcessMessagingSkeleton {
+class JOYNR_EXPORT InProcessLibJoynrMessagingSkeleton : public InProcessMessagingSkeleton
+{
 public:
-     InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher);
-     virtual ~InProcessLibJoynrMessagingSkeleton() {}
-     void transmit(JoynrMessage& message, const MessagingQos& qoS) ;
+    InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher);
+    virtual ~InProcessLibJoynrMessagingSkeleton()
+    {
+    }
+    void transmit(JoynrMessage& message);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessLibJoynrMessagingSkeleton);
     IDispatcher* dispatcher;
 };
 
 } // namespace joynr
-#endif //INPROCESSLIBJOYNRMESSAGINGSKELETON_H
+#endif // INPROCESSLIBJOYNRMESSAGINGSKELETON_H

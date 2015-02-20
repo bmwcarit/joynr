@@ -20,28 +20,33 @@
 #define MY_RADIO_PROVIDER_H
 
 #include "joynr/vehicle/RadioProvider.h"
+#include "joynr/vehicle/RadioStation.h"
+#include "joynr/vehicle/Country.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/joynrlogging.h"
-#include <QStringList>
+#include <QList>
+#include <QMap>
 #include <QMutex>
 
 /**
   * A Radio Provider with a circular list of radio stations
   */
-class MyRadioProvider : public joynr::vehicle::RadioProvider {
+class MyRadioProvider : public joynr::vehicle::RadioProvider
+{
 public:
     MyRadioProvider(const joynr::types::ProviderQos& providerQos);
-   ~MyRadioProvider();
+    ~MyRadioProvider();
 
     /**
       * Get the current radio station
       */
-    void getCurrentStation(joynr::RequestStatus& status, QString& result);
+    void getCurrentStation(joynr::RequestStatus& status, joynr::vehicle::RadioStation& result);
 
     /**
       * Set the current radio station
       */
-    void setCurrentStation(joynr::RequestStatus& status, QString currentStation);
+    void setCurrentStation(joynr::RequestStatus& status,
+                           joynr::vehicle::RadioStation currentStation);
 
     /**
       * Get the next radio station in a circular list of stations
@@ -51,21 +56,22 @@ public:
     /**
       * Add a favourite radio station
       */
-    void addFavouriteStation(joynr::RequestStatus& status, bool& returnValue, QString radioStation);
+    void addFavouriteStation(joynr::RequestStatus& status,
+                             bool& returnValue,
+                             joynr::vehicle::RadioStation radioStation);
 
-    /*
-     * Add a list of favourite stations
-     */
-    void addFavouriteStationList(joynr::RequestStatus& status, bool& returnValue, QList<QString>  radioStationList);
+    void fireWeakSignalBroadcast();
+    void fireNewStationDiscoveredBroadcast();
 
 private:
     // Disallow copy and assign
     MyRadioProvider(const MyRadioProvider&);
     void operator=(const MyRadioProvider&);
 
-    int currentStationIndex;                // Index to the current station
-    QStringList stationsList;   // List of possible stations
-    QMutex mutex;               // Providers need to be threadsafe
+    int currentStationIndex;                          // Index to the current station
+    QList<joynr::vehicle::RadioStation> stationsList; // List of possible stations
+    QMap<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition> countryGeoPositionMap;
+    QMutex mutex; // Providers need to be threadsafe
 
     static joynr::joynr_logging::Logger* logger;
 };

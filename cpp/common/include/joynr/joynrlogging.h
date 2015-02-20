@@ -26,40 +26,35 @@
 
 class QString;
 
-namespace joynr {
+namespace joynr
+{
 
-namespace joynr_logging {
+namespace joynr_logging
+{
 
 class Logger;
 
 #ifdef WIN32
-  #ifdef ERROR
-    // QT5.1 leaks this global definition from windows.h
-    // Because Joynr does not use windows.h directly it is safe to 
-    // undefine this macro
-    #undef ERROR
-  #endif
+#ifdef ERROR
+// QT5.1 leaks this global definition from windows.h
+// Because Joynr does not use windows.h directly it is safe to
+// undefine this macro
+#undef ERROR
+#endif
 #endif
 
-enum LogLevel
-{
-    TRACE,
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
-    FATAL
-};
-
+enum LogLevel { TRACE, DEBUG, INFO, WARN, ERROR, FATAL };
 
 /**
   * Singleton class that represents the logging system.
-  * Use Logging::getInstance()->getLogger("MSG", "MyClass"); to get a logger for the class named MyClass.
+  * Use Logging::getInstance()->getLogger("MSG", "MyClass"); to get a logger for the class named
+ * MyClass.
   * MSG would be the module id, that must not be longer than four characters.
   */
-class JOYNRCOMMON_EXPORT Logging {
+class JOYNRCOMMON_EXPORT Logging
+{
 public:
-    virtual ~Logging() {};
+    virtual ~Logging(){};
     virtual void shutdown() = 0;
 
     virtual Logger* getLogger(QString contextId, QString className) = 0;
@@ -68,21 +63,21 @@ public:
     static Logging* getInstance();
 };
 
-
 /**
   * Objects of this class are used to perform the actual logging.
   * Instead of calling the log method of this class you should concider using the logging macros:
   * LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR and LOG_FATAL.
   * An example would be LOG_INFO(logger, "connected to the server").
-  * The macros have the benefit, that they do not evaluate to code if JOYNR_MAX_LOG_LEVEL_XXXX macro is defined.
+  * The macros have the benefit, that they do not evaluate to code if JOYNR_MAX_LOG_LEVEL_XXXX macro
+ * is defined.
   */
-class JOYNRCOMMON_EXPORT Logger {
+class JOYNRCOMMON_EXPORT Logger
+{
 public:
     virtual ~Logger(){};
     virtual void log(LogLevel logLevel, const char* message) = 0;
     virtual void log(LogLevel logLevel, const QString& message) = 0;
 };
-
 
 } // namespace joynr
 } // namespace joynr_logging

@@ -31,6 +31,7 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
@@ -57,7 +58,7 @@ public class AnnotatedWebFilterLoadingTest {
 
         server.setHandler(context);
         server.start();
-        int port = server.getConnectors()[0].getLocalPort();
+        int port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
 
         serverUrl = String.format("http://localhost:%d", port);
     }

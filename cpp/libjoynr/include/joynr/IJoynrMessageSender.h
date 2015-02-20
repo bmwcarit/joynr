@@ -23,13 +23,15 @@
 #include "joynr/joynrlogging.h"
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class IDispatcher;
 class IReplyCaller;
 class Reply;
 class Request;
 class SubscriptionRequest;
+class BroadcastSubscriptionRequest;
 class SubscriptionReply;
 class SubscriptionStop;
 class SubscriptionPublication;
@@ -40,7 +42,6 @@ class SubscriptionPublication;
   * It uses a JoynrMessage factory to create a JoynrMessage
   * and sends it via a <Middleware>MessagingStub.
   */
-
 
 /*
   * JoynrMessageSender needs an Dispatcher, and Dispatcher needs a JoynrMessageSender.
@@ -59,10 +60,12 @@ class SubscriptionPublication;
   *     No reference to the dispatcher.
   */
 
-class IJoynrMessageSender : public IPublicationSender{
+class IJoynrMessageSender : public IPublicationSender
+{
 public:
-    virtual ~IJoynrMessageSender() { }
-
+    virtual ~IJoynrMessageSender()
+    {
+    }
 
     /*
       * registers Dispatcher. See above comment why this is necessary.
@@ -72,45 +75,40 @@ public:
     /*
      * Prepares and sends a request message (such as issued by a Proxy)
      */
-    virtual void sendRequest(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
-            const MessagingQos& qos,
-            const Request& request,
-            QSharedPointer<IReplyCaller> callback
-    ) = 0;
+    virtual void sendRequest(const QString& senderParticipantId,
+                             const QString& receiverParticipantId,
+                             const MessagingQos& qos,
+                             const Request& request,
+                             QSharedPointer<IReplyCaller> callback) = 0;
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
-    virtual void sendReply(
+    virtual void sendReply(const QString& senderParticipantId,
+                           const QString& receiverParticipantId,
+                           const MessagingQos& qos,
+                           const Reply& reply) = 0;
+
+    virtual void sendSubscriptionRequest(const QString& senderParticipantId,
+                                         const QString& receiverParticipantId,
+                                         const MessagingQos& qos,
+                                         const SubscriptionRequest& subscriptionRequest) = 0;
+
+    virtual void sendBroadcastSubscriptionRequest(
             const QString& senderParticipantId,
             const QString& receiverParticipantId,
             const MessagingQos& qos,
-            const Reply& reply
-    ) = 0;
+            const BroadcastSubscriptionRequest& subscriptionRequest) = 0;
 
-    virtual void sendSubscriptionRequest(
-            const QString &senderParticipantId,
-            const QString &receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionRequest& subscriptionRequest
-    ) = 0;
+    virtual void sendSubscriptionReply(const QString& senderParticipantId,
+                                       const QString& receiverParticipantId,
+                                       const MessagingQos& qos,
+                                       const SubscriptionReply& subscriptionReply) = 0;
 
-    virtual void sendSubscriptionReply(
-            const QString &senderParticipantId,
-            const QString &receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionReply& subscriptionReply
-    ) = 0;
-
-    virtual void sendSubscriptionStop(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
-            const MessagingQos& qos,
-            const SubscriptionStop& subscriptionStop
-    ) = 0;
+    virtual void sendSubscriptionStop(const QString& senderParticipantId,
+                                      const QString& receiverParticipantId,
+                                      const MessagingQos& qos,
+                                      const SubscriptionStop& subscriptionStop) = 0;
 };
-
 
 } // namespace joynr
 #endif // IJOYNRMESSAGESENDER_H

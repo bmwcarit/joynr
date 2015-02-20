@@ -33,7 +33,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.PubSubTestProviderImpl;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -45,8 +45,8 @@ import java.util.UUID;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
-import joynr.tests.TestProxy;
-import joynr.tests.TestSync;
+import joynr.tests.testProxy;
+import joynr.tests.testSync;
 
 import org.junit.After;
 import org.junit.Before;
@@ -72,10 +72,10 @@ public class LocalCommunicationTest {
     private JoynrRuntime runtimeA;
     private PubSubTestProviderImpl provider;
     private String domain;
-    private TestProxy proxy;
+    private testProxy proxy;
 
     @Mock
-    private SubscriptionListener<Integer> listener;
+    private AttributeSubscriptionListener<Integer> listener;
     private SubscriptionQos subscriptionQos;
     private int lengthInMS = 2000;
 
@@ -94,14 +94,14 @@ public class LocalCommunicationTest {
         provider = new PubSubTestProviderImpl();
         domain = "TestDomain" + System.currentTimeMillis();
 
-        runtimeA.registerCapability(domain, provider, TestSync.class, "LocalCommunicationTest");
+        runtimeA.registerCapability(domain, provider, testSync.class, "LocalCommunicationTest");
 
-        ProxyBuilder<TestProxy> proxyBuilder;
+        ProxyBuilder<testProxy> proxyBuilder;
 
         MessagingQos messagingQos = new MessagingQos(20000);
         DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
-        proxyBuilder = runtimeA.getProxyBuilder(domain, TestProxy.class);
+        proxyBuilder = runtimeA.getProxyBuilder(domain, testProxy.class);
         proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
     }
@@ -144,11 +144,11 @@ public class LocalCommunicationTest {
         }, period, period);
 
         Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).publicationMissed();
+        verify(listener, times(0)).onError();
         // verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
         for (int i = 42; i < 42 + times; i++) {
-            verify(listener, times(1)).receive(eq(i));
+            verify(listener, times(1)).onReceive(eq(i));
         }
         verifyNoMoreInteractions(listener);
     }
@@ -164,7 +164,7 @@ public class LocalCommunicationTest {
         final int initialValue = 42;
 
         int period = lengthInMS / times;
-        provider.aTTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
+        provider.ATTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
         subscriptionQos = new OnChangeSubscriptionQos(lengthInMS / 4, System.currentTimeMillis() + lengthInMS, // expiryDate
                                                       lengthInMS / 4);
 
@@ -175,18 +175,18 @@ public class LocalCommunicationTest {
             public void run() {
                 value++;
                 if (value < initialValue + times) {
-                    provider.aTTRIBUTEWITHCAPITALLETTERSChanged(value);
+                    provider.ATTRIBUTEWITHCAPITALLETTERSChanged(value);
                 }
             }
         }, period, period);
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
 
         Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).publicationMissed();
-        verify(listener, times(times)).receive(anyInt());
+        verify(listener, times(0)).onError();
+        verify(listener, times(times)).onReceive(anyInt());
         // TODO verify publications shipped correct data
         for (int i = 42; i < 42 + times; i++) {
-            verify(listener, times(1)).receive(eq(i));
+            verify(listener, times(1)).onReceive(eq(i));
         }
         verifyNoMoreInteractions(listener);
     }

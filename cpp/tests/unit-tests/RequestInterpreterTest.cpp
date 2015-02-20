@@ -20,7 +20,7 @@
 #include "joynr/vehicle/IGps.h"
 #include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
-#include "joynr/tests/TestRequestInterpreter.h"
+#include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/MessagingQos.h"
@@ -58,7 +58,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
                 getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
             .Times(1);
 
-    tests::TestRequestInterpreter interpreter;
+    tests::testRequestInterpreter interpreter;
     QString methodName = "getLocation";
     QVariantList paramValues;
     QVariantList paramDatatypes;

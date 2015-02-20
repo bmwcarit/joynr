@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.inprocess
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,32 +27,36 @@ class InProcessGenerator {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-	
+
 	@Inject
-	InterfaceInProcessConnectorHTemplate interfaceInProcessConnectorH; 
-	
+	InterfaceInProcessConnectorHTemplate interfaceInProcessConnectorH;
+
 	@Inject
-	InterfaceInProcessConnectorCPPTemplate interfaceInProcessConnectorCPP;	
-	
-	def doGenerate(FModel model, 
-		IFileSystemAccess sourceFileSystem, 
-		IFileSystemAccess headerFileSystem, 
+	InterfaceInProcessConnectorCPPTemplate interfaceInProcessConnectorCPP;
+
+	def doGenerate(FModel model,
+		IFileSystemAccess sourceFileSystem,
+		IFileSystemAccess headerFileSystem,
 		String sourceContainerPath,
 		String headerContainerPath
 	){
 		for(serviceInterface: model.interfaces){
-			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator 
-			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
+			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator
+			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 			val serviceName = serviceInterface.joynrName
-			
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerpath + serviceName + "InProcessConnector.h",
-				interfaceInProcessConnectorH.generate(serviceInterface).toString
+				interfaceInProcessConnectorH,
+				serviceInterface
 			);
-			
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcepath + serviceName + "InProcessConnector.cpp",
-				interfaceInProcessConnectorCPP.generate(serviceInterface).toString
+				interfaceInProcessConnectorCPP,
+				serviceInterface
 			);
 		}
 	}

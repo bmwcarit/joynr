@@ -23,31 +23,36 @@
 #include <cassert>
 #include <QMutexLocker>
 
-namespace joynr {
+namespace joynr
+{
 
-MessagingStubFactory::~MessagingStubFactory() {
-    while(!factoryList.isEmpty()) {
+MessagingStubFactory::~MessagingStubFactory()
+{
+    while (!factoryList.isEmpty()) {
         delete factoryList.takeFirst();
     }
 }
 
-MessagingStubFactory::MessagingStubFactory() :
-    partId2MessagingStubDirectory(QString("MessagingStubFactory-MessagingStubDirectory")),
-    factoryList(),
-    mutex()
+MessagingStubFactory::MessagingStubFactory()
+        : partId2MessagingStubDirectory(QString("MessagingStubFactory-MessagingStubDirectory")),
+          factoryList(),
+          mutex()
 {
 }
 
 QSharedPointer<IMessaging> MessagingStubFactory::create(
         QString destParticipantId,
-        const joynr::system::Address& destinationAddress) {
+        const joynr::system::Address& destinationAddress)
+{
     {
         QMutexLocker locker(&this->mutex);
 
         if (!partId2MessagingStubDirectory.contains(destParticipantId)) {
             // search for the corresponding factory
-            for(QList<IMiddlewareMessagingStubFactory*>::iterator it = this->factoryList.begin(); it != factoryList.end(); ++it){
-                if((*it)->canCreate(destinationAddress)) {
+            for (QList<IMiddlewareMessagingStubFactory*>::iterator it = this->factoryList.begin();
+                 it != factoryList.end();
+                 ++it) {
+                if ((*it)->canCreate(destinationAddress)) {
                     QSharedPointer<IMessaging> stub = (*it)->create(destinationAddress);
                     partId2MessagingStubDirectory.add(destParticipantId, stub);
 
@@ -61,15 +66,18 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
     return partId2MessagingStubDirectory.lookup(destParticipantId);
 }
 
-void MessagingStubFactory::remove(QString destParticipantId) {
+void MessagingStubFactory::remove(QString destParticipantId)
+{
     partId2MessagingStubDirectory.remove(destParticipantId);
 }
 
-bool MessagingStubFactory::contains(QString destParticipantId) {
+bool MessagingStubFactory::contains(QString destParticipantId)
+{
     return partId2MessagingStubDirectory.contains(destParticipantId);
 }
 
-void MessagingStubFactory::registerStubFactory(IMiddlewareMessagingStubFactory* factory) {
+void MessagingStubFactory::registerStubFactory(IMiddlewareMessagingStubFactory* factory)
+{
     this->factoryList.append(factory);
 }
 

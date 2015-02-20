@@ -21,55 +21,56 @@
 #include "joynr/exceptions.h"
 #include "joynr/JoynrMessageSender.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
-Logger* AbstractJoynrMessagingConnector::logger = Logging::getInstance()->getLogger("AbstractJoynrMessagingConnector", "AbstractJoynrMessagingConnector");
+Logger* AbstractJoynrMessagingConnector::logger =
+        Logging::getInstance()->getLogger("AbstractJoynrMessagingConnector",
+                                          "AbstractJoynrMessagingConnector");
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
-        IJoynrMessageSender *joynrMessageSender,
+        IJoynrMessageSender* joynrMessageSender,
         SubscriptionManager* subscriptionManager,
-        const QString &domain,
-        const QString &interfaceName,
+        const QString& domain,
+        const QString& interfaceName,
         const QString proxyParticipantId,
         const QString& providerParticipantId,
-        const MessagingQos &qosSettings,
-        IClientCache *cache,
+        const MessagingQos& qosSettings,
+        IClientCache* cache,
         bool cached,
         const qint64 reqCacheDataFreshness_ms)
-    : joynrMessageSender(joynrMessageSender),
-      subscriptionManager(subscriptionManager),
-      domain(domain),
-      interfaceName(interfaceName),
-      proxyParticipantId(proxyParticipantId),
-      providerParticipantId(providerParticipantId),
-      qosSettings(qosSettings),
-      cache(cache),
-      cached(cached),
-      reqCacheDataFreshness_ms(reqCacheDataFreshness_ms)
+        : joynrMessageSender(joynrMessageSender),
+          subscriptionManager(subscriptionManager),
+          domain(domain),
+          interfaceName(interfaceName),
+          proxyParticipantId(proxyParticipantId),
+          providerParticipantId(providerParticipantId),
+          qosSettings(qosSettings),
+          cache(cache),
+          cached(cached),
+          reqCacheDataFreshness_ms(reqCacheDataFreshness_ms)
 {
 }
 
-bool AbstractJoynrMessagingConnector::usesClusterController() const {
+bool AbstractJoynrMessagingConnector::usesClusterController() const
+{
     return true;
 }
 
-void AbstractJoynrMessagingConnector::operationRequest(RequestStatus& status, QSharedPointer<IReplyCaller> replyCaller,
-                                                      const Request& request) {
+void AbstractJoynrMessagingConnector::operationRequest(RequestStatus& status,
+                                                       QSharedPointer<IReplyCaller> replyCaller,
+                                                       const Request& request)
+{
     status.setCode(RequestStatusCode::IN_PROGRESS);
     sendRequest(request, replyCaller);
 }
 
-void AbstractJoynrMessagingConnector::sendRequest(const Request& request, QSharedPointer<IReplyCaller> replyCaller) {
+void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
+                                                  QSharedPointer<IReplyCaller> replyCaller)
+{
     joynrMessageSender->sendRequest(
-                proxyParticipantId,
-                providerParticipantId,
-                qosSettings,
-                request,
-                replyCaller
-    );
+            proxyParticipantId, providerParticipantId, qosSettings, request, replyCaller);
 }
-
-
 
 } // namespace joynr

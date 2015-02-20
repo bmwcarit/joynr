@@ -31,9 +31,11 @@
 #include <iostream>
 #include <assert.h>
 
-namespace joynr {
+namespace joynr
+{
 
-class JsonSerializer {
+class JsonSerializer
+{
 public:
     /**
      * @brief Serializes a QObject into JSON format.
@@ -41,9 +43,10 @@ public:
      * @param object the object to serialize.
      * @return QByteArray the serialized byte array in JSON format, UTF-8 encoding.
      */
-    static QByteArray serialize(const QObject& object) {
+    static QByteArray serialize(const QObject& object)
+    {
         QJson::Serializer serializer;
-        const QMetaObject *metaobject = object.metaObject();
+        const QMetaObject* metaobject = object.metaObject();
         return serializer.serialize(QVariant(QMetaType::type(metaobject->className()), &object));
     }
 
@@ -53,12 +56,13 @@ public:
      * @param variant the variant to serialize.
      * @return QString the serialized string in JSON format.
      */
-    static QByteArray serialize(const QVariant& variant) {
+    static QByteArray serialize(const QVariant& variant)
+    {
         QJson::Serializer serializer;
         return serializer.serialize(variant);
     }
 
-    template<class T>
+    template <class T>
     /**
      * @brief Deserializes a string in JSON list format to a list of the given
      * template type T.
@@ -68,7 +72,8 @@ public:
      * @param json the JSON representation of template type T.
      * @return QList<T> the deserialized list
      */
-    static QList<T*> deserializeList(const QByteArray& json) {
+    static QList<T*> deserializeList(const QByteArray& json)
+    {
 
         // Parse the JSON
         QJson::Parser parser;
@@ -88,7 +93,7 @@ public:
         return ret;
     }
 
-    template<class T>
+    template <class T>
     /**
      * @brief Deserializes a QByteArray in JSON format to the given template type T.
      * Template type T must inherit from QObject. The QByteArray must be a
@@ -97,26 +102,24 @@ public:
      * @param json the JSON representation of template type T.
      * @return T the deserialized object
      */
-    static T* deserialize(const QByteArray& json) {
+    static T* deserialize(const QByteArray& json)
+    {
         QJson::Parser parser;
         QVariant jsonQVar = parser.parse(json);
         QVariantMap jsonQVarValue = jsonQVar.value<QVariantMap>();
-        if(!jsonQVarValue.contains("_typeName")) {
+        if (!jsonQVarValue.contains("_typeName")) {
             std::cerr << "_typename not specified in serialized: "
                       << QString::fromUtf8(json).toStdString() << std::endl;
             assert(false);
         }
         QString typeName = jsonQVarValue.value("_typeName").value<QString>();
         int classId = QJson::QObjectHelper::getClassIdForTransmittedType(typeName);
-        QObject* object = (QObject*) QMetaType::create(classId);
+        QObject* object = (QObject*)QMetaType::create(classId);
         assert(object);
         QJson::QObjectHelper::qvariant2qobject(jsonQVarValue, object);
         return (T*)object;
     }
-
 };
-
-
 
 } // namespace joynr
 #endif // JSONSERIALIZER_H

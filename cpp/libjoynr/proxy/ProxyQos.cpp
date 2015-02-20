@@ -18,23 +18,22 @@
  */
 #include "joynr/ProxyQos.h"
 
-namespace joynr {
+namespace joynr
+{
 
 const qint64 ProxyQos::NO_CACHE_FRESHNESS_REQ = -1;
-const qint64 ProxyQos::DONT_USE_CACHE= 0;
+const qint64 ProxyQos::DONT_USE_CACHE = 0;
 
-
-ProxyQos::ProxyQos():
-    reqCacheDataFreshness_ms(-1)
+ProxyQos::ProxyQos() : reqCacheDataFreshness_ms(-1)
 {
 }
 
-ProxyQos::ProxyQos(const qint64& reqCacheDataFreshness_ms):
-    reqCacheDataFreshness_ms(reqCacheDataFreshness_ms)
+ProxyQos::ProxyQos(const qint64& reqCacheDataFreshness_ms)
+        : reqCacheDataFreshness_ms(reqCacheDataFreshness_ms)
 {
 }
 
-void ProxyQos::setReqCacheDataFreshness_ms(const qint64 &reqCacheDataFreshness_ms)
+void ProxyQos::setReqCacheDataFreshness_ms(const qint64& reqCacheDataFreshness_ms)
 {
     this->reqCacheDataFreshness_ms = reqCacheDataFreshness_ms;
 }

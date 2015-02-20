@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,17 @@ import com.google.inject.Inject
 import org.franca.core.franca.FEnumerationType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.EnumTemplate
 
-class EnumHTemplate {
-	
+class EnumHTemplate implements EnumTemplate{
+
 	@Inject
 	private extension TemplateBase
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	def generate(FEnumerationType type){
+	override generate(FEnumerationType type){
 		val typeName = type.joynrName;
 		val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase
 	'''
@@ -69,6 +70,10 @@ class EnumHTemplate {
 		typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»;
 		Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»)
 		Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»>)
+
+		inline uint qHash(«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» key, uint seed = 0) {
+		    return uint(key) ^ seed;
+		}
 
 		#endif // «headerGuard»
 	'''

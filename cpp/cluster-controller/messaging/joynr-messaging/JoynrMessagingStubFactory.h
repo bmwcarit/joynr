@@ -21,14 +21,17 @@
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IMessageSender;
 
-class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory {
+class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory
+{
 
 public:
-    JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender, QString receiveChannelId);
+    JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender,
+                              QString receiveChannelId);
     QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress);
     bool canCreate(const joynr::system::Address& destAddress);
 

@@ -22,8 +22,8 @@
 #include "joynr/SubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 
-namespace joynr {
-
+namespace joynr
+{
 
 class JOYNRCOMMON_EXPORT SubscriptionUtil
 {
@@ -33,6 +33,5 @@ public:
     static qint64 getMinInterval(SubscriptionQos* qos);
     static qint64 getPeriodicPublicationInterval(SubscriptionQos* qos);
 };
-
 }
 #endif // SUBSCRIPTIONUTIL_H

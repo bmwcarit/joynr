@@ -27,18 +27,19 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
-template<class _SkeletonClass, class _CallBackClass>
+template <class _SkeletonClass, class _CallBackClass>
 class JOYNRCOMMON_EXPORT IDbusSkeletonWrapper
 {
 public:
     IDbusSkeletonWrapper(_CallBackClass& callBack, QString serviceAddress)
-        : // factory(NULL),
-          serviceAddress(serviceAddress),
-          logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
+            : // factory(NULL),
+              serviceAddress(serviceAddress),
+              logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
     {
         LOG_INFO(logger, "Registering dbus skeleton on address: " + serviceAddress);
 
@@ -47,33 +48,37 @@ public:
 
         // register skeleton
         auto runtime = CommonAPI::Runtime::load("DBus");
-        bool success = runtime->getServicePublisher()->registerService(skeleton, serviceAddress.toStdString(), runtime->createFactory());
+        bool success = runtime->getServicePublisher()->registerService(
+                skeleton, serviceAddress.toStdString(), runtime->createFactory());
         // wait some time so that the service is registered and ready to use on dbus level
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
-        if(success) {
+        if (success) {
             LOG_INFO(logger, "SUCCESS");
         } else {
             LOG_FATAL(logger, "ERROR");
         }
     }
 
-    ~IDbusSkeletonWrapper() {
+    ~IDbusSkeletonWrapper()
+    {
         LOG_INFO(logger, "Unregistering dbus skeleton from address: " + serviceAddress);
 
         auto runtime = CommonAPI::Runtime::load("DBus");
-        bool success = runtime->getServicePublisher()->unregisterService(serviceAddress.toStdString());
+        bool success =
+                runtime->getServicePublisher()->unregisterService(serviceAddress.toStdString());
         // wait some time so that the service is unregistered on dbus level
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
-        if(success) {
+        if (success) {
             LOG_INFO(logger, "SUCCESS");
         } else {
             LOG_FATAL(logger, "ERROR");
         }
     }
 
-    void logMethodCall(const QString& method, const QString& adapter) {
+    void logMethodCall(const QString& method, const QString& adapter)
+    {
         LOG_INFO(logger, "Call method " + adapter + ":" + serviceAddress + "-> " + method);
     }
 
@@ -82,7 +87,6 @@ private:
     QString serviceAddress;
     joynr_logging::Logger* logger;
 };
-
 
 } // namespace joynr
 #endif // DBUSSKELETONWRAPPER_H

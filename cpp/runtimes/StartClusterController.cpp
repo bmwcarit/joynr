@@ -25,14 +25,15 @@
 
 using namespace joynr;
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     // init a logger
-    joynr_logging::Logger* logger = joynr_logging::Logging::getInstance()->getLogger("ClusterController", "Runtime");
+    joynr_logging::Logger* logger =
+            joynr_logging::Logging::getInstance()->getLogger("ClusterController", "Runtime");
 
     // Check the usage
     QString programName(argv[0]);
-    if(argc == 1) {
+    if (argc == 1) {
         LOG_INFO(logger, QString("USAGE: No settings provided. Starting with default settings."));
         LOG_INFO(logger, QString("USAGE: %1 <file.settings>...").arg(programName));
     }
@@ -42,10 +43,10 @@ int main( int argc, char* argv[] )
     // TODO we should not use QSettings for non-persistent memory-based settings
     // consider using QMap<QString, QVariant> (cf. QSettings documentation)
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, organization, application);
-    for(int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         QString settingsFileName(argv[i]);
         QFile settingsFile(settingsFileName);
-        if(!settingsFile.exists()) {
+        if (!settingsFile.exists()) {
             LOG_FATAL(logger, QString("Settings file \"%1\" doesn't exist.").arg(settingsFileName));
             return 1;
         }
@@ -55,7 +56,8 @@ int main( int argc, char* argv[] )
     }
 
     // create the cluster controller runtime
-    JoynrClusterControllerRuntime* clusterControllerRuntime = JoynrClusterControllerRuntime::create(&settings);
+    JoynrClusterControllerRuntime* clusterControllerRuntime =
+            JoynrClusterControllerRuntime::create(&settings);
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();

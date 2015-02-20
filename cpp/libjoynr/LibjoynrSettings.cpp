@@ -19,60 +19,76 @@
 #include "joynr/LibjoynrSettings.h"
 #include <QtCore>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 Logger* LibjoynrSettings::logger = Logging::getInstance()->getLogger("MSG", "LibjoynrSettings");
 
-LibjoynrSettings::LibjoynrSettings(QSettings& settings, QObject *parent) :
-    QObject(parent),
-    settings(settings)
+LibjoynrSettings::LibjoynrSettings(QSettings& settings, QObject* parent)
+        : QObject(parent), settings(settings)
 {
     checkSettings();
 }
 
-LibjoynrSettings::LibjoynrSettings(const LibjoynrSettings& other) :
-    QObject(other.parent()),
-    settings(other.settings)
+LibjoynrSettings::LibjoynrSettings(const LibjoynrSettings& other)
+        : QObject(other.parent()), settings(other.settings)
 {
 }
 
-LibjoynrSettings::~LibjoynrSettings () {
+LibjoynrSettings::~LibjoynrSettings()
+{
 }
 
-void LibjoynrSettings::checkSettings() const {
+void LibjoynrSettings::checkSettings() const
+{
     // set default values
-    if(!settings.contains(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())) {
-        settings.setValue(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(), DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    if (!settings.contains(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())) {
+        settings.setValue(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
+                          DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
     }
 }
 
-const QString& LibjoynrSettings::SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME() {
+const QString& LibjoynrSettings::SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()
+{
     static const QString value("lib-joynr/participantids-persistence-file");
     return value;
 }
 
-const QString& LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME() {
+const QString& LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()
+{
     static const QString value("joynr_participantIds.settings");
     return value;
 }
 
-const QString& LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME() {
+const QString& LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()
+{
     static const QString value("SubscriptionRequests.persist");
     return value;
 }
 
-QString LibjoynrSettings::getParticipantIdsPersistenceFilename() const {
+const QString& LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()
+{
+    static const QString value("BroadcastSubscriptionRequests.persist");
+    return value;
+}
+
+QString LibjoynrSettings::getParticipantIdsPersistenceFilename() const
+{
     return settings.value(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()).toString();
 }
 
-void LibjoynrSettings::setParticipantIdsPersistenceFilename(const QString& filename) {
+void LibjoynrSettings::setParticipantIdsPersistenceFilename(const QString& filename)
+{
     settings.setValue(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(), filename);
 }
 
-void LibjoynrSettings::printSettings() const {
-    LOG_DEBUG(logger, "SETTING: " + SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME() + " = " + settings.value(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()).toString());
+void LibjoynrSettings::printSettings() const
+{
+    LOG_DEBUG(logger,
+              "SETTING: " + SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME() + " = " +
+                      settings.value(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()).toString());
 }
 
 } // namespace joynr

@@ -20,37 +20,39 @@
 
 #include <QDateTime>
 
-namespace joynr {
+namespace joynr
+{
 
 static const int MAX_CUMMULATIVE_CACHE_COST = 1000;
 
-ClientQCache::ClientQCache() :
-    cache(),
-    mutex()
+ClientQCache::ClientQCache() : cache(), mutex()
 {
     cache.setMaxCost(MAX_CUMMULATIVE_CACHE_COST);
 }
 
-QVariant ClientQCache::lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs) {
+QVariant ClientQCache::lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs)
+{
     QMutexLocker locker(&mutex);
     if (!cache.contains(attributeId)) {
         return QVariant();
     }
     CachedValue<QVariant>* entry = cache.object(attributeId);
-    if(elapsed(entry->getTimestamp()) > maxAcceptedAgeInMs){
+    if (elapsed(entry->getTimestamp()) > maxAcceptedAgeInMs) {
         return QVariant();
     }
     return entry->getValue();
 }
 
-void ClientQCache::insert(QString attributeId, QVariant value) {
+void ClientQCache::insert(QString attributeId, QVariant value)
+{
     QMutexLocker locker(&mutex);
-    CachedValue<QVariant>* cachedValue = new CachedValue<QVariant>(value, QDateTime::currentMSecsSinceEpoch());
+    CachedValue<QVariant>* cachedValue =
+            new CachedValue<QVariant>(value, QDateTime::currentMSecsSinceEpoch());
     cache.insert(attributeId, cachedValue);
 }
 
-
-qint64 ClientQCache::elapsed(qint64 entryTime){
+qint64 ClientQCache::elapsed(qint64 entryTime)
+{
     return QDateTime::currentMSecsSinceEpoch() - entryTime;
 }
 

@@ -27,52 +27,57 @@
 #include "joynr/TrackableObject.h"
 #include "joynr/joynrlogging.h"
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * \class SubscriptionCallback
   * \brief
   */
 
-template<class T>
-class SubscriptionCallback : public ISubscriptionCallback{
+template <class T>
+class SubscriptionCallback : public ISubscriptionCallback
+{
 public:
-
-    SubscriptionCallback(QSharedPointer<ISubscriptionListener<T> > listener)
-    : listener(listener){
-
+    SubscriptionCallback(QSharedPointer<ISubscriptionListener<T>> listener) : listener(listener)
+    {
     }
 
-    virtual ~SubscriptionCallback() {
+    virtual ~SubscriptionCallback()
+    {
         LOG_TRACE(logger, "destructor: entering...");
         LOG_TRACE(logger, "destructor: leaving...");
     }
 
-    void publicationMissed(){
-        listener->publicationMissed();
+    void publicationMissed()
+    {
+        listener->onError();
     }
 
-    void attributeChanged(const T &value){
-        listener->receive(value);
+    void attributeChanged(const T& value)
+    {
+        listener->onReceive(value);
     }
 
-    void timeOut(){
-        //TODO
+    void timeOut()
+    {
+        // TODO
     }
 
-    int getTypeId() const {
+    int getTypeId() const
+    {
         return qMetaTypeId<T>();
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
-    QSharedPointer<ISubscriptionListener<T> > listener;
+    QSharedPointer<ISubscriptionListener<T>> listener;
     static joynr_logging::Logger* logger;
 };
 
-template<typename T>
-joynr_logging::Logger* SubscriptionCallback<T>::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "SubscriptionCallback");
-
+template <typename T>
+joynr_logging::Logger* SubscriptionCallback<T>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "SubscriptionCallback");
 
 } // namespace joynr
 #endif // SUBSCRIPTIONCALLBACK_H

@@ -25,16 +25,18 @@
 #include <QObject>
 #include <QSettings>
 
+namespace joynr
+{
 
-namespace joynr {
-
-class JOYNR_EXPORT LibjoynrSettings : public QObject {
+class JOYNR_EXPORT LibjoynrSettings : public QObject
+{
     Q_OBJECT
 
 public:
     static const QString& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
     static const QString& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const QString& DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME();
+    static const QString& DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME();
+    static const QString& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
 
     explicit LibjoynrSettings(QSettings& settings, QObject* parent = 0);
     LibjoynrSettings(const LibjoynrSettings& other);
@@ -47,13 +49,12 @@ public:
     void printSettings() const;
 
 private:
-    void operator =(const LibjoynrSettings &other);
+    void operator=(const LibjoynrSettings& other);
 
     QSettings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
-
 
 } // namespace joynr
 #endif // LIBJOYNRSETTINGS_H

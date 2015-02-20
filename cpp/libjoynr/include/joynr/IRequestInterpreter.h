@@ -23,16 +23,20 @@
 #include <QMap>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class RequestCaller;
 
 /**
   * Common interface for all \class <Intf>RequestInterpreter.
   */
-class IRequestInterpreter {
+class IRequestInterpreter
+{
 public:
-    virtual ~IRequestInterpreter(){}
+    virtual ~IRequestInterpreter()
+    {
+    }
 
     /**
       * Executes method \param methodName with parameters \param methodParams
@@ -41,9 +45,8 @@ public:
     virtual QVariant execute(QSharedPointer<RequestCaller> requestCaller,
                              const QString& methodName,
                              const QList<QVariant>& paramValues,
-                             const QList<QVariant>& paramTypes)=0;
+                             const QList<QVariant>& paramTypes) = 0;
 };
 
-
 } // namespace joynr
-#endif //IREQUESTINTERPRETER_H
+#endif // IREQUESTINTERPRETER_H

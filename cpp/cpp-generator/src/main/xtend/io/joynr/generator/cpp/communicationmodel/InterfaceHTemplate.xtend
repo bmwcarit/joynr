@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,19 +23,20 @@ import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceHTemplate {
-	
+class InterfaceHTemplate implements InterfaceTemplate{
+
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension InterfaceUtil
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	def generate(FInterface serviceInterface){
+	override generate(FInterface serviceInterface){
 		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase
 	'''
@@ -46,10 +47,10 @@ class InterfaceHTemplate {
 	
 	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
-			«IF isComplex(datatype as FType)»
-				«getNamespaceStarter(datatype as FType)» class «(datatype as FType).joynrName»; «getNamespaceEnder(datatype as FType)»
+			«IF isComplex(datatype)»
+				«getNamespaceStarter(datatype)» class «(datatype).joynrName»; «getNamespaceEnder(datatype)»
 			«ELSE»
-				#include "«getIncludeOf(datatype as FType)»"
+				#include "«getIncludeOf(datatype)»"
 			«ENDIF»
 		«ENDIF»
 	«ENDFOR»
@@ -110,10 +111,14 @@ class InterfaceHTemplate {
 	    virtual ~I«interfaceName»(){ }
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.name.toFirstUpper»
+			«IF attribute.readable»
 			using I«interfaceName»Sync::get«attributeName»;
 			using I«interfaceName»Async::get«attributeName»;
+			«ENDIF»
+			«IF attribute.writable»
 			using I«interfaceName»Sync::set«attributeName»;
 			using I«interfaceName»Async::set«attributeName»;
+			«ENDIF»
 	    «ENDFOR»
 		«FOR methodName: getUniqueMethodNames(serviceInterface)»
 			using I«interfaceName»Sync::«methodName»;

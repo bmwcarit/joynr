@@ -2,7 +2,7 @@ package io.joynr.generator.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FBroadcast
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
-	
-//    @Inject private extension FrancaGeneratorExtensions
+
+//	@Inject private extension FrancaGeneratorExtensions
 
 	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
 //	private Map<FBasicTypeId,String> primitiveDataTypeNameMap;
@@ -49,9 +50,45 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	def String getNamespaceEnder(FInterface interfaceType) {
 		getNamespaceEnder(getPackageNames(interfaceType));
 	}
-	
+
 	def String getNamespaceEnder(FType datatype) {
 		getNamespaceEnder(getPackageNames(datatype));
+	}
+
+	def boolean hasReadAttribute(FInterface interfaceType){
+		for(attribute: interfaceType.attributes){
+			if (isReadable(attribute)){
+				return true
+			}
+		}
+		return false
+	}
+
+	def boolean hasWriteAttribute(FInterface interfaceType){
+		for(attribute: interfaceType.attributes){
+			if (isWritable(attribute)){
+				return true
+			}
+		}
+		return false
+	}
+
+	def boolean hasMethodWithReturnValue(FInterface interfaceType){
+		for(method: interfaceType.methods){
+			if (getMappedOutputParameter(method).iterator.next!="void"){
+				return true
+			}
+		}
+		return false
+	}
+
+	def boolean hasMethodWithArguments(FInterface interfaceType){
+		for(method: interfaceType.methods){
+			if (getInputParameters(method).size>0){
+				return true
+			}
+		}
+		return false
 	}
 
 	def private String getNamespaceStarter(Iterator<String> packageList){
@@ -92,7 +129,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		primitiveDataTypeNameMap = Collections::unmodifiableMap(aMap);
 */
 
-	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();		
+	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();
 		bMap.put(FBasicTypeId::BOOLEAN, "false");
 		bMap.put(FBasicTypeId::INT8, "0");
 		bMap.put(FBasicTypeId::UINT8, "0");
@@ -108,62 +145,102 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		bMap.put(FBasicTypeId::STRING, "\"\"");
 		bMap.put(FBasicTypeId::BYTE_BUFFER, "new byte[0]");
 		bMap.put(FBasicTypeId::UNDEFINED,"");
-		
+
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
 	}
-	 
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
+
+	def getCommaSeperatedTypedOutputParameterList(
+		Iterable<FArgument> arguments,
+		boolean linebreak
+	) {
 		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
+		for(FArgument argument : arguments){
+
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
-			returnStringBuilder.append("& ");
+			returnStringBuilder.append(" ");
 			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
+			returnStringBuilder.append(",");
+
+			if (linebreak) {
+				returnStringBuilder.append("\n");
+			}
+			else {
+				returnStringBuilder.append(" ");
+			}
 		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
-        }
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
+		}
 	}
-	
+
+	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false)
+	}
+
+	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false)
+	}
+
+	def getCommaSeperatedTypedOutputParameterListLinebreak(FBroadcast broadcast) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true)
+	}
+
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
 		val returnStringBuilder = new StringBuilder();
 		for(FArgument argument : getOutputParameters(method)){
 			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(", ");
 		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
-        }
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
 	}
-	 
+
 	def getCommaSeperatedTypedParameterList(FMethod method) {
-        val returnStringBuilder = new StringBuilder();
-        for (param : getInputParameters(method)) {
-        	returnStringBuilder.append(getMappedDatatypeOrList(param));
-        	returnStringBuilder.append(" ");
-        	returnStringBuilder.append(param.joynrName);
-        	returnStringBuilder.append(", ");
-        }
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
-        }
-    }
+		val returnStringBuilder = new StringBuilder();
+		for (param : getInputParameters(method)) {
+			returnStringBuilder.append(getMappedDatatypeOrList(param));
+			returnStringBuilder.append(" ");
+			returnStringBuilder.append(param.joynrName);
+			returnStringBuilder.append(", ");
+		}
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
+	}
+
+	def getCommaSeperatedTypedFilterParameterList(FBroadcast broadcast) {
+		val returnStringBuilder = new StringBuilder();
+		for (filterParameter : getFilterParameters(broadcast)) {
+			returnStringBuilder.append("String ");
+			returnStringBuilder.append(filterParameter);
+			returnStringBuilder.append(", ");
+		}
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
+	}
+
 	override getMappedDatatype(FType datatype) {
 		return datatype.typeName
 	}
-		
+
 	override getMappedDatatypeOrList(FType datatype, boolean array) {
 		val mappedDatatype = getMappedDatatype(datatype);
 		if (array) {
@@ -181,63 +258,65 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			return mappedDatatype;
 		}
 	}
-	
+
 	override getDefaultValue(FTypedElement element) {
+		getDefaultValue(element, "");
+	}
+
+	def getDefaultValue(FTypedElement element, String constructorParams) {
 		//default values are not supported (currently) by the Franca IDL 
-		if (1==0){
-//		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
-//			if (isEnum(member)){
-//				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
-//				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
-//					if (element.VALUE == member.DEFAULTVALUE){
-//						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
-//					}
-//				}
-//				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
-//			}
-////			else if (isLong(member.getDATATYPEREF().getIDREF())){
-////				return member.getDEFAULTVALUE() + "L"
-////			}
-////			else if (isDouble(member.getDATATYPEREF().getIDREF())){
-////				return member.getDEFAULTVALUE() + "d"
-////			}
-//			else{
-//				return member.getDEFAULTVALUE();
-//			}
-		} else if (isComplex(element.type)) {
-			if ((isArray(element))){
-				return "new ArrayList<" + element.type.complexType.joynrName + ">()";
+/*		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
+			if (isEnum(member)){
+				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
+				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
+					if (element.VALUE == member.DEFAULTVALUE){
+						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
+					}
+				}
+				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
+			}
+			else if (isLong(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "L"
+			}
+			else if (isDouble(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "d"
 			}
 			else{
-				return "new " + element.type.complexType.joynrName + "()";
-			} 
+				return member.getDEFAULTVALUE();
+			}
+		} else */ if (isComplex(element.type)) {
+			if ((isArray(element))){
+				return "new ArrayList<" + element.type.complexType.joynrName + ">(" + constructorParams + ")";
+			}
+			else{
+				return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
+			}
 		} else if (isEnum(element.type)){
 			if ((isArray(element))){
-				return "new ArrayList<" + element.type.enumType.joynrName + ">()";
+				return "new ArrayList<" + element.type.enumType.joynrName + ">(" + constructorParams + ")";
 			}
 			else{
 				return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
-			} 
+			}
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
  			return "NaN";
  		} else if (isPrimitive(element.type)) {
 			if ((isArray(element))){
-				return "new ArrayList<" + getPrimitiveTypeName(getPrimitive(element.type)) + ">()";
+				return "new ArrayList<" + getPrimitiveTypeName(getPrimitive(element.type)) + ">(" + constructorParams + ")";
 			}
 			else{
 				return primitiveDataTypeDefaultMap.get(element.type.predefined);
-			} 
+			}
 		}
-		
 	}
 
-	
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
 		getRequiredIncludesFor(datatype, true);
 	}
+
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype, boolean includingExendedType){
 		val members = getComplexAndEnumMembers(datatype);
-		
+
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
 			if (includingExendedType){
@@ -245,23 +324,26 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 
 			typeList.addAll(getRequiredIncludesFor(getExtendedType(datatype), false))
-
 		}
 
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(getIncludeOf(type as FType));
+				typeList.add(getIncludeOf(type));
 			}
-		}	
+		}
 		return typeList;
 	}
-		
+
 	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface){
+		getRequiredIncludesFor(serviceInterface, true, true, true, true);
+	}
+
+	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts){
 		val includeSet = new TreeSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
+		for(datatype: getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, broadcasts)){
 			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype as FType));
+				includeSet.add(getIncludeOf(datatype));
 			}
 //			else{
 //				includeSet.add(getIncludeOf(datatype as FBasicTypeId));
@@ -269,27 +351,41 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		}
 		return includeSet;
 	}
-	
+
+	def Iterable<String> getRequiredIncludesFor(FBroadcast broadcast) {
+		val includeSet = new TreeSet<String>();
+		for(datatype: getAllComplexAndEnumTypes(broadcast)) {
+			if (datatype instanceof FType) {
+				includeSet.add(getIncludeOf(datatype));
+			}
+		}
+		return includeSet;
+	}
+
 	def String getIncludeOf(FType dataType) {
 		return getPackagePathWithJoynrPrefix(dataType, ".") + "." + dataType.joynrName;
 	}
-	
+
 	override String getOneLineWarning() {
 		//return ""
 		return "/* Generated Code */  "
 	}
-	
+
 	def String getTypedParameterListJavaRpc(FMethod method){
 		var sb = new StringBuilder();
 		val params = getInputParameters(method)
-		for (param : params) {
+		var i = 0;
+		while (i < params.size) {
+			val param = params.get(i);
 			// is it a list type?
 			if(! getMappedDatatypeOrList(param).contains("List")){
 				sb.append("@JoynrRpcParam")
 				sb.append("(\"" + param.joynrName + "\")")
 				sb.append(" "+ getMappedDatatypeOrList(param))
 				sb.append(" "+ param.joynrName)
-				sb.append(", ")
+				if (i != params.size-1){
+					sb.append(",\n")
+				}
 			}else { //TODO clean this up, move to javaGeneratorUtil.xtend!
 				sb.append("@JoynrRpcParam") 
 				sb.append("(value=\"" + param.joynrName 
@@ -298,15 +394,13 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 						+ "Token.class)")
 				sb.append(" "+ getMappedDatatypeOrList(param))
 				sb.append(" "+ param.joynrName)
-				sb.append(", ")				
+				if (i != params.size-1){
+					sb.append(",\n")
+				}
 			}
+			i = i+1;
 		}
-		if (sb.length()==0){
-			return ""; 
-		}
-		else{
-			return sb.toString.substring(0,  sb.length() - 2); //remove the last ,
-		}
+		return sb.toString
 	}
 
 	def String getTypedParameterListJavaTypeReference(FMethod method){
@@ -321,28 +415,10 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		}
 		return sb.toString
 	}
-	
-    override boolean needsListImport (FInterface serviceInterface) {
-    	//only need to Import the dependencies to Lists if either input or output parameters of one of the methods are a list.
-        for (method : getMethods(serviceInterface)) {
-       		if (method!=null && getOutputParameters(method)!=null &&  getOutputParameters(method).iterator.hasNext && isArray(getOutputParameters(method).iterator.next)  ) return true;
-       		
-        	for (input : getInputParameters(method)){
-        		if (input!=null && isArray(input)) return true;
-        	}
-        }
-        
-        for (attribute : getAttributes(serviceInterface)) {
-        	if (attribute!=null && isArray(attribute)) {
-        		return true;
-        	}
-        }
-        return false;
-    }
 
-    override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
+	override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
 
-    override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
+	override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
 
 	override getPrimitiveTypeName(FBasicTypeId basicType) {
 		switch basicType {
@@ -360,37 +436,33 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			case FBasicTypeId::STRING: "String"
 			case FBasicTypeId::BYTE_BUFFER: "byte[]"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.joynrName)
-        }
-		// francaExtensions.getPrimitiveTypeName(basicType)
+		}
 	}
-	
+
 	def String getObjectDataTypeForPlainType(String plainType) {
-		
 		var type = plainType.toLowerCase
 		switch (plainType) {
-			case FBasicTypeId::BOOLEAN.name: type = "Boolean"
-			case FBasicTypeId::INT8.name: type = "Byte"
-			case FBasicTypeId::UINT8.name: type = "Byte"
-			case FBasicTypeId::INT16.name: type = "Integer"
-			case FBasicTypeId::UINT16.name: type = "Integer"
-			case FBasicTypeId::INT32.name: type = "Integer"
-			case FBasicTypeId::UINT32.name: type = "Integer"
-			case FBasicTypeId::INT64.name: type = "Long"
-			case FBasicTypeId::UINT64.name: type = "Long"
-			case FBasicTypeId::FLOAT.name: type = "Double"
-			case FBasicTypeId::DOUBLE.name: type = "Double"
-			case FBasicTypeId::STRING.name: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.name: type = "byte[]"
+			case FBasicTypeId::BOOLEAN.getName: type = "Boolean"
+			case FBasicTypeId::INT8.getName: type = "Byte"
+			case FBasicTypeId::UINT8.getName: type = "Byte"
+			case FBasicTypeId::INT16.getName: type = "Integer"
+			case FBasicTypeId::UINT16.getName: type = "Integer"
+			case FBasicTypeId::INT32.getName: type = "Integer"
+			case FBasicTypeId::UINT32.getName: type = "Integer"
+			case FBasicTypeId::INT64.getName: type = "Long"
+			case FBasicTypeId::UINT64.getName: type = "Long"
+			case FBasicTypeId::FLOAT.getName: type = "Double"
+			case FBasicTypeId::DOUBLE.getName: type = "Double"
+			case FBasicTypeId::STRING.getName: type = "String"
+			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
 			case "void": type = "Void"
 			default :  type = plainType
-
 		}
 
 		return type
 	}
-	
+
 	def String getTokenTypeForArrayType(String plainType) {
-			
 		if(plainType.contains("List<")) {
 			return "List" + getObjectDataTypeForPlainType(plainType.substring(5, plainType.length-1));
 		}
@@ -398,15 +470,15 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			return getObjectDataTypeForPlainType(plainType);
 		}
 	}
-	
-		// Returns true if a class or superclass has array members	
+
+	// Returns true if a class or superclass has array members
 	def boolean hasArrayMembers(FCompoundType datatype){
 		for (member : datatype.members) {
 			if (isArray(member)){
 				return true
 			}
 		}
-		// Check any super classes 
+		// Check any super classes
 		if (hasExtendsDeclaration(datatype)) {
 			return hasArrayMembers(datatype.extendedType)
 		}
@@ -421,24 +493,24 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 		}
 		return false
-	}	
+	}
 
-    def String getJoynFullyQualifiedTypeName(FTypedElement typedElement){
-    	if (typedElement.array == '[]'){
-    		return "List"
-    	}
-    	if (typedElement.type.derived != null){
-    		getJoynFullyQualifiedTypeName(typedElement.type.derived)
-    	}
-    	else{
-    		getPrimitiveTypeName(typedElement.type.predefined)
-    	}
-    }
+	def String getJoynFullyQualifiedTypeName(FTypedElement typedElement){
+		if (typedElement.array == '[]'){
+			return "List"
+		}
+		if (typedElement.type.derived != null){
+			getJoynFullyQualifiedTypeName(typedElement.type.derived)
+		}
+		else{
+			getPrimitiveTypeName(typedElement.type.predefined)
+		}
+	}
 
 	def getJoynFullyQualifiedTypeName(FType type) {
 		joynTypePackagePrefix + "." + type.mappedDatatype
 	}
-	
+
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
 	}

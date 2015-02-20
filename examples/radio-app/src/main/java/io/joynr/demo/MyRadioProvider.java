@@ -3,7 +3,7 @@ package io.joynr.demo;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,88 +18,75 @@ package io.joynr.demo;
  * limitations under the License.
  * #L%
  */
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
 import io.joynr.exceptions.JoynrArbitrationException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import joynr.vehicle.Country;
+import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioAbstractProvider;
+import joynr.vehicle.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 public class MyRadioProvider extends RadioAbstractProvider {
     private static final String PRINT_BORDER = "\n####################\n";
     private static final Logger LOG = LoggerFactory.getLogger(MyRadioProvider.class);
 
-    private List<String> stationsList = Lists.newArrayList("Triple J", "FM 4", "Radio ABC");
+    private List<RadioStation> stationsList = new ArrayList<RadioStation>();
+    private Map<Country, GeoPosition> countryGeoPositionMap = new HashMap<Country, GeoPosition>();
 
-    private int notSoRandomCounter = 0;
+    private int currentStationIndex = 0;
 
     public MyRadioProvider() {
-        isOn = Boolean.FALSE;
         providerQos.setPriority(System.currentTimeMillis());
-        numberOfStations = stationsList.size();
-        currentStation = stationsList.get(notSoRandomCounter);
+        stationsList.add(new RadioStation("ABC Trible J", true, Country.AUSTRALIA));
+        stationsList.add(new RadioStation("Radio Popolare", false, Country.ITALY));
+        stationsList.add(new RadioStation("JAZZ.FM91", false, Country.CANADA));
+        stationsList.add(new RadioStation("Bayern 3", true, Country.GERMANY));
+        countryGeoPositionMap.put(Country.AUSTRALIA, new GeoPosition(-37.8141070, 144.9632800)); // Melbourne
+        countryGeoPositionMap.put(Country.ITALY, new GeoPosition(46.4982950, 11.3547580)); // Bolzano
+        countryGeoPositionMap.put(Country.CANADA, new GeoPosition(53.5443890, -113.4909270)); // Edmonton
+        countryGeoPositionMap.put(Country.GERMANY, new GeoPosition(48.1351250, 11.5819810)); // Munich
+        currentStation = stationsList.get(currentStationIndex);
     }
 
     @Override
-    public String getCurrentStation() throws JoynrArbitrationException {
-        LOG.debug(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
+    public RadioStation getCurrentStation() throws JoynrArbitrationException {
+        LOG.info(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
         return currentStation;
     }
 
     @Override
     public void shuffleStations() throws JoynrArbitrationException {
-        String oldStation = currentStation;
-        notSoRandomCounter++;
-        notSoRandomCounter = notSoRandomCounter % stationsList.size();
-        currentStationChanged(stationsList.get(notSoRandomCounter));
-        LOG.debug(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
+        RadioStation oldStation = currentStation;
+        currentStationIndex++;
+        currentStationIndex = currentStationIndex % stationsList.size();
+        currentStationChanged(stationsList.get(currentStationIndex));
+        LOG.info(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
     }
 
     @Override
-    public Boolean getIsOn() {
-        LOG.debug(PRINT_BORDER + "getIsOn -> " + isOn + PRINT_BORDER);
-        return isOn;
-    }
-
-    @Override
-    public void setIsOn(Boolean isOn) {
-        LOG.debug(PRINT_BORDER + "setIsOn(" + isOn + ")" + PRINT_BORDER);
-        isOnChanged(isOn);
-    }
-
-    @Override
-    @JoynrRpcReturn(deserialisationType = BooleanToken.class)
-    public Boolean addFavouriteStation(@JoynrRpcParam("radioStation") String radioStation)
-                                                                                          throws JoynrArbitrationException {
-        LOG.debug(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
+    public Boolean addFavouriteStation(RadioStation radioStation) throws JoynrArbitrationException {
+        LOG.info(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
         stationsList.add(radioStation);
-        numberOfStationsChanged(stationsList.size());
         return true;
     }
 
-    @Override
-    @JoynrRpcReturn(deserialisationType = BooleanToken.class)
-    public Boolean addFavouriteStationList(@JoynrRpcParam("radioStationList") List<String> radioStationList)
-                                                                                                            throws JoynrArbitrationException {
-        LOG.debug(PRINT_BORDER + "addFavouriteStationList(" + radioStationList + ")" + PRINT_BORDER);
-        stationsList.addAll(radioStationList);
-        numberOfStationsChanged(stationsList.size());
-        return true;
+    public void fireWeakSignalEvent() {
+        LOG.info(PRINT_BORDER + "fire weakSignalEvent: " + currentStation + PRINT_BORDER);
+        fireWeakSignal(currentStation);
     }
 
-    @Override
-    public Integer getNumberOfStations() {
-        return numberOfStations;
-    }
-
-    @Override
-    public void setNumberOfStations(Integer numberOfStations) {
-        numberOfStationsChanged(numberOfStations);
+    public void fireNewStationDiscoveredEvent() {
+        RadioStation discoveredStation = stationsList.get(currentStationIndex);
+        GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
+        LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
+                + PRINT_BORDER);
+        fireNewStationDiscovered(discoveredStation, geoPosition);
     }
 }

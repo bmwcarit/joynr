@@ -58,13 +58,27 @@ public:
     bool& wasTooEarly;
 };
 
+class TriggerRunnable : public QRunnable {
+public:
+    TriggerRunnable(qint64 delay, bool& triggered) :
+        eta_ms(QDateTime::currentMSecsSinceEpoch() + delay),
+        triggered(triggered)
+    {}
+    void run() {
+        LOG_TRACE(logger, "Running trigger runnable");
+        triggered = true;
+    }
+    qint64 eta_ms; //time at which the runnable should be run
+    bool& triggered;
+};
+
 TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
     LOG_TRACE(logger, "staring test");
     qint64 delay = 500;
     DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
     bool wasTooEarly(false);
     DummyRunnable* runnable = new DummyRunnable(delay, wasTooEarly);
-    LOG_TRACE(logger, "staring runnable");
+    LOG_TRACE(logger, "starting runnable");
     scheduler->schedule(runnable, delay);
     LOG_TRACE(logger, "started runnable");
     LOG_TRACE(logger, "starting sleep");
@@ -73,6 +87,39 @@ TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
     EXPECT_FALSE(wasTooEarly);
 
     // Cleanup the test objects 
+    delete scheduler;
+}
+
+TEST(SingleThreadedDelayedSchedulerTest, runnableCanBeStoppedBeforeRun) {
+    LOG_TRACE(logger, "staring test");
+    qint64 delay = 300;
+    DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
+    bool triggered(false);
+    TriggerRunnable* runnable = new TriggerRunnable(delay, triggered);
+    LOG_TRACE(logger, "starting runnable");
+    scheduler->schedule(runnable, delay);
+    LOG_TRACE(logger, "started runnable");
+    LOG_TRACE(logger, "starting sleep");
+    QThreadSleep::msleep(delay+100);
+    LOG_TRACE(logger, "finished sleep");
+    EXPECT_TRUE(triggered);
+
+    triggered = false;
+    //now let's create a runnable, remove it from the scheduler and expect not to be triggered
+    TriggerRunnable* runnableNotToBeTriggered = new TriggerRunnable(delay, triggered);
+    LOG_TRACE(logger, "starting runnable");
+    quint32 runnableHandle = scheduler->schedule(runnableNotToBeTriggered, delay);
+
+    QThreadSleep::msleep(100);
+    LOG_TRACE(logger, "unschedule runnable");
+    scheduler->unschedule(runnableHandle);
+    LOG_TRACE(logger, "starting sleep");
+    QThreadSleep::msleep(delay);
+    LOG_TRACE(logger, "finished sleep");
+    // runnable shall not be triggered
+    EXPECT_FALSE(triggered);
+
+    // Cleanup the test objects
     delete scheduler;
 }
 

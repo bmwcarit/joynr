@@ -3,7 +3,7 @@ package io.joynr.dispatcher.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,19 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
+import joynr.types.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
 import org.junit.Assert;
@@ -53,6 +58,8 @@ public class ConnectorTests {
 
     @Mock
     private RequestReplyDispatcher dispatcher;
+    @Mock
+    private SubscriptionManager subscriptionManager;
     @Mock
     private RequestReplySender messageSender;
 
@@ -113,22 +120,56 @@ public class ConnectorTests {
             Future<String> future = new Future<String>();
             String subscriptionId = "subscriptionId";
             PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(1000, 0, 1000);
-            Object[] args = new Object[]{ null, subscriptionQos };
+            AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionListener<GpsPosition>() {
+                @Override
+                public void onReceive(GpsPosition value) {
+                }
+
+                @Override
+                public void onError() {
+                }
+            };
+            Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };
             Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
-                                                                                      SubscriptionListener.class,
+                                                                                      AttributeSubscriptionListener.class,
                                                                                       SubscriptionQos.class,
                                                                                       String.class);
-            connector.executeSubscriptionMethod(method, args, future, subscriptionId);
+            connector.executeSubscriptionMethod(new AttributeSubscribeInvocation(method, args, future));
             Mockito.verify(messageSender, times(1)).sendSubscriptionRequest(Mockito.eq(fromParticipantId),
                                                                             Mockito.eq(toParticipantId),
                                                                             Mockito.eq(endpointAddress),
                                                                             Mockito.any(SubscriptionRequest.class),
-                                                                            Mockito.any(MessagingQos.class));
+                                                                            Mockito.any(MessagingQos.class),
+                                                                            Mockito.anyBoolean());
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             Assert.fail("Calling a subscription method with no expiry date throws an exception.");
         }
 
+    }
+
+    @Test
+    public void unsubscriptionMethodCall() throws JoynrIllegalStateException {
+
+        ConnectorInvocationHandler connector = createConnector();
+        Assert.assertNotNull(connector);
+        try {
+            Future<String> future = new Future<String>();
+            String subscriptionId = "subscriptionId";
+            Object[] args = new Object[]{ subscriptionId };
+            Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("unsubscribeFromGPSPosition",
+                                                                                      String.class);
+            connector.executeSubscriptionMethod(new UnsubscribeInvocation(method, args, future));
+            Mockito.verify(messageSender, times(1))
+                   .sendSubscriptionStop(Mockito.eq(fromParticipantId),
+                                         Mockito.eq(toParticipantId),
+                                         Mockito.eq(endpointAddress),
+                                         Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                         Mockito.any(MessagingQos.class));
+        } catch (Exception e) {
+            // This is what is supposed to happen -> no error handling
+            Assert.fail("Calling a subscription method with no expiry date throws an exception.");
+        }
     }
 
     private ConnectorInvocationHandler createConnector() {
@@ -138,6 +179,7 @@ public class ConnectorTests {
         arbitrationResult.setEndpointAddress(endpointAddresses);
         arbitrationResult.setParticipantId(toParticipantId);
         ConnectorInvocationHandler connector = ConnectorFactory.create(dispatcher,
+                                                                       subscriptionManager,
                                                                        messageSender,
                                                                        fromParticipantId,
                                                                        arbitrationResult,

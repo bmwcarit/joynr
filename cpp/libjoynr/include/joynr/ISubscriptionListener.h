@@ -19,30 +19,40 @@
 #ifndef ISUBSCRIPTIONLISTENER_H
 #define ISUBSCRIPTIONLISTENER_H
 
-namespace joynr {
+namespace joynr
+{
 
-
- /*
-  *    Inherit this Interface to create a SubscriptionListener for a datatype.
-  */
-
-
-template<typename T>class ISubscriptionListener
+/**
+ * This class must be extended by attribute or broadcast subscription listeners.
+ */
+template <typename T, typename... Ts>
+class ISubscriptionListener
 {
 public:
-    ISubscriptionListener() {}
-    virtual ~ISubscriptionListener(){}
-    /*
-      *     receive will be called on every received publication.
-      */
-    virtual void receive(T value) = 0;
-    /*
-      *     publicationMissed will be called when a publication is not received within the time specified in Subscription QoS.
-      *     publicationMissed may not block, call any slow methods (like synchronous requests), wait for user actions, or do larger computation.
-      */
-    virtual void publicationMissed() = 0;
-};
+    ISubscriptionListener()
+    {
+    }
+    virtual ~ISubscriptionListener()
+    {
+    }
 
+    /**
+     * @brief onReceive Gets called on every received publication
+     *
+     * Since the onReceive callback is called by a communication middleware thread, it should not
+     * be blocked, wait for user interaction, or do larger computation.
+     * @param value values associated with the subscription this listener is listen to
+     */
+    virtual void onReceive(T value, Ts... values) = 0;
+
+    /**
+     * @brief onError Gets called on every error that is detected on the subscription
+     *
+     * Since the onError callback is called by a communication middleware thread, it should not
+     * be blocked, wait for user interaction, or do larger computation.
+     */
+    virtual void onError() = 0;
+};
 
 } // namespace joynr
 #endif // SUBSCRIPTIONLISTENER_H

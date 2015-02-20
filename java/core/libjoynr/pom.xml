@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -125,13 +125,59 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-websocket</artifactId>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-server</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>io.joynr.tools.generator</groupId>
+				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>testSources</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>Navigation.fidl</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.joynr.java</groupId>
+						<artifactId>java-generator</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<classifier>tests</classifier>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

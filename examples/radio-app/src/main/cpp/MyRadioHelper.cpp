@@ -19,29 +19,44 @@
 
 #include "MyRadioHelper.h"
 #include <QTextStream>
+#include <termios.h>
+#include <unistd.h>
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioHelper::logger = joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioHelper");
+joynr_logging::Logger* MyRadioHelper::logger =
+        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioHelper");
 
 MyRadioHelper::MyRadioHelper()
 {
 }
 
+int MyRadioHelper::getch()
+{
+    termios terminalSettingsBackup;
+    tcgetattr(STDIN_FILENO, &terminalSettingsBackup);
+
+    termios terminalSettings = terminalSettingsBackup;
+    terminalSettings.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &terminalSettings);
+
+    int ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &terminalSettingsBackup);
+
+    return ch;
+}
+
 void MyRadioHelper::pressQToContinue()
 {
     LOG_INFO(logger, "*****************************************************");
-    LOG_INFO(logger, "Please press \"q + <Enter>\" to quit the application\n");
+    LOG_INFO(logger, "Please press \"q\" to quit the application\n");
     LOG_INFO(logger, "*****************************************************");
 
-    QTextStream cin(stdin);
-    QString input;
-    do {
-        input = cin.readLine();
-    } while (input != QString("q"));
+    while (getch() != 'q')
+        ;
 }
 
-void MyRadioHelper::prettyLog(joynr_logging::Logger *logger, const QString& message)
+void MyRadioHelper::prettyLog(joynr_logging::Logger* logger, const QString& message)
 {
     LOG_INFO(logger, QString("--------------------------------------------------"));
     LOG_INFO(logger, message);

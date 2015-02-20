@@ -21,41 +21,49 @@
 #include <QtCore>
 #include <QSignalMapper>
 #include <QCoreApplication>
-#include <QTimer>
 #include "joynr/joynrlogging.h"
+#include "QMutableHashIterator"
+#include "joynr/Util.h"
+#include "joynr/PrivateCopyAssign.h"
 
-#include <iostream>
-
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 Logger* DelayedScheduler::logger = Logging::getInstance()->getLogger("MSG", "DelayedScheduler");
 
-
 DelayedScheduler::DelayedScheduler(const QString& eventThreadName, int delay_ms)
-:
-    delay_ms(delay_ms),
-    eventThread(),
-    runnables(),
-    mutex(QMutex::Recursive),
-    stoppingScheduler(false)
+        : delay_ms(delay_ms),
+          runnableHandle(INVALID_RUNNABLE_HANDLE()),
+          eventThread(),
+          runnables(),
+          timers(),
+          mutex(QMutex::Recursive),
+          stoppingScheduler(false)
 {
     eventThread.setObjectName(eventThreadName);
-    moveToThread(&eventThread); //So that timers can be created as children of this
+    moveToThread(&eventThread); // So that timers can be created as children of this
     eventThread.start();
 }
 
-DelayedScheduler::~DelayedScheduler() {
+DelayedScheduler::~DelayedScheduler()
+{
     // LOG_TRACE(logger, "destructor: entering...");
 
-    if(QThread::currentThread() != &eventThread) {
+    if (QThread::currentThread() != &eventThread) {
         // LOG_TRACE(logger, "destructor: stopping event thread");
         eventThread.quit();
         // LOG_TRACE(logger, "destructor: waiting for termination of event thread...");
         eventThread.wait();
-        // LOG_TRACE(logger, "destructor: leaving... event thread stopped. All runnables finished.");
+        // LOG_TRACE(logger, "destructor: leaving... event thread stopped. All runnables
+        // finished.");
     }
+}
 
+quint32 DelayedScheduler::INVALID_RUNNABLE_HANDLE()
+{
+    static const quint32 value(0);
+    return value;
 }
 
 void DelayedScheduler::shutdown()
@@ -65,70 +73,93 @@ void DelayedScheduler::shutdown()
     // LOG_TRACE(logger, "shutdown: locked mutex...");
     stoppingScheduler = true;
     // LOG_TRACE(logger, "shutdown: stopping running timers");
-    QList<QTimer*> runnableTimers = runnables.keys();
-    foreach(QTimer* timer, runnableTimers) {
-        // LOG_TRACE(logger, "shutdown: stop timer");
-        QMetaObject::invokeMethod(
-                    timer,
-                    "stop",
-                    Qt::QueuedConnection);
-        QRunnable* runnable = runnables.take(timer);
-        if(runnable->autoDelete()) {
-            // LOG_TRACE(logger, "shutdown: delete runnable");
+
+    QMutableHashIterator<QTimer*, quint32> iterator(timers);
+
+    while (iterator.hasNext()) {
+        iterator.next();
+        QTimer* timer = iterator.key();
+        QRunnable* runnable = runnables.take(iterator.value());
+
+        assert(runnable != NULL);
+        if (runnable->autoDelete()) {
             delete runnable;
         }
-        // LOG_TRACE(logger, "shutdown: delete timer");
-//            QMetaObject::invokeMethod(
-//                        timer,
-//                        "deleteLater",
-//                        Qt::QueuedConnection);
 
+        assert(timer != NULL);
+        QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
+        iterator.remove();
         timer->deleteLater();
+    }
+
+    assert(runnables.size() == 0);
+}
+
+void DelayedScheduler::unschedule(quint32& runnableHandle)
+{
+    QMutexLocker locker(&mutex);
+    if (runnables.contains(runnableHandle)) {
+        QRunnable* runnable = runnables.take(runnableHandle);
+        QMutableHashIterator<QTimer*, quint32> iterator(timers);
+        if (iterator.findNext(runnableHandle)) {
+            QTimer* timer = iterator.key();
+            timers.remove(timer);
+            QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
+            timer->deleteLater();
+        }
+
+        if (runnable->autoDelete()) {
+            delete runnable;
+        }
+        LOG_TRACE(logger, QString("runnable with handle %1 unscheduled").arg(runnableHandle));
+    } else {
+        LOG_TRACE(logger,
+                  "unschedule did not succeed. Provided runnableHandle " + QString(runnableHandle) +
+                          " could not be found by the scheduler");
     }
 }
 
-
-void DelayedScheduler::schedule(QRunnable* runnable, int delay_ms /* = -1*/) {
+quint32 DelayedScheduler::schedule(QRunnable* runnable, int delay_ms /* = -1*/)
+{
     LOG_DEBUG(logger, QString("schedule: entering with delay %1").arg(delay_ms));
-    if(delay_ms == -1) {
+    if (delay_ms == -1) {
         delay_ms = this->delay_ms;
     }
 
-    {
-        QMutexLocker locker(&mutex);
-        if(stoppingScheduler) {
-            // LOG_TRACE(logger, "schedule: deleting runnable...");
-            delete (QRunnable*)runnable;
-            return;
-        }
+    QMutexLocker locker(&mutex);
+    runnableHandle++;
+    if (stoppingScheduler) {
+        delete runnable;
+        return runnableHandle;
     }
-
     /* Scheduling should be done in the eventThread
       to ensure that the timer is created in that thread. */
-    QMetaObject::invokeMethod(
-                this,
-                "scheduleUsingTimer",
-                Qt::QueuedConnection,
-                Q_ARG(void*, runnable),
-                Q_ARG(int, delay_ms));
+    QMetaObject::invokeMethod(this,
+                              "scheduleUsingTimer",
+                              Qt::QueuedConnection,
+                              Q_ARG(void*, runnable),
+                              Q_ARG(quint32, runnableHandle),
+                              Q_ARG(int, delay_ms));
+    return runnableHandle;
 }
 
-void DelayedScheduler::scheduleUsingTimer(void* runnable, int delay_ms) {
+void DelayedScheduler::scheduleUsingTimer(void* runnable, quint32 runnableHandle, int delay_ms)
+{
     LOG_TRACE(logger, QString("scheduleUsingTimer: entering with delay %1").arg(delay_ms));
     QMutexLocker locker(&mutex);
 
-    if(stoppingScheduler) {
-        // LOG_TRACE(logger, "scheduleUsingTimer: deleting runnable...");
+    if (stoppingScheduler) {
         delete (QRunnable*)runnable;
         return;
     }
 
     // Create a timer
-    QTimer *timer = new QTimer(this);
+    QTimer* timer = new QTimer(this);
     timer->setSingleShot(true);
 
     // Make note of the runnable that will be executed
-    runnables.insert(timer, (QRunnable*)runnable);
+    runnables.insert(runnableHandle, (QRunnable*)runnable);
+    timers.insert(timer, runnableHandle);
 
     // Connect the timer to call run()
     connect(timer, SIGNAL(timeout()), this, SLOT(run()));
@@ -139,42 +170,99 @@ void DelayedScheduler::scheduleUsingTimer(void* runnable, int delay_ms) {
     LOG_TRACE(logger, "scheduleUsingTimer: leaving...");
 }
 
-void DelayedScheduler::run() {
-    //LOG_TRACE(logger, "run: entering...");
+void DelayedScheduler::run()
+{
     QRunnable* runnable = NULL;
     {
         QMutexLocker locker(&mutex);
         // LOG_TRACE(logger, "run: locked mutex.");
-        if(stoppingScheduler) {
+        if (stoppingScheduler) {
             // LOG_TRACE(logger, "run: scheduler stopped. Aborting...");
             return;
         }
         QTimer* timer = reinterpret_cast<QTimer*>(sender());
-        runnable = runnables.take(timer);
         timer->deleteLater();
+
+        if (timers.contains(timer)) {
+            runnable = runnables.take(timers.take(timer));
+        }
     }
 
-    // executeRunnable does not require a mutex lock
-    executeRunnable(runnable);
-
-    // LOG_TRACE(logger, "run: leaving...");
+    if (runnable != NULL) {
+        // executeRunnable does not require a mutex lock
+        executeRunnable(runnable);
+    }
 }
 
-ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(QThreadPool& threadPool, const QString& eventThreadName, int delay_ms)
-    : DelayedScheduler(eventThreadName, delay_ms),
-      threadPool(threadPool)
+class ThreadPoolDelayedScheduler::ThreadPoolRunnable : public QRunnable
+{
+public:
+    ThreadPoolRunnable(QRunnable* runnable, ThreadPoolDelayedScheduler& scheduler);
+    virtual ~ThreadPoolRunnable();
+    virtual void run();
+
+private:
+    QRunnable* runnable;
+    ThreadPoolDelayedScheduler& scheduler;
+
+    DISALLOW_COPY_AND_ASSIGN(ThreadPoolRunnable);
+};
+
+ThreadPoolDelayedScheduler::ThreadPoolRunnable::ThreadPoolRunnable(
+        QRunnable* runnable,
+        ThreadPoolDelayedScheduler& scheduler)
+        : QRunnable(), runnable(runnable), scheduler(scheduler)
+{
+    // auto-deletion is enabled by default
+}
+
+ThreadPoolDelayedScheduler::ThreadPoolRunnable::~ThreadPoolRunnable()
+{
+    if (runnable->autoDelete()) {
+        delete runnable;
+    }
+}
+
+void ThreadPoolDelayedScheduler::ThreadPoolRunnable::run()
+{
+    scheduler.reportRunnableStarted();
+    runnable->run();
+}
+
+Logger* ThreadPoolDelayedScheduler::logger =
+        Logging::getInstance()->getLogger("MSG", "ThreadPoolDelayedScheduler");
+
+ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(QThreadPool& threadPool,
+                                                       const QString& eventThreadName,
+                                                       int delay_ms)
+        : DelayedScheduler(eventThreadName, delay_ms),
+          threadPool(threadPool),
+          waitingRunnablesCount(0),
+          waitingRunnablesCountMutex()
 {
     threadPool.setObjectName(eventThreadName + QString("-ThreadPool"));
 }
 
-void ThreadPoolDelayedScheduler::executeRunnable(QRunnable* runnable) {
-    threadPool.start(runnable);
+void ThreadPoolDelayedScheduler::executeRunnable(QRunnable* runnable)
+{
+    {
+        QMutexLocker locker(&waitingRunnablesCountMutex);
+        waitingRunnablesCount++;
+    }
+    threadPool.start(new ThreadPoolRunnable(runnable, *this));
+    LOG_TRACE(logger,
+              QString("scheduler waiting runnables (active threads/max threads): %1 (%2/%3)")
+                      .arg(waitingRunnablesCount)
+                      .arg(threadPool.activeThreadCount())
+                      .arg(threadPool.maxThreadCount()));
 }
 
-Logger* SingleThreadedDelayedScheduler::logger = Logging::getInstance()->getLogger("MSG", "SingleThreadedDelayedScheduler");
+Logger* SingleThreadedDelayedScheduler::logger =
+        Logging::getInstance()->getLogger("MSG", "SingleThreadedDelayedScheduler");
 
-SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(const QString& eventThreadName, int delay_ms)
-    : DelayedScheduler(eventThreadName, delay_ms)
+SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(const QString& eventThreadName,
+                                                               int delay_ms)
+        : DelayedScheduler(eventThreadName, delay_ms)
 {
 }
 
@@ -183,19 +271,34 @@ SingleThreadedDelayedScheduler::~SingleThreadedDelayedScheduler()
     shutdown();
 }
 
-void SingleThreadedDelayedScheduler::executeRunnable(QRunnable* runnable) {
+void SingleThreadedDelayedScheduler::executeRunnable(QRunnable* runnable)
+{
     LOG_TRACE(logger, "executeRunnable: entering ...");
     runnable->run();
-    if(runnable->autoDelete()) {
+    if (runnable->autoDelete()) {
         LOG_TRACE(logger, "executeRunnable: deleting runnable.");
         delete runnable;
     }
     LOG_TRACE(logger, "executeRunnable: leaving...");
 }
 
-ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler(){
+ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler()
+{
     shutdown();
     threadPool.waitForDone();
+}
+
+void ThreadPoolDelayedScheduler::reportRunnableStarted()
+{
+    {
+        QMutexLocker locker(&waitingRunnablesCountMutex);
+        waitingRunnablesCount--;
+    }
+    LOG_TRACE(logger,
+              QString("scheduler waiting runnables (active threads/max threads): %1 (%2/%3)")
+                      .arg(waitingRunnablesCount)
+                      .arg(threadPool.activeThreadCount())
+                      .arg(threadPool.maxThreadCount()));
 }
 
 DelayedScheduler::EventThread::EventThread()
@@ -204,7 +307,7 @@ DelayedScheduler::EventThread::EventThread()
 
 DelayedScheduler::EventThread::~EventThread()
 {
-     // LOG_TRACE(logger, "EventThread destructor ...");
+    // LOG_TRACE(logger, "EventThread destructor ...");
 }
 
 void DelayedScheduler::EventThread::run()

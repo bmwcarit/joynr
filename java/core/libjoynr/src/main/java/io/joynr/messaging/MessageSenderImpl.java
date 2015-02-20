@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ package io.joynr.messaging;
  * #L%
  */
 
+import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.httpoperation.FailureAction;
-import io.joynr.messaging.httpoperation.HttpConstants;
-import io.joynr.messaging.httpoperation.LongPollingMessageReceiver;
+import io.joynr.messaging.http.operation.FailureAction;
+import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -64,28 +64,23 @@ public class MessageSenderImpl implements MessageSender {
 
     private final IMessageReceivers messageReceivers;
 
-    private HttpConstants httpConstants;
-
     @Inject
     public MessageSenderImpl(MessageScheduler sendRequestScheduler,
                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
                              MessagingSettings settings,
                              ObjectMapper objectMapper,
-                             IMessageReceivers messageReceivers,
-                             HttpConstants httpConstants) {
+                             IMessageReceivers messageReceivers) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
         this.settings = settings;
         this.objectMapper = objectMapper;
         this.messageReceivers = messageReceivers;
-        this.httpConstants = httpConstants;
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see io.joynr.messaging.MessageSender#sendMessage(java.lang.String,
-     * io.joynr.messaging.JoynrMessage, long)
+     * @see io.joynr.messaging.MessageSender#sendMessage(java.lang.String, io.joynr.messaging.JoynrMessage, long)
      */
     @Override
     public void sendMessage(final String channelId, final JoynrMessage message) throws JoynrSendBufferFullException,
@@ -106,7 +101,8 @@ public class MessageSenderImpl implements MessageSender {
         }
 
         if (message.getType().equals(MESSAGE_TYPE_REQUEST)
-                || message.getType().equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)) {
+                || message.getType().equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                || message.getType().equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)) {
             message.setReplyTo(getReplyToChannelId());
         }
 
@@ -151,18 +147,17 @@ public class MessageSenderImpl implements MessageSender {
         final MessageContainer messageContainer = new MessageContainer(channelId,
                                                                        message,
                                                                        ttlExpirationDate_ms,
-                                                                       httpConstants,
                                                                        objectMapper);
 
         final FailureAction failureAction = new FailureAction() {
             @Override
             public void execute(Throwable error) {
-                logger.error("!!!! ERROR SENDING: messageId: {} on Channel: {}. Error: {}", new String[]{
-                        message.getId(), channelId, error.getMessage() });
                 if (error instanceof JoynrShutdownException) {
-                    logger.error("Message not sent because joynr is already shutting down.");
+                    logger.warn("{}", error.getMessage());
                     return;
                 }
+                logger.error("!!!! ERROR SENDING: messageId: {} on Channel: {}. Error: {}", new String[]{
+                        message.getId(), channelId, error.getMessage() });
 
                 long delay_ms = settings.getSendMsgRetryIntervalMs();
                 delay_ms += exponentialWait(messageContainer.getTries());

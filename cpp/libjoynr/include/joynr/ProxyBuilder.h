@@ -35,24 +35,25 @@
 #include <QList>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 class ICapabilities;
 
-template<class T>
-class ProxyBuilder: public IArbitrationListener  {
+template <class T>
+class ProxyBuilder : public IArbitrationListener
+{
 public:
-    ProxyBuilder(
-            ProxyFactory* proxyFactory,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const QString& domain,
-            QSharedPointer<joynr::system::Address> dispatcherAddress,
-            QSharedPointer<MessageRouter> messageRouter
-    );
+    ProxyBuilder(ProxyFactory* proxyFactory,
+                 joynr::system::IDiscoverySync& discoveryProxy,
+                 const QString& domain,
+                 QSharedPointer<joynr::system::Address> dispatcherAddress,
+                 QSharedPointer<MessageRouter> messageRouter);
 
     ~ProxyBuilder();
     /*
-      * The proxy is build and returned to the caller. The caller takes ownership of the proxy and is responsible for deletion.
+      * The proxy is build and returned to the caller. The caller takes ownership of the proxy and
+     * is responsible for deletion.
       */
 
     T* build();
@@ -64,7 +65,6 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
-
 
     /*
      * Throws an JoynrArbitrationException if the arbitration is cancled
@@ -86,7 +86,8 @@ private:
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
 
     /*
-     *  If the arbitration finished successfully the arbitrator uses setChannelId to set the arbitration result.
+     *  If the arbitration finished successfully the arbitrator uses setChannelId to set the
+     * arbitration result.
      */
     void setParticipantId(const QString& participantId);
 
@@ -102,7 +103,8 @@ private:
       */
 
     /*
-     *  waitForArbitration(int timeout) is used internally before a remote action is executed to check
+     *  waitForArbitration(int timeout) is used internally before a remote action is executed to
+     * check
      *  whether arbitration is already completed.
      *  timeout specifies the maximal time to wait in milliseconds.
      */
@@ -128,55 +130,54 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 
-
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
 };
 
-template<class T>
-ProxyBuilder<T>::ProxyBuilder(
-        ProxyFactory* proxyFactory,
-        joynr::system::IDiscoverySync& discoveryProxy,
-        const QString& domain,
-        QSharedPointer<joynr::system::Address> dispatcherAddress,
-        QSharedPointer<MessageRouter> messageRouter
-) :
-    domain(domain),
-    cached(false),
-    hasProxyQosSet(false),
-    hasArbitrationStarted(false),
-    proxyQos(),
-    runtimeQos(),
-    proxyFactory(proxyFactory),
-    discoveryProxy(discoveryProxy),
-    arbitrator(NULL),
-    arbitrationSemaphore(1),
-    participantId(""),
-    connection(joynr::system::CommunicationMiddleware::NONE),
-    arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-    discoveryTimeout(-1),
-    dispatcherAddress(dispatcherAddress),
-    messageRouter(messageRouter)
+template <class T>
+ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
+                              joynr::system::IDiscoverySync& discoveryProxy,
+                              const QString& domain,
+                              QSharedPointer<joynr::system::Address> dispatcherAddress,
+                              QSharedPointer<MessageRouter> messageRouter)
+        : domain(domain),
+          cached(false),
+          hasProxyQosSet(false),
+          hasArbitrationStarted(false),
+          proxyQos(),
+          runtimeQos(),
+          proxyFactory(proxyFactory),
+          discoveryProxy(discoveryProxy),
+          arbitrator(NULL),
+          arbitrationSemaphore(1),
+          participantId(""),
+          connection(joynr::system::CommunicationMiddleware::NONE),
+          arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
+          discoveryTimeout(-1),
+          dispatcherAddress(dispatcherAddress),
+          messageRouter(messageRouter)
 {
-
 }
 
-template<class T>
-ProxyBuilder<T>::~ProxyBuilder(){
-    if (arbitrator!=NULL){
+template <class T>
+ProxyBuilder<T>::~ProxyBuilder()
+{
+    if (arbitrator != NULL) {
         arbitrator->removeArbitationListener();
-        //question: it is only safe to delete the arbitrator here, if the proxybuilder will not be deleted
-        //before all arbitrations are finished.
+        // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
+        // deleted
+        // before all arbitrations are finished.
         delete arbitrator;
         arbitrator = NULL;
-        //TODO delete arbitrator
+        // TODO delete arbitrator
         // 1. delete arbitrator or
         // 2. (if qsharedpointer) delete arbitrator
     }
 }
 
-template<class T>
-T* ProxyBuilder<T>::build() {
+template <class T>
+T* ProxyBuilder<T>::build()
+{
     T* proxy = proxyFactory->createProxy<T>(domain, proxyQos, runtimeQos, cached);
     waitForArbitration(discoveryTimeout);
     proxy->handleArbitrationFinished(participantId, connection);
@@ -185,84 +186,96 @@ T* ProxyBuilder<T>::build() {
     return proxy;
 }
 
-template<class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached) {
+template <class T>
+ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached)
+{
     this->cached = cached;
     return this;
 }
 
-template<class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setRuntimeQos(const MessagingQos& runtimeQos) {
+template <class T>
+ProxyBuilder<T>* ProxyBuilder<T>::setRuntimeQos(const MessagingQos& runtimeQos)
+{
     this->runtimeQos = runtimeQos;
     return this;
 }
 
-template<class T>
-/* Sets the Proxy Qos. Those should be set before arbitration is started (which will happen as soon as discoveryQos are set)
+template <class T>
+/* Sets the Proxy Qos. Those should be set before arbitration is started (which will happen as soon
+   as discoveryQos are set)
    Calling setProxyQos after setDiscoveryQos will result in a false assertion.
 */
-ProxyBuilder<T>* ProxyBuilder<T>::setProxyQos(const ProxyQos& proxyQos) {
-    assert(!hasArbitrationStarted); //if DiscoveryQos is set, arbitration will be started. Setting ProxyQos after arbitration has started does not make sense.
+ProxyBuilder<T>* ProxyBuilder<T>::setProxyQos(const ProxyQos& proxyQos)
+{
+    assert(!hasArbitrationStarted); // if DiscoveryQos is set, arbitration will be started. Setting
+                                    // ProxyQos after arbitration has started does not make sense.
     this->proxyQos = proxyQos;
     this->hasProxyQosSet = true;
     return this;
 }
 
-
-template<class T>
-/* Sets the arbitration Qos and starts arbitration. This way arbitration will be started, before the ->build() is called on the proxy Builder.
+template <class T>
+/* Sets the arbitration Qos and starts arbitration. This way arbitration will be started, before the
+   ->build() is called on the proxy Builder.
    All parameter that are needed for arbitration should be set, before setDiscoveryQos is called.
    Calling setProxyQos after setDiscoveryQos will result in a false assertion.
 */
-ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(DiscoveryQos &discoveryQos) {
-    //if DiscoveryQos is set, arbitration will be started. It shall be avoided that the setDiscoveryQos method can be called twice
+ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(DiscoveryQos& discoveryQos)
+{
+    // if DiscoveryQos is set, arbitration will be started. It shall be avoided that the
+    // setDiscoveryQos method can be called twice
     assert(!hasArbitrationStarted);
     discoveryTimeout = discoveryQos.getDiscoveryTimeout();
     arbitrator = ProviderArbitratorFactory::createArbitrator(
-                domain,
-                T::getInterfaceName(),
-                discoveryProxy,
-                discoveryQos
-    );
+            domain, T::getInterfaceName(), discoveryProxy, discoveryQos);
     arbitrationSemaphore.acquire();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();
-    hasArbitrationStarted=true;
+    hasArbitrationStarted = true;
     return this;
 }
 
-template<class T>
-void ProxyBuilder<T>::setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus){
-   this->arbitrationStatus = arbitrationStatus;
-    if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful){
-        if(!participantId.isEmpty() && connection != joynr::system::CommunicationMiddleware::NONE) {
+template <class T>
+void ProxyBuilder<T>::setArbitrationStatus(
+        ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
+{
+    this->arbitrationStatus = arbitrationStatus;
+    if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
+        if (!participantId.isEmpty() &&
+            connection != joynr::system::CommunicationMiddleware::NONE) {
             arbitrationSemaphore.release();
         } else {
-            throw JoynrArbitrationFailedException("Arbitration was set to successfull by arbitrator, but either ParticipantId or MessagingEndpointAddress where empty");
+            throw JoynrArbitrationFailedException("Arbitration was set to successfull by "
+                                                  "arbitrator, but either ParticipantId or "
+                                                  "MessagingEndpointAddress where empty");
         }
     } else {
         throw JoynrArbitrationFailedException("Arbitration finished unsucessfully.");
     }
 }
 
-template<class T>
-void ProxyBuilder<T>::setConnection(const joynr::system::CommunicationMiddleware::Enum& connection){
+template <class T>
+void ProxyBuilder<T>::setConnection(const joynr::system::CommunicationMiddleware::Enum& connection)
+{
     this->connection = connection;
 }
 
-template<class T>
-void ProxyBuilder<T>::setParticipantId(const QString& participantId){
+template <class T>
+void ProxyBuilder<T>::setParticipantId(const QString& participantId)
+{
     this->participantId = participantId;
 }
 
-template<class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(){
+template <class T>
+void ProxyBuilder<T>::waitForArbitrationAndCheckStatus()
+{
     waitForArbitrationAndCheckStatus(discoveryTimeout);
 }
 
-template<class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(int timeout){
-    switch (arbitrationStatus){
+template <class T>
+void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(int timeout)
+{
+    switch (arbitrationStatus) {
     case ArbitrationStatus::ArbitrationSuccessful:
         break;
     case ArbitrationStatus::ArbitrationRunning:
@@ -270,24 +283,26 @@ void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(int timeout){
         waitForArbitrationAndCheckStatus(0);
         break;
     case ArbitrationStatus::ArbitrationCanceledForever:
-        throw JoynrArbitrationFailedException("Arbitration for this interface has not been successful.");
+        throw JoynrArbitrationFailedException(
+                "Arbitration for this interface has not been successful.");
         break;
     }
 }
 
-template<class T>
-void ProxyBuilder<T>::waitForArbitration(){
+template <class T>
+void ProxyBuilder<T>::waitForArbitration()
+{
     waitForArbitration(discoveryTimeout);
 }
 
-template<class T>
-void ProxyBuilder<T>::waitForArbitration(int timeout){
-    if(!arbitrationSemaphore.tryAcquire(1, timeout)) {
+template <class T>
+void ProxyBuilder<T>::waitForArbitration(int timeout)
+{
+    if (!arbitrationSemaphore.tryAcquire(1, timeout)) {
         throw JoynrArbitrationTimeOutException("Arbitration could not be finished in time.");
     }
     arbitrationSemaphore.release();
 }
-
 
 } // namespace joynr
 #endif // PROXYBUILDER_H

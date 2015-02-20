@@ -25,9 +25,11 @@
 #include <QString>
 #include <string>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT JoynrException : public std::exception {
+class JOYNRCOMMON_EXPORT JoynrException : public std::exception
+{
 public:
     JoynrException() throw();
     JoynrException(const std::string& what) throw();
@@ -39,38 +41,42 @@ protected:
     std::string message;
 };
 
-class JOYNRCOMMON_EXPORT JoynrTimeOutException : public JoynrException {
+class JOYNRCOMMON_EXPORT JoynrTimeOutException : public JoynrException
+{
 public:
     JoynrTimeOutException() throw();
     JoynrTimeOutException(const std::string& what) throw();
 };
 
-
-class JOYNRCOMMON_EXPORT JoynrParseError : public JoynrException{
+class JOYNRCOMMON_EXPORT JoynrParseError : public JoynrException
+{
 public:
     JoynrParseError(const std::string& what) throw();
 };
 
-class JOYNRCOMMON_EXPORT JoynrArbitrationException : public JoynrException {
+class JOYNRCOMMON_EXPORT JoynrArbitrationException : public JoynrException
+{
 public:
     JoynrArbitrationException(const std::string& what) throw();
 };
 
-class JOYNRCOMMON_EXPORT JoynrArbitrationFailedException : public JoynrException {
+class JOYNRCOMMON_EXPORT JoynrArbitrationFailedException : public JoynrException
+{
 public:
     JoynrArbitrationFailedException(const std::string& what) throw();
 };
 
-class JOYNRCOMMON_EXPORT JoynrArbitrationTimeOutException : public JoynrException {
+class JOYNRCOMMON_EXPORT JoynrArbitrationTimeOutException : public JoynrException
+{
 public:
     JoynrArbitrationTimeOutException(const std::string& what) throw();
 };
 
-class JOYNRCOMMON_EXPORT JoynrRuntimeException : public JoynrException {
+class JOYNRCOMMON_EXPORT JoynrRuntimeException : public JoynrException
+{
 public:
     JoynrRuntimeException(const std::string& what) throw();
 };
 
-
 } // namespace joynr
-#endif //EXCEPTIONS_H
+#endif // EXCEPTIONS_H

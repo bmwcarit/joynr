@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,8 @@ import io.joynr.arbitration.ArbitrationStatus;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class DiscoveryAgent implements ArbitrationCallback {
 
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
-    @SuppressWarnings("unused")
     private ArbitrationStatus arbitrationStatus;
     private Lock arbitrationStatusLock = new ReentrantLock();
     private ArbitrationResult arbitrationResult;
@@ -90,4 +86,7 @@ public class DiscoveryAgent implements ArbitrationCallback {
         return arbitrationResult;
     }
 
+    public ArbitrationStatus getArbitrationStatus() {
+        return arbitrationStatus;
+    }
 }

@@ -27,27 +27,26 @@
 #include <QSharedPointer>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class ILocalCapabilitiesCallback;
 class LocalCapabilitiesDirectory;
 
-class LocalCapabilitiesCallbackWrapper : public IGlobalCapabilitiesCallback {
+class LocalCapabilitiesCallbackWrapper : public IGlobalCapabilitiesCallback
+{
 public:
-    LocalCapabilitiesCallbackWrapper(
-            LocalCapabilitiesDirectory* localCapabilitiesDirectory,
-            QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-            const QString &participantId,
-            const joynr::system::DiscoveryQos& discoveryQos
-    );
-    LocalCapabilitiesCallbackWrapper(
-            LocalCapabilitiesDirectory* localCapabilitiesDirectory,
-            QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-            const InterfaceAddress& interfaceAddress,
-            const joynr::system::DiscoveryQos& discoveryQos
-    );
+    LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
+                                     QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
+                                     const QString& participantId,
+                                     const joynr::system::DiscoveryQos& discoveryQos);
+    LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
+                                     QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
+                                     const InterfaceAddress& interfaceAddress,
+                                     const joynr::system::DiscoveryQos& discoveryQos);
 
     void capabilitiesReceived(QList<types::CapabilityInformation> results);
+
 private:
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback;
@@ -58,6 +57,5 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallbackWrapper);
 };
 
-
 } // namespace joynr
-#endif //LOCALCAPABILITIESCALLBACKWRAPPER_H
+#endif // LOCALCAPABILITIESCALLBACKWRAPPER_H

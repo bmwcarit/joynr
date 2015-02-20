@@ -32,27 +32,30 @@ class ChannelUrlSelectorTest_punishTest_Test;
 class ChannelUrlSelectorTest_updateTest_Test;
 class ChannelUrlSelectorTest_initFittnessTest_Test;
 
-namespace joynr {
+namespace joynr
+{
 
 class ChannelUrlSelectorEntry;
-
 
 /**
  * @brief ChannelUrlSelector
  * Used by the MessageSender to obtain the 'best' Url available for a channelId. The 'best' is
- * determined using feedback from former trials. The available Urls for a channelId are ranked according to
+ * determined using feedback from former trials. The available Urls for a channelId are ranked
+ *according to
  * their position, the first Url is ranked highest. Every Url is assigned a 'fitness' value.
  * This fitness is initialized to the rank of the Url. It cannot be higher than the rank of the
- * corrsponding Url. If a connection using an Url fails, its fitness value is reduced by 'punishMent' factor.
+ * corrsponding Url. If a connection using an Url fails, its fitness value is reduced by
+ *'punishMent' factor.
  * The 'best' Url is the Url with the highest fitness value. After 'timeForOneRecouperation'
  * has passed, the fitness value of all Urls are increased.
  *
  */
-class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelector : public IChannelUrlSelector{
+class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelector : public IChannelUrlSelector
+{
 
 public:
-     static const qint64& TIME_FOR_ONE_RECOUPERATION();
-     static const double& PUNISHMENT_FACTOR();
+    static const qint64& TIME_FOR_ONE_RECOUPERATION();
+    static const double& PUNISHMENT_FACTOR();
     /**
      * @brief Initialize
      *
@@ -61,8 +64,8 @@ public:
      * @param punishmentFactor
      */
     explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                      qint64 timeForOneRecouperation,
-                                      double punishmentFactor);
+                                qint64 timeForOneRecouperation,
+                                double punishmentFactor);
 
     virtual ~ChannelUrlSelector();
 
@@ -71,9 +74,8 @@ public:
     *
     * @param channelUrlDirectoryProxy
     */
-    virtual void init(
-             QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-             const MessagingSettings& settings);
+    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+                      const MessagingSettings& settings);
 
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
@@ -85,10 +87,9 @@ public:
     * @param timeout
     * @return QString
     */
-    virtual QString obtainUrl(
-            const QString& channelId,
-            RequestStatus& status,
-            const qint64& timeout_ms );
+    virtual QString obtainUrl(const QString& channelId,
+                              RequestStatus& status,
+                              const qint64& timeout_ms);
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -96,15 +97,11 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success,
-            const QString& channelId,
-            QString url);
-
+    virtual void feedback(bool success, const QString& channelId, QString url);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelector);
-    QString constructDefaultUrl(
-            const QString& channelId);
+    QString constructDefaultUrl(const QString& channelId);
     QString constructUrl(const QString& baseUrl);
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
@@ -119,15 +116,17 @@ private:
 /**
  * @brief ChannelUrlSelectorEntry
  *
- * This is a "private Class" of ChannelUrlSelector. In order to use it with googleTest it has been moved out of ChannelUrlSelector
+ * This is a "private Class" of ChannelUrlSelector. In order to use it with googleTest it has been
+ *moved out of ChannelUrlSelector
  * Class, but stays within the same file, as noone else should use ChannelUrlSelector.
  *
  */
-class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry  {
+class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
+{
 public:
     ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
-                                  double punishmentFactor,
-                                  qint64 timeForOneRecouperation);
+                            double punishmentFactor,
+                            qint64 timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
     /**
      * @brief Returns the Url with the higest fitness value.
@@ -148,7 +147,8 @@ public:
      */
     void initFitness();
     /**
-     * @brief Checks whether time for one recouperation has passed and increases fitness values if so.
+     * @brief Checks whether time for one recouperation has passed and increases fitness values if
+     *so.
      *
      */
     void updateFitness();
@@ -157,6 +157,7 @@ public:
      *
      */
     QList<double> getFitness();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelectorEntry);
 
@@ -170,10 +171,7 @@ private:
     double punishmentFactor;
     qint64 timeForOneRecouperation;
     static joynr_logging::Logger* logger;
-
 };
 
-
-
 } // namespace joynr
-#endif //CHANNELDIRECTORYURLCACHE_H_
+#endif // CHANNELDIRECTORYURLCACHE_H_

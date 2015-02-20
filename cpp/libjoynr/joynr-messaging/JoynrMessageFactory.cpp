@@ -19,6 +19,7 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -27,26 +28,28 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Util.h"
 
-namespace joynr {
+namespace joynr
+{
 
-JoynrMessageFactory::JoynrMessageFactory() :
-    logger(joynr_logging::Logging::getInstance()->getLogger(QString("LIB"), QString("JoynrMessageFactory")))
+JoynrMessageFactory::JoynrMessageFactory()
+        : logger(joynr_logging::Logging::getInstance()->getLogger(QString("LIB"),
+                                                                  QString("JoynrMessageFactory")))
 {
     qRegisterMetaType<Reply>();
     qRegisterMetaType<Request>();
     qRegisterMetaType<SubscriptionRequest>();
+    qRegisterMetaType<BroadcastSubscriptionRequest>();
     qRegisterMetaType<SubscriptionReply>();
     qRegisterMetaType<SubscriptionStop>();
     qRegisterMetaType<SubscriptionPublication>();
     qRegisterMetaType<JoynrMessage>();
 }
 
-JoynrMessage JoynrMessageFactory::createRequest(
-        const QString& senderId,
-        const QString& receiverId,
-        const MessagingQos& qos,
-        const Request& payload
-) {
+JoynrMessage JoynrMessageFactory::createRequest(const QString& senderId,
+                                                const QString& receiverId,
+                                                const MessagingQos& qos,
+                                                const Request& payload)
+{
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
@@ -54,24 +57,22 @@ JoynrMessage JoynrMessageFactory::createRequest(
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createReply(
-        const QString& senderId,
-        const QString& receiverId,
-        const MessagingQos& qos,
-        const Reply& payload
-) {
+JoynrMessage JoynrMessageFactory::createReply(const QString& senderId,
+                                              const QString& receiverId,
+                                              const MessagingQos& qos,
+                                              const Reply& payload)
+{
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
     initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createOneWay(
-        const QString& senderId,
-        const QString& receiverId,
-        const MessagingQos& qos,
-        const Reply& payload
-) {
+JoynrMessage JoynrMessageFactory::createOneWay(const QString& senderId,
+                                               const QString& receiverId,
+                                               const MessagingQos& qos,
+                                               const Reply& payload)
+{
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
@@ -82,57 +83,65 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
         const QString& senderId,
         const QString& receiverId,
         const MessagingQos& qos,
-        const SubscriptionPublication& payload
-) {
+        const SubscriptionPublication& payload)
+{
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
     initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
-        const QString& senderId,
-        const QString& receiverId,
-        const MessagingQos& qos,
-        const SubscriptionRequest& payload
-) {
+JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const QString& senderId,
+                                                            const QString& receiverId,
+                                                            const MessagingQos& qos,
+                                                            const SubscriptionRequest& payload)
+{
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
     initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionReply(
+JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
         const QString& senderId,
         const QString& receiverId,
         const MessagingQos& qos,
-        const SubscriptionReply& payload
-) {
+        const BroadcastSubscriptionRequest& payload)
+{
+    JoynrMessage msg;
+    msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    return msg;
+}
+
+JoynrMessage JoynrMessageFactory::createSubscriptionReply(const QString& senderId,
+                                                          const QString& receiverId,
+                                                          const MessagingQos& qos,
+                                                          const SubscriptionReply& payload)
+{
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
     initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionStop(
-        const QString& senderId,
-        const QString& receiverId,
-        const MessagingQos& qos,
-        const SubscriptionStop& payload
-) {
+JoynrMessage JoynrMessageFactory::createSubscriptionStop(const QString& senderId,
+                                                         const QString& receiverId,
+                                                         const MessagingQos& qos,
+                                                         const SubscriptionStop& payload)
+{
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
     initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
-void JoynrMessageFactory::initMsg(
-        JoynrMessage& msg,
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
-        const qint64 ttl,
-        const QObject& payload
-) {
+void JoynrMessageFactory::initMsg(JoynrMessage& msg,
+                                  const QString& senderParticipantId,
+                                  const QString& receiverParticipantId,
+                                  const qint64 ttl,
+                                  const QObject& payload)
+{
     msg.setHeaderFrom(senderParticipantId);
     msg.setHeaderTo(receiverParticipantId);
 

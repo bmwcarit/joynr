@@ -26,29 +26,29 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
-#include "joynr/Directory.h"
 #include "joynr/ObjectWithDecayTime.h"
-#include "joynr/ThreadSafeMap.h"
 #include "joynr/MessagingQos.h"
-
+#include <QReadWriteLock>
+#include <QThreadPool>
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-
-class PubSubState;
-
+class DelayedScheduler;
 /**
   * \class SubscriptionManager
   * \brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
-  * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application and
+  * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
+ * and
   * packaged into a callback by the connector.
   * This listener is notified (via the callback) when a subscription is missed or when a publication
   * arrives.
   */
-class JOYNR_EXPORT SubscriptionManager {
+class JOYNR_EXPORT SubscriptionManager
+{
 
 public:
     ~SubscriptionManager();
@@ -66,11 +66,10 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    void registerSubscription(
-            const QString &subscribeToName,
-            ISubscriptionCallback * subscriptionCaller, // SubMgr gets ownership of ptr
-            QSharedPointer<SubscriptionQos> qos,
-            SubscriptionRequest& subscriptionRequest);
+    void registerSubscription(const QString& subscribeToName,
+                              QSharedPointer<ISubscriptionCallback> subscriptionCaller,
+                              QSharedPointer<SubscriptionQos> qos,
+                              SubscriptionRequest& subscriptionRequest);
 
     /**
      * @brief Stop the subscription. Removes the callback and stops the notifications
@@ -81,14 +80,16 @@ public:
     void unregisterSubscription(const QString& subscriptionId);
 
     /**
-     * @brief Sets the time of last received publication (incoming attribute value) to the current system time.
+     * @brief Sets the time of last received publication (incoming attribute value) to the current
+     *system time.
      *
      * @param subscriptionId
      */
     void touchSubscriptionState(const QString& subscriptionId);
 
     /**
-     * @brief Get a shared pointer to the subscription callback - ownership remains with the subscription manager.
+     * @brief Get a shared pointer to the subscription callback. The shared pointer points to null
+     * if the subscription ID does not exist.
      *
      * @param subscriptionId
      * @return QSharedPointer<ISubscriptionCallback>
@@ -97,59 +98,68 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
-    void subscriptionEnded(const QString& subscriptionId);
+    class Subscription;
 
-    Directory<QString, ISubscriptionCallback> subscriptionDirectory;
-    ThreadSafeMap<QString, PubSubState*>* subscriptionStates;
+    QMap<QString, QSharedPointer<Subscription>> subscriptions;
+
+    QReadWriteLock subscriptionsLock;
+
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
     /**
       * \class SubscriptionManager::MissedPublicationRunnable
       * \brief
       */
-    class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime {
+    class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime
+    {
     public:
-        MissedPublicationRunnable(const QDateTime& decayTime,
+        MissedPublicationRunnable(const QDateTime& expiryDate,
+                                  const qint64& expectedIntervalMSecs,
                                   const QString& subscriptionId,
+                                  QSharedPointer<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
                                   const qint64& alertAfterInterval);
 
         /**
-         * @brief Checks whether a publication arrived in time, whether it is expired or interrupted.
+         * @brief Checks whether a publication arrived in time, whether it is expired or
+         *interrupted.
          *
          */
         void run();
+
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
-        QSemaphore stoppedSemaphore;
-        QString subscriptionId;
+        qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
+        qint64 expectedIntervalMSecs;
+        QSharedPointer<Subscription> subscription;
+        const QString subscriptionId;
         qint64 alertAfterInterval;
         SubscriptionManager& subscriptionManager;
-        PubSubState* state;
         static joynr_logging::Logger* logger;
     };
     /**
-      * \class SubscriptionManager::ExpiredSubscriptionRunnable
+      * \class SubscriptionManager::SubscriptionEndRunnable
       * \brief
       */
-    class ExpiredSubscriptionRunnable : public QRunnable {
+    class SubscriptionEndRunnable : public QRunnable
+    {
     public:
-        ExpiredSubscriptionRunnable(const QString& subscriptionId,
-                                  SubscriptionManager& subscriptionManager);
+        SubscriptionEndRunnable(const QString& subscriptionId,
+                                SubscriptionManager& subscriptionManager);
 
         /**
          * @brief removes subscription once running.
          *
          */
         void run();
+
     private:
-        DISALLOW_COPY_AND_ASSIGN(ExpiredSubscriptionRunnable);
+        DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
         QString subscriptionId;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
     };
 };
-
 
 } // namespace joynr
 #endif // SUBSCRIPTIONMANAGER_H

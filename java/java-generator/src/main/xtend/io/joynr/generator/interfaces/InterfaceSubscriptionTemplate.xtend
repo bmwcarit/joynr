@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,67 +19,67 @@ package io.joynr.generator.interfaces
 
 import com.google.inject.Inject
 import io.joynr.generator.util.TemplateBase
-import java.util.TreeSet
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import com.google.common.collect.Collections2
+import java.util.HashSet
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceSubscriptionTemplate {	
+class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase	
-	
-	def generate(FInterface serviceInterface) {
+
+	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
 		'''
-«warning()»
-package «packagePath»;			
-import com.fasterxml.jackson.core.type.TypeReference;
+		«warning()»
+		package «packagePath»;
 
-import java.util.List;
+		«IF needsListImport(serviceInterface, false, true)»
+		import java.util.List;
 
-import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
-import io.joynr.pubsub.subscription.SubscriptionListener;
-import io.joynr.pubsub.SubscriptionQos;
+		«ENDIF»
+		import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 
+		«IF getAttributes(serviceInterface).size > 0»
+		import com.fasterxml.jackson.core.type.TypeReference;
+		«IF hasReadAttribute(serviceInterface)»
+		import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
+		import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+		import io.joynr.pubsub.SubscriptionQos;
+		«ENDIF»
+		«ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
-	import «datatype»;
-«ENDFOR»
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, false)»
+			import «datatype»;
+		«ENDFOR»
 
-//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the fibex. 
-@SuppressWarnings("unused")
+		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
+		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.getMappedDatatypeOrList()]))»
 
-«val attrTypeset = new TreeSet<String>()»
-«FOR attribute: getAttributes(serviceInterface)»
-	«var repl = attrTypeset.add(getMappedDatatypeOrList(attribute))»
-«ENDFOR»
+			«FOR attributeType: attrTypeset»
+			public static class «getTokenTypeForArrayType(attributeType)»Reference extends TypeReference<«attributeType»> {}
+			«ENDFOR»
 
-«FOR attributeType: attrTypeset»
-		public static class «getTokenTypeForArrayType(attributeType)»Reference extends TypeReference<«attributeType»> {}
-«ENDFOR»	
+		«FOR attribute: getAttributes(serviceInterface)»
+		«var attributeName = attribute.joynrName»
+		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
+			«IF isReadable(attribute)»
 
-«FOR attribute: getAttributes(serviceInterface)»
-«var attributeName = attribute.joynrName»
-«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
-	«IF isReadable(attribute)»	
-		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)		
-		public String subscribeTo«attributeName.toFirstUpper»(SubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
-		
-		//TODO is the app allowed to specify the subscriptionId?
-		@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)		
-		public String subscribeTo«attributeName.toFirstUpper»(SubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
-		
-		public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
-	«ENDIF»	
-«ENDFOR»	
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
+				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
-}
-'''			
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
+				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
+
+				public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);
+			«ENDIF»
+		«ENDFOR»
+		}
+'''
 	}
-	
 }

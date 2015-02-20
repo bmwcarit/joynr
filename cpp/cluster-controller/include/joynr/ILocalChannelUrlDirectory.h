@@ -21,11 +21,13 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 template <class T>
- class Future;
-namespace types {
-    class ChannelUrlInformation;
+class Future;
+namespace types
+{
+class ChannelUrlInformation;
 }
 
 /**
@@ -34,10 +36,13 @@ namespace types {
  * ChannelUrlDirectory and stores the resulting ChannelInformation.
  *
  */
-class ILocalChannelUrlDirectory {
+class ILocalChannelUrlDirectory
+{
 
 public:
-    virtual ~ILocalChannelUrlDirectory() {}
+    virtual ~ILocalChannelUrlDirectory()
+    {
+    }
     /**
      * @brief Register a set of Url's for a channelId.
      *
@@ -45,10 +50,9 @@ public:
      * @param channelUrlInformation
      * @param status
      */
-    virtual void registerChannelUrls(
-            QSharedPointer<Future<void> > future,
-            const QString& channelId,
-            types::ChannelUrlInformation channelUrlInformation) = 0;
+    virtual void registerChannelUrls(QSharedPointer<Future<void>> future,
+                                     const QString& channelId,
+                                     types::ChannelUrlInformation channelUrlInformation) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -56,24 +60,22 @@ public:
      * @param status
      * @param channelId
      */
-    virtual void unregisterChannelUrls(
-            QSharedPointer<Future<void> > future,
-            const QString& channelId) = 0;
+    virtual void unregisterChannelUrls(QSharedPointer<Future<void>> future,
+                                       const QString& channelId) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
-     * entry is obtained it is stored and returned from there on (instead of starting another remote request).
+     * entry is obtained it is stored and returned from there on (instead of starting another remote
+     *request).
      *
      * @param future
      * @param channelId
      * @param timeout
      */
-    virtual void getUrlsForChannel(
-            QSharedPointer<Future<types::ChannelUrlInformation> > future,
-            const QString &channelId,
-            const qint64& timeout_ms) = 0;
+    virtual void getUrlsForChannel(QSharedPointer<Future<types::ChannelUrlInformation>> future,
+                                   const QString& channelId,
+                                   const qint64& timeout_ms) = 0;
 };
 
-
 } // namespace joynr
-#endif //ILOCALCHANNELURLDIRECTORY_H_
+#endif // ILOCALCHANNELURLDIRECTORY_H_

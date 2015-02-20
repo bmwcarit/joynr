@@ -1,5 +1,7 @@
 package io.joynr.servlet;
 
+import io.joynr.capabilities.CapabilitiesStore;
+import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.discovery.DiscoveryDirectoriesModule;
 
 import com.google.inject.AbstractModule;
@@ -27,6 +29,7 @@ public class ServletModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(CapabilitiesStore.class).to(CapabilitiesStoreImpl.class).asEagerSingleton();
         install(new DiscoveryDirectoriesModule());
     }
 

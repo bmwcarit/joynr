@@ -3,7 +3,7 @@ package io.joynr.demo;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,27 @@ package io.joynr.demo;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
+import java.io.IOException;
 import java.util.Properties;
 
+import jline.console.ConsoleReader;
 import joynr.vehicle.RadioProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 import com.google.inject.Module;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class MyRadioProviderApplication extends AbstractJoynrApplication {
     private static final String AUTH_TOKEN = "MyRadioProvider_authToken";
@@ -40,10 +47,12 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
 
     private MyRadioProvider provider = null;
+    @Inject
+    private ObjectMapper jsonSerializer;
 
     public static void main(String[] args) {
         // run application from cmd line using Maven:
-        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MadioProviderApplication" -Dexec.args="<local-domain>"
+        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
         if (args.length != 1) {
             LOG.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",
@@ -124,22 +133,61 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                                                                                                                                         appConfig));
         joynrApplication.run();
 
-        MyRadioHelper.pressQEnterToContinue();
-
         joynrApplication.shutdown();
     }
 
     @Override
     public void run() {
         provider = new MyRadioProvider();
+        provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
+        provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
         runtime.registerCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+
+        ConsoleReader console;
+        try {
+            console = new ConsoleReader();
+            int key;
+            while ((key = console.readCharacter()) != 'q') {
+                switch (key) {
+                case 's':
+                    provider.shuffleStations();
+                    break;
+                case 'w':
+                    provider.fireWeakSignalEvent();
+                    break;
+                case 'n':
+                    provider.fireNewStationDiscoveredEvent();
+                    break;
+                default:
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
+                            + " w\tto fire weak signal event\n" + " n\tto fire station discovered event\n");
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            LOG.error("error reading input from console", e);
+        }
     }
 
     @Override
+    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
+        LOG.info("shutting down");
         if (provider != null) {
-            runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+            try {
+                runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+            } catch (JoynrException e) {
+                LOG.error("unable to unregister capabilities {}", e.getMessage());
+            }
         }
         runtime.shutdown(true);
+        // TODO currently there is a bug preventing all threads being stopped
+        // WORKAROUND
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // do nothing; exiting application
+        }
+        System.exit(0);
     }
 }

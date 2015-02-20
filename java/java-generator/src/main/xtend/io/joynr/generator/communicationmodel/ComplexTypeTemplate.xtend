@@ -2,7 +2,7 @@ package io.joynr.generator.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import com.google.inject.Inject
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FCompoundType
+import io.joynr.generator.util.CompoundTypeTemplate
 
-class ComplexTypeTemplate {
+class ComplexTypeTemplate implements CompoundTypeTemplate{
 
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
-	
-	def generate(FCompoundType complexType) {
+
+	override generate(FCompoundType complexType) {
 		val typeName = complexType.joynrName
 		val complexTypePackageName = getPackagePathWithJoynrPrefix(complexType, ".")
 		'''
@@ -63,13 +64,41 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	private «memberType» «member.joynrName»;
 	«ENDIF»
 	«ENDFOR»
-	
+
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
 		this.«member.joynrName» = «getDefaultValue(member)»;
 		«ENDFOR»
 	}
-	
+
+	«val copyObjName = typeName.toFirstLower + "Obj"»
+	public «typeName»(«typeName» «copyObjName») {
+		«IF complexType.hasExtendsDeclaration»
+		super(«copyObjName»);
+		«ENDIF»
+		«FOR member : getMembers(complexType)»
+		«IF isArray(member)»
+			«IF isComplex(member.type)»
+			«val memberType = getMappedDatatype(member.type)»
+			this.«member.joynrName» = «getDefaultValue(member)»;
+			if («copyObjName».«member.joynrName» != null){
+				for («memberType» element : «copyObjName».«member.joynrName») {
+					this.«member.joynrName».add(new «memberType»(element));
+				}
+			}
+			«ELSE»
+			this.«member.joynrName» = «getDefaultValue(member, copyObjName + "." + member.joynrName)»;
+			«ENDIF»
+		«ELSE»
+			«IF isComplex(member.type)»
+			«val memberType = getMappedDatatype(member.type)»
+			this.«member.joynrName» = new «memberType»(«copyObjName».«member.joynrName»);
+			«ELSE»
+			this.«member.joynrName» = «copyObjName».«member.joynrName»;
+			«ENDIF»
+		«ENDIF»
+		«ENDFOR»
+	}
 
 	«IF !getMembersRecursive(complexType).empty»
 	public «typeName»(
@@ -89,7 +118,6 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 	}
 	«ENDIF»
-	
 
 	«FOR member : getMembers(complexType)»
 	«val memberType = getMappedDatatypeOrList(member).replace("::","__")»
@@ -97,13 +125,13 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	public «memberType» get«memberName.toFirstUpper»() {
 		return this.«member.joynrName»;
 	}
-	
+
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		this.«member.joynrName» = «member.joynrName»;
 	}
-	
+
 	«ENDFOR»
-	
+
 	@Override
 	public String toString() {
 		return "«typeName» ["
@@ -115,7 +143,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 		+ "]";
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -148,7 +176,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«ENDFOR»
 		return true;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		«IF hasExtendsDeclaration(complexType)»

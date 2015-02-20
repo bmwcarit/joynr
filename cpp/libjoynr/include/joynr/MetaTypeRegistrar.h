@@ -28,7 +28,8 @@
 #include <QHash>
 #include <QMetaType>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * A class that registers metatypes so that ReplyInterpreters and
@@ -60,6 +61,12 @@ public:
      */
     template <class T>
     void registerEnumMetaType();
+
+    /**
+     * Register a composite metatype
+     */
+    template <class... Ts>
+    void registerBroadcastMetaType();
 
     /**
      * Get the publication interpreter with the given type id.
@@ -100,6 +107,8 @@ private:
     void addPublicationInterpreter();
     template <class T>
     void addReplyInterpreter();
+    template <class... Ts>
+    void addPublicationInterpreterForBroadcastType();
 
     // A threadsafe hash holding PublicationInterpreters
     QHash<int, IPublicationInterpreter*> publicationInterpreters;
@@ -134,12 +143,12 @@ void MetaTypeRegistrar::registerEnumMetaType()
     {
         QMutexLocker locker(&publicationInterpretersMutex);
         addEnumPublicationInterpreter<T>(qMetaTypeId<typename T::Enum>());
-        addEnumPublicationInterpreter<QList<T> >(qMetaTypeId<QList<typename T::Enum> >());
+        addEnumPublicationInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
     }
     {
         QMutexLocker locker(&replyInterpretersMutex);
         addEnumReplyInterpreter<T>(qMetaTypeId<typename T::Enum>());
-        addEnumReplyInterpreter<QList<T> >(qMetaTypeId<QList<typename T::Enum> >());
+        addEnumReplyInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
     }
 }
 
@@ -169,16 +178,33 @@ void MetaTypeRegistrar::registerMetaType()
     {
         QMutexLocker locker(&publicationInterpretersMutex);
         addPublicationInterpreter<T>();
-        addPublicationInterpreter<QList<T> >();
+        addPublicationInterpreter<QList<T>>();
     }
     {
         QMutexLocker locker(&replyInterpretersMutex);
         addReplyInterpreter<T>();
-        addReplyInterpreter<QList<T> >();
+        addReplyInterpreter<QList<T>>();
     }
 }
 
+template <class... Ts>
+void MetaTypeRegistrar::registerBroadcastMetaType()
+{
+    {
+        QMutexLocker locker(&publicationInterpretersMutex);
+        addPublicationInterpreterForBroadcastType<Ts...>();
+    }
+}
 
+template <class... Ts>
+void MetaTypeRegistrar::addPublicationInterpreterForBroadcastType()
+{
+    int typeId = Util::getBroadcastTypeId<Ts...>();
+
+    if (!publicationInterpreters.contains(typeId)) {
+        publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
+    }
+}
 
 } // namespace joynr
 #endif // METATYPEREGISTRAR_H

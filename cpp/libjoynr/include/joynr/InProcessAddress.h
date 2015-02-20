@@ -24,20 +24,22 @@
 
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class RequestCaller;
 
-class JOYNR_EXPORT InProcessAddress : public joynr::system::Address {
+class JOYNR_EXPORT InProcessAddress : public joynr::system::Address
+{
     Q_OBJECT
 public:
     virtual ~InProcessAddress();
     InProcessAddress(QSharedPointer<RequestCaller> requestCaller);
     QSharedPointer<RequestCaller> getRequestCaller() const;
+
 private:
     QSharedPointer<RequestCaller> requestCaller;
 };
 
-
 } // namespace joynr
-#endif //INPROCESSADDRESS_H
+#endif // INPROCESSADDRESS_H

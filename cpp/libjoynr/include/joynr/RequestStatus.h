@@ -24,7 +24,8 @@
 #include "joynr/RequestStatusCode.h"
 #include <QStringList>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * @brief This class will house all the status information needed by callers to
@@ -32,15 +33,14 @@ namespace joynr {
  * are predefined Joynr middleware constants, and a description string with additional
  * information.
  */
-class JOYNR_EXPORT RequestStatus {
+class JOYNR_EXPORT RequestStatus
+{
 public:
-
     /**
      * @brief Creates a request status with an empty description and a default request
      * status signifying that it has not started.
      */
     RequestStatus();
-
 
     /**
      * @brief Creates a RequestStatus with the supplied status code.
@@ -49,14 +49,12 @@ public:
      */
     RequestStatus(RequestStatusCode requestCode);
 
-
     /**
      * @brief A convenience method that checks whether the request was successful.
      *
      * @return bool Was the request successful?
      */
     bool successful() const;
-
 
     /**
      * @brief Returns the status code of the request.
@@ -65,14 +63,12 @@ public:
      */
     RequestStatusCode getCode() const;
 
-
     /**
      * @brief To update the request status code with the given code.
      *
      * @param code The RequestStatusCode to update to.
      */
     void setCode(const RequestStatusCode& code);
-
 
     /**
      * @brief Returns a detailed description of the request.
@@ -81,7 +77,6 @@ public:
      */
     QStringList getDescription();
 
-
     /**
      * @brief Adds a sentence describing a state of the request to the list of descriptions.
      *
@@ -89,20 +84,18 @@ public:
      */
     void addDescription(const QString& description);
 
-
     /**
      * @brief A convenience method to prints this object to string.
      *
-     * @return QString The String representation of this object, to be used in error messages/logging etc.
+     * @return QString The String representation of this object, to be used in error
+     *messages/logging etc.
      */
     QString toString() const;
 
 private:
     RequestStatusCode code;
     QStringList description;
-
 };
 
-
 } // namespace joynr
-#endif //REQUESTSTATUS_H
+#endif // REQUESTSTATUS_H

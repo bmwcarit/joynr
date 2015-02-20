@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -121,20 +121,19 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-	        <groupId>org.eclipse.jetty</groupId>
-	        <artifactId>jetty-websocket</artifactId>
-	        <scope>test</scope>
-	    </dependency>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-client</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-	        <groupId>org.eclipse.jetty</groupId>
-	        <artifactId>jetty-util</artifactId>
-	        <version>${jetty.version}</version>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.slf4j</groupId>
-	        <artifactId>slf4j-log4j12</artifactId>
-	    </dependency>
-	    
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-util</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
 	</dependencies>
 
 
@@ -156,26 +155,34 @@
 							<artifactId>channel-service</artifactId>
 							<type>jar</type>
 							<includes>
-				                <include>css/**</include>
-				                <include>script/**</include>
-				                <include>channels.html</include>
-				                <include>NOTICE-javascript</include>
+								<include>css/**</include>
+								<include>script/**</include>
+								<include>channels.html</include>
+								<include>NOTICE-javascript</include>
 								<include>MIT-LICENSE</include>
 								<include>LICENSE_INFO</include>
-				            </includes>
+							</includes>
 						</overlay>
 					</overlays>
 				</configuration>
 			</plugin>
 			
 			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
+				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
+					<!--
+					Don't define system properties here, because it will override system
+					properties defined in plugin management in super POM.
+					-->
 					<webAppSourceDirectory>${basedir}/src/main/java</webAppSourceDirectory>
 					<webXml>${basedir}/src/main/resources/WEB-INF/web.xml</webXml>
-				    <stopKey>quit</stopKey>
-    				<stopPort>12345</stopPort>
+					<!--
+					This "override" is needed to disable contextHandlers defined in plugin
+					management in super POM.
+					-->
+					<contextHandlers combine.self="override"></contextHandlers>
+					<webApp combine.self="override"></webApp>
 				</configuration>
 			</plugin>
 			

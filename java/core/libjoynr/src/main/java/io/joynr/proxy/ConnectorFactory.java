@@ -25,8 +25,8 @@ import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import javax.annotation.CheckForNull;
 
@@ -51,12 +51,13 @@ public final class ConnectorFactory {
      * @param fromParticipantId
      * @param toParticipantId
      * @param qosSettings
+     * @param subscriptionManager
      * @param endpointAddress
      * @return
-     * @throws JoynrIllegalStateException
      */
     @CheckForNull
     public static ConnectorInvocationHandler create(final RequestReplyDispatcher dispatcher,
+                                                    final SubscriptionManager subscriptionManager,
                                                     final RequestReplySender messageSender,
                                                     final String fromParticipantId,
                                                     final ArbitrationResult arbitrationResult,
@@ -65,6 +66,7 @@ public final class ConnectorFactory {
         for (EndpointAddressBase endpointAddress : arbitrationResult.getEndpointAddress()) {
             if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
                 return JoynrMessagingConnectorFactory.create(dispatcher,
+                                                             subscriptionManager,
                                                              messageSender,
                                                              fromParticipantId,
                                                              arbitrationResult.getParticipantId(),

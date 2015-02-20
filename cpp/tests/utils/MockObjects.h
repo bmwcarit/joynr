@@ -23,10 +23,11 @@
 #include <gmock/gmock.h>
 #include "PrettyPrint.h"
 
-#include "joynr/tests/DefaultTestProvider.h"
-#include "joynr/tests/TestProvider.h"
-#include "joynr/tests/TestRequestCaller.h"
+#include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
+#include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "QtCore"
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
@@ -52,6 +53,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/vehicle/GpsProvider.h"
@@ -128,7 +130,7 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const joynr::MessagingQos& qoS));
+    MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
 };
 
 class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
@@ -136,7 +138,8 @@ class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
 public:
     MockDelayedScheduler(QString name) : SingleThreadedDelayedScheduler(name){};
     MOCK_METHOD1(executeRunnable, void(QRunnable* runnable));
-    MOCK_METHOD2(schedule, void(QRunnable* runnable, int delay_ms));
+    MOCK_METHOD1(stopRunnable, void(QRunnable* runnable));
+    MOCK_METHOD2(schedule, quint32(QRunnable* runnable, int delay_ms));
 };
 
 class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
@@ -157,7 +160,7 @@ public:
     MOCK_METHOD1(removeReplyCaller, void(const QString& requestReplyId));
     MOCK_METHOD2(addRequestCaller, void(const QString& participantId, QSharedPointer<joynr::RequestCaller> requestCaller));
     MOCK_METHOD1(removeRequestCaller, void(const QString& participantId));
-    MOCK_METHOD2(receive, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qosSettings));
+    MOCK_METHOD1(receive, void(const joynr::JoynrMessage& message));
     MOCK_METHOD1(registerSubscriptionManager, void(joynr::SubscriptionManager* subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
 };
@@ -170,7 +173,7 @@ public:
 
 class MockMessaging : public joynr::IMessaging {
 public:
-  MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
+  MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
   MOCK_METHOD2(test1, void(int a0, int a1));
 };
 
@@ -180,7 +183,7 @@ public:
         MessageRouter(NULL, 500, 0){
 
     }
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, const joynr::MessagingQos& qos));
+    MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
     MOCK_METHOD2(addNextHop, void(QString participantId, QSharedPointer<joynr::system::Address> inprocessAddress));
     MOCK_METHOD2(removeNextHop, void(joynr::RequestStatus& joynrInternalStatus, QString participantId));
 };
@@ -221,6 +224,16 @@ public:
                 const QString &receiverParticipantId,
                 const joynr::MessagingQos& qos,
                 const joynr::SubscriptionRequest& subscriptionRequest
+            )
+    );
+
+    MOCK_METHOD4(
+            sendBroadcastSubscriptionRequest,
+            void(
+                const QString &senderParticipantId,
+                const QString &receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::BroadcastSubscriptionRequest& subscriptionRequest
             )
     );
 
@@ -272,17 +285,33 @@ public:
      MOCK_METHOD2_T(onSuccess, void(const joynr::RequestStatus status, T result));
 };
 
+// GMock doesn't support mocking variadic template functions directly.
+// Workaround: Mock exactly the functions with the number of arguments used in the tests.
 template <typename T>
-class MockSubscriptionListener : public joynr::ISubscriptionListener<T> {
+class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T> {
 public:
-     MOCK_METHOD1_T(receive, void( T value));
-     MOCK_METHOD0(publicationMissed, void());
+     MOCK_METHOD1_T(onReceive, void( T value));
+     MOCK_METHOD0(onError, void());
+};
+
+template <typename T1, typename T2, typename... Ts>
+class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
+public:
+     MOCK_METHOD2_T(onReceive, void( T1 value1, T2 value2, Ts... values));
+     MOCK_METHOD0(onError, void());
 };
 
 class MockGpsSubscriptionListener : public joynr::ISubscriptionListener<joynr::types::GpsLocation> {
 public:
-    MOCK_METHOD1(receive, void(joynr::types::GpsLocation value));
-    MOCK_METHOD0(publicationMissed, void());
+    MOCK_METHOD1(onReceive, void(joynr::types::GpsLocation value));
+    MOCK_METHOD0(onError, void());
+};
+
+class MockGpsDoubleSubscriptionListener
+        : public joynr::ISubscriptionListener<joynr::types::GpsLocation, double> {
+public:
+    MOCK_METHOD2(onReceive, void(joynr::types::GpsLocation value, double));
+    MOCK_METHOD0(onError, void());
 };
 
 class MockPublicationSender : public joynr::IPublicationSender {
@@ -476,7 +505,7 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD3(sendMessage,void(const QString&, const QDateTime&, const joynr::JoynrMessage&));
+    MOCK_METHOD2(sendMessage,void(const QString&, const joynr::JoynrMessage&));
     MOCK_METHOD2(init,void(QSharedPointer<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
 };
 
@@ -566,15 +595,15 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     }
 };
 
-class MockTestProvider : public joynr::tests::DefaultTestProvider
+class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
     MockTestProvider() :
-        joynr::tests::DefaultTestProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
+        joynr::tests::DefaulttestProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
     {
     };
     MockTestProvider(joynr::types::ProviderQos qos) :
-        DefaultTestProvider(qos)
+        DefaulttestProvider(qos)
     {
     };
     ~MockTestProvider()
@@ -623,13 +652,15 @@ public:
     }
 };
 
-class MockTestRequestCaller : public joynr::tests::TestRequestCaller {
+class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
 //    MockTestRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
-    MockTestRequestCaller() : joynr::tests::TestRequestCaller(QSharedPointer<joynr::tests::TestProvider>(new MockTestProvider()) ) {}
+    MockTestRequestCaller() : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {}
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
     MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(registerBroadcastListener, void(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
+    MOCK_METHOD2(unregisterBroadcastListener, void(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener));
 };
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
@@ -743,6 +774,14 @@ public:
     }
     MOCK_METHOD3(getProviderParticipantId, QString(const QString& domain, const QString& interfaceName, const QString& authenticationToken));
     MOCK_METHOD4(getProviderParticipantId, QString(const QString& domain, const QString& interfaceName, const QString& authenticationToken, const QString& defaultValue));
+};
+
+class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
+public:
+    MOCK_METHOD2(filter,
+                 bool(
+                     const joynr::types::GpsLocation &location,
+                     const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
 
 #ifdef _MSC_VER

@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,20 +22,21 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceCppTemplate {
-	
+class InterfaceCppTemplate implements InterfaceTemplate{
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-	
+
 	@Inject
 	private extension TemplateBase
-		
-	def generate(FInterface serviceInterface){
+
+	override generate(FInterface serviceInterface){
 		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include "qjson/serializer.h"
 		#include "joynr/MetaTypeRegistrar.h"
@@ -46,7 +47,7 @@ class InterfaceCppTemplate {
 
 		#include "joynr/Future.h"
 		#include "joynr/ICallback.h"
-		
+
 		«getNamespaceStarter(serviceInterface)»
 
 		I«interfaceName»Base::I«interfaceName»Base()
@@ -72,16 +73,28 @@ class InterfaceCppTemplate {
 				«ENDIF»
 			«ENDFOR»
 
+			«IF serviceInterface.broadcasts.size > 0»
+				/*
+				 * Broadcast output parameters are packed into a single publication message when the
+				 * broadcast occurs. They are encapsulated in a map. Hence, a new composite data type is
+				 * needed for all broadcasts. The map is serialised into the publication message. When
+				 * deserialising on consumer side, the right publication interpreter is chosen by calculating
+				 * the type id for the composite type.
+				*/
+			«ENDIF»
+			«FOR broadcast: serviceInterface.broadcasts»
+				registrar.registerBroadcastMetaType<«getMappedOutputParameterTypesCommaSeparated(broadcast)»>();
+			«ENDFOR»
 		}
 
-	
+
 		static const QString INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
-		
+
 		const QString I«interfaceName»Base::getInterfaceName()
 		{
 			return INTERFACE_NAME;
 		}
-		
+
 		«getNamespaceEnder(serviceInterface)»
 		'''
 	}

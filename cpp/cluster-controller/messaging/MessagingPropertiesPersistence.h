@@ -23,7 +23,8 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * Persists messaging properties
@@ -56,12 +57,10 @@ public:
      */
     static const QString& RECEIVER_ID_KEY();
 
-
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingPropertiesPersistence);
     QString filename;
 };
-
 
 } // namespace joynr
 #endif // MESSAGINGPROPERTIESPERSISTENCE_H

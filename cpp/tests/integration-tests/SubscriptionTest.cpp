@@ -32,7 +32,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/tests/TestRequestInterpreter.h"
+#include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
@@ -59,7 +59,7 @@ public:
         mockCallback(new MockCallback<types::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
-        mockSubscriptionListener(new MockSubscriptionListener<types::GpsLocation>()),
+        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -74,12 +74,12 @@ public:
     }
 
     void SetUp(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager();
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::getInterfaceName());
     }
 
     void TearDown(){
@@ -92,7 +92,7 @@ protected:
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
     QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
-    QSharedPointer<MockSubscriptionListener<types::GpsLocation> > mockSubscriptionListener;
+    QSharedPointer<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListener;
 
     types::GpsLocation gpsLocation1;
 
@@ -146,7 +146,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                 subscriptionRequest);
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // Wait for a call to be made to the mockRequestCaller
     ASSERT_TRUE(semaphore.tryAcquire(1,1000));
@@ -168,7 +168,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListener, receive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<types::GpsLocation>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -188,8 +188,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
     response.setValue(gpsLocation1);
     subscriptionPublication.setResponse(response);
 
-    SubscriptionCallback<types::GpsLocation>* subscriptionCallback =
-            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListener);
+    QSharedPointer<SubscriptionCallback<types::GpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListener));
 
 
     // subscriptionRequest is an out param
@@ -205,7 +205,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
@@ -252,7 +252,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                 subscriptionRequest);
     // first received message with subscription request
 
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     ASSERT_TRUE(semaphore.tryAcquire(1,15000));
     //Try to acquire a semaphore for up to 5 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
@@ -294,7 +294,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
     // remove the request caller
@@ -338,7 +338,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
@@ -351,7 +351,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 providerParticipantId,
                 qos,
                 subscriptionStop);
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
     // assert that less than 2 requests happen in the next 300 milliseconds
     ASSERT_FALSE(semaphore.tryAcquire(2, 300));

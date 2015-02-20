@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -112,21 +113,37 @@ public class ChannelUrlDirectoryTest {
 
     }
 
-    @Test
-    public void testMissingChannelUrl() throws Exception {
-        ChannelUrlDirectorySync proxy = createChannelUrlDirectoryProxy();
-        String testChannelId = name.getMethodName() + UUID.randomUUID().toString();
-
-        ChannelUrlInformation urlInformation = proxy.getUrlsForChannel(testChannelId);
-        List<String> urlsFromChannelUrlDirectory = urlInformation.getUrls();
-
-        assertTrue(urlsFromChannelUrlDirectory.isEmpty());
+    private ChannelUrlDirectorySync createChannelUrlDirectoryProxy() throws InterruptedException {
+        return createChannelUrlDirectoryProxy(MessagingQos.DEFAULT_TTL);
     }
 
-    private ChannelUrlDirectorySync createChannelUrlDirectoryProxy() throws InterruptedException {
+    @Test
+    public void testMissingChannelUrl() throws Exception {
+        int ttl_ms = 500;
+        ChannelUrlDirectorySync proxy = createChannelUrlDirectoryProxy(ttl_ms);
+        String testChannelId = name.getMethodName() + UUID.randomUUID().toString();
+
+        ChannelUrlInformation urlInformation = null;
+        try {
+            urlInformation = proxy.getUrlsForChannel(testChannelId);
+            assertTrue("synchronized proxy call \"getUrlsForChannel\" shall cause a timeout exception, because the provider only replies in case a url is available for the mentioned channel",
+                       false);
+        } catch (Exception e) {
+            //exception expected
+        }
+
+        ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
+        proxy.registerChannelUrls(testChannelId, channelUrlInformation);
+
+        urlInformation = proxy.getUrlsForChannel(testChannelId);
+
+        assertEquals(channelUrlInformation, urlInformation);
+    }
+
+    private ChannelUrlDirectorySync createChannelUrlDirectoryProxy(long ttl_ms) throws InterruptedException {
         JoynrRuntime runtime = injectorConsumer.getInstance(JoynrRuntime.class);
 
-        MessagingQos messagingQos = new MessagingQos();
+        MessagingQos messagingQos = new MessagingQos(ttl_ms);
         DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         Properties properties = PropertyLoader.loadProperties(new LowerCaseProperties(),

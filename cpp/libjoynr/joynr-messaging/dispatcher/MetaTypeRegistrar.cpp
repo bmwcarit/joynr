@@ -19,15 +19,16 @@
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/DeclareMetatypeUtil.h"
 
-namespace joynr {
+namespace joynr
+{
 
 MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = 0;
 
-MetaTypeRegistrar::MetaTypeRegistrar() :
-    publicationInterpreters(),
-    publicationInterpretersMutex(),
-    replyInterpreters(),
-    replyInterpretersMutex()
+MetaTypeRegistrar::MetaTypeRegistrar()
+        : publicationInterpreters(),
+          publicationInterpretersMutex(),
+          replyInterpreters(),
+          replyInterpretersMutex()
 {
     // Register known types
     registerMetaType<QString>();
@@ -62,7 +63,7 @@ IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId
 {
     QMutexLocker locker(&publicationInterpretersMutex);
 
-    IPublicationInterpreter *ret = publicationInterpreters.value(typeId);
+    IPublicationInterpreter* ret = publicationInterpreters.value(typeId);
 
     // It is a programming error if the interpreter does not exist
     assert(ret);
@@ -73,7 +74,7 @@ IReplyInterpreter& MetaTypeRegistrar::getReplyInterpreter(int typeId)
 {
     QMutexLocker locker(&replyInterpretersMutex);
 
-    IReplyInterpreter *ret = replyInterpreters.value(typeId);
+    IReplyInterpreter* ret = replyInterpreters.value(typeId);
 
     // It is a programming error if the interpreter does not exist
     assert(ret);

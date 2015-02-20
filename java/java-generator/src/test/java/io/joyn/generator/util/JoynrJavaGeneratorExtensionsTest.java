@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import io.joynr.generator.loading.ModelLoader;
+import io.joynr.generator.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 
 import java.util.Iterator;
@@ -37,7 +38,10 @@ import org.franca.core.franca.FTypeCollection;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
 
 public class JoynrJavaGeneratorExtensionsTest {
 
@@ -48,7 +52,17 @@ public class JoynrJavaGeneratorExtensionsTest {
 
     @Before
     public void setup() {
-        fixture = Guice.createInjector().getInstance(JoynrJavaGeneratorExtensions.class);
+        Injector injector = Guice.createInjector(new AbstractModule() {
+
+            @Override
+            protected void configure() {
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
+                                   .toInstance(true);
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
+                                   .toInstance(false);
+            }
+        });
+        fixture = injector.getInstance(JoynrJavaGeneratorExtensions.class);
     }
 
     @Test

@@ -19,20 +19,26 @@ package io.joynr.channel;
  * #L%
  */
 
+import io.joynr.dispatcher.rpc.Callback;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.provider.AbstractJoynrProvider;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.CheckForNull;
 
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
+import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
 import joynr.types.ChannelUrlInformation;
 import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -41,14 +47,15 @@ import com.google.inject.name.Named;
  * The channelurldirectory stores channelIds mapped to channelUrls.
  * 
  * 
- * channelurls are stored in a concurrentHashMap. Using a in memory database
- * could be possible optimization.
+ * channelurls are stored in a concurrentHashMap. Using a in memory database could be possible optimization.
  */
 // TODO Evaluate pro /cons of a in memory database
 
 @Singleton
-public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider {
+public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements ChannelUrlDirectoryProviderAsync {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoyImpl.class);
+
+    protected ProviderQos providerQos = new ProviderQos();
 
     public static final String CHANNELURL_INACTIVE_TIME_IN_MS = "joynr.channel.channelurlinactivetime";
 
@@ -60,6 +67,8 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
 
     private Thread cleanupThread;
 
+    private Map<String, List<Callback<ChannelUrlInformation>>> pendingCallbackMap;
+
     ConcurrentHashMap<String, ChannelUrlInformation> getRegisteredChannels() {
         return registeredChannels;
     }
@@ -67,6 +76,7 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
     @Inject
     public ChannelUrlDirectoyImpl(@Named(CHANNELURL_INACTIVE_TIME_IN_MS) long inactiveTimeInMS) {
         channelurInactiveTimeInMS = inactiveTimeInMS;
+        pendingCallbackMap = Maps.newConcurrentMap();
         cleanupThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -111,20 +121,29 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
     }
 
     @Override
-    public ChannelUrlInformation getUrlsForChannel(String channelId) {
+    public void getUrlsForChannel(Callback<ChannelUrlInformation> callback, String channelId) {
 
         ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
         if (channelUrlInformation == null) {
-            channelUrlInformation = new ChannelUrlInformation();
-            logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing.", channelId, channelUrlInformation);
+            addPendingCallback(callback, channelId);
+            logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing. Invoke callbacks once ChannelUrlInformation becomes available",
+                        channelId);
         } else {
             logger.debug("GLOBAL getUrlsForChannel ChannelUrls for channelId {} found: {}",
                          channelId,
                          channelUrlInformation);
+            callback.onSuccess(channelUrlInformation);
         }
 
-        return channelUrlInformation;
+    }
 
+    private synchronized void addPendingCallback(Callback<ChannelUrlInformation> callback, String channelId) {
+        if (pendingCallbackMap.get(channelId) == null) {
+            pendingCallbackMap.put(channelId, Lists.<Callback<ChannelUrlInformation>> newArrayList());
+        }
+        pendingCallbackMap.get(channelId).add(callback);
+        // TODO drop the newly added callback from the pendingCallbackMap after a while, avoiding a continuously growing
+        // map
     }
 
     @Override
@@ -134,18 +153,32 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
     }
 
     @Override
-    public void registerChannelUrls(@JoynrRpcParam("channelId") String channelId,
-                                    @JoynrRpcParam("channelUrlInformation") joynr.types.ChannelUrlInformation channelUrlInformation) {
+    public synchronized void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                 @JoynrRpcParam("channelId") String channelId,
+                                                 @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
         logger.debug("GLOBAL registerChannelUrls channelId: {} channelUrls: {}", channelId, channelUrlInformation);
         registeredChannels.put(channelId, channelUrlInformation);
         inactiveChannelIds.remove(channelId);
+        if (callback != null) {
+            callback.onSuccess(null);
+        }
+        List<Callback<ChannelUrlInformation>> pendingCallbacks = pendingCallbackMap.remove(channelId);
+        if (pendingCallbacks != null) {
+            for (Callback<ChannelUrlInformation> pendingCallback : pendingCallbacks) {
+                pendingCallback.onSuccess(channelUrlInformation);
+            }
+        }
     }
 
     @Override
-    public void unregisterChannelUrls(@JoynrRpcParam("channelId") final String channelId) {
+    public synchronized void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                   @JoynrRpcParam("channelId") String channelId) {
         inactiveChannelIds.put(channelId, System.currentTimeMillis());
         synchronized (cleanupThread) {
             cleanupThread.notify();
+        }
+        if (callback != null) {
+            callback.onSuccess(null);
         }
     }
 }

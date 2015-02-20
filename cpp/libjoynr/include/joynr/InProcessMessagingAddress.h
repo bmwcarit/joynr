@@ -24,20 +24,21 @@
 
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class InProcessMessagingSkeleton;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::Address {
+class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::Address
+{
     Q_OBJECT
 public:
     InProcessMessagingAddress(QSharedPointer<InProcessMessagingSkeleton> skeleton);
     QSharedPointer<InProcessMessagingSkeleton> getSkeleton() const;
+
 private:
     QSharedPointer<InProcessMessagingSkeleton> skeleton;
 };
 
-
-
 } // namespace joynr
-#endif //INPROCESSMESSAGINGENDPOINTADDRESS_H
+#endif // INPROCESSMESSAGINGENDPOINTADDRESS_H

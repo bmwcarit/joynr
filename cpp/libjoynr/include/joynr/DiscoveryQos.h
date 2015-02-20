@@ -29,17 +29,20 @@
 #include "joynr/types/CustomParameter.h"
 #include "joynr/system/DiscoveryScope.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNR_EXPORT DiscoveryQos {
+class JOYNR_EXPORT DiscoveryQos
+{
 public:
-
     /**
      * Instantiates an DiscoveryQos object with default values.
      */
     DiscoveryQos();
     explicit DiscoveryQos(const qint64& cacheMaxAge);
-    virtual ~DiscoveryQos(){}
+    virtual ~DiscoveryQos()
+    {
+    }
 
     /*
      *  List of available arbitration strategies.
@@ -81,9 +84,10 @@ public:
      * The discovery process outputs a list of matching providers. The arbitration strategy then
      * chooses one or more of them to be used by the proxy.
      *
-     * @return the arbitration strategy used to pick the "best" provider of the list of matching providers
+     * @return the arbitration strategy used to pick the "best" provider of the list of matching
+     *providers
      */
-    ArbitrationStrategy getArbitrationStrategy() const ;
+    ArbitrationStrategy getArbitrationStrategy() const;
 
     /**
      * As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
@@ -91,7 +95,8 @@ public:
      * discovery timeout duration it will be terminated and you will get an discovery exception.
      *
      * @param discoveryTimeout
-     *            Sets the amount of time the arbitrator keeps trying to find a suitable provider. The arbitration
+     *            Sets the amount of time the arbitrator keeps trying to find a suitable provider.
+     *The arbitration
      *            lookup might happen multiple times during this time span.
      */
     void setDiscoveryTimeout(qint64 discoveryTimeout);
@@ -105,7 +110,8 @@ public:
     qint64 getDiscoveryTimeout() const;
 
     /**
-     * addCustomParameter allows to add special parameters to the DiscoveryQos which will be used only by some strategies.
+     * addCustomParameter allows to add special parameters to the DiscoveryQos which will be used
+     *only by some strategies.
      *
      * @param name
      *            String to identify the arbitration parameter
@@ -117,7 +123,8 @@ public:
     /**
      * getCustomParameter returns the parameters previously specified by addParameter
      *
-     * @return Returns the value to which the specified key is mapped, or null if the map of additional parameters
+     * @return Returns the value to which the specified key is mapped, or null if the map of
+     *additional parameters
      *         contains no mapping for the key
      */
     types::CustomParameter getCustomParameter(QString name) const;
@@ -132,28 +139,33 @@ public:
     /**
      * Provider entries in the global capabilities directory are cached locally. Discovery will
      * consider entries in this cache valid if they are younger as the max age of cached
-     * providers as defined in the QoS. All valid entries will be processed by the arbitrator when searching
+     * providers as defined in the QoS. All valid entries will be processed by the arbitrator when
+     *searching
      * for and arbitrating the "best" matching provider.
      * <p>NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
      *       directory. Therefore, not all providers registered with the global capabilities
      *       directory might be taken into account during arbitration.
      *
-     * @return the maximum age of locally cached provider entries to be used during discovery and arbitration
+     * @return the maximum age of locally cached provider entries to be used during discovery and
+     *arbitration
      */
     qint64 getCacheMaxAge() const;
 
     /**
      * Provider entries in the global capabilities directory are cached locally. Discovery will
      * consider entries in this cache valid if they are younger as the max age of cached
-     * providers as defined in the QoS. All valid entries will be processed by the arbitrator when searching
+     * providers as defined in the QoS. All valid entries will be processed by the arbitrator when
+     *searching
      * for and arbitrating the "best" matching provider.
      * <p>NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
      *       directory. Therefore, not all providers registered with the global capabilities
      *       directory might be taken into account during arbitration.
      *
      * @param maxAgeOfCachedProviders
-     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
-     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters
+     *out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will
+     *take place.
      */
     void setCacheMaxAge(const qint64& cacheMaxAge);
 
@@ -162,16 +174,19 @@ public:
      *
      * @return true if only providers that support onChange subscriptions are considered
      */
-    bool getProviderMustSupportOnChange () const;
+    bool getProviderMustSupportOnChange() const;
     /**
-     * Indicate if the arbitration should only consider providers that support onChange subscriptions
+     * Indicate if the arbitration should only consider providers that support onChange
+     *subscriptions
      *
-     * @param providerMustSupportOnChange  true if only providers that support onChange subscriptions should be considered
+     * @param providerMustSupportOnChange  true if only providers that support onChange
+     *subscriptions should be considered
      */
-    void setProviderMustSupportOnChange(bool providerMustSupportOnChange );
+    void setProviderMustSupportOnChange(bool providerMustSupportOnChange);
 
     /**
-     * The scope determines where the discovery process will look for matching providers, if LOCAL_ONLY,
+     * The scope determines where the discovery process will look for matching providers, if
+     *LOCAL_ONLY,
      * only local providers will be considered. LOCAL_THEN_GLOBAL considers both the local providers
      * and the global providers in its search results. GLOBAL_ONLY only considers providers that are
      * flagged as global.
@@ -181,7 +196,8 @@ public:
     joynr::system::DiscoveryScope::Enum getDiscoveryScope() const;
 
     /**
-     * The scope determines where the discovery process will look for matching providers, if LOCAL_ONLY,
+     * The scope determines where the discovery process will look for matching providers, if
+     *LOCAL_ONLY,
      * only local providers will be considered. LOCAL_THEN_GLOBAL considers both the local providers
      * and the global providers in its search results. GLOBAL_ONLY only considers providers that are
      * flagged as global.
@@ -223,4 +239,4 @@ private:
 };
 
 } // namespace joynr
-#endif //DISCOVERYQOS_H
+#endif // DISCOVERYQOS_H

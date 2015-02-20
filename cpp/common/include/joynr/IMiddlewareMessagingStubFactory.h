@@ -22,18 +22,24 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system { class Address; }
+namespace system
+{
+class Address;
+}
 class IMessaging;
 
-class IMiddlewareMessagingStubFactory {
+class IMiddlewareMessagingStubFactory
+{
 public:
-    virtual ~IMiddlewareMessagingStubFactory() {}
+    virtual ~IMiddlewareMessagingStubFactory()
+    {
+    }
     virtual QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress) = 0;
     virtual bool canCreate(const joynr::system::Address& destAddress) = 0;
 };
-
 
 } // namespace joynr
 

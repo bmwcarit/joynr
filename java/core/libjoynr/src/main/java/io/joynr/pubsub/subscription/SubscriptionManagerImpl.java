@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,13 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -41,8 +43,9 @@ import com.google.inject.name.Named;
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager {
 
-    private ConcurrentMap<String, SubscriptionListener<?>> subscriptionListenerDirectory;
-    private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
+    private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
+    private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
+    private ConcurrentMap<String, Class<?>> subscriptionTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
@@ -57,47 +60,71 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         super();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
+        this.broadcastSubscriptionListenerDirectory = Maps.newConcurrentMap();
         this.subscriptionStates = Maps.newConcurrentMap();
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
-        this.subscriptionAttributeTypes = Maps.newConcurrentMap();
+        this.subscriptionTypes = Maps.newConcurrentMap();
 
     }
 
-    public SubscriptionManagerImpl(ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory,
+    public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
+                                   ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
                                    ConcurrentMap<String, PubSubState> subscriptionStates,
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
-                                   ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes,
+                                   ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
                                    ScheduledExecutorService cleanupScheduler) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
+        this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
         this.subscriptionStates = subscriptionStates;
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
-        this.subscriptionAttributeTypes = subscriptionAttributeTypes;
+        this.subscriptionTypes = subscriptionAttributeTypes;
         this.cleanupScheduler = cleanupScheduler;
     }
 
-    @Override
-    public String registerAttributeSubscription(final String attributeName,
-                                                Class<? extends TypeReference<?>> attributeTypeReference,
-                                                SubscriptionListener<?> attributeSubscriptionCallback,
-                                                final SubscriptionQos qos) {
+    private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
+        ScheduledFuture<?> scheduledFuture = subscriptionEndFutures.get(subscriptionId);
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(false);
+        }
+    }
 
-        String uuid = UUID.randomUUID().toString();
-        String subscriptionId = uuid;
-        logger.info("Attribute subscription registered with Id: " + subscriptionId);
-        subscriptionAttributeTypes.put(subscriptionId, attributeTypeReference);
-        subscriptionListenerDirectory.put(subscriptionId, attributeSubscriptionCallback);
+    private void registerSubscription(final SubscriptionQos qos, String subscriptionId) {
+
+        cancelExistingSubscriptionEndRunnable(subscriptionId);
 
         PubSubState subState = new PubSubState();
         subState.updateTimeOfLastPublication();
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDate();
-        logger.info("####################### expiryDate in: "
-                + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate - System.currentTimeMillis()));
+        logger.info("subscription: {} expiryDate: "
+                            + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
+                                    - System.currentTimeMillis()),
+                    subscriptionId);
+
+        if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
+            SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
+            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
+                                                                                 expiryDate,
+                                                                                 TimeUnit.MILLISECONDS);
+            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+        }
+    }
+
+    @Override
+    public void registerAttributeSubscription(AttributeSubscribeInvocation request) {
+        if (!request.hasSubscriptionId()) {
+            request.setSubscriptionId(UUID.randomUUID().toString());
+        }
+        SubscriptionQos qos = request.getQos();
+        registerSubscription(qos, request.getSubscriptionId());
+        logger.info("Attribute subscription registered with Id: " + request.getSubscriptionId());
+        subscriptionTypes.put(request.getSubscriptionId(), request.getAttributeTypeReference());
+        subscriptionListenerDirectory.put(request.getSubscriptionId(), request.getAttributeSubscriptionListener());
 
         if (qos instanceof HeartbeatSubscriptionInformation) {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
@@ -107,26 +134,31 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
                 logger.info("Will notify if updates are missed.");
 
-                missedPublicationTimers.put(subscriptionId,
-                                            new MissedPublicationTimer(expiryDate,
+                missedPublicationTimers.put(request.getSubscriptionId(),
+                                            new MissedPublicationTimer(qos.getExpiryDate(),
+                                                                       heartbeat.getHeartbeat(),
                                                                        heartbeat.getAlertAfterInterval(),
-                                                                       attributeSubscriptionCallback,
-                                                                       subState));
+                                                                       request.getAttributeSubscriptionListener(),
+                                                                       subscriptionStates.get(request.getSubscriptionId())));
             }
         }
-        if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
-            SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
-            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
-                                                                                 expiryDate,
-                                                                                 TimeUnit.MILLISECONDS);
-            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
-        }
-
-        return subscriptionId;
     }
 
     @Override
-    public void unregisterAttributeSubscription(final String subscriptionId) {
+    public void registerBroadcastSubscription(BroadcastSubscribeInvocation subscriptionRequest) {
+        if (!subscriptionRequest.hasSubscriptionId()) {
+            subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
+        }
+        String subscriptionId = subscriptionRequest.getSubscriptionId();
+        registerSubscription(subscriptionRequest.getQos(), subscriptionId);
+        logger.info("Attribute subscription registered with Id: " + subscriptionId);
+        subscriptionTypes.put(subscriptionId, List.class);
+        broadcastSubscriptionListenerDirectory.put(subscriptionId,
+                                                   subscriptionRequest.getBroadcastSubscriptionListener());
+    }
+
+    @Override
+    public void unregisterSubscription(final String subscriptionId) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);
@@ -147,19 +179,35 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionState.updateTimeOfLastPublication();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public SubscriptionListener<?> getSubscriptionListener(final String subscriptionId) {
+    public <T> AttributeSubscriptionListener<T> getSubscriptionListener(final String subscriptionId) {
         if (!subscriptionStates.containsKey(subscriptionId)
                 || !subscriptionListenerDirectory.containsKey(subscriptionId)) {
             logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);
         }
-        return subscriptionListenerDirectory.get(subscriptionId);
+        return (AttributeSubscriptionListener<T>) subscriptionListenerDirectory.get(subscriptionId);
 
     }
 
     @Override
-    public Class<? extends TypeReference<?>> getAttributeTypeReference(final String subscriptionId) {
-        return subscriptionAttributeTypes.get(subscriptionId);
+    public BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId) {
+        if (!subscriptionStates.containsKey(subscriptionId)
+                || !broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
+            logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);
+        }
+        return broadcastSubscriptionListenerDirectory.get(subscriptionId);
+
+    }
+
+    @Override
+    public boolean isBroadcast(String subscriptionId) {
+        return broadcastSubscriptionListenerDirectory.containsKey(subscriptionId);
+    }
+
+    @Override
+    public Class<?> getType(final String subscriptionId) {
+        return subscriptionTypes.get(subscriptionId);
     }
 
     protected void removeSubscription(String subscriptionId) {
@@ -173,7 +221,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
         subscriptionStates.remove(subscriptionId);
         subscriptionListenerDirectory.remove(subscriptionId);
-        subscriptionAttributeTypes.remove(subscriptionId);
+        subscriptionTypes.remove(subscriptionId);
 
     }
 
@@ -197,4 +245,5 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     public void shutdown() {
 
     }
+
 }

@@ -3,7 +3,7 @@ package io.joynr.dispatcher.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,13 @@ public abstract class JoynrInvocationHandler implements InvocationHandler {
                                                                                      JsonMappingException, IOException,
                                                                                      IllegalAccessException, Throwable;
 
+    protected abstract Object executeBroadcastSubscriptionMethod(Method method, Object[] args)
+                                                                                              throws JoynrSendBufferFullException,
+                                                                                              JoynrMessageNotSentException,
+                                                                                              JsonGenerationException,
+                                                                                              JsonMappingException,
+                                                                                              IOException;
+
     protected abstract Object executeSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
                                                                              JoynrSendBufferFullException,
                                                                              JoynrMessageNotSentException,
@@ -67,6 +74,8 @@ public abstract class JoynrInvocationHandler implements InvocationHandler {
         Class<?> methodInterfaceClass = method.getDeclaringClass();
         if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeSubscriptionMethod(method, args);
+        } else if (JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
+            return executeBroadcastSubscriptionMethod(method, args);
         } else if (JoynrSyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeSyncMethod(method, args);
         } else if (JoynrAsyncInterface.class.isAssignableFrom(methodInterfaceClass)) {

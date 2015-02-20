@@ -28,7 +28,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
-import io.joynr.servlet.DefaultServletWrapper;
 import io.joynr.servlet.JoynrWebServlet;
 
 import java.util.Properties;

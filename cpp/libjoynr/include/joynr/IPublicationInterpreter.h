@@ -21,7 +21,8 @@
 
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class ISubscriptionCallback;
 class SubscriptionPublication;
@@ -30,16 +31,16 @@ class SubscriptionPublication;
   * TODO
   */
 
-class IPublicationInterpreter {
+class IPublicationInterpreter
+{
 public:
-    virtual ~IPublicationInterpreter(){}
+    virtual ~IPublicationInterpreter()
+    {
+    }
     // The ReplyCaller is the instance that calls the actual receiver of the reply.
-    virtual void execute(
-            QSharedPointer<ISubscriptionCallback> callback,
-            const SubscriptionPublication& subscriptionPublication
-    ) = 0;
+    virtual void execute(QSharedPointer<ISubscriptionCallback> callback,
+                         const SubscriptionPublication& subscriptionPublication) = 0;
 };
-
 
 } // namespace joynr
 #endif // IPUBLICATIONINTERPRETER_H

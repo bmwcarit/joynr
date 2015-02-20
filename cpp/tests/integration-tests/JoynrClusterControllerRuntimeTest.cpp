@@ -26,9 +26,9 @@
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 
-#include "joynr/tests/ITest.h"
-#include "joynr/tests/TestProvider.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/Itest.h"
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/testProxy.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -81,7 +81,7 @@ void SetUp(){
 }
 
 void TearDown(){
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
 }
 
@@ -127,14 +127,14 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             .WillOnce(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::TestProvider>(
+    QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
                 mockTestProvider,
                 authenticationToken
     );
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -142,7 +142,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
-    tests::TestProxy* testProxy = testProxyBuilder
+    tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
@@ -152,7 +152,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     testProxy->getLocation(future);
     future->waitForFinished(500);
 
-    EXPECT_EQ(tests::TestProxy::getInterfaceName(), testProxy->getInterfaceName());
+    EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
     EXPECT_EQ(gpsLocation, future->getValue());
     delete testProxy;
@@ -172,14 +172,14 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     requestStatus.setCode(RequestStatusCode::OK);
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::TestProvider>(
+    QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
                 mockTestProvider,
                 authenticationToken
     );
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -187,7 +187,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
-    tests::TestProxy* testProxy = testProxyBuilder
+    tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
@@ -197,7 +197,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     testProxy->sumInts(future, ints);
     future->waitForFinished(500);
 
-    EXPECT_EQ(tests::TestProxy::getInterfaceName(), testProxy->getInterfaceName());
+    EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
     EXPECT_EQ(sum, future->getValue());
     delete testProxy;
@@ -205,7 +205,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
@@ -230,21 +230,21 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             .WillRepeatedly(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::TestProvider>(
+    QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
                 mockTestProvider,
                 authenticationToken
     );
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
-    tests::TestProxy* testProxy = testProxyBuilder
+    tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
@@ -253,7 +253,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
-    EXPECT_CALL(*mockSubscriptionListener, receive(gpsLocation))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(Between(1, 2));
 
 
@@ -274,7 +274,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
@@ -299,21 +299,21 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             .WillRepeatedly(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::TestProvider>(
+    QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
                 mockTestProvider,
                 authenticationToken
     );
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::TestProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
-    tests::TestProxy* testProxy = testProxyBuilder
+    tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
@@ -322,7 +322,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
-    EXPECT_CALL(*mockSubscriptionListener, receive(gpsLocation))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtMost(3));
 
     QSharedPointer<SubscriptionQos> subscriptionQos = QSharedPointer<SubscriptionQos>(

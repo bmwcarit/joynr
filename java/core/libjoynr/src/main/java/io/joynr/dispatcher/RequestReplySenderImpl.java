@@ -199,14 +199,16 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                         String toParticipantId,
                                         EndpointAddressBase endpointAddress,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                 JoynrMessageNotSentException, JsonGenerationException,
-                                                                 JsonMappingException, IOException {
+                                        MessagingQos qosSettings,
+                                        boolean broadcast) throws JoynrSendBufferFullException,
+                                                          JoynrMessageNotSentException, JsonGenerationException,
+                                                          JsonMappingException, IOException {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
                                                                              messageSender.getReplyToChannelId(),
-                                                                             DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
+                                                                             DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
+                                                                             broadcast);
 
         routeMessageByEndpointAddress(toParticipantId, message, endpointAddress);
     }
@@ -265,7 +267,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                                    JsonMappingException, IOException {
 
         if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
-            logger.info("SEND  messageId: {} type: {} from: {} to: {} header: {}",
+            logger.info("SEND messageId: {} type: {} from: {} to: {} header: {}",
                         new String[]{ message.getId(), message.getType(),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),

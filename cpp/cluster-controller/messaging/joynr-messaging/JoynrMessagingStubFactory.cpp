@@ -22,21 +22,27 @@
 #include "joynr/IMessageSender.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 
-namespace  joynr {
+namespace joynr
+{
 
-JoynrMessagingStubFactory::JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender, QString receiveChannelId):
-    messageSender(messageSender),
-    receiveChannelId(receiveChannelId)
+JoynrMessagingStubFactory::JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender,
+                                                     QString receiveChannelId)
+        : messageSender(messageSender), receiveChannelId(receiveChannelId)
 {
 }
 
-bool JoynrMessagingStubFactory::canCreate(const joynr::system::Address& destAddress) {
+bool JoynrMessagingStubFactory::canCreate(const joynr::system::Address& destAddress)
+{
     return destAddress.inherits(system::ChannelAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> JoynrMessagingStubFactory::create(const joynr::system::Address& destAddress) {
-    const system::ChannelAddress* channelAddress = dynamic_cast<const system::ChannelAddress*>(&destAddress);
-    return QSharedPointer<IMessaging>(new JoynrMessagingStub(messageSender, channelAddress->getChannelId(), receiveChannelId));
+QSharedPointer<IMessaging> JoynrMessagingStubFactory::create(
+        const joynr::system::Address& destAddress)
+{
+    const system::ChannelAddress* channelAddress =
+            dynamic_cast<const system::ChannelAddress*>(&destAddress);
+    return QSharedPointer<IMessaging>(new JoynrMessagingStub(
+            messageSender, channelAddress->getChannelId(), receiveChannelId));
 }
 
 } // namespace joynr

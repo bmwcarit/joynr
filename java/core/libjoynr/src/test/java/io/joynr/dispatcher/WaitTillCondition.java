@@ -106,7 +106,10 @@ public abstract class WaitTillCondition {
     }
 
     public void assertAllPayloadsReceived(long timeOutMs) {
-        assertTrue(waitForMessage(timeOutMs));
+        assertTrue("wait for " + numberOfMessagesExpected + " messages did not succeed. "
+                           + (numberOfMessagesExpected - semaphoreMessages.availablePermits())
+                           + " messages received in time.",
+                   waitForMessage(timeOutMs));
     }
 
     public void assertAllErrorsReceived(long timeOutMs) {

@@ -19,17 +19,19 @@
 #ifndef CLUSTERCONTROLLERDIRECTORIES_H
 #define CLUSTERCONTROLLERDIRECTORIES_H
 
-
 #include "joynr/Directory.h"
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system { class Address; }
+namespace system
+{
+class Address;
+}
 class IMessaging;
 
-    typedef Directory<QString, IMessaging > MessageStubDirectory;
-
+typedef Directory<QString, IMessaging> MessageStubDirectory;
 
 } // namespace joynr
 #endif

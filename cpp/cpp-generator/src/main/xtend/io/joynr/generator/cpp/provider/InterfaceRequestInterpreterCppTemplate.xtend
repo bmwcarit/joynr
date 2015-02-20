@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,17 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceRequestInterpreterCppTemplate {
+class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	def generate(FInterface serviceInterface){
+	override generate(FInterface serviceInterface){
 		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
@@ -51,13 +52,13 @@ class InterfaceRequestInterpreterCppTemplate {
 		
 		«getNamespaceStarter(serviceInterface)» 
 		
-		joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joynr::joynr_logging::Logging::getInstance()->getLogger("SDMO", "«interfaceName»JsonRequestInterpreter");
+		joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joynr::joynr_logging::Logging::getInstance()->getLogger("SDMO", "«interfaceName»RequestInterpreter");
 		
 		«interfaceName»RequestInterpreter::«interfaceName»RequestInterpreter()
 		{
 			«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 				«IF datatype instanceof FType»
-					qRegisterMetaType<«getMappedDatatype(datatype as FType)»>("«getMappedDatatype(datatype as FType)»");
+					qRegisterMetaType<«getMappedDatatype(datatype)»>("«getMappedDatatype(datatype)»");
 				«ENDIF»
 			«ENDFOR»
 		}
@@ -68,10 +69,11 @@ class InterfaceRequestInterpreterCppTemplate {
 		        const QList<QVariant>& paramValues,
 		        const QList<QVariant>& paramTypes)
 		{
+			«val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 			Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 			Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 			// cast generic RequestCaller to «interfaceName»Requestcaller
-			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.requestCaller» =
+			QSharedPointer<«interfaceName»RequestCaller> «requestCallerName» =
 					requestCaller.dynamicCast<«interfaceName»RequestCaller>();
 			
 			joynr::RequestStatus status;
@@ -84,7 +86,7 @@ class InterfaceRequestInterpreterCppTemplate {
 					«val attributeName = attribute.joynrName»
 					if (methodName == "get«attributeName.toFirstUpper»"){
 						«getMappedDatatypeOrList(attribute)» returnValue;
-						«serviceInterface.requestCaller»->get«attributeName.toFirstUpper»(status, returnValue);
+						«requestCallerName»->get«attributeName.toFirstUpper»(status, returnValue);
 						// convert typed return value into variant
 						«IF isArray(attribute)»
 							return joynr::Util::convertListToVariantList(returnValue);
@@ -106,7 +108,7 @@ class InterfaceRequestInterpreterCppTemplate {
 							assert(«attributeName»QVar.canConvert<«getMappedDatatypeOrList(attribute)»>());
 							«getMappedDatatypeOrList(attribute)» typedInput«attributeName.toFirstUpper» = «attributeName»QVar.value<«getMappedDatatypeOrList(attribute)»>();
 						«ENDIF»
-						«serviceInterface.requestCaller»->set«attributeName.toFirstUpper»(status, typedInput«attributeName.toFirstUpper»);
+						«requestCallerName»->set«attributeName.toFirstUpper»(status, typedInput«attributeName.toFirstUpper»);
 						QVariant returnValue("void");
 						return returnValue;
 
@@ -128,7 +130,7 @@ class InterfaceRequestInterpreterCppTemplate {
 					) {
 						«IF outputParameterType != "void" && inputParameterList == ""»
 							«getMappedOutputParameter(method).head» typedReturnValue;
-							«serviceInterface.requestCaller»->«methodName»(status, typedReturnValue);
+							«requestCallerName»->«methodName»(status, typedReturnValue);
 							«IF isArray(getOutputParameters(method).head)»
 								QList<QVariant> returnValue = joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue);
 								return returnValue;
@@ -161,11 +163,11 @@ class InterfaceRequestInterpreterCppTemplate {
 							«ENDFOR»
 							«IF outputParameterType != "void"»
 								«getMappedOutputParameter(method).head» typedReturnValue;
-								«serviceInterface.requestCaller»->«methodName»(
+								«requestCallerName»->«methodName»(
 									status, 
 									typedReturnValue«IF inputParams.size>0»,«ENDIF» 
 							«ELSE»
-								«serviceInterface.requestCaller»->«methodName»(
+								«requestCallerName»->«methodName»(
 									status«IF inputParams.size>0»,«ENDIF» 
 							«ENDIF»		
 								«FOR input : inputParams SEPARATOR ','»
@@ -200,9 +202,4 @@ class InterfaceRequestInterpreterCppTemplate {
 		'''
 	}
 	
-	def getRequestCaller(FInterface serviceInterface){
-	    serviceInterface.joynrName.toFirstLower+"RequestCaller"
-	}
-	
 }
-

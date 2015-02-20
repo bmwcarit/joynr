@@ -25,31 +25,30 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace system {
-    class IDiscoverySync;
-    class DiscoveryEntry;
+namespace system
+{
+class IDiscoverySync;
+class DiscoveryEntry;
 }
 
-class DefaultArbitrator : public ProviderArbitrator {
+class DefaultArbitrator : public ProviderArbitrator
+{
 public:
-    DefaultArbitrator(
-            const QString& domain,
-            const QString& interfaceName,
-            joynr::system::IDiscoverySync& discoveryProxy,
-            const DiscoveryQos &discoveryQos
-    );
+    DefaultArbitrator(const QString& domain,
+                      const QString& interfaceName,
+                      joynr::system::IDiscoverySync& discoveryProxy,
+                      const DiscoveryQos& discoveryQos);
     virtual void attemptArbitration();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
     virtual void receiveCapabilitiesLookupResults(
-            const QList<joynr::system::DiscoveryEntry>& discoveryEntries
-    );
+            const QList<joynr::system::DiscoveryEntry>& discoveryEntries);
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //DEFAULTARBITRATOR_H
+#endif // DEFAULTARBITRATOR_H

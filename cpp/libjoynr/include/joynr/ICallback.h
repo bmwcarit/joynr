@@ -21,7 +21,8 @@
 
 #include "joynr/RequestStatus.h"
 
-namespace joynr {
+namespace joynr
+{
 
 template <class T>
 
@@ -33,10 +34,12 @@ template <class T>
  *
  * T is the return type that is expected from the callback.
  */
-class ICallback {
+class ICallback
+{
 public:
-
-    virtual ~ICallback () {}
+    virtual ~ICallback()
+    {
+    }
 
     /**
      * @brief If an error occurs during the processing of the asychronous request,
@@ -60,10 +63,12 @@ template <>
 /**
  * @brief This is a specialisation of the ICallback<T> interface for a void type.
  */
-class ICallback<void> {
+class ICallback<void>
+{
 public:
-    virtual ~ICallback () {}
-
+    virtual ~ICallback()
+    {
+    }
 
     /**
      * @brief This is called when a failure occurs for the request.
@@ -71,7 +76,6 @@ public:
      * @param status Containing an explanation why it failed.
      */
     virtual void onFailure(const RequestStatus status) = 0;
-
 
     /**
      * @brief This is called when the async method succeeds.
@@ -83,6 +87,5 @@ public:
     virtual void onSuccess(const RequestStatus status) = 0;
 };
 
-
 } // namespace joynr
-#endif //ICALLBACK_H
+#endif // ICALLBACK_H

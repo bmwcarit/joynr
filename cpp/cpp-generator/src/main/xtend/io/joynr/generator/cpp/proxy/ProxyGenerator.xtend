@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,96 +18,118 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class ProxyGenerator {
-	
+
 	@Inject
-	extension JoynrCppGeneratorExtensions	
-	
+	extension JoynrCppGeneratorExtensions
+
 	@Inject
 	IInterfaceConnectorHTemplate iInterfaceConnectorHTemplate
-	
+
 	@Inject
 	InterfaceProxyBaseCppTemplate interfaceProxyBaseCpp
 
 	@Inject
 	InterfaceProxyBaseHTemplate interfaceProxyBaseH
-	
-	@Inject
-	InterfaceProxyCppTemplate interfaceProxyCpp;
 
 	@Inject
-	InterfaceProxyHTemplate interfaceProxyH;
-	
-	@Inject
-	InterfaceSyncProxyCppTemplate interfaceSyncProxyCpp;
+	InterfaceProxyCppTemplate interfaceProxyCpp
 
 	@Inject
-	InterfaceSyncProxyHTemplate interfaceSyncProxyH;
+	InterfaceProxyHTemplate interfaceProxyH
 
 	@Inject
-	InterfaceAsyncProxyCppTemplate interfaceAsyncProxyCpp;
+	InterfaceSyncProxyCppTemplate interfaceSyncProxyCpp
 
 	@Inject
-	InterfaceAsyncProxyHTemplate interfaceAsyncProxyH;
-	
+	InterfaceSyncProxyHTemplate interfaceSyncProxyH
+
+	@Inject
+	InterfaceAsyncProxyCppTemplate interfaceAsyncProxyCpp
+
+	@Inject
+	InterfaceAsyncProxyHTemplate interfaceAsyncProxyH
+
 	def doGenerate(FModel model,
-		IFileSystemAccess sourceFileSystem, 
-		IFileSystemAccess headerFileSystem, 
-		String sourceContainerPath, 
+		IFileSystemAccess sourceFileSystem,
+		IFileSystemAccess headerFileSystem,
+		String sourceContainerPath,
 		String headerContainerPath
 	) {
-		     
-        for(fInterface: model.interfaces){
-        	val sourcePath = sourceContainerPath + getPackageSourceDirectory(fInterface) + File::separator 
-        	val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
+
+		for(fInterface: model.interfaces){
+			val sourcePath = sourceContainerPath + getPackageSourceDirectory(fInterface) + File::separator
+			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 			var serviceName = fInterface.joynrName
-						
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerPath + "I" + serviceName + "Connector.h",
-				iInterfaceConnectorHTemplate.generate(fInterface).toString
+				iInterfaceConnectorHTemplate,
+				fInterface
 			);
-						
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "ProxyBase.h",
-				interfaceProxyBaseH.generate(fInterface).toString
-			);			
-			sourceFileSystem.generateFile(
+				interfaceProxyBaseH,
+				fInterface
+			);
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "ProxyBase.cpp",
-				interfaceProxyBaseCpp.generate(fInterface).toString
+				interfaceProxyBaseCpp,
+				fInterface
 			);
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "Proxy.h",
-				interfaceProxyH.generate(fInterface).toString
+				interfaceProxyH,
+				fInterface
 			);
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "Proxy.cpp",
-				interfaceProxyCpp.generate(fInterface).toString
+				interfaceProxyCpp,
+				fInterface
 			);
-			
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "SyncProxy.h",
-				interfaceSyncProxyH.generate(fInterface).toString
+				interfaceSyncProxyH,
+				fInterface
 			);
-	
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "SyncProxy.cpp",
-				interfaceSyncProxyCpp.generate(fInterface).toString
+				interfaceSyncProxyCpp,
+				fInterface
 			);
-	
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "AsyncProxy.h",
-				interfaceAsyncProxyH.generate(fInterface).toString
+				interfaceAsyncProxyH,
+				fInterface
 			);
-	
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "AsyncProxy.cpp",
-				interfaceAsyncProxyCpp.generate(fInterface).toString
-			);		
-        }
+				interfaceAsyncProxyCpp,
+				fInterface
+			);
+		}
 	}
+
 }

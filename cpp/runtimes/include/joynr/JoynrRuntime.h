@@ -31,70 +31,77 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/PublicationManager.h"
+#include "joynr/IBroadcastFilter.h"
 
 #include <QString>
 #include <QSharedPointer>
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
-
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime {
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
+{
 
 public:
-
     // NOTE: The implementation of the constructor and destructor must be inside this
     // header file because there are multiple implementations (cpp files) in folder
     // cluster-controller-runtime and libjoynr-runtime.
-    JoynrRuntime(QSettings &settings) :
-            proxyFactory(NULL),
-            participantIdStorage(NULL),
-            capabilitiesRegistrar(NULL),
-            systemServicesSettings(settings),
-            dispatcherAddress(NULL),
-            messageRouter(NULL),
-            discoveryProxy(NULL)
+    JoynrRuntime(QSettings& settings)
+            : proxyFactory(NULL),
+              participantIdStorage(NULL),
+              capabilitiesRegistrar(NULL),
+              systemServicesSettings(settings),
+              dispatcherAddress(NULL),
+              messageRouter(NULL),
+              discoveryProxy(NULL),
+              publicationManager(NULL)
     {
         systemServicesSettings.printSettings();
     }
 
-    virtual ~JoynrRuntime() {
+    virtual ~JoynrRuntime()
+    {
         delete discoveryProxy;
     }
 
     template <class T>
-    QString registerCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
+    QString registerCapability(const QString& domain,
+                               QSharedPointer<T> provider,
+                               const QString& authenticationToken)
+    {
         assert(capabilitiesRegistrar);
-        assert(domain!="");
+        assert(domain != "");
         return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken);
     }
 
     virtual void unregisterCapability(QString participantId) = 0;
 
     template <class T>
-    QString unregisterCapability(const QString& domain, QSharedPointer<T> provider, const QString& authenticationToken) {
+    QString unregisterCapability(const QString& domain,
+                                 QSharedPointer<T> provider,
+                                 const QString& authenticationToken)
+    {
         assert(capabilitiesRegistrar);
-        assert(domain!="");
+        assert(domain != "");
         return capabilitiesRegistrar->remove<T>(domain, provider, authenticationToken);
     }
 
     template <class T>
-    ProxyBuilder<T>* getProxyBuilder(const QString& domain) {
-        if(!proxyFactory){
-            throw JoynrException("Exception in JoynrRuntime: Creating a proxy before startMessaging was called is not yet supported.");
+    ProxyBuilder<T>* getProxyBuilder(const QString& domain)
+    {
+        if (!proxyFactory) {
+            throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
+                                 "startMessaging was called is not yet supported.");
         }
         ProxyBuilder<T>* builder = new ProxyBuilder<T>(
-                    proxyFactory,
-                    *discoveryProxy,
-                    domain,
-                    dispatcherAddress,
-                    messageRouter
-        );
+                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
         return builder;
     }
 
     static JoynrRuntime* createRuntime(const QString& pathToLibjoynrSettings,
-                                      const QString& pathToMessagingSettings = "");
+                                       const QString& pathToMessagingSettings = "");
 
 protected:
     ProxyFactory* proxyFactory;
@@ -104,6 +111,8 @@ protected:
     QSharedPointer<joynr::system::Address> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
     LocalDiscoveryAggregator* discoveryProxy;
+    PublicationManager* publicationManager;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
 };

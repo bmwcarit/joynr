@@ -40,8 +40,11 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/system/CommonApiDbusAddress.h"
+#include "joynr/system/WebSocketAddress.h"
+#include "joynr/system/WebSocketClientAddress.h"
 #include "joynr/tests/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
@@ -105,11 +108,25 @@ protected:
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     qRegisterMetaType<joynr::SubscriptionRequest>();
     SubscriptionRequest request;
-    QSharedPointer<SubscriptionQos> x(new SubscriptionQos(5000));
-    request.setQos(x);
+    QSharedPointer<SubscriptionQos> subscriptionQos(new SubscriptionQos(5000));
+    request.setQos(subscriptionQos);
     QByteArray result = JsonSerializer::serialize(request);
     LOG_DEBUG(logger, QString(result));
     SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
+    EXPECT_TRUE(request == *desRequest);
+}
+
+TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
+    qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
+    BroadcastSubscriptionRequest request;
+    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(5000, 2000));
+    request.setQos(subscriptionQos);
+    BroadcastFilterParameters filterParams;
+    filterParams.setFilterParameter("MyFilter", "MyFilterValue");
+    request.setFilterParameters(filterParams);
+    QByteArray requestJson = JsonSerializer::serialize(request);
+    LOG_DEBUG(logger, QString(requestJson));
+    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
     EXPECT_TRUE(request == *desRequest);
 }
 
@@ -837,23 +854,40 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
 
     joynr::system::ChannelAddress joynr("TEST_channelId");
     joynr::system::CommonApiDbusAddress dbus("domain", "interfacename", "id");
+    joynr::system::WebSocketAddress wsServer(
+                joynr::system::WebSocketProtocol::WS,
+                "localhost",
+                42,
+                "some/path"
+    );
+    joynr::system::WebSocketClientAddress wsClient("TEST_clientId");
 
     // serialize
     QByteArray joynrSerialized = JsonSerializer::serialize(joynr);
     QByteArray dbusSerialized = JsonSerializer::serialize(dbus);
+    QByteArray wsServerSerialized = JsonSerializer::serialize(wsServer);
+    QByteArray wsClientSerialized = JsonSerializer::serialize(wsClient);
     
     LOG_DEBUG(logger, "serialized Joynr address: "+ QString::fromUtf8(joynrSerialized));
     LOG_DEBUG(logger, "serialized Dbus address: "+ QString::fromUtf8(dbusSerialized));
+    LOG_DEBUG(logger, QString("serialized WS server address: %0").arg(QString::fromUtf8(wsServerSerialized)));
+    LOG_DEBUG(logger, QString("serialized WS client address: %0").arg(QString::fromUtf8(wsClientSerialized)));
 
     // deserialize
     joynr::system::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::ChannelAddress>(joynrSerialized);
     joynr::system::CommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserialize<joynr::system::CommonApiDbusAddress>(dbusSerialized);
+    joynr::system::WebSocketAddress* wsServerDeserialized = JsonSerializer::deserialize<joynr::system::WebSocketAddress>(wsServerSerialized);
+    joynr::system::WebSocketClientAddress* wsClientDeserialized = JsonSerializer::deserialize<joynr::system::WebSocketClientAddress>(wsClientSerialized);
 
     EXPECT_EQ(joynr, *joynrDeserialized);
     EXPECT_EQ(dbus, *dbusDeserialized);
+    EXPECT_EQ(wsServer, *wsServerDeserialized);
+    EXPECT_EQ(wsClient, *wsClientDeserialized);
 
     delete joynrDeserialized;
     delete dbusDeserialized;
+    delete wsServerDeserialized;
+    delete wsClientDeserialized;
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {

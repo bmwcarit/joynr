@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -73,7 +73,7 @@
 		<!-- 
 			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
 			It is pulled in as transitive dependency:
-			io.joynr.java.messaging:messaging-servlet:jar:classes:0.6.0-SNAPSHOT:compile
+			io.joynr.java.messaging:messaging-servlet:jar:classes:0.8.0:compile
 			+- org.reflections:reflections:jar:0.9.8:compile
 			|  +- javassist:javassist:jar:3.12.1.GA:compile
 			Please double check the correct version if these dependencies change.
@@ -175,13 +175,6 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j12</artifactId>
-						<version>1.6.6</version>
-					</dependency>
-				</dependencies>
 				<configuration>
 					<webAppSourceDirectory>src/main/resources</webAppSourceDirectory>
 					<webApp>
@@ -197,16 +190,6 @@
 							<contextPath>/bounceproxy</contextPath>
 						</contextHandler>
 					</contextHandlers>
-					<systemProperties>
-						<systemProperty>
-							<name>log4j.configuration</name>
-							<value>file:${basedir}/src/main/resources/WEB-INF/classes/log4j.properties</value>
-						</systemProperty>
-						<systemProperty>
-							<name>joynr.servlet.hostPath</name>
-							<value>http://localhost:8080</value>
-						</systemProperty>
-					</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>

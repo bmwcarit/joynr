@@ -21,10 +21,10 @@
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT void registerJoynrMetaTypes();
 
-
 } // namespace joynr
-#endif //JOYNRMETATYPES
+#endif // JOYNRMETATYPES

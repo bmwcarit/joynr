@@ -26,12 +26,14 @@
 
 struct curl_slist;
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * This class encapsulates the execution of an http request.
   */
-class DefaultHttpRequest : public HttpRequest {
+class DefaultHttpRequest : public HttpRequest
+{
 public:
     DefaultHttpRequest(void* handle, const QByteArray& content, curl_slist* headers);
     HttpResult execute();
@@ -39,8 +41,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultHttpRequest);
-    static size_t writeToQByteArray(void *buffer, size_t size, size_t nmemb, void *userp);
-    static size_t writeToQMultiMap(void *buffer, size_t size, size_t nmemb, void *userp);
+    static size_t writeToQByteArray(void* buffer, size_t size, size_t nmemb, void* userp);
+    static size_t writeToQMultiMap(void* buffer, size_t size, size_t nmemb, void* userp);
 
     void* handle;
     curl_slist* headers;
@@ -49,7 +51,5 @@ private:
     static joynr_logging::Logger* logger;
 };
 
-
-
 } // namespace joynr
-#endif //DEFAULTHTTPREQUEST_H_
+#endif // DEFAULTHTTPREQUEST_H_

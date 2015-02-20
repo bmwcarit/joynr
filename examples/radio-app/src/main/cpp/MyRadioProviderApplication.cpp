@@ -19,6 +19,8 @@
 
 #include "MyRadioHelper.h"
 #include "MyRadioProvider.h"
+#include "TrafficServiceBroadcastFilter.h"
+#include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
 
 #include <QString>
@@ -29,14 +31,15 @@ using namespace joynr;
 using joynr_logging::Logger;
 using joynr_logging::Logging;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
     // Get a logger
     Logger* logger = Logging::getInstance()->getLogger("DEMO", "MyRadioProviderApplication");
 
     // Check the usage
     QString programName(argv[0]);
-    if(argc != 2) {
+    if (argc != 2) {
         LOG_ERROR(logger, QString("USAGE: %1 <provider-domain>").arg(programName));
         return 1;
     }
@@ -50,8 +53,10 @@ int main(int argc, char* argv[]) {
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));
-    QString pathToLibJoynrSettings(dir + QString("/resources/radio-app-provider.libjoynr.settings"));
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+    QString pathToLibJoynrSettings(dir +
+                                   QString("/resources/radio-app-provider.libjoynr.settings"));
+    JoynrRuntime* runtime =
+            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently
@@ -59,23 +64,50 @@ int main(int argc, char* argv[]) {
     types::ProviderQos providerQos;
     providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-    // Register the provider
+    // create provider instance
     QSharedPointer<MyRadioProvider> provider(new MyRadioProvider(providerQos));
+    // add broadcast filters
+    QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
+            new TrafficServiceBroadcastFilter());
+    provider->addBroadcastFilter(trafficServiceBroadcastFilter);
+    QSharedPointer<GeocastBroadcastFilter> geocastBroadcastFilter(new GeocastBroadcastFilter());
+    provider->addBroadcastFilter(geocastBroadcastFilter);
+
+    // Register the provider
     QString authenticationToken("MyRadioProvider_authToken");
-    runtime->registerCapability<vehicle::RadioProvider>(providerDomain,
-                                                        provider,
-                                                        authenticationToken);
+    runtime->registerCapability<vehicle::RadioProvider>(
+            providerDomain, provider, authenticationToken);
 
     // Run until the user hits q
-    MyRadioHelper::pressQToContinue();
+    int key;
+    while ((key = MyRadioHelper::getch()) != 'q') {
+        joynr::RequestStatus status;
+        switch (key) {
+        case 's':
+            provider->shuffleStations(status);
+            break;
+        case 'w':
+            provider->fireWeakSignalBroadcast();
+            break;
+        case 'n':
+            provider->fireNewStationDiscoveredBroadcast();
+            break;
+        default:
+            MyRadioHelper::prettyLog(logger,
+                                     QString("USAGE press\n"
+                                             " q\tto quit\n"
+                                             " s\tto shuffle stations\n"
+                                             " w\tto fire weak signal broadcast\n"
+                                             " n\tto fire new station discovered broadcast"));
+            break;
+        }
+    }
 
     // Unregister the provider
-    runtime->unregisterCapability<vehicle::RadioProvider>(providerDomain,
-                                                        provider,
-                                                        authenticationToken);
+    runtime->unregisterCapability<vehicle::RadioProvider>(
+            providerDomain, provider, authenticationToken);
 
     delete runtime;
     delete logger;
     return 0;
 }
-

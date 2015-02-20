@@ -21,9 +21,9 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class MessagingQos;
 class JoynrMessage;
 
 /*
@@ -34,11 +34,13 @@ class JoynrMessage;
 class JOYNRCOMMON_EXPORT InProcessMessagingSkeleton : public IMessaging
 {
 public:
-    virtual ~InProcessMessagingSkeleton() {}
-    virtual void transmit(JoynrMessage &message, const MessagingQos &qos) = 0;
+    virtual ~InProcessMessagingSkeleton()
+    {
+    }
+    virtual void transmit(JoynrMessage& message) = 0;
+
 private:
 };
-
 
 } // namespace joynr
 #endif // COMMON_INPROCESS_INPROCESSMESSAGINGSKELETON_H

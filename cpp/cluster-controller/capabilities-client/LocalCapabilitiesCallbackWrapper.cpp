@@ -21,62 +21,63 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/CapabilityEntry.h"
 
-namespace joynr {
+namespace joynr
+{
 
 LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
-        LocalCapabilitiesDirectory *localCapabilitiesDirectory,
+        LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-        const QString &participantId,
-        const joynr::system::DiscoveryQos& discoveryQos
-) :
-        localCapabilitiesDirectory(localCapabilitiesDirectory),
-        wrappedCallback(wrappedCallback),
-        participantId(participantId),
-        interfaceAddress(),
-        discoveryQos(discoveryQos)
+        const QString& participantId,
+        const joynr::system::DiscoveryQos& discoveryQos)
+        : localCapabilitiesDirectory(localCapabilitiesDirectory),
+          wrappedCallback(wrappedCallback),
+          participantId(participantId),
+          interfaceAddress(),
+          discoveryQos(discoveryQos)
 {
 }
 
 LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
-        LocalCapabilitiesDirectory *localCapabilitiesDirectory,
+        LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-        const InterfaceAddress &interfaceAddress,
-        const joynr::system::DiscoveryQos& discoveryQos
-) :
-        localCapabilitiesDirectory(localCapabilitiesDirectory),
-        wrappedCallback(wrappedCallback),
-        participantId(""),
-        interfaceAddress(interfaceAddress),
-        discoveryQos(discoveryQos)
+        const InterfaceAddress& interfaceAddress,
+        const joynr::system::DiscoveryQos& discoveryQos)
+        : localCapabilitiesDirectory(localCapabilitiesDirectory),
+          wrappedCallback(wrappedCallback),
+          participantId(""),
+          interfaceAddress(interfaceAddress),
+          discoveryQos(discoveryQos)
 {
 }
 
-void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(QList<types::CapabilityInformation> results){
+void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
+        QList<types::CapabilityInformation> results)
+{
     QMap<QString, CapabilityEntry> capabilitiesMap;
     QList<CapabilityEntry> mergedEntries;
 
-    foreach (types::CapabilityInformation capInfo, results){
+    foreach (types::CapabilityInformation capInfo, results) {
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
         connections.append(joynr::system::CommunicationMiddleware::JOYNR);
-        CapabilityEntry capEntry(
-                    capInfo.getDomain(),
-                    capInfo.getInterfaceName(),
-                    capInfo.getProviderQos(),
-                    capInfo.getParticipantId(),
-                    connections,
-                    true
-        );
+        CapabilityEntry capEntry(capInfo.getDomain(),
+                                 capInfo.getInterfaceName(),
+                                 capInfo.getProviderQos(),
+                                 capInfo.getParticipantId(),
+                                 connections,
+                                 true);
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
         mergedEntries.append(capEntry);
     }
     localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
 
-    if(discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL ||
-       discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
+    if (discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL ||
+        discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // look if in the meantime there are some local providers registered
-        //lookup in the local directory to get local providers which were registered in the meantime.
-        if (participantId.isEmpty()){
-            mergedEntries += localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress);
+        // lookup in the local directory to get local providers which were registered in the
+        // meantime.
+        if (participantId.isEmpty()) {
+            mergedEntries +=
+                    localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress);
         } else {
             mergedEntries += localCapabilitiesDirectory->getCachedLocalCapabilities(participantId);
         }

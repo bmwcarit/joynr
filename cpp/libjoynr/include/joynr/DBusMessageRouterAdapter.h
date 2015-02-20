@@ -28,7 +28,8 @@
 
 #include "joynr/JoynrExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT DBusMessageRouterAdapter : public IMessaging
 {
@@ -37,14 +38,13 @@ public:
 
     ~DBusMessageRouterAdapter();
 
-    virtual void transmit(JoynrMessage& message, const MessagingQos& qos);
+    virtual void transmit(JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DBusMessageRouterAdapter);
     IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>* dbusSkeletonWrapper;
     MessageRouter& messageRouter;
 };
-
 
 } // namespace joynr
 #endif // DBUSMESSAGEROUTERADAPTER_H

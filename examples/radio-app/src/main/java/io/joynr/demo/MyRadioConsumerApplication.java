@@ -3,7 +3,7 @@ package io.joynr.demo;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,22 +26,31 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Properties;
 
+import jline.console.ConsoleReader;
+import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.vehicle.Country;
+import joynr.vehicle.GeoPosition;
+import joynr.vehicle.RadioBroadcastInterface;
+import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
+import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
+import joynr.vehicle.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -58,7 +67,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private String providerDomain;
     private String subscriptionIdCurrentStation;
     private RadioProxy radioProxy;
-    private String subscriptionIdIsOn;
+    @Inject
+    private ObjectMapper objectMapper;
 
     /**
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
@@ -124,8 +134,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                                                                                                                                  appConfig));
         myRadioConsumerApp.run();
 
-        MyRadioHelper.pressQEnterToContinue();
-
         myRadioConsumerApp.shutdown();
     }
 
@@ -133,9 +141,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         if (radioProxy != null) {
-            if (subscriptionIdIsOn != null) {
-                radioProxy.unsubscribeFromIsOn(subscriptionIdIsOn);
-            }
             if (subscriptionIdCurrentStation != null) {
                 radioProxy.unsubscribeFromCurrentStation(subscriptionIdCurrentStation);
             }
@@ -147,13 +152,14 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // TODO currently there is a bug preventing all threads being stopped
         // WORKAROUND
         try {
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             // do nothing; exiting application
         }
         System.exit(0);
     }
 
+    @SuppressWarnings("checkstyle:methodlength")
     @Override
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -205,66 +211,127 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
         ProxyBuilder<RadioProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, RadioProxy.class);
 
-        // reading an attribute value
-
         try {
-
+            // getting an attribute
             radioProxy = proxyBuilder.setMessagingQos(new MessagingQos()).setDiscoveryQos(discoveryQos).build();
-            boolean isOn = radioProxy.getIsOn();
-            LOG.info(PRINT_BORDER + "Is the radio on? " + isOn + PRINT_BORDER);
+            RadioStation currentStation = radioProxy.getCurrentStation();
+            LOG.info(PRINT_BORDER + "ATTRIBUTE GET: current station: " + currentStation + PRINT_BORDER);
 
-            subscriptionIdIsOn = radioProxy.subscribeToIsOn(new SubscriptionListener<Boolean>() {
+            // subscribe to an attribute
+            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionAdapter<RadioStation>() {
 
+                                                                                    @Override
+                                                                                    public void onReceive(RadioStation value) {
+                                                                                        LOG.info(PRINT_BORDER
+                                                                                                + "ATTRIBUTE SUBSCRIPTION: current station: "
+                                                                                                + value + PRINT_BORDER);
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onError() {
+                                                                                        LOG.info(PRINT_BORDER
+                                                                                                + "ATTRIBUTE SUBSCRIPTION: publication missed "
+                                                                                                + PRINT_BORDER);
+                                                                                    }
+                                                                                },
+                                                                                subscriptionQos);
+
+            // broadcast subscription
+
+            // The provider will send a notification whenever the value changes. The number of sent
+            // notifications may be limited by the min interval QoS.
+            // NOTE: The provider must support on-change notifications in order to use this feature by
+            // calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
+            // the <broadcast> should be triggered.
+            OnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
+            // The provider will maintain at least a minimum interval idle time in milliseconds between
+            // successive notifications, even if on-change notifications are enabled and the value changes
+            // more often. This prevents the consumer from being flooded by updated values. The filtering
+            // happens on the provider's side, thus also preventing excessive network traffic.
+            int wsbMinInterval = 1 * 1000;
+            // The provider will send notifications until the end date is reached. The consumer will not receive any
+            // notifications (neither value notifications nor missed publication notifications) after
+            // this date.
+            long wsbExpiryDate = System.currentTimeMillis() + 60 * 1000;
+            // Notification messages will be sent with this time-to-live. If a notification message can not be
+            // delivered within its TTL, it will be deleted from the system.
+            // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
+            // missed publication notification (depending on the value of the alert interval QoS).
+            int wsbPublicationTtl = 5 * 1000;
+            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos(wsbMinInterval,
+                                                                             wsbExpiryDate,
+                                                                             wsbPublicationTtl);
+            radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
                 @Override
-                public void receive(Boolean value) {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: isOn: " + value + PRINT_BORDER);
+                public void onReceive(RadioStation weakSignalStation) {
+                    LOG.info(PRINT_BORDER + "BROADCAST SUBSCRIPTION: weak signal: " + weakSignalStation + PRINT_BORDER);
                 }
+            },
+                                                      weakSignalBroadcastSubscriptionQos);
 
-                @Override
-                public void publicationMissed() {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: isOn, publication missed " + PRINT_BORDER);
-                }
-            }, subscriptionQos);
-            subscriptionIdCurrentStation = radioProxy.subscribeToCurrentStation(new SubscriptionListener<String>() {
+            // selective broadcast subscription
 
-                @Override
-                public void receive(String value) {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: current station: " + value + PRINT_BORDER);
-                }
-
-                @Override
-                public void publicationMissed() {
-                    LOG.info(PRINT_BORDER + "SUBSCRIPTION: publication missed " + PRINT_BORDER);
-                }
-            }, subscriptionQos);
-
-            // setting an attribute value
-            radioProxy.setIsOn(true);
-            isOn = radioProxy.getIsOn();
-            LOG.info(PRINT_BORDER + "The radio should be on: " + isOn + PRINT_BORDER);
-
-            // calling an operation
-            String currentStation = radioProxy.getCurrentStation();
-            LOG.info(PRINT_BORDER + "The current radio station is: " + currentStation + PRINT_BORDER);
+            OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
+            int nsdbMinInterval = 2 * 1000;
+            long nsdbExpiryDate = System.currentTimeMillis() + 180 * 1000;
+            int nsdbPublicationTtl = 5 * 1000;
+            newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinInterval,
+                                                                                       nsdbExpiryDate,
+                                                                                       nsdbPublicationTtl);
+            NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
+            newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
+            GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
+            String positionOfInterestJson = null;
+            try {
+                positionOfInterestJson = objectMapper.writeValueAsString(positionOfInterest);
+            } catch (JsonProcessingException e1) {
+                LOG.error("Unable to write position of interest filter parameter to JSON", e1);
+            }
+            newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
+            newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
+            radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastAdapter() {
+                                                                    @Override
+                                                                    public void onReceive(RadioStation discoveredStation,
+                                                                                          GeoPosition geoPosition) {
+                                                                        LOG.info(PRINT_BORDER
+                                                                                + "BROADCAST SUBSCRIPTION: new station discovered: "
+                                                                                + discoveredStation + " at "
+                                                                                + geoPosition + PRINT_BORDER);
+                                                                    }
+                                                                },
+                                                                newStationDiscoveredBroadcastSubscriptionQos,
+                                                                newStationDiscoveredBroadcastFilterParams);
 
             boolean success;
 
             // add favorite radio station
-            success = radioProxy.addFavouriteStation("asdf");
-            LOG.info(PRINT_BORDER + "added favourite station: " + success + PRINT_BORDER);
-
-            // add favorite radio stations
-            success = radioProxy.addFavouriteStationList(Arrays.asList("asdf", "asdf", "asdf"));
-            LOG.info(PRINT_BORDER + "added favourite stations: " + success + PRINT_BORDER);
+            RadioStation favouriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
+            success = radioProxy.addFavouriteStation(favouriteStation);
+            LOG.info(PRINT_BORDER + "METHOD: added favourite station: " + favouriteStation + ": " + success
+                    + PRINT_BORDER);
 
             // shuffle the stations
             radioProxy.shuffleStations();
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
 
-            // // play custom radio on audio device
-            // radioProxy.playCustomAudio(new Radio.Byte[]{ new Radio.Byte() });
-            // LOG.info(PRINT_BORDER + "played custom audio" + PRINT_BORDER);
+            ConsoleReader console;
+            try {
+                console = new ConsoleReader();
+                int key;
+                while ((key = console.readCharacter()) != 'q') {
+                    switch (key) {
+                    case 's':
+                        radioProxy.shuffleStations();
+                        break;
+                    default:
+                        LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                LOG.error("error reading input from console", e);
+            }
 
         } catch (JoynrArbitrationException e) {
             LOG.error("No provider found", e);

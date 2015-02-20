@@ -2,6 +2,7 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
+get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -78,6 +79,23 @@ add_library(
 )
 qt5_use_modules(JoynrClusterControllerRuntime Core)
 
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterControllerRuntime_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterControllerRuntime_SOURCES}")
+
+    add_custom_command(
+        TARGET JoynrClusterControllerRuntime
+        PRE_BUILD
+        COMMAND clang-format -i ${JoynrClusterControllerRuntime_HEADERS} ${JoynrClusterControllerRuntime_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
+
 set_target_properties(
     JoynrClusterControllerRuntime
     PROPERTIES
@@ -101,7 +119,112 @@ install(
     EXPORT JoynrTargets
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-    # this will flatten directory hierarchy of headder files
+    # this will flatten directory hierarchy of header files
+    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+)
+# so we install header files manually to preserve directory hierarchy
+install(
+    DIRECTORY include/
+    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    FILES_MATCHING PATTERN "*.h"
+)
+
+set(
+    JoynrRuntime_PRIVATE_HEADERS
+    "libjoynr-runtime/JoynrRuntimeExecutor.h"
+    "libjoynr-runtime/LibJoynrRuntime.h"
+)
+
+set(
+    JoynrRuntime_SOURCES
+    "libjoynr-runtime/JoynrRuntimeExecutor.cpp"
+    "libjoynr-runtime/LibJoynrRuntime.cpp"
+)
+
+# library for applications
+set(
+    JoynrRuntime_EXPORT_HEADER
+    "include/joynr/JoynrRuntimeExport.h"
+)
+
+#######################################################
+# build libraries and executable for WebSocket
+#######################################################
+
+set(
+    JoynrWsRuntime_PRIVATE_HEADERS
+    "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.h"
+)
+
+set(
+    JoynrWsRuntime_SOURCES
+    "libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
+    "libjoynr-runtime/websocket/JoynrRuntime.cpp"
+    "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.cpp"
+)
+
+include_directories(
+    ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+add_library(
+    JoynrWsRuntime
+    SHARED
+    ${JoynrRuntime_PRIVATE_HEADERS}
+    ${JoynrRuntime_SOURCES}
+    ${JoynrWsRuntime_PRIVATE_HEADERS}
+    ${JoynrWsRuntime_SOURCES}
+)
+qt5_use_modules(JoynrWsRuntime Core)
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrRuntime_PRIVATE_HEADERS};${JoynrWsRuntime_PRIVATE_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrRuntime_SOURCES};${JoynrWsRuntime_SOURCES}")
+
+    add_custom_command(
+        TARGET JoynrWsRuntime
+        PRE_BUILD
+        COMMAND clang-format -i
+            ${JoynrRuntime_PRIVATE_HEADERS}
+            ${JoynrWsRuntime_PRIVATE_HEADERS}
+            ${JoynrRuntime_SOURCES}
+            ${JoynrWsRuntime_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
+
+target_link_libraries(
+    JoynrWsRuntime
+    JoynrCommon
+    Joynr
+    qjson
+)
+
+generate_export_header(
+    JoynrWsRuntime
+    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
+)
+
+set_target_properties(
+    JoynrWsRuntime
+    PROPERTIES
+    SOVERSION "${JOYNR_VERSION}"
+    VERSION "${JOYNR_VERSION}"
+    PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+)
+
+install(
+    TARGETS JoynrWsRuntime
+    EXPORT JoynrTargets
+    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    # this will flatten directory hierarchy of header files
     # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
@@ -116,19 +239,17 @@ install(
 #######################################################
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    file (GLOB_RECURSE JoynrRuntime_PRIVATE_HEADERS
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "libjoynr-runtime/*.h"
+    set(
+        JoynrDbusRuntime_PRIVATE_HEADERS
+        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
+        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h"
     )
 
-    file (GLOB_RECURSE JoynrRuntime_SOURCES
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "libjoynr-runtime/*.cpp"
-    )
-
-    # library for applications
-    set(JoynrRuntime_EXPORT_HEADER
-        "include/joynr/JoynrRuntimeExport.h"
+    set(
+        JoynrDbusRuntime_SOURCES
+        "libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp"
+        "libjoynr-runtime/dbus/JoynrRuntime.cpp"
+        "libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.cpp"
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
@@ -138,28 +259,48 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 
     include_directories(
-       ${JoynrRuntime_INCLUDE_DIRECTORIES}
+        ${JoynrRuntime_INCLUDE_DIRECTORIES}
     )
 
-    add_library(JoynrRuntime
+    add_library(
+        JoynrDbusRuntime
         SHARED
         ${JoynrRuntime_HEADERS}
         ${JoynrRuntime_SOURCES}
+        ${JoynrDbusRuntime_PRIVATE_HEADERS}
+        ${JoynrDbusRuntime_SOURCES}
     )
+    qt5_use_modules(JoynrDbusRuntime Core)
+
+    if(${ENABLE_CLANG_FORMATTER})
+        set(COMMENT "running C++ code formatter: clang-format")
+        set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+        set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrDbusRuntime_PRIVATE_HEADERS}")
+        set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrDbusRuntime_SOURCES}")
+
+        add_custom_command(
+            TARGET JoynrDbusRuntime
+            PRE_BUILD
+            COMMAND clang-format -i ${JoynrDbusRuntime_PRIVATE_HEADERS} ${JoynrDbusRuntime_SOURCES}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "${COMMENT}"
+            VERBATIM
+        )
+    endif(${ENABLE_CLANG_FORMATTER})
 
     target_link_libraries(
-        JoynrRuntime
+        JoynrDbusRuntime
         JoynrCommon
         Joynr
     )
 
     generate_export_header(
-        JoynrRuntime
+        JoynrDbusRuntime
         EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
     )
 
     set_target_properties(
-        JoynrRuntime
+        JoynrDbusRuntime
         PROPERTIES
         SOVERSION "${JOYNR_VERSION}"
         VERSION "${JOYNR_VERSION}"
@@ -167,11 +308,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 
     install(
-        TARGETS JoynrRuntime
+        TARGETS JoynrDbusRuntime
         EXPORT JoynrTargets
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-        # this will flatten directory hierarchy of headder files
+        # this will flatten directory hierarchy of header files
         # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
     )
     # so we install header files manually to preserve directory hierarchy
@@ -180,25 +321,52 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         DESTINATION "${INSTALL_INCLUDE_DIR}"
         FILES_MATCHING PATTERN "*.h"
     )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    # executable to start the cluster controller
-    add_executable(cluster-controller StartClusterController.cpp)
 
-    qt5_use_modules(cluster-controller Core)
+# executable to start the cluster controller
+set(
+    cluster-controller_HEADERS
+    StartClusterController.cpp
+)
+set(
+    cluster-controller_SOURCES
+    StartClusterController.cpp
+)
 
+add_executable(cluster-controller StartClusterController.cpp)
+qt5_use_modules(cluster-controller Core)
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${cluster-controller_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${cluster-controller_SOURCES}")
+
+    add_custom_command(
+        TARGET cluster-controller
+        PRE_BUILD
+        COMMAND clang-format -i ${cluster-controller_HEADERS} ${cluster-controller_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
+
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     target_link_libraries(cluster-controller
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
-        JoynrClusterControllerRuntime
     )
-
-    install(
-        TARGETS cluster-controller
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-    )
-
-    qt5_use_modules(JoynrRuntime Core)
-
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
+target_link_libraries(cluster-controller
+    JoynrClusterControllerRuntime
+)
+
+install(
+    TARGETS cluster-controller
+    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+)

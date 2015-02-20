@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,18 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInvocationHandler;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MethodInvocation;
+import io.joynr.proxy.invocation.Invocation;
+import io.joynr.proxy.invocation.SubscriptionInvocation;
+import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
@@ -45,8 +48,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.CheckForNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class ProxyInvocationHandler extends JoynrInvocationHandler {
@@ -60,10 +65,12 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
     private RequestReplyDispatcher dispatcher;
     private final String proxyParticipantId;
     private SubscriptionManager subscriptionManager;
-    private ConcurrentLinkedQueue<QueuedRPC> queuedRpcList = new ConcurrentLinkedQueue<QueuedRPC>();
-    private ConcurrentLinkedQueue<QueuedSubscription> queuedSubscriptionsList = new ConcurrentLinkedQueue<QueuedSubscription>();
+    private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
+    private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
     private String domain;
+
+    private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
 
     // CHECKSTYLE:OFF
     public ProxyInvocationHandler(String domain,
@@ -166,9 +173,9 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
 
     }
 
-    private void sendQueuedSubscriptionRequests() {
+    private void sendQueuedSubscriptionInvocations() {
         while (true) {
-            QueuedSubscription currentSubscription = queuedSubscriptionsList.poll();
+            SubscriptionInvocation currentSubscription = queuedSubscriptionInvocationList.poll();
             if (currentSubscription == null) {
                 return;
             }
@@ -176,10 +183,13 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
             try {
                 // TODO how to react on failures. Setting the failure state in the future is useless as the future is
                 // not passed to the app for subscriptions
-                connector.executeSubscriptionMethod(currentSubscription.getMethod(),
-                                                    currentSubscription.getArgs(),
-                                                    currentSubscription.getFuture(),
-                                                    currentSubscription.getSubscriptionId());
+                if (currentSubscription instanceof AttributeSubscribeInvocation) {
+                    connector.executeSubscriptionMethod((AttributeSubscribeInvocation) currentSubscription);
+                } else if (currentSubscription instanceof BroadcastSubscribeInvocation) {
+                    connector.executeSubscriptionMethod((BroadcastSubscribeInvocation) currentSubscription);
+                } else if (currentSubscription instanceof UnsubscribeInvocation) {
+                    connector.executeSubscriptionMethod((UnsubscribeInvocation) currentSubscription);
+                }
             } catch (JoynrSendBufferFullException e) {
                 currentSubscription.getFuture().onFailure(e);
 
@@ -198,17 +208,16 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
         }
     }
 
-    private void setFutureErrorState(Future<?> future, JoynrException e) {
-        future.onFailure(e);
-
+    private void setFutureErrorState(Invocation invocation, JoynrException e) {
+        invocation.getFuture().onFailure(e);
     }
 
     /**
      * Executes previously queued remote calls. This method is called when arbitration is completed.
      */
-    private void sendQueuedRequests() {
+    private void sendQueuedInvocations() {
         while (true) {
-            QueuedRPC currentRPC = queuedRpcList.poll();
+            MethodInvocation currentRPC = queuedRpcList.poll();
             if (currentRPC == null) {
                 return;
             }
@@ -243,15 +252,20 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
      *            from the previously invoked arbitration
      */
     public void createConnector(ArbitrationResult result) {
-        connector = ConnectorFactory.create(dispatcher, messageSender, proxyParticipantId, result, qosSettings);
+        connector = ConnectorFactory.create(dispatcher,
+                                            subscriptionManager,
+                                            messageSender,
+                                            proxyParticipantId,
+                                            result,
+                                            qosSettings);
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;
             connectorSuccessfullyFinished.signal();
 
             if (connector != null) {
-                sendQueuedRequests();
-                sendQueuedSubscriptionRequests();
+                sendQueuedInvocations();
+                sendQueuedSubscriptionInvocations();
             }
         } finally {
             connectorStatusLock.unlock();
@@ -261,78 +275,98 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
     @CheckForNull
     @Override
     protected Object executeSubscriptionMethod(Method method, Object[] args) throws IllegalAccessException, Throwable {
+        Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
-            JoynrRpcSubscription subscriptionAnnotation = method.getAnnotation(JoynrRpcSubscription.class);
-            if (subscriptionAnnotation == null) {
-                throw new JoynrIllegalStateException("SubscribeTo... methods must be annotated with JoynrRpcSubscription annotation");
+            AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
+            // TODO how to react on failures / what to do with the future which is returned from executeSubscriptionMethod
+            connectorStatusLock.lock();
+            try {
+                if (!isConnectorReady()) {
+                    // waiting for arbitration -> queue invocation
+                    queuedSubscriptionInvocationList.offer(attributeSubscription);
+                    //TODO Bug: [Java] subscribeTo<Attribute> does not return correct value in case connector is not available
+                    return attributeSubscription.getSubscriptionId();
+                }
+            } finally {
+                connectorStatusLock.unlock();
             }
-            String attributeName = subscriptionAnnotation.attributeName();
-            if (args[0] == null || !SubscriptionListener.class.isAssignableFrom(args[0].getClass())) {
-                throw new JoynrIllegalStateException("First parameter of subscribeTo... has to implement SubscriptionListener");
+
+            try {
+                connector.executeSubscriptionMethod(attributeSubscription);
+            } catch (JoynrSendBufferFullException e) {
+                logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(attributeSubscription, e);
+            } catch (JoynrMessageNotSentException e) {
+                logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(attributeSubscription, e);
+            } catch (JsonGenerationException e) {
+                logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(attributeSubscription, new JoynrException(e));
+            } catch (JsonMappingException e) {
+                logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(attributeSubscription, new JoynrException(e));
+            } catch (IOException e) {
+                logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(attributeSubscription, new JoynrException(e));
             }
-            Class<? extends TypeReference<?>> attributeTypeReference = subscriptionAnnotation.attributeType();
 
-            SubscriptionListener<?> attributeSubscriptionListener = (SubscriptionListener<?>) args[0];
-            if (args[1] == null || !SubscriptionQos.class.isAssignableFrom(args[1].getClass())) {
-                throw new JoynrIllegalStateException("Second parameter of subscribeTo... has to be of type SubscriptionQos");
-            }
-            SubscriptionQos qos = (SubscriptionQos) args[1];
-
-            String subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                                      attributeTypeReference,
-                                                                                      attributeSubscriptionListener,
-                                                                                      qos);
-            // TODO how to react on failures / what to do with the future which is returned from sendSubscriptionMethod
-            @SuppressWarnings("unused")
-            Object sendSubscriptionMethodFuture = sendSubscriptionMethod(method, args, subscriptionId);
-
-            return subscriptionId;
+            return attributeSubscription.getSubscriptionId();
         } else if (method.getName().startsWith("unsubscribeFrom")) {
-            if (args[0] == null || !String.class.isAssignableFrom(args[0].getClass())) {
-                throw new JoynrIllegalStateException("First parameter of unsubscribe... has to be a String containing the subscriptionId");
-            }
-            String subscriptionId = (String) args[0];
-            subscriptionManager.unregisterAttributeSubscription(subscriptionId);
-            sendSubscriptionMethod(method, args, subscriptionId);
-            return null;
+            return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
         } else {
             throw new JoynrIllegalStateException("Called unknown method in subscription interface.");
         }
     }
 
-    private Future<String> sendSubscriptionMethod(Method method, Object[] args, String subscriptionId) {
+    @Override
+    protected Object executeBroadcastSubscriptionMethod(Method method, Object[] args)
+                                                                                     throws JoynrSendBufferFullException,
+                                                                                     JoynrMessageNotSentException,
+                                                                                     JsonGenerationException,
+                                                                                     JsonMappingException, IOException {
+
         Future<String> future = new Future<String>();
-        connectorStatusLock.lock();
-        try {
-            if (!isConnectorReady()) {
-                // waiting for arbitration -> queue request
-                queuedSubscriptionsList.offer(new QueuedSubscription(method, args, future, subscriptionId));
-                return future;
+        if (method.getName().startsWith("subscribeTo")) {
+
+            BroadcastSubscribeInvocation broadcastSubscription = new BroadcastSubscribeInvocation(method,
+                                                                                                  args,
+                                                                                                  new Future<String>());
+            connectorStatusLock.lock();
+            try {
+                if (!isConnectorReady()) {
+                    // waiting for arbitration -> queue invocation
+                    queuedSubscriptionInvocationList.offer(broadcastSubscription);
+                    //TODO Bug: [Java] subscribeTo<Attribute> does not return correct value in case connector is not available
+                    return broadcastSubscription.getSubscriptionId();
+                }
+            } finally {
+                connectorStatusLock.unlock();
             }
-        } finally {
-            connectorStatusLock.unlock();
-        }
 
-        try {
-            connector.executeSubscriptionMethod(method, args, future, subscriptionId);
-        } catch (JoynrSendBufferFullException e) {
-            e.printStackTrace();
-            setFutureErrorState(future, e);
-        } catch (JoynrMessageNotSentException e) {
-            setFutureErrorState(future, e);
-            e.printStackTrace();
-        } catch (JsonGenerationException e) {
-            setFutureErrorState(future, new JoynrException(e));
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            setFutureErrorState(future, new JoynrException(e));
-            e.printStackTrace();
-        } catch (IOException e) {
-            setFutureErrorState(future, new JoynrException(e));
-            e.printStackTrace();
+            try {
+                connector.executeSubscriptionMethod(broadcastSubscription);
+            } catch (JoynrSendBufferFullException e) {
+                logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(broadcastSubscription, e);
+            } catch (JoynrMessageNotSentException e) {
+                logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(broadcastSubscription, e);
+            } catch (JsonGenerationException e) {
+                logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(broadcastSubscription, new JoynrException(e));
+            } catch (JsonMappingException e) {
+                logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(broadcastSubscription, new JoynrException(e));
+            } catch (IOException e) {
+                logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
+                setFutureErrorState(broadcastSubscription, new JoynrException(e));
+            }
+            return broadcastSubscription.getSubscriptionId();
+        } else if (method.getName().startsWith("unsubscribeFrom")) {
+            return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
+        } else {
+            throw new JoynrIllegalStateException("Called unknown method in broadcast subscription interface.");
         }
-
-        return future;
     }
 
     @Override
@@ -341,15 +375,60 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
         connectorStatusLock.lock();
         try {
             if (!isConnectorReady()) {
-                // waiting for arbitration -> queue request
-                queuedRpcList.offer(new QueuedRPC(method, args, future));
+                // waiting for arbitration -> queue invocation
+                queuedRpcList.offer(new MethodInvocation(method, args, future));
                 return future;
             }
         } finally {
             connectorStatusLock.unlock();
         }
 
-        // arbitration already successfully finished -> send request
+        // arbitration already successfully finished -> send invocation
         return connector.executeAsyncMethod(method, args, future);
+    }
+
+    private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
+        subscriptionManager.unregisterSubscription(unsubscribeInvocation.getSubscriptionId());
+        connectorStatusLock.lock();
+        try {
+            if (!isConnectorReady()) {
+                // waiting for arbitration -> queue invocation
+                queuedSubscriptionInvocationList.offer(unsubscribeInvocation);
+                return unsubscribeInvocation;
+            }
+        } finally {
+            connectorStatusLock.unlock();
+        }
+
+        try {
+            connector.executeSubscriptionMethod(unsubscribeInvocation);
+        } catch (JoynrSendBufferFullException e) {
+            logger.error("error executing unsubscription: {} : {}",
+                         unsubscribeInvocation.getSubscriptionId(),
+                         e.getMessage());
+            setFutureErrorState(unsubscribeInvocation, e);
+        } catch (JoynrMessageNotSentException e) {
+            logger.error("error executing unsubscription: {} : {}",
+                         unsubscribeInvocation.getSubscriptionId(),
+                         e.getMessage());
+            setFutureErrorState(unsubscribeInvocation, e);
+        } catch (JsonGenerationException e) {
+            logger.error("error executing unsubscription: {} : {}",
+                         unsubscribeInvocation.getSubscriptionId(),
+                         e.getMessage());
+            setFutureErrorState(unsubscribeInvocation, new JoynrException(e));
+        } catch (JsonMappingException e) {
+            logger.error("error executing unsubscription: {} : {}",
+                         unsubscribeInvocation.getSubscriptionId(),
+                         e.getMessage());
+            setFutureErrorState(unsubscribeInvocation, new JoynrException(e));
+        } catch (IOException e) {
+            logger.error("error executing unsubscription: {} : {}",
+                         unsubscribeInvocation.getSubscriptionId(),
+                         e.getMessage());
+            setFutureErrorState(unsubscribeInvocation, new JoynrException(e));
+        }
+
+        return unsubscribeInvocation;
     }
 }

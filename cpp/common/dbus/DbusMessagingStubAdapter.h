@@ -36,18 +36,20 @@
 // restore the old GCC diagnostic state
 #pragma GCC diagnostic pop
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNRCOMMON_EXPORT DbusMessagingStubAdapter : public IDbusStubWrapper<joynr::messaging::IMessagingProxy>, public IMessaging
+class JOYNRCOMMON_EXPORT DbusMessagingStubAdapter
+        : public IDbusStubWrapper<joynr::messaging::IMessagingProxy>,
+          public IMessaging
 {
 public:
     DbusMessagingStubAdapter(QString serviceAddress);
-    virtual void transmit(JoynrMessage &message, const MessagingQos &qos);
+    virtual void transmit(JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingStubAdapter);
 };
-
 
 } // namespace joynr
 #endif // DBUSMESSAGINSTUBADAPTER_H

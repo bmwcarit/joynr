@@ -22,8 +22,8 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/joynrlogging.h"
 
-
-namespace joynr {
+namespace joynr
+{
 
 class JOYNRCOMMON_EXPORT TrackableObject
 {
@@ -31,12 +31,11 @@ public:
     TrackableObject();
     virtual ~TrackableObject();
     static int getInstances();
+
 private:
     static int instances;
     static joynr_logging::Logger* logger;
-
 };
-
 
 } // namespace joynr
 #endif // TRACKABLEOBJECT_H

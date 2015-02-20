@@ -33,37 +33,35 @@
 #include <QSharedPointer>
 #include <QThreadPool>
 
-namespace joynr {
+namespace joynr
+{
 
 class JoynrMessage;
 class DelayedScheduler;
 class MessagingSettings;
 class HttpResult;
 
-
-
-class HttpSender : public IMessageSender {
+class HttpSender : public IMessageSender
+{
 public:
     static const qint64& MIN_ATTEMPT_TTL();
     static const qint64& MAX_ATTEMPT_TTL();
     static const qint64& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
-    HttpSender(const BounceProxyUrl& bounceProxyUrl, qint64 maxAttemptTtl_ms, int messageSendRetryInterval);// int messageSendRetryInterval
+    HttpSender(const BounceProxyUrl& bounceProxyUrl,
+               qint64 maxAttemptTtl_ms,
+               int messageSendRetryInterval); // int messageSendRetryInterval
     virtual ~HttpSender();
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(
-            const QString& channelId,
-            const QDateTime& decayTime,
-            const JoynrMessage& message);
+    void sendMessage(const QString& channelId, const JoynrMessage& message);
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
-    void init(
-            QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-            const MessagingSettings& settings);
+    void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+              const MessagingSettings& settings);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
@@ -78,15 +76,15 @@ private:
     QThreadPool channelUrlContactorThreadPool; // obtaining an url must be in a different threadpool
     DelayedScheduler* channelUrlContactorDelayedScheduler;
 
-    class SendMessageRunnable : public QRunnable, public ObjectWithDecayTime {
+    class SendMessageRunnable : public QRunnable, public ObjectWithDecayTime
+    {
     public:
-        SendMessageRunnable(
-                HttpSender* messageSender,
-                const QString& channelId,
-                const QDateTime& decayTime,
-                const QByteArray& data,
-                DelayedScheduler& delayedScheduler,
-                qint64 maxAttemptTtl_ms);
+        SendMessageRunnable(HttpSender* messageSender,
+                            const QString& channelId,
+                            const QDateTime& decayTime,
+                            const QByteArray& data,
+                            DelayedScheduler& delayedScheduler,
+                            qint64 maxAttemptTtl_ms);
         ~SendMessageRunnable();
         /**
          * @brief run
@@ -102,7 +100,7 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const QString &url, qint64 curlTimeout);
+        HttpResult buildRequestAndSend(const QString& url, qint64 curlTimeout);
         QString resolveUrlForChannelId(qint64 curlTimeout);
         QString channelId;
         QByteArray data;
@@ -115,6 +113,5 @@ private:
     };
 };
 
-
 } // namespace joynr
-#endif //HTTPSENDER_H_
+#endif // HTTPSENDER_H_

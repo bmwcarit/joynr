@@ -37,4 +37,9 @@ public class JoynGeneratorHelpMojo extends AbstractJoynGeneratorMojo {
                                                       InstantiationException, IllegalAccessException {
         task.printHelp(getLog());
     }
+
+    @Override
+    protected String getSupportedGoal() {
+        return "help";
+    }
 }

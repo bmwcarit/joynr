@@ -24,18 +24,23 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class IMessageSender;
 class JoynrMessage;
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */
-class JoynrMessagingStub : public IMessaging {
+class JoynrMessagingStub : public IMessaging
+{
 public:
-    explicit JoynrMessagingStub(QSharedPointer<IMessageSender> messageSender, QString destinationChannelId, QString receiveChannelId);
+    explicit JoynrMessagingStub(QSharedPointer<IMessageSender> messageSender,
+                                QString destinationChannelId,
+                                QString receiveChannelId);
     virtual ~JoynrMessagingStub();
-    void transmit(JoynrMessage& message, const MessagingQos& qos);
+    void transmit(JoynrMessage& message);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessagingStub);
     QSharedPointer<IMessageSender> messageSender;
@@ -44,4 +49,4 @@ private:
 };
 
 } // namespace joynr
-#endif //JOYNRMESSAGINGSTUB_H
+#endif // JOYNRMESSAGINGSTUB_H

@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,29 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
-import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 
 import javax.annotation.CheckForNull;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 public interface SubscriptionManager {
 
-    String registerAttributeSubscription(final String attributeName,
-                                         Class<? extends TypeReference<?>> attributeTypeReference,
-                                         SubscriptionListener<?> attributeSubscriptionCallback,
-                                         final SubscriptionQos qos);
+    void registerAttributeSubscription(AttributeSubscribeInvocation subscriptionRequest);
 
-    void unregisterAttributeSubscription(final String subscriptionId);
+    void registerBroadcastSubscription(BroadcastSubscribeInvocation subscriptionRequest);
+
+    void unregisterSubscription(final String subscriptionId);
 
     void touchSubscriptionState(final String subscriptionId);
 
-    @CheckForNull
-    SubscriptionListener<?> getSubscriptionListener(final String subscriptionId);
-
-    Class<? extends TypeReference<?>> getAttributeTypeReference(String subscriptionId);
+    Class<?> getType(String subscriptionId);
 
     void shutdown();
+
+    boolean isBroadcast(String subscriptionId);
+
+    BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId);
+
+    @CheckForNull
+    <T> AttributeSubscriptionListener<T> getSubscriptionListener(String subscriptionId);
 }

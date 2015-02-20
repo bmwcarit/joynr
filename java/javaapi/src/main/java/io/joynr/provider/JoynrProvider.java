@@ -20,6 +20,7 @@ package io.joynr.provider;
  */
 
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastListener;
 import joynr.types.ProviderQos;
 
 public interface JoynrProvider {
@@ -28,5 +29,9 @@ public interface JoynrProvider {
     void registerAttributeListener(String attributeName, AttributeListener attributeListener);
 
     void unregisterAttributeListener(String attributeName, AttributeListener attributeListener);
+
+    void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
+
+    void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
 
 }

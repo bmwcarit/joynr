@@ -27,23 +27,23 @@
 #include "joynr/system/Address.h"
 #include "joynr/system/CommunicationMiddleware.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IClientCache;
 class ConnectorFactory;
 
-class JOYNR_EXPORT ProxyBase{
+class JOYNR_EXPORT ProxyBase
+{
 
 public:
-    ProxyBase(
-            ConnectorFactory* connectorFactory,
-            IClientCache* cache,
-            const QString& domain,
-            const QString& interfaceName,
-            const ProxyQos& proxyQos,
-            const MessagingQos& qosSettings,
-            bool cached
-    );
+    ProxyBase(ConnectorFactory* connectorFactory,
+              IClientCache* cache,
+              const QString& domain,
+              const QString& interfaceName,
+              const ProxyQos& proxyQos,
+              const MessagingQos& qosSettings,
+              bool cached);
     virtual ~ProxyBase();
 
     /**
@@ -62,8 +62,7 @@ protected:
      */
     virtual void handleArbitrationFinished(
             const QString& participantId,
-            const joynr::system::CommunicationMiddleware::Enum& connection
-    );
+            const joynr::system::CommunicationMiddleware::Enum& connection);
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
@@ -78,6 +77,5 @@ protected:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //PROXYBASE_H
+#endif // PROXYBASE_H

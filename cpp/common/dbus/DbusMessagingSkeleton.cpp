@@ -22,22 +22,20 @@
 #include "joynr/JoynrMessage.h"
 #include "common/dbus/DbusMessagingUtil.h"
 
-namespace joynr {
+namespace joynr
+{
 
-DbusMessagingSkeleton::DbusMessagingSkeleton(IMessaging& callBack):
-callBack(callBack)
+DbusMessagingSkeleton::DbusMessagingSkeleton(IMessaging& callBack) : callBack(callBack)
 {
 }
 
-void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage message, joynr::messaging::types::Types::JoynrMessageQos qos) {
+void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage message)
+{
     // convert joynr message
     JoynrMessage joynrMessage;
     DbusMessagingUtil::copyDbusMsgToJoynrMsg(message, joynrMessage);
-    // convert qos
-    MessagingQos joynrMsgQos;
-    DbusMessagingUtil::copyDbusQosToJoynrQos(qos, joynrMsgQos);
     // callback
-    callBack.transmit(joynrMessage, joynrMsgQos);
+    callBack.transmit(joynrMessage);
 }
 
 } // namespace joynr

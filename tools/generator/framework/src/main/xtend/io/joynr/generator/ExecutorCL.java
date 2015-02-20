@@ -3,7 +3,7 @@ package io.joynr.generator;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,12 @@ public class ExecutorCL {
 
         // Parse the command line arguments
         InvocationArguments invocationArguments = new InvocationArguments(args);
-        if (!invocationArguments.isValid()) {
-            return;
-        }
-
         Executor executor = new Executor(invocationArguments);
         IGenerator generator = executor.setup();
-        executor.execute(generator);
+
+        if (invocationArguments.isValid()) {
+            executor.generate(generator);
+        }
     }
 
 }

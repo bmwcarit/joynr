@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,12 @@ import java.util.Properties;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 
+/**
+ * This class is used as concrete joynr injector factory. Client code uses this class to instantiate joynr
+ * applications via the createApplication method and to get injector objects for their own object instantiations.
+ * This class binds JoynrBaseModule as module to be used when creating injectors and joynr applications
+ *
+ */
 public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
 
     @Inject
@@ -62,7 +68,6 @@ public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
         return super.createApplication(applicationModule, applicationSpecificModules);
     }
 
-    //TODO remove this and recompile and redeploy A4AInjectorFactory 
     public JoynrApplication createApplication(JoynrApplicationModule applicationModule) {
         return super.createApplication(applicationModule, (Module[]) null);
     }

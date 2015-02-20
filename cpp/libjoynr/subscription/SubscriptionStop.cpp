@@ -19,38 +19,43 @@
 
 #include "joynr/SubscriptionStop.h"
 
-namespace joynr {
+namespace joynr
+{
 
 const SubscriptionStop SubscriptionStop::NULL_RESPONSE = SubscriptionStop();
 
-SubscriptionStop::SubscriptionStop():
-    subscriptionId(){
-
+SubscriptionStop::SubscriptionStop() : subscriptionId()
+{
 }
-SubscriptionStop::SubscriptionStop(const SubscriptionStop &other) :
-    QObject(),
-    subscriptionId(other.getSubscriptionId()){
+SubscriptionStop::SubscriptionStop(const SubscriptionStop& other)
+        : QObject(), subscriptionId(other.getSubscriptionId())
+{
 }
 
-SubscriptionStop& SubscriptionStop::operator=(const SubscriptionStop &other){
+SubscriptionStop& SubscriptionStop::operator=(const SubscriptionStop& other)
+{
     this->subscriptionId = other.getSubscriptionId();
     return *this;
 }
 
-QString SubscriptionStop::getSubscriptionId() const {
+QString SubscriptionStop::getSubscriptionId() const
+{
     return subscriptionId;
 }
 
-void SubscriptionStop::setSubscriptionId(QString subscriptionId){
+void SubscriptionStop::setSubscriptionId(QString subscriptionId)
+{
     this->subscriptionId = subscriptionId;
 }
 
-bool SubscriptionStop::operator==(const SubscriptionStop& other) const {
+bool SubscriptionStop::operator==(const SubscriptionStop& other) const
+{
     return subscriptionId == other.getSubscriptionId();
 }
 
-bool SubscriptionStop::operator!=(const SubscriptionStop& other) const {
-    return !(*this==other);
+bool SubscriptionStop::operator!=(const SubscriptionStop& other) const
+{
+    return !(*this == other);
 }
 
 } // namespace joynr

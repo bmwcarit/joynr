@@ -26,8 +26,8 @@
 #include <QMetaType>
 #include <QSharedPointer>
 
-namespace joynr {
-
+namespace joynr
+{
 
 template <class T>
 /**
@@ -35,16 +35,17 @@ template <class T>
  * T is the desired type that the response should be converted to.
  *
  */
-class ReplyCaller : public IReplyCaller{
+class ReplyCaller : public IReplyCaller
+{
 public:
-
-    ReplyCaller(QSharedPointer<ICallback<T> > callback)
-        : callback(callback),
-          hasTimeOutOccurred(false){
+    ReplyCaller(QSharedPointer<ICallback<T>> callback)
+            : callback(callback), hasTimeOutOccurred(false)
+    {
     }
 
-    ~ReplyCaller() { }
-
+    ~ReplyCaller()
+    {
+    }
 
     void returnValue(const T& payload)
     {
@@ -71,7 +72,7 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<T> > callback;
+    QSharedPointer<ICallback<T>> callback;
     bool hasTimeOutOccurred;
 };
 
@@ -80,12 +81,11 @@ template <>
  * @brief Template specialisation for the void type.
  *
  */
-class ReplyCaller <void> : public IReplyCaller {
+class ReplyCaller<void> : public IReplyCaller
+{
 public:
-
-    ReplyCaller(QSharedPointer<ICallback<void> > callback)
-        : callback(callback),
-          hasTimeOutOccurred(false)
+    ReplyCaller(QSharedPointer<ICallback<void>> callback)
+            : callback(callback), hasTimeOutOccurred(false)
     {
     }
 
@@ -93,11 +93,9 @@ public:
     {
     }
 
-
     void returnValue()
     {
-        if (!hasTimeOutOccurred)
-        {
+        if (!hasTimeOutOccurred) {
             callback->onSuccess(RequestStatus(RequestStatusCode::OK));
         }
     }
@@ -120,10 +118,9 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<void> > callback;
+    QSharedPointer<ICallback<void>> callback;
     bool hasTimeOutOccurred;
 };
 
-
 } // namespace joynr
-#endif //REPLYCALLER_H
+#endif // REPLYCALLER_H

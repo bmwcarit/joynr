@@ -67,7 +67,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
 
     // create the skeleton
     MockMessaging* msgMock = new MockMessaging();
-    EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>(), A<const MessagingQos&>())).Times(2);
+    EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>())).Times(2);
     auto provider = std::make_shared<DbusMessagingSkeleton>(*msgMock);
 
     // register skeleton
@@ -89,10 +89,9 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     joynr::messaging::IMessaging::JoynrMessage message;
     message.type =  "reply";
     message.payload = "This is a test";
-    joynr::messaging::types::Types::JoynrMessageQos qos;
     CommonAPI::CallStatus status;
     ASSERT_TRUE(proxy->isAvailable());
-    proxy->transmit(message, qos, status);
+    proxy->transmit(message, status);
     printResult(logger, "transmit status", status == CommonAPI::CallStatus::SUCCESS);
     ASSERT_TRUE(status == CommonAPI::CallStatus::SUCCESS);
 
@@ -102,7 +101,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     ASSERT_TRUE(success);
 
     // call method
-    proxy->transmit(message, qos, status);
+    proxy->transmit(message, status);
     printResult(logger, "transmit status", status == CommonAPI::CallStatus::SUCCESS);
     ASSERT_FALSE(status == CommonAPI::CallStatus::SUCCESS);
 
@@ -116,7 +115,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // call method
-    proxy->transmit(message, qos, status);
+    proxy->transmit(message, status);
     printResult(logger, "transmit status", status == CommonAPI::CallStatus::SUCCESS);
     ASSERT_TRUE(status == CommonAPI::CallStatus::SUCCESS);
 
@@ -133,7 +132,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
 
     // craete mock and expect 2 calls
     MockMessaging* msgMock = new MockMessaging();
-    EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>(), A<const MessagingQos&>())).Times(2);
+    EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>())).Times(2);
 
     // create the skeleton
     LOG_INFO(logger, "Register skeleton");
@@ -144,7 +143,6 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
     msg.setHeaderTo(QString("local"));
     msg.setPayload("This is a test");
-    MessagingQos qos;
 
     // get stub
     DbusMessagingStubAdapter* msgStub = new DbusMessagingStubAdapter(ccMessagingAddress);
@@ -152,7 +150,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
 
     // call method
     LOG_INFO(logger, "Transmit message: should work");
-    msgStub->transmit(msg, qos);
+    msgStub->transmit(msg);
 
     // delete skeleton
     LOG_INFO(logger, "Delete skeleton");
@@ -160,7 +158,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
 
     // call method
     LOG_INFO(logger, "Transmit message: should fail");
-    msgStub->transmit(msg, qos);
+    msgStub->transmit(msg);
 
     // register skeleton
     LOG_INFO(logger, "Register skeleton");
@@ -168,7 +166,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
 
     // call method
     LOG_INFO(logger, "Transmit message: should work");
-    msgStub->transmit(msg, qos);
+    msgStub->transmit(msg);
 
     delete msgSkeleton;
 
@@ -198,7 +196,7 @@ TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
 
     // register skeletons
     MockMessaging* msgMock = new MockMessaging();
-    EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>(), A<const MessagingQos&>())).Times(1);
+    EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>())).Times(1);
     auto msgSkeleton = new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*msgMock, ccMessagingAddress);
 
     // get stub
@@ -212,14 +210,13 @@ TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
     msg.setPayload("This is a test");
 
     // create messaging qos
-    MessagingQos qos;
-    msgStub->transmit(msg, qos);
+    msgStub->transmit(msg);
 
     // delete skeleton
     delete msgSkeleton;
 
     // error on transmission
-    msgStub->transmit(msg, qos);
+    msgStub->transmit(msg);
 
     // stub not availabe
     ASSERT_FALSE(msgStub->isProxyAvailabe());

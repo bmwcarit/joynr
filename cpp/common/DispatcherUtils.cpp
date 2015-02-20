@@ -25,8 +25,8 @@
 #include <limits>
 #include <cassert>
 
-
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
@@ -36,23 +36,41 @@ DispatcherUtils::DispatcherUtils()
 {
 }
 
+// Dispatcher Utils
 
-//Dispatcher Utils
+QDateTime DispatcherUtils::convertTtlToAbsoluteTime(qint64 ttl_ms)
+{
+    QDateTime now = QDateTime::currentDateTimeUtc();
+    QDateTime expiryDate = now.addMSecs(ttl_ms);
 
-QDateTime DispatcherUtils::convertTtlToAbsoluteTime(qint64 ttl_ms) {
-    return QDateTime::currentDateTime().addMSecs(ttl_ms);
+    // check for overflow
+    if (ttl_ms > 0) {
+        bool positiveOverflow = expiryDate.toMSecsSinceEpoch() < now.toMSecsSinceEpoch();
+        if (positiveOverflow) {
+            return getMaxAbsoluteTime();
+        }
+    } else if (ttl_ms < 0) {
+        bool negativeOverflow = expiryDate.toMSecsSinceEpoch() > now.toMSecsSinceEpoch();
+        if (negativeOverflow) {
+            return QDateTime::fromMSecsSinceEpoch(std::numeric_limits<qint64>::min(), Qt::UTC);
+        }
+    }
+
+    return expiryDate;
 }
 
-QDateTime DispatcherUtils::getMaxAbsoluteTime(){
-    return QDateTime::fromMSecsSinceEpoch(std::numeric_limits< qint64 >::max());
+QDateTime DispatcherUtils::getMaxAbsoluteTime()
+{
+    return QDateTime::fromMSecsSinceEpoch(std::numeric_limits<qint64>::max(), Qt::UTC);
 }
 
-qint64 DispatcherUtils::convertAbsoluteTimeToTtl(const QDateTime& date) {
-    //todo optimise using appropriate operator from QDateTime
+qint64 DispatcherUtils::convertAbsoluteTimeToTtl(const QDateTime& date)
+{
+    // todo optimise using appropriate operator from QDateTime
     return date.toMSecsSinceEpoch() - QDateTime::currentMSecsSinceEpoch();
 }
 
-QString DispatcherUtils::convertAbsoluteTimeToTtlString(const QDateTime &date)
+QString DispatcherUtils::convertAbsoluteTimeToTtlString(const QDateTime& date)
 {
     return QString::number(convertAbsoluteTimeToTtl(date));
 }

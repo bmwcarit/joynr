@@ -47,6 +47,7 @@ This project has dependencies to:
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
+  Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
@@ -109,7 +110,6 @@ This project has dependencies to:
   io.joynr.java:java-generator under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr:java under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
@@ -148,7 +148,6 @@ This project has dependencies to:
   jersey-multipart under CDDL 1.1 or GPL2 w/ CPE
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
-  Jetty :: Continuation under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -157,8 +156,12 @@ This project has dependencies to:
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty Orbit :: Servlet API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
@@ -181,23 +184,10 @@ This project has dependencies to:
   OpenJPA Persistence under Apache Software License 2.0
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
-  org.eclipse.core.contenttype under Eclipse Public License - v 1.0
-  org.eclipse.core.expressions under Eclipse Public License - v 1.0
-  org.eclipse.core.filesystem under Eclipse Public License - v 1.0
-  org.eclipse.core.jobs under Eclipse Public License - v 1.0
-  org.eclipse.core.resources under Eclipse Public License - v 1.0
-  org.eclipse.core.runtime under Eclipse Public License - v 1.0
-  org.eclipse.equinox.app under Eclipse Public License - v 1.0
-  org.eclipse.equinox.common under Eclipse Public License - v 1.0
-  org.eclipse.equinox.preferences under Eclipse Public License - v 1.0
-  org.eclipse.equinox.registry under Eclipse Public License - v 1.0
-  org.eclipse.osgi under Eclipse Public License - v 1.0
-  org.eclipse.osgi.services under Eclipse Public License - v 1.0
   org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  OSGi R4 Foundation EE under The Apache Software License, Version 2.0
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0

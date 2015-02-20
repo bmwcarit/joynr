@@ -22,28 +22,33 @@
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/joynrlogging.h"
 
-namespace joynr {
+namespace joynr
+{
 
 /*
  * IGlobalCapabilitiesCallback is an old callback method for capabilities.
  * Now that Code is generated the new interface for callbacks using ICallback.h is needed
  * to access the proxy.
- * For this reason, we currently have two callbacks: One GlobalCapabilitiesInformationCallback : ICallback<types::CapabilityInformation> for the proxy
- * and one IGlobalCapabilitiesCallback for the application. The ICallback<types::CapabilityInformation> just calls the
+ * For this reason, we currently have two callbacks: One GlobalCapabilitiesInformationCallback :
+ * ICallback<types::CapabilityInformation> for the proxy
+ * and one IGlobalCapabilitiesCallback for the application. The
+ * ICallback<types::CapabilityInformation> just calls the
  * IGlobalCapabilitiesCallback.
  * Those two callbacks should be merged into one.
  */
 
-class IGlobalCapabilitiesCallback {
+class IGlobalCapabilitiesCallback
+{
 public:
-    virtual ~IGlobalCapabilitiesCallback(){}
-    virtual void capabilitiesReceived(QList<types::CapabilityInformation> results)=0;
+    virtual ~IGlobalCapabilitiesCallback()
+    {
+    }
+    virtual void capabilitiesReceived(QList<types::CapabilityInformation> results) = 0;
+
 private:
     static joynr_logging::Logger* logger;
 };
 
-
-
 } // namespace joynr
 
-#endif //CAPABILITIESRESULTCALLBACK_H
+#endif // CAPABILITIESRESULTCALLBACK_H

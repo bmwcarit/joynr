@@ -35,7 +35,8 @@
 #include <QList>
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
 class MessageRouter;
 class Request;
@@ -45,8 +46,8 @@ class MessagingQos;
 class IReplyCaller;
 class IGlobalCapabilitiesCallback;
 
-
-class JOYNRCLUSTERCONTROLLER_EXPORT FakeCapabilitiesClient : public ICapabilitiesClient{
+class JOYNRCLUSTERCONTROLLER_EXPORT FakeCapabilitiesClient : public ICapabilitiesClient
+{
 
 public:
     /*
@@ -54,7 +55,6 @@ public:
        dispatcherPrt - pointer to a dispatcher instance created by the dispatcherFactory
       */
     FakeCapabilitiesClient(const QString& localChannelId, const QString& settingsFileName);
-
 
     virtual ~FakeCapabilitiesClient();
     /*
@@ -71,27 +71,37 @@ public:
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain, const QString& interfaceName);
+    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
+                                                       const QString& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
       */
-    virtual void lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(const QString& domain,
+                        const QString& interfaceName,
+                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual void lookup(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback);
-
+    virtual void lookup(const QString& participantId,
+                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
     virtual QString getLocalChannelId();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FakeCapabilitiesClient);
-    void sendOneWayFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr, MessagingQos qosSettings);
-    Reply sendSynchronizedRequestFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr, MessagingQos qosSettings);
-    void sendRequest(QSharedPointer<QObject> jsonFunctionCallSharedPtr, MessagingQos qosSettings, QSharedPointer<IReplyCaller> callBack);
+    void sendOneWayFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+                                MessagingQos qosSettings);
+    Reply sendSynchronizedRequestFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+                                              MessagingQos qosSettings);
+    void sendRequest(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+                     MessagingQos qosSettings,
+                     QSharedPointer<IReplyCaller> callBack);
 
-    QList<types::CapabilityInformation> createFakedCapInfoList(const QString& domain, const QString& interfaceName);
-    QList<types::CapabilityInformation> createFakedCapInfoListForChannelId(const QString& channelId);
-    QList<types::CapabilityInformation> createFakedCapInfoListForParticipantId(const QString& participantId);
+    QList<types::CapabilityInformation> createFakedCapInfoList(const QString& domain,
+                                                               const QString& interfaceName);
+    QList<types::CapabilityInformation> createFakedCapInfoListForChannelId(
+            const QString& channelId);
+    QList<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
+            const QString& participantId);
     QList<types::CapabilityInformation> createFakedCapInfoList();
 
     qint64 defaultRequestTTL;
@@ -106,11 +116,7 @@ private:
     QString preconfiguredInterfaceName;
     QString preconfiguredChannelId;
     QString preconfiguredParticipantId;
-
-
 };
 
-
-
 } // namespace joynr
-#endif //FAKECAPABILITIESCLIENT_H
+#endif // FAKECAPABILITIESCLIENT_H

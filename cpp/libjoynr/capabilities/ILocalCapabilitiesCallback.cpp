@@ -19,11 +19,12 @@
 
 #include "joynr/ILocalCapabilitiesCallback.h"
 
-namespace joynr {
-
+namespace joynr
+{
 
 // Please see header file for an explanation of why this is defined here
-ILocalCapabilitiesCallback::~ILocalCapabilitiesCallback() {}
-
+ILocalCapabilitiesCallback::~ILocalCapabilitiesCallback()
+{
+}
 
 } // namespace joynr

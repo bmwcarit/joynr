@@ -38,7 +38,7 @@ class InterfaceUtil {
 	
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
 	'''
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
 			 
@@ -58,7 +58,7 @@ class InterfaceUtil {
 
 	def produceAsyncGetters(FInterface serviceInterface, boolean pure)
 	'''
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
 			 
@@ -97,7 +97,7 @@ class InterfaceUtil {
 
 	def produceSyncSetters(FInterface serviceInterface, boolean pure)
 	'''
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
 			 
@@ -116,7 +116,7 @@ class InterfaceUtil {
 
 	def produceAsyncSetters(FInterface serviceInterface, boolean pure)
 	'''
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
 			 

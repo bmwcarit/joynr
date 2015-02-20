@@ -27,7 +27,8 @@
 #include <QVariant>
 #include <QList>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * Implements IClientMultiCache. Stores SEVERAL objects with a key
@@ -38,10 +39,13 @@ namespace joynr {
  * 1000 entries). This is in memory only, no persistence.
  *
  */
-class ClientMultiQCache : public IClientMultiCache{
+class ClientMultiQCache : public IClientMultiCache
+{
 
 public:
-    virtual ~ClientMultiQCache(){}
+    virtual ~ClientMultiQCache()
+    {
+    }
 
     ClientMultiQCache();
     /*
@@ -62,11 +66,10 @@ private:
      * Returns time since activation in ms (elapsed())
      */
     qint64 elapsed(qint64 entryTime);
-    QCache<QString, QList<CachedValue<QVariant> > > cache;
+    QCache<QString, QList<CachedValue<QVariant>>> cache;
     static const int MAX_CUMMULATIVE_CACHE_COST;
     QMutex mutex;
 };
-
 
 } // namespace joynr
 #endif // CLIENTMULTIQCACHE_H

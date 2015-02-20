@@ -30,7 +30,6 @@ public abstract class PubSubTimerBase {
     protected PubSubState state;
     protected Timer timer = new Timer();
     private static final Logger logger = LoggerFactory.getLogger(PubSubTimerBase.class);
-    protected TimerTask timerTask;
 
     public PubSubTimerBase(long expiryDate, PubSubState state) {
         this.state = state;
@@ -39,7 +38,11 @@ public abstract class PubSubTimerBase {
     }
 
     public void startTimer() {
-        rescheduleTimer(0);
+        startTimer(0);
+    }
+
+    public void startTimer(long delay) {
+        rescheduleTimer(delay);
     }
 
     protected boolean isExpiredInMs(long delay_ms) {
@@ -59,9 +62,8 @@ public abstract class PubSubTimerBase {
             boolean isExpiredNow = isExpiredInMs(0);
             boolean isExpiredBeforeNextPublication = isExpiredInMs(delay);
             if (!isExpiredNow && !isExpiredBeforeNextPublication && !state.isStopped()) {
-                timerTask = getTimerTask();
                 logger.info("Rescheduling PubSubTimer with delay {}.", delay);
-                timer.schedule(timerTask, delay);
+                timer.schedule(getTimerTask(), delay);
             } else {
                 logger.info("Will not reschedule PubSubTimer: "
                         + (isExpiredNow ? "endDate is reached"

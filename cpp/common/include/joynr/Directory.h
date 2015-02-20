@@ -31,12 +31,15 @@
 #include <QMap>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * The directory.h offers the interface of a Map. However, in contrast to a Map,
-  * one can choose to use two different add methods. The first add/remove behave as expected by a Map.
-  * The second option is to specify a time to live for entries when adding them (in milli-secondes). The
+  * one can choose to use two different add methods. The first add/remove behave as expected by a
+  *Map.
+  * The second option is to specify a time to live for entries when adding them (in milli-secondes).
+  *The
   * entry will be removed automatically after this time. The methods are thread-safe.
   *
   * This template can be used on libJoynr and ClusterController sides:
@@ -46,147 +49,158 @@ namespace joynr {
   *     ReplyCallerDirectory,               libjoynr
   */
 
-
 template <typename Key, typename T>
-class IDirectory {
+class IDirectory
+{
 public:
-    virtual ~IDirectory(){}
-    virtual QSharedPointer < T > lookup(const Key& keyId) =0;
-    virtual bool contains(const Key& keyId) =0;
+    virtual ~IDirectory()
+    {
+    }
+    virtual QSharedPointer<T> lookup(const Key& keyId) = 0;
+    virtual bool contains(const Key& keyId) = 0;
 
-    virtual void add(const Key &keyId, T* value) =0;
-    virtual void add(const Key& keyId, QSharedPointer < T > value) =0;
+    virtual void add(const Key& keyId, T* value) = 0;
+    virtual void add(const Key& keyId, QSharedPointer<T> value) = 0;
 
-    virtual void add(const Key &keyId, T* value, qint64 ttl_ms) =0;
-    virtual void add(const Key& keyId, QSharedPointer < T > value, qint64 ttl_ms) =0;
-    virtual void remove(const Key& keyId) =0;
+    virtual void add(const Key& keyId, T* value, qint64 ttl_ms) = 0;
+    virtual void add(const Key& keyId, QSharedPointer<T> value, qint64 ttl_ms) = 0;
+    virtual void remove(const Key& keyId) = 0;
 };
 
 template <typename Key, typename T>
-class Directory : public IDirectory< Key, T> {
+class Directory : public IDirectory<Key, T>
+{
 
 public:
     virtual ~Directory();
     Directory(const QString& directoryName);
-    QSharedPointer < T > lookup(const Key& keyId);
+    QSharedPointer<T> lookup(const Key& keyId);
     bool contains(const Key& keyId);
     /*
      * Adds an element and keeps it until actively removed (using the 'remove' method)
      */
-    void add(const Key &keyId, T* value);
-    void add(const Key& keyId, QSharedPointer < T > value);
+    void add(const Key& keyId, T* value);
+    void add(const Key& keyId, QSharedPointer<T> value);
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key &keyId, T* value, qint64 ttl_ms);
-    void add(const Key& keyId, QSharedPointer < T > value, qint64 ttl_ms);
+    void add(const Key& keyId, T* value, qint64 ttl_ms);
+    void add(const Key& keyId, QSharedPointer<T> value, qint64 ttl_ms);
     void remove(const Key& keyId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    QMap<Key, QSharedPointer < T > > callbackMap;
+    QMap<Key, QSharedPointer<T>> callbackMap;
     QMutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
 };
 
-
 template <typename Key, typename T>
-class RemoverRunnable : public QRunnable {
+class RemoverRunnable : public QRunnable
+{
 public:
-     RemoverRunnable(const Key& keyId, Directory<Key,T>* directory);
-     void run();
- private:
-     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
-     QString keyId;
-     Directory<Key, T>* directory;
-     static joynr_logging::Logger* logger;
+    RemoverRunnable(const Key& keyId, Directory<Key, T>* directory);
+    void run();
 
+private:
+    DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
+    QString keyId;
+    Directory<Key, T>* directory;
+    static joynr_logging::Logger* logger;
 };
 
+template <typename Key, typename T>
+joynr_logging::Logger* RemoverRunnable<Key, T>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "RemoverRunnable");
 
 template <typename Key, typename T>
-joynr_logging::Logger* RemoverRunnable<Key, T>::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "RemoverRunnable");
+joynr_logging::Logger* Directory<Key, T>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
 
 template <typename Key, typename T>
-joynr_logging::Logger* Directory<Key, T>::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
-
-
-template <typename Key, typename T>
-Directory<Key, T>::~Directory() {
-    LOG_TRACE(logger, QString("destructor: number of entries = ")+QString::number(callbackMap.size()));
+Directory<Key, T>::~Directory()
+{
+    LOG_TRACE(logger,
+              QString("destructor: number of entries = ") + QString::number(callbackMap.size()));
 }
 
 template <typename Key, typename T>
-Directory<Key, T>::Directory(const QString& directoryName) :
-    callbackMap(),
-    mutex(),
-    callBackRemoverScheduler(directoryName + QString("-CleanUpScheduler"))
+Directory<Key, T>::Directory(const QString& directoryName)
+        : callbackMap(),
+          mutex(),
+          callBackRemoverScheduler(directoryName + QString("-CleanUpScheduler"))
 {
 }
 
 template <typename Key, typename T>
-QSharedPointer < T > Directory<Key, T>::lookup(const Key &keyId){
+QSharedPointer<T> Directory<Key, T>::lookup(const Key& keyId)
+{
     QMutexLocker locker(&mutex);
     return callbackMap.value(keyId);
 }
 
 template <typename Key, typename T>
-bool Directory<Key, T>::contains(const Key &keyId){
+bool Directory<Key, T>::contains(const Key& keyId)
+{
     QMutexLocker locker(&mutex);
     return callbackMap.contains(keyId);
 }
 
 template <typename Key, typename T>
 // ownership passed off to the directory, which passes off to SharedPointer
-void Directory<Key, T>::add(const Key &keyId, T* value){
-    QSharedPointer< T > valuePtr = QSharedPointer< T >(value);
+void Directory<Key, T>::add(const Key& keyId, T* value)
+{
+    QSharedPointer<T> valuePtr = QSharedPointer<T>(value);
     add(keyId, valuePtr);
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key &keyId, QSharedPointer < T > value){
+void Directory<Key, T>::add(const Key& keyId, QSharedPointer<T> value)
+{
     QMutexLocker locker(&mutex);
-    callbackMap.insert(keyId,value);
+    callbackMap.insert(keyId, value);
 }
 
 // ownership passed off to the directory, which passes off to SharedPointer
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key &keyId, T* value, qint64 ttl_ms){
-    QSharedPointer< T > valuePtr = QSharedPointer< T >(value);
+void Directory<Key, T>::add(const Key& keyId, T* value, qint64 ttl_ms)
+{
+    QSharedPointer<T> valuePtr = QSharedPointer<T>(value);
     add(keyId, valuePtr, ttl_ms);
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key &keyId, QSharedPointer < T > value, qint64 ttl_ms){
+void Directory<Key, T>::add(const Key& keyId, QSharedPointer<T> value, qint64 ttl_ms)
+{
     // Insert the value
     {
         QMutexLocker locker(&mutex);
-        callbackMap.insert(keyId,value);
+        callbackMap.insert(keyId, value);
     }
 
     // make a removerRunnable and shedule it to remove the entry after ttl!
     RemoverRunnable<Key, T>* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
     callBackRemoverScheduler.schedule(removerRunnable, ttl_ms);
-
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::remove(const Key& keyId) {
+void Directory<Key, T>::remove(const Key& keyId)
+{
     QMutexLocker locker(&mutex);
     callbackMap.remove(keyId);
 }
 
 template <typename Key, typename T>
-RemoverRunnable<Key, T>::RemoverRunnable(const Key& keyId,
-                                               Directory<Key, T>* directory):
-                                                keyId(keyId),
-                                                directory(directory) {}
+RemoverRunnable<Key, T>::RemoverRunnable(const Key& keyId, Directory<Key, T>* directory)
+        : keyId(keyId), directory(directory)
+{
+}
 
 template <typename Key, typename T>
-void RemoverRunnable<Key, T>::run() {
-//    LOG_TRACE(logger, "Calling Directory<Key,T>" );
-
+void RemoverRunnable<Key, T>::run()
+{
+    //    LOG_TRACE(logger, "Calling Directory<Key,T>" );
 
     QSharedPointer<T> val = directory->lookup(keyId);
     directory->remove(keyId);
@@ -201,37 +215,39 @@ void RemoverRunnable<Key, T>::run() {
  */
 
 template <typename Key>
-class RemoverRunnable<Key, IReplyCaller> : public QRunnable {
+class RemoverRunnable<Key, IReplyCaller> : public QRunnable
+{
 public:
-     RemoverRunnable(const Key& keyId, Directory<Key,IReplyCaller>* directory);
-     void run();
- private:
-     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
-     QString keyId;
-     Directory<Key, IReplyCaller>* directory;
-     static joynr_logging::Logger* logger;
+    RemoverRunnable(const Key& keyId, Directory<Key, IReplyCaller>* directory);
+    void run();
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
+    QString keyId;
+    Directory<Key, IReplyCaller>* directory;
+    static joynr_logging::Logger* logger;
 };
 
-
 template <typename Key>
-void RemoverRunnable<Key, IReplyCaller>::run() {
+void RemoverRunnable<Key, IReplyCaller>::run()
+{
     QSharedPointer<IReplyCaller> value = directory->lookup(keyId);
     if (!value.isNull()) {
-         value->timeOut();
-         directory->remove(keyId);
+        value->timeOut();
+        directory->remove(keyId);
     }
 }
 
 template <typename Key>
 RemoverRunnable<Key, IReplyCaller>::RemoverRunnable(const Key& keyId,
-                                               Directory<Key, IReplyCaller>* directory):
-                                                keyId(keyId),
-                                                directory(directory) {}
+                                                    Directory<Key, IReplyCaller>* directory)
+        : keyId(keyId), directory(directory)
+{
+}
 
 template <typename Key>
-joynr_logging::Logger* RemoverRunnable<Key, IReplyCaller>::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
-
-
+joynr_logging::Logger* RemoverRunnable<Key, IReplyCaller>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
 
 } // namespace joynr
-#endif //DIRECTORY_H
+#endif // DIRECTORY_H

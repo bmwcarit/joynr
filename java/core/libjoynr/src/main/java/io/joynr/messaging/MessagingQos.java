@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessagingQos {
+    public static final int DEFAULT_TTL = 60000;
     public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
     private long ttl_ms;
 
@@ -30,7 +31,7 @@ public class MessagingQos {
      * MessagingQos with default values
      */
     public MessagingQos() {
-        ttl_ms = 60000;
+        ttl_ms = DEFAULT_TTL;
     }
 
     public MessagingQos(MessagingQos src) {

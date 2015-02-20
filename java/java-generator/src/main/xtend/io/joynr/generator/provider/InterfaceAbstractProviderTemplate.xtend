@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import com.google.inject.Inject
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceAbstractProviderTemplate {
+class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface serviceInterface) {
+	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "AbstractProvider"
 		val providerInterfaceName = interfaceName + "Provider"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		
 
 		'''
 		«warning()»
@@ -43,62 +43,66 @@ class InterfaceAbstractProviderTemplate {
 
 		import io.joynr.provider.AbstractJoynrProvider;
 		import «joynTypePackagePrefix».types.ProviderQos;
-		
-		
-		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, true)»
 			import «datatype»;
 		«ENDFOR»
-			
-			
-		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the fibex. 
+
+		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the franca model.
 		@SuppressWarnings("unused")
 
 		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
-			    protected ProviderQos providerQos = new ProviderQos();
-			    
+			protected ProviderQos providerQos = new ProviderQos();
 
-		«IF getAttributes(serviceInterface).size() > 0»
+			«IF getAttributes(serviceInterface).size() > 0»
 			//attributes
-		«ENDIF»
-		«FOR attribute: getAttributes(serviceInterface)»
+			«ENDIF»
+			«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
-				protected «attributeType» «attributeName»;	
-		«ENDFOR»
-		
-		«IF getAttributes(serviceInterface).size() > 0»
-		 	//setter & abstract getter
-		«ENDIF»
-		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.joynrName»
-			«val attributeType = getMappedDatatypeOrList(attribute)»
-	
+				protected «attributeType» «attributeName»;
+			«ENDFOR»
 
-			«IF isReadable(attribute)»
-				@Override
-				public abstract «attributeType» get«attributeName.toFirstUpper»();
+			«IF getAttributes(serviceInterface).size() > 0»
+				//setter & abstract getter
 			«ENDIF»
-		
-			«IF isNotifiable(attribute)»
-				@Override
-				public final void «attributeName.toFirstLower»Changed(«attributeType» «attributeName») {
-					this.«attributeName» = «attributeName»;
-					onAttributeValueChanged("«attributeName»", this.«attributeName»);
-				}
-			«ENDIF»
+			«FOR attribute: getAttributes(serviceInterface)»
+				«val attributeName = attribute.joynrName»
+				«val attributeType = getMappedDatatypeOrList(attribute)»
 
-			«IF isWritable(attribute)»
-				@Override
-				public abstract void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
-			«ENDIF»
-		«ENDFOR»
-		
+				«IF isReadable(attribute)»
+					@Override
+					public abstract «attributeType» get«attributeName.toFirstUpper»();
+				«ENDIF»
+
+				«IF isNotifiable(attribute)»
+					@Override
+					public final void «attributeName»Changed(«attributeType» «attributeName») {
+						this.«attributeName» = «attributeName»;
+						onAttributeValueChanged("«attributeName»", this.«attributeName»);
+					}
+				«ENDIF»
+
+				«IF isWritable(attribute)»
+					@Override
+					public abstract void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
+				«ENDIF»
+			«ENDFOR»
+
+			«FOR broadcast: serviceInterface.broadcasts»
+			«var broadcastName = broadcast.joynrName»
+			public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
+				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
+			}
+
+			«ENDFOR»
+
 			@Override
 			public ProviderQos getProviderQos() {
-			return providerQos;
+				return providerQos;
 			}
-		
+
 			}
-		'''	
-	}		
+		'''
+	}
 }

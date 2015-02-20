@@ -120,7 +120,24 @@ add_library(
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
 )
-qt5_use_modules(JoynrClusterController Core)
+qt5_use_modules(JoynrClusterController Core WebSockets)
+
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterController_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterController_SOURCES}")
+
+    add_custom_command(
+        TARGET JoynrClusterController
+        PRE_BUILD
+        COMMAND clang-format -i ${JoynrClusterController_HEADERS} ${JoynrClusterController_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(
     JoynrClusterController
@@ -158,16 +175,20 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-messaging.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-dbus.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-websocket.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-websocket.settings)
 else()
     # copy resources for build tree
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
     # ...and for install tree
     install(
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings
-            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
+        DESTINATION ${INSTALL_BIN_DIR}/resources/
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 

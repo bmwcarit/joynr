@@ -23,9 +23,9 @@ import io.joynr.pubsub.SubscriptionQos;
 
 public class SubscriptionRequest implements JoynrMessageType {
 
-    private String subscriptionId;
-    private String subscribedToName;
-    private SubscriptionQos qos;
+    protected String subscriptionId;
+    protected String subscribedToName;
+    protected SubscriptionQos qos;
 
     /**
      * \class SubscriptionRequest \brief SubscriptionRequest stores the information that is necessary to store a
@@ -70,6 +70,43 @@ public class SubscriptionRequest implements JoynrMessageType {
     public String toString() {
         return "SubscriptionRequest [subscriptionId=" + subscriptionId + "," + ", subscribedToName=" + subscribedToName
                 + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((qos == null) ? 0 : qos.hashCode());
+        result = prime * result + ((subscribedToName == null) ? 0 : subscribedToName.hashCode());
+        result = prime * result + ((subscriptionId == null) ? 0 : subscriptionId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SubscriptionRequest other = (SubscriptionRequest) obj;
+        if (qos == null) {
+            if (other.qos != null)
+                return false;
+        } else if (!qos.equals(other.qos))
+            return false;
+        if (subscribedToName == null) {
+            if (other.subscribedToName != null)
+                return false;
+        } else if (!subscribedToName.equals(other.subscribedToName))
+            return false;
+        if (subscriptionId == null) {
+            if (other.subscriptionId != null)
+                return false;
+        } else if (!subscriptionId.equals(other.subscriptionId))
+            return false;
+        return true;
     }
 
 }

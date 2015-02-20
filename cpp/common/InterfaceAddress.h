@@ -24,12 +24,14 @@
 #include <QObject>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
   * Immutable data class for messaging interface addresses.
   */
-class JOYNRCOMMON_EXPORT InterfaceAddress {
+class JOYNRCOMMON_EXPORT InterfaceAddress
+{
 public:
     InterfaceAddress();
     explicit InterfaceAddress(const QString& domain, const QString& interfaceName);
@@ -46,4 +48,4 @@ private:
 JOYNRCOMMON_EXPORT uint qHash(const InterfaceAddress& interfaceAddress);
 
 } // namespace joynr
-#endif //INTERFACEADDRESS_H_
+#endif // INTERFACEADDRESS_H_

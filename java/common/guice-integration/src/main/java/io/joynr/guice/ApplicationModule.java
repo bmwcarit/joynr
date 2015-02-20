@@ -3,7 +3,7 @@ package io.joynr.guice;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,9 @@ import java.util.Properties;
 import com.google.inject.name.Names;
 
 /**
- * @author christoph.ainhauser
- *
  * This class is used to configure the Guice InjectorFactory when creating applications. 
- * This module binds the unique identified of the application as well as the subclass of IApplication
- * which is binded for instantion. 
- */
-/**
- * @author christoph.ainhauser
- *
+ * This module binds the unique identifier of the application as well as the subclass of IApplication
+ * which is binded for instantiaton. 
  */
 public class ApplicationModule extends PropertyLoadingModule {
 

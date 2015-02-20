@@ -24,7 +24,8 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
-
+#include "joynr/MessageQueue.h"
+#include "joynr/system/ChannelAddress.h"
 
 using namespace joynr;
 
@@ -35,9 +36,9 @@ public:
         settings(settingsFileName, QSettings::IniFormat),
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
-        messageRouter(new MessageRouter(new MessagingStubFactory())),
-        joynrMessage(),
-        qos()
+        messageQueue(new MessageQueue()),
+        messageRouter(new MessageRouter(new MessagingStubFactory(), 500, 6, messageQueue)),
+        joynrMessage()
     {
         // provision global capabilities directory
         QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
@@ -65,9 +66,9 @@ protected:
     QSettings settings;
     MessagingSettings messagingSettings;
     MockMessagingStubFactory* messagingStubFactory;
+    MessageQueue* messageQueue;
     MessageRouter* messageRouter;
     JoynrMessage joynrMessage;
-    MessagingQos qos;
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouterTest);
 };
@@ -78,6 +79,46 @@ TEST_F(MessageRouterTest, DISABLED_routeDelegatesToStubFactory){
     // be mocked. However, this test was already disabled.
     EXPECT_CALL(*messagingStubFactory, create(_,_)).Times(1);
 
-    messageRouter->route(joynrMessage, qos);
+    messageRouter->route(joynrMessage);
 
+}
+
+TEST_F(MessageRouterTest, addMessageToQueue){
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+}
+
+TEST_F(MessageRouterTest, doNotAddMessageToQueue){
+    // this message should be added because no destination header set
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    // the message now has a known destination and should be directly routed
+    joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId());
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+}
+
+TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
+    // this message should be added because no destination header set
+    joynrMessage.setHeaderTo("TEST");
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    // add destination address -> message should be routed
+    QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress("TEST"));
+    messageRouter->addNextHop("TEST", address);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+}
+
+TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
+    messageRouter->route(joynrMessage);
+    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+
+    // we wait for the time out (500ms) and the thread sleep (1000ms)
+    QThread::msleep(1200);
+    EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

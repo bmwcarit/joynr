@@ -25,9 +25,11 @@
 
 #include <QRunnable>
 
-namespace joynr {
+namespace joynr
+{
 
-void registerMessagingMetaTypes(){
+void registerMessagingMetaTypes()
+{
 
     qRegisterMetaType<JoynrMessage>("joynr.JoynrMessage");
     qRegisterMetaType<QRunnable*>("QRunnableStar");

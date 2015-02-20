@@ -288,15 +288,15 @@ public class DispatcherTest {
 
     @Test
     public void queueMessagesForUnregisteredResponder() throws InterruptedException {
-        messageToUnregisteredResponder1.setExpirationDate(ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 0.1)));
+        messageToUnregisteredResponder1.setExpirationDate(ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 0.03)));
         messageSenderReceiverMock.receiveMessage(messageToUnregisteredResponder1);
 
-        messageToUnregisteredResponder2.setExpirationDate(ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 2)));
+        messageToUnregisteredResponder2.setExpirationDate(ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 5)));
         messageSenderReceiverMock.receiveMessage(messageToUnregisteredResponder2);
 
-        Thread.sleep((long) (TIME_TO_LIVE * 0.1 + 20));
+        Thread.sleep((long) (TIME_TO_LIVE * 0.03 + 20));
 
-        testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.5));
+        testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
         dispatcher.addRequestCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));

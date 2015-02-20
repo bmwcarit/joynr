@@ -20,18 +20,18 @@
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include <cassert>
 
-namespace joynr {
+namespace joynr
+{
 
 InProcessMessagingStub::InProcessMessagingStub(QSharedPointer<InProcessMessagingSkeleton> skeleton)
-    : skeleton(skeleton)
+        : skeleton(skeleton)
 {
 }
 
-
-
-void InProcessMessagingStub::transmit(JoynrMessage& message, const MessagingQos& qos) {
-    assert(skeleton!=NULL);
-    skeleton->transmit(message, qos);
+void InProcessMessagingStub::transmit(JoynrMessage& message)
+{
+    assert(skeleton != NULL);
+    skeleton->transmit(message);
 }
 
 } // namespace joynr

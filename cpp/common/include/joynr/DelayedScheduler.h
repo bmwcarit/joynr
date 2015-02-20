@@ -22,6 +22,7 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <QThreadPool>
+#include <QRunnable>
 #include <QHash>
 #include <QAtomicInt>
 #include <QMutex>
@@ -29,11 +30,13 @@
 #include <QEventLoop>
 #include <QTimer>
 
-namespace joynr {
+namespace joynr
+{
 
-namespace joynr_logging { class Logger; }
-
-
+namespace joynr_logging
+{
+class Logger;
+}
 
 /**
   * An abstract base class to schedule QRunnables to be executed at some time in the future.
@@ -41,29 +44,34 @@ namespace joynr_logging { class Logger; }
   * Internally uses a newly started thread with a QT event queue.
   * Because the thread is stopped in the destructor, destruction of this object can take some time.
   */
-class JOYNRCOMMON_EXPORT DelayedScheduler : public QObject {
+class JOYNRCOMMON_EXPORT DelayedScheduler : public QObject
+{
     Q_OBJECT
 
 public:
     DelayedScheduler(const QString& eventThreadName, int delay_ms = 0);
     virtual ~DelayedScheduler();
 
+    static quint32 INVALID_RUNNABLE_HANDLE();
+
     /**
       * Schedules a runnable to be executed after delay_ms has passed.
       * If no delay is supplied the default delay specified in the constructor is used.
       */
-    virtual void schedule(QRunnable* runnable, int delay_ms = -1);
+    virtual quint32 schedule(QRunnable* runnable, int delay_ms = -1);
+    virtual void unschedule(quint32& runnableHandle);
 
 protected:
     virtual void executeRunnable(QRunnable* runnable) = 0;
     void shutdown();
 
 private slots:
-    void scheduleUsingTimer(void* runnable, int delay_ms);
+    void scheduleUsingTimer(void* runnable, quint32 runnableHandle, int delay_ms);
     void run();
 
 private:
-    class EventThread : public QThread {
+    class EventThread : public QThread
+    {
     public:
         EventThread();
         virtual ~EventThread();
@@ -71,35 +79,50 @@ private:
     };
 
     int delay_ms;
+    quint32 runnableHandle;
 
     EventThread eventThread;
-    QHash<QTimer*, QRunnable*> runnables;
+    QHash<quint32, QRunnable*> runnables;
+    QHash<QTimer*, quint32> timers;
     QMutex mutex;
     bool stoppingScheduler;
     static joynr_logging::Logger* logger;
 };
 
 /**
-  * An implementation of the DelayedScheduler that uses the ThreadPool passed in the constructor to execute the runnables.
+  * An implementation of the DelayedScheduler that uses the ThreadPool passed in the constructor to
+ * execute the runnables.
   */
-class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public DelayedScheduler {
+class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public DelayedScheduler
+{
     Q_OBJECT
 
 public:
-    ThreadPoolDelayedScheduler(QThreadPool& threadPool, const QString& eventThreadName, int delay_ms = 0);
+    ThreadPoolDelayedScheduler(QThreadPool& threadPool,
+                               const QString& eventThreadName,
+                               int delay_ms = 0);
     virtual ~ThreadPoolDelayedScheduler();
+
+    void reportRunnableStarted();
+
 protected:
     void executeRunnable(QRunnable* runnable);
 
 private:
+    static joynr_logging::Logger* logger;
     QThreadPool& threadPool;
+    int waitingRunnablesCount;
+    QMutex waitingRunnablesCountMutex;
+
+    class ThreadPoolRunnable;
 };
 
 /**
   * An implementation of the DelayedScheduler that uses the event thread to execute the runnables.
   * This implementation should not be used for runnables that take substantial time to complete.
   */
-class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public DelayedScheduler {
+class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public DelayedScheduler
+{
     Q_OBJECT
 
 public:
@@ -108,10 +131,10 @@ public:
 
 protected:
     void executeRunnable(QRunnable* runnable);
+
 private:
     static joynr_logging::Logger* logger;
 };
 
-
 } // namespace joynr
-#endif //DELAYED_SCHEDULER_H_
+#endif // DELAYED_SCHEDULER_H_

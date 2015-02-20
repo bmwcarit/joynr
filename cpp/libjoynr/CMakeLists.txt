@@ -50,6 +50,7 @@ file(
     "provider/*.h"
     "proxy/*.h"
     "subscription/*.h"
+    "websocket/*.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
 )
@@ -74,6 +75,7 @@ file(
     "provider/*.cpp"
     "proxy/*.cpp"
     "subscription/*.cpp"
+    "websocket/*.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
 )
@@ -113,11 +115,28 @@ include_directories(
 
 add_library(
     Joynr
-	SHARED
+    SHARED
     ${JoynrLib_HEADERS}
     ${JoynrLib_SOURCES}
 )
 qt5_use_modules(Joynr Core)
+
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrLib_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrLib_SOURCES}")
+
+    add_custom_command(
+        TARGET Joynr
+        PRE_BUILD
+        COMMAND clang-format -i ${JoynrLib_HEADERS} ${JoynrLib_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(
     Joynr

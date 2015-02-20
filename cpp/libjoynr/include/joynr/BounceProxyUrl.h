@@ -25,12 +25,14 @@
 #include <QObject>
 #include <QUrl>
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNR_EXPORT BounceProxyUrl : public QObject {
+class JOYNR_EXPORT BounceProxyUrl : public QObject
+{
     Q_OBJECT
 public:
-    explicit BounceProxyUrl(const QString &bounceProxyChannelsBaseUrl, QObject* parent = 0);
+    explicit BounceProxyUrl(const QString& bounceProxyChannelsBaseUrl, QObject* parent = 0);
 
     BounceProxyUrl(const BounceProxyUrl& other);
 
@@ -49,12 +51,12 @@ public:
     QUrl getBounceProxyBaseUrl() const;
     QUrl getDeleteChannelUrl(const QString& mcid) const;
     QUrl getTimeCheckUrl() const;
+
 private:
     QString bounceProxyBaseUrl;
     QUrl bounceProxyChannelsBaseUrl;
     static joynr_logging::Logger* logger;
 };
-
 
 } // namespace joynr
 #endif // BOUNCEPROXYURL_H

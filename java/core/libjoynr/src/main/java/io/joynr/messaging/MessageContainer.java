@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package io.joynr.messaging;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.messaging.httpoperation.HttpConstants;
 
 import javax.annotation.Nullable;
 
@@ -50,18 +48,14 @@ public class MessageContainer {
 
     private JoynrMessage message;
 
-    private HttpConstants httpConstants;
-
     private int tries = 0;
 
     public MessageContainer(final String channelId,
                             final JoynrMessage message,
                             final long expiryDate,
-                            HttpConstants httpConstants,
                             ObjectMapper objectMapper) throws JsonProcessingException {
         this.channelId = channelId;
         this.message = message;
-        this.httpConstants = httpConstants;
         this.serializedMessage = objectMapper.writeValueAsString(message); // jsonConverter.toJson(message);
         this.expiryDate = expiryDate;
         this.messageId = message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID);
@@ -87,14 +81,6 @@ public class MessageContainer {
     @Nullable
     public String getMessageId() {
         return messageId;
-    }
-
-    public HttpConstants getHttpConstants() {
-        return httpConstants;
-    }
-
-    public void setHttpConstants(HttpConstants httpConstants) {
-        this.httpConstants = httpConstants;
     }
 
     @Override

@@ -37,9 +37,13 @@ public interface CapabilitiesStore {
     public abstract void remove(Collection<String> participantIds);
 
     public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint,
-                                                                                  DiscoveryQos discoveryQos);
+                                                                                  long cacheMaxAge);
 
-    public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName, DiscoveryQos discoveryQos);
+    public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint);
+
+    public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName, long cacheMaxAge);
+
+    public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName);
 
     public abstract CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos);
 

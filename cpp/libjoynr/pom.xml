@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -35,17 +35,25 @@
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<configuration>
+					<model>${basedir}/../../basemodel/src/main/franca</model>
+					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+					<outputPath>${basedir}</outputPath>
+				</configuration>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
+						<id>generate</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
-						<configuration>
-							<model>${basedir}/../../basemodel/src/main/franca</model>
-							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-							<outputPath>${basedir}</outputPath>
-						</configuration>
+					</execution>
+					<execution>
+						<phase>clean</phase>
+						<id>clean</id>
+						<goals>
+							<goal>clean</goal>
+						</goals>
 					</execution>
 				</executions>
 				<dependencies>
@@ -65,8 +73,6 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
 					<filesets>
-						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
-							<include>**</include> </includes> </fileset> -->
 						<fileset>
 							<directory>${basedir}</directory>
 							<includes>

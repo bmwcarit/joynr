@@ -20,7 +20,8 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/RequestStatus.h"
 
-namespace joynr {
+namespace joynr
+{
 
 joynr_logging::Logger* CapabilitiesRegistrar::logger =
         joynr_logging::Logging::getInstance()->getLogger("DIS", "CapabilitiesRegistrar");
@@ -31,49 +32,45 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         QSharedPointer<joynr::system::Address> messagingStubAddress,
         QSharedPointer<ParticipantIdStorage> participantIdStorage,
         QSharedPointer<joynr::system::Address> dispatcherAddress,
-        QSharedPointer<MessageRouter> messageRouter
-) :
-    dispatcherList(dispatcherList),
-    discoveryProxy(discoveryProxy),
-    messagingStubAddress(messagingStubAddress),
-    participantIdStorage(participantIdStorage),
-    dispatcherAddress(dispatcherAddress),
-    messageRouter(messageRouter)
+        QSharedPointer<MessageRouter> messageRouter)
+        : dispatcherList(dispatcherList),
+          discoveryProxy(discoveryProxy),
+          messagingStubAddress(messagingStubAddress),
+          participantIdStorage(participantIdStorage),
+          dispatcherAddress(dispatcherAddress),
+          messageRouter(messageRouter)
 {
-
 }
 
-void CapabilitiesRegistrar::remove(QString participantId) {
+void CapabilitiesRegistrar::remove(const QString& participantId)
+{
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
     joynr::RequestStatus status;
     discoveryProxy.remove(status, participantId);
-    if(!status.successful()) {
-        LOG_ERROR(
-                    logger,
-                    QString("Unable to remove provider (participant ID: %1) "
-                            "to discovery. Status code: %2."
-                    )
-                    .arg(participantId)
-                    .arg(status.getCode().toString())
-        );
+    if (!status.successful()) {
+        LOG_ERROR(logger,
+                  QString("Unable to remove provider (participant ID: %1) "
+                          "to discovery. Status code: %2.")
+                          .arg(participantId)
+                          .arg(status.getCode().toString()));
     }
     messageRouter->removeNextHop(status, participantId);
-    if(!status.successful()) {
-        LOG_ERROR(
-                    logger,
-                    QString("Unable to remove next hop (participant ID: %1) from message router.")
-                    .arg(participantId)
-        );
+    if (!status.successful()) {
+        LOG_ERROR(logger,
+                  QString("Unable to remove next hop (participant ID: %1) from message router.")
+                          .arg(participantId));
     }
 }
 
-void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher) {
+void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)
+{
     dispatcherList.append(dispatcher);
 }
 
-void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher) {
+void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher)
+{
     dispatcherList.removeAll(dispatcher);
 }
 

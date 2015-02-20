@@ -19,40 +19,43 @@
 
 #include "joynr/SubscriptionReply.h"
 
-namespace joynr {
+namespace joynr
+{
 
 const SubscriptionReply SubscriptionReply::NULL_RESPONSE = SubscriptionReply();
 
-SubscriptionReply::SubscriptionReply():
-    subscriptionId()
+SubscriptionReply::SubscriptionReply() : subscriptionId()
 {
-
 }
-SubscriptionReply::SubscriptionReply(const SubscriptionReply &other) :
-    QObject(),
-    subscriptionId(other.getSubscriptionId())
+SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
+        : QObject(), subscriptionId(other.getSubscriptionId())
 {
 }
 
-SubscriptionReply& SubscriptionReply::operator=(const SubscriptionReply &other){
+SubscriptionReply& SubscriptionReply::operator=(const SubscriptionReply& other)
+{
     this->subscriptionId = other.getSubscriptionId();
     return *this;
 }
 
-QString SubscriptionReply::getSubscriptionId() const {
+QString SubscriptionReply::getSubscriptionId() const
+{
     return subscriptionId;
 }
 
-void SubscriptionReply::setSubscriptionId(QString subscriptionId){
+void SubscriptionReply::setSubscriptionId(QString subscriptionId)
+{
     this->subscriptionId = subscriptionId;
 }
 
-bool SubscriptionReply::operator==(const SubscriptionReply& other) const {
+bool SubscriptionReply::operator==(const SubscriptionReply& other) const
+{
     return subscriptionId == other.getSubscriptionId();
 }
 
-bool SubscriptionReply::operator!=(const SubscriptionReply& other) const {
-    return !(*this==other);
+bool SubscriptionReply::operator!=(const SubscriptionReply& other) const
+{
+    return !(*this == other);
 }
 
 } // namespace joynr

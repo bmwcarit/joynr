@@ -34,7 +34,8 @@
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/joynrlogging.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IReplyCaller;
 class MessagingQos;
@@ -42,14 +43,16 @@ class RequestCaller;
 class JoynrMessage;
 class JoynrMessageSender;
 
-class JOYNR_EXPORT Dispatcher : public IDispatcher {
+class JOYNR_EXPORT Dispatcher : public IDispatcher
+{
 
 public:
-    //ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for deleting it.
-    //Todo: should be changed to QSP or reference.
+    // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
+    // deleting it.
+    // Todo: should be changed to QSP or reference.
     explicit Dispatcher(JoynrMessageSender* messageSender, int maxThreads = 4);
 
-    virtual ~Dispatcher() ;
+    virtual ~Dispatcher();
 
     virtual void addReplyCaller(const QString& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
@@ -62,17 +65,18 @@ public:
 
     virtual void removeRequestCaller(const QString& participantId);
 
-    virtual void receive(const JoynrMessage& message, const MessagingQos& qos);
+    virtual void receive(const JoynrMessage& message);
 
     virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager);
 
     virtual void registerPublicationManager(PublicationManager* publicationManager);
 
 private:
-    void handleRequestReceived(const JoynrMessage& message, const MessagingQos& qos);
+    void handleRequestReceived(const JoynrMessage& message);
     void handleReplyReceived(const JoynrMessage& message);
     void handlePublicationReceived(const JoynrMessage& message);
     void handleSubscriptionRequestReceived(const JoynrMessage& message);
+    void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
     void handleSubscriptionStopReceived(const JoynrMessage& message);
 
 private:
@@ -85,7 +89,6 @@ private:
     QThreadPool handleReceivedMessageThreadPool;
     static joynr_logging::Logger* logger;
     QMutex subscriptionHandlingMutex;
-
 
     friend class ReceivedMessageRunnable;
 };

@@ -18,41 +18,49 @@
  */
 #include "joynr/RequestStatusCode.h"
 
-namespace joynr {
+namespace joynr
+{
 
 RequestStatusCode RequestStatusCode::OK = RequestStatusCode(0, "OK");
 RequestStatusCode RequestStatusCode::NOT_STARTED = RequestStatusCode(1, "Not started");
 RequestStatusCode RequestStatusCode::IN_PROGRESS = RequestStatusCode(2, "In progress");
 
 RequestStatusCode RequestStatusCode::ERROR = RequestStatusCode(300, "Error");
-RequestStatusCode RequestStatusCode::ERROR_TIME_OUT_ARBITRATION = RequestStatusCode(301, "Error timout waiting for arbitration");
-RequestStatusCode RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE = RequestStatusCode(302, "Error timeout waiting for the json response");
-RequestStatusCode RequestStatusCode::ERROR_REPLY_CALLER_CANNOT_CONVERT_RETURN_VALUE = RequestStatusCode(303, "Error in ReplyCaller when attempting to cast the return type to the desired type");
-
+RequestStatusCode RequestStatusCode::ERROR_TIME_OUT_ARBITRATION =
+        RequestStatusCode(301, "Error timout waiting for arbitration");
+RequestStatusCode RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE =
+        RequestStatusCode(302, "Error timeout waiting for the json response");
+RequestStatusCode RequestStatusCode::ERROR_REPLY_CALLER_CANNOT_CONVERT_RETURN_VALUE =
+        RequestStatusCode(
+                303,
+                "Error in ReplyCaller when attempting to cast the return type to the desired type");
 
 RequestStatusCode::RequestStatusCode(long id, QString description)
-    : id(id),
-      description(description){
+        : id(id), description(description)
+{
 }
 
-QString RequestStatusCode::toString() const {
+QString RequestStatusCode::toString() const
+{
     QString result;
     result.append("[RequestStatusCode id: " + QString::number(id));
     result.append(" description: " + description + "]");
     return result;
 }
 
-long RequestStatusCode::getId() const {
+long RequestStatusCode::getId() const
+{
     return id;
 }
 
-bool RequestStatusCode::operator==(const RequestStatusCode& requestStatusCode) const {
+bool RequestStatusCode::operator==(const RequestStatusCode& requestStatusCode) const
+{
     return id == requestStatusCode.getId();
 }
 
-bool RequestStatusCode::operator!=(const RequestStatusCode& requestStatusCode) const {
-    return !(*this==requestStatusCode);
+bool RequestStatusCode::operator!=(const RequestStatusCode& requestStatusCode) const
+{
+    return !(*this == requestStatusCode);
 }
-
 
 } // namespace joynr

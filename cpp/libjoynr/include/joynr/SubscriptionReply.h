@@ -25,7 +25,8 @@
 #include <QString>
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class JOYNR_EXPORT SubscriptionReply : public QObject
 {
@@ -33,14 +34,13 @@ class JOYNR_EXPORT SubscriptionReply : public QObject
 
     Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
 public:
-    SubscriptionReply& operator=(const SubscriptionReply &other);
+    SubscriptionReply& operator=(const SubscriptionReply& other);
     bool operator==(const SubscriptionReply& other) const;
     bool operator!=(const SubscriptionReply& other) const;
 
-
     const static SubscriptionReply NULL_RESPONSE;
 
-    SubscriptionReply(const SubscriptionReply &other);
+    SubscriptionReply(const SubscriptionReply& other);
     SubscriptionReply();
 
     QString getSubscriptionId() const;
@@ -55,4 +55,4 @@ private:
 Q_DECLARE_METATYPE(joynr::SubscriptionReply)
 Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionReply>)
 
-#endif //SUBSCRIPTIONREPLY_H
+#endif // SUBSCRIPTIONREPLY_H

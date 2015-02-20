@@ -20,6 +20,7 @@ This project has dependencies to:
   Apache HttpClient under Apache License
   Apache HttpClient Mime under Apache License
   Apache HttpCore under Apache License
+  Apache Log4j under The Apache Software License, Version 2.0
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
@@ -45,10 +46,10 @@ This project has dependencies to:
   Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
+  Java Servlet API under CDDL + GPLv2 with classpath exception
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
-  Jetty :: Continuation under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -56,9 +57,12 @@ This project has dependencies to:
   Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty Orbit :: Servlet API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
@@ -68,6 +72,7 @@ This project has dependencies to:
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   SLF4J API Module under MIT License
+  SLF4J LOG4J-12 Binding under MIT License
   TagSoup under Apache License 2.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0
   xml-path under Apache 2.0

@@ -27,13 +27,18 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 	</parent>
 
 	<properties>
 		<!-- NOTE: platform version and level must match -->
-		<platform.version>4.0.1.2</platform.version>
-		<platform.level>15</platform.level>
+		<platform.version>4.1.1.4</platform.version>
+		<!--
+			ATTENTION:
+			If the platform level is changed here, the target property
+			inside ${basedir}/project.properties must be changed accordingly.
+		-->
+		<platform.level>19</platform.level>
 	</properties>
 
 	<dependencies>

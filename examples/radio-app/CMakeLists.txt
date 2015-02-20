@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 ######## Project settings ########
-project(radio-app-0.7.2)
+project(radio-app-0.8.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -14,14 +14,25 @@ set(
 )
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
+
+option(
+    ENABLE_CLANG_FORMATTER
+    "Use clang-formatter to format source code?"
+    ON
+)
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.7.2 REQUIRED)
+find_package(Joynr 0.8.0 REQUIRED)
 message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
-message(STATUS "joynr variable JOYNR_LIB_INCLUDE_DIRS=${JOYNR_LIB_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_LIB_DBUS_INCLUDE_DIRS=${JOYNR_LIB_DBUS_INCLUDE_DIRS}")
+message(STATUS "joynr variable JOYNR_LIB_WS_INCLUDE_DIRS=${JOYNR_LIB_WS_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
-message(STATUS "joynr variable JOYNR_LIB_LIBRARIES=${JOYNR_LIB_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_LIB_DBUS_LIBRARIES=${JOYNR_LIB_DBUS_LIBRARIES}")
+message(STATUS "joynr variable JOYNR_LIB_WS_LIBRARIES=${JOYNR_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable JOYNR_EXECUTABLES=${JOYNR_EXECUTABLES}")
 message(STATUS "joynr variable JOYNR_RESOURCES_DIR=${JOYNR_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
@@ -63,6 +74,8 @@ set(radio-app-provider_HEADERS
     ${GENERATED_HEADERS}
     "src/main/cpp/MyRadioProvider.h"
     "src/main/cpp/MyRadioHelper.h"
+    "src/main/cpp/TrafficServiceBroadcastFilter.h"
+    "src/main/cpp/GeocastBroadcastFilter.h"
 )
 
 # Use the generated source files for the provider application
@@ -70,6 +83,8 @@ set(radio-app-provider_SOURCES
     "src/main/cpp/MyRadioProvider.cpp"
     "src/main/cpp/MyRadioHelper.cpp"
     "src/main/cpp/MyRadioProviderApplication.cpp"
+    "src/main/cpp/TrafficServiceBroadcastFilter.cpp"
+    "src/main/cpp/GeocastBroadcastFilter.cpp"
 )
 
 # Link with the joynr libraries
@@ -86,11 +101,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
     message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
     message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1)
+    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1.4)
     message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
     message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1)
+    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1.4)
     message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
     message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
@@ -141,34 +156,108 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+# Compile the provider application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+add_executable(radio-app-provider-ws
+    ${radio-app-provider_HEADERS}
+    ${radio-app-provider_SOURCES}
+)
+
+# Link the provider application
+target_link_libraries(radio-app-provider-ws
+    radio-app
+    ${JOYNR_LIB_WS_LIBRARIES}
+)
+
+# Compile the consumer application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+add_executable(radio-app-consumer-ws
+    ${radio-app-consumer_HEADERS}
+    ${radio-app-consumer_SOURCES}
+)
+
+# Link the consumer application
+target_link_libraries(radio-app-consumer-ws
+    radio-app
+    ${JOYNR_LIB_WS_LIBRARIES}
+)
+
+install(TARGETS
+            radio-app-provider-ws
+            radio-app-consumer-ws
+            radio-app-provider-cc
+            radio-app-consumer-cc
+        RUNTIME DESTINATION bin COMPONENT bin
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application (requires: Dbus and running cluster controller)
-    add_executable(radio-app-provider
+    # Communicates via Dbus with cluster controller
+    add_executable(radio-app-provider-dbus
         ${radio-app-provider_HEADERS}
         ${radio-app-provider_SOURCES}
     )
 
     # Link the provider application
-    target_link_libraries(radio-app-provider
+    target_link_libraries(radio-app-provider-dbus
         radio-app
-        ${JOYNR_LIB_LIBRARIES}
+        ${JOYNR_LIB_DBUS_LIBRARIES}
     )
 
     # Compile the consumer application (requires: Dbus and running cluster controller)
-    add_executable(radio-app-consumer
+    # Communicates via Dbus with cluster controller
+    add_executable(radio-app-consumer-dbus
         ${radio-app-consumer_HEADERS}
         ${radio-app-consumer_SOURCES}
     )
 
     # Link the consumer application
-    target_link_libraries(radio-app-consumer
+    target_link_libraries(radio-app-consumer-dbus
         radio-app
-        ${JOYNR_LIB_LIBRARIES}
+        ${JOYNR_LIB_DBUS_LIBRARIES}
     )
+
+    install(TARGETS
+                radio-app-provider-dbus
+                radio-app-consumer-dbus
+            RUNTIME DESTINATION bin COMPONENT bin
+    )
+
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-MESSAGE("CMAKE_CURRENT_SOURCE_DIR:" ${CMAKE_CURRENT_SOURCE_DIR})
-MESSAGE("CMAKE_RUNTIME_OUTPUT_DIRECTORY:" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES}")
+
+    add_custom_command(
+        TARGET radio-app-provider-cc
+        PRE_BUILD
+        COMMAND clang-format -i
+            ${radio-app-provider_HEADERS}
+            ${radio-app-provider_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-consumer_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-consumer_SOURCES}")
+
+    add_custom_command(
+        TARGET radio-app-consumer-cc
+        PRE_BUILD
+        COMMAND clang-format -i
+            ${radio-app-consumer_HEADERS}
+            ${radio-app-consumer_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
 
 # Set Visual Studio to do parallel builds
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")

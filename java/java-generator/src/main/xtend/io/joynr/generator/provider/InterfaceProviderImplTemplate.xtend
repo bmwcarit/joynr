@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import com.google.inject.Inject
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceProviderImplTemplate {
+class InterfaceProviderImplTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject	extension TemplateBase
-	
-	def generate(FInterface serviceInterface) {
+
+	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val className = "Default" + interfaceName + "Provider"
 		val abstractProviderName = interfaceName + "AbstractProvider"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		
 
 		'''
 		«warning()»
@@ -42,59 +42,50 @@ class InterfaceProviderImplTemplate {
 		import com.google.inject.Singleton;
 		import org.slf4j.Logger;
 		import org.slf4j.LoggerFactory;
-		
+
 		import «joynTypePackagePrefix».types.ProviderQos;
-		
+
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
-//The current generator is not able to check wether some of the imports are acutally necessary for this specific interface.
-//Therefore some imports migth be unused in this version of the interface.
-//To prevent warnings @SuppressWarnings("unused") is being used. 
-//To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
-import java.util.TreeSet;
-@SuppressWarnings("unused")
-			
+		//The current generator is not able to check wether some of the imports are acutally necessary for this specific interface.
+		//Therefore some imports migth be unused in this version of the interface.
+		//To prevent warnings @SuppressWarnings("unused") is being used. 
+		//To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
+		import java.util.TreeSet;
+		@SuppressWarnings("unused")
+
 		@Singleton
 		public class «className» extends «abstractProviderName» {
 			private static final Logger logger = LoggerFactory.getLogger(«className».class);
-			    
-			public «className»() {				
+
+			public «className»() {
 				// default uses a priority that is the current time, causing arbitration to the last started instance
 				//providerQos.put(ArbitrationConstants.PRIORITY_PARAMETER, "" + System.currentTimeMillis());
 				providerQos.setPriority(System.currentTimeMillis());
-			}	
+			}
 
-«««     The members are already defined in AbstractProvider, and should not be defined again here.
-«««		«FOR attribute: getAttributes(serviceInterface)»
-«««		«val attributeName = attribute.SHORTNAME.toFirstLower»
-«««		«val attributeType = getMappedDatatypeOrList(attribute)»
-«««			private «attributeType» «attributeName»;	
-«««		«ENDFOR»
-		
-		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.joynrName»
-			«val attributeType = getMappedDatatypeOrList(attribute)»
-		
-			«IF isReadable(attribute)»
-				@Override
-				public «attributeType» get«attributeName.toFirstUpper»() {
-					return «attributeName»;
-				}
-			«ENDIF»
-		
-			«IF isWritable(attribute)»
-				@Override
-				public void set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
-					«IF isNotifiable(attribute)»
-						super.«attributeName.toFirstLower»Changed(«attributeName»);
-					«ENDIF»
-					this.«attributeName» = «attributeName»;
-				}
-			«ENDIF»
-		«ENDFOR»
-		
-				
+			«FOR attribute: getAttributes(serviceInterface)»
+				«val attributeName = attribute.joynrName»
+				«val attributeType = getMappedDatatypeOrList(attribute)»
+
+				«IF isReadable(attribute)»
+					@Override
+					public «attributeType» get«attributeName.toFirstUpper»() {
+						return «attributeName»;
+					}
+				«ENDIF»
+				«IF isWritable(attribute)»
+					@Override
+					public void set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
+						«IF isNotifiable(attribute)»
+							super.«attributeName»Changed(«attributeName»);
+						«ENDIF»
+						this.«attributeName» = «attributeName»;
+					}
+				«ENDIF»
+			«ENDFOR»
+
 		«FOR method: getMethods(serviceInterface)»
 		«val methodName = method.joynrName»
 		«val outputParameters = getOutputParameters(method)»
@@ -104,8 +95,8 @@ import java.util.TreeSet;
 			public «outputParameterType» «methodName»(«getCommaSeperatedTypedParameterList(method)») {
 				logger.warn("**********************************************");
 				logger.warn("* «interfaceName».«methodName» called");
-				logger.warn("**********************************************");	
-		
+				logger.warn("**********************************************");
+
 			«IF outputParameterType=="void"»
 			«ELSEIF outputParameterType=="String"»
 				return "Hello World";
@@ -114,29 +105,27 @@ import java.util.TreeSet;
 			«ELSEIF outputParameterType=="Integer"»
 				return 42;
 			«ELSEIF outputParameterType=="Double"»
-			    return 3.1415;
+				return 3.1415;
 			«ELSEIF outputParameterType=="Long"»
-			    return (long) 42;
+				return (long) 42;
 			«ELSEIF outputParameterType=="Byte"»
-			    return (byte) 42;
+				return (byte) 42;
 			«ELSEIF outputParameterType.startsWith("List<")»
 				return new Array«outputParameterType»();
 			«ELSEIF isEnum(outputParameter.type)»
 				return «outputParameterType».«getEnumElements(getEnumType(outputParameter.type)).iterator.next.joynrName»;
 			«ELSE»
-				return new «outputParameterType»();	
+				return new «outputParameterType»();
 			«ENDIF»
-		
+
 			}
-		«ENDFOR»    	
-			
+		«ENDFOR»
+
 			@Override
 			public ProviderQos getProviderQos() {
-			    return providerQos;
-			}	
+				return providerQos;
+			}
 		}
-		'''	
-	}	
-	
-			
+		'''
+	}
 }

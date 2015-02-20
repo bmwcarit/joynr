@@ -22,13 +22,16 @@
 #include <QString>
 #include <QStringList>
 
-namespace joynr {
+namespace joynr
+{
 
-QSettings* SettingsMerger::mergeSettings(QString fileName, QSettings* currentSettings) {
+QSettings* SettingsMerger::mergeSettings(QString fileName, QSettings* currentSettings)
+{
     // create new settingsfile
-    if(!currentSettings) {
+    if (!currentSettings) {
         QString uuid = Util::createUuid();
-        currentSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GENIVI", "Joynr-"+uuid);
+        currentSettings = new QSettings(
+                QSettings::IniFormat, QSettings::UserScope, "GENIVI", "Joynr-" + uuid);
     }
 
     // load new settings file
@@ -38,13 +41,14 @@ QSettings* SettingsMerger::mergeSettings(QString fileName, QSettings* currentSet
     return currentSettings;
 }
 
-void SettingsMerger::mergeSettings(const QSettings& from, QSettings& into, bool override) {
+void SettingsMerger::mergeSettings(const QSettings& from, QSettings& into, bool override)
+{
     // iterate over new settings and add if not existing
     QStringList fromKeyList = from.allKeys();
-    for(int index = 0; index < fromKeyList.size(); index++) {
+    for (int index = 0; index < fromKeyList.size(); index++) {
         QString key = fromKeyList.at(index);
         // check if key exists
-        if(override || !into.contains(key)) {
+        if (override || !into.contains(key)) {
             into.setValue(key, from.value(key));
         }
     }

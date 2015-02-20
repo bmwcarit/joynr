@@ -44,7 +44,7 @@ public class FixedParticipantArbitrator extends Arbitrator {
 
     @Override
     public void startArbitration() {
-        participantId = discoveryQos.getCustomParameter("fixedParticipantId").toString();
+        participantId = discoveryQos.getCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD).toString();
         arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
         localCapabilitiesDirectory.lookup(participantId, discoveryQos, new CapabilityCallback() {
 

@@ -16,19 +16,20 @@
   limitations under the License.
   #L%
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>common-api-model</artifactId>
-    <groupId>io.joynr.cpp</groupId>
-    <name>${project.groupId}:${project.artifactId}</name>
-    <packaging>jar</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>common-api-model</artifactId>
+	<groupId>io.joynr.cpp</groupId>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<packaging>jar</packaging>
 
-    <parent>
-        <groupId>io.joynr</groupId>
-        <artifactId>cpp</artifactId>
-        <version>0.7.3</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+	<parent>
+		<groupId>io.joynr</groupId>
+		<artifactId>cpp</artifactId>
+		<version>0.8.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<dependencies>
 		<!-- This dependency is needed to ensure that the libs project is
@@ -61,7 +62,7 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>src/main/generated</directory>
+							<directory>joynr</directory>
 							<includes>
 								<include>**</include>
 							</includes>
@@ -69,12 +70,12 @@
 					</filesets>
 				</configuration>
 			</plugin>
-			 <plugin>
+			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>capabilitiesDirectory</id>
+						<id>commonapi</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -90,12 +91,23 @@
 					<dependency>
 						<groupId>org.genivi.commonapi</groupId>
 						<artifactId>core</artifactId>
-						<version>2.1.2</version>
+						<version>2.1.4</version>
 					</dependency>
 					<dependency>
 						<groupId>org.genivi.commonapi</groupId>
 						<artifactId>dbus</artifactId>
-						<version>2.1.2</version>
+						<version>2.1.4</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.core</groupId>
+						<artifactId>org.eclipse.core.resources</artifactId>
+						<version>3.7.100</version>
+						<exclusions>
+							<exclusion>
+								<groupId>javax.servlet</groupId>
+								<artifactId>servlet-api</artifactId>
+							</exclusion>
+						</exclusions>
 					</dependency>
 				</dependencies>
 			</plugin>

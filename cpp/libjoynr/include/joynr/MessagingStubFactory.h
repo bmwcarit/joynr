@@ -25,34 +25,41 @@
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class IMessaging;
 
-namespace system { class Address; }
+namespace system
+{
+class Address;
+}
 class InProcessMessagingSkeleton;
 
 /**
-  * Creates/Stores <Middleware>MessagingStubs. MessagingStubs are used to contact remote ClusterControllers (HttpCommunicationManager)
+  * Creates/Stores <Middleware>MessagingStubs. MessagingStubs are used to contact remote
+  *ClusterControllers (HttpCommunicationManager)
   * and libjoynrs (dummy<Libjoynr>Skeleton) on the machine.
-  * A libjoynr does not need a MessagingStubFactory, as each libJoynr has one MessagingStub that connects it to its cc,
+  * A libjoynr does not need a MessagingStubFactory, as each libJoynr has one MessagingStub that
+  *connects it to its cc,
   * and will nevere use any other MessagingStubs.
   *
   */
 
-class MessagingStubFactory : public IMessagingStubFactory {
+class MessagingStubFactory : public IMessagingStubFactory
+{
 
 public:
     virtual ~MessagingStubFactory();
-    //MessagingStubFactory is created without the necessary skeletons.
-    //Those Skeletons must be registered before the MessagingStubFactory is used.
+    // MessagingStubFactory is created without the necessary skeletons.
+    // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
-    //void registerInProcessMessagingSkeleton(QSharedPointer<InProcessMessagingSkeleton> messagingSkeleton);
+    // void registerInProcessMessagingSkeleton(QSharedPointer<InProcessMessagingSkeleton>
+    // messagingSkeleton);
 
-    QSharedPointer<IMessaging> create(
-            QString destParticipantId,
-            const joynr::system::Address& destinationAddress);
+    QSharedPointer<IMessaging> create(QString destParticipantId,
+                                      const joynr::system::Address& destinationAddress);
     void remove(QString destParticipantId);
     bool contains(QString destParticipantId);
 
@@ -66,6 +73,5 @@ private:
     QMutex mutex;
 };
 
-
 } // namespace joynr
-#endif //MESSAGINGSTUBFACTORY
+#endif // MESSAGINGSTUBFACTORY

@@ -34,8 +34,8 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/joynrlogging.h"
 
-#include "joynr/tests/ITest.h"
-#include "joynr/tests/TestRequestInterpreter.h"
+#include "joynr/tests/Itest.h"
+#include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/GpsLocation.h"
 
 using namespace ::testing;
@@ -50,7 +50,7 @@ public:
         mockCallback(new MockCallback<types::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
-        mockSubscriptionListener(new MockSubscriptionListener<types::GpsLocation>()),
+        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("TEST-providerParticipantId"),
@@ -60,7 +60,7 @@ public:
         messageSender(mockMessageRouter),
         dispatcher(&messageSender)
     {
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::TestRequestInterpreter>(tests::ITestBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::getInterfaceName());
     }
 
 
@@ -77,7 +77,7 @@ protected:
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
     QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
-    QSharedPointer<MockSubscriptionListener<types::GpsLocation> > mockSubscriptionListener;
+    QSharedPointer<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListener;
 
     types::GpsLocation gpsLocation1;
 
@@ -147,8 +147,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                     AllOf(
                         Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
                         Property(&JoynrMessage::getPayload, Eq(expectedReply.getPayload()))
-                    ),
-                    qos
+                    )
                 )
     );
 
@@ -156,7 +155,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     // This should cause our mock messaging to receive a reply from the mock provider
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
     QThreadSleep::msleep(250);
 }
 
@@ -189,7 +188,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     // test code: send the reply through the dispatcher.
     // This should cause our reply caller to be called
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
-    dispatcher.receive(msg, qos);
+    dispatcher.receive(msg);
 
 
     QThreadSleep::msleep(250);

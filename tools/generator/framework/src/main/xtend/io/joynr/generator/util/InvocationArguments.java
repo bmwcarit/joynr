@@ -3,7 +3,7 @@ package io.joynr.generator.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,10 @@ public class InvocationArguments {
     private String generationId = null;
 
     private Map<String, String> parameter;
+
+    private boolean generate = true;
+
+    private boolean clean = false;
 
     public InvocationArguments() {
     }
@@ -136,11 +140,24 @@ public class InvocationArguments {
             } else if (args[i].equals("-outputHeaderPath")) {
                 setParameterElement("outputHeaderPath", args[i + 1].replace("\"", ""));
                 i++;
+            } else if (args[i].equals("-clean")) {
+                setClean(true);
+            } else if (args[i].equals("-generate")) {
+                setGenerate(args[i + 1].equalsIgnoreCase("true"));
+                i++;
             }
         }
         if (!isValid()) {
             System.out.println(getErrorMessage());
         }
+    }
+
+    public void setClean(boolean clean) {
+        this.clean = clean;
+    }
+
+    public void setGenerate(boolean generate) {
+        this.generate = generate;
     }
 
     private void setParameterElement(String key, String value) {
@@ -150,6 +167,14 @@ public class InvocationArguments {
 
         parameter.put(key, value);
 
+    }
+
+    public boolean generate() {
+        return generate;
+    }
+
+    public boolean clean() {
+        return clean;
     }
 
     public boolean isValid() {

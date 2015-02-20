@@ -2,7 +2,7 @@ package io.joynr.generator.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,29 @@ import com.google.inject.Inject
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfaceProxyTemplate {
+class InterfaceProxyTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface fInterface) {
+	override generate(FInterface fInterface) {
 		val interfaceName =  fInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
+		val broadcastClassName = interfaceName + "BroadcastInterface"
 		val packagePath = getPackagePathWithJoynrPrefix(fInterface, ".")
 		'''
 
-		«warning()»   
-		package «packagePath»;  	
-			
-		public interface «className» extends «asyncClassName», «syncClassName», «subscriptionClassName» {
+		«warning()»
+		package «packagePath»;
+
+		public interface «className» extends «asyncClassName», «syncClassName»«IF fInterface.attributes.size>0», «subscriptionClassName»«ENDIF»«IF fInterface.broadcasts.size>0», «broadcastClassName»«ENDIF» {
 		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(fInterface, "/")»/«interfaceName.toLowerCase»";
 		}
-		'''	
-	}	
-	
-			
+		'''
+	}
+
 }

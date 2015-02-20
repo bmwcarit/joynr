@@ -38,8 +38,8 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.UUID;
 
-import joynr.tests.DefaultTestProvider;
-import joynr.tests.TestProxy;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
@@ -67,7 +67,7 @@ public class SSLEnd2EndTest {
     private DummyJoynrApplication dummyProviderApplication;
     private DummyJoynrApplication dummyConsumerApplication;
 
-    DefaultTestProvider provider;
+    DefaulttestProvider provider;
     String domain;
 
     private MessagingQos messagingQos;
@@ -145,12 +145,12 @@ public class SSLEnd2EndTest {
 
         dummyConsumerApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigConsumer).createApplication(DummyJoynrApplication.class);
 
-        provider = new DefaultTestProvider();
+        provider = new DefaulttestProvider();
         domain = "SSLEnd2EndTest." + methodName + System.currentTimeMillis();
 
         dummyProviderApplication.getRuntime().registerCapability(domain,
                                                                  provider,
-                                                                 joynr.tests.TestSync.class,
+                                                                 joynr.tests.testSync.class,
                                                                  "authToken");
 
         messagingQos = new MessagingQos(5000);
@@ -176,10 +176,10 @@ public class SSLEnd2EndTest {
     public void getAndSetAttribute() {
 
         // Build a client proxy
-        ProxyBuilder<TestProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
-                                                                                                     TestProxy.class);
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
 
-        TestProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         // Set an attribute value
         int value = 1234;

@@ -3,7 +3,7 @@ package io.joynr.pubsub.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import io.joynr.pubsub.PubSubState;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -42,96 +42,77 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionTimersTest.class);
 
     private SubscriptionManager subscriptionManager;
-    private ConcurrentMap<String, SubscriptionListener<?>> attributeSubscriptionDirectory;
-    private ConcurrentMap<String, PubSubState> subscriptionStates;
+
     private ScheduledExecutorService subscriptionEndScheduler;
     ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
 
     private String attributeName;
     @Mock
-    private SubscriptionListener<?> attributeSubscriptionCallback;
+    private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
-    @Mock
-    private ConcurrentMap<String, Class<? extends TypeReference<?>>> subscriptionAttributeTypes;
     private String subscriptionId;
 
-    private int period = 400;
+    private int period = 100;
+    private long alertAfterInterval = 120;
     private int numberOfPublications = 5;
-    private int missedPublicationAlertDelay = 100;
-    private long alertAfterInterval;
+    private long subscriptionLength = period * numberOfPublications + alertAfterInterval;
 
     class IntegerReference extends TypeReference<Integer> {
     }
 
     @Before
     public void setUp() {
-        attributeSubscriptionDirectory = Maps.newConcurrentMap();
-        subscriptionStates = Maps.newConcurrentMap();
-        missedPublicationTimers = Maps.newConcurrentMap();
-        subscriptionEndFutures = Maps.newConcurrentMap();
         subscriptionEndScheduler = Executors.newScheduledThreadPool(10);
-        subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
-                                                          subscriptionStates,
-                                                          missedPublicationTimers,
-                                                          subscriptionEndFutures,
-                                                          subscriptionAttributeTypes,
-                                                          subscriptionEndScheduler);
-
+        subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler);
         attributeName = "testAttribute";
-
-        alertAfterInterval = period + missedPublicationAlertDelay;
     }
 
-    @Test
+    @Test(timeout = 3000)
     public void missedPublicationRunnableIsStopped() throws InterruptedException {
         LOG.debug("Starting missedPublicationRunnableIsStopped test");
 
-        long expiryDate = System.currentTimeMillis() // the publication should start now 
-                + alertAfterInterval * numberOfPublications; // time needed to raise numberOfPublications missed publication alerts
-        // Note: we will receive numberOfPublications-1 missed publication alerts, since it needs also some time
-        // to execute an alert and thus the last alert will be expired (due to endDate) before execution
+        long expiryDate = System.currentTimeMillis() // the publication should start now
+                + subscriptionLength;
 
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
 
         // register a subscription
-        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                           IntegerReference.class,
-                                                                           attributeSubscriptionCallback,
-                                                                           qos);
-        // wait until endDate
-        Thread.sleep(expiryDate - System.currentTimeMillis());
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
+        Thread.sleep(subscriptionLength);
+        verify(attributeSubscriptionCallback, times(numberOfPublications)).onError();
 
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
 
         // verify callback is not called
-        // Note: we will receive numberOfPublications-1 missed publication alerts, since it needs also some time
-        // to execute an alert and thus the last alert will be expired (due to endDate) before execution
-        verify(attributeSubscriptionCallback, times(numberOfPublications - 1)).publicationMissed();
         verifyNoMoreInteractions(attributeSubscriptionCallback);
     }
 
-    @Test
+    @Test(timeout = 3000)
     public void noMissedPublicationWarningWhenPublicationIsReceived() throws InterruptedException {
         LOG.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
 
         // there should be at least one successful publication, so (numberOfPublications-1)
-        //        int numberOfMissedPublications = (int) (Math.random() * (numberOfPublications - 1));
-        int numberOfMissedPublications = 0;
+        int numberOfMissedPublications = (int) (Math.random() * (numberOfPublications - 1));
+        // int numberOfMissedPublications = 5;
         int numberOfSuccessfulPublications = numberOfPublications - numberOfMissedPublications;
 
-        // TODO JOYN-1097 missed publications are currently relative to last missed publication alert.
-        long expiryDate = System.currentTimeMillis() // the publication should start now 
-                + alertAfterInterval * numberOfMissedPublications // time needed to raise numberOfMissedPublications missed publication alerts
-                + period * numberOfSuccessfulPublications; // time needed to raise numberOfSuccessfulPublications successful publications
+        long expiryDate = System.currentTimeMillis() // the publication should start now
+                + period * numberOfPublications // usual length of the subsciption
+                + (alertAfterInterval - period); // plus time for the last possible alertAfterInterval to arrive
 
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
         qos.setPublicationTtl(period);
@@ -141,29 +122,34 @@ public class SubscriptionTimersTest {
         qos.setPublicationTtl(1000);
 
         // register a subscription
-        subscriptionId = subscriptionManager.registerAttributeSubscription(attributeName,
-                                                                           IntegerReference.class,
-                                                                           attributeSubscriptionCallback,
-                                                                           qos);
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
 
         boolean lastPublicationIsMissedPublication = false;
         int missedPublicationsCounter = 0;
-        int successfulPublicationsCoutner = 0;
+        int successfulPublicationsCounter = 0;
         for (int i = 0; i < numberOfPublications; i++) {
             // choose randomly whether the current publication is successful or missed
-            if ((Math.random() < 0.5 && successfulPublicationsCoutner < numberOfSuccessfulPublications)
+            if ((Math.random() < 0.5 && successfulPublicationsCounter < numberOfSuccessfulPublications)
                     || missedPublicationsCounter == numberOfMissedPublications) {
                 Thread.sleep(period);
                 // publication successfully received
                 subscriptionManager.touchSubscriptionState(subscriptionId);
-                successfulPublicationsCoutner++;
+                successfulPublicationsCounter++;
                 LOG.trace("\nSUCCESSFUL publication");
             } else {
-                Thread.sleep(alertAfterInterval);
+                Thread.sleep(period);
                 // publication missed
                 missedPublicationsCounter++;
-                // Note: if the last publication is a missed publication, in _MOST_ cases we will not receive the last missed publication alert,
-                // since it needs also some time to execute an alert and thus the last alert will be expired (due to endDate)
+                // Note: if the last publication is a missed publication, in _MOST_ cases we will not receive the last
+                // missed publication alert,
+                // since it needs also some time to execute an alert and thus the last alert will be expired (due to
+                // endDate)
                 // before execution
                 if (i == numberOfPublications - 1) {
                     lastPublicationIsMissedPublication = true;
@@ -177,11 +163,10 @@ public class SubscriptionTimersTest {
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
 
-        // Note: see comment above about last missed publication alert
         int missedPublicationAlerts = (lastPublicationIsMissedPublication) ? missedPublicationsCounter - 1
                 : missedPublicationsCounter;
-        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).publicationMissed();
-        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).publicationMissed();
+        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).onError();
+        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).onError();
         // verify callback is not called
         verifyNoMoreInteractions(attributeSubscriptionCallback);
         LOG.trace("finishing test.");

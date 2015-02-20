@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ import java.util.ArrayList
 import java.util.Collection
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class InterfacesTemplate {
+class InterfacesTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
 
-	def generate(FInterface serviceInterface) {
+	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
@@ -51,17 +52,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.TreeSet;
 @SuppressWarnings("unused")
 public interface «className»  {
-    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
-    
+	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
+
 	«FOR type : filterTypesByToken(getAllTypes(serviceInterface))»
 		public static class «if (type.typeName==null) "Typename not found" else getTokenTypeForArrayType(type.typeName)»Token extends TypeReference<«getTokenTypeForArrayType(type.typeName)»> {}	
 		public static class List«getTokenTypeForArrayType(type.typeName)»Token extends TypeReference<List<«getTokenTypeForArrayType(type.typeName)»> > {}	
 	«ENDFOR»
-	
+
 }
-		'''	
+'''	
 	}
-	
+
 	def filterTypesByToken(Collection<Object> objects) {
 		val result = new ArrayList<Object>()
 		val tokens = new ArrayList<String>();
@@ -69,10 +70,8 @@ public interface «className»  {
 			if (object!=null && !tokens.contains(getTokenTypeForArrayType(object.typeName))){
 				result.add(object)
 				tokens.add(getTokenTypeForArrayType(object.typeName))
-			}			
+			}
 		}
 		return result;
 	}
-	
-	
 }

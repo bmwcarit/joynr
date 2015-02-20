@@ -27,16 +27,18 @@
 
 #include <QtCore>
 
-namespace joynr {
+namespace joynr
+{
 
-class Logging_log4qt : public joynr_logging::Logging {
+class Logging_log4qt : public joynr_logging::Logging
+{
 public:
     Logging_log4qt();
     virtual void shutdown();
 
     virtual joynr_logging::Logger* getLogger(const QString contextId, const QString className);
     virtual void destroyLogger(const QString contextId, const QString className);
-	
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Logging_log4qt);
     typedef QHash<QString, joynr_logging::Logger*> LoggerHash;
@@ -45,7 +47,8 @@ private:
     QMutex loggerMutex;
 };
 
-class Logger_log4qt : public joynr_logging::Logger {
+class Logger_log4qt : public joynr_logging::Logger
+{
 public:
     Logger_log4qt(const QString& prefix);
 
@@ -59,27 +62,29 @@ private:
     Log4Qt::Logger* logger;
 };
 
-Logging_log4qt::Logging_log4qt() :
-    loggers(),
-    loggerMutex()
+Logging_log4qt::Logging_log4qt() : loggers(), loggerMutex()
 {
     Log4Qt::LogManager::rootLogger();
-//    Log4Qt::TTCCLayout *p_layout = new Log4Qt::TTCCLayout();
-    Log4Qt::PatternLayout *p_layout = new Log4Qt::PatternLayout(QLatin1String("%d{ISO8601} [%t] [%-5p] %c: %m%n"));
+    //    Log4Qt::TTCCLayout *p_layout = new Log4Qt::TTCCLayout();
+    Log4Qt::PatternLayout* p_layout =
+            new Log4Qt::PatternLayout(QLatin1String("%d{ISO8601} [%t] [%-5p] %c: %m%n"));
     p_layout->setName(QLatin1String("Joynr Layout"));
     p_layout->activateOptions();
     // Create an appender
-    Log4Qt::ConsoleAppender *p_appender = new Log4Qt::ConsoleAppender(p_layout, Log4Qt::ConsoleAppender::STDOUT_TARGET);
+    Log4Qt::ConsoleAppender* p_appender =
+            new Log4Qt::ConsoleAppender(p_layout, Log4Qt::ConsoleAppender::STDOUT_TARGET);
     p_appender->setName(QLatin1String("Joynr Appender"));
     p_appender->activateOptions();
     // Set appender on root logger
     Log4Qt::Logger::rootLogger()->addAppender(p_appender);
 }
 
-void Logging_log4qt::shutdown() {
+void Logging_log4qt::shutdown()
+{
 }
 
-joynr_logging::Logger* Logging_log4qt::getLogger(const QString contextId, const QString className) {
+joynr_logging::Logger* Logging_log4qt::getLogger(const QString contextId, const QString className)
+{
     QString prefix = contextId + " - " + className;
     if (!loggers.contains(prefix)) {
         QMutexLocker lock(&loggerMutex);
@@ -91,7 +96,8 @@ joynr_logging::Logger* Logging_log4qt::getLogger(const QString contextId, const 
     return loggers.value(prefix);
 }
 
-void Logging_log4qt::destroyLogger(const QString contextId, const QString className) {
+void Logging_log4qt::destroyLogger(const QString contextId, const QString className)
+{
     QString prefix = contextId + " - " + className;
     QMutexLocker lock(&loggerMutex);
     if (!loggers.contains(prefix)) {
@@ -101,22 +107,23 @@ void Logging_log4qt::destroyLogger(const QString contextId, const QString classN
     loggers.remove(prefix);
 }
 
-
-Logger_log4qt::Logger_log4qt(const QString& prefix)
-        : logger(Log4Qt::Logger::logger(prefix))
+Logger_log4qt::Logger_log4qt(const QString& prefix) : logger(Log4Qt::Logger::logger(prefix))
 {
     logger->setLevel(Log4Qt::Level::TRACE_INT);
 }
 
-void Logger_log4qt::log(joynr_logging::LogLevel logLevel, const char* message) {
+void Logger_log4qt::log(joynr_logging::LogLevel logLevel, const char* message)
+{
     logger->log(joynrLogLevelToLog4QtLogLevel(logLevel), message);
 }
 
-void Logger_log4qt::log(joynr_logging::LogLevel logLevel, const QString& message) {
+void Logger_log4qt::log(joynr_logging::LogLevel logLevel, const QString& message)
+{
     logger->log(joynrLogLevelToLog4QtLogLevel(logLevel), message);
 }
 
-Log4Qt::Level Logger_log4qt::joynrLogLevelToLog4QtLogLevel(joynr_logging::LogLevel logLevel) {
+Log4Qt::Level Logger_log4qt::joynrLogLevelToLog4QtLogLevel(joynr_logging::LogLevel logLevel)
+{
     switch (logLevel) {
     case joynr_logging::TRACE:
         return Log4Qt::Level::TRACE_INT;
@@ -135,7 +142,8 @@ Log4Qt::Level Logger_log4qt::joynrLogLevelToLog4QtLogLevel(joynr_logging::LogLev
     return Log4Qt::Level::TRACE_INT;
 }
 
-joynr_logging::Logging* joynr_logging::Logging::getInstance() {
+joynr_logging::Logging* joynr_logging::Logging::getInstance()
+{
     static joynr_logging::Logging* instance = 0;
     static QMutex instanceMutex;
     if (instance == 0) {

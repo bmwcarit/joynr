@@ -24,11 +24,13 @@
 #include <QObject>
 #include <QSettings>
 
-namespace joynr {
+namespace joynr
+{
 
 class BounceProxyUrl;
 
-class JOYNR_EXPORT MessagingSettings : public QObject {
+class JOYNR_EXPORT MessagingSettings : public QObject
+{
     Q_OBJECT
 
 public:
@@ -71,7 +73,6 @@ public:
     static qint64 DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
     static qint64 DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
     static qint64 DEFAULT_SEND_MESSAGE_MAX_TTL();
-
 
     BounceProxyUrl getBounceProxyUrl() const;
     void setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl);
@@ -134,7 +135,6 @@ private:
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
-
 
 } // namespace joynr
 #endif // MESSAGINGSETTINGS_H

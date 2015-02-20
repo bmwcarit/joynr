@@ -24,14 +24,16 @@
 
 #include "joynr/Directory.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class JoynrMessage;
 class MessageRouter;
 class ILocalChannelUrlDirectory;
 
-namespace system {
-    class Address;
+namespace system
+{
+class Address;
 }
 
 /**
@@ -42,10 +44,13 @@ namespace system {
   * the Joynr framework. Especially, it offers a method to notify about
   * received messages.
   */
-class IMessageReceiver {
+class IMessageReceiver
+{
 
 public:
-    virtual ~IMessageReceiver() {}
+    virtual ~IMessageReceiver()
+    {
+    }
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.
@@ -80,7 +85,6 @@ public:
     virtual bool tryToDeleteChannel() = 0;
 
     virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) = 0;
-
 };
 
 } // namespace joynr

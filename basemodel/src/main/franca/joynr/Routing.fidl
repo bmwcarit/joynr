@@ -19,7 +19,7 @@
 package system
 
 typeCollection RoutingTypes {
-	struct Address {}
+	struct Address polymorphic {}
 
 	struct ChannelAddress extends Address {
 		String channelId
@@ -35,9 +35,20 @@ typeCollection RoutingTypes {
 		String windowId
 	}
 
+	enumeration WebSocketProtocol  {
+        WS
+        WSS
+    }
+
 	struct WebSocketAddress extends Address {
+		WebSocketProtocol protocol
 		String host
 		Int32 port
+		String path
+	}
+	
+	struct WebSocketClientAddress extends Address {
+		String id
 	}
 }
 
@@ -112,6 +123,22 @@ interface Routing {
         in {
             String participantId
             RoutingTypes.WebSocketAddress webSocketAddress
+        }
+    }
+
+    /**
+     * Adds a hop to the parent routing table.
+     *
+     * The overloaded methods (one for each concrete Address type) is needed
+     * since polymorphism is currently not supported by joynr.
+     *
+     * @param participantId the ID of the target participant
+     * @param messagingAddress the messaging address of the next hop towards the corresponding participant ID
+     */
+    method addNextHop {
+        in {
+            String participantId
+            RoutingTypes.WebSocketClientAddress webSocketClientAddress
         }
     }
 

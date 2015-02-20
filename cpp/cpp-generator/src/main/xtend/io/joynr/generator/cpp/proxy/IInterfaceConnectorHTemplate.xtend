@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.util.InterfaceTemplate
 
-class IInterfaceConnectorHTemplate {
+class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	
 	@Inject extension InterfaceSubscriptionUtil
-	def generate(FInterface serviceInterface) {
+	override generate(FInterface serviceInterface) {
 		val interfaceName = serviceInterface.joynrName
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"Connector_h").toUpperCase
 		'''
@@ -38,14 +39,18 @@ class IInterfaceConnectorHTemplate {
 		#define «headerGuard»
 		
 		«getDllExportIncludeStatement()»
+		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+		#include "«parameterType»"
+		«ENDFOR»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include "joynr/ISubscriptionListener.h"
 		#include "joynr/IConnector.h"
 
 		namespace joynr {
-			template <class T> class ISubscriptionListener;
-			class ISubscriptionCallback;
-			class SubscriptionQos;
+		    template <class T, class... Ts> class ISubscriptionListener;
+		    class ISubscriptionCallback;
+		    class SubscriptionQos;
+		    class OnChangeSubscriptionQos;
 		}
 		
 		«getNamespaceStarter(serviceInterface)»

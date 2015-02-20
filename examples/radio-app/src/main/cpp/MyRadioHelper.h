@@ -25,7 +25,8 @@
 /**
  * A helper class for use by the MyRadio consumer and provider applications
  */
-class MyRadioHelper {
+class MyRadioHelper
+{
 public:
     MyRadioHelper();
 
@@ -34,13 +35,15 @@ public:
      */
     static void pressQToContinue();
 
+    static int getch();
+
     /**
      * Output a prominent log message at level INFO
      */
-    static void prettyLog(joynr::joynr_logging::Logger *logger, const QString& message);
+    static void prettyLog(joynr::joynr_logging::Logger* logger, const QString& message);
 
 private:
-    static joynr::joynr_logging::Logger *logger;
+    static joynr::joynr_logging::Logger* logger;
 };
 
 #endif

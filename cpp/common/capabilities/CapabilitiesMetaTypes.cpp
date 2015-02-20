@@ -18,9 +18,11 @@
  */
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 
-namespace joynr {
+namespace joynr
+{
 
-void registerCapabilitiesMetaTypes(){
+void registerCapabilitiesMetaTypes()
+{
 }
 
 } // namespace joynr

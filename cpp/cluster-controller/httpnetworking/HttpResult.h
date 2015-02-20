@@ -24,15 +24,21 @@
 #include <QSharedPointer>
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
-  * Encapsulates the result of an http request. Stores the body, the returned headers and the status code.
+  * Encapsulates the result of an http request. Stores the body, the returned headers and the status
+ * code.
   * In case of a network error the status code contains the CURL error code instead.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpResult {
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpResult
+{
 public:
-    HttpResult(long curlError, int statusCode, QByteArray* body, QMultiMap<QString, QString>* headers);
+    HttpResult(long curlError,
+               int statusCode,
+               QByteArray* body,
+               QMultiMap<QString, QString>* headers);
     ~HttpResult();
 
     bool isCurlError() const;
@@ -46,9 +52,8 @@ private:
     int curlError;
     int statusCode;
     QSharedPointer<QByteArray> body;
-    QSharedPointer<QMultiMap<QString, QString> > headers;
+    QSharedPointer<QMultiMap<QString, QString>> headers;
 };
 
-
 } // namespace joynr
-#endif //HTTPRESULT_H_
+#endif // HTTPRESULT_H_

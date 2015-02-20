@@ -24,7 +24,6 @@
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 
-
 /*
 *   Client for the capabilities directory. Registration and lookup
 *   requests are sent in serialized JsonFunctionCalls. The capabilities directory
@@ -32,12 +31,12 @@
 *
 */
 
-
 #include <QString>
 #include <QSharedPointer>
 #include <QList>
 
-namespace joynr {
+namespace joynr
+{
 
 class MessageRouter;
 class Request;
@@ -46,17 +45,18 @@ class CapabilitiesInformationConverter;
 class MessagingQos;
 class IReplyCaller;
 
-
-
-class JOYNRCLUSTERCONTROLLER_EXPORT CapabilitiesClient : public ICapabilitiesClient{
+class JOYNRCLUSTERCONTROLLER_EXPORT CapabilitiesClient : public ICapabilitiesClient
+{
 
 public:
     /*
        Default constructor for the capabilities client.
        This will create a CapabilitiesClient that is not capable of doing actual lookups.
-       To upgrade to a complete CapabilitiesClient the init method must be called, and a ProxyBuilder
+       To upgrade to a complete CapabilitiesClient the init method must be called, and a
+       ProxyBuilder
         must be provided. No lookups may be performed before the proxyBuilder is passed in.
-       To create the GlobalCapabilitiesDirectoryProxy the provisioned data in the LocalCapabilitiesDirectory
+       To create the GlobalCapabilitiesDirectoryProxy the provisioned data in the
+       LocalCapabilitiesDirectory
         has to be used.
        Todo: Ownership of libjoynr is not transferred, should not be a pointer.
     */
@@ -84,16 +84,20 @@ public:
     virtual void remove(const QString& participantId);
 
     /*
-      Channel id lookup for a known interfaceAddress.
+      Synchronous lookup of capabilities for domain and interface.
       */
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain, const QString& interfaceName);
+    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
+                                                       const QString& interfaceName);
 
     /*
-      Asynchronous channel id lookup for a known interfaceAddress.
+      Asynchronous lookup of capabilities for domain and interface.
       */
-    virtual void lookup(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(const QString& domain,
+                        const QString& interfaceName,
+                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual void lookup(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(const QString& participantId,
+                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
     virtual ~CapabilitiesClient();
 
@@ -101,10 +105,13 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
-    void sendOneWayFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr, MessagingQos qosSettings);
-    Reply sendSynchronizedRequestFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr, MessagingQos qosSettings);
-    void sendRequest(QSharedPointer<QObject> jsonFunctionCallSharedPtr, MessagingQos qosSettings, QSharedPointer<IReplyCaller> callBack);
-
+    void sendOneWayFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+                                MessagingQos qosSettings);
+    Reply sendSynchronizedRequestFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+                                              MessagingQos qosSettings);
+    void sendRequest(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+                     MessagingQos qosSettings,
+                     QSharedPointer<IReplyCaller> callBack);
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
@@ -112,11 +119,9 @@ private:
     QString capabilitiesClientParticipantId;
     QString localChannelId;
 
-    //capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
+    // capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
 };
 
-
-
 } // namespace joynr
-#endif //CAPABILITIESCLIENT_H
+#endif // CAPABILITIESCLIENT_H

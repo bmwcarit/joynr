@@ -128,7 +128,24 @@ add_library(
     ${JoynrCommon_HEADERS}
     ${JoynrCommon_SOURCES}
 )
-qt5_use_modules(JoynrCommon Core)
+qt5_use_modules(JoynrCommon Core WebSockets)
+
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommon_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommon_SOURCES}")
+
+    add_custom_command(
+        TARGET JoynrCommon
+        PRE_BUILD
+        COMMAND clang-format -i ${JoynrCommon_HEADERS} ${JoynrCommon_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(
     JoynrCommon
@@ -170,7 +187,7 @@ else()
     # ...and for install tree
     install(
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
+        DESTINATION ${INSTALL_BIN_DIR}/resources/
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

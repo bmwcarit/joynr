@@ -32,65 +32,71 @@
 
 #include <algorithm>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
-Logger* LongPollingMessageReceiver::logger = Logging::getInstance()->getLogger("MSG", "LongPollingMessageReceiver");
+Logger* LongPollingMessageReceiver::logger =
+        Logging::getInstance()->getLogger("MSG", "LongPollingMessageReceiver");
 
 LongPollingMessageReceiver::LongPollingMessageReceiver(
         const BounceProxyUrl& bounceProxyUrl,
         const QString& channelId,
         const QString& receiverId,
-        const LongPollingMessageReceiverSettings &settings,
-        QSemaphore *channelCreatedSemaphore,
+        const LongPollingMessageReceiverSettings& settings,
+        QSemaphore* channelCreatedSemaphore,
         QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
         QSharedPointer<MessageRouter> messageRouter)
-    : bounceProxyUrl(bounceProxyUrl),
-      channelId(channelId),
-      receiverId(receiverId),
-      settings(settings),
-      interruptedMutex(),
-      interrupted(false),
-      channelUrlDirectory(channelUrlDirectory),
-      channelCreatedSemaphore(channelCreatedSemaphore),
-      messageRouter(messageRouter)
+        : bounceProxyUrl(bounceProxyUrl),
+          channelId(channelId),
+          receiverId(receiverId),
+          settings(settings),
+          interruptedMutex(),
+          interrupted(false),
+          channelUrlDirectory(channelUrlDirectory),
+          channelCreatedSemaphore(channelCreatedSemaphore),
+          messageRouter(messageRouter)
 {
 }
 
-void LongPollingMessageReceiver::interrupt() {
+void LongPollingMessageReceiver::interrupt()
+{
     QMutexLocker lock(&interruptedMutex);
     interrupted = true;
 }
 
-bool LongPollingMessageReceiver::isInterrupted() {
+bool LongPollingMessageReceiver::isInterrupted()
+{
     QMutexLocker lock(&interruptedMutex);
     return (interrupted) ? true : false;
 }
 
-void LongPollingMessageReceiver::run() {
+void LongPollingMessageReceiver::run()
+{
     checkServerTime();
     QString createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
     LOG_INFO(logger, "Running lpmr with channelId " + channelId);
-    QSharedPointer<IHttpPostBuilder> createChannelRequestBuilder(HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
+    QSharedPointer<IHttpPostBuilder> createChannelRequestBuilder(
+            HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
     QSharedPointer<HttpRequest> createChannelRequest(
-                createChannelRequestBuilder
-                ->addHeader("X-Atmosphere-tracking-id", receiverId)
-                ->withContentType("application/json")
-                ->withTimeout_ms(settings.bounceProxyTimeout_ms)
-                ->build()
-    );
+            createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
+                    ->withContentType("application/json")
+                    ->withTimeout_ms(settings.bounceProxyTimeout_ms)
+                    ->build());
 
     QString channelUrl;
-    while(channelUrl.isEmpty() && !isInterrupted()) {
+    while (channelUrl.isEmpty() && !isInterrupted()) {
         LOG_DEBUG(logger, "sending create channel request");
         HttpResult createChannelResult = createChannelRequest->execute();
-        if(createChannelResult.getStatusCode() == 201) {
+        if (createChannelResult.getStatusCode() == 201) {
             channelUrl = *createChannelResult.getHeaders().find("Location");
             LOG_INFO(logger, "channel creation successfull; channel url:" + channelUrl);
             channelCreatedSemaphore->release(1);
         } else {
-            LOG_INFO(logger, "channel creation failed; status code:" + QString::number(createChannelResult.getStatusCode()));
+            LOG_INFO(logger,
+                     "channel creation failed; status code:" +
+                             QString::number(createChannelResult.getStatusCode()));
             usleep(settings.createChannelRetryInterval_ms * 1000);
         }
     }
@@ -100,96 +106,96 @@ void LongPollingMessageReceiver::run() {
     assert(channelUrlDirectory != NULL);
     types::ChannelUrlInformation urlInformation;
     QList<QString> urls;
-    // urls << channelUrl + QString("pseudoDirectUrlForTestingPurpose");  //for testing purpose (bogus Url)
+    // urls << channelUrl + QString("pseudoDirectUrlForTestingPurpose");  //for testing purpose
+    // (bogus Url)
     urls << channelUrl;
     urlInformation.setUrls(urls);
     LOG_INFO(logger,
-             "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory"
-             + urls.first());
-    QSharedPointer<Future<void> > future(new Future<void>());
-    channelUrlDirectory->registerChannelUrls(
-                future,
-                channelId,
-                urlInformation);
+             "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
+                     urls.first());
+    QSharedPointer<Future<void>> future(new Future<void>());
+    channelUrlDirectory->registerChannelUrls(future, channelId, urlInformation);
 
-    while(!isInterrupted()) {
+    while (!isInterrupted()) {
 
-        QSharedPointer<IHttpGetBuilder> longPollRequestBuilder(HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
+        QSharedPointer<IHttpGetBuilder> longPollRequestBuilder(
+                HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
 
         QSharedPointer<HttpRequest> longPollRequest(
-                    longPollRequestBuilder
-                    ->acceptGzip()
-                    ->addHeader("Accept", "application/json")
-                    ->addHeader("X-Atmosphere-tracking-id", receiverId)
-                    ->withTimeout_ms(settings.longPollTimeout_ms)
-                    ->build()
-        );
+                longPollRequestBuilder->acceptGzip()
+                        ->addHeader("Accept", "application/json")
+                        ->addHeader("X-Atmosphere-tracking-id", receiverId)
+                        ->withTimeout_ms(settings.longPollTimeout_ms)
+                        ->build());
 
         LOG_DEBUG(logger, QString("sending long polling request; url: %1").arg(channelUrl));
         HttpResult longPollingResult = longPollRequest->execute();
         if (!isInterrupted()) {
-            //TODO: remove HttpErrorCodes and use constants.
-            //there is a bug in atmosphere, which currently gives back 503 instead of 200 as a result to longpolling.
-            //Accepting 503 is a temporary workaround for this bug. As soon as atmosphere is fixed, this should be removed
-			// 200 does nott refect the state of the message body! It could be empty.
-            if(longPollingResult.getStatusCode() == 200 || longPollingResult.getStatusCode() == 503 ) {
+            // TODO: remove HttpErrorCodes and use constants.
+            // there is a bug in atmosphere, which currently gives back 503 instead of 200 as a
+            // result to longpolling.
+            // Accepting 503 is a temporary workaround for this bug. As soon as atmosphere is fixed,
+            // this should be removed
+            // 200 does nott refect the state of the message body! It could be empty.
+            if (longPollingResult.getStatusCode() == 200 ||
+                longPollingResult.getStatusCode() == 503) {
                 Util::logSerializedMessage(logger,
                                            QString("long polling successful; contents: "),
                                            longPollingResult.getBody().data());
                 processReceivedInput(longPollingResult.getBody());
-			// Atmosphere currently cannot return 204 when a long poll times out, so this code is currently never executed (2.2.2012)	
+                // Atmosphere currently cannot return 204 when a long poll times out, so this code
+                // is currently never executed (2.2.2012)
             } else if (longPollingResult.getStatusCode() == 204) {
                 LOG_DEBUG(logger, "long polling successfull; no data");
             } else {
                 QString body("NULL");
-                if(!longPollingResult.getBody().isNull()) {
+                if (!longPollingResult.getBody().isNull()) {
                     body = QString(longPollingResult.getBody().data());
                 }
                 LOG_ERROR(logger,
                           QString("long polling failed; error message: %1; contents: %2")
-                            .arg(longPollingResult.getErrorMessage())
-                            .arg(body)
-                );
+                                  .arg(longPollingResult.getErrorMessage())
+                                  .arg(body));
                 usleep(settings.longPollRetryInterval_ms * 1000);
             }
         }
     }
 }
 
-void LongPollingMessageReceiver::processReceivedInput(const QByteArray& receivedInput) {
+void LongPollingMessageReceiver::processReceivedInput(const QByteArray& receivedInput)
+{
     QList<QByteArray> jsonObjects = Util::splitIntoJsonObjects(receivedInput);
     for (int i = 0; i < jsonObjects.size(); i++) {
         processReceivedQjsonObjects(jsonObjects.at(i));
     }
 }
 
-void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& jsonObject){
+void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& jsonObject)
+{
     JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
     if (msg->getType().isEmpty()) {
         LOG_ERROR(logger, "received empty message - dropping Messages");
         return;
     }
-    if(!msg->containsHeaderExpiryDate()) {
-        LOG_ERROR(logger, QString("received message [msgId=%1] without decay time - dropping message")
-                  .arg(msg->getHeaderMessageId())
-        );
+    if (!msg->containsHeaderExpiryDate()) {
+        LOG_ERROR(logger,
+                  QString("received message [msgId=%1] without decay time - dropping message")
+                          .arg(msg->getHeaderMessageId()));
     }
 
-    if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST || msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST){
-        //TODO ca: check if replyTo header info is available?
+    if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+        // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
         QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress(replyChannelId));
         messageRouter->addNextHop(msg->getHeaderFrom(), address);
     }
 
-    QDateTime expiryDate = msg->getHeaderExpiryDate();
-    // Set the Qos for the reply message
-    qint64 ttl = DispatcherUtils::convertAbsoluteTimeToTtl(expiryDate);
-    MessagingQos qos(ttl);
-
     // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
-    //TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable, and runnable should delete it.
-    messageRouter->route(*msg, qos);
+    // TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable,
+    // and runnable should delete it.
+    messageRouter->route(*msg);
     delete msg;
 }
 
@@ -197,42 +203,45 @@ void LongPollingMessageReceiver::checkServerTime()
 {
     QString timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString();
 
-    QSharedPointer<IHttpGetBuilder> timeCheckRequestBuilder(HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
+    QSharedPointer<IHttpGetBuilder> timeCheckRequestBuilder(
+            HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
     QSharedPointer<HttpRequest> timeCheckRequest(
-                timeCheckRequestBuilder
-                ->addHeader("Accept", "text/plain")
-                ->withTimeout_ms(settings.bounceProxyTimeout_ms)
-                ->build()
-    );
-    LOG_DEBUG(logger, QString("CheckServerTime: sending request to Bounce Proxy (") + timeCheckUrl + QString(")"));
+            timeCheckRequestBuilder->addHeader("Accept", "text/plain")
+                    ->withTimeout_ms(settings.bounceProxyTimeout_ms)
+                    ->build());
+    LOG_DEBUG(logger,
+              QString("CheckServerTime: sending request to Bounce Proxy (") + timeCheckUrl +
+                      QString(")"));
     QDateTime localTimeBeforeRequest = QDateTime::currentDateTime();
     HttpResult timeCheckResult = timeCheckRequest->execute();
     QDateTime localTimeAfterRequest = QDateTime::currentDateTime();
-    QDateTime localTime = QDateTime::fromMSecsSinceEpoch(
-                (localTimeBeforeRequest.toMSecsSinceEpoch() + localTimeAfterRequest.toMSecsSinceEpoch()) / 2
-    );
-    if(timeCheckResult.getStatusCode() != 200) {
-        LOG_ERROR(logger, QString("CheckServerTime: Bounce Proxy not reached [statusCode=%1] [body=%2]")
-                            .arg(QString::number(timeCheckResult.getStatusCode()))
-                            .arg(QString(timeCheckResult.getBody()))
-        );
+    QDateTime localTime =
+            QDateTime::fromMSecsSinceEpoch((localTimeBeforeRequest.toMSecsSinceEpoch() +
+                                            localTimeAfterRequest.toMSecsSinceEpoch()) /
+                                           2);
+    if (timeCheckResult.getStatusCode() != 200) {
+        LOG_ERROR(logger,
+                  QString("CheckServerTime: Bounce Proxy not reached [statusCode=%1] [body=%2]")
+                          .arg(QString::number(timeCheckResult.getStatusCode()))
+                          .arg(QString(timeCheckResult.getBody())));
     } else {
-        LOG_TRACE(logger, QString("CheckServerTime: reply received [statusCode=%1] [body=%2]")
-                            .arg(QString::number(timeCheckResult.getStatusCode()))
-                            .arg(QString(timeCheckResult.getBody()))
-        );
-        QDateTime serverTime = QDateTime::fromMSecsSinceEpoch(QString(timeCheckResult.getBody()).toLongLong());
+        LOG_TRACE(logger,
+                  QString("CheckServerTime: reply received [statusCode=%1] [body=%2]")
+                          .arg(QString::number(timeCheckResult.getStatusCode()))
+                          .arg(QString(timeCheckResult.getBody())));
+        QDateTime serverTime =
+                QDateTime::fromMSecsSinceEpoch(QString(timeCheckResult.getBody()).toLongLong());
         qint64 diff = qAbs(serverTime.msecsTo(localTime));
 
-        LOG_INFO(logger, QString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")
-                            .arg(serverTime.toString())
-                            .arg(localTime.toString())
-                            .arg(QString::number(diff))
-        );
+        LOG_INFO(logger,
+                 QString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")
+                         .arg(serverTime.toString())
+                         .arg(localTime.toString())
+                         .arg(QString::number(diff)));
         if (diff > 500) {
-            LOG_ERROR(logger, QString("CheckServerTime: time difference to server is %1 ms")
-                                .arg(QString::number(diff))
-            );
+            LOG_ERROR(logger,
+                      QString("CheckServerTime: time difference to server is %1 ms")
+                              .arg(QString::number(diff)));
         }
     }
 }

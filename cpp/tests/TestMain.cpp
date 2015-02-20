@@ -20,31 +20,49 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QObject>
-#include <QCoreApplication>
-#include <QTimer>
-#include <QThread>
 
+#include <QtCore/QObject>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QTimer>
+#include <QtCore/QThread>
 
-using namespace joynr;
+class TestRunner : public QObject {
+    Q_OBJECT
+public:
+    TestRunner(int argc, char *argv[]) :
+        application(argc, argv),
+        testResults(0)
+    {
+    }
 
-// executable: g_IntegrationTests
+    int runTests() {
+        QTimer::singleShot(0, this, SLOT(runGTest()));
+        application.exec();
+        return testResults;
+    }
+
+private Q_SLOTS:
+    void runGTest() {
+        testResults = RUN_ALL_TESTS();
+        QTimer::singleShot(0, &application, SLOT(quit()));
+    }
+
+private:
+    QCoreApplication application;
+    int testResults;
+};
+
 int main(int argc, char *argv[])
 {
     // set the name of the main thread, used for logging
     QThread::currentThread()->setObjectName(QString("main"));
 
-    // the QCoreApplication is needed to have an event loop
-    // it seems the event loop is running, although exec was
-    // not called on the QCoreApplication
-    QCoreApplication app(argc, argv);
-
     // The following line must be executed to initialize Google Mock
     // (and Google Test) before running the tests.
     testing::InitGoogleMock(&argc, argv);
 
-    return RUN_ALL_TESTS();
+    TestRunner testRunner(argc, argv);
+    return testRunner.runTests();
 }
 
-
-
+#include "TestMain.moc"

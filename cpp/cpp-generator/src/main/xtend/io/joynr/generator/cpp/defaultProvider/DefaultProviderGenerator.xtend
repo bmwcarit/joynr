@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.defaultProvider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,36 +25,40 @@ import org.franca.core.franca.FModel
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class DefaultProviderGenerator {
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-		
+
 	@Inject
-	DefaultProviderHTemplate defaultProviderHTemplate; 
-	
+	DefaultProviderHTemplate defaultProviderHTemplate;
+
 	@Inject
 	DefaultProviderCppTemplate defaultProviderCppTemplate;
-	
-	
-	def doGenerate(FModel fModel, 
-		IFileSystemAccess sourceFileSystem, 
-		IFileSystemAccess headerFileSystem, 
+
+	def doGenerate(FModel fModel,
+		IFileSystemAccess sourceFileSystem,
+		IFileSystemAccess headerFileSystem,
 		String sourceContainerPath,
 		String headerContainerPath
 	){
 
 		for(serviceInterface: fModel.interfaces){
-			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator 
-			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
+			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator
+			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 			val serviceName = serviceInterface.joynrName;
-			
-			headerFileSystem.generateFile(
+
+			generateFile(
+				headerFileSystem,
 				headerpath + "Default" + serviceName + "Provider.h",
-				defaultProviderHTemplate.generate(serviceInterface).toString
+				defaultProviderHTemplate,
+				serviceInterface
 			);
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcepath + "Default" + serviceName + "Provider.cpp",
-				defaultProviderCppTemplate.generate(serviceInterface).toString
+				defaultProviderCppTemplate,
+				serviceInterface
 			);
 		}
 	}

@@ -21,37 +21,45 @@
 
 #include "joynr/OnChangeSubscriptionQos.h"
 
-namespace joynr {
+namespace joynr
+{
 
-
-class JOYNRCOMMON_EXPORT OnChangeWithKeepAliveSubscriptionQos : public OnChangeSubscriptionQos {
+class JOYNRCOMMON_EXPORT OnChangeWithKeepAliveSubscriptionQos : public OnChangeSubscriptionQos
+{
 
     Q_OBJECT
 
     Q_PROPERTY(qint64 maxInterval READ getMaxInterval WRITE setMaxInterval)
-    Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval  WRITE setAlertAfterInterval)
+    Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval WRITE setAlertAfterInterval)
 
 public:
-
     OnChangeWithKeepAliveSubscriptionQos();
     OnChangeWithKeepAliveSubscriptionQos(const OnChangeWithKeepAliveSubscriptionQos& other);
-    OnChangeWithKeepAliveSubscriptionQos(const qint64& validity, const qint64& minIntervals, const qint64& maxInterval, const qint64& alertAfterInterval);
+    OnChangeWithKeepAliveSubscriptionQos(const qint64& validity,
+                                         const qint64& minIntervals,
+                                         const qint64& maxInterval,
+                                         const qint64& alertAfterInterval);
 
     /**
      * The provider will maintain at least a minimum interval idle time in milliseconds between
-     * successive notifications, even if on-change notifications are enabled and the value changes more
-     * often. This prevents the consumer from being flooded by updated values. The filtering happens on
+     * successive notifications, even if on-change notifications are enabled and the value changes
+     *more
+     * often. This prevents the consumer from being flooded by updated values. The filtering happens
+     *on
      * the provider's side, thus also preventing excessive network traffic.
      *
      * @param minInterval
-     *            The publisher will keep a minimum idle time of minInterval between two successive notifications.
+     *            The publisher will keep a minimum idle time of minInterval between two successive
+     *notifications.
      */
     virtual void setMinInterval(const qint64& minInterval);
 
     /**
-    * The provider will send notifications every maximum interval in milliseconds, even if the value didn't
+    * The provider will send notifications every maximum interval in milliseconds, even if the value
+    *didn't
     * change. It will send notifications more often if on-change notifications are enabled,
-    * the value changes more often, and the minimum interval QoS does not prevent it. The maximum interval
+    * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
+    *interval
     * can thus be seen as a sort of heart beat.
     *
     * @return qint64 maxInterval
@@ -60,9 +68,11 @@ public:
     virtual qint64 getMaxInterval() const;
 
     /**
-     * The provider will send notifications every maximum interval in milliseconds, even if the value didn't
+     * The provider will send notifications every maximum interval in milliseconds, even if the
+     *value didn't
      * change. It will send notifications more often if on-change notifications are enabled,
-     * the value changes more often, and the minimum interval QoS does not prevent it. The maximum interval
+     * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
+     *interval
      * can thus be seen as a sort of heart beat.
      *
      * @param maxInterval
@@ -75,7 +85,8 @@ public:
      * notification will be raised.
      *
      * @return alertInterval_ms
-     *            If more than alertInterval_ms pass without receiving a message, subscriptionManager will issue a
+     *            If more than alertInterval_ms pass without receiving a message,
+     *subscriptionManager will issue a
      *            publicationMissed.
      */
     virtual qint64 getAlertAfterInterval() const;
@@ -85,12 +96,14 @@ public:
      * notification will be raised.
      *
      * @param alertInterval_ms
-     *            If more than alertInterval pass without receiving a message, subscriptionManager will issue a
+     *            If more than alertInterval pass without receiving a message, subscriptionManager
+     *will issue a
      *            publicationMissed..
      */
     virtual void setAlertAfterInterval(const qint64& alertAfterInterval);
 
-    OnChangeWithKeepAliveSubscriptionQos& operator=(const OnChangeWithKeepAliveSubscriptionQos& other);
+    OnChangeWithKeepAliveSubscriptionQos& operator=(
+            const OnChangeWithKeepAliveSubscriptionQos& other);
     virtual bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
 
     static const qint64& MAX_MAX_INTERVAL();

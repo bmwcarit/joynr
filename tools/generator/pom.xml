@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tools</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
@@ -35,6 +35,7 @@
 		<module>dependency-libs</module>
 		<module>framework</module>
 		<module>joynr-generator-maven-plugin</module>
+		<module>joynr-generator-standalone</module>
 	</modules>
 	
 	<build>

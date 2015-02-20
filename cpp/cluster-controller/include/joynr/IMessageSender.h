@@ -27,27 +27,26 @@
 #include <QSharedPointer>
 #include <QDateTime>
 
-namespace joynr {
+namespace joynr
+{
 
-class IMessageSender {
+class IMessageSender
+{
 public:
-    virtual ~IMessageSender() {}
+    virtual ~IMessageSender()
+    {
+    }
     /**
     * @brief Sends the message to the given channel.
     */
-    virtual void sendMessage(
-            const QString& channelId,
-            const QDateTime& decayTime,
-            const JoynrMessage& message) = 0;
+    virtual void sendMessage(const QString& channelId, const JoynrMessage& message) = 0;
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
-    virtual void init(
-            QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-            const MessagingSettings& settings) = 0;
+    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+                      const MessagingSettings& settings) = 0;
 };
-
 }
 
 #endif // IMESSAGESENDER_H

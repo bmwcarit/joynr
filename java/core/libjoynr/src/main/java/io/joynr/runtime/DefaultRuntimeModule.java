@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.httpoperation.HttpClientProvider;
-import io.joynr.messaging.httpoperation.HttpDefaultRequestConfigProvider;
+import io.joynr.messaging.http.operation.HttpClientProvider;
+import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

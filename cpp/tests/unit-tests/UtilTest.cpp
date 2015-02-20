@@ -23,10 +23,24 @@
 #include <QString>
 #include <QByteArray>
 #include <QList>
+#include <tuple>
+#include <functional>
 
 using namespace joynr;
 
-TEST(UtilTest, splitIntoJsonObjects)
+class UtilTest : public ::testing::Test {
+protected:
+
+    struct ExpandTuple {
+        bool expandIntoThis(int arg1, float arg2, QString arg3) {
+            return arg1 == 23 && arg2 == 24.25 && arg3 == "Test";
+        }
+    };
+
+    ExpandTuple expandTuple;
+};
+
+TEST_F(UtilTest, splitIntoJsonObjects)
 {
     QByteArray inputStream;
     QList<QByteArray> result;
@@ -100,7 +114,7 @@ TEST(UtilTest, splitIntoJsonObjects)
                   QString("{\"mes\\\\\"sa{ge\":{one:two}}"));
 }
 
-TEST(UtilTest, convertListToQVariantList){
+TEST_F(UtilTest, convertListToQVariantList){
 
     QList<int> intlist;
     QList<QVariant> qvarList;
@@ -126,4 +140,34 @@ TEST(UtilTest, convertListToQVariantList){
     EXPECT_EQ(reconvertedIntList, intlist);
 
 
+}
+
+TEST_F(UtilTest, typeIdSingleType){
+    EXPECT_GT(Util::getBroadcastTypeId<QString>(), 0);
+    EXPECT_NE(Util::getBroadcastTypeId<QString>(), Util::getBroadcastTypeId<int>());
+}
+
+TEST_F(UtilTest, typeIdCompositeType){
+    int typeId1 = Util::getBroadcastTypeId<QString, int, float>();
+    EXPECT_GT(typeId1, 0);
+
+    int typeId2 = Util::getBroadcastTypeId<int, QString, float>();
+    EXPECT_NE(typeId1, typeId2);
+}
+
+TEST_F(UtilTest, expandTuple){
+    std::tuple<int, float, QString> tup = std::make_tuple(23, 24.25, "Test");
+    auto memberFunction = std::mem_fn(&ExpandTuple::expandIntoThis);
+    bool ret = Util::expandTupleIntoFunctionArguments(memberFunction, expandTuple, tup);
+
+    EXPECT_TRUE(ret);
+}
+
+TEST_F(UtilTest, toValueTuple){
+    QList<QVariant> list({QVariant(int(23)), QVariant(float(24.25)), QVariant(QString("Test"))});
+    std::tuple<int, float, QString> tup = Util::toValueTuple<int, float, QString>(list);
+
+    EXPECT_EQ(int(23), std::get<0>(tup));
+    EXPECT_EQ(float(24.25), std::get<1>(tup));
+    EXPECT_EQ(QString("Test"), std::get<2>(tup));
 }

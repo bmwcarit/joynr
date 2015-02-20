@@ -25,19 +25,22 @@
 
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class MessagingQos;
 class IDispatcher;
 
 class InProcessMessagingSkeleton;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging {
+class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging
+{
 public:
-
     InProcessMessagingStub(QSharedPointer<InProcessMessagingSkeleton> skeleton);
-    virtual ~InProcessMessagingStub() {}
-    virtual void transmit(JoynrMessage &message, const MessagingQos &qos);
+    virtual ~InProcessMessagingStub()
+    {
+    }
+    virtual void transmit(JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingStub);
@@ -45,4 +48,4 @@ private:
 };
 
 } // namespace joynr
-#endif //INPROCESSMESSAGINGSTUB_H
+#endif // INPROCESSMESSAGINGSTUB_H

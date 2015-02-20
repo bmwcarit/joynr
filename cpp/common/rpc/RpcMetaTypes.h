@@ -21,10 +21,10 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-namespace joynr {
+namespace joynr
+{
 
 void JOYNRCOMMON_EXPORT registerRpcMetaTypes();
 
-
 } // namespace joynr
-#endif //RPCMETATYPES
+#endif // RPCMETATYPES

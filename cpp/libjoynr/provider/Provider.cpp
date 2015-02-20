@@ -19,51 +19,51 @@
 
 #include "joynr/Provider.h"
 #include "joynr/IAttributeListener.h"
+#include "joynr/IBroadcastListener.h"
 
 #include <QVariant>
 #include <QWriteLocker>
 #include <QReadLocker>
 
-namespace joynr {
+namespace joynr
+{
 
-Provider::Provider()
-    : lock(),
-      attributeListeners()
+Provider::Provider() : lock(), attributeListeners(), broadcastListeners(), broadcastFilters()
 {
 }
 
 Provider::~Provider()
 {
     // Delete all attribute listeners
-    foreach (const QList<IAttributeListener *>& listeners, attributeListeners) {
-        foreach (IAttributeListener *listener, listeners) {
+    foreach (const QList<IAttributeListener*>& listeners, attributeListeners) {
+        foreach (IAttributeListener* listener, listeners) {
             delete listener;
         }
     }
 }
 
-void Provider::registerAttributeListener(const QString& attributeName, IAttributeListener* attributeListener)
+void Provider::registerAttributeListener(const QString& attributeName,
+                                         IAttributeListener* attributeListener)
 {
     QWriteLocker locker(&lock);
     attributeListeners[attributeName].append(attributeListener);
 }
 
-
-void Provider::unregisterAttributeListener(const QString& attributeName, IAttributeListener* attributeListener)
+void Provider::unregisterAttributeListener(const QString& attributeName,
+                                           IAttributeListener* attributeListener)
 {
     QWriteLocker locker(&lock);
     QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Find and delete the attribute listener
     for (int i = 0; i < listeners.length(); i++) {
-       if (listeners[i] == attributeListener) {
-           IAttributeListener* listener = listeners[i];
-           listeners.removeAt(i);
-           delete listener;
-       }
+        if (listeners[i] == attributeListener) {
+            IAttributeListener* listener = listeners[i];
+            listeners.removeAt(i);
+            delete listener;
+        }
     }
 }
-
 
 void Provider::onAttributeValueChanged(const QString& attributeName, const QVariant& value)
 {
@@ -75,6 +75,58 @@ void Provider::onAttributeValueChanged(const QString& attributeName, const QVari
     foreach (IAttributeListener* listener, listeners) {
         listener->attributeValueChanged(value);
     }
+}
+
+void Provider::registerBroadcastListener(const QString& broadcastName,
+                                         IBroadcastListener* broadcastListener)
+{
+    QWriteLocker locker(&lock);
+    broadcastListeners[broadcastName].append(broadcastListener);
+}
+
+void Provider::unregisterBroadcastListener(const QString& broadcastName,
+                                           IBroadcastListener* broadcastListener)
+{
+    QWriteLocker locker(&lock);
+    QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+
+    int listenerIndex = listeners.indexOf(broadcastListener);
+    delete listeners.takeAt(listenerIndex);
+}
+
+void Provider::fireBroadcast(const QString& broadcastName, const QList<QVariant>& values)
+{
+    QReadLocker locker(&lock);
+
+    const QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+
+    // Inform all the broadcast listeners for this broadcast
+    foreach (IBroadcastListener* listener, listeners) {
+        listener->broadcastOccurred(values, broadcastFilters.value(broadcastName));
+    }
+}
+
+void Provider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
+{
+    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
+            broadcastFilters.find(filter->getName());
+
+    if (it != broadcastFilters.end()) {
+        it.value().append(filter);
+    } else {
+        broadcastFilters.insert(
+                filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
+    }
+}
+
+bool Provider::hasAttributeListeners(const QString& attributeName)
+{
+    return !attributeListeners.value(attributeName).isEmpty();
+}
+
+bool Provider::hasBroadcastListeners(const QString& broadcastName)
+{
+    return !broadcastListeners.value(broadcastName).isEmpty();
 }
 
 } // namespace joynr

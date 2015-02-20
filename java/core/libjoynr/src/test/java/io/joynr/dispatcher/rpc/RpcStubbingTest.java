@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.DispatcherTestModule;
-import io.joynr.dispatcher.RequestCaller;
+import io.joynr.dispatcher.RequestCallerSync;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
@@ -42,6 +42,7 @@ import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.runtime.PropertyLoader;
 
 import java.io.IOException;
@@ -117,7 +118,8 @@ public class RpcStubbingTest {
 
     @Mock
     private RequestReplyDispatcher dispatcher;
-
+    @Mock
+    private SubscriptionManager subscriptionManager;
     @Mock
     private RequestReplySender messageSender;
 
@@ -161,7 +163,8 @@ public class RpcStubbingTest {
                                            any(SynchronizedReplyCaller.class),
                                            eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
 
-            private RequestCaller requestCaller = requestCallerFactory.create(testMock, TestSyncInterface.class);
+            private RequestCallerSync requestCaller = (RequestCallerSync) requestCallerFactory.create(testMock,
+                                                                                                      TestSyncInterface.class);
 
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
@@ -180,6 +183,7 @@ public class RpcStubbingTest {
 
         MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
         connector = JoynrMessagingConnectorFactory.create(dispatcher,
+                                                          subscriptionManager,
                                                           messageSender,
                                                           fromParticipantId,
                                                           toParticipantId,

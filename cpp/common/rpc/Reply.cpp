@@ -19,52 +19,54 @@
 
 #include "joynr/Reply.h"
 
-namespace joynr {
+namespace joynr
+{
 
 const Reply Reply::NULL_RESPONSE = Reply();
 
-Reply::Reply():
-    requestReplyId(),
-    response()
+Reply::Reply() : requestReplyId(), response()
 {
-
 }
-Reply::Reply(const Reply &other) :
-    QObject(),
-    requestReplyId(other.getRequestReplyId()),
-    response(other.response)
+Reply::Reply(const Reply& other)
+        : QObject(), requestReplyId(other.getRequestReplyId()), response(other.response)
 {
 }
 
-Reply& Reply::operator=(const Reply &other){
+Reply& Reply::operator=(const Reply& other)
+{
     this->requestReplyId = other.getRequestReplyId();
     this->response = other.response;
     return *this;
 }
 
-QString Reply::getRequestReplyId() const {
+QString Reply::getRequestReplyId() const
+{
     return requestReplyId;
 }
 
-void Reply::setRequestReplyId(QString requestReplyId){
+void Reply::setRequestReplyId(QString requestReplyId)
+{
     this->requestReplyId = requestReplyId;
 }
 
-QVariant Reply::getResponse() const {
+QVariant Reply::getResponse() const
+{
     return response;
 }
 
-void Reply::setResponse(QVariant response){
+void Reply::setResponse(QVariant response)
+{
     this->response = response;
 }
 
-bool Reply::operator==(const Reply& other) const {
-    return requestReplyId == other.getRequestReplyId()
-            && response == other.getResponse();
+bool Reply::operator==(const Reply& other) const
+{
+    return requestReplyId == other.getRequestReplyId() && response == other.getResponse();
 }
 
-bool Reply::operator!=(const Reply& other) const {
-    return !(*this==other);
+bool Reply::operator!=(const Reply& other) const
+{
+    return !(*this == other);
 }
 
 } // namespace joynr

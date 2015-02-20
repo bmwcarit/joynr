@@ -21,10 +21,10 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
-#include "joynr/tests/DefaultTestProvider.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testProxy.h"
 
 #include "joynr/RequestStatus.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -43,10 +43,10 @@ public:
     QString messageSettingsFilename;
 
     JoynrClusterControllerRuntime* clusterControllerRuntime;
-    LibJoynrRuntime* runtime1;
-    LibJoynrRuntime* runtime2;
+    LibJoynrDbusRuntime* runtime1;
+    LibJoynrDbusRuntime* runtime2;
 
-    tests::TestProxy* testProxy;
+    tests::testProxy* testProxy;
 
     QString domain;
     QSemaphore semaphore;
@@ -69,8 +69,8 @@ public:
         clusterControllerRuntime->registerDiscoveryProvider();
 
         // create lib joynr runtimes
-        runtime1 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
-        runtime2 = new LibJoynrRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime1 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime2 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
     }
 
     void SetUp() {
@@ -100,7 +100,7 @@ public:
         types::ProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-        QSharedPointer<tests::TestProvider> provider(new MockTestProvider(providerQos));
+        QSharedPointer<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
         QString participantId = runtime1->registerCapability(domain, provider, authenticationToken);
@@ -108,7 +108,7 @@ public:
     }
 
     void connectProxy() {
-        auto proxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domain);
+        auto proxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
         ASSERT_TRUE(proxyBuilder != NULL);
 
         // start arbitration
@@ -222,8 +222,8 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     connectProxy();
 
     // use semaphore to count recieves
-    auto mockListener = new MockSubscriptionListener<int>();
-    EXPECT_CALL(*mockListener, receive(A<int>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
+    auto mockListener = new MockSubscriptionListenerOneType<int>();
+    EXPECT_CALL(*mockListener, onReceive(A<int>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
     QSharedPointer<ISubscriptionListener<int> > subscriptionListener(mockListener);
 
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(

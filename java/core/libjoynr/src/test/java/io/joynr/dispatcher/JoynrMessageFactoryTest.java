@@ -134,7 +134,8 @@ public class JoynrMessageFactoryTest {
                                                                              toParticipantId,
                                                                              subscriptionRequest,
                                                                              replyToChannelId,
-                                                                             ExpiryDate.fromRelativeTtl(TTL));
+                                                                             ExpiryDate.fromRelativeTtl(TTL),
+                                                                             false);
         Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
         Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));

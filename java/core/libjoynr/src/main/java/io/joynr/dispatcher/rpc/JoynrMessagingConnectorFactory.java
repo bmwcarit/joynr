@@ -23,6 +23,7 @@ import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,6 +68,7 @@ public class JoynrMessagingConnectorFactory {
      * @return
      */
     public static JoynrMessagingConnectorInvocationHandler create(final RequestReplyDispatcher dispatcher,
+                                                                  final SubscriptionManager subscriptionManager,
                                                                   final RequestReplySender messageSender,
                                                                   final String fromParticipantId,
                                                                   final String toParticipantId,
@@ -80,7 +82,8 @@ public class JoynrMessagingConnectorFactory {
                                                             fromParticipantId,
                                                             qosSettings,
                                                             messageSender,
-                                                            dispatcher);
+                                                            dispatcher,
+                                                            subscriptionManager);
     }
 
     public static MethodMetaInformation ensureMethodMetaInformationPresent(Method method) throws JsonMappingException {

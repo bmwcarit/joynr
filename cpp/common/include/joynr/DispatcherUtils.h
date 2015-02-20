@@ -24,7 +24,8 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 
-namespace joynr {
+namespace joynr
+{
 
 class JoynrMessage;
 
@@ -32,8 +33,9 @@ class JOYNRCOMMON_EXPORT DispatcherUtils
 {
 public:
     DispatcherUtils();
-    //todo some of those could be moved  to other classes (e.g. a HeaderMap Dataclass)
-    typedef QMap<QString, QVariant> HeaderMap; //todo refactor this,  remove Headermap and create dataclass
+    // todo some of those could be moved  to other classes (e.g. a HeaderMap Dataclass)
+    typedef QMap<QString, QVariant>
+            HeaderMap; // todo refactor this,  remove Headermap and create dataclass
 
     static QDateTime convertTtlToAbsoluteTime(qint64 ttl_ms);
     static QDateTime getMaxAbsoluteTime();
@@ -41,9 +43,7 @@ public:
     static QString convertAbsoluteTimeToTtlString(const QDateTime& date);
 
     static joynr_logging::Logger* logger;
-
 };
-
 
 } // namespace joynr
 #endif // DISPATCHERUTILS_H

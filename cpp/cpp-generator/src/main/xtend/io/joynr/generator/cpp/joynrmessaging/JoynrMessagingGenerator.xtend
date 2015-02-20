@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@ class JoynrMessagingGenerator {
 
 	@Inject
 	InterfaceJoynrMessagingConnectorCppTemplate interfaceJoynrMessagingConnectorCpp;
-	
-	def doGenerate(FModel model, 
-		IFileSystemAccess sourceFileSystem, 
-		IFileSystemAccess headerFileSystem, 
+
+	def doGenerate(FModel model,
+		IFileSystemAccess sourceFileSystem,
+		IFileSystemAccess headerFileSystem,
 		String sourceContainerPath,
 		String headerContainerPath
 	){
@@ -46,14 +46,18 @@ class JoynrMessagingGenerator {
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 			val serviceName = serviceInterface.joynrName
 
-			headerFileSystem.generateFile(
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "JoynrMessagingConnector.h",
-				interfaceJoynrMessagingConnectorH.generate(serviceInterface).toString
+				interfaceJoynrMessagingConnectorH,
+				serviceInterface
 			);
-			
-			sourceFileSystem.generateFile(
+
+			generateFile(
+				sourceFileSystem,
 				sourcePath + serviceName + "JoynrMessagingConnector.cpp",
-				interfaceJoynrMessagingConnectorCpp.generate(serviceInterface).toString
+				interfaceJoynrMessagingConnectorCpp,
+				serviceInterface
 			);
 		}
 	}

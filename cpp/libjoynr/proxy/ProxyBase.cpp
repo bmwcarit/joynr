@@ -21,50 +21,50 @@
 
 #include <QUuid>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 Logger* ProxyBase::logger = Logging::getInstance()->getLogger("ProxyBase", "ProxyBase");
 
-ProxyBase::ProxyBase(
-        ConnectorFactory* connectorFactory,
-        IClientCache *cache,
-        const QString &domain,
-        const QString &interfaceName,
-        const ProxyQos &proxyQos,
-        const MessagingQos &qosSettings,
-        bool cached
-) :
-        connectorFactory(connectorFactory),
-        cache(cache),
-        domain(domain),
-        interfaceName(interfaceName),
-        proxyQos(proxyQos),
-        qosSettings(qosSettings),
-        cached(cached),
-        providerParticipantId(""),
-        proxyParticipantId(""),
-        connection(NULL)
+ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
+                     IClientCache* cache,
+                     const QString& domain,
+                     const QString& interfaceName,
+                     const ProxyQos& proxyQos,
+                     const MessagingQos& qosSettings,
+                     bool cached)
+        : connectorFactory(connectorFactory),
+          cache(cache),
+          domain(domain),
+          interfaceName(interfaceName),
+          proxyQos(proxyQos),
+          qosSettings(qosSettings),
+          cached(cached),
+          providerParticipantId(""),
+          proxyParticipantId(""),
+          connection(NULL)
 {
     proxyParticipantId = QUuid::createUuid().toString();
-    proxyParticipantId = proxyParticipantId.mid(1,proxyParticipantId.length()-2);
+    proxyParticipantId = proxyParticipantId.mid(1, proxyParticipantId.length() - 2);
 }
 
-ProxyBase::~ProxyBase() {
+ProxyBase::~ProxyBase()
+{
     delete connection;
 }
 
 void ProxyBase::handleArbitrationFinished(
-        const QString &participantId,
-        const joynr::system::CommunicationMiddleware::Enum& connection
-) {
+        const QString& participantId,
+        const joynr::system::CommunicationMiddleware::Enum& connection)
+{
     providerParticipantId = participantId;
     this->connection = new joynr::system::CommunicationMiddleware::Enum(connection);
 }
 
-QString ProxyBase::getProxyParticipantId() {
+QString ProxyBase::getProxyParticipantId()
+{
     return this->proxyParticipantId;
 }
-
 
 } // namespace joynr

@@ -23,7 +23,8 @@
 #include "joynr/JoynrExport.h"
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 /**
  * Creates and persists participant ids.
@@ -37,7 +38,9 @@ public:
      * Persist participant ids using the given file
      */
     ParticipantIdStorage(const QString& filename);
-    virtual ~ParticipantIdStorage() {}
+    virtual ~ParticipantIdStorage()
+    {
+    }
 
     static const QString& STORAGE_FORMAT_STRING();
 
@@ -49,38 +52,33 @@ public:
      * @param authenticationToken the authentication token of the provider.
      * @param participantId the participantId to set.
      */
-    virtual void setProviderParticipantId(
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& authenticationToken,
-            const QString& participantId
-    );
+    virtual void setProviderParticipantId(const QString& domain,
+                                          const QString& interfaceName,
+                                          const QString& authenticationToken,
+                                          const QString& participantId);
 
     /**
      * Get a provider participant id
      */
     virtual QString getProviderParticipantId(const QString& domain,
-                                     const QString& interfaceName,
-                                     const QString& authenticationToken);
+                                             const QString& interfaceName,
+                                             const QString& authenticationToken);
 
     /**
      * Get a provider participant id or use a default
      */
     virtual QString getProviderParticipantId(const QString& domain,
-                                     const QString& interfaceName,
-                                     const QString& authenticationToken,
-                                     const QString& defaultValue);
+                                             const QString& interfaceName,
+                                             const QString& authenticationToken,
+                                             const QString& defaultValue);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
-    QString createProviderKey(
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& authenticationToken
-    );
+    QString createProviderKey(const QString& domain,
+                              const QString& interfaceName,
+                              const QString& authenticationToken);
     QString filename;
 };
-
 
 } // namespace joynr
 #endif // PARTICIPANTIDSTORAGE_H

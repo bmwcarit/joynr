@@ -22,19 +22,18 @@ import types.ExtendedTypes.* from "classpath:/common/Types.fidl"
 import types.TestTypes.* from "TestTypes.fidl"
 
 typeCollection testTypes {
-	
+
 	enumeration TestEnum {
 		ZERO = "0"
 		ONE = "1"
 		TWO = "2"
 	}
-	
+
 	struct ComplexTestType {
 		Int32 a 
 		Int32 b
 	}
-	
-	
+
 	struct ComplexTestType2 {
 		Int32 c 
 		Int32 d
@@ -45,50 +44,54 @@ typeCollection testTypes {
 		String a
 		GpsLocation l
 	}
-	
+
 	struct DerivedStruct extends BaseStruct {
 		String b
 	}
-	
+
 	struct AnotherDerivedStruct extends BaseStruct {
-		String d	
+		String d
 	}
-	
+
 	struct ComplexStructUsingDerivedStruct {
-		DerivedStruct d 
+		DerivedStruct d
 	}
 }
 
 
-
+//this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
 interface test{
-	
+
 	version {major 0 minor 1}
 
 	attribute testTypes.TestEnum enumAttribute
-	attribute GpsLocation location readonly
+
+	attribute testTypes.TestEnum enumAttributeReadOnly readonly
+
+	attribute GpsLocation location
 	attribute Trip mytrip readonly
 	attribute GpsLocation yourLocation readonly
-	attribute Int32 firstPrime readonly
-	
-	attribute Int32[] listOfInts readonly
+	attribute Int32 firstPrime
+
+	attribute Int32[] listOfInts
 	attribute GpsLocation[] listOfLocations readonly
 	attribute String[] listOfStrings
-	
+
 	//Those two are needed for the java tests:
 	attribute Int32 testAttribute
 	attribute GpsLocation complexTestAttribute
-	
+
 	//Just two methods to test all the other combinations 
 	attribute Int32 readWriteAttribute
 	attribute Int32 readOnlyAttribute readonly
 	attribute Int32 writeOnly
-	
+
 	attribute Int32 notifyWriteOnly
-	attribute Int32 notifyReadOnly readonly 
+	attribute Int32 notifyReadOnly readonly
 	attribute Int32 notifyReadWrite
-	
+
 	attribute Int32 notify
+	//this attributes starts with capital letter (in contrary to our modelling guidelines) for testing purposes
 	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
 	method addNumbers {
@@ -97,22 +100,22 @@ interface test{
 			Int32 second
 			Int32 third // defaultValue 0
 		}
-		
+
 		out {
 			Int32 result
 		}	
 	}
-	
+
 	method sumInts {
 		in {
 			Int32[] ints
 		}
-		
+
 		out {
 			Int32 result
 		}
 	} 
-	
+
 	method methodWithNoInputParameters {
 		out {
 			Int32 result
@@ -127,7 +130,7 @@ interface test{
 			Int32 result
 		}
 	}
-    
+
 	method methodWithEnumListParameter{
 		in {
 			testTypes.TestEnum[] input
@@ -136,7 +139,7 @@ interface test{
 			Int32 result
 		}
 	}
-    
+
 	method methodWithEnumReturn{
 		in {
 			Int32 input
@@ -145,7 +148,7 @@ interface test{
 			testTypes.TestEnum result
 		}
 	}
-    
+
 	method methodWithEnumListReturn{
 		in {
 			Int32 input
@@ -154,7 +157,6 @@ interface test{
 			testTypes.TestEnum[] result
 		}
 	}
-
 
 	method  methodWithByteArray{
 		in {
@@ -208,16 +210,16 @@ interface test{
 	}
 
 	method voidOperation {
-		
+
 	}
-	
+
 	method stringAndBoolParameters{
 		in {
 			String stringParam
 			Boolean boolParam
 		}
 	}
-	
+
 	method returnPrimeNumbers {
 		in {
 			Int32 upperBound
@@ -240,13 +242,13 @@ interface test{
 
 	method overloadedOperation {
 		in {
-			testTypes.DerivedStruct input			
+			testTypes.DerivedStruct input
 		}
 		out {
 			String result
 		}
 	}
-	
+
 	method overloadedOperation{
 		in {
 			testTypes.AnotherDerivedStruct input
@@ -255,25 +257,25 @@ interface test{
 			String result
 		}
 	}
-	
-    method overloadedOperation {
-        in {
-            String input
-        }
-        out {
-            testTypes.ComplexTestType result
-        }
-    }
 
-    method overloadedOperation {
-        in {
-            String input1
-            String input2
-        }
-        out {
-            testTypes.ComplexTestType2 result
-        }
-    }
+	method overloadedOperation {
+		in {
+			String input
+		}
+		out {
+			testTypes.ComplexTestType result
+		}
+	}
+
+	method overloadedOperation {
+		in {
+			String input1
+			String input2
+		}
+		out {
+			testTypes.ComplexTestType2 result
+		}
+	}
 
 	method optimizeLocations {
 		in {
@@ -285,23 +287,23 @@ interface test{
 	}
 
 	method toLowerCase {
-		in {			
+		in {
 			String inputString
 		}
 		out {
 			String result
 		}
-	} 
-	
+	}
+
 	method waitTooLong{
 		in {
-			Int64 ttl_ms			
+			Int64 ttl_ms
 		}
 		out {
 			String result
 		}
-	} 
-	
+	}
+
 	method sayHello {
 		out {
 			String result
@@ -315,6 +317,12 @@ interface test{
 //	method Vowel optimizeVowel {
 //		inputVowel : Vowel
 //	}
+
+	method methodWithEnumReturnValue {
+		out {
+			testTypes.TestEnum result
+		}
+	}
 
 	method checkVowel {
 		in {
@@ -333,5 +341,49 @@ interface test{
 			GpsLocation[] result
 		}
 	}
-}
 
+	// Broadcast which has the same name as an attribute for testing possible conflicts.
+	broadcast location {
+		out {
+			GpsLocation location
+		}
+	}
+
+	broadcast locationUpdate {
+		out {
+			GpsLocation location
+		}
+	}
+
+	broadcast locationUpdateWithSpeed {
+		out {
+			GpsLocation location
+			Float currentSpeed
+		}
+	}
+
+	<**
+		@description: Selective broadcast with one output parameter
+		@param: country Only update location when in this country
+		@param: startTime Start update at this time
+		@param: endTime End update at this time
+	**>
+	broadcast locationUpdateSelective selective {
+		out {
+			GpsLocation location
+		}
+	}
+
+	<**
+		@description: Selective broadcast with multiple output parameters
+		@param: country Only update location when in this country
+		@param: startTime Start update at this time
+		@param: endTime End update at this time
+	**>
+	broadcast locationUpdateWithSpeedSelective selective {
+		out {
+			GpsLocation location
+			Float currentSpeed
+		}
+	}
+}

@@ -19,51 +19,53 @@
 #include "common/cache/ClientMultiQCache.h"
 #include "joynr/CachedValue.h"
 
-namespace joynr {
+namespace joynr
+{
 
 const int ClientMultiQCache::MAX_CUMMULATIVE_CACHE_COST = 1000;
 
-ClientMultiQCache::ClientMultiQCache() :
-    cache(),
-    mutex()
+ClientMultiQCache::ClientMultiQCache() : cache(), mutex()
 
 {
     cache.setMaxCost(MAX_CUMMULATIVE_CACHE_COST);
 }
 
-QList<QVariant> ClientMultiQCache::lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs){
+QList<QVariant> ClientMultiQCache::lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs)
+{
     QMutexLocker locker(&mutex);
-    if(!cache.contains(attributeId)){
+    if (!cache.contains(attributeId)) {
         return QList<QVariant>();
     }
-    QList<CachedValue<QVariant> >* list = cache.object(attributeId);
+    QList<CachedValue<QVariant>>* list = cache.object(attributeId);
     QList<QVariant> result;
     qint64 time;
 
-    for(int i=0;i<list->size();i++){
+    for (int i = 0; i < list->size(); i++) {
         time = list->value(i).getTimestamp();
-        if(elapsed(time) < maxAcceptedAgeInMs){
+        if (elapsed(time) < maxAcceptedAgeInMs) {
             result.append(list->value(i).getValue());
         }
     }
     return result;
 }
 
-void ClientMultiQCache::insert(QString attributeId, QVariant value){
+void ClientMultiQCache::insert(QString attributeId, QVariant value)
+{
     QMutexLocker locker(&mutex);
-    CachedValue<QVariant>  cachedValue = CachedValue<QVariant> (value, QDateTime::currentMSecsSinceEpoch());
-    if(cache.contains(attributeId)){
+    CachedValue<QVariant> cachedValue =
+            CachedValue<QVariant>(value, QDateTime::currentMSecsSinceEpoch());
+    if (cache.contains(attributeId)) {
         cache.object(attributeId)->append(cachedValue);
         return;
-    }else{
-         QList<CachedValue<QVariant> >* list = new QList<CachedValue<QVariant> >();
-         list->append(cachedValue);
-         cache.insert(attributeId, list);
+    } else {
+        QList<CachedValue<QVariant>>* list = new QList<CachedValue<QVariant>>();
+        list->append(cachedValue);
+        cache.insert(attributeId, list);
     }
 }
 
-
-qint64 ClientMultiQCache::elapsed(qint64 entryTime){
+qint64 ClientMultiQCache::elapsed(qint64 entryTime)
+{
     return QDateTime::currentMSecsSinceEpoch() - entryTime;
 }
 

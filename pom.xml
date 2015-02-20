@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.7.3</version>
+	<version>0.8.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -47,55 +47,57 @@
 	</licenses>
 
 	<modules>
-		<module>java</module>
-		<module>cpp</module>
+		<!--
+			ATTENTION: Order of modules matters!
+			Tools must be build first in order to have build-resources available right
+			at the begining of the build.
+		-->
 		<module>tools</module>
 		<module>basemodel</module>
+		<module>java</module>
+		<module>cpp</module>
 		<module>examples</module>
 	</modules>
 
 	<profiles>
 		<profile>
-            <!-- 
-            This profile is extended in several submodules with packaging type WAR
-            to disable deployment of WAR files containing third-party software to
-            Sonatype repositories.
-            
-            java/messaging/bounceproxy/bounceproxy-ui/pom.xml
-            -->
-		
+			<!--
+				This profile is extended in several submodules with packaging type WAR
+				to disable deployment of WAR files containing third-party software to
+				Sonatype repositories.
+			-->
 			<id>deploy-artifacts-to-sonatype</id>
 			<activation>
 				<!--
-				maven-jgitflow-plugin will set the performRelease property during
-				release and thus automatically activate this profile during release.
-				NOTE: You need to install GPG [1] and publish your public key to a key 
-				server.
-				The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
-				[2].
-				Follow instructions [3] to verify dependencies.
-				[1] https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven
-				[2] http://maven.apache.org/plugins/maven-gpg-plugin/usage.html
-				[3] http://branchandbound.net/blog/security/2012/08/verify-dependencies-using-pgp/
+					maven-jgitflow-plugin will set the performRelease property during
+					release and thus automatically activate this profile during release.
+					NOTE: You need to install GPG [1] and publish your public key to a key 
+					server.
+					The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
+					[2].
+					Follow instructions [3] to verify dependencies.
+					[1] https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven
+					[2] http://maven.apache.org/plugins/maven-gpg-plugin/usage.html
+					[3] http://branchandbound.net/blog/security/2012/08/verify-dependencies-using-pgp/
 				-->
 				<property>
 					<name>performRelease</name>
 					<value>true</value>
 				</property>
 			</activation>
-            <properties>
-                <!--
-                This property will skip the execution of the maven-assembly-plugin during
-                deployment to Sonatype repositories. The plugin builds jar-with-dependencies
-                including third-party software that should not be deployed by this project.
-                
-                Following jar-with-dependencies are created during build:
-                java/backend-services/channelurldirectory/target/deploy/channelurldirectory-jar-with-dependencies.jar
-                java/backend-services/capabilitiesdirectory/target/deploy/capabilitiesdirectory-jar-with-dependencies.jar
-                java/backend-services/discovery/target/deploy/discovery-jar-with-dependencies.jar
-                -->
-                <assembly.skipAssembly>true</assembly.skipAssembly>
-            </properties>
+			<properties>
+				<!--
+					This property will skip the execution of the maven-assembly-plugin during
+					deployment to Sonatype repositories. The plugin builds jar-with-dependencies
+					including third-party software that should not be deployed by this project.
+
+					Following jar-with-dependencies are created during build:
+					java/backend-services/channelurldirectory/target/deploy/channelurldirectory-jar-with-dependencies.jar
+					java/backend-services/capabilitiesdirectory/target/deploy/capabilitiesdirectory-jar-with-dependencies.jar
+					java/backend-services/discovery/target/deploy/discovery-jar-with-dependencies.jar
+				-->
+				<assembly.skipAssembly>true</assembly.skipAssembly>
+			</properties>
 			<distributionManagement>
 				<snapshotRepository>
 					<id>sonatype-nexus-snapshots</id>
@@ -163,42 +165,6 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>findbugs</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>findbugs-maven-plugin</artifactId>
-						<version>2.5.2</version>
-						<configuration>
-							<failOnError>false</failOnError>
-							<threshold>Normal</threshold>
-							<effort>Default</effort>
-							<xmlOutput>true</xmlOutput>
-							<findbugsXmlOutput>true</findbugsXmlOutput>
-							<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-							<excludeFilterFile>findbugs/findbugs-exclude.xml</excludeFilterFile>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>verify</phase>
-								<goals>
-									<goal>check</goal>
-								</goals>
-							</execution>
-						</executions>
-						<dependencies>
-							<dependency>
-								<groupId>io.joynr.tools</groupId>
-								<artifactId>build-resources</artifactId>
-								<version>${project.version}</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
 			<!-- 
 				NOTE: if you change activation or the profile ID here, your also must
 				change it in the following child modules that extend this profile:
@@ -206,14 +172,13 @@
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.4</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>license-maven-plugin</artifactId>
-						<version>1.5</version>
 						<configuration>
 							<licenseName>apache_v2</licenseName>
 							<inceptionYear>2011</inceptionYear>
@@ -278,14 +243,15 @@
 					configuration properties must be set as global properties. It is
 					not sufficient to specify them directly in the plugin configuration.
 				-->
-	            <license.useLicensesConfigFile>true</license.useLicensesConfigFile>
-	            <license.licensesConfigFile>classpath://license/missinglicenses.xml</license.licensesConfigFile>
+				<license.useLicensesConfigFile>true</license.useLicensesConfigFile>
+				<license.licensesConfigFile>classpath://license/missinglicenses.xml</license.licensesConfigFile>
 			</properties>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>license-maven-plugin</artifactId>
+						<!-- overriding version defined in plugin management -->
 						<version>1.3-JOYN.2</version>
 						<configuration>
 							<licenseName>apache_v2</licenseName>
@@ -308,22 +274,22 @@
 								<licenseMerge>LGPL-2.1|Lesser Gnu Public License (LGPL), Version 2.1</licenseMerge>
 							</licenseMerges>
 							<generateBundle>true</generateBundle>
-				            <fileTemplate>license/joynr-third-party-file.ftl</fileTemplate>
-				            <bundleThirdPartyPath>${project.artifactId}-LICENSES.html</bundleThirdPartyPath>
+							<fileTemplate>license/joynr-third-party-file.ftl</fileTemplate>
+							<bundleThirdPartyPath>${project.artifactId}-LICENSES.html</bundleThirdPartyPath>
 							<!-- 
 								For unknown reasons useLicensesConfigFile and licensesConfigFile 
 								configuration properties must be set as global properties. It is
 								not sufficient to specify them directly in the plugin configuration.
 							-->
-				            <useLicensesConfigFile>true</useLicensesConfigFile>
-				            <licensesConfigFile>classpath://license/missinglicenses.xml</licensesConfigFile>
-				            <excludedScopes>test</excludedScopes>
-				            <licenseResolver>classpath://license/resolver</licenseResolver>
-				            <!-- MissingFile is now replaced by the licenses config file -->
-				            <useMissingFile>true</useMissingFile>
-				            <failIfWarning>false</failIfWarning>
-				            <encoding>UTF-8</encoding>
-				            <canUpdateCopyright>true</canUpdateCopyright>
+							<useLicensesConfigFile>true</useLicensesConfigFile>
+							<licensesConfigFile>classpath://license/missinglicenses.xml</licensesConfigFile>
+							<excludedScopes>test</excludedScopes>
+							<licenseResolver>classpath://license/resolver</licenseResolver>
+							<!-- MissingFile is now replaced by the licenses config file -->
+							<useMissingFile>true</useMissingFile>
+							<failIfWarning>false</failIfWarning>
+							<encoding>UTF-8</encoding>
+							<canUpdateCopyright>true</canUpdateCopyright>
 						</configuration>
 						<dependencies>
 							<dependency>
@@ -339,33 +305,37 @@
 		<profile>
 			<id>no-checkstyle</id>
 			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-checkstyle-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>none</phase>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-checkstyle-plugin</artifactId>
+							<executions>
+								<execution>
+									<phase>none</phase>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
 			</build>
 		</profile>
 		<profile>
 			<id>no-java-formatter</id>
 			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-						<artifactId>maven-java-formatter-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>none</phase>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+							<artifactId>maven-java-formatter-plugin</artifactId>
+							<executions>
+								<execution>
+									<phase>none</phase>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
 			</build>
 		</profile>
 		<profile>
@@ -390,20 +360,23 @@
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Those versions should not be used outside of the superpom. All dependencies
+		<!--
+			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
 			here, and should not have a version tag in the the pom-files where they 
-			are referenced. -->
+			are referenced.
+		-->
 		<jersey.version>1.17</jersey.version>
 		<jackson.version>2.2.1</jackson.version>
 		<guice.version>3.0</guice.version>
-		<!--jetty.version>8.1.11.v20130520</jetty.version-->
-		<jetty.version>8.1.7.v20120910</jetty.version>
+		<jetty.version>9.2.2.v20140723</jetty.version>
 		<tycho.version>0.15.0</tycho.version>
 	</properties>
 
-	<!-- specify dependency versions and properties here to share this information
-		with all children that use the specified dependency -->
+	<!--
+		specify dependency versions and properties here to share this information
+		with all children that use the specified dependency
+	-->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -440,8 +413,14 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-websocket</artifactId>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-client</artifactId>
+				<version>${jetty.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-server</artifactId>
 				<version>${jetty.version}</version>
 				<scope>test</scope>
 			</dependency>
@@ -481,12 +460,18 @@
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>org.eclipse.xtend.lib</artifactId>
-				<version>2.4.1</version>
+				<version>2.7.2</version>
 			</dependency>
+			<!--
+				This dependecy is needed to avoid conflicts with Java 5 code (generics)
+				when pulling in transitive dependency org.apache.felix:org.osgi.foundation:1.2.0
+				that defines java.util collection classes without generics.
+				https://bugs.eclipse.org/bugs/show_bug.cgi?id=343069
+			 -->
 			<dependency>
-				<groupId>org.eclipse.core</groupId>
-				<artifactId>org.eclipse.core.resources</artifactId>
-				<version>3.6.0.v20100526-0737</version>
+				<groupId>org.eclipse.equinox</groupId>
+				<artifactId>org.eclipse.equinox.app</artifactId>
+				<version>[1.3.1,2.0.0)</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
@@ -677,7 +662,7 @@
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
-				<version>3.0.1</version>
+				<version>3.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
@@ -707,12 +692,12 @@
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
 				<artifactId>core</artifactId>
-				<version>2.1.2</version>
+				<version>2.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
 				<artifactId>dbus</artifactId>
-				<version>2.1.2</version>
+				<version>2.1.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -726,10 +711,17 @@
 	</dependencies>
 
 	<build>
-		<!-- specify plugin versions and configuration here to apply to all submodules
-			that use the specified plugin -->
+		<!--
+			specify plugin versions and configuration here to apply to all submodules
+			that use the specified plugin
+		-->
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>properties-maven-plugin</artifactId>
+					<version>1.0-alpha-2</version>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -737,6 +729,19 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-enforcer-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>enforce</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
@@ -806,6 +811,21 @@
 										</execute>
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-clean-plugin</artifactId>
+										<versionRange>[2.5,)</versionRange>
+										<goals>
+											<goal>clean</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -820,6 +840,11 @@
 						<reuseForks>false</reuseForks>
 						<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.5</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -840,11 +865,35 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>findbugs-maven-plugin</artifactId>
 					<version>2.5.2</version>
+					<configuration>
+						<failOnError>false</failOnError>
+						<threshold>Normal</threshold>
+						<effort>Default</effort>
+						<xmlOutput>true</xmlOutput>
+						<findbugsXmlOutput>true</findbugsXmlOutput>
+						<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+						<excludeFilterFile>findbugs/findbugs-exclude.xml</excludeFilterFile>
+					</configuration>
+					<executions>
+						<execution>
+							<phase>verify</phase>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>io.joynr.tools</groupId>
+							<artifactId>build-resources</artifactId>
+							<version>${project.version}</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.9.0-rc.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
@@ -863,14 +912,52 @@
 					<version>1.7</version>
 				</plugin>
 				<plugin>
-					<groupId>org.mortbay.jetty</groupId>
+					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
 					<version>${jetty.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-log4j12</artifactId>
+							<version>1.6.6</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+						<webApp>
+							<contextPath>/</contextPath>
+						</webApp>
+						<stopPort>9966</stopPort>
+						<stopKey>joynr</stopKey>
+						<contextHandlers>
+							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+								<war>${project.build.directory}/bounceproxy.war</war>
+								<contextPath>/bounceproxy</contextPath>
+							</contextHandler>
+							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+								<war>${project.build.directory}/discovery.war</war>
+								<contextPath>/discovery</contextPath>
+							</contextHandler>
+						</contextHandlers>
+						<systemProperties>
+							<systemProperty>
+								<name>log4j.configuration</name>
+								<value>file:${basedir}/src/main/resources/log4j.properties</value>
+							</systemProperty>
+							<systemProperty>
+								<name>joynr.servlet.hostPath</name>
+								<value>http://localhost:8080</value>
+							</systemProperty>
+							<systemProperty>
+								<name>org.atmosphere.useNative</name>
+								<value>true</value>
+							</systemProperty>
+						</systemProperties>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
-					<version>2.4.1</version>
+					<version>2.7.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -890,25 +977,15 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>2.12.1</version>
+					<version>2.13</version>
 					<configuration>
 						<!-- configLocation is resolved from classpath -->
 						<configLocation>checkstyle/checkstyle.xml</configLocation>
-						<!-- suppressionsLocation is resolved from classpath and extracted
-							to ${project.build.directory}/checkstyle-suppressions.xml -->
+						<!--
+							suppressionsLocation is resolved from classpath and extracted
+							to ${project.build.directory}/checkstyle-suppressions.xml
+						-->
 						<suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-						<!-- suppression property is incorrectly set if suppressions file is
-							on classpath, cf. http://jira.codehaus.org/browse/MCHECKSTYLE-169 
-							WORKAROUND:
-							change the suppression property name to noop using the suppressionsFileExpression
-							config and set the original suppression property manually by using 
-							the propertyExpansion
-							config -->
-						<suppressionsFileExpression>checkstyle.suppressions.file.noop</suppressionsFileExpression>
-						<propertyExpansion>checkstyle.suppressions.file=${project.build.directory}/checkstyle-suppressions.xml</propertyExpansion>
-						<!-- Automatic eclipse configuration through m2e-code-quality doesn't
-							work since windows paths (in ${project.build.directory}) are not handled
-							correctly, cf. https://github.com/m2e-code-quality/m2e-code-quality/issues/7 -->
 					</configuration>
 					<executions>
 						<execution>
@@ -928,7 +1005,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>cobertura-maven-plugin</artifactId>
-					<version>2.5.2</version>
+					<version>2.6</version>
 					<configuration>
 						<instrumentation>
 							<excludes>
@@ -957,8 +1034,10 @@
 					<version>2.3.2</version>
 					<configuration>
 						<compilerId>eclipse</compilerId>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.7</source>
+						<target>1.7</target>
+						<testSource>1.7</testSource>
+						<testTarget>1.7</testTarget>
 						<debug>true</debug>
 						<debuglevel>lines,vars,source</debuglevel>
 					</configuration>
@@ -1009,9 +1088,13 @@
 					<version>2.4</version>
 					<configuration>
 						<excludes>
-							<exclude>**/package-info*</exclude> <!-- to prevent package-info files from different projects to collide -->
-							<exclude>**/CheckForNull*</exclude> <!-- to prevent check-for-null annotations from package-info to be pulled
-								into jar-files -->
+							<!-- to prevent package-info files from different projects to collide -->
+							<exclude>**/package-info*</exclude>
+							<!--
+								to prevent check-for-null annotations from package-info to be pulled
+								into jar-files
+							-->
+							<exclude>**/CheckForNull*</exclude>
 						</excludes>
 						<archive>
 							<manifestEntries>
@@ -1081,16 +1164,20 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>enforce-maven-version</id>
+						<id>enforce-maven-and-java-version</id>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>[3.0,3.1)</version>
-									<message>Wrong Maven version. You must use Maven 3.0.x to build joynr.</message>
+									<version>[3.0,3.3)</version>
+									<message>Wrong Maven version. You must use Maven 3.0.x, 3.1.x or 3.2.x to build joynr.</message>
 								</requireMavenVersion>
+								<requireJavaVersion>
+									<version>1.7.0</version>
+									<message>Wrong java version. You must use Java 1.7.0 to build joynr.</message>
+								</requireJavaVersion>
 							</rules>
 						</configuration>
 					</execution>
@@ -1270,8 +1357,8 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<!-- 
-					Workaraound: sets properties to skip execution of copying NOTICE file
-					and unpacking of LICENCE inforamation on Maven projects with packaging pom. 
+						Workaraound: sets properties to skip execution of copying NOTICE file
+						and unpacking of LICENSE information on Maven projects with packaging pom.
 					-->
 					<execution>
 						<phase>validate</phase>

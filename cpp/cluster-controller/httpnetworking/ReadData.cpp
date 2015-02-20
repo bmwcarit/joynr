@@ -18,28 +18,29 @@
  */
 #include "cluster-controller/httpnetworking/ReadData.h"
 
-namespace joynr {
+namespace joynr
+{
 
-ReadData::ReadData()
-    : byteArray()
+ReadData::ReadData() : byteArray()
 {
 }
 
-ReadData::ReadData(const QString &dataQString)
-    : byteArray(dataQString.toLatin1())
+ReadData::ReadData(const QString& dataQString) : byteArray(dataQString.toLatin1())
 {
 }
 
-size_t ReadData::getLen() const {
+size_t ReadData::getLen() const
+{
     return byteArray.length();
 }
 
-
-const char* ReadData::getData() const {
+const char* ReadData::getData() const
+{
     return byteArray.constData();
 }
 
-bool ReadData::isEmpty() const {
+bool ReadData::isEmpty() const
+{
     return byteArray.isEmpty() || byteArray.length() == 0;
 };
 

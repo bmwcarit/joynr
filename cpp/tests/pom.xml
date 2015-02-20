@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -58,6 +58,10 @@
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<configuration>
+					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+					<outputPath>${basedir}/gen</outputPath>
+				</configuration>
 				<executions>
 					<execution>
 						<id>generate-common-test-classes</id>
@@ -67,8 +71,6 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/../../basemodel/src/test/franca</model>
-							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-							<outputPath>${basedir}/gen</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -79,8 +81,6 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/model</model>
-							<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-							<outputPath>${basedir}/gen</outputPath>
 						</configuration>
 					</execution>
 				</executions>
@@ -101,8 +101,6 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
 					<filesets>
-						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
-							<include>**</include> </includes> </fileset> -->
 						<fileset>
 							<directory>${basedir}</directory>
 							<includes>
@@ -123,7 +121,7 @@
 				<executions>
 					<execution>
 						<id>copy-integration-test-dependencies</id>
-						<phase>pre-integration-test</phase>
+						<phase>validate</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>
@@ -153,46 +151,67 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-jetty-config-files</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/jetty-config-files</outputDirectory>
+							<resources>
+								<resource>
+									<directory>resources</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>jetty*.xml</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>resources</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>localhost.jks</include>
+										<include>truststore.jks</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<property>
+									<name>log4j.configuration</name>
+									<value>file:${basedir}/resources/log4j.properties</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<configuration>
-					<connectors>
-						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-							<port>8080</port>
-						</connector>
-						<connector implementation="org.eclipse.jetty.server.ssl.SslSocketConnector">
-							<port>8443</port>
-							<keystore>${basedir}/resources/localhost.jks</keystore>
-							<truststore>${basedir}/resources/truststore.jks</truststore>
-							<password>changeit</password>
-							<keyPassword>changeit</keyPassword>
-							<needClientAuth>true</needClientAuth>
-						</connector>
-					</connectors>
-					<webApp>
-						<contextPath>/</contextPath>
-					</webApp>
-					<stopPort>9966</stopPort>
-					<stopKey>joynr</stopKey>
-					<contextHandlers>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/bounceproxy.war</war>
-							<contextPath>/bounceproxy</contextPath>
-						</contextHandler>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/discovery.war</war>
-							<contextPath>/discovery</contextPath>
-						</contextHandler>
-					</contextHandlers>
-					<systemProperties>
-						<systemProperty>
-							<name>joynr.servlet.hostPath</name>
-							<value>http://localhost:8080</value>
-						</systemProperty>
-					</systemProperties>
+					<!--
+					Don't define system properties here, because it will override system
+					properties defined in plugin management in super POM.
+					-->
+					<jettyXml>${project.build.directory}/jetty-config-files/jetty.xml,${project.build.directory}/jetty-config-files/jetty-http.xml,${project.build.directory}/jetty-config-files/jetty-ssl.xml,${project.build.directory}/jetty-config-files/jetty-https.xml</jettyXml>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

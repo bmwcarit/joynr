@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 ######## Project settings ########
-project(joynr-0.7.2)
+project(joynr-0.8.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 7)
-set(JOYNR_PATCH_VERSION 2)
+set(JOYNR_MINOR_VERSION 8)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -68,6 +68,14 @@ option(
 )
 message(STATUS "option ENABLE_GCOV=" ${ENABLE_GCOV})
 
+option(
+    ENABLE_CLANG_FORMATTER
+    "Use clang-formatter to format source code?"
+    ON
+)
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+
 message(STATUS "############ VARIABLES ############")
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
@@ -75,21 +83,6 @@ endif(NOT DEFINED JOYNR_SERVER)
 message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
-
-#------- SYSTEM_ARCHITECTURE --------
-message(STATUS "variable CMAKE_SYSTEM_PROCESSOR=" ${CMAKE_SYSTEM_PROCESSOR})
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
-    set(SYSTEM_ARCHITECTURE "x86")
-endif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    set(SYSTEM_ARCHITECTURE "x86_64")
-endif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-
-if(NOT DEFINED SYSTEM_ARCHITECTURE)
-    message(WARNING "system architecture unknown")
-    set(SYSTEM_ARCHITECTURE "unknown-system-architecture")
-endif(NOT DEFINED SYSTEM_ARCHITECTURE)
-message(STATUS "variable SYSTEM_ARCHITECTURE=" ${SYSTEM_ARCHITECTURE})
 
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
@@ -129,8 +122,14 @@ message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
 message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
 message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
 
+find_package(Qt5WebSockets REQUIRED)
+message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
+message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
+message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
+message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+
 include_directories(
-    SYSTEM ${Qt5Core_INCLUDE_DIRS}
+    SYSTEM ${Qt5Core_INCLUDE_DIRS} ${Qt5WebSockets_INCLUDE_DIRS}
 )
 
 message(STATUS "############ Import: cURL ############")
@@ -249,48 +248,57 @@ add_definitions(-DJOYNR_MAX_LOG_LEVEL_TRACE)
 #-Wpadded
 #-Wswitch-default //but QT moc_files produce lots of warnings here.
 
+message(STATUS "CMAKE_GENERATOR=" ${CMAKE_GENERATOR})
+message(STATUS "compiler CMAKE_C_COMPILER=" ${CMAKE_C_COMPILER})
+message(STATUS "compiler CMAKE_C_COMPILER_ID=" ${CMAKE_C_COMPILER_ID})
+message(STATUS "compiler CMAKE_C_COMPILER_VERSION=" ${CMAKE_C_COMPILER_VERSION})
+message(STATUS "compiler CMAKE_CXX_COMPILER=" ${CMAKE_CXX_COMPILER})
+message(STATUS "compiler CMAKE_CXX_COMPILER_ID=" ${CMAKE_CXX_COMPILER_ID})
+message(STATUS "compiler CMAKE_CXX_COMPILER_VERSION=" ${CMAKE_CXX_COMPILER_VERSION})
 # Compiler flags that depend on compiler type and OS
-IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${MSVCC_AUTO_INCLUDE} /MP")
 
         # When compiling with DEBUG turn on runtime error checks (RTC1) and
         # Buffer Overflow detection (GS)
         set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${MSVCC_AUTO_INCLUDE} /RTC1 /GS /MP")
-ELSE()
-        # libs/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for 3rd-Party code.
-        # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
-        # generated code.
-        # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
-        set(GNU_CXX_FLAGS "-pipe -g")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Weffc++ -Wformat-security")
-        IF(${WIN32})
-                # This setting does not work in linux:
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
-        ELSE()
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -pthread")
-        ENDIF(${WIN32})
-        # set cpp verion
-        if(CMAKE_COMPILER_IS_GNUCXX)
-           execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-           if (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7)
-                message(STATUS "C++11 activated.")
-                add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-           elseif(GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
-                message(WARNING "C++0x activated. If you get any errors update to a compiler which fully supports C++11")
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-           else ()
-                message(FATAL_ERROR "C++11 needed. Therefore a gcc compiler with a version higher than 4.3 is needed.")
-           endif()
-        else(CMAKE_COMPILER_IS_GNUCXX)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-        endif(CMAKE_COMPILER_IS_GNUCXX)
-ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # libs/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for 3rd-Party code.
+    # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
+    # generated code.
+    # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
+    set(GNU_CXX_FLAGS "-pipe -g")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Weffc++ -Wformat-security")
+    if(${WIN32})
+            # This setting does not work in linux:
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
+    else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -pthread")
+    endif(${WIN32})
+    # check GNU CXX compiler version
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.7")
+        message(STATUS "C++11 activated.")
+        add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.3" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.3")
+        message(WARNING "C++0x activated. If you get any errors update to a compiler which fully supports C++11")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+    else()
+        message(FATAL_ERROR "C++11 needed. Therefore a gcc compiler with a version higher than 4.3 is needed.")
+    endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.7")
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 --stdlib=libc++")
+    add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     message(STATUS "### DBUS CommonAPI configuration ###")
@@ -300,29 +308,29 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
     message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
     message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1)
+    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1.4)
     message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
     message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1)
+    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1.4)
     message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
     message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
     message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
 
-    include_directories(SYSTEM
-
+    include_directories(
+        SYSTEM
         ${COMMONAPI_INCLUDE_DIRS}
         ${DBUS1_INCLUDE_DIRS}
         ${COMMONAPI_DBUS_INCLUDE_DIRS}
     )
 
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
-
-    add_subdirectory(common-api)
-
-ENDIF(${USE_DBUS_COMMONAPI_COMMUNICATION})
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 ######## Add submodules ########
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    add_subdirectory(common-api)
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(libs)
 add_subdirectory(common)
 add_subdirectory(libjoynr)
@@ -340,6 +348,7 @@ set(
     Joynr
     JoynrClusterController
     JoynrClusterControllerRuntime
+    JoynrWsRuntime
     log4qt
     qjson
 )
@@ -347,7 +356,7 @@ set(
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
         APPEND TARGET_LIBS
-        JoynrRuntime
+        JoynrDbusRuntime
         JoynrCommonAPI
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -381,14 +390,23 @@ set(
     log4qt
 )
 
+set(
+    JoynrConfig_LIB_WS_LIBRARIES
+    JoynrCommon
+    Joynr
+    qjson
+    log4qt
+    JoynrWsRuntime
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        JoynrConfig_LIB_LIBRARIES
+        JoynrConfig_LIB_DBUS_LIBRARIES
         JoynrCommon
         Joynr
         qjson
         log4qt
-        JoynrRuntime
+        JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
@@ -408,9 +426,16 @@ set(
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
 )
+set(
+    JoynrConfig_LIB_WS_INCLUDE_DIRS
+    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
+    ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+)
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        JoynrConfig_LIB_INCLUDE_DIRS
+        JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${qjson_PUBLIC_INCLUDE_DIRECTORY}

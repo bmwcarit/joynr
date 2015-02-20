@@ -30,6 +30,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrRuntime.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -41,7 +42,8 @@ class QCoreApplication;
 class QString;
 class JoynrClusterControllerRuntimeTest;
 
-namespace joynr {
+namespace joynr
+{
 
 class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
@@ -60,21 +62,22 @@ class JoynrMessagingConnectorFactory;
 class MessagingSettings;
 class Dispatcher;
 class InProcessPublicationSender;
+class WebSocketCcMessagingSkeleton;
 
-namespace infrastructure {
-    class ChannelUrlDirectoryProxy;
+namespace infrastructure
+{
+class ChannelUrlDirectoryProxy;
 }
-template<typename Key, typename T> class Directory;
+template <typename Key, typename T>
+class Directory;
 
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime {
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
+{
 public:
-
-    JoynrClusterControllerRuntime(
-            QCoreApplication* app,
-            QSettings* settings,
-            IMessageReceiver* messageReceiver = NULL,
-            IMessageSender* = NULL
-    );
+    JoynrClusterControllerRuntime(QCoreApplication* app,
+                                  QSettings* settings,
+                                  IMessageReceiver* messageReceiver = NULL,
+                                  IMessageSender* = NULL);
 
     static JoynrClusterControllerRuntime* create(QSettings* settings);
 
@@ -99,7 +102,6 @@ protected:
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     IDispatcher* ccDispatcher;
-    PublicationManager* publicationManager;
     SubscriptionManager* subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;
@@ -107,10 +109,11 @@ protected:
     ICapabilitiesClient* capabilitiesClient;
     QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
-    //Reason why CapabilitiesAggregator (CA) has to be a QSP:
-    //CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()
-    //CA has to be a pointer instead of a reference, because it has to be initialised to NULL (because other members are needed for its constructor)
-    //CA is passed into different other classes, so ownership cannot be transferred.
+    // Reason why CapabilitiesAggregator (CA) has to be a QSP:
+    // CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()
+    // CA has to be a pointer instead of a reference, because it has to be initialised to NULL
+    // (because other members are needed for its constructor)
+    // CA is passed into different other classes, so ownership cannot be transferred.
     // => CA needs to be a QSP
     ClientQCache cache;
     // messageRouter must be shared pointer since it is also registered as
@@ -137,14 +140,16 @@ protected:
     DbusSettings* dbusSettings;
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
+    WebSocketSettings wsSettings;
+    WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
 
     static joynr_logging::Logger* logger;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
-friend class ::JoynrClusterControllerRuntimeTest;
+    friend class ::JoynrClusterControllerRuntimeTest;
 };
 
-
 } // namespace joynr
-#endif //JOYNRCLUSTERCONTROLLERRUNTIME_H
+#endif // JOYNRCLUSTERCONTROLLERRUNTIME_H

@@ -22,19 +22,20 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/CapabilityEntry.h"
 
-namespace joynr {
+namespace joynr
+{
 
-class JOYNR_EXPORT ILocalCapabilitiesCallback {
+class JOYNR_EXPORT ILocalCapabilitiesCallback
+{
 public:
     // This class is accessed through a QSharedPointer.
     // The empty destructor is not defined in the header file:
     // https://bugreports.qt-project.org/browse/QTBUG-7302
     // http://doc.qt.digia.com/qt/qscopedpointer.html#forward-declared-pointers
-    virtual ~ILocalCapabilitiesCallback();  
+    virtual ~ILocalCapabilitiesCallback();
 
-    virtual void capabilitiesReceived(QList<CapabilityEntry> capabilities)=0;
+    virtual void capabilitiesReceived(QList<CapabilityEntry> capabilities) = 0;
 };
 
-
 } // namespace joynr
-#endif //ILOCALCAPABILITIESDIRECTORYCALLBACK_H
+#endif // ILOCALCAPABILITIESDIRECTORYCALLBACK_H

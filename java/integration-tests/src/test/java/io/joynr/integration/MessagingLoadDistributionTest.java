@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public class MessagingLoadDistributionTest {
                                           String msgId) throws JsonProcessingException {
 
         String previousBaseUri = RestAssured.baseURI;
-        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, "jsessionid");
+        RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, "jsessionid");
         String sessionId = Utilities.getSessionId(channelUrl, "jsessionid");
 
         String serializedMessage = bpMock.createSerializedJoynrMessage(relativeTtlMs, msgId, msgId);
@@ -160,7 +160,7 @@ public class MessagingLoadDistributionTest {
                                                                            JsonMappingException, IOException {
 
         String previousBaseUri = RestAssured.baseURI;
-        RestAssured.baseURI = Utilities.getUrlWithoutJsessionId(channelUrl, "jsessionid");
+        RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, "jsessionid");
         String sessionId = Utilities.getSessionId(channelUrl, "jsessionid");
 
         /* @formatter:off */

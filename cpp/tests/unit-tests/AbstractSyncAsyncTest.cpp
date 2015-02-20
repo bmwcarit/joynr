@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "PrettyPrint.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/types/GpsLocation.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/IClientCache.h"
@@ -147,7 +147,7 @@ public:
             QSharedPointer<IReplyCaller>
     )>& setExpectationsForSendRequestCall(QString expectedType, QString methodName) = 0;
 
-    virtual tests::ITest* createFixture(bool cacheEnabled)=0;
+    virtual tests::Itest* createFixture(bool cacheEnabled)=0;
 
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
@@ -162,7 +162,7 @@ public:
 
 
     void testSync_setAttributeNotCached() {
-        tests::ITest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture(false);
 
         EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -188,7 +188,7 @@ public:
 
 
     void testSync_getAttributeNotCached() {
-        tests::ITest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture(false);
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
@@ -217,7 +217,7 @@ public:
     }
 
     void testSync_getAttributeCached() {
-        tests::ITest* testFixture = createFixture(true);
+        tests::Itest* testFixture = createFixture(true);
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
 
@@ -245,7 +245,7 @@ public:
     }
 
     void testSync_OperationWithNoArguments() {
-        tests::ITest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture(false);
         setExpectationsForSendRequestCall("int", "methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
@@ -283,7 +283,7 @@ protected:
     QString providerParticipantId;
     MockClientCache mockClientCache;
     QSharedPointer<system::Address> endPointAddress;
-    tests::ITest* asyncTestFixture;
+    tests::Itest* asyncTestFixture;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);
 };

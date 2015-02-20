@@ -26,42 +26,40 @@
 #include <QUuid>
 #include <cstring>
 
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 Logger* Util::logger = Logging::getInstance()->getLogger("MSG", "Util");
 
-
-QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream) {
+QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
+{
     // This code relies assumes jsonStream is a valid JSON string
     QList<QByteArray> jsonObjects;
     int parenthesisCount = 0;
     int currentObjectStart = -1;
     bool isInsideString = false;
-            /*A string starts with an unescaped " and ends with an unescaped "
-             * } or { within a string must be ignored.
-            */
+    /*A string starts with an unescaped " and ends with an unescaped "
+     * } or { within a string must be ignored.
+    */
     for (int i = 0; i < jsonStream.size(); i++) {
-        if (jsonStream.at(i) == '"' && (i>0) && jsonStream.at(i-1)!= '\\') {
-            //only switch insideString if " is not escaped
-            isInsideString=!isInsideString;
+        if (jsonStream.at(i) == '"' && (i > 0) && jsonStream.at(i - 1) != '\\') {
+            // only switch insideString if " is not escaped
+            isInsideString = !isInsideString;
+        } else if (!isInsideString && jsonStream.at(i) == '{') {
+            parenthesisCount++;
+        } else if (!isInsideString && jsonStream.at(i) == '}') {
+            parenthesisCount--;
         }
-        else if (!isInsideString && jsonStream.at(i) == '{') {
-                parenthesisCount++;
-            }
-        else if (!isInsideString && jsonStream.at(i) == '}') {
-                parenthesisCount--;
-            }
-        
+
         if (parenthesisCount == 1 && currentObjectStart < 0) {
             // found start of object
             currentObjectStart = i;
         }
         if (parenthesisCount == 0 && currentObjectStart >= 0) {
             // found end of object
-            jsonObjects += jsonStream.mid(currentObjectStart,
-                                          i - currentObjectStart + 1);
+            jsonObjects += jsonStream.mid(currentObjectStart, i - currentObjectStart + 1);
 
             currentObjectStart = -1;
         }
@@ -69,7 +67,7 @@ QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream) {
     return jsonObjects;
 }
 
-QString Util::attributeGetterFromName(const QString &attributeName)
+QString Util::attributeGetterFromName(const QString& attributeName)
 {
     QString result = attributeName;
     result[0] = result[0].toUpper();
@@ -80,23 +78,22 @@ QString Util::attributeGetterFromName(const QString &attributeName)
 QString Util::createUuid()
 {
     QString baseUuid = QUuid::createUuid().toString();
-    return baseUuid.mid(1, baseUuid.length()-2);
+    return baseUuid.mid(1, baseUuid.length() - 2);
 }
 
-void Util::logSerializedMessage(joynr_logging::Logger *logger,
-                                       const QString& explanation,
-                                       const QString& message)
+void Util::logSerializedMessage(joynr_logging::Logger* logger,
+                                const QString& explanation,
+                                const QString& message)
 {
     if (message.length() > 2048) {
-        LOG_DEBUG(logger, QString("%1 %2<**truncated, length %3")
-                            .arg(explanation)
-                            .arg(message.left(2048))
-                            .arg(message.length()));
+        LOG_DEBUG(logger,
+                  QString("%1 %2<**truncated, length %3")
+                          .arg(explanation)
+                          .arg(message.left(2048))
+                          .arg(message.length()));
     } else {
-        LOG_DEBUG(logger, QString("%1 %2, length %3")
-                            .arg(explanation)
-                            .arg(message)
-                            .arg(message.length()));
+        LOG_DEBUG(logger,
+                  QString("%1 %2, length %3").arg(explanation).arg(message).arg(message.length()));
     }
 }
 

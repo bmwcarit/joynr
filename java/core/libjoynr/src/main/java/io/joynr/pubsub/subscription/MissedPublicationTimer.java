@@ -29,15 +29,18 @@ import org.slf4j.LoggerFactory;
 
 public class MissedPublicationTimer extends PubSubTimerBase {
 
-    private final SubscriptionListener<?> callback;
+    private final AttributeSubscriptionListener<?> callback;
     private final long alertAfterInterval_ms;
+    private long expectedInterval_ms;
     private static final Logger logger = LoggerFactory.getLogger(MissedPublicationTimer.class);
 
     public MissedPublicationTimer(long expiryDate,
+                                  long expectedInterval_ms,
                                   long alertAfterInterval_ms,
-                                  SubscriptionListener<?> callback,
+                                  AttributeSubscriptionListener<?> callback,
                                   PubSubState state) {
         super(expiryDate, state);
+        this.expectedInterval_ms = expectedInterval_ms;
         this.alertAfterInterval_ms = alertAfterInterval_ms;
         this.callback = callback;
         startTimer();
@@ -56,14 +59,18 @@ public class MissedPublicationTimer extends PubSubTimerBase {
                     delay = alertAfterInterval_ms - timeSinceLastPublication;
                 } else {
                     logger.info("Missed publication!");
-                    callback.publicationMissed();
-                    delay = alertAfterInterval_ms;
+                    delay = alertAfterInterval_ms - timeSinceLastExpectedPublication(timeSinceLastPublication);
+                    callback.onError();
                 }
                 logger.info("Rescheduling MissedPublicationTimer with delay: " + delay);
                 rescheduleTimer(delay);
             } else {
                 logger.info("Subscription expired. MissedPublicationTimer is not rescheduled.");
             }
+        }
+
+        private long timeSinceLastExpectedPublication(long timeSinceLastPublication) {
+            return timeSinceLastPublication % expectedInterval_ms;
         }
     }
 

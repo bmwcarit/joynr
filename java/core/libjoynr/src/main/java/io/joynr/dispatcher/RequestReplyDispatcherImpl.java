@@ -3,7 +3,7 @@ package io.joynr.dispatcher;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ package io.joynr.dispatcher;
  */
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JsonRequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -31,10 +33,16 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.pubsub.publication.PublicationManager;
-import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -51,6 +59,7 @@ import joynr.SubscriptionStop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -159,7 +168,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         if (messageList != null) {
             for (ContentWithExpiryDate<JoynrMessage> messageItem : messageList) {
                 if (!messageItem.isExpired()) {
-                    executeRequestAndRespond(requestCaller, messageItem.getContent());
+                    executeRequestAndReply(requestCaller, messageItem.getContent());
                 }
             }
         }
@@ -246,12 +255,11 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     }
 
+    @Override
     public void removeRequestCaller(String participantId) {
         synchronized (requestCallerDirectory) {
             requestCallerDirectory.remove(participantId);
         }
-        publicationManager.stopPublicationByProviderId(participantId);
-
     }
 
     @Override
@@ -273,7 +281,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                     handleRequestMessageReceived(message);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                     handleOneWayMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)) {
+                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                        || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
                     handleSubscriptionRequestReceived(message);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                     handleSubscriptionStopReceived(message);
@@ -291,28 +300,64 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         deliverPublication(message);
     }
 
-    @SuppressWarnings("unchecked")
     private void deliverPublication(JoynrMessage message) {
         SubscriptionPublication publication;
         try {
             publication = objectMapper.readValue(message.getPayload(), SubscriptionPublication.class);
             String subscriptionId = publication.getSubscriptionId();
-            Class<? extends TypeReference<?>> attributeType = subscriptionManager.getAttributeTypeReference(subscriptionId);
+            Class<?> receivedType = subscriptionManager.getType(subscriptionId);
 
-            TypeReference<?> typeRef = attributeType.newInstance();
-            Object receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
-            @SuppressWarnings("unchecked")
-            SubscriptionListener listener = subscriptionManager.getSubscriptionListener(subscriptionId);
-            if (listener == null) {
-                logger.error("No subscription listener found for incoming publication!");
+            Object receivedObject;
+            if (TypeReference.class.isAssignableFrom(receivedType)) {
+                TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
+                receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
             } else {
-                subscriptionManager.touchSubscriptionState(subscriptionId);
-                listener.receive(receivedObject);
+                receivedObject = objectMapper.convertValue(publication.getResponse(), receivedType);
+            }
+
+            subscriptionManager.touchSubscriptionState(subscriptionId);
+
+            if (subscriptionManager.isBroadcast(subscriptionId)) {
+                callBroadcastListener(subscriptionId, receivedObject);
+            } else {
+                callSubscriptionListener(subscriptionId, receivedObject);
             }
 
         } catch (Exception e) {
             logger.error("Error delivering publication: {} : {}", e.getClass(), e.getMessage());
         }
+    }
+
+    private <T> void callSubscriptionListener(String subscriptionId, T attributeValue) {
+        AttributeSubscriptionListener<T> listener = subscriptionManager.getSubscriptionListener(subscriptionId);
+        if (listener == null) {
+            logger.error("No subscription listener found for incoming publication!");
+        } else {
+            listener.onReceive(attributeValue);
+        }
+    }
+
+    private void callBroadcastListener(String subscriptionId, Object receivedObject) throws NoSuchMethodException,
+                                                                                    IllegalAccessException,
+                                                                                    InvocationTargetException {
+        BroadcastSubscriptionListener broadcastSubscriptionListener = subscriptionManager.getBroadcastSubscriptionListener(subscriptionId);
+
+        List<?> receivedList = (List<?>) receivedObject;
+        Object[] broadcastValues = receivedList.toArray(new Object[receivedList.size()]);
+        Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
+        Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("onReceive", broadcastTypes);
+        if (!receive.isAccessible()) {
+            receive.setAccessible(true);
+        }
+        receive.invoke(broadcastSubscriptionListener, broadcastValues);
+    }
+
+    private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {
+        List<Class<?>> parameterTypes = new ArrayList<Class<?>>(broadcastValues.length);
+        for (int i = 0; i < broadcastValues.length; i++) {
+            parameterTypes.add(broadcastValues[i].getClass());
+        }
+        return parameterTypes.toArray(new Class<?>[parameterTypes.size()]);
     }
 
     private void handleSubscriptionStopReceived(JoynrMessage message) {
@@ -344,8 +389,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 publicationManager.addSubscriptionRequest(fromParticipantId,
                                                           toParticipantId,
                                                           subscriptionRequest,
-                                                          requestCaller,
-                                                          messageSender);
+                                                          requestCaller);
             } catch (JsonParseException e) {
                 logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
                              new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
@@ -406,7 +450,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         // set, otherwise log an error
 
         if (requestCallerDirectory.containsKey(toParticipantId)) {
-            executeRequestAndRespond(requestCallerDirectory.get(toParticipantId), message);
+            executeRequestAndReply(requestCallerDirectory.get(toParticipantId), message);
 
         } else {
             putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
@@ -414,54 +458,89 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
-    private void executeRequestAndRespond(final RequestCaller requestCaller, final JoynrMessage message) {
+    private void executeRequestAndReply(final RequestCaller requestCaller, final JoynrMessage message) {
         try {
             // TODO shall be moved to request manager and not handled by dispatcher
             Request request = objectMapper.readValue(message.getPayload(), Request.class);
             logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
-            Reply reply = jsonRequestInterpreter.execute(requestCaller, request);
-            // String replyMcid =
-            // message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_TO);
-            String originalReceiverParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
-            String originalSenderParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
-            long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
-            if (expiryDate > System.currentTimeMillis()) {
-                try {
-                    messageSender.sendReply(originalReceiverParticipantId,
-                                            originalSenderParticipantId,
-                                            reply,
-                                            ExpiryDate.fromAbsolute(expiryDate));
-                } catch (JoynrSendBufferFullException e) {
-                    // TODO React on exception thrown by sendReply
-                    logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);
-                } catch (JoynrMessageNotSentException e) {
-                    // TODO React on JoynrMessageNotSentException
-                    // thrown by sendReply
-                    logger.error("Responder could not reply due to a JoynrMessageNotSentException: ", e);
-                } catch (JoynrCommunicationException e) {
-                    // TODO React on JoynCommunicationException
-                    // thrown by sendReply
-                    logger.error("Responder could not reply due to a JoynCommunicationException: ", e);
-                }
+            if (requestCaller instanceof RequestCallerAsync) {
+                jsonRequestInterpreter.execute(new Callback<Reply>() {
 
+                    @Override
+                    public void onSuccess(Reply reply) {
+                        try {
+                            if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
+                                sendReply(message, reply);
+                            } else {
+                                logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message {} has been reached.",
+                                             reply,
+                                             new Date(message.getExpiryDate()));
+                            }
+                        } catch (Exception e) {
+                            logger.error("Error processing message: \r\n {} : error : {}", message, e);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(JoynrException error) {
+                        logger.error("Error processing message: \r\n {} ; error: {}", message, error);
+                    }
+                },
+                                               (RequestCallerAsync) requestCaller,
+                                               request);
+            } else if (requestCaller instanceof RequestCallerSync) {
+                Reply reply = jsonRequestInterpreter.execute((RequestCallerSync) requestCaller, request);
+                sendReply(message, reply);
             } else {
-                logger.error("Expiry Date exceeded. Reply discarded: messageId: {} requestReplyId: {}",
-                             message.getId(),
-                             reply.getRequestReplyId());
+                logger.error("Error processing message: \r\n {}. RequestCaller type {} unknown.",
+                             message,
+                             requestCaller.getClass().getName());
             }
-            // } catch (IOException e) {
-            // logger.error("Error processing message: \r\n {}",
-            // message, e);
-            // } catch (ClassNotFoundException e) {
-            // e.printStackTrace();
-            // TODO: how can the exception be passed on, outside of
-            // the runnable, and to whom?
         } catch (Throwable e) {
             logger.error("Error processing message: \r\n {}", message, e);
-
         }
 
+    }
+
+    private void sendReply(final JoynrMessage message, Reply reply) throws JsonGenerationException,
+                                                                   JsonMappingException, IOException {
+        // String replyMcid =
+        // message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_TO);
+        String originalReceiverParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
+        String originalSenderParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
+        long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
+        if (expiryDate > System.currentTimeMillis()) {
+            try {
+                messageSender.sendReply(originalReceiverParticipantId,
+                                        originalSenderParticipantId,
+                                        reply,
+                                        ExpiryDate.fromAbsolute(expiryDate));
+            } catch (JoynrSendBufferFullException e) {
+                // TODO React on exception thrown by sendReply
+                logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);
+            } catch (JoynrMessageNotSentException e) {
+                // TODO React on JoynrMessageNotSentException
+                // thrown by sendReply
+                logger.error("Responder could not reply due to a JoynrMessageNotSentException: ", e);
+            } catch (JoynrCommunicationException e) {
+                // TODO React on JoynCommunicationException
+                // thrown by sendReply
+                logger.error("Responder could not reply due to a JoynCommunicationException: ", e);
+            }
+
+        } else {
+            logger.error("Expiry Date exceeded. Reply discarded: messageId: {} requestReplyId: {}",
+                         message.getId(),
+                         reply.getRequestReplyId());
+        }
+        // } catch (IOException e) {
+        // logger.error("Error processing message: \r\n {}",
+        // message, e);
+        // } catch (ClassNotFoundException e) {
+        // e.printStackTrace();
+        // TODO: how can the exception be passed on, outside of
+        // the runnable, and to whom?
     }
 
     private void handleReplyMessageReceived(final JoynrMessage message) {
@@ -488,6 +567,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         callBack.messageCallBack(reply);
     }
 
+    @Override
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN Dispatcher");
         shutdown = true;

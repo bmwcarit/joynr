@@ -24,12 +24,12 @@
 #include "joynr/Directory.h"
 #include "joynr/ISubscriptionCallback.h"
 
-namespace joynr {
+namespace joynr
+{
 
-    typedef Directory< QString, RequestCaller > RequestCallerDirectory;
-    typedef Directory< QString, IReplyCaller > ReplyCallerDirectory;
-    typedef Directory< QString, ISubscriptionCallback > AttributeSubscriptionDirectory;
-
+typedef Directory<QString, RequestCaller> RequestCallerDirectory;
+typedef Directory<QString, IReplyCaller> ReplyCallerDirectory;
+typedef Directory<QString, ISubscriptionCallback> AttributeSubscriptionDirectory;
 
 } // namespace joynr
-#endif //LIBJOYNRDIRECTORIES_H
+#endif // LIBJOYNRDIRECTORIES_H

@@ -3,7 +3,7 @@ package io.joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr;
  */
 
 import io.joynr.generator.GeneratorTask;
+import io.joynr.generator.util.InvocationArguments;
 
 import java.io.IOException;
 
@@ -52,5 +53,18 @@ public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
     protected void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
                                                       InstantiationException, IllegalAccessException {
         task.generate(getLog());
+    }
+
+    @Override
+    protected InvocationArguments createInvocationArguments() {
+        InvocationArguments result = super.createInvocationArguments();
+        result.setGenerate(true);
+        result.setClean(false);
+        return result;
+    }
+
+    @Override
+    protected String getSupportedGoal() {
+        return "generate";
     }
 }

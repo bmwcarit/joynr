@@ -25,7 +25,8 @@
 
 #include <QSharedPointer>
 
-namespace joynr {
+namespace joynr
+{
 
 class MessagingSettings;
 
@@ -33,19 +34,20 @@ class MessagingSettings;
  * @brief
  *
  */
-class   IChannelUrlSelector {
+class IChannelUrlSelector
+{
 
 public:
-
-    virtual ~IChannelUrlSelector() {}
+    virtual ~IChannelUrlSelector()
+    {
+    }
     /**
     * @brief Uses the ChannelUrlDirectoryProxy to query the remote ChannelUrlDirectory
     *
     * @param channelUrlDirectoryProxy
     */
-    virtual void init(
-            QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-            const MessagingSettings& settings) = 0;
+    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+                      const MessagingSettings& settings) = 0;
 
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
@@ -57,10 +59,9 @@ public:
     * @param timeout
     * @return QString
     */
-    virtual QString obtainUrl(
-            const QString& channelId,
-            RequestStatus& status,
-            const qint64& timeout_ms) = 0;
+    virtual QString obtainUrl(const QString& channelId,
+                              RequestStatus& status,
+                              const qint64& timeout_ms) = 0;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -68,12 +69,8 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success,
-            const QString& channelId,
-            QString url) = 0;
+    virtual void feedback(bool success, const QString& channelId, QString url) = 0;
 };
 
-
-
 } // namespace joynr
-#endif //ICHANNELDIRECTORYURLCACHE_H_
+#endif // ICHANNELDIRECTORYURLCACHE_H_

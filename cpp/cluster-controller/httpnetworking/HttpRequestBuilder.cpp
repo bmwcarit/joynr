@@ -22,63 +22,68 @@
 
 #include <curl/curl.h>
 
-
-namespace joynr {
+namespace joynr
+{
 
 using namespace joynr_logging;
 
 Logger* HttpRequestBuilder::logger = Logging::getInstance()->getLogger("MSG", "HttpRequestBuilder");
 
 HttpRequestBuilder::HttpRequestBuilder(const QString& url)
-    : handle(NULL),
-      headers(NULL),
-      content(),
-      built(false)
+        : handle(NULL), headers(NULL), content(), built(false)
 {
     handle = HttpNetworking::getInstance()->getCurlHandlePool()->getHandle(url);
     curl_easy_setopt(handle, CURLOPT_URL, url.toLatin1().data());
 }
 
-HttpRequestBuilder::~HttpRequestBuilder() {
-    if(!built) {
-        if(headers != 0) {
+HttpRequestBuilder::~HttpRequestBuilder()
+{
+    if (!built) {
+        if (headers != 0) {
             curl_slist_free_all(headers);
         }
         HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);
     }
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withProxy(const QString& proxy) {
+HttpRequestBuilder* HttpRequestBuilder::withProxy(const QString& proxy)
+{
     curl_easy_setopt(handle, CURLOPT_PROXY, proxy.toLatin1().data());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withCertificateAuthority(const QString& caFile) {
+HttpRequestBuilder* HttpRequestBuilder::withCertificateAuthority(const QString& caFile)
+{
     curl_easy_setopt(handle, CURLOPT_CAINFO, caFile.toLatin1().data());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withClientCertificate(const QString& certificateFile) {
+HttpRequestBuilder* HttpRequestBuilder::withClientCertificate(const QString& certificateFile)
+{
     curl_easy_setopt(handle, CURLOPT_SSLCERT, certificateFile.toLatin1().data());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withClientCertificatePassword(const QString& password) {
+HttpRequestBuilder* HttpRequestBuilder::withClientCertificatePassword(const QString& password)
+{
     curl_easy_setopt(handle, CURLOPT_KEYPASSWD, password.toLatin1().data());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withDebug() {
+HttpRequestBuilder* HttpRequestBuilder::withDebug()
+{
     curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::postContent(const QByteArray& data) {
+HttpRequestBuilder* HttpRequestBuilder::postContent(const QByteArray& data)
+{
     content = data;
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::asPost() {
+HttpRequestBuilder* HttpRequestBuilder::asPost()
+{
     curl_easy_setopt(handle, CURLOPT_POST, 1);
     curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, 0);
 
@@ -88,41 +93,51 @@ HttpRequestBuilder* HttpRequestBuilder::asPost() {
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::asDelete() {
+HttpRequestBuilder* HttpRequestBuilder::asDelete()
+{
     curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withTimeout_ms(long timeout_ms) {
+HttpRequestBuilder* HttpRequestBuilder::withTimeout_ms(long timeout_ms)
+{
     curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, timeout_ms);
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withConnectTimeout_ms(long timeout_ms) {
+HttpRequestBuilder* HttpRequestBuilder::withConnectTimeout_ms(long timeout_ms)
+{
     curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT_MS, timeout_ms);
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::acceptGzip() {
+HttpRequestBuilder* HttpRequestBuilder::acceptGzip()
+{
     curl_easy_setopt(handle, CURLOPT_ACCEPT_ENCODING, "gzip");
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withContentType(const QString& contentType) {
+HttpRequestBuilder* HttpRequestBuilder::withContentType(const QString& contentType)
+{
     addHeader("Content-Type", contentType);
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::addHeader(const QString& name, const QString& value) {
+HttpRequestBuilder* HttpRequestBuilder::addHeader(const QString& name, const QString& value)
+{
     QString header(name + ": " + value);
     headers = curl_slist_append(headers, header.toLatin1().data());
     return this;
 }
 
-HttpRequest* HttpRequestBuilder::build() {
-    if(built)   {
-        LOG_WARN(logger, "The method build of HttpBuilder may be called only once on a specific instance. Throwing an Exception from worker thread.");
-        throw JoynrException("The method build of HttpBuilder may be called only once on a specific instance");
+HttpRequest* HttpRequestBuilder::build()
+{
+    if (built) {
+        LOG_WARN(logger,
+                 "The method build of HttpBuilder may be called only once on a specific "
+                 "instance. Throwing an Exception from worker thread.");
+        throw JoynrException(
+                "The method build of HttpBuilder may be called only once on a specific instance");
     }
     built = true;
     return new DefaultHttpRequest(handle, content, headers);

@@ -22,15 +22,14 @@
 
 #include <QVariant>
 
-namespace joynr {
+namespace joynr
+{
 
-SubscriptionAttributeListener::SubscriptionAttributeListener(const QString &subscriptionId,
-                                                             PublicationManager &publicationManager) :
-        subscriptionId(subscriptionId),
-        publicationManager(publicationManager)
+SubscriptionAttributeListener::SubscriptionAttributeListener(const QString& subscriptionId,
+                                                             PublicationManager& publicationManager)
+        : subscriptionId(subscriptionId), publicationManager(publicationManager)
 {
 }
-
 
 void SubscriptionAttributeListener::attributeValueChanged(const QVariant& value)
 {

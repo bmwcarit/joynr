@@ -20,7 +20,9 @@ package io.joynr.pubsub.publication;
  */
 
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
+
+import java.util.List;
+
 import joynr.SubscriptionRequest;
 
 public interface PublicationManager {
@@ -35,17 +37,16 @@ public interface PublicationManager {
                                 SubscriptionRequest subscriptionRequest);
 
     /**
-     * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
+     * @brief Adds the SubscriptionRequest for event or attribute
      * @param fromParticipantId
-     * @param requestCaller
+     * @param toParticipantId
      * @param subscriptionRequest
-     * @param publicationSender
+     * @param requestCaller
      */
     void addSubscriptionRequest(String fromParticipantId,
                                 String toParticipantId,
                                 SubscriptionRequest subscriptionRequest,
-                                RequestCaller requestCaller,
-                                RequestReplySender requestReplySender);
+                                RequestCaller requestCaller);
 
     /**
      * @brief Stops the sending of publications
@@ -67,13 +68,17 @@ public interface PublicationManager {
      * 
      * @param providerId
      * @param requestCaller
-     * @param publicationSender
      */
-    void restoreQueuedSubscription(final String providerId,
-                                   RequestCaller requestCaller,
-                                   RequestReplySender requestReplySender);
+    void restoreQueuedSubscription(final String providerId, RequestCaller requestCaller);
 
+    /**
+     * @brief Call passed through from ProviderListener when an attribute on the provider is changed.
+     * @param subscriptionId
+     * @param value
+     */
     void attributeValueChanged(String subscriptionId, Object value);
+
+    void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
 
     void shutdown();
 

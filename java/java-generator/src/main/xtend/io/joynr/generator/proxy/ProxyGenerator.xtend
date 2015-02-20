@@ -2,7 +2,7 @@ package io.joynr.generator.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,23 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class ProxyGenerator {
-	
+
 	@Inject
 	extension JoynrJavaGeneratorExtensions	
-	
-	
+
 	@Inject
 	InterfaceProxyTemplate interfaceProxy
 
-
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
-	
-		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
+		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 
 		var serviceName =  fInterface.joynrName
 
-		fsa.generateFile(
+		generateFile(
+			fsa,
 			path + serviceName + "Proxy.java",
-			interfaceProxy.generate(fInterface).toString
-		);		
+			interfaceProxy,
+			fInterface
+		);
 	}
 }

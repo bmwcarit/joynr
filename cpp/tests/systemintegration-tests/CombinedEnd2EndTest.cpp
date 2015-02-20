@@ -22,7 +22,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/tests/TestProxy.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/tests/DerivedStruct.h"
 #include "joynr/tests/AnotherDerivedStruct.h"
 #include "joynr/types/Trip.h"
@@ -154,18 +154,18 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     QThreadSleep::msleep(1000);
 
-    runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     QThreadSleep::msleep(1000);
 
     //consumer for testinterface
     // Testing Lists
     {
-        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
@@ -174,7 +174,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         qlonglong qosCacheDataFreshnessMs = 400000;
 
         // Send a message and expect to get a result
-        QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                    ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                    ->setCached(false)
@@ -281,9 +281,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         // List of strings,
         QList<QString> localStrList;
         QList<QString> remoteStrList;
-        localStrList.append("one");
-        localStrList.append("two");
-        localStrList.append("three");
+        localStrList.append("one ü");
+        localStrList.append("two 漢語");
+        localStrList.append("three ـتـ");
+        localStrList.append("four {");
         testProvider->setListOfStrings(statusOfSet, localStrList);
 
         testProxy->getListOfStrings(status, remoteStrList);
@@ -328,14 +329,14 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     // Testing TTL
     {
        //create a proxy with very short TTL and expect no returning replies.
-        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
         qlonglong qosRoundTripTTL = 1;
         qlonglong qosCacheDataFreshnessMs = 400000;
-        QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                    ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                    ->setCached(false)
@@ -353,7 +354,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 #if 0
     // Testing operation overloading
     {
-        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
         discoveryQos.setDiscoveryTimeout(1000);
@@ -363,7 +364,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         qlonglong qosCacheDataFreshnessMs = 400000;
 
         // Send a message and expect to get a result
-        QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosOneWayTTL, qosRoundTripTTL))
                                                    ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                    ->setCached(false)
@@ -396,7 +397,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -405,17 +406,17 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new tests::DefaultTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
-    runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -424,7 +425,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
@@ -458,7 +459,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -468,15 +469,15 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::TestProvider> testProvider(new tests::DefaultTestProvider(providerQos));
-    runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -485,7 +486,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
@@ -538,10 +539,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     //so the datatype is not registered, and cannot be deserialized.
     qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
 
-    MockSubscriptionListener<QList<int> > *mockListener = new MockSubscriptionListener<QList<int> >();
+    MockSubscriptionListenerOneType<QList<int> > *mockListener = new MockSubscriptionListenerOneType<QList<int> >();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(A<QList<int> >()))
+    EXPECT_CALL(*mockListener, onReceive(A<QList<int> >()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<QList<int> > > subscriptionListener(mockListener);
@@ -549,15 +550,15 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
-    QString providerParticipantId = runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    QString providerParticipantId = runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
-    ProxyBuilder<tests::TestProxy>* proxyBuilder
-            = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* proxyBuilder
+            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -566,7 +567,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(proxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(proxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
@@ -598,8 +599,8 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 	QString nonexistentDomain(QString("non-existent-") + uuid);
 
 	// Create a proxy to a non-existent domain
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::TestProxy>(nonexistentDomain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+            = runtime2->getProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -619,7 +620,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 	// Expect an ArbitrationException
 	try {
 		// Send a message and expect to get a result
-        QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
 												   ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
 												   ->setCached(false)
@@ -649,7 +650,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, receive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -658,16 +659,16 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider (new tests::DefaultTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
-    runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
     QThreadSleep::msleep(5000);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -676,7 +677,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> gpsProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> gpsProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
@@ -706,13 +707,13 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider (new tests::DefaultTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
-    runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     QThreadSleep::msleep(1000); //This wait is necessary, because registerCapability is async, and a lookup could occour before the register has finished.
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -721,7 +722,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
@@ -753,7 +754,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     infrastructure::ChannelUrlDirectoryProxy* channelUrlDirectoryProxy
             = channelUrlDirectoryProxyBuilder
-                ->setRuntimeQos(MessagingQos(10000))
+                ->setRuntimeQos(MessagingQos(1000))
                 ->setCached(true)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -762,8 +763,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     types::ChannelUrlInformation result;
     QString channelId("test");
     channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
-    EXPECT_TRUE(status.successful());
-    EXPECT_EQ(result.getUrls().size(), 0);
+    EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
 }
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
@@ -850,9 +850,9 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     EXPECT_FALSE(status4.successful());
 }
 
-tests::TestProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, QString domainName){
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder
-           = runtime->getProxyBuilder<tests::TestProxy>(domainName);
+tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, QString domainName){
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+           = runtime->getProxyBuilder<tests::testProxy>(domainName);
    DiscoveryQos discoveryQos;
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
    discoveryQos.setDiscoveryTimeout(1000);
@@ -861,7 +861,7 @@ tests::TestProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, QStrin
    qlonglong qosCacheDataFreshnessMs = 400000;
 
    // Send a message and expect to get a result
-   tests::TestProxy* testProxy(testProxyBuilder
+   tests::testProxy* testProxy(testProxyBuilder
       ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
       ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
       ->setCached(false)
@@ -874,7 +874,7 @@ tests::TestProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, QStrin
 
 // A function that subscribes to a GpsPosition - to be run in a background thread
 void subscribeToLocation(QSharedPointer<ISubscriptionListener<types::GpsLocation> > listener,
-                            tests::TestProxy* testProxy,
+                            tests::testProxy* testProxy,
                             CombinedEnd2EndTest* testSuite) {
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
                                     500000,   // validity_ms
@@ -885,7 +885,7 @@ void subscribeToLocation(QSharedPointer<ISubscriptionListener<types::GpsLocation
 }
 
 // A function that subscribes to a GpsPosition - to be run in a background thread
-void unsubscribeFromLocation(tests::TestProxy* testProxy,
+void unsubscribeFromLocation(tests::testProxy* testProxy,
                             QString subscriptionId) {
     testProxy->unsubscribeFromLocation(subscriptionId);
 }
@@ -901,7 +901,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     // Use a semaphore to count and wait on calls to the mock listener
     // QSemaphore semaphore(0);
-    EXPECT_CALL(*mockListener, receive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -909,14 +909,14 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new tests::DefaultTestProvider(providerQos));
-    QString providerParticipantId = runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    QString providerParticipantId = runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
-    tests::TestProxy* testProxy = createTestProxy(runtime2, domainName);
+    tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
     QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
 
@@ -931,15 +931,15 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     QThreadSleep::msleep(100);
 
-    runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     QThreadSleep::msleep(100);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -948,7 +948,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                    ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                    ->setCached(false)
@@ -974,15 +974,15 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::TestProvider> testProvider(new MockTestProvider(providerQos));
+    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     QThreadSleep::msleep(2550);
 
-    QString testProviderParticipantId = runtime1->registerCapability<tests::TestProvider>(domainName,testProvider, QString());
+    QString testProviderParticipantId = runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     QThreadSleep::msleep(2550);
 
-    ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::TestProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -991,7 +991,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::TestProxy> testProxy(testProxyBuilder
+    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
                                                    ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                    ->setCached(false)

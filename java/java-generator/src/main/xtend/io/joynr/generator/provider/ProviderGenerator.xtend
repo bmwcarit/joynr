@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,45 +18,59 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class ProviderGenerator {
-	
+
 	@Inject
-	extension JoynrJavaGeneratorExtensions	
-	
+	extension JoynrJavaGeneratorExtensions
+
 	@Inject
 	InterfaceProviderTemplate interfaceProvider
-	
+
+	@Inject
+	InterfaceProviderAsyncTemplate interfaceProviderAsync
+
 	@Inject
 	InterfaceProviderImplTemplate interfaceProviderImpl
-	
+
 	@Inject
 	InterfaceAbstractProviderTemplate interfaceAbstractProvider
 
-
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
-		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator 
+		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 
 		var serviceName =  fInterface.joynrName
-					
-		
-		fsa.generateFile(
+
+		generateFile(
+			fsa,
 			path + serviceName + "Provider.java",
-			interfaceProvider.generate(fInterface).toString
-		);			
-		
-		fsa.generateFile(
-		    path + "Default" + serviceName + "Provider.java",
-			interfaceProviderImpl.generate(fInterface).toString
-		);		
-		
-		fsa.generateFile(
+			interfaceProvider,
+			fInterface
+		);
+
+		generateFile(
+			fsa,
+			path + serviceName + "ProviderAsync.java",
+			interfaceProviderAsync,
+			fInterface
+		);
+
+		generateFile(
+			fsa,
+			path + "Default" + serviceName + "Provider.java",
+			interfaceProviderImpl,
+			fInterface
+		);
+
+		generateFile(
+			fsa,
 			path + serviceName + "AbstractProvider.java",
-			interfaceAbstractProvider.generate(fInterface).toString	
+			interfaceAbstractProvider,
+			fInterface
 		);
 	}
 }

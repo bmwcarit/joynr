@@ -24,11 +24,14 @@
 
 #include <QString>
 
-namespace joynr {
+namespace joynr
+{
 
 class IAttributeListener;
+class IBroadcastListener;
 
-class JOYNR_EXPORT RequestCaller {
+class JOYNR_EXPORT RequestCaller
+{
 public:
     RequestCaller(const QString& interfaceName);
     virtual ~RequestCaller();
@@ -36,14 +39,21 @@ public:
     QString getInterfaceName();
 
     // Get and set the attribute listeners listening on the provider
-    virtual void registerAttributeListener(const QString& attributeName, IAttributeListener* attributeListener) = 0;
-    virtual void unregisterAttributeListener(const QString& attributeName, IAttributeListener* attributeListener) = 0;
+    virtual void registerAttributeListener(const QString& attributeName,
+                                           IAttributeListener* attributeListener) = 0;
+    virtual void unregisterAttributeListener(const QString& attributeName,
+                                             IAttributeListener* attributeListener) = 0;
+
+    // Get and set the broadcast listeners listening on the provider
+    virtual void registerBroadcastListener(const QString& broadcastName,
+                                           IBroadcastListener* broadcastListener) = 0;
+    virtual void unregisterBroadcastListener(const QString& broadcastName,
+                                             IBroadcastListener* broadcastListener) = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);
     QString interfaceName;
 };
 
-
 } // namespace joynr
-#endif //REQUESTCALLER_H
+#endif // REQUESTCALLER_H

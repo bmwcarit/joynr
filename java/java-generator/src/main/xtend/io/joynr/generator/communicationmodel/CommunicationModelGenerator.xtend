@@ -2,7 +2,7 @@ package io.joynr.generator.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,49 +18,47 @@ package io.joynr.generator.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FModel
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class CommunicationModelGenerator {
-	
+
 	@Inject
 	extension JoynrJavaGeneratorExtensions
-	
+
 	@Inject
-	EnumTemplate enumTemplate;
-	
+	EnumTypeTemplate enumTemplate
+
 	@Inject
-	ComplexTypeTemplate complexTypeTemplate;
-	
-	
+	ComplexTypeTemplate complexTypeTemplate
+
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
 		for( type: getComplexDataTypes(fModel)){
 			if(type instanceof FCompoundType) {
 				val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-				
-				fsa.generateFile(
-					path + type.name.toFirstUpper + ".java",
-					complexTypeTemplate.generate(type as FCompoundType).toString
+				generateFile(
+					fsa,
+					path + type.joynrName + ".java",
+					complexTypeTemplate,
+					type
 				)
-	
 			}
 		}
-		
+
 		for( type: getEnumDataTypes(fModel)){
 			val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator 
-			
-			fsa.generateFile(
-				path + type.name.toFirstUpper + ".java",
-				enumTemplate.generate(type as FEnumerationType).toString
-			)
+			if(type instanceof FEnumerationType) {
+				generateFile(
+					fsa,
+					path + type.joynrName + ".java",
+					enumTemplate,
+					type
+				)
+			}
 		}
-
 	}
-	
-
-
 }

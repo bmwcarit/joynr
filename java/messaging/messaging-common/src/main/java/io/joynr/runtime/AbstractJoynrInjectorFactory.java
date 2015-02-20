@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,19 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 
+/**
+ * This class is used as abstract joynr injector factory. Client code uses sub classes of this to instantiate joynr
+ * applications via the createApplication method and to get injector objects for their own object instantiations.
+ * The injection binding is based on the modules provided via the constructor of this class.
+ */
 public abstract class AbstractJoynrInjectorFactory extends InjectorFactory<JoynrApplicationModule, JoynrApplication> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractJoynrInjectorFactory.class);
 
+    /**
+     * @param modules - arbitrary set of modules used to bind injection elements while creating injectors or joynr
+     *                  applications
+     */
     public AbstractJoynrInjectorFactory(Module... modules) {
         super(modules);
     }
@@ -66,5 +75,10 @@ public abstract class AbstractJoynrInjectorFactory extends InjectorFactory<Joynr
                 + JoynrApplication.class.getSimpleName());
     }
 
+    /**
+     * This function is used to update the injector factory with new bindings
+     * @param customJoynProperties - properties to be used as binding for the injectors
+     * @param modules - modules to be uses as binding for the injectors
+     */
     public abstract void updateInjectorModule(Properties customJoynProperties, Module... modules);
 }

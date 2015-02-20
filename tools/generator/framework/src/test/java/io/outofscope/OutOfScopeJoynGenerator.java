@@ -50,5 +50,4 @@ public class OutOfScopeJoynGenerator implements IJoynrGenerator {
     public Set<String> supportedParameters() {
         return new HashSet<String>();
     }
-
 }

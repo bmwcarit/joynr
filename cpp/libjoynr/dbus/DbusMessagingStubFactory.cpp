@@ -22,25 +22,29 @@
 
 #include <QMutexLocker>
 
-namespace  joynr {
+namespace joynr
+{
 
-DbusMessagingStubFactory::DbusMessagingStubFactory():
-    stubMap(),
-    mutex()
+DbusMessagingStubFactory::DbusMessagingStubFactory() : stubMap(), mutex()
 {
 }
 
-bool DbusMessagingStubFactory::canCreate(const joynr::system::Address& destAddress) {
+bool DbusMessagingStubFactory::canCreate(const joynr::system::Address& destAddress)
+{
     return destAddress.inherits(system::CommonApiDbusAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> DbusMessagingStubFactory::create(const joynr::system::Address& destAddress) {
-    const system::CommonApiDbusAddress* dbusAddress = dynamic_cast<const system::CommonApiDbusAddress*>(&destAddress);
-    QString address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" + dbusAddress->getParticipantId();
+QSharedPointer<IMessaging> DbusMessagingStubFactory::create(
+        const joynr::system::Address& destAddress)
+{
+    const system::CommonApiDbusAddress* dbusAddress =
+            dynamic_cast<const system::CommonApiDbusAddress*>(&destAddress);
+    QString address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" +
+                      dbusAddress->getParticipantId();
     // lookup address
     {
         QMutexLocker locker(&mutex);
-        if(!stubMap.contains(address)) {
+        if (!stubMap.contains(address)) {
             // create new stub
             auto stub = QSharedPointer<IMessaging>(new DbusMessagingStubAdapter(address));
             stubMap.insert(address, stub);

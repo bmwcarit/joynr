@@ -21,7 +21,6 @@ package io.joynr.arbitration;
 
 import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityScope;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.endpoints.EndpointAddressBase;
@@ -101,8 +100,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos,
                                                  expectedEndpointAddresses,
-                                                 expectedParticipantId,
-                                                 CapabilityScope.LOCALONLY));
+                                                 expectedParticipantId));
         ProviderQos providerQos2 = new ProviderQos();
         List<CustomParameter> qosParamterList2 = Lists.newArrayList();
         qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword"));
@@ -115,8 +113,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos2,
                                                  otherEndpointAddresses,
-                                                 "wrongParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "wrongParticipantId"));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -151,8 +148,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos,
                                                  expectedEndpointAddresses,
-                                                 expectedParticipantId,
-                                                 CapabilityScope.LOCALONLY));
+                                                 expectedParticipantId));
         ProviderQos providerQos2 = new ProviderQos();
         List<CustomParameter> qosParamterList2 = Lists.newArrayList();
         qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword"));
@@ -165,8 +161,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos2,
                                                  otherEndpointAddresses,
-                                                 "wrongParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "wrongParticipantId"));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -207,8 +202,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos,
                                                  otherEndpointAddresses,
-                                                 "wrongParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "wrongParticipantId"));
 
         // Create a capability entry for a provider with the correct keyword and that also supports onChange subscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -224,8 +218,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos2,
                                                  expectedEndpointAddresses,
-                                                 "expectedParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "expectedParticipantId"));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -258,8 +251,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos,
                                                  expectedEndpointAddresses,
-                                                 expectedParticipantId,
-                                                 CapabilityScope.LOCALONLY));
+                                                 expectedParticipantId));
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
@@ -271,8 +263,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos2,
                                                  otherEndpointAddresses,
-                                                 "wrongParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "wrongParticipantId"));
         long negativePriority = -10;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -284,8 +275,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos3,
                                                  thirdEndpointAddresses,
-                                                 "thirdParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "thirdParticipantId"));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -317,8 +307,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos,
                                                  expectedEndpointAddresses,
-                                                 expectedParticipantId,
-                                                 CapabilityScope.LOCALONLY));
+                                                 expectedParticipantId));
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(Long.MIN_VALUE);
 
@@ -329,8 +318,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos2,
                                                  otherEndpointAddresses,
-                                                 "wrongParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "wrongParticipantId"));
         long negativePriority = Long.MIN_VALUE;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -342,8 +330,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos3,
                                                  thirdEndpointAddresses,
-                                                 "thirdParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "thirdParticipantId"));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -379,8 +366,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos,
                                                  expectedEndpointAddresses,
-                                                 expectedParticipantId,
-                                                 CapabilityScope.LOCALONLY));
+                                                 expectedParticipantId));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -394,8 +380,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos2,
                                                  otherEndpointAddresses,
-                                                 "wrongParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "wrongParticipantId"));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos3 = new ProviderQos();
@@ -409,8 +394,7 @@ public class ArbitrationTest {
                                                  TestInterface.class,
                                                  providerQos3,
                                                  thirdEndpointAddresses,
-                                                 "thirdParticipantId",
-                                                 CapabilityScope.LOCALONLY));
+                                                 "thirdParticipantId"));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         discoveryQos.setProviderMustSupportOnChange(true);
