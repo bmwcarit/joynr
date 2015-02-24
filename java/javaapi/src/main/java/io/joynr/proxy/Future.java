@@ -99,8 +99,8 @@ public class Future<T> {
         try {
             statusLock.lock();
             reply = result;
-            statusLockChangedCondition.signal();
             status = new RequestStatus(RequestStatusCode.OK);
+            statusLockChangedCondition.signalAll();
         } catch (Throwable e) {
             status = new RequestStatus(RequestStatusCode.ERROR);
             exception = new JoynrException(e);
@@ -120,7 +120,7 @@ public class Future<T> {
         status = new RequestStatus(RequestStatusCode.ERROR);
         try {
             statusLock.lock();
-            statusLockChangedCondition.signal();
+            statusLockChangedCondition.signalAll();
         } finally {
             statusLock.unlock();
         }

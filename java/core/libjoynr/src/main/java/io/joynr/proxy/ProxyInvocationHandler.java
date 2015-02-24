@@ -261,7 +261,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;
-            connectorSuccessfullyFinished.signal();
+            connectorSuccessfullyFinished.signalAll();
 
             if (connector != null) {
                 sendQueuedInvocations();

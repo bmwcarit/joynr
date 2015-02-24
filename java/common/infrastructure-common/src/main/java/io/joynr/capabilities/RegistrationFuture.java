@@ -76,7 +76,7 @@ public class RegistrationFuture {
         statusLock.lock();
         try {
             this.status = status;
-            statusChanged.signal();
+            statusChanged.signalAll();
         } finally {
             statusLock.unlock();
         }
