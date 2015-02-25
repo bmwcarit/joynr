@@ -274,6 +274,26 @@ typeCollection DacTypes {
 		**>
 		Role role
 	}
+
+	<**
+		@description: The type of a change.
+	**>
+	enumeration ChangeType {
+		<**
+			@description: Entry was added. There was no entry with the same
+			key before.
+		**>
+		ADD
+		<**
+			@description: Entry was updated. An entry with the key already
+			existed and was updated.
+		**>
+		UPDATE
+		<**
+			@description: Entry was removed.
+		**>
+		REMOVE
+	}
 }
 
 
@@ -725,8 +745,9 @@ interface GlobalDomainAccessController {
 
 	<**
 		@description: Event that is fired when new domain role
-			entry is added or an existing entry changed.
-			The event includes new domain role entry.
+			entry is added, an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The interface provider offers a filter for this selective broadcast.
 			This filter filters events based on userIdOfInterest filter parameter
 			or does no filtering if this parameter is not set.
@@ -737,13 +758,16 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast domainRoleEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.DomainRoleEntry newDomainRoleEntry
 		}
 	}
 
 	<**
 		@description: Event that is fired when new master access
-			control entry is added or an existing entry changed.
+			control entry is added or an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The event includes new access control entry.
 			The interface provider offers two filters for this selective
 			broadcast.
@@ -764,13 +788,16 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast masterAccessControlEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterAccessControlEntry newMasterAce
 		}
 	}
 
 	<**
 		@description: Event that is fired when new mediator access
-			control entry is added or an existing entry changed.
+			control entry is added or an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The event includes new access control entry.
 			The interface provider offers two filters for this selective
 			broadcast.
@@ -791,13 +818,16 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast mediatorAccessControlEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterAccessControlEntry newMediatorAce
 		}
 	}
 
 	<**
 		@description: Event that is fired when new owner access
-			control entry is added or an existing entry changed.
+			control entry is added or an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The event includes new access control entry.
 			The interface provider offers two filters for this selective
 			broadcast.
@@ -818,13 +848,16 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast ownerAccessControlEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.OwnerAccessControlEntry newOwnerAce
 		}
 	}
 
 	<**
 		@description: Event that is fired when new master registration
-			control entry is added or an existing entry changed.
+			control entry is added or an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The event includes new access control entry.
 			The interface provider offers a filter for this selective
 			broadcast.
@@ -837,13 +870,16 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast masterRegistrationControlEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterRegistrationControlEntry newMasterRce
 		}
 	}
 
 	<**
 		@description: Event that is fired when new mediator registration
-			control entry is added or an existing entry changed.
+			control entry is added or an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The event includes new access control entry.
 			The interface provider offers a filter for this selective
 			broadcast.
@@ -856,13 +892,16 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast mediatorRegistrationControlEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.MasterRegistrationControlEntry newMediatorRce
 		}
 	}
 
 	<**
 		@description: Event that is fired when new master registration
-			control entry is added or an existing entry changed.
+			control entry is added or an existing entry changed or is removed.
+			The event includes new domain role entry as well as the type of
+			the change.
 			The event includes new access control entry.
 			The interface provider offers a filter for this selective
 			broadcast.
@@ -875,6 +914,7 @@ interface GlobalDomainAccessController {
 	**>
 	broadcast ownerRegistrationControlEntryChanged selective {
 		out {
+			DacTypes.ChangeType typeOfChange
 			DacTypes.OwnerRegistrationControlEntry newOwnerRce
 		}
 	}
