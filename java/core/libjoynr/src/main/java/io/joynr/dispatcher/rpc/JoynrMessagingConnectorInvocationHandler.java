@@ -250,4 +250,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                               true);
     }
 
+    @Override
+    public void unregisterSubscription(String subscriptionId) {
+        subscriptionManager.unregisterSubscription(subscriptionId);
+
+    }
+
 }

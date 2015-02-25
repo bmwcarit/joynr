@@ -388,7 +388,7 @@ public class ProxyInvocationHandler extends JoynrInvocationHandler {
     }
 
     private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
-        subscriptionManager.unregisterSubscription(unsubscribeInvocation.getSubscriptionId());
+        connector.unregisterSubscription(unsubscribeInvocation.getSubscriptionId());
         connectorStatusLock.lock();
         try {
             if (!isConnectorReady()) {
