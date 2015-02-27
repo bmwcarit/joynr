@@ -180,21 +180,21 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         }
         buildCalled = true;
 
-        ProxyInvocationHandler ret = new ProxyInvocationHandler(domain,
-                                                                interfaceName,
-                                                                proxyParticipantId,
-                                                                discoveryQos,
-                                                                messagingQos,
-                                                                messageSender,
-                                                                dispatcher,
-                                                                subscriptionManager);
+        ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandlerImpl(domain,
+                                                                                       interfaceName,
+                                                                                       proxyParticipantId,
+                                                                                       discoveryQos,
+                                                                                       messagingQos,
+                                                                                       messageSender,
+                                                                                       dispatcher,
+                                                                                       subscriptionManager);
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the 
         // Arbitrator cannot return early
-        discoveryAgent.setProxyInvocationHandler(ret);
+        discoveryAgent.setProxyInvocationHandler(proxyInvocationHandler);
         arbitrator.setArbitrationListener(this.discoveryAgent);
 
-        return ret;
+        return proxyInvocationHandler;
     }
 }

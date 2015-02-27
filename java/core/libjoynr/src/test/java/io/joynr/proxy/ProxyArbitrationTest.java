@@ -103,14 +103,14 @@ public class ProxyArbitrationTest {
 
         requestReplySender = new RequestReplySenderImpl(joynrMessageFactory, messageSender, messagingEndpointDirectory);
 
-        proxyHandler = new ProxyInvocationHandler("domain",
-                                                  "interfaceName",
-                                                  participantId,
-                                                  discoveryQos,
-                                                  messagingQos,
-                                                  requestReplySender,
-                                                  dispatcher,
-                                                  subscriptionManager);
+        proxyHandler = new ProxyInvocationHandlerImpl("domain",
+                                                      "interfaceName",
+                                                      participantId,
+                                                      discoveryQos,
+                                                      messagingQos,
+                                                      requestReplySender,
+                                                      dispatcher,
+                                                      subscriptionManager);
         List<EndpointAddressBase> endpoints = Lists.newArrayList(correctEndpointAddress);
 
         DiscoveryAgent discoveryAgent = new DiscoveryAgent();
@@ -153,8 +153,7 @@ public class ProxyArbitrationTest {
     @Test
     public void proxyUsesCorrectEndpointToSendRequest() throws IllegalArgumentException, SecurityException,
                                                        InterruptedException, NoSuchMethodException, Throwable {
-        proxyHandler.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}),
-                                       new Object[]{});
+        proxyHandler.invoke(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}), new Object[]{});
         Mockito.verify(messageSender).sendMessage(Mockito.eq(CORRECT_CHANNELID), Mockito.<JoynrMessage> any());
     }
 
