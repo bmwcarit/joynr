@@ -306,10 +306,16 @@ public class PublicationManagerImpl implements PublicationManager {
 
     protected void removePublication(String subscriptionId) {
         PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
+        if (publicationInformation == null) {
+            return;
+        }
 
-        // Remove (eventually) queued susbcriptionRequest
-        queuedSubscriptionRequests.get(publicationInformation.getProviderParticipantId())
-                                  .remove(publicationInformation);
+        // Remove (eventually) queued subcriptionRequest
+        Collection<PublicationInformation> queuedSubscriptionRequestsForParticipant = queuedSubscriptionRequests.get(publicationInformation.getProviderParticipantId());
+
+        if (queuedSubscriptionRequestsForParticipant != null) {
+            queuedSubscriptionRequestsForParticipant.remove(publicationInformation);
+        }
 
         PublicationTimer publicationTimer = publicationTimers.remove(subscriptionId);
         if (publicationTimer != null) {
