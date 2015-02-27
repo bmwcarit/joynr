@@ -57,6 +57,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private final MessagingQos qosSettings;
@@ -77,11 +79,12 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
     // CHECKSTYLE:OFF
-    public ProxyInvocationHandlerImpl(String domain,
-                                      String interfaceName,
-                                      String proxyParticipantId,
-                                      DiscoveryQos discoveryQos,
-                                      MessagingQos messagingQos,
+    @Inject
+    public ProxyInvocationHandlerImpl(@Assisted("domain") String domain,
+                                      @Assisted("interfaceName") String interfaceName,
+                                      @Assisted("proxyParticipantId") String proxyParticipantId,
+                                      @Assisted DiscoveryQos discoveryQos,
+                                      @Assisted MessagingQos messagingQos,
                                       RequestReplySender messageSender,
                                       RequestReplyDispatcher dispatcher,
                                       SubscriptionManager subscriptionManager) {

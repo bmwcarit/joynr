@@ -34,6 +34,9 @@ import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
+import io.joynr.proxy.ProxyInvocationHandler;
+import io.joynr.proxy.ProxyInvocationHandlerImpl;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,6 +48,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 
 public class DefaultRuntimeModule extends AbstractModule {
@@ -52,6 +56,8 @@ public class DefaultRuntimeModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(JoynrRuntime.class).to(JoynrRuntimeImpl.class).in(Singleton.class);
+        install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
+                                          .build(ProxyInvocationHandlerFactory.class));
 
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(RequestReplySender.class).to(RequestReplySenderImpl.class);

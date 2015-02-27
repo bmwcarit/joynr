@@ -57,6 +57,7 @@ This project has dependencies to:
   Google Android Java ME Library (Khronos) under Apache 2.0
   Google Android Library under Apache 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
+  Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   grizzly-framework under CDDL+GPL
