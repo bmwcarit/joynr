@@ -54,7 +54,6 @@ import joynr.tests.testProvider;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,11 +105,6 @@ public class PublicationManagerTest {
         requestCaller = requestCallerFactory.create(provider, testProvider.class);
 
         when(attributePollInterpreter.execute(eq(requestCaller), any(Method.class))).thenReturn(valueToPublish);
-    }
-
-    @After
-    public void tearDown() {
-        publicationManager.shutdown();
     }
 
     @Test(timeout = 3000)

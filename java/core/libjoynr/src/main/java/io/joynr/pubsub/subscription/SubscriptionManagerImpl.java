@@ -240,10 +240,4 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
 
     }
-
-    @Override
-    public void shutdown() {
-
-    }
-
 }

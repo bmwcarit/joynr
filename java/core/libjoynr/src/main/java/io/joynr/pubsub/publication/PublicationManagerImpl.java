@@ -540,9 +540,4 @@ public class PublicationManagerImpl implements PublicationManager {
         return ReflectionUtils.findMethodByParamTypes(clazz, attributeGetterName, new Class[]{});
 
     }
-
-    @Override
-    public void shutdown() {
-
-    }
 }

@@ -36,8 +36,6 @@ public interface SubscriptionManager {
 
     Class<?> getType(String subscriptionId);
 
-    void shutdown();
-
     boolean isBroadcast(String subscriptionId);
 
     BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId);

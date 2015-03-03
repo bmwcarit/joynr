@@ -28,7 +28,6 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.subtypes.JoynrType;
 
@@ -61,8 +60,6 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     private RequestReplyDispatcher dispatcher;
     @Inject
     private SubscriptionManager subscriptionManager;
-    @Inject
-    private PublicationManager publicationManager;
     @Inject
     public ObjectMapper objectMapper;
 
@@ -136,18 +133,5 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         } catch (Exception e) {
             logger.error("error shutting down message sender: {}", e.getMessage());
         }
-
-        try {
-            publicationManager.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down publicationManager", e);
-        }
-
-        try {
-            subscriptionManager.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down subscriptionManager", e);
-        }
-
     }
 }
