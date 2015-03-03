@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
 project(radio-app-0.9.0-SNAPSHOT)

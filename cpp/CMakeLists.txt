@@ -2,7 +2,7 @@
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
 project(joynr-0.9.0-SNAPSHOT)
@@ -86,6 +86,7 @@ message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
+message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
 message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 
 # Set the binary directory
