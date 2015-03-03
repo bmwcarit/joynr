@@ -61,7 +61,7 @@ QString RequestStatus::toString() const
         if (i != 0) {
             desc.append("\n");
         }
-        desc.append(i + ": ");
+        desc.append(QString(i) + ": ");
         desc.append(description.at(i));
     }
 
