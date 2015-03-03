@@ -75,7 +75,7 @@ public:
      *
      * @return QStringList A list of descriptions detailing the progress of a request.
      */
-    QStringList getDescription();
+    QStringList getDescription() const;
 
     /**
      * @brief Adds a sentence describing a state of the request to the list of descriptions.

@@ -44,7 +44,7 @@ void RequestStatus::setCode(const RequestStatusCode& code)
     this->code = code;
 }
 
-QStringList RequestStatus::getDescription()
+QStringList RequestStatus::getDescription() const
 {
     return description;
 }
