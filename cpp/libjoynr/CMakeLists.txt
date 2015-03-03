@@ -94,12 +94,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         "dbus/DbusMessagingStubFactory.cpp"
     )
 
-    set(
-        JoynrLib_TARGET_LIBRARIES
+    list(
+        APPEND JoynrLib_TARGET_LIBRARIES
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
-        ${JoynrLib_TARGET_LIBRARIES}
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
