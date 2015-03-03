@@ -120,8 +120,6 @@ add_library(
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
 )
-qt5_use_modules(JoynrClusterController Core WebSockets)
-
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")

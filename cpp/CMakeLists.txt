@@ -120,14 +120,26 @@ find_package(Qt5Core REQUIRED)
 
 message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
 message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
+get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
+message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
 message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
 message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
 
 find_package(Qt5WebSockets REQUIRED)
 message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
 message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
+get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
+message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
 message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
 message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+
+find_package(Qt5Test REQUIRED)
+message(STATUS "variable Qt5Test_VERSION_STRING=${Qt5Test_VERSION_STRING}")
+message(STATUS "variable Qt5Test_INCLUDE_DIRS=${Qt5Test_INCLUDE_DIRS}")
+get_target_property(Qt5Test_LOCATION Qt5::Test LOCATION)
+message(STATUS "variable Qt5::Test LOCATION=${Qt5Test_LOCATION}")
+message(STATUS "variable Qt5Test_LIBRARIES=${Qt5Test_LIBRARIES}")
+message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
 
 include_directories(
     SYSTEM ${Qt5Core_INCLUDE_DIRS} ${Qt5WebSockets_INCLUDE_DIRS}

@@ -119,7 +119,6 @@ add_library(
     ${JoynrLib_HEADERS}
     ${JoynrLib_SOURCES}
 )
-qt5_use_modules(Joynr Core)
 
 
 if(${ENABLE_CLANG_FORMATTER})

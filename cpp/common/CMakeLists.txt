@@ -31,6 +31,8 @@ set(
 
 set(
     JoynrCommon_TARGET_LIBRARIES
+    Qt5::Core
+    Qt5::WebSockets
     qjson
     log4qt
 )
@@ -118,7 +120,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
-        ${JoynrCommon_TARGET_LIBRARIES}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
@@ -128,8 +129,6 @@ add_library(
     ${JoynrCommon_HEADERS}
     ${JoynrCommon_SOURCES}
 )
-qt5_use_modules(JoynrCommon Core WebSockets)
-
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")

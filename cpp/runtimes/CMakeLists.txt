@@ -77,8 +77,6 @@ add_library(
     ${JoynrClusterControllerRuntime_HEADERS}
     ${JoynrClusterControllerRuntime_SOURCES}
 )
-qt5_use_modules(JoynrClusterControllerRuntime Core)
-
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
@@ -177,7 +175,6 @@ add_library(
     ${JoynrWsRuntime_PRIVATE_HEADERS}
     ${JoynrWsRuntime_SOURCES}
 )
-qt5_use_modules(JoynrWsRuntime Core)
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
@@ -270,7 +267,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrDbusRuntime_PRIVATE_HEADERS}
         ${JoynrDbusRuntime_SOURCES}
     )
-    qt5_use_modules(JoynrDbusRuntime Core)
 
     if(${ENABLE_CLANG_FORMATTER})
         set(COMMENT "running C++ code formatter: clang-format")
@@ -335,7 +331,6 @@ set(
 )
 
 add_executable(cluster-controller StartClusterController.cpp)
-qt5_use_modules(cluster-controller Core)
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")

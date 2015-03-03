@@ -236,11 +236,14 @@ add_executable(
     ${test_SOURCES}
     ${g_UnitTests_SOURCES}
 )
-qt5_use_modules(g_UnitTests Core Test)
 add_dependencies(g_UnitTests googletest)
 add_dependencies(g_UnitTests googlemock)
 
-target_link_libraries(g_UnitTests ${test_TARGET_LIBRARIES})
+target_link_libraries(
+    g_UnitTests
+    Qt5::Test
+    ${test_TARGET_LIBRARIES}
+)
 
 set_target_properties(
     g_UnitTests
@@ -271,7 +274,6 @@ add_executable(
     ${test_SOURCES}
     ${g_IntegrationTests_SOURCES}
 )
-qt5_use_modules(g_IntegrationTests Core)
 add_dependencies(g_IntegrationTests googletest)
 add_dependencies(g_IntegrationTests googlemock)
 
@@ -305,7 +307,6 @@ add_executable(
     ${test_SOURCES}
     ${g_SystemIntegrationTests_SOURCES}
 )
-qt5_use_modules(g_SystemIntegrationTests Core)
 add_dependencies(g_SystemIntegrationTests googletest)
 add_dependencies(g_SystemIntegrationTests googlemock)
 

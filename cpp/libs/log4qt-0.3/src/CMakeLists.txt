@@ -115,7 +115,7 @@ add_library(
     ${log4qt_HEADERS}
     ${log4qt_SOURCES}
 )
-qt5_use_modules(log4qt Core)
+target_link_libraries(log4qt Qt5::Core)
 
 set_target_properties(
     log4qt
