@@ -29,7 +29,6 @@ import io.joynr.capabilities.CapabilitiesRegistrarImpl;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
-import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.capabilities.ParticipantIdStorage;
@@ -98,40 +97,4 @@ public class DiscoveryClientModule extends AbstractModule {
 
         return proxy;
     }
-
-    @CheckForNull
-    @Provides
-    public// @Singleton
-    GlobalCapabilitiesDirectoryClient provideCapabilitiesDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                                                         RequestReplySender messageSender,
-                                                                         RequestReplyDispatcher dispatcher,
-                                                                         @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
-                                                                         @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
-                                                                         SubscriptionManager subscriptionManager) {
-
-        MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
-        DiscoveryQos discoveryQos = new DiscoveryQos(discoveryRequestTimeoutMs,
-                                                     ArbitrationStrategy.HighestPriority,
-                                                     Long.MAX_VALUE,
-                                                     DiscoveryScope.LOCAL_THEN_GLOBAL);
-
-        // ProxyBuilder<GlobalCapabilitiesDirectoryClient> proxyBuilder =
-        // runtime.getProxyBuilder(CapabilitiesDirectory.CAPABILITIES_DIRECTORY_PARTICIPANTID,
-        // CapabilitiesDirectory.CAPABILITIES_DIRECTORY_DOMAIN,
-        // GlobalCapabilitiesDirectoryClient.class);
-
-        ProxyBuilder<GlobalCapabilitiesDirectoryClient> proxyBuilder = new ProxyBuilderDefaultImpl<GlobalCapabilitiesDirectoryClient>(localCapabilitiesDirectory,
-                                                                                                                                      discoveryDirectoriesDomain,
-                                                                                                                                      GlobalCapabilitiesDirectoryClient.class,
-                                                                                                                                      messageSender,
-                                                                                                                                      dispatcher,
-                                                                                                                                      subscriptionManager);
-
-        GlobalCapabilitiesDirectoryClient proxy = null;
-
-        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-
-        return proxy;
-    }
-
 }

@@ -22,6 +22,8 @@ package io.joynr.capabilities;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
+import io.joynr.dispatcher.RequestReplyDispatcher;
+import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
@@ -30,6 +32,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Future;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,36 +63,32 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
-    CapabilitiesStore localCapabilitiesStore;
-
-    @Inject
-    GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
-
-    @Inject
-    MessagingEndpointDirectory messagingEndpointDirectory;
-
-    @Inject
-    @Named(MessagingPropertyKeys.CHANNELID)
-    String localChannelId;
+    private MessagingEndpointDirectory messagingEndpointDirectory;
+    private String localChannelId;
+    private CapabilitiesStore localCapabilitiesStore;
+    private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
 
     private CapabilitiesStore globalCapabilitiesCache;
 
-    public LocalCapabilitiesDirectoryImpl(CapabilitiesStore localCapabilitiesStore,
-                                          CapabilitiesStore globalCapabilitiesCache) {
-        this.localCapabilitiesStore = localCapabilitiesStore;
-        this.globalCapabilitiesCache = globalCapabilitiesCache;
-    }
-
     @Inject
+    // CHECKSTYLE:OFF
     public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId,
+                                          @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                          MessagingEndpointDirectory messagingEndpointDirectory,
                                           CapabilitiesStore localCapabilitiesStore,
-                                          CapabilitiesStore globalCapabilitiesCache) {
-
-        this(localCapabilitiesStore, globalCapabilitiesCache);
+                                          CapabilitiesStore globalCapabilitiesCache,
+                                          RequestReplySender requestRelySender,
+                                          RequestReplyDispatcher dispatcher,
+                                          SubscriptionManager subscriptionManager) {
+        // CHECKSTYLE:ON
+        this.localChannelId = localChannelId;
+        this.messagingEndpointDirectory = messagingEndpointDirectory;
+        this.localCapabilitiesStore = localCapabilitiesStore;
+        this.globalCapabilitiesCache = globalCapabilitiesCache;
         this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
                                                              GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                              new ProviderQos(),
@@ -101,6 +100,12 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                                              new ProviderQos(),
                                                              new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId),
                                                              channelUrlDirectoryParticipantId));
+
+        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
+                                                                         this,
+                                                                         requestRelySender,
+                                                                         dispatcher,
+                                                                         subscriptionManager);
     }
 
     /**
@@ -226,7 +231,11 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 if (globalCapabilities.size() > 0) {
                     capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
                 } else {
-                    asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
+                    asyncGetGlobalCapabilitities(domain,
+                                                 interfaceName,
+                                                 null,
+                                                 discoveryQos.getDiscoveryTimeout(),
+                                                 capabilitiesCallback);
                 }
             }
             break;
@@ -236,7 +245,11 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
             } else {
                 // in this case, no global only caps are included in the cache --> call glob cap dir
-                asyncGetGlobalCapabilitities(domain, interfaceName, null, capabilitiesCallback);
+                asyncGetGlobalCapabilitities(domain,
+                                             interfaceName,
+                                             null,
+                                             discoveryQos.getDiscoveryTimeout(),
+                                             capabilitiesCallback);
             }
             break;
         case LOCAL_AND_GLOBAL:
@@ -250,7 +263,11 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 capabilitiesCallback.processCapabilitiesReceived(globalCapabilities);
             } else {
                 // in this case, no global only caps are included in the cache --> call glob cap dir
-                asyncGetGlobalCapabilitities(domain, interfaceName, localCapabilities, capabilitiesCallback);
+                asyncGetGlobalCapabilitities(domain,
+                                             interfaceName,
+                                             localCapabilities,
+                                             discoveryQos.getDiscoveryTimeout(),
+                                             capabilitiesCallback);
             }
             break;
         default:
@@ -278,11 +295,11 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             if (localCapability != null) {
                 capabilityCallback.processCapabilityReceived(localCapability);
             } else {
-                asyncGetGlobalCapabilitity(participantId, capabilityCallback);
+                asyncGetGlobalCapabilitity(participantId, discoveryQos.getDiscoveryTimeout(), capabilityCallback);
             }
             break;
         case GLOBAL_ONLY:
-            asyncGetGlobalCapabilitity(participantId, capabilityCallback);
+            asyncGetGlobalCapabilitity(participantId, discoveryQos.getDiscoveryTimeout(), capabilityCallback);
             break;
         default:
             break;
@@ -329,7 +346,9 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     /**
      * mixes in the localCapabilities to global capabilities found by domain/interface
      */
-    private void asyncGetGlobalCapabilitity(final String participantId, final CapabilityCallback capabilitiesCallback) {
+    private void asyncGetGlobalCapabilitity(final String participantId,
+                                            long discoveryTimeout,
+                                            final CapabilityCallback capabilitiesCallback) {
 
         globalCapabilitiesClient.lookup(new Callback<CapabilityInformation>() {
 
@@ -347,7 +366,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                 capabilitiesCallback.onError(exception);
 
             }
-        }, participantId);
+        }, participantId, discoveryTimeout);
     }
 
     /**
@@ -356,6 +375,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     private void asyncGetGlobalCapabilitities(final String domain,
                                               final String interfaceName,
                                               Collection<CapabilityEntry> mixinCapabilities,
+                                              long discoveryTimeout,
                                               final CapabilitiesCallback capabilitiesCallback) {
 
         final Collection<CapabilityEntry> localCapabilities = mixinCapabilities == null ? new LinkedList<CapabilityEntry>()
@@ -378,7 +398,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             public void onFailure(JoynrException exception) {
                 capabilitiesCallback.onError(exception);
             }
-        }, domain, interfaceName);
+        }, domain, interfaceName, discoveryTimeout);
     }
 
     @CheckForNull

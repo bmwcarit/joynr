@@ -19,8 +19,6 @@ package io.joynr.discovery;
  * #L%
  */
 
-import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
-import io.joynr.capabilities.directory.CapabilitiesClientDummy;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
 import io.joynr.channel.ChannelUrlDirectoyImpl;
 import io.joynr.messaging.ChannelUrlStore;
@@ -50,7 +48,6 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
         bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
                         .toInstance(5000l);
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-        bind(GlobalCapabilitiesDirectoryClient.class).to(CapabilitiesClientDummy.class);
     }
 
     @Provides

@@ -19,7 +19,6 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -34,8 +33,6 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-        bind(GlobalCapabilitiesDirectoryClient.class).to(CapabilitiesClientDummy.class);
-
     }
 
     @Provides

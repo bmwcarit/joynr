@@ -19,9 +19,12 @@ package io.joynr.messaging;
  * #L%
  */
 
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.dispatcher.RequestReplyDispatcher;
+import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.exceptions.JoynrException;
-import joynr.infrastructure.ChannelUrlDirectoryProxy;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -36,18 +39,28 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
 
     private static final Logger logger = LoggerFactory.getLogger(LocalChannelUrlDirectoryClient.class);
 
-    private final ChannelUrlDirectoryProxy channelUrlDirectoryClient;
+    private final GlobalChannelUrlDirectoryClient channelUrlDirectoryClient;
     private final ChannelUrlStore channelUrlStore;
 
     @Inject
-    public LocalChannelUrlDirectoryClientImpl(ChannelUrlDirectoryProxy channelUrlDirectoryClient,
-                                              ChannelUrlStore channelUrlStore,
+    // CHECKSTYLE:OFF
+    public LocalChannelUrlDirectoryClientImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
-                                              MessagingSettings settings) {
-        this.channelUrlDirectoryClient = channelUrlDirectoryClient;
+                                              LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                                              ChannelUrlStore channelUrlStore,
+                                              MessagingSettings settings,
+                                              RequestReplySender requestReplySender,
+                                              RequestReplyDispatcher dispatcher,
+                                              SubscriptionManager subscriptionManager) {
+        // CHECKSTYLE:ON
+        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(discoveryDirectoriesDomain,
+                                                                             localCapabilitiesDirectory,
+                                                                             requestReplySender,
+                                                                             dispatcher,
+                                                                             subscriptionManager);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);
