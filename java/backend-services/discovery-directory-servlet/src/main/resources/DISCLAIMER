@@ -11,11 +11,13 @@ The software listed below included in some products is licensed under the "Apach
 - com.google.guava:guava:11.0.2
 - com.google.inject:guice:3.0
   Notice file: WEB-INF/lib/guice-3.0.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/guice-3.0.jar:META-INF/LICENSE
 - com.google.inject.extensions:guice-assistedinject:3.0
   Notice file: WEB-INF/lib/guice-assistedinject.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-assistedinject.jar:META-INF/LICENSE
 - com.google.inject.extensions:guice-servlet:3.0
   Notice file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/LICENSE
 - commons-codec:commons-codec:1.4
   Notice file: WEB-INF/lib/commons-codec-1.4.jar:META-INF/NOTICE.txt
   License file: WEB-INF/lib/commons-codec-1.4.jar:META-INF/LICENSE.txt
