@@ -173,6 +173,12 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& jsonObject)
 {
     JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
+    if (msg == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize message. Raw message: %1")
+                          .arg(QString::fromUtf8(jsonObject)));
+        return;
+    }
     if (msg->getType().isEmpty()) {
         LOG_ERROR(logger, "received empty message - dropping Messages");
         return;

@@ -156,6 +156,12 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 
     // deserialize json
     Request* request = JsonSerializer::deserialize<Request>(jsonRequest);
+    if (request == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize request object from: %1")
+                          .arg(QString::fromUtf8(jsonRequest)));
+        return;
+    }
     QString requestReplyId = request->getRequestReplyId();
 
     // execute request
@@ -184,11 +190,11 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 
     // deserialize the jsonReply
     Reply* reply = JsonSerializer::deserialize<Reply>(jsonReply);
-    if (reply == NULL) {
-        LOG_FATAL(logger,
-                  QString("Could not convert jsonReply %1 into Reply object")
+    if (reply == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize reply object from: %1")
                           .arg(QString::fromUtf8(jsonReply)));
-        assert(false);
+        return;
     }
     QString requestReplyId = reply->getRequestReplyId();
 
@@ -232,6 +238,12 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     // PublicationManager is responsible for deleting SubscriptionRequests
     SubscriptionRequest* subscriptionRequest =
             JsonSerializer::deserialize<SubscriptionRequest>(jsonSubscriptionRequest);
+    if (subscriptionRequest == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize subscription request object from: %1")
+                          .arg(QString::fromUtf8(jsonSubscriptionRequest)));
+        return;
+    }
 
     if (caller.isNull()) {
         // Provider not registered yet
@@ -265,6 +277,12 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     // PublicationManager is responsible for deleting SubscriptionRequests
     BroadcastSubscriptionRequest* subscriptionRequest =
             JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonSubscriptionRequest);
+    if (subscriptionRequest == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize broadcast subscription request object from: %1")
+                          .arg(QString::fromUtf8(jsonSubscriptionRequest)));
+        return;
+    }
 
     if (caller.isNull()) {
         // Provider not registered yet
@@ -289,6 +307,12 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 
     SubscriptionStop* subscriptionStop =
             JsonSerializer::deserialize<SubscriptionStop>(jsonSubscriptionStop);
+    if (subscriptionStop == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize subscription stop object from: %1")
+                          .arg(QString::fromUtf8(jsonSubscriptionStop)));
+        return;
+    }
     QString subscriptionId = subscriptionStop->getSubscriptionId();
     assert(publicationManager != NULL);
     publicationManager->stopPublication(subscriptionId);
@@ -300,6 +324,12 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 
     SubscriptionPublication* subscriptionPublication =
             JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
+    if (subscriptionPublication == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize subscription publication object from: %1")
+                          .arg(QString::fromUtf8(jsonSubscriptionPublication)));
+        return;
+    }
     QString subscriptionId = subscriptionPublication->getSubscriptionId();
 
     assert(subscriptionManager != NULL);

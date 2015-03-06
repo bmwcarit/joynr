@@ -21,6 +21,9 @@
 
 #include "joynr/JsonSerializer.h"
 
+joynr_logging::Logger* GeocastBroadcastFilter::logger =
+        joynr_logging::Logging::getInstance()->getLogger("DEMO", "GeocastBroadcastFilter");
+
 GeocastBroadcastFilter::GeocastBroadcastFilter()
 {
 }
@@ -39,6 +42,12 @@ bool GeocastBroadcastFilter::filter(
     joynr::vehicle::GeoPosition* positionOfInterest =
             JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
                     filterParameters.getPositionOfInterest().toLatin1());
+    if (positionOfInterest == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize geo position object from: %1")
+                          .arg(filterParameters.getPositionOfInterest()));
+        return true;
+    }
     int radiusOfInterestArea = filterParameters.getRadiusOfInterestArea().toInt();
 
     // calculate distance between two geo positions using the haversine formula

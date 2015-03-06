@@ -17,8 +17,10 @@
  * #L%
  */
 #include "joynr/MessagingQos.h"
-#include "QDateTime"
-//#include <JoynrMessaging/messagingqos.h>
+
+#include <QDateTime>
+#include <iostream>
+
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
 

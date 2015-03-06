@@ -17,9 +17,12 @@
  * #L%
  */
 #include "joynr/JoynrMessage.h"
-#include "joynr/Util.h"
+
+#include <iostream>
 #include <QString>
 #include <QUuid>
+
+#include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
 
 namespace joynr

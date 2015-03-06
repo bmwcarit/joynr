@@ -105,6 +105,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
         joynr::system::WebSocketClientAddress* clientAddress =
                 JsonSerializer::deserialize<joynr::system::WebSocketClientAddress>(
                         message.toUtf8());
+        // client address must be valid, or libjoynr and CC are deployed in different versions
+        assert(clientAddress);
         messagingStubFactory.addClient(*clientAddress, client);
         delete clientAddress;
 
@@ -120,6 +122,11 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
+    if (joynrMsg == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize joynr message object from: %1").arg(message));
+        return;
+    }
     LOG_TRACE(logger, QString("INCOMING\nmessage: %0").arg(message));
     // message router copies joynr message when scheduling thread that handles
     // message delivery

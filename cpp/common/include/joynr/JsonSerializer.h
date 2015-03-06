@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@
 #include <QVariant>
 #include <QMetaType>
 #include <QByteArray>
-#include <iostream>
-#include <assert.h>
 
 namespace joynr
 {
@@ -100,7 +98,7 @@ public:
      * valid JSON representation of the template type T.
      *
      * @param json the JSON representation of template type T.
-     * @return T the deserialized object
+     * @return T the deserialized object, or NULL in case of deserialization error
      */
     static T* deserialize(const QByteArray& json)
     {
@@ -108,17 +106,24 @@ public:
         QVariant jsonQVar = parser.parse(json);
         QVariantMap jsonQVarValue = jsonQVar.value<QVariantMap>();
         if (!jsonQVarValue.contains("_typeName")) {
-            std::cerr << "_typename not specified in serialized: "
-                      << QString::fromUtf8(json).toStdString() << std::endl;
-            assert(false);
+            LOG_ERROR(logger,
+                      QString("_typename not specified in serialized: %1")
+                              .arg(QString::fromUtf8(json)));
+            return Q_NULLPTR;
         }
         QString typeName = jsonQVarValue.value("_typeName").value<QString>();
         int classId = QJson::QObjectHelper::getClassIdForTransmittedType(typeName);
+        if (!QMetaType::isRegistered(classId)) {
+            LOG_ERROR(logger, QString("unknow type name: %1").arg(typeName));
+            return Q_NULLPTR;
+        }
         QObject* object = (QObject*)QMetaType::create(classId);
-        assert(object);
         QJson::QObjectHelper::qvariant2qobject(jsonQVarValue, object);
         return (T*)object;
     }
+
+private:
+    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr
