@@ -1,5 +1,4 @@
-@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
-package io.joynr.public_examples.android_location_provider;
+package io.joynr.examples.android_location_provider;
 
 /*
  * #%L
@@ -20,3 +19,8 @@ package io.joynr.public_examples.android_location_provider;
  * #L%
  */
 
+public interface Output {
+
+    public void append(String text);
+
+}

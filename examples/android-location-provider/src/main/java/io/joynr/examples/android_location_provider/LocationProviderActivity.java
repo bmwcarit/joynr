@@ -1,4 +1,4 @@
-package io.joynr.public_examples.android_location_provider;
+package io.joynr.examples.android_location_provider;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ public class LocationProviderActivity extends Activity {
         setContentView(R.layout.main);
         application = (JoynrAndroidLocationProviderApplication) getApplication();
 
-        ((JoynrAndroidLocationProviderApplication) getApplication()).setOutput(new Output() {
+        application.setOutput(new Output() {
             TextView textView = (TextView) findViewById(R.id.progressoutput);
 
             @Override

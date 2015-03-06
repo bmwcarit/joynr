@@ -1,4 +1,4 @@
-package io.joynr.public_examples.android_location_provider;
+package io.joynr.examples.android_location_provider;
 
 /*
  * #%L

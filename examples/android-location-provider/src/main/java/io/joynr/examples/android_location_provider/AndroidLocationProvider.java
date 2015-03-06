@@ -1,4 +1,4 @@
-package io.joynr.public_examples.android_location_provider;
+package io.joynr.examples.android_location_provider;
 
 /*
  * #%L
@@ -22,8 +22,8 @@ package io.joynr.public_examples.android_location_provider;
 import io.joynr.arbitration.ArbitrationConstants;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
+import io.joynr.examples.android_location_provider.MyLocation.LocationResult;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.public_examples.android_location_provider.MyLocation.LocationResult;
 
 import java.util.List;
 import java.util.concurrent.Executors;

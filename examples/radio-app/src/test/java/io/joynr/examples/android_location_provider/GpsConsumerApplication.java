@@ -1,4 +1,4 @@
-package io.joynr.public_examples.android_location_provider;
+package io.joynr.examples.android_location_provider;
 
 /*
  * #%L
@@ -63,7 +63,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
      * with Guice bindings 3. Starting the application. 4. Ending the application so that the necessary clean up calls
      * are made.
-     * 
+     *
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
