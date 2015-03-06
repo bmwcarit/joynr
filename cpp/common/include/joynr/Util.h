@@ -116,6 +116,17 @@ public:
         return ret;
     }
 
+    template <class T>
+    static QList<int> convertEnumListToIntList(const QList<T>& enumList)
+    {
+        QList<int> enumAsIntList;
+        enumAsIntList.reserve(enumList.length());
+        foreach (const T& e, enumList) {
+            enumAsIntList.append(e);
+        }
+        return enumAsIntList;
+    }
+
     /**
      * Create a Uuid for use in Joynr.
      *
