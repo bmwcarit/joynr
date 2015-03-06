@@ -21,8 +21,6 @@ package io.joynr.proxy;
 
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
@@ -39,7 +37,6 @@ import io.joynr.proxy.invocation.Invocation;
 import io.joynr.proxy.invocation.MethodInvocation;
 import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -61,16 +58,14 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
+    private ConnectorFactory connectorFactory;
     private final MessagingQos qosSettings;
     private ConnectorStatus connectorStatus;
     private Lock connectorStatusLock = new ReentrantLock();
     private Condition connectorSuccessfullyFinished = connectorStatusLock.newCondition();
     private DiscoveryQos discoveryQos;
     private ConnectorInvocationHandler connector;
-    private RequestReplySender messageSender;
-    private RequestReplyDispatcher dispatcher;
     private final String proxyParticipantId;
-    private SubscriptionManager subscriptionManager;
     private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
     private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
@@ -78,25 +73,19 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
-    // CHECKSTYLE:OFF
     @Inject
     public ProxyInvocationHandlerImpl(@Assisted("domain") String domain,
                                       @Assisted("interfaceName") String interfaceName,
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
-                                      RequestReplySender messageSender,
-                                      RequestReplyDispatcher dispatcher,
-                                      SubscriptionManager subscriptionManager) {
-        // CHECKSTYLE:ON
+                                      ConnectorFactory connectorFactory) {
         this.domain = domain;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
         this.discoveryQos = discoveryQos;
         this.qosSettings = messagingQos;
-        this.messageSender = messageSender;
-        this.dispatcher = dispatcher;
-        this.subscriptionManager = subscriptionManager;
+        this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
     }
 
@@ -105,11 +94,11 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * called. The ProxyInvocationHandler will check the arbitration status before the call is delegated to the
      * connector. If the arbitration is still in progress the synchronous call will block until the arbitration was
      * successful or the timeout elapsed.
-     *
+     * 
      * @throws Throwable
      * @throws InterruptedException
      * @throws IllegalArgumentException
-     *
+     * 
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     @CheckForNull
@@ -139,7 +128,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * Checks the connector status before a method call is executed. Instantly returns True if the connector already
      * finished successfully , otherwise it will block up to the amount of milliseconds defined by the
      * arbitrationTimeout or until the ProxyInvocationHandler is notified about a successful connection.
-     *
+     * 
      * @return True if the connector was finished successfully in time, False if the connector failed or could not be
      *         finished in time.
      * @throws InterruptedException
@@ -162,7 +151,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     /**
      * Checks if the connector was set successfully. Returns immediately and does not block until the connector is
      * finished.
-     *
+     * 
      * @return true if a connector was successfully set.
      */
     public boolean isConnectorReady() {
@@ -253,18 +242,13 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     /**
      * Sets the connector for this ProxyInvocationHandler after the DiscoveryAgent got notified about a successful
      * arbitration. Should be called from the DiscoveryAgent
-     *
+     * 
      * @param result
      *            from the previously invoked arbitration
      */
     @Override
     public void createConnector(ArbitrationResult result) {
-        connector = ConnectorFactory.create(dispatcher,
-                                            subscriptionManager,
-                                            messageSender,
-                                            proxyParticipantId,
-                                            result,
-                                            qosSettings);
+        connector = connectorFactory.create(proxyParticipantId, result, qosSettings);
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;

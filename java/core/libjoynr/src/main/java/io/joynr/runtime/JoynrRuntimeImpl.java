@@ -29,6 +29,7 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
 import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.subtypes.JoynrType;
 
 import java.util.Set;
@@ -62,6 +63,8 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     private SubscriptionManager subscriptionManager;
     @Inject
     public ObjectMapper objectMapper;
+    @Inject
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper) {
@@ -90,9 +93,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         return new ProxyBuilderDefaultImpl<T>(localCapabilitiesDirectory,
                                               domain,
                                               interfaceClass,
-                                              messageSender,
-                                              dispatcher,
-                                              subscriptionManager);
+                                              proxyInvocationHandlerFactory);
     }
 
     @Override

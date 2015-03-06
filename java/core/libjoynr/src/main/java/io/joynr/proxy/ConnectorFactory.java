@@ -20,26 +20,30 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class ConnectorFactory {
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
-    private ConnectorFactory() {
+@Singleton
+public class ConnectorFactory {
 
-    }
+    JoynrMessagingConnectorFactory joynrMessagingConnectorFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
+
+    @Inject
+    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory) {
+        this.joynrMessagingConnectorFactory = joynrMessagingConnectorFactory;
+    }
 
     /**
      * Creates a new connector object using concrete connector factories chosen by the endpointAddress which is passed
@@ -56,19 +60,13 @@ public final class ConnectorFactory {
      * @return
      */
     @CheckForNull
-    public static ConnectorInvocationHandler create(final RequestReplyDispatcher dispatcher,
-                                                    final SubscriptionManager subscriptionManager,
-                                                    final RequestReplySender messageSender,
-                                                    final String fromParticipantId,
-                                                    final ArbitrationResult arbitrationResult,
-                                                    final MessagingQos qosSettings) {
+    public ConnectorInvocationHandler create(final String fromParticipantId,
+                                             final ArbitrationResult arbitrationResult,
+                                             final MessagingQos qosSettings) {
 
         for (EndpointAddressBase endpointAddress : arbitrationResult.getEndpointAddress()) {
             if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
-                return JoynrMessagingConnectorFactory.create(dispatcher,
-                                                             subscriptionManager,
-                                                             messageSender,
-                                                             fromParticipantId,
+                return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                              arbitrationResult.getParticipantId(),
                                                              (JoynrMessagingEndpointAddress) endpointAddress,
                                                              qosSettings);

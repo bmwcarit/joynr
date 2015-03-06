@@ -22,8 +22,6 @@ package io.joynr.capabilities;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
@@ -32,7 +30,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Future;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +65,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     private String localChannelId;
     private CapabilitiesStore localCapabilitiesStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
-
     private CapabilitiesStore globalCapabilitiesCache;
 
     @Inject
@@ -81,9 +78,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                           MessagingEndpointDirectory messagingEndpointDirectory,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesStore globalCapabilitiesCache,
-                                          RequestReplySender requestRelySender,
-                                          RequestReplyDispatcher dispatcher,
-                                          SubscriptionManager subscriptionManager) {
+                                          ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         // CHECKSTYLE:ON
         this.localChannelId = localChannelId;
         this.messagingEndpointDirectory = messagingEndpointDirectory;
@@ -103,14 +98,12 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
                                                                          this,
-                                                                         requestRelySender,
-                                                                         dispatcher,
-                                                                         subscriptionManager);
+                                                                         proxyInvocationHandlerFactory);
     }
 
     /**
      * Adds capability to local and global directories,
-     * 
+     *
      * @return
      */
     @Override

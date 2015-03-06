@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.inject.Inject;
 
 /**
  * This class creates a connector to access a service over JoynRPC using Java dynamic proxies.
@@ -46,8 +47,18 @@ public class JoynrMessagingConnectorFactory {
     // use for caching because creation of MethodMetaInformation is expensive
     private static final ConcurrentMap<Method, MethodMetaInformation> metaInformationMap = new ConcurrentHashMap<Method, MethodMetaInformation>();
 
-    // @Inject
-    // private static SubscriptionManager subscriptionManager;
+    private RequestReplySender messageSender;
+    private RequestReplyDispatcher dispatcher;
+    private SubscriptionManager subscriptionManager;
+
+    @Inject
+    public JoynrMessagingConnectorFactory(RequestReplySender messageSender,
+                                          RequestReplyDispatcher dispatcher,
+                                          SubscriptionManager subscriptionManager) {
+        this.messageSender = messageSender;
+        this.dispatcher = dispatcher;
+        this.subscriptionManager = subscriptionManager;
+    }
 
     /**
      * Creates a connector (java reflection dynamic proxy object) to execute remote procedure calls. Internally uses
@@ -67,16 +78,11 @@ public class JoynrMessagingConnectorFactory {
      *            Time to live in milliseconds.
      * @return
      */
-    public static JoynrMessagingConnectorInvocationHandler create(final RequestReplyDispatcher dispatcher,
-                                                                  final SubscriptionManager subscriptionManager,
-                                                                  final RequestReplySender messageSender,
-                                                                  final String fromParticipantId,
-                                                                  final String toParticipantId,
-                                                                  final JoynrMessagingEndpointAddress endpointAddress,
-                                                                  final MessagingQos qosSettings) {
+    public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
+                                                           final String toParticipantId,
+                                                           final JoynrMessagingEndpointAddress endpointAddress,
+                                                           final MessagingQos qosSettings) {
 
-        // return (T) Proxy.newProxyInstance(proxyInterface.getClassLoader(),
-        // new Class<?>[] { proxyInterface },
         return new JoynrMessagingConnectorInvocationHandler(toParticipantId,
                                                             endpointAddress,
                                                             fromParticipantId,

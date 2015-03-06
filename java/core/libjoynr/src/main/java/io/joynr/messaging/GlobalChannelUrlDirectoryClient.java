@@ -3,12 +3,10 @@ package io.joynr.messaging;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 import joynr.types.ChannelUrlInformation;
 
@@ -38,29 +36,21 @@ public class GlobalChannelUrlDirectoryClient {
     private ProxyBuilder<ChannelUrlDirectoryProxy> channelUrlProxyBuilder;
     private String domain;
     private LocalCapabilitiesDirectory capabilitiesDirectory;
-    private RequestReplySender requestRelySender;
-    private RequestReplyDispatcher dispatcher;
-    private SubscriptionManager subscriptionManager;
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     public GlobalChannelUrlDirectoryClient(String domain,
                                            LocalCapabilitiesDirectory capabilitiesDirectory,
-                                           RequestReplySender requestRelySender,
-                                           RequestReplyDispatcher dispatcher,
-                                           SubscriptionManager subscriptionManager) {
+                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         this.domain = domain;
         this.capabilitiesDirectory = capabilitiesDirectory;
-        this.requestRelySender = requestRelySender;
-        this.dispatcher = dispatcher;
-        this.subscriptionManager = subscriptionManager;
+        this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
     }
 
     private ChannelUrlDirectoryProxy getProxy(long ttl) {
         this.channelUrlProxyBuilder = new ProxyBuilderDefaultImpl<ChannelUrlDirectoryProxy>(capabilitiesDirectory,
                                                                                             domain,
                                                                                             ChannelUrlDirectoryProxy.class,
-                                                                                            requestRelySender,
-                                                                                            dispatcher,
-                                                                                            subscriptionManager);
+                                                                                            proxyInvocationHandlerFactory);
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, DiscoveryQos.NO_MAX_AGE);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return channelUrlProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();

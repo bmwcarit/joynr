@@ -178,10 +178,11 @@ public class ConnectorTests {
         endpointAddresses.add(endpointAddress);
         arbitrationResult.setEndpointAddress(endpointAddresses);
         arbitrationResult.setParticipantId(toParticipantId);
-        ConnectorInvocationHandler connector = ConnectorFactory.create(dispatcher,
-                                                                       subscriptionManager,
-                                                                       messageSender,
-                                                                       fromParticipantId,
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
+                                                                                                           dispatcher,
+                                                                                                           subscriptionManager);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory);
+        ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
                                                                        qosSettings);
         return connector;

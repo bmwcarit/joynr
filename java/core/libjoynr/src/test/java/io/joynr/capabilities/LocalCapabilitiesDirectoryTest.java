@@ -24,15 +24,13 @@ import static org.mockito.Matchers.eq;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.proxy.Future;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.ArrayList;
@@ -71,11 +69,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private MessagingEndpointDirectory messagingEndpointDirectoryMock;
     @Mock
-    private RequestReplyDispatcher dispatcherMock;
-    @Mock
-    private RequestReplySender requestReplySender;
-    @Mock
-    private SubscriptionManager subscriptionManagerMock;
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
     @Spy
     protected CapabilitiesStore localCapabilitiesStoreSpy = new CapabilitiesStoreImpl();
     @Spy
@@ -124,9 +118,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         messagingEndpointDirectoryMock,
                                                                         localCapabilitiesStoreSpy,
                                                                         globalCapabilitiesCacheSpy,
-                                                                        requestReplySender,
-                                                                        dispatcherMock,
-                                                                        subscriptionManagerMock);
+                                                                        proxyInvocationHandlerFactoryMock);
 
         ProviderQos providerQos = new ProviderQos();
         List<CustomParameter> parameterList = Lists.newArrayList();

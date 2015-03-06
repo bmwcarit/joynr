@@ -29,6 +29,7 @@ import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.RequestReplySenderImpl;
+import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.endpoints.EndpointAddressBase;
@@ -69,8 +70,7 @@ public class ProxyArbitrationTest {
     @Mock
     private Reply jsonReply;
 
-    ProxyInvocationHandler proxyHandler;
-    private RequestReplySender requestReplySender;
+    ProxyInvocationHandlerImpl proxyHandler;
 
     private MessagingEndpointDirectory messagingEndpointDirectory;
     private String participantId;
@@ -101,16 +101,19 @@ public class ProxyArbitrationTest {
         messagingEndpointDirectory.put(participantId, wrongEndpointAddress);
         messagingEndpointDirectory.put(participantId, correctEndpointAddress);
 
-        requestReplySender = new RequestReplySenderImpl(joynrMessageFactory, messageSender, messagingEndpointDirectory);
-
+        RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory,
+                                                                           messageSender,
+                                                                           messagingEndpointDirectory);
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
+                                                                                                           dispatcher,
+                                                                                                           subscriptionManager);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory);
         proxyHandler = new ProxyInvocationHandlerImpl("domain",
                                                       "interfaceName",
                                                       participantId,
                                                       discoveryQos,
                                                       messagingQos,
-                                                      requestReplySender,
-                                                      dispatcher,
-                                                      subscriptionManager);
+                                                      connectorFactory);
         List<EndpointAddressBase> endpoints = Lists.newArrayList(correctEndpointAddress);
 
         DiscoveryAgent discoveryAgent = new DiscoveryAgent();

@@ -20,11 +20,9 @@ package io.joynr.messaging;
  */
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -52,15 +50,11 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                               ChannelUrlStore channelUrlStore,
                                               MessagingSettings settings,
-                                              RequestReplySender requestReplySender,
-                                              RequestReplyDispatcher dispatcher,
-                                              SubscriptionManager subscriptionManager) {
+                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         // CHECKSTYLE:ON
         this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(discoveryDirectoriesDomain,
                                                                              localCapabilitiesDirectory,
-                                                                             requestReplySender,
-                                                                             dispatcher,
-                                                                             subscriptionManager);
+                                                                             proxyInvocationHandlerFactory);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);

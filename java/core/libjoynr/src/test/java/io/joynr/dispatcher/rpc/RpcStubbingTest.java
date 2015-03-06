@@ -182,10 +182,10 @@ public class RpcStubbingTest {
         });
 
         MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
-        connector = JoynrMessagingConnectorFactory.create(dispatcher,
-                                                          subscriptionManager,
-                                                          messageSender,
-                                                          fromParticipantId,
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
+                                                                                                           dispatcher,
+                                                                                                           subscriptionManager);
+        connector = joynrMessagingConnectorFactory.create(fromParticipantId,
                                                           toParticipantId,
                                                           endpointAddress,
                                                           qosSettings);

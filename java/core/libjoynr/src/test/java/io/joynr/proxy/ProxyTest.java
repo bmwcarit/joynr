@@ -88,6 +88,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyTest {
@@ -108,6 +110,7 @@ public class ProxyTest {
 
     @Mock
     private Callback<String> callback;
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     public interface SyncTestInterface extends JoynrSyncInterface {
         String method1();
@@ -126,14 +129,22 @@ public class ProxyTest {
 
     @Before
     public void setUp() throws Exception {
-        Guice.createInjector(new AbstractModule() {
+        Injector injector = Guice.createInjector(new AbstractModule() {
 
             @Override
             protected void configure() {
                 requestStaticInjection(RpcUtils.class);
+                bind(RequestReplyDispatcher.class).toInstance(dispatcher);
+                bind(RequestReplySender.class).toInstance(requestReplySender);
+                bind(SubscriptionManager.class).toInstance(subscriptionManager);
+                install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,
+                                                             ProxyInvocationHandlerImpl.class)
+                                                  .build(ProxyInvocationHandlerFactory.class));
             }
 
         });
+
+        proxyInvocationHandlerFactory = injector.getInstance(ProxyInvocationHandlerFactory.class);
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -184,12 +195,7 @@ public class ProxyTest {
     }
 
     private <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final Class<T> interfaceClass) {
-        return new ProxyBuilderDefaultImpl<T>(capabilitiesClient,
-                                              domain,
-                                              interfaceClass,
-                                              requestReplySender,
-                                              dispatcher,
-                                              subscriptionManager);
+        return new ProxyBuilderDefaultImpl<T>(capabilitiesClient, domain, interfaceClass, proxyInvocationHandlerFactory);
     }
 
     @Test
