@@ -1,4 +1,4 @@
-package io.joynr.example;
+package io.joynr.examples.android_example;
 
 /*
  * #%L

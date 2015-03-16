@@ -1,5 +1,5 @@
 @edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
-package io.joynr.example;
+package io.joynr.examples.android_example;
 
 /*
  * #%L
