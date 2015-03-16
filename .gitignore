@@ -14,3 +14,4 @@ THIRD-PARTY.properties
 .idea/
 *.iml
 logs/
+examples/radio-app/gps-provider-joynr.properties

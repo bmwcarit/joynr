@@ -35,25 +35,35 @@ public class JoynrAndroidExampleApplication extends Application {
     private final JoynrAndroidExampleLauncher joynrAndroidExampleLauncher = new JoynrAndroidExampleLauncher();
 
     private JoynrAndroidRuntime runtime;
+    private Output output;
 
     @Override
     public void onCreate() {
+        logger.info("onCreate JoynrAndroidExampleApplication");
         super.onCreate();
-        // Replace with your bounceproxy's host name
-        String backendHost = "YOURHOSTHERE:8080"; //TODO make this configurable
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://" + backendHost + "/bounceproxy/");
-        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://" + backendHost
-                + "/discovery/channels/discoverydirectory_channelid/");
-        joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://" + backendHost
-                + "/discovery/channels/discoverydirectory_channelid/");
+    }
+
+    public void initJoynrRuntime(Properties joynrConfig) {
+        logToOutput("Creating joynr Runtime.");
+        logToOutput("Bounceproxy URL: " + joynrConfig.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL));
+        logToOutput("Channel URL Directory: " + joynrConfig.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL));
+        logToOutput("Capabilities Directory: "
+                + joynrConfig.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL));
         runtime = new JoynrAndroidRuntime(getApplicationContext(), joynrConfig);
-        logger.info("onCreate JoynAndroidExampleApplication");
+
         joynrAndroidExampleLauncher.setJoynAndroidRuntime(runtime);
 
     }
 
+    private void logToOutput(String string) {
+        if (output != null) {
+            output.append(string);
+            output.append("\n");
+        }
+    }
+
     public void setOutput(Output output) {
+        this.output = output;
         joynrAndroidExampleLauncher.setOutput(output);
 
     }

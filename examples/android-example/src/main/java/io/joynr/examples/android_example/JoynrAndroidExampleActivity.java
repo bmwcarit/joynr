@@ -19,6 +19,10 @@ package io.joynr.examples.android_example;
  * #L%
  */
 
+import io.joynr.messaging.MessagingPropertyKeys;
+
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +34,8 @@ import android.widget.TextView;
 
 public class JoynrAndroidExampleActivity extends Activity {
     private static final Logger logger = LoggerFactory.getLogger(JoynrAndroidExampleActivity.class);
-    private static final String TAG = "JOYnAndroidExample";
+    private static final String TAG = "joynrAndroidExample";
+    private JoynrAndroidExampleApplication application;
 
     /**
      * Called when the activity is first created.
@@ -42,11 +47,12 @@ public class JoynrAndroidExampleActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        logger.info("onCreate JoynAndroidExampleActivity");
+        logger.info("onCreate JoynrAndroidExampleActivity");
         Log.i(TAG, "onCreate");
         setContentView(R.layout.main);
+        application = (JoynrAndroidExampleApplication) getApplication();
 
-        ((JoynrAndroidExampleApplication) getApplication()).setOutput(new Output() {
+        application.setOutput(new Output() {
             TextView textView = (TextView) findViewById(R.id.progressoutput);
 
             @Override
@@ -65,17 +71,26 @@ public class JoynrAndroidExampleActivity extends Activity {
             }
 
         });
+
+        String backendHost = "<concrete host>:8080"; //TODO make this configurable
+        Log.i(TAG, "Bounceproxy URL: " + backendHost);
+        Properties joynrConfig = new Properties();
+        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://" + backendHost + "/bounceproxy/");
+        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://" + backendHost
+                + "/discovery/channels/discoverydirectory_channelid/");
+        joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://" + backendHost
+                + "/discovery/channels/discoverydirectory_channelid/");
+        application.initJoynrRuntime(joynrConfig);
     }
 
     public void onCreateAndRequestButtonClicked(View view) {
-        // Requesting the GPS Location via Joyn will take some seconds -> it has to be executed in a new thread (not the
+        // Requesting the GPS Location via joynr will take some seconds -> it has to be executed in a new thread (not the
         // UI thread) otherwise the device would not react on user interaction until the request is completed or the
         // application is even stopped with an "Application Not Responding" dialog
         // see http://developer.android.com/guide/components/processes-and-threads.html
         new Thread(new Runnable() {
             public void run() {
-                ((JoynrAndroidExampleApplication) getApplication()).getJoynAndroidExampleLauncher()
-                                                                   .createProxyAndGetLocation();
+                application.getJoynAndroidExampleLauncher().createProxyAndGetLocation();
             }
         }).start();
 

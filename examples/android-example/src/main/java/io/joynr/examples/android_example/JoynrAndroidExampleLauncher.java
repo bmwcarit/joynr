@@ -41,7 +41,7 @@ public class JoynrAndroidExampleLauncher {
     private static final Logger logger = LoggerFactory.getLogger(JoynrAndroidExampleLauncher.class);
     private Output output; // Interface to a TextView to display log messages in the app
     private JoynrAndroidRuntime joynrAndroidRuntime; // Bound service for communication via joynr in background
-    private static final String PROVIDER_DOMAIN = "android_location";
+    private static final String PROVIDER_DOMAIN = "android-domain";
 
     public void setJoynAndroidRuntime(JoynrAndroidRuntime joynrAndroidRuntime) {
         this.joynrAndroidRuntime = joynrAndroidRuntime;
@@ -49,10 +49,10 @@ public class JoynrAndroidExampleLauncher {
 
     public void createProxyAndGetLocation() {
         if (joynrAndroidRuntime == null) {
-            logger.error("JoynAndroidExampleLauncher has not been initialized!");
-            logToOutput("JoynAndroidExampleLauncher has not been initialized!\n");
+            logger.error("JoynrAndroidExampleLauncher has not been initialized!");
+            logToOutput("JoynrAndroidExampleLauncher has not been initialized!\n");
         }
-        logger.info("In JoynAndroidExampleLauncher");
+        logger.info("In JoynrAndroidExampleLauncher");
         logToOutput("Creating joynr GPS proxy and requesting location...\n");
 
         MessagingQos messagingQos = new MessagingQos(); // MessagingQos with defaul values. If messages are dropped due
