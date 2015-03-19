@@ -19,13 +19,15 @@ package io.joynr.channel;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import joynr.infrastructure.ChannelUrlDirectoryProviderAsync.GetUrlsForChannelDeferred;
 import joynr.types.ChannelUrlInformation;
 
 import org.junit.Assert;
@@ -40,42 +42,43 @@ public class ChannelUrlDirectoryTest {
         fixture = new ChannelUrlDirectoyImpl(500);
     }
 
-    private abstract class TestCallback implements Callback<ChannelUrlInformation> {
+    private abstract class TestPromiseListener implements PromiseListener {
 
         @Override
-        public void onFailure(JoynrException error) {
-            Assert.assertFalse(error.getLocalizedMessage(), true);
+        public void onRejection(JoynrException error) {
+            Assert.fail(error.getLocalizedMessage());
         }
 
     }
 
     @Test
     public void testDelayedCleanup() throws Exception {
-
         final String testChannelId = "testDelayedCleanup" + UUID.randomUUID().toString();
         final String[] urls = { "http://testurl.com/" + testChannelId + "/" };
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(urls));
 
-        fixture.registerChannelUrls(null, testChannelId, channelUrlInformation);
+        fixture.registerChannelUrls(testChannelId, channelUrlInformation);
 
-        Callback<ChannelUrlInformation> callback = new TestCallback() {
+        Promise<GetUrlsForChannelDeferred> promise = fixture.getUrlsForChannel(testChannelId);
+        promise.then(new TestPromiseListener() {
 
             @Override
-            public void onSuccess(ChannelUrlInformation result) {
+            public void onFulfillment(Object... values) {
 
-                List<String> urlsFromServer = result.getUrls();
+                List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
                 Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
-                fixture.unregisterChannelUrls(null, testChannelId);
+                fixture.unregisterChannelUrls(testChannelId);
                 /* after deletion, url shall still be a valid channelurl, as the unregistration shall only affect after
                  * fixture.channelurInactiveTimeInMS
                  */
 
-                Callback<ChannelUrlInformation> callback2 = new TestCallback() {
+                Promise<GetUrlsForChannelDeferred> promise2 = fixture.getUrlsForChannel(testChannelId);
+                promise2.then(new TestPromiseListener() {
 
                     @Override
-                    public void onSuccess(ChannelUrlInformation result) {
-                        List<String> urlsFromServer = result.getUrls();
+                    public void onFulfillment(Object... values) {
+                        List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
                         Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
 
                         synchronized (this) {
@@ -86,20 +89,18 @@ public class ChannelUrlDirectoryTest {
                             }
                         }
 
-                        Callback<ChannelUrlInformation> callback3 = new TestCallback() {
+                        Promise<GetUrlsForChannelDeferred> promise3 = fixture.getUrlsForChannel(testChannelId);
+                        promise3.then(new TestPromiseListener() {
 
                             @Override
-                            public void onSuccess(ChannelUrlInformation result) {
-                                Assert.assertEquals(0, result.getUrls().size());
+                            public void onFulfillment(Object... values) {
+                                Assert.assertTrue(((ChannelUrlInformation) values[0]).getUrls().isEmpty());
                             }
-                        };
-                        fixture.getUrlsForChannel(callback3, testChannelId);
+                        });
                     }
-                };
-                fixture.getUrlsForChannel(callback2, testChannelId);
+                });
             }
-        };
-        fixture.getUrlsForChannel(callback, testChannelId);
+        });
     }
 
     @Test
@@ -110,18 +111,20 @@ public class ChannelUrlDirectoryTest {
         final ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(urls));
 
-        fixture.registerChannelUrls(null, testChannelId, channelUrlInformation);
+        fixture.registerChannelUrls(testChannelId, channelUrlInformation);
 
-        fixture.unregisterChannelUrls(null, testChannelId);
-        Callback<ChannelUrlInformation> callback = new TestCallback() {
+        fixture.unregisterChannelUrls(testChannelId);
+
+        Promise<GetUrlsForChannelDeferred> promise = fixture.getUrlsForChannel(testChannelId);
+        promise.then(new TestPromiseListener() {
 
             @Override
-            public void onSuccess(ChannelUrlInformation urlsForChannelId) {
-                List<String> urlsFromServer = urlsForChannelId.getUrls();
+            public void onFulfillment(Object... values) {
+                List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
                 Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
                 Assert.assertEquals(1, fixture.inactiveChannelIds.size());
                 Assert.assertNotNull(fixture.inactiveChannelIds.get(testChannelId));
-                fixture.registerChannelUrls(null, testChannelId, channelUrlInformation);
+                fixture.registerChannelUrls(testChannelId, channelUrlInformation);
                 Assert.assertEquals(0, fixture.inactiveChannelIds.size());
                 synchronized (this) {
                     try {
@@ -130,19 +133,16 @@ public class ChannelUrlDirectoryTest {
                         Assert.assertFalse(e.getMessage(), true);
                     }
                 }
-                Callback<ChannelUrlInformation> callback2 = new TestCallback() {
+                Promise<GetUrlsForChannelDeferred> promise2 = fixture.getUrlsForChannel(testChannelId);
+                promise2.then(new TestPromiseListener() {
 
                     @Override
-                    public void onSuccess(ChannelUrlInformation urlsForChannelId) {
-                        List<String> urlsFromServer = urlsForChannelId.getUrls();
+                    public void onFulfillment(Object... values) {
+                        List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
                         Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
                     }
-                };
-                fixture.getUrlsForChannel(callback2, testChannelId);
-
+                });
             }
-        };
-        fixture.getUrlsForChannel(callback, testChannelId);
-
+        });
     }
 }

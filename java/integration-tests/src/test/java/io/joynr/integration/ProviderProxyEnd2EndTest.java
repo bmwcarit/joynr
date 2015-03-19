@@ -30,8 +30,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -42,6 +40,10 @@ import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.AttributeListener;
@@ -322,315 +324,545 @@ public class ProviderProxyEnd2EndTest {
         }
 
         @Override
-        public void getEnumAttribute(@JoynrRpcCallback(deserialisationType = TestEnumToken.class) Callback<TestEnum> callback) {
-            callback.onSuccess(enumAttribute);
+        public Promise<Deferred<TestEnum>> getEnumAttribute() {
+            Deferred<TestEnum> deferred = new Deferred<TestEnum>();
+            deferred.resolve(enumAttribute);
+            return new Promise<Deferred<TestEnum>>(deferred);
         }
 
         @Override
-        public void setEnumAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "enumAttribute", deserialisationType = TestEnumToken.class) TestEnum enumAttribute) {
+        public Promise<DeferredVoid> setEnumAttribute(TestEnum enumAttribute) {
+            DeferredVoid deferred = new DeferredVoid();
             this.enumAttribute = enumAttribute;
-            callback.onSuccess(null);
+            deferred.resolve();
+            return new Promise<DeferredVoid>(deferred);
         }
 
         @Override
-        public void getLocation(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
-            callback.onSuccess(location);
+        public Promise<Deferred<GpsLocation>> getLocation() {
+            Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
+            deferred.resolve(location);
+            return new Promise<Deferred<GpsLocation>>(deferred);
         }
 
         @Override
-        public void getMytrip(@JoynrRpcCallback(deserialisationType = TripToken.class) Callback<Trip> callback) {
-            callback.onSuccess(myTrip);
+        public Promise<Deferred<Trip>> getMytrip() {
+            Deferred<Trip> deferred = new Deferred<Trip>();
+            deferred.resolve(myTrip);
+            return new Promise<Deferred<Trip>>(deferred);
         }
 
         @Override
-        public void getYourLocation(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
-            callback.onSuccess(new GpsLocation());
+        public Promise<Deferred<GpsLocation>> getYourLocation() {
+            Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
+            deferred.resolve(new GpsLocation());
+            return new Promise<Deferred<GpsLocation>>(deferred);
         }
 
         @Override
-        public void getFirstPrime(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-            callback.onSuccess(10);
+        public Promise<Deferred<Integer>> getFirstPrime() {
+            Deferred<Integer> deferred = new Deferred<Integer>();
+            deferred.resolve(10);
+            return new Promise<Deferred<Integer>>(deferred);
         }
 
         @Override
-        public void getListOfInts(@JoynrRpcCallback(deserialisationType = ListIntegerToken.class) Callback<List<Integer>> callback) {
-            callback.onSuccess(new ArrayList<Integer>());
+        public Promise<Deferred<List<Integer>>> getListOfInts() {
+            Deferred<List<Integer>> deferred = new Deferred<List<Integer>>();
+            deferred.resolve(new ArrayList<Integer>());
+            return new Promise<Deferred<List<Integer>>>(deferred);
         }
 
         @Override
-        public void getListOfLocations(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback) {
-            callback.onSuccess(new ArrayList<GpsLocation>());
+        public Promise<Deferred<List<GpsLocation>>> getListOfLocations() {
+            Deferred<List<GpsLocation>> deferred = new Deferred<List<GpsLocation>>();
+            deferred.resolve(new ArrayList<GpsLocation>());
+            return new Promise<Deferred<List<GpsLocation>>>(deferred);
         }
 
         @Override
-        public void getListOfStrings(@JoynrRpcCallback(deserialisationType = ListStringToken.class) Callback<List<String>> callback) {
-            callback.onSuccess(listOfStrings);
+        public Promise<Deferred<List<String>>> getListOfStrings() {
+            Deferred<List<String>> deferred = new Deferred<List<String>>();
+            deferred.resolve(listOfStrings);
+            return new Promise<Deferred<List<String>>>(deferred);
         }
 
         @Override
-        public void setListOfStrings(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "listOfStrings", deserialisationType = ListStringToken.class) List<String> listOfStrings) {
+        public Promise<DeferredVoid> setListOfStrings(List<String> listOfStrings) {
+            DeferredVoid deferred = new DeferredVoid();
             this.listOfStrings = listOfStrings;
-            callback.onSuccess(null);
+            deferred.resolve();
+            return new Promise<DeferredVoid>(deferred);
         }
 
         @Override
-        public void getTestAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-            callback.onSuccess(testAttribute);
+        public Promise<Deferred<Integer>> getTestAttribute() {
+            Deferred<Integer> deferred = new Deferred<Integer>();
+            deferred.resolve(testAttribute);
+            return new Promise<Deferred<Integer>>(deferred);
         }
 
         @Override
-        public void setTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "testAttribute", deserialisationType = IntegerToken.class) Integer testAttribute) {
+        public Promise<DeferredVoid> setTestAttribute(Integer testAttribute) {
+            DeferredVoid deferred = new DeferredVoid();
             this.testAttribute = testAttribute;
-            callback.onSuccess(null);
+            deferred.resolve();
+            return new Promise<DeferredVoid>(deferred);
         }
 
         @Override
-        public void getComplexTestAttribute(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
-            callback.onSuccess(complexTestAttribute);
+        public Promise<Deferred<GpsLocation>> getComplexTestAttribute() {
+            Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
+            deferred.resolve(complexTestAttribute);
+            return new Promise<Deferred<GpsLocation>>(deferred);
         }
 
         @Override
-        public void setComplexTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam(value = "complexTestAttribute", deserialisationType = GpsLocationToken.class) GpsLocation complexTestAttribute) {
+        public Promise<DeferredVoid> setComplexTestAttribute(GpsLocation complexTestAttribute) {
+            DeferredVoid deferred = new DeferredVoid();
             this.complexTestAttribute = complexTestAttribute;
-            callback.onSuccess(null);
+            deferred.resolve();
+            return new Promise<DeferredVoid>(deferred);
         }
 
         @Override
-        public void getReadWriteAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getReadWriteAttribute() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void setReadWriteAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                          @JoynrRpcParam(value = "readWriteAttribute", deserialisationType = IntegerToken.class) Integer readWriteAttribute) {
+        public Promise<DeferredVoid> setReadWriteAttribute(Integer readWriteAttribute) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         @Override
-        public void getReadOnlyAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getReadOnlyAttribute() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void getWriteOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getWriteOnly() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void setWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                 @JoynrRpcParam(value = "writeOnly", deserialisationType = IntegerToken.class) Integer writeOnly) {
+        public Promise<DeferredVoid> setWriteOnly(Integer writeOnly) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         @Override
-        public void getNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getNotifyWriteOnly() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void setNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                       @JoynrRpcParam(value = "notifyWriteOnly", deserialisationType = IntegerToken.class) Integer notifyWriteOnly) {
+        public Promise<DeferredVoid> setNotifyWriteOnly(Integer notifyWriteOnly) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         @Override
-        public void getNotifyReadOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getNotifyReadOnly() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void getNotifyReadWrite(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getNotifyReadWrite() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void setNotifyReadWrite(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                       @JoynrRpcParam(value = "notifyReadWrite", deserialisationType = IntegerToken.class) Integer notifyReadWrite) {
+        public Promise<DeferredVoid> setNotifyReadWrite(Integer notifyReadWrite) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         @Override
-        public void getNotify(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getNotify() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void setNotify(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                              @JoynrRpcParam(value = "notify", deserialisationType = IntegerToken.class) Integer notify) {
+        public Promise<DeferredVoid> setNotify(Integer notify) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         @Override
-        public void getATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<Deferred<Integer>> getATTRIBUTEWITHCAPITALLETTERS() {
+            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
         }
 
         @Override
-        public void setATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                   @JoynrRpcParam(value = "aTTRIBUTEWITHCAPITALLETTERS", deserialisationType = IntegerToken.class) Integer aTTRIBUTEWITHCAPITALLETTERS) {
+        public Promise<DeferredVoid> setATTRIBUTEWITHCAPITALLETTERS(Integer aTTRIBUTEWITHCAPITALLETTERS) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         @Override
-        public void addNumbers(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                               @JoynrRpcParam("first") Integer first,
-                               @JoynrRpcParam("second") Integer second,
-                               @JoynrRpcParam("third") Integer third) {
+        public Promise<AddNumbersDeferred> addNumbers(Integer first, Integer second, Integer third) {
+            return new Promise<AddNumbersDeferred>(new AddNumbersDeferred());
         }
 
         @Override
-        public void sumInts(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                            @JoynrRpcParam(value = "ints", deserialisationType = ListIntegerToken.class) List<Integer> ints) {
+        public Promise<SumIntsDeferred> sumInts(List<Integer> ints) {
+            return new Promise<SumIntsDeferred>(new SumIntsDeferred());
         }
 
         @Override
-        public void methodWithNoInputParameters(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
+        public Promise<MethodWithNoInputParametersDeferred> methodWithNoInputParameters() {
+            return new Promise<MethodWithNoInputParametersDeferred>(new MethodWithNoInputParametersDeferred());
         }
 
         @Override
-        public void methodWithEnumParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                                            @JoynrRpcParam("input") TestEnum input) {
+        public Promise<MethodWithEnumParameterDeferred> methodWithEnumParameter(TestEnum input) {
+            return new Promise<MethodWithEnumParameterDeferred>(new MethodWithEnumParameterDeferred());
         }
 
         @Override
-        public void methodWithEnumListParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                                                @JoynrRpcParam(value = "input", deserialisationType = ListTestEnumToken.class) List<TestEnum> input) {
+        public Promise<MethodWithEnumListParameterDeferred> methodWithEnumListParameter(List<TestEnum> input) {
+            return new Promise<MethodWithEnumListParameterDeferred>(new MethodWithEnumListParameterDeferred());
         }
 
         @Override
-        public void methodWithEnumReturn(@JoynrRpcCallback(deserialisationType = TestEnumToken.class) Callback<TestEnum> callback,
-                                         @JoynrRpcParam("input") Integer input) {
+        public Promise<MethodWithEnumReturnDeferred> methodWithEnumReturn(Integer input) {
+            return new Promise<MethodWithEnumReturnDeferred>(new MethodWithEnumReturnDeferred());
         }
 
         @Override
-        public void methodWithEnumListReturn(@JoynrRpcCallback(deserialisationType = ListTestEnumToken.class) Callback<List<TestEnum>> callback,
-                                             @JoynrRpcParam("input") Integer input) {
+        public Promise<MethodWithEnumListReturnDeferred> methodWithEnumListReturn(Integer input) {
+            return new Promise<MethodWithEnumListReturnDeferred>(new MethodWithEnumListReturnDeferred());
         }
 
         @Override
-        public void methodWithByteArray(@JoynrRpcCallback(deserialisationType = ListByteToken.class) Callback<List<Byte>> callback,
-                                        @JoynrRpcParam(value = "input", deserialisationType = ListByteToken.class) List<Byte> input) {
+        public Promise<MethodWithByteArrayDeferred> methodWithByteArray(List<Byte> input) {
+            return new Promise<MethodWithByteArrayDeferred>(new MethodWithByteArrayDeferred());
         }
 
         @Override
-        public void methodEnumDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                               @JoynrRpcParam("enumParam") TestEnum enumParam,
-                                               @JoynrRpcParam("doubleParam") Double doubleParam) {
+        public Promise<DeferredVoid> methodEnumDoubleParameters(TestEnum enumParam, Double doubleParam) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<MethodWithEnumReturnValueDeferred> methodWithEnumReturnValue() {
+            MethodWithEnumReturnValueDeferred deferred = new MethodWithEnumReturnValueDeferred();
+            deferred.resolve(TestEnum.TWO);
+            return new Promise<MethodWithEnumReturnValueDeferred>(deferred);
+        }
+
+        @Override
+        public Promise<Deferred<TestEnum>> getEnumAttributeReadOnly() {
+            Deferred<TestEnum> deferred = new Deferred<TestEnum>();
+            deferred.resolve(TestEnum.ONE);
+            return new Promise<Deferred<TestEnum>>(deferred);
+        }
+
+        @Override
+        public Promise<DeferredVoid> methodStringDoubleParameters(String stringParam, Double doubleParam) {
+            DeferredVoid deferred = new DeferredVoid();
+            deferred.resolve();
+            return new Promise<DeferredVoid>(deferred);
+        }
+
+        @Override
+        public Promise<DeferredVoid> methodCustomCustomParameters(ComplexTestType customParam1,
+                                                                  ComplexTestType2 customParam2) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> methodStringDoubleListParameters(String stringParam, List<Double> doubleListParam) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> methodCustomCustomListParameters(ComplexTestType customParam,
+                                                                      List<ComplexTestType2> customListParam) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> customTypeAndListParameter(ComplexTestType complexTestType,
+                                                                List<BaseStruct> complexArray) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> voidOperation() {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> stringAndBoolParameters(String stringParam, Boolean boolParam) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<ReturnPrimeNumbersDeferred> returnPrimeNumbers(Integer upperBound) {
+            return new Promise<ReturnPrimeNumbersDeferred>(new ReturnPrimeNumbersDeferred());
+        }
+
+        @Override
+        public Promise<OptimizeTripDeferred> optimizeTrip(Trip input) {
+            return new Promise<OptimizeTripDeferred>(new OptimizeTripDeferred());
+        }
+
+        @Override
+        public Promise<OverloadedOperation1Deferred> overloadedOperation(DerivedStruct input) {
+            return new Promise<OverloadedOperation1Deferred>(new OverloadedOperation1Deferred());
+        }
+
+        @Override
+        public Promise<OverloadedOperation1Deferred> overloadedOperation(AnotherDerivedStruct input) {
+            return new Promise<OverloadedOperation1Deferred>(new OverloadedOperation1Deferred());
+        }
+
+        @Override
+        public Promise<OverloadedOperation2Deferred> overloadedOperation(String input) {
+            return new Promise<OverloadedOperation2Deferred>(new OverloadedOperation2Deferred());
+        }
+
+        @Override
+        public Promise<OverloadedOperation3Deferred> overloadedOperation(String input1, String input2) {
+            return new Promise<OverloadedOperation3Deferred>(new OverloadedOperation3Deferred());
+        }
+
+        @Override
+        public Promise<OptimizeLocationsDeferred> optimizeLocations(List<GpsLocation> input) {
+            return new Promise<OptimizeLocationsDeferred>(new OptimizeLocationsDeferred());
+        }
+
+        @Override
+        public Promise<ToLowerCaseDeferred> toLowerCase(String inputString) {
+            return new Promise<ToLowerCaseDeferred>(new ToLowerCaseDeferred());
+        }
+
+        @Override
+        public Promise<WaitTooLongDeferred> waitTooLong(Long ttl_ms) {
+            return new Promise<WaitTooLongDeferred>(new WaitTooLongDeferred());
+        }
+
+        @Override
+        public Promise<SayHelloDeferred> sayHello() {
+            return new Promise<SayHelloDeferred>(new SayHelloDeferred());
+        }
+
+        @Override
+        public Promise<CheckVowelDeferred> checkVowel(Vowel inputVowel) {
+            return new Promise<CheckVowelDeferred>(new CheckVowelDeferred());
+        }
+
+        @Override
+        public Promise<OptimizeLocationListDeferred> optimizeLocationList(List<GpsLocation> inputList) {
+            return new Promise<OptimizeLocationListDeferred>(new OptimizeLocationListDeferred());
+        }
+
+        @Override
+        public Promise<DeferredVoid> setLocation(GpsLocation location) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> setFirstPrime(Integer firstPrime) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        @Override
+        public Promise<DeferredVoid> setListOfInts(List<Integer> listOfInts) {
+            return new Promise<DeferredVoid>(new DeferredVoid());
+        }
+
+        // TODO: remove begin
+        @Override
+        public void addNumbers(Callback<Integer> callback, Integer first, Integer second, Integer third) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void sumInts(Callback<Integer> callback, List<Integer> ints) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodWithNoInputParameters(Callback<Integer> callback) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodWithEnumParameter(Callback<Integer> callback, TestEnum input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodWithEnumListParameter(Callback<Integer> callback, List<TestEnum> input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodWithEnumReturn(Callback<TestEnum> callback, Integer input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodWithEnumListReturn(Callback<List<TestEnum>> callback, Integer input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodWithByteArray(Callback<List<Byte>> callback, List<Byte> input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodEnumDoubleParameters(Callback<Void> callback, TestEnum enumParam, Double doubleParam) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodStringDoubleParameters(final Callback<Void> callback, String stringParam, Double doubleParam) {
+            methodStringDoubleParameters(stringParam, doubleParam).then(new PromiseListener() {
+
+                @Override
+                public void onRejection(JoynrException error) {
+                    callback.onFailure(error);
+                }
+
+                @Override
+                public void onFulfillment(Object... values) {
+                    callback.onSuccess(null);
+                }
+            });
+
+        }
+
+        @Override
+        public void methodCustomCustomParameters(Callback<Void> callback,
+                                                 ComplexTestType customParam1,
+                                                 ComplexTestType2 customParam2) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodStringDoubleListParameters(Callback<Void> callback,
+                                                     String stringParam,
+                                                     List<Double> doubleListParam) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void methodCustomCustomListParameters(Callback<Void> callback,
+                                                     ComplexTestType customParam,
+                                                     List<ComplexTestType2> customListParam) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void customTypeAndListParameter(Callback<Void> callback,
+                                               ComplexTestType complexTestType,
+                                               List<BaseStruct> complexArray) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void voidOperation(Callback<Void> callback) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void stringAndBoolParameters(Callback<Void> callback, String stringParam, Boolean boolParam) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void returnPrimeNumbers(Callback<List<Integer>> callback, Integer upperBound) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void optimizeTrip(Callback<Trip> callback, Trip input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void overloadedOperation(Callback<String> callback, DerivedStruct input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void overloadedOperation(Callback<String> callback, AnotherDerivedStruct input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void overloadedOperation(Callback<ComplexTestType> callback, String input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void overloadedOperation(Callback<ComplexTestType2> callback, String input1, String input2) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void optimizeLocations(Callback<List<GpsLocation>> callback, List<GpsLocation> input) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void toLowerCase(Callback<String> callback, String inputString) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void waitTooLong(Callback<String> callback, Long ttl_ms) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void sayHello(Callback<String> callback) {
+            // TODO Auto-generated method stub
+
         }
 
         @Override
         public void methodWithEnumReturnValue(Callback<TestEnum> callback) {
-            callback.onSuccess(TestEnum.TWO);
+            // TODO Auto-generated method stub
+
         }
 
         @Override
-        public void getEnumAttributeReadOnly(Callback<TestEnum> callback) {
-            callback.onSuccess(TestEnum.ONE);
+        public void checkVowel(Callback<Boolean> callback, Vowel inputVowel) {
+            // TODO Auto-generated method stub
+
         }
 
         @Override
-        public void methodStringDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                 @JoynrRpcParam("stringParam") String stringParam,
-                                                 @JoynrRpcParam("doubleParam") Double doubleParam) {
-            callback.onSuccess(null);
-        }
+        public void optimizeLocationList(Callback<List<GpsLocation>> callback, List<GpsLocation> inputList) {
+            // TODO Auto-generated method stub
 
-        @Override
-        public void methodCustomCustomParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                 @JoynrRpcParam("customParam1") ComplexTestType customParam1,
-                                                 @JoynrRpcParam("customParam2") ComplexTestType2 customParam2) {
         }
-
-        @Override
-        public void methodStringDoubleListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                     @JoynrRpcParam("stringParam") String stringParam,
-                                                     @JoynrRpcParam(value = "doubleListParam", deserialisationType = ListDoubleToken.class) List<Double> doubleListParam) {
-        }
-
-        @Override
-        public void methodCustomCustomListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                     @JoynrRpcParam("customParam") ComplexTestType customParam,
-                                                     @JoynrRpcParam(value = "customListParam", deserialisationType = ListComplexTestType2Token.class) List<ComplexTestType2> customListParam) {
-        }
-
-        @Override
-        public void customTypeAndListParameter(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                               @JoynrRpcParam("complexTestType") ComplexTestType complexTestType,
-                                               @JoynrRpcParam(value = "complexArray", deserialisationType = ListBaseStructToken.class) List<BaseStruct> complexArray) {
-        }
-
-        @Override
-        public void voidOperation(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback) {
-        }
-
-        @Override
-        public void stringAndBoolParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam("stringParam") String stringParam,
-                                            @JoynrRpcParam("boolParam") Boolean boolParam) {
-        }
-
-        @Override
-        public void returnPrimeNumbers(@JoynrRpcCallback(deserialisationType = ListIntegerToken.class) Callback<List<Integer>> callback,
-                                       @JoynrRpcParam("upperBound") Integer upperBound) {
-        }
-
-        @Override
-        public void optimizeTrip(@JoynrRpcCallback(deserialisationType = TripToken.class) Callback<Trip> callback,
-                                 @JoynrRpcParam("input") Trip input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                        @JoynrRpcParam("input") DerivedStruct input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                        @JoynrRpcParam("input") AnotherDerivedStruct input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = ComplexTestTypeToken.class) Callback<ComplexTestType> callback,
-                                        @JoynrRpcParam("input") String input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = ComplexTestType2Token.class) Callback<ComplexTestType2> callback,
-                                        @JoynrRpcParam("input1") String input1,
-                                        @JoynrRpcParam("input2") String input2) {
-        }
-
-        @Override
-        public void optimizeLocations(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
-                                      @JoynrRpcParam(value = "input", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> input) {
-        }
-
-        @Override
-        public void toLowerCase(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                @JoynrRpcParam("inputString") String inputString) {
-        }
-
-        @Override
-        public void waitTooLong(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                @JoynrRpcParam("ttl_ms") Long ttl_ms) {
-        }
-
-        @Override
-        public void sayHello(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback) {
-        }
-
-        @Override
-        public void checkVowel(@JoynrRpcCallback(deserialisationType = BooleanToken.class) Callback<Boolean> callback,
-                               @JoynrRpcParam("inputVowel") Vowel inputVowel) {
-        }
-
-        @Override
-        public void optimizeLocationList(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
-                                         @JoynrRpcParam(value = "inputList", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> inputList) {
-        }
-
-        @Override
-        public void setLocation(Callback<Void> callback, GpsLocation location) {
-        }
-
-        @Override
-        public void setFirstPrime(Callback<Void> callback, Integer firstPrime) {
-        }
-
-        @Override
-        public void setListOfInts(Callback<Void> callback, List<Integer> listOfInts) {
-        }
-
+        // TODO: remove end
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

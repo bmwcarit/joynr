@@ -84,7 +84,7 @@ abstract class JoynrGeneratorExtensions {
 			return new HashSet<FArgument>
 		}
 		else{
-			event.outArgs.filterNull
+			return event.outArgs.filterNull
 		}
 	}
 
