@@ -94,26 +94,22 @@ public class ArbitrationTest {
         qosParamterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword));
         providerQos.setCustomParameters(qosParamterList);
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
-        ArrayList<EndpointAddressBase> expectedEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos,
-                                                 expectedEndpointAddresses,
-                                                 expectedParticipantId));
+                                                 expectedParticipantId,
+                                                 expectedEndpointAddress));
         ProviderQos providerQos2 = new ProviderQos();
         List<CustomParameter> qosParamterList2 = Lists.newArrayList();
         qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword"));
         providerQos2.setCustomParameters(qosParamterList2);
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
-        ArrayList<EndpointAddressBase> otherEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos2,
-                                                 otherEndpointAddresses,
-                                                 "wrongParticipantId"));
+                                                 "wrongParticipantId",
+                                                 otherEndpointAddress));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -126,7 +122,7 @@ public class ArbitrationTest {
             Mockito.verify(arbitrationCallback, Mockito.times(1))
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
-                                                                          expectedEndpointAddresses)));
+                                                                          Lists.newArrayList(expectedEndpointAddress))));
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
@@ -142,26 +138,22 @@ public class ArbitrationTest {
         providerQos.setCustomParameters(qosParamterList);
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
-        ArrayList<EndpointAddressBase> expectedEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos,
-                                                 expectedEndpointAddresses,
-                                                 expectedParticipantId));
+                                                 expectedParticipantId,
+                                                 expectedEndpointAddress));
         ProviderQos providerQos2 = new ProviderQos();
         List<CustomParameter> qosParamterList2 = Lists.newArrayList();
         qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword"));
         providerQos2.setCustomParameters(qosParamterList2);
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
-        ArrayList<EndpointAddressBase> otherEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos2,
-                                                 otherEndpointAddresses,
-                                                 "wrongParticipantId"));
+                                                 "wrongParticipantId",
+                                                 otherEndpointAddress));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -177,7 +169,7 @@ public class ArbitrationTest {
             Mockito.verify(arbitrationCallback, Mockito.never())
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
-                                                                          expectedEndpointAddresses)));
+                                                                          Lists.newArrayList(expectedEndpointAddress))));
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
@@ -196,13 +188,11 @@ public class ArbitrationTest {
         providerQos.setCustomParameters(qosParamterList);
         providerQos.setSupportsOnChangeSubscriptions(false);
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
-        ArrayList<EndpointAddressBase> otherEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos,
-                                                 otherEndpointAddresses,
-                                                 "wrongParticipantId"));
+                                                 "wrongParticipantId",
+                                                 otherEndpointAddress));
 
         // Create a capability entry for a provider with the correct keyword and that also supports onChange subscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -212,13 +202,11 @@ public class ArbitrationTest {
         providerQos2.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
-        ArrayList<EndpointAddressBase> expectedEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos2,
-                                                 expectedEndpointAddresses,
-                                                 "expectedParticipantId"));
+                                                 "expectedParticipantId",
+                                                 expectedEndpointAddress));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -232,7 +220,7 @@ public class ArbitrationTest {
             Mockito.verify(arbitrationCallback, Mockito.times(1))
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
-                                                                          expectedEndpointAddresses)));
+                                                                          Lists.newArrayList(expectedEndpointAddress))));
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
@@ -245,25 +233,21 @@ public class ArbitrationTest {
         providerQos.setPriority(testPriority);
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
-        ArrayList<EndpointAddressBase> expectedEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos,
-                                                 expectedEndpointAddresses,
-                                                 expectedParticipantId));
+                                                 expectedParticipantId,
+                                                 expectedEndpointAddress));
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
-        ArrayList<EndpointAddressBase> otherEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos2,
-                                                 otherEndpointAddresses,
-                                                 "wrongParticipantId"));
+                                                 "wrongParticipantId",
+                                                 otherEndpointAddress));
         long negativePriority = -10;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -274,8 +258,8 @@ public class ArbitrationTest {
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos3,
-                                                 thirdEndpointAddresses,
-                                                 "thirdParticipantId"));
+                                                 "thirdParticipantId",
+                                                 thirdEndpointAddress));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -288,7 +272,7 @@ public class ArbitrationTest {
             Mockito.verify(arbitrationCallback, Mockito.times(1))
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
-                                                                          expectedEndpointAddresses)));
+                                                                          Lists.newArrayList(expectedEndpointAddress))));
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
@@ -306,31 +290,27 @@ public class ArbitrationTest {
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos,
-                                                 expectedEndpointAddresses,
-                                                 expectedParticipantId));
+                                                 expectedParticipantId,
+                                                 expectedEndpointAddress));
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(Long.MIN_VALUE);
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
-        ArrayList<EndpointAddressBase> otherEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos2,
-                                                 otherEndpointAddresses,
-                                                 "wrongParticipantId"));
+                                                 "wrongParticipantId",
+                                                 otherEndpointAddress));
         long negativePriority = Long.MIN_VALUE;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
 
         EndpointAddressBase thirdEndpointAddress = new JoynrMessagingEndpointAddress("thirdChannelId");
-        ArrayList<EndpointAddressBase> thirdEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos3,
-                                                 thirdEndpointAddresses,
-                                                 "thirdParticipantId"));
+                                                 "thirdParticipantId",
+                                                 thirdEndpointAddress));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -360,13 +340,11 @@ public class ArbitrationTest {
         providerQos.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
-        ArrayList<EndpointAddressBase> expectedEndpointAddresses = new ArrayList<EndpointAddressBase>();
-        expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos,
-                                                 expectedEndpointAddresses,
-                                                 expectedParticipantId));
+                                                 expectedParticipantId,
+                                                 expectedEndpointAddress));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -379,8 +357,8 @@ public class ArbitrationTest {
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos2,
-                                                 otherEndpointAddresses,
-                                                 "wrongParticipantId"));
+                                                 "wrongParticipantId",
+                                                 otherEndpointAddress));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos3 = new ProviderQos();
@@ -393,8 +371,8 @@ public class ArbitrationTest {
         capabilitiesList.add(new CapabilityEntry(domain,
                                                  TestInterface.class,
                                                  providerQos3,
-                                                 thirdEndpointAddresses,
-                                                 "thirdParticipantId"));
+                                                 "thirdParticipantId",
+                                                 thirdEndpointAddress));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         discoveryQos.setProviderMustSupportOnChange(true);
@@ -408,7 +386,7 @@ public class ArbitrationTest {
             Mockito.verify(arbitrationCallback, Mockito.times(1))
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
-                                                                          expectedEndpointAddresses)));
+                                                                          Lists.newArrayList(expectedEndpointAddress))));
         } catch (JoynrArbitrationException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");

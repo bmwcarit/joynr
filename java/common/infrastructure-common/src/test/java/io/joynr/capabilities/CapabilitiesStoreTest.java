@@ -86,14 +86,14 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
                                                                GpsAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId);
+                                                               participantId,
+                                                               endpointAddress);
 
         CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
                                                                NavigationAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId);
+                                                               participantId,
+                                                               endpointAddress);
         store.add(Lists.newArrayList(capabilityEntry1, capabilityEntry2));
         Assert.assertEquals(2, store.getAllCapabilities().size());
 
@@ -118,8 +118,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
                                                                GpsAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId + "1");
+                                                               participantId + "1",
+                                                               endpointAddress);
         store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
@@ -153,8 +153,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
                                                                NavigationAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId + "2");
+                                                               participantId + "2",
+                                                               endpointAddress);
         store.add(capabilityEntry2);
 
         // check if newly created Entry overrides old one
@@ -191,8 +191,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
                                                                GpsAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId);
+                                                               participantId,
+                                                               endpointAddress);
         store.add(capabilityEntry1);
         String key1 = store.getInterfaceAddressParticipantKeyForCapability(domain,
                                                                            GpsAsync.INTERFACE_NAME,
@@ -241,8 +241,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
                                                                GpsAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId + "1");
+                                                               participantId + "1",
+                                                               endpointAddress);
         store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
@@ -260,8 +260,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capEntryFake = new CapabilityEntry(domain,
                                                            NavigationAsync.class,
                                                            providerQos,
-                                                           endpointAddress,
-                                                           participantId);
+                                                           participantId,
+                                                           endpointAddress);
 
         store.add(capEntryFake);
 
@@ -316,8 +316,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
                                                                GpsAsync.class,
                                                                providerQos,
-                                                               endpointAddress,
-                                                               participantId);
+                                                               participantId,
+                                                               endpointAddress);
         store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
@@ -350,8 +350,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
                                                                GpsAsync.class,
                                                                providerQos,
-                                                               endpointAddress2,
-                                                               participantId);
+                                                               participantId,
+                                                               endpointAddress2);
         store.add(capabilityEntry2);
 
         // check if newly created Entry overrides old one

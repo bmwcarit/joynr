@@ -19,10 +19,11 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
@@ -35,6 +36,7 @@ import joynr.Request;
 import joynr.infrastructure.Permission;
 import joynr.infrastructure.TrustLevel;
 import joynr.types.ProviderQos;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,11 +44,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * Test the AccessController
@@ -106,8 +107,8 @@ public class AccessControllerTest {
         CapabilityEntry capabilityEntry = new CapabilityEntry(testDomain,
                                                               testInterface,
                                                               new ProviderQos(),
-                                                              new JoynrMessagingEndpointAddress("11111"),
-                                                              toParticipantId);
+                                                              toParticipantId,
+                                                              new JoynrMessagingEndpointAddress("11111"));
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(capabilityEntry);
     }
 

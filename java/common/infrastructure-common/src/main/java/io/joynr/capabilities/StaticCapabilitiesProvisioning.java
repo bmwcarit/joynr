@@ -61,8 +61,8 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                 capabilityEntries.add(new CapabilityEntry(capabilityInformation.getDomain(),
                                                           capabilityInformation.getInterfaceName(),
                                                           capabilityInformation.getProviderQos(),
-                                                          new JoynrMessagingEndpointAddress(capabilityInformation.getChannelId()),
-                                                          capabilityInformation.getParticipantId()));
+                                                          capabilityInformation.getParticipantId(),
+                                                          new JoynrMessagingEndpointAddress(capabilityInformation.getChannelId())));
             }
         } catch (Exception e) {
             logger.error("unable to load provisioned capabilities. "

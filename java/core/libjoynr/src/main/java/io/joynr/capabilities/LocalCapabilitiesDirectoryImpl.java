@@ -87,14 +87,14 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
                                                              GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                              new ProviderQos(),
-                                                             new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId),
-                                                             capabilitiesDirectoryParticipantId));
+                                                             capabilitiesDirectoryParticipantId,
+                                                             new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId)));
 
         this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
                                                              ChannelUrlDirectory.INTERFACE_NAME,
                                                              new ProviderQos(),
-                                                             new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId),
-                                                             channelUrlDirectoryParticipantId));
+                                                             channelUrlDirectoryParticipantId,
+                                                             new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId)));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
                                                                          this,

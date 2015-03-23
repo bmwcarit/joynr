@@ -25,6 +25,7 @@ import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
@@ -49,9 +50,6 @@ class EndpointList extends ArrayList<EndpointAddressBase> {
 }
 
 public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializable {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilityEntry.class);
@@ -69,39 +67,22 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
     public CapabilityEntry(String domain,
                            String interfaceName,
                            ProviderQos providerQos,
-                           EndpointAddressBase endpointAddress,
-                           String participantId) {
+                           String participantId,
+                           EndpointAddressBase... endpointAddresses) {
         this.interfaceName = interfaceName;
 
         this.providerQos = providerQos;
-        this.endpointAddresses.add(endpointAddress);
+        this.endpointAddresses.addAll(Arrays.asList(endpointAddresses));
         this.participantId = participantId;
         this.domain = domain;
-    }
-
-    public CapabilityEntry(String domain,
-                           String interfaceName,
-                           ProviderQos providerQos,
-                           List<EndpointAddressBase> endpointAddresses,
-                           String participantId) {
-        this.interfaceName = interfaceName;
-
-        this.providerQos = providerQos;
-        this.endpointAddresses.addAll(endpointAddresses);
-        this.participantId = participantId;
-        this.domain = domain;
-    }
-
-    public CapabilityEntry(String domain, String interfaceName, ProviderQos providerQos, String participantId) {
-        this(domain, interfaceName, providerQos, new EndpointList(), participantId);
     }
 
     public <T extends JoynrInterface> CapabilityEntry(String domain,
                                                       Class<T> providedInterface,
                                                       ProviderQos providerQos,
-                                                      List<EndpointAddressBase> endpointAddressList,
-                                                      String participantId) {
-        this(domain, "", providerQos, endpointAddressList, participantId);
+                                                      String participantId,
+                                                      EndpointAddressBase... endpointAddresses) {
+        this(domain, "", providerQos, participantId, endpointAddresses);
         String name = null;
         String reason = "shadow field INTERFACE_NAME in your interface";
         try {
@@ -117,28 +98,13 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         this.interfaceName = name;
     }
 
-    public <T extends JoynrInterface> CapabilityEntry(String domain,
-                                                      Class<T> providedInterface,
-                                                      ProviderQos providerQos,
-                                                      EndpointAddressBase endpointAddress,
-                                                      String participantId) {
-        this(domain, providedInterface, providerQos, new EndpointList(endpointAddress), participantId);
-    }
-
-    public <T extends JoynrInterface> CapabilityEntry(String domain,
-                                                      Class<T> providedInterface,
-                                                      ProviderQos providerQos,
-                                                      String participantId) {
-        this(domain, providedInterface, providerQos, new EndpointList(), participantId);
-
-    }
-
     public static CapabilityEntry fromCapabilityInformation(CapabilityInformation capInfo) {
         return new CapabilityEntry(capInfo.getDomain(),
                                    capInfo.getInterfaceName(),
                                    capInfo.getProviderQos(),
-                                   new JoynrMessagingEndpointAddress(capInfo.getChannelId()),
-                                   capInfo.getParticipantId()); // Assume the Capability entry is not local because it has been serialized
+                                   capInfo.getParticipantId(),
+                                   // Assume the Capability entry is not local because it has been serialized
+                                   new JoynrMessagingEndpointAddress(capInfo.getChannelId()));
     }
 
     @CheckForNull

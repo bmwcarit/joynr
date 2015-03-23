@@ -154,8 +154,8 @@ public class ProxyTest {
                 fakeCapabilitiesResult.add(new CapabilityEntry(domain,
                                                                TestInterface.class,
                                                                new ProviderQos(),
-                                                               new JoynrMessagingEndpointAddress("testChannelId"),
-                                                               "TestParticipantId"));
+                                                               "TestParticipantId",
+                                                               new JoynrMessagingEndpointAddress("testChannelId")));
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }

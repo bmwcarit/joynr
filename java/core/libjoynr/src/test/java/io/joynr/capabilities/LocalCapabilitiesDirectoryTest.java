@@ -71,9 +71,9 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
     @Spy
-    protected CapabilitiesStore localCapabilitiesStoreSpy = new CapabilitiesStoreImpl();
+    protected CapabilitiesStore localCapabilitiesStoreSpy = new CapabilitiesStoreImpl(new DefaultCapabilitiesProvisioning());
     @Spy
-    protected CapabilitiesStore globalCapabilitiesCacheSpy = new CapabilitiesStoreImpl();
+    protected CapabilitiesStore globalCapabilitiesCacheSpy = new CapabilitiesStoreImpl(new DefaultCapabilitiesProvisioning());
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private String channelId;
@@ -129,7 +129,7 @@ public class LocalCapabilitiesDirectoryTest {
         EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress(channelId);
         String participantId = "testParticipantId";
         String domain = "domain";
-        capabilityEntry = new CapabilityEntry(domain, TestInterface.class, providerQos, endpointAddress, participantId);
+        capabilityEntry = new CapabilityEntry(domain, TestInterface.class, providerQos, participantId, endpointAddress);
         capabilityInformation = new CapabilityInformation(domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
