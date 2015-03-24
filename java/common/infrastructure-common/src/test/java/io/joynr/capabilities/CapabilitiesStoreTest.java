@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.endpoints.EndpointAddressBase;
@@ -41,25 +43,37 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * Tests the interaction of the dispatcher and communication manager.
  */
 public class CapabilitiesStoreTest {
 
+    CapabilitiesStore store;
+
     @Before
     public void setUp() {
+        Injector injector = Guice.createInjector(new AbstractModule() {
 
+            @Override
+            protected void configure() {
+                bind(CapabilitiesStore.class).to(CapabilitiesStoreImpl.class);
+                bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
+
+            }
+        });
+        store = injector.getInstance(CapabilitiesStore.class);
     }
 
     @After
     public void tearDown() {
-
     }
 
     @Test
     public void testInvalidEntry() throws Exception {
-        CapabilitiesStore store = new CapabilitiesStoreImpl();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         CapabilityEntry capabilityEntry = new CapabilityEntry(null, GpsAsync.class, providerQos, "");
@@ -77,7 +91,6 @@ public class CapabilitiesStoreTest {
 
     @Test
     public void testMultipleCapEntryRegistrations() {
-        CapabilitiesStore store = new CapabilitiesStoreImpl();
         String domain = "testDomain";
         String participantId = "testparticipantId";
 
@@ -107,7 +120,6 @@ public class CapabilitiesStoreTest {
     }
 
     private void testCapabilitiesStoreEndPointAddressQueryInternal(CapabilityScope scope) {
-        CapabilitiesStore store = new CapabilitiesStoreImpl();
         HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 
@@ -180,7 +192,6 @@ public class CapabilitiesStoreTest {
 
     @Test
     public void testCapabilitiesStoreCleanRegisterAndUnregister() {
-        CapabilitiesStoreImpl store = new CapabilitiesStoreImpl();
         HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 
@@ -194,43 +205,26 @@ public class CapabilitiesStoreTest {
                                                                participantId,
                                                                endpointAddress);
         store.add(capabilityEntry1);
-        String key1 = store.getInterfaceAddressParticipantKeyForCapability(domain,
-                                                                           GpsAsync.INTERFACE_NAME,
-                                                                           participantId);
-        String key2 = store.getInterfaceAddressKeyForCapability(domain, GpsAsync.INTERFACE_NAME);
-        Assert.assertEquals(1, store.capabilityKeyToCapabilityMapping.size());
-        Assert.assertTrue(store.capabilityKeyToCapabilityMapping.containsKey(key1));
-        Assert.assertTrue(store.capabilityKeyToCapabilityMapping.containsValue(capabilityEntry1));
-        Assert.assertEquals(1, store.capabilityKeyToEndPointAddressMapping.size());
-        Assert.assertTrue(store.capabilityKeyToEndPointAddressMapping.containsKey(key1));
-        Assert.assertEquals(1, store.capabilityKeyToEndPointAddressMapping.get(key1).size());
-        Assert.assertTrue(store.capabilityKeyToEndPointAddressMapping.get(key1).contains(endpointAddress));
-        Assert.assertEquals(1, store.endPointAddressToCapabilityMapping.size());
-        Assert.assertTrue(store.endPointAddressToCapabilityMapping.containsKey(endpointAddress));
-        Assert.assertEquals(1, store.endPointAddressToCapabilityMapping.get(endpointAddress).size());
-        Assert.assertTrue(store.endPointAddressToCapabilityMapping.get(endpointAddress).contains(key1));
-        Assert.assertEquals(1, store.interfaceAddressToCapabilityMapping.size());
-        Assert.assertTrue(store.interfaceAddressToCapabilityMapping.containsKey(key2));
-        Assert.assertEquals(1, store.interfaceAddressToCapabilityMapping.get(key2).size());
-        Assert.assertTrue(store.interfaceAddressToCapabilityMapping.get(key2).contains(key1));
-        Assert.assertEquals(1, store.participantIdToCapabilityMapping.size());
-        Assert.assertTrue(store.participantIdToCapabilityMapping.containsKey(participantId));
-        Assert.assertNotNull(store.participantIdToCapabilityMapping.get(participantId));
-        Assert.assertEquals(key1, store.participantIdToCapabilityMapping.get(participantId));
-        Assert.assertTrue(store.registeredCapabilitiesTime.containsKey(key1));
-        Assert.assertEquals(1, store.registeredCapabilitiesTime.size());
+
+        // check that the entry was stored
+        CapabilityEntry foundEntryById = store.lookup(participantId, DiscoveryQos.NO_MAX_AGE);
+        assertEquals(capabilityEntry1, foundEntryById);
+
+        Collection<CapabilityEntry> foundEntryByDomainInterface = store.lookup(domain, "vehicle/gps");
+        assertEquals(1, foundEntryByDomainInterface.size());
+        assertEquals(capabilityEntry1, foundEntryByDomainInterface.iterator().next());
 
         store.remove(capabilityEntry1.getParticipantId());
-        Assert.assertTrue(store.capabilityKeyToCapabilityMapping.isEmpty());
-        Assert.assertTrue(store.capabilityKeyToEndPointAddressMapping.isEmpty());
-        Assert.assertTrue(store.endPointAddressToCapabilityMapping.isEmpty());
-        Assert.assertTrue(store.interfaceAddressToCapabilityMapping.isEmpty());
-        Assert.assertTrue(store.participantIdToCapabilityMapping.isEmpty());
-        Assert.assertTrue(store.registeredCapabilitiesTime.isEmpty());
+        // check that the entry has been removed.
+        CapabilityEntry notFoundEntryById = store.lookup(participantId, DiscoveryQos.NO_MAX_AGE);
+        assertNull(notFoundEntryById);
+
+        Collection<CapabilityEntry> notFoundEntryByDomainInterface = store.lookup(domain, "vehicle/gps");
+        assertEquals(0, notFoundEntryByDomainInterface.size());
+
     }
 
     private void testCapabilitiesStoreInterfaceAddressQueryInternal(ProviderScope scope) {
-        CapabilitiesStore store = new CapabilitiesStoreImpl();
         HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 
@@ -299,13 +293,16 @@ public class CapabilitiesStoreTest {
     }
 
     @Test
-    public void testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntry() {
+    public void testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntryScopeLocal() {
         testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntryInternal(ProviderScope.LOCAL);
+    }
+
+    @Test
+    public void testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntryScopeGlobal() {
         testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntryInternal(ProviderScope.GLOBAL);
     }
 
     private void testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntryInternal(ProviderScope scope) {
-        CapabilitiesStore store = new CapabilitiesStoreImpl();
         HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 

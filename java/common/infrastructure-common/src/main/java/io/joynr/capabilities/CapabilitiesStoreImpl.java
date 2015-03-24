@@ -62,10 +62,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     // Fixes FindBug warning: DL: Synchronization on Boolean
     private Object capsLock = new Object();
 
-    public CapabilitiesStoreImpl() {
-        logger.debug("creating empty capabiltities store {}", this);
-    }
-
     @Inject
     public CapabilitiesStoreImpl(CapabilitiesProvisioning staticProvisioning) {
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
@@ -427,8 +423,9 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
                                                                            public CapabilityEntry apply(String input) {
                                                                                // prevent warning about potential use of null as
                                                                                // param to capabilityKeyToCapabilityMapping.get(input)
-                                                                               if (input == null)
+                                                                               if (input == null) {
                                                                                    return null;
+                                                                               }
                                                                                return capabilityKeyToCapabilityMapping.get(input);
                                                                            }
                                                                        }));
@@ -442,7 +439,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         // TODO implement ProviderQosRequirements and adjust this section
         /*
          * if (providerQos.getPriority() != requestedQos ... priority)
-         * 
+         *
          * for (Map.Entry<String, String> qosEntry :
          * capInfo.getProviderQos().getQos()) { String requestedValue =
          * requestedQos.get(qosEntry.getKey()); if
