@@ -862,6 +862,39 @@ public class ProviderProxyEnd2EndTest {
             // TODO Auto-generated method stub
 
         }
+
+        // TODO: remove end
+
+        // TODO: remove begin; once the abstract provider is adapted to the async interface
+        @Override
+        public void fireLocation(GpsLocation location) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void fireLocationUpdate(GpsLocation location) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void fireLocationUpdateWithSpeed(GpsLocation location, Double currentSpeed) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void fireLocationUpdateSelective(GpsLocation location) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void fireLocationUpdateWithSpeedSelective(GpsLocation location, Double currentSpeed) {
+            // TODO Auto-generated method stub
+
+        }
         // TODO: remove end
     }
 

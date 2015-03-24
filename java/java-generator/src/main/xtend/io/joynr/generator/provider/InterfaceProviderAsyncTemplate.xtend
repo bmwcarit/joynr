@@ -101,8 +101,8 @@ import io.joynr.provider.DeferredVoid;
 
 import io.joynr.provider.JoynrProviderAsync;
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false)»
-	import «datatype»;
+«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+import «datatype»;
 «ENDFOR»
 public interface «className» extends «interfaceName», JoynrProviderAsync, JoynrAsyncInterface {
 	// TODO: remove begin
@@ -123,7 +123,7 @@ public interface «className» extends «interfaceName», JoynrProviderAsync, Jo
 				@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName»);
 		«ENDIF»
 	«ENDFOR»
-	«FOR method: getMethods(serviceInterface)»
+	«FOR method : getMethods(serviceInterface)»
 		«var methodName = method.joynrName»
 		«var params = getTypedParameterListJavaRpc(method)»
 
@@ -145,19 +145,24 @@ public interface «className» extends «interfaceName», JoynrProviderAsync, Jo
 
 		public class «methodToDeferredName.get(method)» extends AbstractDeferred {
 			«IF method.outputParameters.empty»
-			public synchronized boolean resolve() {
-				values = new Object[] {};
-				return super.resolve();
-			}
+				public synchronized boolean resolve() {
+					values = new Object[] {};
+					return super.resolve();
+				}
 			«ELSE»
 				«var outParameterName = method.outputParameters.iterator.next.name»
 				«var outParameterType = getObjectDataTypeForPlainType(method.outputParameters.iterator.next.mappedDatatypeOrList.objectDataTypeForPlainType)»
-			public synchronized boolean resolve(«outParameterType» «outParameterName») {
-				values = new Object[] { «outParameterName» };
-				return super.resolve();
-			}
+				public synchronized boolean resolve(«outParameterType» «outParameterName») {
+					values = new Object[] { «outParameterName» };
+					return super.resolve();
+				}
 			«ENDIF»
 		}
+	«ENDFOR»
+	«FOR broadcast : serviceInterface.broadcasts»
+		«val broadcastName = broadcast.joynrName»
+
+		public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
 	«ENDFOR»
 }
 		'''
