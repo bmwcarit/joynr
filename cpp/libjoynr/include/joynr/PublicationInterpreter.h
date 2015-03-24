@@ -25,6 +25,7 @@
 #include "joynr/BroadcastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
+#include <functional>
 
 #include <cassert>
 
