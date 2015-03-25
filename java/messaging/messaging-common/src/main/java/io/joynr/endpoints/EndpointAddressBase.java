@@ -1,5 +1,7 @@
 package io.joynr.endpoints;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * %%
@@ -19,6 +21,16 @@ package io.joynr.endpoints;
  * #L%
  */
 
-public interface EndpointAddressBase {
+public class EndpointAddressBase implements Serializable {
+    private static final long serialVersionUID = 1L;
 
+    private int id;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

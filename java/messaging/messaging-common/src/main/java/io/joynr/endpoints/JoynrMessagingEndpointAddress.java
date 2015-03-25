@@ -19,17 +19,11 @@ package io.joynr.endpoints;
  * #L%
  */
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class JoynrMessagingEndpointAddress implements EndpointAddressBase, Serializable {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 2258977417169018529L;
+public class JoynrMessagingEndpointAddress extends EndpointAddressBase {
+    private static final long serialVersionUID = 1L;
     private String channelId;
 
     @JsonCreator
