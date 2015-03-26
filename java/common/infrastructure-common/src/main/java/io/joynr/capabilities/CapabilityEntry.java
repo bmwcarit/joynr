@@ -160,6 +160,26 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         this.dateWhenRegistered = dateWhenRegistered;
     }
 
+    protected final void setProviderQos(ProviderQos providerQos) {
+        this.providerQos = providerQos;
+    }
+
+    protected final void setEndpointAddresses(EndpointList endpointAddresses) {
+        this.endpointAddresses = endpointAddresses;
+    }
+
+    protected final void setParticipantId(String participantId) {
+        this.participantId = participantId;
+    }
+
+    protected final void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    protected final void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
