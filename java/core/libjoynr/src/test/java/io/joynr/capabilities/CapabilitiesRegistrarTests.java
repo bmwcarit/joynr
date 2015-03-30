@@ -96,7 +96,8 @@ public class CapabilitiesRegistrarTests {
         verify(localCapabilitiesDirectory).add(eq(new CapabilityEntry(domain,
                                                                       TestInterface.class,
                                                                       providerQos,
-                                                                      participantId)));
+                                                                      participantId,
+                                                                      System.currentTimeMillis())));
         verify(requestCallerFactory).create(provider, ProvidedInterface.class);
 
         verify(dispatcher).addRequestCaller(participantId, requestCaller);
@@ -111,7 +112,8 @@ public class CapabilitiesRegistrarTests {
         verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntry(domain,
                                                                          TestInterface.class,
                                                                          providerQos,
-                                                                         participantId)));
+                                                                         participantId,
+                                                                         System.currentTimeMillis())));
         verify(dispatcher).removeRequestCaller(eq(participantId));
     }
 

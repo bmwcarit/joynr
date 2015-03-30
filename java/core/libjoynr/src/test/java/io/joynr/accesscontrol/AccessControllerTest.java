@@ -108,6 +108,7 @@ public class AccessControllerTest {
                                                               testInterface,
                                                               new ProviderQos(),
                                                               toParticipantId,
+                                                              System.currentTimeMillis(),
                                                               new JoynrMessagingEndpointAddress("11111"));
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(capabilityEntry);
     }

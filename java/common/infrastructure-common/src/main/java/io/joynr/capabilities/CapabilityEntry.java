@@ -60,6 +60,8 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
     protected String domain;
     protected String interfaceName;
 
+    protected long dateWhenRegistered;
+
     public CapabilityEntry() {
 
     }
@@ -68,6 +70,7 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
                            String interfaceName,
                            ProviderQos providerQos,
                            String participantId,
+                           long dateWhenRegistered,
                            EndpointAddressBase... endpointAddresses) {
         this.interfaceName = interfaceName;
 
@@ -75,14 +78,16 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         this.endpointAddresses.addAll(Arrays.asList(endpointAddresses));
         this.participantId = participantId;
         this.domain = domain;
+        this.dateWhenRegistered = dateWhenRegistered;
     }
 
     public <T extends JoynrInterface> CapabilityEntry(String domain,
                                                       Class<T> providedInterface,
                                                       ProviderQos providerQos,
                                                       String participantId,
+                                                      long dateWhenRegistered,
                                                       EndpointAddressBase... endpointAddresses) {
-        this(domain, "", providerQos, participantId, endpointAddresses);
+        this(domain, "", providerQos, participantId, System.currentTimeMillis(), endpointAddresses);
         String name = null;
         String reason = "shadow field INTERFACE_NAME in your interface";
         try {
@@ -103,6 +108,7 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
                                    capInfo.getInterfaceName(),
                                    capInfo.getProviderQos(),
                                    capInfo.getParticipantId(),
+                                   System.currentTimeMillis(),
                                    // Assume the Capability entry is not local because it has been serialized
                                    new JoynrMessagingEndpointAddress(capInfo.getChannelId()));
     }
@@ -146,35 +152,44 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         return interfaceName;
     }
 
+    public long getDateWhenRegistered() {
+        return dateWhenRegistered;
+    }
+
+    public void setDateWhenRegistered(long dateWhenRegistered) {
+        this.dateWhenRegistered = dateWhenRegistered;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CapabilityEntry [providerQos=")
+               .append(providerQos)
+               .append(", endpointAddresses=")
+               .append(endpointAddresses)
+               .append(", participantId=")
+               .append(participantId)
+               .append(", domain=")
+               .append(domain)
+               .append(", interfaceName=")
+               .append(interfaceName)
+               .append(", dateWhenRegistered=")
+               .append(getDateWhenRegistered())
+               .append("]");
+        return builder.toString();
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + (int) (getDateWhenRegistered() ^ (getDateWhenRegistered() >>> 32));
         result = prime * result + ((domain == null) ? 0 : domain.hashCode());
         result = prime * result + ((endpointAddresses == null) ? 0 : endpointAddresses.hashCode());
         result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         result = prime * result + ((providerQos == null) ? 0 : providerQos.hashCode());
         return result;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("domain: ");
-        stringBuilder.append(domain);
-        stringBuilder.append("\r\n");
-        stringBuilder.append("interface: ");
-        stringBuilder.append(interfaceName);
-        stringBuilder.append("\r\n");
-        stringBuilder.append("participant: ");
-        stringBuilder.append(participantId);
-        stringBuilder.append("\r\n");
-        stringBuilder.append("endpoint: ");
-        stringBuilder.append(endpointAddresses);
-        stringBuilder.append("\r\n");
-        return stringBuilder.toString();
-
     }
 
     @Override
@@ -189,6 +204,9 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
             return false;
         }
         CapabilityEntry other = (CapabilityEntry) obj;
+        if (getDateWhenRegistered() != other.getDateWhenRegistered()) {
+            return false;
+        }
         if (domain == null) {
             if (other.domain != null) {
                 return false;
@@ -196,14 +214,13 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         } else if (!domain.equals(other.domain)) {
             return false;
         }
-        // TODO removed to enable CapabilitiesStore.removeCapability
-        // if (endpointAddresses == null) {
-        // if (other.endpointAddresses != null) {
-        // return false;
-        // }
-        // } else if (!endpointAddresses.equals(other.endpointAddresses)) {
-        // return false;
-        // }
+        if (endpointAddresses == null) {
+            if (other.endpointAddresses != null) {
+                return false;
+            }
+        } else if (!endpointAddresses.equals(other.endpointAddresses)) {
+            return false;
+        }
         if (interfaceName == null) {
             if (other.interfaceName != null) {
                 return false;

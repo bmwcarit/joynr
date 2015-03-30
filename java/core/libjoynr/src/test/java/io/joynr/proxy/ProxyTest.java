@@ -155,6 +155,7 @@ public class ProxyTest {
                                                                TestInterface.class,
                                                                new ProviderQos(),
                                                                "TestParticipantId",
+                                                               System.currentTimeMillis(),
                                                                new JoynrMessagingEndpointAddress("testChannelId")));
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;

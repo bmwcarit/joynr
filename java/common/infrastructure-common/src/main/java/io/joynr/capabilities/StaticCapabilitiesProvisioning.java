@@ -62,6 +62,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                                           capabilityInformation.getInterfaceName(),
                                                           capabilityInformation.getProviderQos(),
                                                           capabilityInformation.getParticipantId(),
+                                                          System.currentTimeMillis(),
                                                           new JoynrMessagingEndpointAddress(capabilityInformation.getChannelId())));
             }
         } catch (Exception e) {

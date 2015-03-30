@@ -53,7 +53,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.capabilities.CapabilitiesRegistrar# registerCapability(java.lang.String,
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
@@ -68,7 +68,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
                                                               provider.getProviderQos(),
-                                                              participantId);
+                                                              participantId,
+                                                              System.currentTimeMillis());
         RequestCaller requestCaller = requestCallerFactory.create(provider, providedInterface);
 
         dispatcher.addRequestCaller(participantId, requestCaller);
@@ -88,7 +89,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
                                                               provider.getProviderQos(),
-                                                              participantId);
+                                                              participantId,
+                                                              System.currentTimeMillis());
         localCapabilitiesDirectory.remove(capabilityEntry);
         dispatcher.removeRequestCaller(participantId);
         publicationManager.stopPublicationByProviderId(participantId);
