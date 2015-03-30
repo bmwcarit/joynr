@@ -54,6 +54,10 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilityEntry.class);
 
+    protected enum Origin {
+        LOCAL, REMOTE
+    };
+
     protected ProviderQos providerQos;
     protected EndpointList endpointAddresses = new EndpointList();
     protected String participantId;
@@ -61,9 +65,10 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
     protected String interfaceName;
 
     protected long dateWhenRegistered;
+    protected Origin origin;
 
     public CapabilityEntry() {
-
+        origin = Origin.LOCAL;
     }
 
     public CapabilityEntry(String domain,
@@ -79,6 +84,7 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         this.participantId = participantId;
         this.domain = domain;
         this.dateWhenRegistered = dateWhenRegistered;
+        origin = Origin.LOCAL;
     }
 
     public <T extends JoynrInterface> CapabilityEntry(String domain,
@@ -156,8 +162,16 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         return dateWhenRegistered;
     }
 
+    protected Origin getOrigin() {
+        return origin;
+    }
+
     public void setDateWhenRegistered(long dateWhenRegistered) {
         this.dateWhenRegistered = dateWhenRegistered;
+    }
+
+    protected void setOrigin(Origin origin) {
+        this.origin = origin;
     }
 
     protected final void setProviderQos(ProviderQos providerQos) {

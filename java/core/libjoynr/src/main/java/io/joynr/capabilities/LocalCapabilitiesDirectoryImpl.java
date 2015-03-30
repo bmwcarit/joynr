@@ -77,7 +77,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
                                           MessagingEndpointDirectory messagingEndpointDirectory,
                                           CapabilitiesStore localCapabilitiesStore,
-                                          CapabilitiesStore globalCapabilitiesCache,
+                                          CapabilitiesCache globalCapabilitiesCache,
                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         // CHECKSTYLE:ON
         this.localChannelId = localChannelId;

@@ -72,7 +72,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     protected CapabilitiesStore localCapabilitiesStoreMock;
     @Mock
-    protected CapabilitiesStore globalCapabilitiesCacheMock;
+    protected CapabilitiesCache globalCapabilitiesCacheMock;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private String channelId;
