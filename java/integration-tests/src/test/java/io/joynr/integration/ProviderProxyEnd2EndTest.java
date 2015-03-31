@@ -213,12 +213,15 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public Integer methodWithEnumParameter(TestEnum input) {
-            if (TestEnum.ONE.equals(input))
+            if (TestEnum.ONE.equals(input)) {
                 return 1;
-            if (TestEnum.TWO.equals(input))
+            }
+            if (TestEnum.TWO.equals(input)) {
                 return 2;
-            if (TestEnum.ZERO.equals(input))
+            }
+            if (TestEnum.ZERO.equals(input)) {
                 return 0;
+            }
 
             return 42;
         }
