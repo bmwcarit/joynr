@@ -104,7 +104,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     }
 
     /**
-     * Adds capability to local and global directories,
+     * Adds local capability to local and (depending on SCOPE) the global directory
      *
      * @return
      */
@@ -338,9 +338,6 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         }
     }
 
-    /**
-     * mixes in the localCapabilities to global capabilities found by domain/interface
-     */
     private void asyncGetGlobalCapabilitity(final String participantId,
                                             long discoveryTimeout,
                                             final CapabilityCallback capabilitiesCallback) {
@@ -351,7 +348,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             public void onSuccess(CapabilityInformation capInfo) {
                 CapabilityEntry capEntry = CapabilityEntry.fromCapabilityInformation(capInfo);
                 registerIncomingEndpoints(Lists.newArrayList(capEntry));
-                localCapabilitiesStore.add(capEntry);
+                globalCapabilitiesCache.add(capEntry);
 
                 capabilitiesCallback.processCapabilityReceived(capEntry);
             }
