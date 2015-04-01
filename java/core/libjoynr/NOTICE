@@ -51,7 +51,6 @@ This project has dependencies to:
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
-  jersey-core under CDDL 1.1 or GPL2 w/ CPE
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
