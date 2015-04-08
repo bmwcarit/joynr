@@ -18,7 +18,7 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.RegistrationFuture;
@@ -28,11 +28,12 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.subtypes.JoynrType;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
@@ -47,8 +48,10 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public class JoynrRuntimeImpl implements JoynrRuntime {
+
     private static final Logger logger = LoggerFactory.getLogger(JoynrRuntimeImpl.class);
 
     @Inject
@@ -65,6 +68,10 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     public ObjectMapper objectMapper;
     @Inject
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+
+    @Inject
+    @Named(JOYNR_SCHEDULER_CLEANUP)
+    ScheduledExecutorService cleanupScheduler;
 
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper) {
@@ -134,5 +141,12 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         } catch (Exception e) {
             logger.error("error shutting down message sender: {}", e.getMessage());
         }
+
+        try {
+            cleanupScheduler.shutdownNow();
+        } catch (Exception e) {
+            logger.error("error shutting down queue cleanup scheduler: {}", e.getMessage());
+        }
+
     }
 }
