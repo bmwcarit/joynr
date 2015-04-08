@@ -164,8 +164,11 @@ public class HttpMessageSender {
                 break;
             }
         } catch (Exception e) {
+            // An exception occured - this could still be a communication error (e.g Connection refused)
             logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
                     e.getMessage() });
+            failureAction.execute(new JoynrCommunicationException("Exception while communicating error: "
+                    + e.getMessage()));
         } finally {
             if (response != null) {
                 try {
