@@ -25,7 +25,7 @@ Content of this html file is included into ng-view in index.html by angular-js
             <div class="panel-heading">
                 <h3 class="panel-title">Master ACL</h3>
                 <div class="pull-right">
-                    <button class="btn btn-default btn-xs btn-add" data-title="Add" data-toggle="modal" data-target="#edit" data-entry="{{entry}}" data-index="{{index}}" data-mode="add"><span class="glyphicon glyphicon-plus-sign"></span> Add</button>
+                    <button class="btn btn-default btn-xs btn-add" data-title="Add" data-toggle="modal" data-target="#edit-modal" data-entry="{{entry}}" data-index="{{index}}" data-mode="add"><span class="glyphicon glyphicon-plus-sign"></span> Add</button>
                     <button class="btn btn-default btn-xs btn-filter"><span class="glyphicon glyphicon-filter"></span> Filter</button>
                 </div>
             </div>
@@ -99,35 +99,35 @@ Content of this html file is included into ng-view in index.html by angular-js
                 <form name="editForm" class="css-form" novalidate>
                     <div class="form-group" ng-class="{ 'has-error': editForm.editUid.$invalid }">
                         <div>UID: </div>
-                        <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-uid" name="editUid" class="form-control " type="text" placeholder="UID" ng-model="editableEntry.uid" ng-pattern="/^[\w]+$/">
+                        <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-uid" name="editUid" class="form-control " type="text" placeholder="UID" ng-model="editableEntry.uid" ng-pattern="/^[\w\*]+$/">
                         <span ng-show="editForm.editUid.$invalid">
                             <span class="glyphicon glyphicon-warning-sign"></span>
-                            Invalid value! Please enter a UID[a-zA-Z_0-9].
+                            Invalid value! Please enter a UID[a-zA-Z_0-9*].
                         </span>
                     </div>
                     <div class="form-group"  ng-class="{ 'has-error': editForm.editDomain.$invalid }">
                         <div>Domain: </div>
-                        <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-domain" name="editDomain" class="form-control " type="text" placeholder="Domain" ng-model="editableEntry.domain" ng-pattern="/^[\w]+$/">
+                        <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-domain" name="editDomain" class="form-control " type="text" placeholder="Domain" ng-model="editableEntry.domain" ng-pattern="/^[\w\.]+$/">
                         <span ng-show="editForm.editDomain.$invalid">
                             <span class="glyphicon glyphicon-warning-sign"></span>
-                            Invalid value! Please enter a domain[a-zA-Z_0-9].
+                            Invalid value! Please enter a domain[a-zA-Z_0-9.].
                         </span>
                     </div>
                     <div class="form-group"  ng-class="{ 'has-error': editForm.editInterfaceName.$invalid }">
                         <div>Interface Name: </div>
-                        <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-interface-name" name="editInterfaceName" class="form-control " type="text" placeholder="Interface Name" ng-model="editableEntry.interfaceName" ng-pattern="/^[\w]+$/">
+                        <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-interface-name" name="editInterfaceName" class="form-control " type="text" placeholder="Interface Name" ng-model="editableEntry.interfaceName" ng-pattern="/^[\w\/]+$/">
                         <span ng-show="editForm.editInterfaceName.$invalid">
                             <span class="glyphicon glyphicon-warning-sign"></span>
-                            Invalid value! Please enter a interface name[a-zA-Z_0-9].
+                            Invalid value! Please enter a interface name[a-zA-Z_0-9/].
                         </span>
                     </div>
                     <div class="form-group" ng-class="{ 'has-error': editForm.editOperation.$invalid }">
                         <div>Operation: </div>
                         <input data-ng-required="true" ng-disabled="mode === 'edit'" id="edit-operation" name="editOperation" class="form-control " type="text" placeholder="Operation"
-                               ng-model="editableEntry.operation" ng-pattern="/^[\w]+$/">
+                               ng-model="editableEntry.operation" ng-pattern="/^[\w\*]+$/">
                         <span ng-show="editForm.editOperation.$invalid">
                             <span class="glyphicon glyphicon-warning-sign"></span>
-                            Invalid value! Please enter a operation[a-zA-Z_0-9].
+                            Invalid value! Please enter a operation[a-zA-Z_0-9*].
                         </span>
                     </div>
                     <div class="form-group">
