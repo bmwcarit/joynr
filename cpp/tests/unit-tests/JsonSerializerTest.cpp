@@ -49,6 +49,8 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 
+#include "joynr/infrastructure/MasterAccessControlEntry.h"
+
 using namespace joynr;
 using namespace joynr_logging;
 
@@ -330,6 +332,85 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
     tests::TestEnum::Enum value = Util::convertVariantToEnum<tests::TestEnum>(enumParam);
     EXPECT_EQ(1, value);
     delete(request);
+}
+
+TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
+
+    using namespace infrastructure;
+
+    qRegisterMetaType<joynr::infrastructure::Permission>();
+    qRegisterMetaType<joynr::infrastructure::Permission::Enum>("joynr::infrastructure::Permission");
+    qRegisterMetaType<joynr::infrastructure::TrustLevel>();
+    qRegisterMetaType<joynr::infrastructure::TrustLevel::Enum>("joynr::infrastructure::TrustLevel");
+    qRegisterMetaType<joynr::infrastructure::MasterAccessControlEntry>("joynr::infrastructure::MasterAccessControlEntry");
+
+    // Deserialize a type containing multiple enum lists
+    QByteArray serializedContent("{\"_typeName\":\"joynr.infrastructure.MasterAccessControlEntry\","
+                                 "\"defaultConsumerPermission\":\"NO\","
+                                 "\"defaultRequiredControlEntryChangeTrustLevel\":\"LOW\","
+                                 "\"defaultRequiredTrustLevel\":\"LOW\","
+                                 "\"domain\":\"unittest\","
+                                 "\"interfaceName\":\"vehicle/radio\","
+                                 "\"operation\":\"*\","
+                                 "\"possibleConsumerPermissions\":[\"YES\",\"NO\"],"
+                                 "\"possibleRequiredControlEntryChangeTrustLevels\":[\"HIGH\",\"MID\",\"LOW\"],"
+                                 "\"possibleRequiredTrustLevels\":[\"HIGH\",\"MID\",\"LOW\"],"
+                                 "\"uid\":\"*\"}");
+
+    infrastructure::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::MasterAccessControlEntry>(serializedContent);
+
+    // Check scalar enums
+    EXPECT_EQ(Permission::NO, mac->getDefaultConsumerPermission());
+    EXPECT_EQ(TrustLevel::LOW, mac->getDefaultRequiredTrustLevel());
+
+    // Check enum lists
+    QList<Permission::Enum> possibleRequiredPermissions;
+    possibleRequiredPermissions << Permission::YES << Permission::NO;
+    EXPECT_EQ(possibleRequiredPermissions, mac->getPossibleConsumerPermissions());
+
+    QList<TrustLevel::Enum> possibleRequiredTrustLevels;
+    possibleRequiredTrustLevels << TrustLevel::HIGH << TrustLevel::MID << TrustLevel::LOW;
+    EXPECT_EQ(possibleRequiredTrustLevels, mac->getPossibleRequiredTrustLevels());
+
+    delete(mac);
+}
+
+TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
+
+    using namespace infrastructure;
+
+    qRegisterMetaType<joynr::infrastructure::Permission>();
+    qRegisterMetaType<joynr::infrastructure::Permission::Enum>("joynr::infrastructure::Permission");
+    qRegisterMetaType<joynr::infrastructure::TrustLevel>();
+    qRegisterMetaType<joynr::infrastructure::TrustLevel::Enum>("joynr::infrastructure::TrustLevel");
+    qRegisterMetaType<joynr::infrastructure::MasterAccessControlEntry>("joynr::infrastructure::MasterAccessControlEntry");
+
+    QList<TrustLevel::Enum> possibleTrustLevels;
+    possibleTrustLevels << TrustLevel::LOW << TrustLevel::MID << TrustLevel::HIGH;
+    QList<Permission::Enum> possiblePermissions;
+    possiblePermissions << Permission::NO << Permission::ASK << Permission::YES;
+
+    infrastructure::MasterAccessControlEntry expectedMac(QStringLiteral("*"),
+                                                         QStringLiteral("unittest"),
+                                                         QStringLiteral("vehicle/radio"),
+                                                         TrustLevel::LOW,
+                                                         possibleTrustLevels,
+                                                         TrustLevel::HIGH,
+                                                         possibleTrustLevels,
+                                                         QStringLiteral("*"),
+                                                         Permission::YES,
+                                                         possiblePermissions);
+
+    // Serialize
+    QByteArray serializedContent = JsonSerializer::serialize(expectedMac);
+
+    // Deserialize the result
+    infrastructure::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::MasterAccessControlEntry>(serializedContent);
+
+    // Check that the object serialized/deserialized correctly
+    EXPECT_EQ(expectedMac, *mac);
+
+    delete(mac);
 }
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {

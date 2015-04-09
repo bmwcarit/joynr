@@ -62,6 +62,18 @@ public:
         return QLatin1String(metaEnum.valueToKey(value));
     }
 
+    /**
+      * Converts an enum value to a QVariant for use by the serializer
+      * \param T, the qt class that surrounds the enum
+      * \param value, the enum value to convert
+      */
+    template <class T>
+    static QVariant convertEnumToVariant(typename T::Enum value)
+    {
+        QMetaEnum metaEnum = T::staticMetaObject.enumerator(0);
+        return QVariant(metaEnum.valueToKey(value));
+    }
+
     static QString attributeGetterFromName(const QString& attributeName);
 
     template <class T>
@@ -72,14 +84,25 @@ public:
     }
 
     template <class T>
-    static QList<typename T::Enum> convertVariantListToEnumList(const QVariantList& variantList)
+    static QList<QVariant> convertEnumListToVariantList(const QList<typename T::Enum>& enumList)
     {
-        QList<typename T::Enum> ret;
-        ret.reserve(variantList.length());
-        foreach (const QVariant& v, variantList) {
-            ret.append(convertVariantToEnum<T>(v));
+        QList<QVariant> variantList;
+        variantList.reserve(enumList.length());
+        foreach (const typename T::Enum e, enumList) {
+            variantList.append(convertEnumToVariant<T>(e));
         }
-        return ret;
+        return variantList;
+    }
+
+    template <class T>
+    static QList<typename T::Enum> convertVariantListToEnumList(const QList<QVariant>& variantList)
+    {
+        QList<typename T::Enum> enumList;
+        enumList.reserve(variantList.length());
+        foreach (const QVariant& v, variantList) {
+            enumList.append(convertVariantToEnum<T>(v));
+        }
+        return enumList;
     }
 
     template <class T>

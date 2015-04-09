@@ -39,6 +39,7 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 		#include "«getPackagePathWithJoynrPrefix(type, "/")»/«typeName».h"
 		#include "joynr/Reply.h"
 		#include "joynr/DeclareMetatypeUtil.h"
+		#include "joynr/Util.h"
 		#include "qjson/serializer.h"
 		#include <QMetaEnum>
 		#include <QDateTime>
@@ -121,34 +122,35 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 			«val joynrName = member.joynrName»
 			«IF isArray(member)»
 				QList<QVariant> «typeName»::get«joynrName.toFirstUpper»Internal() const {
-					QList<QVariant> returnList;
-					returnList.reserve( this->m_«joynrName».size() );
-					«getMappedDatatypeOrList(member)»::const_iterator iter = this->m_«joynrName».begin();
-					while(iter!=this->m_«joynrName».end()) {
-						QVariant value;
-						«IF isEnum(member.type)»
-							value.setValue((int)*iter);
-						«ELSE»
+					«IF isEnum(member.type)»
+						return Util::convertEnumListToVariantList<«getEnumContainer(member.type)»>(m_«joynrName»);
+					«ELSE»
+						QList<QVariant> returnList;
+						returnList.reserve( this->m_«joynrName».size() );
+						«getMappedDatatypeOrList(member)»::const_iterator iter = this->m_«joynrName».begin();
+						while(iter!=this->m_«joynrName».end()) {
+							QVariant value;
 							value.setValue(*iter);
-						«ENDIF»
-						returnList.push_back(value);
-						iter++;
-					}
-					return returnList;
+							returnList.push_back(value);
+							iter++;
+						}
+						return returnList;
+					«ENDIF»
 				}
 
 				void «typeName»::set«joynrName.toFirstUpper»Internal(const QList<QVariant>& obj«joynrName.toFirstUpper») {
-					this->m_«joynrName».clear();
-					this->m_«joynrName».reserve( obj«joynrName.toFirstUpper».size() );
-					QList<QVariant>::const_iterator iter = obj«joynrName.toFirstUpper».begin();
-					while(iter!=obj«joynrName.toFirstUpper».end()){
-						«IF isEnum(member.type)»
-							this->m_«joynrName».push_back((«getMappedDatatype(member)»)(*iter).value<int>());
-						«ELSE»
+					«IF isEnum(member.type)»
+						m_«joynrName» =
+							Util::convertVariantListToEnumList<«getEnumContainer(member.type)»>(obj«joynrName.toFirstUpper»);
+					«ELSE»
+						this->m_«joynrName».clear();
+						this->m_«joynrName».reserve( obj«joynrName.toFirstUpper».size() );
+						QList<QVariant>::const_iterator iter = obj«joynrName.toFirstUpper».begin();
+						while(iter!=obj«joynrName.toFirstUpper».end()){
 							this->m_«joynrName».push_back((*iter).value<«getMappedDatatype(member)»>());
-						«ENDIF»
-						iter++;
-					}
+							iter++;
+						}
+					«ENDIF»
 				}
 
 			«ELSEIF isByteBuffer(member.type)»

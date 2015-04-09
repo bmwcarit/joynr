@@ -114,7 +114,7 @@ public:
         QString typeName = jsonQVarValue.value("_typeName").value<QString>();
         int classId = QJson::QObjectHelper::getClassIdForTransmittedType(typeName);
         if (!QMetaType::isRegistered(classId)) {
-            LOG_ERROR(logger, QString("unknow type name: %1").arg(typeName));
+            LOG_ERROR(logger, QString("unknown type name: %1").arg(typeName));
             return Q_NULLPTR;
         }
         QObject* object = (QObject*)QMetaType::create(classId);

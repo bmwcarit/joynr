@@ -82,14 +82,14 @@ TEST(DatatypeTemplateTest, enterAndRetrieveEnumList) {
 
 TEST(DatatypeTemplateTest, enterAndRetrieveEnumListviaInternalSetter) {
 
-    QList<QVariant> inputIntList = QList<QVariant>();
-    inputIntList.append(QVariant::fromValue(0)); // a == 0
-    inputIntList.append(QVariant::fromValue(1)); // e == 1
-    inputIntList.append(QVariant::fromValue(1)); // e == 1
-    inputIntList.append(QVariant::fromValue(4)); // u == 4
-    types::Word myIntWord = types::Word();
-    myIntWord.setVowelsInternal(inputIntList);
-    EXPECT_EQ( myIntWord.getVowels().value(1), types::Vowel::E); // e == 1
+    QList<QVariant> inputSerializedList = QList<QVariant>();
+    inputSerializedList.append(QVariant::fromValue(QStringLiteral("A")));
+    inputSerializedList.append(QVariant::fromValue(QStringLiteral("E")));
+    inputSerializedList.append(QVariant::fromValue(QStringLiteral("E")));
+    inputSerializedList.append(QVariant::fromValue(QStringLiteral("U")));
+    types::Word myWord = types::Word();
+    myWord.setVowelsInternal(inputSerializedList);
+    EXPECT_EQ( myWord.getVowels().value(1), types::Vowel::E);
 
     QList<types::Vowel::Enum> inputList = QList<types::Vowel::Enum>();
     inputList.append(types::Vowel::A);
@@ -98,5 +98,5 @@ TEST(DatatypeTemplateTest, enterAndRetrieveEnumListviaInternalSetter) {
     inputList.append(types::Vowel::U);
     types::Word myVowelWord =types::Word(inputList);
 
-    EXPECT_EQ( myVowelWord, myIntWord);
+    EXPECT_EQ( myVowelWord, myWord);
 }
