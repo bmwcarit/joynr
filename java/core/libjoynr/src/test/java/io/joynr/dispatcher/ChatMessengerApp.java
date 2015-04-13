@@ -23,6 +23,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -109,6 +110,18 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
 
         @Override
         public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void addBroadcastFilter(BroadcastFilterImpl filter) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void addBroadcastFilter(BroadcastFilterImpl... filters) {
             // TODO Auto-generated method stub
 
         }

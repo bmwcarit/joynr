@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.Collection;
@@ -105,6 +106,18 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
 
     @Override
     public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void addBroadcastFilter(BroadcastFilterImpl filter) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void addBroadcastFilter(BroadcastFilterImpl... filters) {
         // TODO Auto-generated method stub
 
     }

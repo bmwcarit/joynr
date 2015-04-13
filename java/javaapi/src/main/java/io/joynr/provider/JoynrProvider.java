@@ -20,6 +20,7 @@ package io.joynr.provider;
  */
 
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import joynr.types.ProviderQos;
 
@@ -33,5 +34,24 @@ public interface JoynrProvider {
     void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
 
     void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
+
+    /**
+     * Adds a broadcast filter to the provider. The filter is specific for a
+     * single broadcast as defined in the Franca model. It will be executed
+     * once for each subscribed client whenever the broadcast is fired. Clients
+     * set individual filter parameters to control filter behavior.
+     *
+     * @param filter the filter to add.
+     */
+    void addBroadcastFilter(BroadcastFilterImpl filter);
+
+    /**
+     * Adds multiple broadcast filters to the provider.
+     *
+     * @see JoynrProvider.addBroadcastFilter(BroadcastFilterImpl filter)
+     *
+     * @param filters the filters to add.
+     */
+    void addBroadcastFilter(BroadcastFilterImpl... filters);
 
 }

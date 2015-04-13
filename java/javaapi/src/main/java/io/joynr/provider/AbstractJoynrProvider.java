@@ -123,6 +123,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
+    @Override
     public void addBroadcastFilter(BroadcastFilterImpl filter) {
         if (broadcastFilters.containsKey(filter.getName())) {
             broadcastFilters.get(filter.getName()).add(filter);
@@ -133,6 +134,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
+    @Override
     public void addBroadcastFilter(BroadcastFilterImpl... filters) {
         List<BroadcastFilterImpl> filtersList = Arrays.asList(filters);
 

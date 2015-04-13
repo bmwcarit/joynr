@@ -47,6 +47,7 @@ import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -895,7 +896,20 @@ public class ProviderProxyEnd2EndTest {
             // TODO Auto-generated method stub
 
         }
+
         // TODO: remove end
+
+        @Override
+        public void addBroadcastFilter(BroadcastFilterImpl filter) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void addBroadcastFilter(BroadcastFilterImpl... filters) {
+            // TODO Auto-generated method stub
+
+        }
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
