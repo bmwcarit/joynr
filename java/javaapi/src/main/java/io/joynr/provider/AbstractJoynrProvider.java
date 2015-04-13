@@ -53,6 +53,17 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         return providerQos;
     }
 
+    /**
+     * Called by generated {@code <Interface>AbstractProvider} classes to notify
+     * all registered listeners about the attribute change.
+     *
+     * NOTE: Provider implementations should _not_ call this method but use
+     * attribute specific {@code <Interface>AbstractProvider.<attribute>Changed}
+     * methods.
+     *
+     * @param attributeName the attribute name as defined in the Franca model.
+     * @param value the new value of the changed attribute.
+     */
     protected void onAttributeValueChanged(String attributeName, Object value) {
         if (!attributeListeners.containsKey(attributeName)) {
             return;
@@ -65,6 +76,18 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
+    /**
+     * Called by generated {@code <Interface>AbstractProvider} classes to notify
+     * all registered listeners about the fired broadcast.
+     *
+     * NOTE: Provider implementations should _not_ call this method but use
+     * broadcast specific {@code <Interface>AbstractProvider.fire<Broadcast>}
+     * methods.
+     *
+     * @param broadcastName the broadcast name as defined in the Franca model.
+     * @param broadcastFilters the list of filters to apply.
+     * @param values the broadcast arguments.
+     */
     protected void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
         if (!broadcastListeners.containsKey(broadcastName)) {
             return;
