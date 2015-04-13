@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import joynr.types.ProviderQos;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +40,17 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
     ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
     protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
+    protected ProviderQos providerQos = new ProviderQos();
 
     public AbstractJoynrProvider() {
         attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
         broadcastListeners = new ConcurrentHashMap<String, List<BroadcastListener>>();
         broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
+    }
+
+    @Override
+    public ProviderQos getProviderQos() {
+        return providerQos;
     }
 
     protected void onAttributeValueChanged(String attributeName, Object value) {

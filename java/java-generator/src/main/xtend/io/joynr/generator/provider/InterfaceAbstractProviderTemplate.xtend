@@ -52,8 +52,6 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 		@SuppressWarnings("unused")
 
 		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
-			protected ProviderQos providerQos = new ProviderQos();
-
 			«IF getAttributes(serviceInterface).size() > 0»
 			//attributes
 			«ENDIF»
@@ -96,12 +94,6 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 			}
 
 			«ENDFOR»
-
-			@Override
-			public ProviderQos getProviderQos() {
-				return providerQos;
-			}
-
 			}
 		'''
 	}

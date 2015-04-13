@@ -33,11 +33,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.CheckForNull;
-
 import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
 import joynr.types.ChannelUrlInformation;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +56,6 @@ import com.google.inject.name.Named;
 @Singleton
 public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements ChannelUrlDirectoryProviderAsync {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoyImpl.class);
-
-    protected ProviderQos providerQos = new ProviderQos();
 
     public static final String CHANNELURL_INACTIVE_TIME_IN_MS = "joynr.channel.channelurlinactivetime";
 
@@ -170,12 +165,6 @@ public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements Cha
         pendingDeferredsMap.get(channelId).add(deferred);
         // TODO drop the newly added callback from the pendingCallbackMap after a while, avoiding a continuously growing
         // map
-    }
-
-    @Override
-    @CheckForNull
-    public ProviderQos getProviderQos() {
-        return providerQos;
     }
 
     // TODO: remove begin
