@@ -82,8 +82,6 @@ import io.joynr.provider.Promise;
 «IF hasReadAttribute(serviceInterface)»
 import io.joynr.provider.Deferred;
 «ENDIF»
-// TODO: remove begin
-import com.fasterxml.jackson.core.type.TypeReference;
 «IF !getMethods(serviceInterface).isEmpty»
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
@@ -104,7 +102,16 @@ import io.joynr.provider.JoynrProviderAsync;
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 import «datatype»;
 «ENDFOR»
-public interface «className» extends «interfaceName», JoynrProviderAsync, JoynrAsyncInterface {
+// TODO: remove begin
+import com.fasterxml.jackson.core.type.TypeReference;
+//To prevent warnings @SuppressWarnings("unused") is being used. 
+//To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
+import java.util.TreeSet;
+import «packagePath».«interfaceName».*;
+@SuppressWarnings("unused")
+// TODO: remove end
+public interface «className» extends JoynrProviderAsync, JoynrAsyncInterface {
+	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 	// TODO: remove begin
 	public static class VoidToken extends TypeReference<Void> {
 	}
