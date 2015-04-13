@@ -47,6 +47,7 @@ import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -212,6 +213,11 @@ public class ProviderProxyEnd2EndTest {
         public static final String answer = "Answer to: ";
 
         public TestProvider() {
+        }
+
+        // change visibility from protected to public for testing purposes
+        public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+            super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
 
         @Override

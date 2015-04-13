@@ -45,7 +45,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
     }
 
-    public void onAttributeValueChanged(String attributeName, Object value) {
+    protected void onAttributeValueChanged(String attributeName, Object value) {
         if (!attributeListeners.containsKey(attributeName)) {
             return;
         }
@@ -57,7 +57,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
-    public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+    protected void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
         if (!broadcastListeners.containsKey(broadcastName)) {
             return;
         }
