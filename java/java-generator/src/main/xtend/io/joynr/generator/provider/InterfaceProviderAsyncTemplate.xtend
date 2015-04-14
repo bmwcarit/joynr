@@ -28,12 +28,14 @@ import java.util.ArrayList
 import org.franca.core.franca.FArgument
 
 class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
 
-	override generate(FInterface serviceInterface) {
-		var methodToDeferredName = new HashMap<FMethod, String>();
-		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
+		init(serviceInterface, methodToDeferredName, new ArrayList<FMethod>());
+	}
+
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName, ArrayList<FMethod> uniqueMethodsToCreateDeferreds) {
 		var uniqueMethodSignatureToPromiseName = new HashMap<String, String>();
 		var methodNameToCount = overloadedMethodCounts(getMethods(serviceInterface));
 		var methodNameToIndex = new HashMap<String, Integer>();
@@ -63,6 +65,12 @@ class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 				methodToDeferredName.put(method, uniqueMethodSignatureToPromiseName.get(methodSignature) + "Deferred");
 			}
 		}
+	}
+
+	override generate(FInterface serviceInterface) {
+		var methodToDeferredName = new HashMap<FMethod, String>();
+		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
+		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
 		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "ProviderAsync"
