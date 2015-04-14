@@ -21,7 +21,7 @@ package io.joynr.dispatcher.rpc;
 
 import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrInvalidInnvocationException;
+import io.joynr.exceptions.JoynrInvalidInvocationException;
 import io.joynr.proxy.Future;
 
 import java.lang.reflect.Method;
@@ -61,7 +61,7 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         try {
             reply = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
         } catch (Throwable e) {
-            error(new JoynrInvalidInnvocationException(e));
+            error(new JoynrInvalidInvocationException(e));
             return;
         }
 

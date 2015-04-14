@@ -19,9 +19,9 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrInvalidInnvocationException extends JoynrRuntimeException {
+public class JoynrInvalidInvocationException extends JoynrRuntimeException {
 
-    public JoynrInvalidInnvocationException(Throwable e) {
+    public JoynrInvalidInvocationException(Throwable e) {
         super(e);
     }
 
