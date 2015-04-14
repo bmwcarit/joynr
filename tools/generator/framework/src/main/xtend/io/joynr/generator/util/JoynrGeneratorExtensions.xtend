@@ -216,7 +216,7 @@ abstract class JoynrGeneratorExtensions {
 	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast, boolean constRef) {
 		val commaSeparatedParams = new StringBuilder();
 		for (parameter : getOutputParameters(broadcast)) {
-			commaSeparatedParams.append("\n        ")
+			commaSeparatedParams.append("\n		")
 			if (constRef) {
 				commaSeparatedParams.append("const ")
 			}
