@@ -15,3 +15,5 @@ THIRD-PARTY.properties
 *.iml
 logs/
 examples/radio-app/gps-provider-joynr.properties
+joynrpersistence/
+derby.log
