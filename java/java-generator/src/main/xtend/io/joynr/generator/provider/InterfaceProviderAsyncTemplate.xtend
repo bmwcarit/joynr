@@ -111,21 +111,10 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 import «datatype»;
 «ENDFOR»
-// TODO: remove begin
-import com.fasterxml.jackson.core.type.TypeReference;
-//To prevent warnings @SuppressWarnings("unused") is being used. 
-//To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
-import java.util.TreeSet;
-import «packagePath».«interfaceName».*;
-@SuppressWarnings("unused")
-// TODO: remove end
+
 public interface «className» extends JoynrInterface, JoynrProviderAsync {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
-	// TODO: remove begin
-	public static class VoidToken extends TypeReference<Void> {
-	}
-	// TODO: remove end
-	«FOR attribute: getAttributes(serviceInterface)»
+	«FOR attribute : getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
 
@@ -143,16 +132,9 @@ public interface «className» extends JoynrInterface, JoynrProviderAsync {
 		«var methodName = method.joynrName»
 		«var params = getTypedParameterListJavaRpc(method)»
 
-		// TODO: remove begin
-		«var callbackParameter = getCallbackParameter(method)»
-		public void «methodName»(
-				«callbackParameter»«IF !params.equals("")»,«ENDIF»
-				«IF !params.equals("")»«params»«ENDIF»
-		);
-		// TODO: remove end
-		/*
-		* «methodName»
-		*/
+		/**
+		 * «methodName»
+		 */
 		public Promise<«methodToDeferredName.get(method)»> «methodName»(
 				«IF !params.equals("")»«params»«ENDIF»
 		);
@@ -217,20 +199,5 @@ public interface «className» extends JoynrInterface, JoynrProviderAsync {
 			methodNameToCount.put(method.name, count);
 		}
 		return methodNameToCount;
-	}
-
-	def getCallbackParameter(FMethod method) {
-		var outPutParameterType = getMappedOutputParameter(method).iterator.next;
-		var outPutObjectType = getObjectDataTypeForPlainType(outPutParameterType);
-		if (outPutParameterType!="void"){
-			if (outPutObjectType == ""){
-				return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutParameterType)+"Token.class) Callback<"+outPutParameterType+"> callback"
-			}
-			else{
-				return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutObjectType)+"Token.class) Callback<"+outPutParameterType+"> callback"
-			}
-		} else {
-			return "@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback"
-		}
 	}
 }

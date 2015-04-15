@@ -393,26 +393,12 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		var i = 0;
 		while (i < params.size) {
 			val param = params.get(i);
-			// is it a list type?
-			if(! getMappedDatatypeOrList(param).contains("List")){
-				sb.append("@JoynrRpcParam")
-				sb.append("(\"" + param.joynrName + "\")")
-				sb.append(" "+ getMappedDatatypeOrList(param))
-				sb.append(" "+ param.joynrName)
-				if (i != params.size-1){
-					sb.append(",\n")
-				}
-			}else { //TODO clean this up, move to javaGeneratorUtil.xtend!
-				sb.append("@JoynrRpcParam") 
-				sb.append("(value=\"" + param.joynrName 
-						+ "\", deserialisationType=List"
-						+ getMappedDatatypeOrList(param).substring(5, getMappedDatatypeOrList(param).length()-1) 
-						+ "Token.class)")
-				sb.append(" "+ getMappedDatatypeOrList(param))
-				sb.append(" "+ param.joynrName)
-				if (i != params.size-1){
-					sb.append(",\n")
-				}
+			sb.append("@JoynrRpcParam")
+			sb.append("(\"" + param.joynrName + "\")")
+			sb.append(" "+ getMappedDatatypeOrList(param))
+			sb.append(" "+ param.joynrName)
+			if (i != params.size-1){
+				sb.append(",\n")
 			}
 			i = i+1;
 		}

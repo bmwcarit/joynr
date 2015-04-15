@@ -42,7 +42,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
-import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.BroadcastFilter;
@@ -59,7 +58,6 @@ import java.util.concurrent.Semaphore;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.AnotherDerivedStruct;
-import joynr.tests.BaseStruct;
 import joynr.tests.ComplexTestType;
 import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaulttestProvider;
@@ -68,11 +66,11 @@ import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProviderAsync;
+import joynr.tests.testProviderAsync.MethodWithEnumReturnValueDeferred;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 import joynr.types.Trip;
-import joynr.types.Vowel;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
@@ -313,201 +311,6 @@ public class ProviderProxyEnd2EndTest {
             return new Promise<Deferred<TestEnum>>(deferred);
         }
 
-        // TODO: remove begin
-        @Override
-        public void addNumbers(Callback<Integer> callback, Integer first, Integer second, Integer third) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void sumInts(Callback<Integer> callback, List<Integer> ints) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithNoInputParameters(Callback<Integer> callback) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithEnumParameter(Callback<Integer> callback, TestEnum input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithEnumListParameter(Callback<Integer> callback, List<TestEnum> input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithEnumReturn(Callback<TestEnum> callback, Integer input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithEnumListReturn(Callback<List<TestEnum>> callback, Integer input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithByteArray(Callback<List<Byte>> callback, List<Byte> input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodEnumDoubleParameters(Callback<Void> callback, TestEnum enumParam, Double doubleParam) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodStringDoubleParameters(final Callback<Void> callback, String stringParam, Double doubleParam) {
-            methodStringDoubleParameters(stringParam, doubleParam).then(new PromiseListener() {
-
-                @Override
-                public void onRejection(JoynrException error) {
-                    callback.onFailure(error);
-                }
-
-                @Override
-                public void onFulfillment(Object... values) {
-                    callback.onSuccess(null);
-                }
-            });
-
-        }
-
-        @Override
-        public void methodCustomCustomParameters(Callback<Void> callback,
-                                                 ComplexTestType customParam1,
-                                                 ComplexTestType2 customParam2) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodStringDoubleListParameters(Callback<Void> callback,
-                                                     String stringParam,
-                                                     List<Double> doubleListParam) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodCustomCustomListParameters(Callback<Void> callback,
-                                                     ComplexTestType customParam,
-                                                     List<ComplexTestType2> customListParam) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void customTypeAndListParameter(Callback<Void> callback,
-                                               ComplexTestType complexTestType,
-                                               List<BaseStruct> complexArray) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void voidOperation(Callback<Void> callback) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void stringAndBoolParameters(Callback<Void> callback, String stringParam, Boolean boolParam) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void returnPrimeNumbers(Callback<List<Integer>> callback, Integer upperBound) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void optimizeTrip(Callback<Trip> callback, Trip input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void overloadedOperation(Callback<String> callback, DerivedStruct input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void overloadedOperation(Callback<String> callback, AnotherDerivedStruct input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void overloadedOperation(Callback<ComplexTestType> callback, String input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void overloadedOperation(Callback<ComplexTestType2> callback, String input1, String input2) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void optimizeLocations(Callback<List<GpsLocation>> callback, List<GpsLocation> input) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void toLowerCase(Callback<String> callback, String inputString) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void waitTooLong(Callback<String> callback, Long ttl_ms) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void sayHello(Callback<String> callback) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void methodWithEnumReturnValue(Callback<TestEnum> callback) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void checkVowel(Callback<Boolean> callback, Vowel inputVowel) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void optimizeLocationList(Callback<List<GpsLocation>> callback, List<GpsLocation> inputList) {
-            // TODO Auto-generated method stub
-
-        }
-
-        // TODO: remove end
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

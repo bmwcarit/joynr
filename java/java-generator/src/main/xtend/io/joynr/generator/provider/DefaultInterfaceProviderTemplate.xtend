@@ -48,13 +48,8 @@ package «packagePath»;
 	import java.util.ArrayList;
 	import java.util.List;
 «ENDIF»
-import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.joynr.provider.PromiseListener;
-import io.joynr.exceptions.JoynrException;
-import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 
 import io.joynr.provider.Promise;
 «IF hasReadAttribute(serviceInterface)»
@@ -70,9 +65,7 @@ import io.joynr.provider.Promise;
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 	import «datatype»;
 «ENDFOR»
-import «packagePath».«interfaceName».*;
 
-@Singleton
 public class «className» extends «abstractProviderName» {
 	private static final Logger logger = LoggerFactory.getLogger(«className».class);
 
@@ -155,32 +148,6 @@ public class «className» extends «abstractProviderName» {
 			«ENDIF»
 			return new Promise<«deferredName»>(deferred);
 		}
-
-		// TODO: remove begin
-		«var callbackParameter = getCallbackParameter(method)»
-		public void «methodName»(
-				final «callbackParameter»«IF !params.equals("")»,«ENDIF»
-				«IF !params.equals("")»«params»«ENDIF»
-		) {
-			«methodName»(«getCommaSeperatedUntypedParameterList(method)»).then(new PromiseListener() {
-				@Override
-				public void onRejection(JoynrException error) {
-					callback.onFailure(error);
-				}
-				«IF !outputParameters.isEmpty && isArray(outputParameter)»
-				@SuppressWarnings("unchecked")
-				«ENDIF»
-				@Override
-				public void onFulfillment(Object... values) {
-					«IF !outputParameters.isEmpty»
-						callback.onSuccess((«outputParameterType») values[0]);
-					«ELSE»
-						callback.onSuccess(null);
-					«ENDIF»
-				}
-			});
-		}
-		// TODO: remove end
 	«ENDFOR»
 }
 		'''

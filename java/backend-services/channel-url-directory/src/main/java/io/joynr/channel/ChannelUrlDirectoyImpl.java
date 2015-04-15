@@ -19,13 +19,8 @@ package io.joynr.channel;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-import io.joynr.provider.PromiseListener;
 
 import java.util.List;
 import java.util.Map;
@@ -120,25 +115,6 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProviderA
         }
     }
 
-    // TODO: remove begin
-    @Override
-    public void getUrlsForChannel(final Callback<ChannelUrlInformation> callback, String channelId) {
-        getUrlsForChannel(channelId).then(new PromiseListener() {
-
-            @Override
-            public void onRejection(JoynrException error) {
-                callback.onFailure(error);
-            }
-
-            @Override
-            public void onFulfillment(Object... values) {
-                callback.onSuccess((ChannelUrlInformation) values[0]);
-            }
-        });
-    }
-
-    // TODO: remove end
-
     @Override
     public Promise<GetUrlsForChannelDeferred> getUrlsForChannel(String channelId) {
         GetUrlsForChannelDeferred deferred = new GetUrlsForChannelDeferred();
@@ -166,27 +142,6 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProviderA
         // map
     }
 
-    // TODO: remove begin
-    @Override
-    public synchronized void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
-                                                 @JoynrRpcParam("channelId") String channelId,
-                                                 @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
-        registerChannelUrls(channelId, channelUrlInformation).then(new PromiseListener() {
-
-            @Override
-            public void onRejection(JoynrException error) {
-                callback.onFailure(error);
-            }
-
-            @Override
-            public void onFulfillment(Object... values) {
-                callback.onSuccess(null);
-            }
-        });
-    }
-
-    // TODO: remove end
-
     @Override
     public Promise<DeferredVoid> registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
         logger.debug("GLOBAL registerChannelUrls channelId: {} channelUrls: {}", channelId, channelUrlInformation);
@@ -204,26 +159,6 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProviderA
         }
         return new Promise<DeferredVoid>(deferred);
     }
-
-    // TODO: remove begin
-    @Override
-    public synchronized void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
-                                                   @JoynrRpcParam("channelId") String channelId) {
-        unregisterChannelUrls(channelId).then(new PromiseListener() {
-
-            @Override
-            public void onRejection(JoynrException error) {
-                callback.onFailure(error);
-            }
-
-            @Override
-            public void onFulfillment(Object... values) {
-                callback.onSuccess(null);
-            }
-        });
-    }
-
-    // TODO: remove end
 
     @Override
     public Promise<DeferredVoid> unregisterChannelUrls(String channelId) {
