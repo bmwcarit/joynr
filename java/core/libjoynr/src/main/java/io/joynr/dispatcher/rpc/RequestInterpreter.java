@@ -23,6 +23,9 @@ import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestCallerAsync;
 import io.joynr.dispatcher.RequestCallerSync;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.provider.AbstractDeferred;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +39,6 @@ import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.Request;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,38 +71,32 @@ public class RequestInterpreter {
     }
 
     public void execute(final Callback<Reply> callback, RequestCallerAsync requestCaller, final Request request) {
-        Callback<Object> genericCallback = new Callback<Object>() {
+        Promise<? extends AbstractDeferred> promise = (Promise<?>) invokeMethod(requestCaller, request);
+        promise.then(new PromiseListener() {
 
             @Override
-            public void onSuccess(Object response) {
-                callback.onSuccess(createReply(request, response));
-            }
-
-            @Override
-            public void onFailure(JoynrException error) {
-                logger.error("RequestInterpreter: Error occurred during execution of async RPC invocation: {}", error);
+            public void onRejection(JoynrException error) {
                 callback.onFailure(error);
             }
-        };
-        invokeMethod(requestCaller, request, new Object[]{ genericCallback }, new String[]{ Callback.class.getName() });
+
+            @Override
+            public void onFulfillment(Object... values) {
+                Object response = null;
+                if (values.length > 0) {
+                    response = values[0];
+                }
+                callback.onSuccess(createReply(request, response));
+            }
+        });
+
     }
 
     private Object invokeMethod(RequestCaller requestCaller, Request request) {
-        return invokeMethod(requestCaller, request, new Object[0], new String[0]);
-    }
-
-    private Object invokeMethod(RequestCaller requestCaller,
-                                Request request,
-                                Object[] additionalArguments,
-                                String[] additionalArgumentTypes) {
         // A method is identified by its name and the types of its arguments
         List<String> methodSignature = new ArrayList<String>();
 
         methodSignature.add(request.getMethodName());
 
-        for (String type : additionalArgumentTypes) {
-            methodSignature.add(type);
-        }
         if (request.hasParamDatatypes()) {
             List<String> paramDatatypes = request.getFullyQualifiedParamDatatypes();
             methodSignature.addAll(paramDatatypes);
@@ -112,22 +108,16 @@ public class RequestInterpreter {
                                                                               .get(methodSignature);
 
         if (methodMetaInformation.isMethodWithoutParameters()) {
-            return invokeMethod(request, requestCaller, methodMetaInformation);
+            return invokeMethod(request, requestCaller, methodMetaInformation, null);
         }
 
-        Object[] params = ArrayUtils.addAll(additionalArguments, request.getParams());
+        Object[] params = request.getParams();
         Class<?>[] parameterTypes = methodMetaInformation.getMethod().getParameterTypes();
-        for (int i = additionalArguments.length; i < params.length; i++) {
+        for (int i = 0; i < params.length; i++) {
             params[i] = objectMapper.convertValue(params[i], parameterTypes[i]);
         }
 
         return invokeMethod(request, requestCaller, methodMetaInformation, params);
-    }
-
-    private Object invokeMethod(Request request,
-                                RequestCaller requestCaller,
-                                MethodMetaInformation methodMetaInformation) {
-        return invokeMethod(request, requestCaller, methodMetaInformation, null);
     }
 
     private Object invokeMethod(Request request,
