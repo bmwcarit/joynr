@@ -206,7 +206,7 @@ public class SubscriptionEnd2EndTest {
         Thread.sleep(subscriptionDuration);
         // 100 2100 4100 6100
         verify(gpsListener, times(0)).onError();
-        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttribute()));
+        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttributeSync()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
     }

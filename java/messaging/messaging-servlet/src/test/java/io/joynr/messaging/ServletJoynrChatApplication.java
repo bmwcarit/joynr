@@ -19,8 +19,10 @@ package io.joynr.messaging;
  * #L%
  */
 
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
 import io.joynr.runtime.AbstractJoynrApplication;
-import joynr.chat.DefaultMessengerProvider;
+import joynr.chat.DefaultMessengerProviderAsync;
 import joynr.chat.Message;
 import joynr.chat.MessengerProvider;
 
@@ -30,16 +32,19 @@ public class ServletJoynrChatApplication extends AbstractJoynrApplication {
     // @Named("DummyJoynApplication.participantId")
     // String participantId;
 
-    private DefaultMessengerProvider provider;
+    private DefaultMessengerProviderAsync provider;
 
     @Override
     public void run() {
-        provider = new DefaultMessengerProvider() {
+        provider = new DefaultMessengerProviderAsync() {
             @Override
-            public void setMessage(Message message) {
+            public Promise<DeferredVoid> setMessage(Message message) {
+                DeferredVoid deferred = new DeferredVoid();
                 // manipulate the message so that the consumer can verify that the set worked
                 message.setMessage(message.getSenderId() + message.getMessage());
-                super.setMessage(message);
+                this.message = message;
+                messageChanged(message);
+                return new Promise<DeferredVoid>(deferred);
             }
 
         };

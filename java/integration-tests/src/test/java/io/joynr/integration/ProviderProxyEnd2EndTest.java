@@ -60,13 +60,11 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.tests.AnotherDerivedStruct;
 import joynr.tests.ComplexTestType;
 import joynr.tests.ComplexTestType2;
-import joynr.tests.DefaulttestProvider;
 import joynr.tests.DefaulttestProviderAsync;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProviderAsync;
-import joynr.tests.testProviderAsync.MethodWithEnumReturnValueDeferred;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
@@ -172,7 +170,7 @@ public class ProviderProxyEnd2EndTest {
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domain, provider, joynr.tests.testProvider.class, "authToken")
+                                .registerCapability(domain, provider, testProviderAsync.class, "authToken")
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
@@ -204,7 +202,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    protected static class TestProvider extends DefaulttestProvider {
+    protected static class TestProvider extends DefaulttestProviderAsync {
         public static final String answer = "Answer to: ";
 
         public TestProvider() {
@@ -217,27 +215,30 @@ public class ProviderProxyEnd2EndTest {
         }
 
         @Override
-        public Integer methodWithEnumParameter(TestEnum input) {
+        public Promise<MethodWithEnumParameterDeferred> methodWithEnumParameter(TestEnum input) {
+            MethodWithEnumParameterDeferred deferred = new MethodWithEnumParameterDeferred();
             if (TestEnum.ONE.equals(input)) {
-                return 1;
+                deferred.resolve(1);
+            } else if (TestEnum.TWO.equals(input)) {
+                deferred.resolve(2);
+            } else if (TestEnum.ZERO.equals(input)) {
+                deferred.resolve(0);
+            } else {
+                deferred.resolve(42);
             }
-            if (TestEnum.TWO.equals(input)) {
-                return 2;
-            }
-            if (TestEnum.ZERO.equals(input)) {
-                return 0;
-            }
-
-            return 42;
+            return new Promise<MethodWithEnumParameterDeferred>(deferred);
         }
 
         @Override
-        public Integer addNumbers(Integer first, Integer second, Integer third) {
-            return first + second + third;
+        public Promise<AddNumbersDeferred> addNumbers(Integer first, Integer second, Integer third) {
+            AddNumbersDeferred deferred = new AddNumbersDeferred();
+            deferred.resolve(first + second + third);
+            return new Promise<AddNumbersDeferred>(deferred);
         }
 
         @Override
-        public String waitTooLong(Long ttl_ms) {
+        public Promise<WaitTooLongDeferred> waitTooLong(Long ttl_ms) {
+            WaitTooLongDeferred deferred = new WaitTooLongDeferred();
             String returnString = "";
             long enteredAt = System.currentTimeMillis();
             try {
@@ -245,53 +246,65 @@ public class ProviderProxyEnd2EndTest {
             } catch (InterruptedException e) {
                 returnString += "InterruptedException... ";
             }
-            return returnString + "time: " + (System.currentTimeMillis() - enteredAt);
+            deferred.resolve(returnString + "time: " + (System.currentTimeMillis() - enteredAt));
+            return new Promise<WaitTooLongDeferred>(deferred);
         }
 
         @Override
-        public List<TestEnum> methodWithEnumListReturn(Integer input) {
-            return Arrays.asList(new TestEnum[]{ TestEnum.getEnumValue(input) });
+        public Promise<MethodWithEnumListReturnDeferred> methodWithEnumListReturn(Integer input) {
+            MethodWithEnumListReturnDeferred deferred = new MethodWithEnumListReturnDeferred();
+            deferred.resolve(Arrays.asList(new TestEnum[]{ TestEnum.getEnumValue(input) }));
+            return new Promise<MethodWithEnumListReturnDeferred>(deferred);
         }
 
         @Override
-        public String sayHello() {
-            return "Hello";
+        public Promise<SayHelloDeferred> sayHello() {
+            SayHelloDeferred deferred = new SayHelloDeferred();
+            deferred.resolve("Hello");
+            return new Promise<SayHelloDeferred>(deferred);
         }
 
         @Override
-        public String toLowerCase(String inputString) {
-            return inputString.toLowerCase();
+        public Promise<ToLowerCaseDeferred> toLowerCase(String inputString) {
+            ToLowerCaseDeferred deferred = new ToLowerCaseDeferred();
+            deferred.resolve(inputString.toLowerCase());
+            return new Promise<ToLowerCaseDeferred>(deferred);
         }
 
         @Override
-        public Trip optimizeTrip(Trip input) {
-            return input;
+        public Promise<OptimizeTripDeferred> optimizeTrip(Trip input) {
+            OptimizeTripDeferred deferred = new OptimizeTripDeferred();
+            deferred.resolve(input);
+            return new Promise<OptimizeTripDeferred>(deferred);
         }
 
         @Override
-        public String overloadedOperation(DerivedStruct s) {
-            return "DerivedStruct";
+        public Promise<OverloadedOperation1Deferred> overloadedOperation(DerivedStruct s) {
+            OverloadedOperation1Deferred deferred = new OverloadedOperation1Deferred();
+            deferred.resolve("DerivedStruct");
+            return new Promise<OverloadedOperation1Deferred>(deferred);
         }
 
         @Override
-        public String overloadedOperation(AnotherDerivedStruct s) {
-            return "AnotherDerivedStruct";
+        public Promise<OverloadedOperation1Deferred> overloadedOperation(AnotherDerivedStruct s) {
+            OverloadedOperation1Deferred deferred = new OverloadedOperation1Deferred();
+            deferred.resolve("AnotherDerivedStruct");
+            return new Promise<OverloadedOperation1Deferred>(deferred);
         }
 
         @Override
-        public ComplexTestType overloadedOperation(String input) {
+        public Promise<OverloadedOperation2Deferred> overloadedOperation(String input) {
+            OverloadedOperation2Deferred deferred = new OverloadedOperation2Deferred();
             int result = Integer.parseInt(input);
-            return new ComplexTestType(result, result);
+            deferred.resolve(new ComplexTestType(result, result));
+            return new Promise<OverloadedOperation2Deferred>(deferred);
         }
 
         @Override
-        public ComplexTestType2 overloadedOperation(String input1, String input2) {
-            return new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2));
-        }
-
-        @Override
-        public void voidOperation() {
-            super.voidOperation();
+        public Promise<OverloadedOperation3Deferred> overloadedOperation(String input1, String input2) {
+            OverloadedOperation3Deferred deferred = new OverloadedOperation3Deferred();
+            deferred.resolve(new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2)));
+            return new Promise<OverloadedOperation3Deferred>(deferred);
         }
     }
 

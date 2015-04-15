@@ -34,11 +34,6 @@ class ProviderGenerator {
 	@Inject
 	InterfaceProviderAsyncTemplate interfaceProviderAsync
 
-	// TODO: remove begin
-	@Inject
-	InterfaceProviderImplTemplate interfaceProviderImpl
-	// TODO: remove end
-
 	@Inject
 	DefaultInterfaceProviderTemplate defaultInterfaceProvider
 
@@ -66,13 +61,6 @@ class ProviderGenerator {
 			fsa,
 			path + serviceName + "ProviderAsync.java",
 			interfaceProviderAsync,
-			fInterface
-		);
-
-		generateFile(
-			fsa,
-			path + "Default" + serviceName + "Provider.java",
-			interfaceProviderImpl,
 			fInterface
 		);
 
