@@ -27,7 +27,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
+import joynr.infrastructure.ChannelUrlDirectoryAbstractProviderAsync;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 import joynr.types.ChannelUrlInformation;
 
@@ -47,7 +47,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(ChannelUrlDirectoryProviderAsync.class).to(ChannelUrlDirectoyImpl.class);
+        bind(ChannelUrlDirectoryAbstractProviderAsync.class).to(ChannelUrlDirectoyImpl.class);
         bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
                         .toInstance(5000l);
     }

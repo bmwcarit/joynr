@@ -23,7 +23,6 @@ import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -33,7 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
+import joynr.infrastructure.ChannelUrlDirectoryAbstractProviderAsync;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -54,7 +53,7 @@ import com.google.inject.name.Named;
 // TODO Evaluate pro /cons of a in memory database
 
 @Singleton
-public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements ChannelUrlDirectoryProviderAsync {
+public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProviderAsync {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoyImpl.class);
 
     public static final String CHANNELURL_INACTIVE_TIME_IN_MS = "joynr.channel.channelurlinactivetime";

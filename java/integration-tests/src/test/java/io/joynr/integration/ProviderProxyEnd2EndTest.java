@@ -41,15 +41,11 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
-import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilter;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -67,6 +63,7 @@ import joynr.tests.BaseStruct;
 import joynr.tests.ComplexTestType;
 import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.DefaulttestProviderAsync;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
@@ -74,7 +71,6 @@ import joynr.tests.testProviderAsync;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
-import joynr.types.ProviderQos;
 import joynr.types.Trip;
 import joynr.types.Vowel;
 
@@ -301,253 +297,7 @@ public class ProviderProxyEnd2EndTest {
         }
     }
 
-    protected static class TestAsyncProviderImpl implements testProviderAsync {
-
-        private ProviderQos providerQos = new ProviderQos();
-        private TestEnum enumAttribute;
-        private GpsLocation location = new GpsLocation();
-        private Trip myTrip = new Trip();
-        private List<String> listOfStrings;
-        private Integer testAttribute;
-        private GpsLocation complexTestAttribute;
-
-        @Override
-        public ProviderQos getProviderQos() {
-            return providerQos;
-        }
-
-        @Override
-        public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
-        }
-
-        @Override
-        public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
-        }
-
-        @Override
-        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-        }
-
-        @Override
-        public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-        }
-
-        @Override
-        public Promise<Deferred<TestEnum>> getEnumAttribute() {
-            Deferred<TestEnum> deferred = new Deferred<TestEnum>();
-            deferred.resolve(enumAttribute);
-            return new Promise<Deferred<TestEnum>>(deferred);
-        }
-
-        @Override
-        public Promise<DeferredVoid> setEnumAttribute(TestEnum enumAttribute) {
-            DeferredVoid deferred = new DeferredVoid();
-            this.enumAttribute = enumAttribute;
-            deferred.resolve();
-            return new Promise<DeferredVoid>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<GpsLocation>> getLocation() {
-            Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
-            deferred.resolve(location);
-            return new Promise<Deferred<GpsLocation>>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<Trip>> getMytrip() {
-            Deferred<Trip> deferred = new Deferred<Trip>();
-            deferred.resolve(myTrip);
-            return new Promise<Deferred<Trip>>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<GpsLocation>> getYourLocation() {
-            Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
-            deferred.resolve(new GpsLocation());
-            return new Promise<Deferred<GpsLocation>>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getFirstPrime() {
-            Deferred<Integer> deferred = new Deferred<Integer>();
-            deferred.resolve(10);
-            return new Promise<Deferred<Integer>>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<List<Integer>>> getListOfInts() {
-            Deferred<List<Integer>> deferred = new Deferred<List<Integer>>();
-            deferred.resolve(new ArrayList<Integer>());
-            return new Promise<Deferred<List<Integer>>>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<List<GpsLocation>>> getListOfLocations() {
-            Deferred<List<GpsLocation>> deferred = new Deferred<List<GpsLocation>>();
-            deferred.resolve(new ArrayList<GpsLocation>());
-            return new Promise<Deferred<List<GpsLocation>>>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<List<String>>> getListOfStrings() {
-            Deferred<List<String>> deferred = new Deferred<List<String>>();
-            deferred.resolve(listOfStrings);
-            return new Promise<Deferred<List<String>>>(deferred);
-        }
-
-        @Override
-        public Promise<DeferredVoid> setListOfStrings(List<String> listOfStrings) {
-            DeferredVoid deferred = new DeferredVoid();
-            this.listOfStrings = listOfStrings;
-            deferred.resolve();
-            return new Promise<DeferredVoid>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getTestAttribute() {
-            Deferred<Integer> deferred = new Deferred<Integer>();
-            deferred.resolve(testAttribute);
-            return new Promise<Deferred<Integer>>(deferred);
-        }
-
-        @Override
-        public Promise<DeferredVoid> setTestAttribute(Integer testAttribute) {
-            DeferredVoid deferred = new DeferredVoid();
-            this.testAttribute = testAttribute;
-            deferred.resolve();
-            return new Promise<DeferredVoid>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<GpsLocation>> getComplexTestAttribute() {
-            Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
-            deferred.resolve(complexTestAttribute);
-            return new Promise<Deferred<GpsLocation>>(deferred);
-        }
-
-        @Override
-        public Promise<DeferredVoid> setComplexTestAttribute(GpsLocation complexTestAttribute) {
-            DeferredVoid deferred = new DeferredVoid();
-            this.complexTestAttribute = complexTestAttribute;
-            deferred.resolve();
-            return new Promise<DeferredVoid>(deferred);
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getReadWriteAttribute() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setReadWriteAttribute(Integer readWriteAttribute) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getReadOnlyAttribute() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getWriteOnly() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setWriteOnly(Integer writeOnly) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getNotifyWriteOnly() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setNotifyWriteOnly(Integer notifyWriteOnly) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getNotifyReadOnly() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getNotifyReadWrite() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setNotifyReadWrite(Integer notifyReadWrite) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getNotify() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setNotify(Integer notify) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<Deferred<Integer>> getATTRIBUTEWITHCAPITALLETTERS() {
-            return new Promise<Deferred<Integer>>(new Deferred<Integer>());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setATTRIBUTEWITHCAPITALLETTERS(Integer aTTRIBUTEWITHCAPITALLETTERS) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<AddNumbersDeferred> addNumbers(Integer first, Integer second, Integer third) {
-            return new Promise<AddNumbersDeferred>(new AddNumbersDeferred());
-        }
-
-        @Override
-        public Promise<SumIntsDeferred> sumInts(List<Integer> ints) {
-            return new Promise<SumIntsDeferred>(new SumIntsDeferred());
-        }
-
-        @Override
-        public Promise<MethodWithNoInputParametersDeferred> methodWithNoInputParameters() {
-            return new Promise<MethodWithNoInputParametersDeferred>(new MethodWithNoInputParametersDeferred());
-        }
-
-        @Override
-        public Promise<MethodWithEnumParameterDeferred> methodWithEnumParameter(TestEnum input) {
-            return new Promise<MethodWithEnumParameterDeferred>(new MethodWithEnumParameterDeferred());
-        }
-
-        @Override
-        public Promise<MethodWithEnumListParameterDeferred> methodWithEnumListParameter(List<TestEnum> input) {
-            return new Promise<MethodWithEnumListParameterDeferred>(new MethodWithEnumListParameterDeferred());
-        }
-
-        @Override
-        public Promise<MethodWithEnumReturnDeferred> methodWithEnumReturn(Integer input) {
-            return new Promise<MethodWithEnumReturnDeferred>(new MethodWithEnumReturnDeferred());
-        }
-
-        @Override
-        public Promise<MethodWithEnumListReturnDeferred> methodWithEnumListReturn(Integer input) {
-            return new Promise<MethodWithEnumListReturnDeferred>(new MethodWithEnumListReturnDeferred());
-        }
-
-        @Override
-        public Promise<MethodWithByteArrayDeferred> methodWithByteArray(List<Byte> input) {
-            return new Promise<MethodWithByteArrayDeferred>(new MethodWithByteArrayDeferred());
-        }
-
-        @Override
-        public Promise<DeferredVoid> methodEnumDoubleParameters(TestEnum enumParam, Double doubleParam) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
+    protected static class TestAsyncProviderImpl extends DefaulttestProviderAsync {
 
         @Override
         public Promise<MethodWithEnumReturnValueDeferred> methodWithEnumReturnValue() {
@@ -561,121 +311,6 @@ public class ProviderProxyEnd2EndTest {
             Deferred<TestEnum> deferred = new Deferred<TestEnum>();
             deferred.resolve(TestEnum.ONE);
             return new Promise<Deferred<TestEnum>>(deferred);
-        }
-
-        @Override
-        public Promise<DeferredVoid> methodStringDoubleParameters(String stringParam, Double doubleParam) {
-            DeferredVoid deferred = new DeferredVoid();
-            deferred.resolve();
-            return new Promise<DeferredVoid>(deferred);
-        }
-
-        @Override
-        public Promise<DeferredVoid> methodCustomCustomParameters(ComplexTestType customParam1,
-                                                                  ComplexTestType2 customParam2) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> methodStringDoubleListParameters(String stringParam, List<Double> doubleListParam) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> methodCustomCustomListParameters(ComplexTestType customParam,
-                                                                      List<ComplexTestType2> customListParam) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> customTypeAndListParameter(ComplexTestType complexTestType,
-                                                                List<BaseStruct> complexArray) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> voidOperation() {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> stringAndBoolParameters(String stringParam, Boolean boolParam) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<ReturnPrimeNumbersDeferred> returnPrimeNumbers(Integer upperBound) {
-            return new Promise<ReturnPrimeNumbersDeferred>(new ReturnPrimeNumbersDeferred());
-        }
-
-        @Override
-        public Promise<OptimizeTripDeferred> optimizeTrip(Trip input) {
-            return new Promise<OptimizeTripDeferred>(new OptimizeTripDeferred());
-        }
-
-        @Override
-        public Promise<OverloadedOperation1Deferred> overloadedOperation(DerivedStruct input) {
-            return new Promise<OverloadedOperation1Deferred>(new OverloadedOperation1Deferred());
-        }
-
-        @Override
-        public Promise<OverloadedOperation1Deferred> overloadedOperation(AnotherDerivedStruct input) {
-            return new Promise<OverloadedOperation1Deferred>(new OverloadedOperation1Deferred());
-        }
-
-        @Override
-        public Promise<OverloadedOperation2Deferred> overloadedOperation(String input) {
-            return new Promise<OverloadedOperation2Deferred>(new OverloadedOperation2Deferred());
-        }
-
-        @Override
-        public Promise<OverloadedOperation3Deferred> overloadedOperation(String input1, String input2) {
-            return new Promise<OverloadedOperation3Deferred>(new OverloadedOperation3Deferred());
-        }
-
-        @Override
-        public Promise<OptimizeLocationsDeferred> optimizeLocations(List<GpsLocation> input) {
-            return new Promise<OptimizeLocationsDeferred>(new OptimizeLocationsDeferred());
-        }
-
-        @Override
-        public Promise<ToLowerCaseDeferred> toLowerCase(String inputString) {
-            return new Promise<ToLowerCaseDeferred>(new ToLowerCaseDeferred());
-        }
-
-        @Override
-        public Promise<WaitTooLongDeferred> waitTooLong(Long ttl_ms) {
-            return new Promise<WaitTooLongDeferred>(new WaitTooLongDeferred());
-        }
-
-        @Override
-        public Promise<SayHelloDeferred> sayHello() {
-            return new Promise<SayHelloDeferred>(new SayHelloDeferred());
-        }
-
-        @Override
-        public Promise<CheckVowelDeferred> checkVowel(Vowel inputVowel) {
-            return new Promise<CheckVowelDeferred>(new CheckVowelDeferred());
-        }
-
-        @Override
-        public Promise<OptimizeLocationListDeferred> optimizeLocationList(List<GpsLocation> inputList) {
-            return new Promise<OptimizeLocationListDeferred>(new OptimizeLocationListDeferred());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setLocation(GpsLocation location) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setFirstPrime(Integer firstPrime) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
-        }
-
-        @Override
-        public Promise<DeferredVoid> setListOfInts(List<Integer> listOfInts) {
-            return new Promise<DeferredVoid>(new DeferredVoid());
         }
 
         // TODO: remove begin
@@ -873,51 +508,6 @@ public class ProviderProxyEnd2EndTest {
         }
 
         // TODO: remove end
-
-        // TODO: remove begin; once the abstract provider is adapted to the async interface
-        @Override
-        public void fireLocation(GpsLocation location) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void fireLocationUpdate(GpsLocation location) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void fireLocationUpdateWithSpeed(GpsLocation location, Double currentSpeed) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void fireLocationUpdateSelective(GpsLocation location) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void fireLocationUpdateWithSpeedSelective(GpsLocation location, Double currentSpeed) {
-            // TODO Auto-generated method stub
-
-        }
-
-        // TODO: remove end
-
-        @Override
-        public void addBroadcastFilter(BroadcastFilterImpl filter) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void addBroadcastFilter(BroadcastFilterImpl... filters) {
-            // TODO Auto-generated method stub
-
-        }
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

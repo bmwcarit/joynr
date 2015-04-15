@@ -106,6 +106,7 @@ import io.joynr.provider.DeferredVoid;
 «ENDIF»
 
 import io.joynr.provider.JoynrProviderAsync;
+import io.joynr.dispatcher.rpc.JoynrInterface;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 import «datatype»;
@@ -118,8 +119,8 @@ import java.util.TreeSet;
 import «packagePath».«interfaceName».*;
 @SuppressWarnings("unused")
 // TODO: remove end
-public interface «className» extends JoynrProviderAsync, JoynrAsyncInterface {
-	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
+public interface «className» extends JoynrInterface, JoynrProviderAsync {
+	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 	// TODO: remove begin
 	public static class VoidToken extends TypeReference<Void> {
 	}
@@ -129,13 +130,13 @@ public interface «className» extends JoynrProviderAsync, JoynrAsyncInterface {
 		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
 
 		«IF isReadable(attribute)»
-			«var getAttribute = "get" + attributeName.toFirstUpper»
-		Promise<Deferred<«attributeType»>> «getAttribute»();
+		Promise<Deferred<«attributeType»>> get«attributeName.toFirstUpper»();
 		«ENDIF»
 		«IF isWritable(attribute)»
-			«var setAttribute = "set" + attributeName.toFirstUpper»
-		Promise<DeferredVoid> «setAttribute»(
-				@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName»);
+		Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
+		«ENDIF»
+		«IF isNotifiable(attribute)»
+		public void «attributeName»Changed(«attributeType» «attributeName»);
 		«ENDIF»
 	«ENDFOR»
 	«FOR method : getMethods(serviceInterface)»

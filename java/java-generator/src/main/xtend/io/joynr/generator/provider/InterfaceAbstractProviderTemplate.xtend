@@ -52,13 +52,15 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 		@SuppressWarnings("unused")
 
 		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
+			// TODO: remove begin moved into Default<Interface>Provider
+			// NOTE: <attribute>Changed is still needed without attribute assignment
 			«IF getAttributes(serviceInterface).size() > 0»
 			//attributes
 			«ENDIF»
 			«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.joynrName»
 			«val attributeType = getMappedDatatypeOrList(attribute)»
-				protected «attributeType» «attributeName»;
+			protected «attributeType» «attributeName»;
 			«ENDFOR»
 
 			«IF getAttributes(serviceInterface).size() > 0»
@@ -67,12 +69,6 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 			«FOR attribute: getAttributes(serviceInterface)»
 				«val attributeName = attribute.joynrName»
 				«val attributeType = getMappedDatatypeOrList(attribute)»
-
-				«IF isReadable(attribute)»
-					@Override
-					public abstract «attributeType» get«attributeName.toFirstUpper»();
-				«ENDIF»
-
 				«IF isNotifiable(attribute)»
 					@Override
 					public final void «attributeName»Changed(«attributeType» «attributeName») {
@@ -80,12 +76,8 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 						onAttributeValueChanged("«attributeName»", this.«attributeName»);
 					}
 				«ENDIF»
-
-				«IF isWritable(attribute)»
-					@Override
-					public abstract void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
-				«ENDIF»
 			«ENDFOR»
+			// TODO: remove end
 
 			«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
