@@ -50,8 +50,6 @@ import java.util.List;
  * Add/Remove operations can be expensive. Get operations should be fast.
  */
 public class DomainAccessControlStoreEhCache implements DomainAccessControlStore {
-    public static final String DUMMY_USERID = "dummyUserId";
-
     private static final Logger logger = LoggerFactory.getLogger(DomainAccessControlStoreEhCache.class);
     private static final String WILDCARD = "*";
     private final CacheManager cacheManager;
@@ -177,23 +175,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce) {
-        // TODO: we need the user ID of the user that is updating the ACE
-        // this will be a new joynr feature: Provider gets calling user ID
-        // WORKAROUND: we use a dummy user ID that has all possible roles
-        DomainRoleEntry domainRole = getDomainRole(DUMMY_USERID, Role.MASTER);
-        // if userId has not Role.MASTER, he may not change Master ACL
-        if (domainRole == null) {
-            return false;
-        }
-
         boolean updateSuccess = false;
-        if (domainRole.getDomains().contains(updatedMasterAce.getDomain())) {
-            UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedMasterAce.getUid(),
-                                                                                         updatedMasterAce.getDomain(),
-                                                                                         updatedMasterAce.getInterfaceName(),
-                                                                                         updatedMasterAce.getOperation());
-            updateSuccess = updateAce(updatedMasterAce, CacheId.MASTER_ACL, aceKey);
-        }
+        UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedMasterAce.getUid(),
+                                                                                     updatedMasterAce.getDomain(),
+                                                                                     updatedMasterAce.getInterfaceName(),
+                                                                                     updatedMasterAce.getOperation());
+        updateSuccess = updateAce(updatedMasterAce, CacheId.MASTER_ACL, aceKey);
 
         return updateSuccess;
     }
@@ -244,29 +231,20 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce) {
-        // TODO: we need the user ID of the user that is updating the ACE
-        // this will be a new joynr feature: Provider gets calling user ID
-        // WORKAROUND: we use a dummy user ID that has all possible roles
-        DomainRoleEntry domainRole = getDomainRole(DUMMY_USERID, Role.MASTER);
-        // if userId has not Role.MASTER, he may not change Mediator ACL
-        if (domainRole == null) {
-            return false;
-        }
 
         boolean updateSuccess = false;
-        if (domainRole.getDomains().contains(updatedMediatorAce.getDomain())) {
-            MasterAccessControlEntry masterAce = getMasterAccessControlEntry(updatedMediatorAce.getUid(),
-                                                                             updatedMediatorAce.getDomain(),
-                                                                             updatedMediatorAce.getInterfaceName(),
-                                                                             updatedMediatorAce.getOperation());
-            AceValidator aceValidator = new AceValidator(masterAce, updatedMediatorAce, null);
-            if (aceValidator.isMediatorValid()) {
-                UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedMediatorAce.getUid(),
-                                                                                             updatedMediatorAce.getDomain(),
-                                                                                             updatedMediatorAce.getInterfaceName(),
-                                                                                             updatedMediatorAce.getOperation());
-                updateSuccess = updateAce(updatedMediatorAce, CacheId.MASTER_ACL, aceKey);
-            }
+        MasterAccessControlEntry masterAce = getMasterAccessControlEntry(updatedMediatorAce.getUid(),
+                                                                         updatedMediatorAce.getDomain(),
+                                                                         updatedMediatorAce.getInterfaceName(),
+                                                                         updatedMediatorAce.getOperation());
+
+        AceValidator aceValidator = new AceValidator(masterAce, updatedMediatorAce, null);
+        if (aceValidator.isMediatorValid()) {
+            UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedMediatorAce.getUid(),
+                                                                                         updatedMediatorAce.getDomain(),
+                                                                                         updatedMediatorAce.getInterfaceName(),
+                                                                                         updatedMediatorAce.getOperation());
+            updateSuccess = updateAce(updatedMediatorAce, CacheId.MASTER_ACL, aceKey);
         }
 
         return updateSuccess;
@@ -316,33 +294,24 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
-        // TODO: we need the user ID of the user that is updating the ACE
-        // this will be a new joynr feature: Provider gets calling user ID
-        // WORKAROUND: we use a dummy user ID that has all possible roles
-        DomainRoleEntry domainRole = getDomainRole(DUMMY_USERID, Role.OWNER);
-        // if userId has not Role.OWNER, he may not change Owner ACL
-        if (domainRole == null) {
-            return false;
-        }
-
         boolean updateSuccess = false;
-        if (domainRole.getDomains().contains(updatedOwnerAce.getDomain())) {
-            MasterAccessControlEntry masterAce = getMasterAccessControlEntry(updatedOwnerAce.getUid(),
+        MasterAccessControlEntry masterAce = getMasterAccessControlEntry(updatedOwnerAce.getUid(),
+                                                                         updatedOwnerAce.getDomain(),
+                                                                         updatedOwnerAce.getInterfaceName(),
+                                                                         updatedOwnerAce.getOperation());
+
+        MasterAccessControlEntry mediatorAce = getMediatorAccessControlEntry(updatedOwnerAce.getUid(),
                                                                              updatedOwnerAce.getDomain(),
                                                                              updatedOwnerAce.getInterfaceName(),
                                                                              updatedOwnerAce.getOperation());
-            MasterAccessControlEntry mediatorAce = getMediatorAccessControlEntry(updatedOwnerAce.getUid(),
-                                                                                 updatedOwnerAce.getDomain(),
-                                                                                 updatedOwnerAce.getInterfaceName(),
-                                                                                 updatedOwnerAce.getOperation());
-            AceValidator aceValidator = new AceValidator(masterAce, mediatorAce, updatedOwnerAce);
-            if (aceValidator.isOwnerValid()) {
-                UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedOwnerAce.getUid(),
-                                                                                             updatedOwnerAce.getDomain(),
-                                                                                             updatedOwnerAce.getInterfaceName(),
-                                                                                             updatedOwnerAce.getOperation());
-                updateSuccess = updateAce(updatedOwnerAce, CacheId.OWNER_ACL, aceKey);
-            }
+
+        AceValidator aceValidator = new AceValidator(masterAce, mediatorAce, updatedOwnerAce);
+        if (aceValidator.isOwnerValid()) {
+            UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedOwnerAce.getUid(),
+                                                                                         updatedOwnerAce.getDomain(),
+                                                                                         updatedOwnerAce.getInterfaceName(),
+                                                                                         updatedOwnerAce.getOperation());
+            updateSuccess = updateAce(updatedOwnerAce, CacheId.OWNER_ACL, aceKey);
         }
 
         return updateSuccess;

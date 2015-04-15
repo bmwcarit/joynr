@@ -62,6 +62,8 @@ public class AccessControllerTest {
     @Mock
     private LocalDomainAccessController localDomainAccessController;
 
+    private static final String DUMMY_USERID = "dummyUserId";
+
     private static JoynrMessageFactory messageFactory;
     private JoynrMessage message;
     private static ObjectMapper objectMapper;
@@ -103,7 +105,7 @@ public class AccessControllerTest {
                                                request,
                                                expiryDate,
                                                replyToChannelId);
-        message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DomainAccessControlStoreEhCache.DUMMY_USERID);
+        message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
         CapabilityEntry capabilityEntry = new CapabilityEntryImpl(testDomain,
                                                                   testInterface,
@@ -116,21 +118,15 @@ public class AccessControllerTest {
 
     @Test
     public void testAccessWithInterfaceLevelAccessControl() {
-        when(localDomainAccessController.getConsumerPermission(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                               testDomain,
-                                                               testInterface,
-                                                               TrustLevel.HIGH)).thenReturn(Permission.YES);
+        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(Permission.YES);
 
         assertTrue(accessController.hasConsumerPermission(message));
     }
 
     @Test
     public void testAccessWithOperationLevelAccessControl() {
-        when(localDomainAccessController.getConsumerPermission(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                               testDomain,
-                                                               testInterface,
-                                                               TrustLevel.HIGH)).thenReturn(null);
-        when(localDomainAccessController.getConsumerPermission(DomainAccessControlStoreEhCache.DUMMY_USERID,
+        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID, testDomain, testInterface, TrustLevel.HIGH)).thenReturn(null);
+        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
                                                                testDomain,
                                                                testInterface,
                                                                testOperation,
@@ -141,7 +137,7 @@ public class AccessControllerTest {
 
     @Test
     public void testAccessWithOperationLevelAccessControlAndFaultyMessage() {
-        when(localDomainAccessController.getConsumerPermission(DomainAccessControlStoreEhCache.DUMMY_USERID,
+        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
                                                                testDomain,
                                                                testInterface,
                                                                testOperation,

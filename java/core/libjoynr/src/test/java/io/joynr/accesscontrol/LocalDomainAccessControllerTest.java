@@ -69,7 +69,6 @@ public class LocalDomainAccessControllerTest {
     private MasterAccessControlEntry masterAce;
     private OwnerAccessControlEntry ownerAce;
     private DomainRoleEntry userDre;
-    private DomainRoleEntry dummyUserDre;
 
     @Mock
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
@@ -113,10 +112,6 @@ public class LocalDomainAccessControllerTest {
                                                TrustLevel.LOW,
                                                OPEARATION1,
                                                Permission.YES);
-        // dummyUser DRE to prepare for ACE validation workaround
-        dummyUserDre = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                           Arrays.asList(DOMAIN1),
-                                           Role.OWNER);
     }
 
     @After
@@ -142,7 +137,6 @@ public class LocalDomainAccessControllerTest {
 
     @Test
     public void testConsumerPermission() throws Exception {
-        domainAccessControlStore.updateDomainRole(dummyUserDre);
         domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
 
         assertEquals("UID1 should have Permission YES",
@@ -157,12 +151,7 @@ public class LocalDomainAccessControllerTest {
     @Test
     public void testConsumerPermissionInvalidOwnerAce() throws Exception {
         masterAce.setDefaultConsumerPermission(Permission.ASK);
-        domainAccessControlStore.updateDomainRole(dummyUserDre);
         domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
-        DomainRoleEntry dummyUserDomainRoleEntryMaster = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                                             Arrays.asList(DOMAIN1),
-                                                                             Role.MASTER);
-        domainAccessControlStore.updateDomainRole(dummyUserDomainRoleEntryMaster);
         domainAccessControlStore.updateMasterAccessControlEntry(masterAce);
 
         assertEquals("UID1 should have Permission NO",
@@ -176,14 +165,9 @@ public class LocalDomainAccessControllerTest {
 
     @Test
     public void testConsumerPermissionOwnerAceOverrulesMaster() throws Exception {
-        domainAccessControlStore.updateDomainRole(dummyUserDre);
         ownerAce.setRequiredTrustLevel(TrustLevel.MID);
         ownerAce.setConsumerPermission(Permission.ASK);
         domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
-        DomainRoleEntry dummyUserDomainRoleEntryMaster = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                                             Arrays.asList(DOMAIN1),
-                                                                             Role.MASTER);
-        domainAccessControlStore.updateDomainRole(dummyUserDomainRoleEntryMaster);
         domainAccessControlStore.updateMasterAccessControlEntry(masterAce);
 
         assertEquals("UID1 should have Permission ASK",
@@ -204,7 +188,6 @@ public class LocalDomainAccessControllerTest {
 
     @Test
     public void testConsumerPermissionOperationWildcard() throws Exception {
-        domainAccessControlStore.updateDomainRole(dummyUserDre);
         ownerAce.setOperation(WILDCARD);
         domainAccessControlStore.updateOwnerAccessControlEntry(ownerAce);
         assertEquals("UID1 should have Permission YES",

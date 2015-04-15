@@ -37,6 +37,8 @@ import com.google.inject.Inject;
  */
 public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccessControllerAbstractProvider {
 
+    private static final String DUMMY_USERID = "dummyUserId";
+
     private final DomainAccessControlStore domainAccessStore;
 
     @Inject
@@ -101,12 +103,30 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateMasterAccessControlEntryDeferred> updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAccessControlEntry) {
         UpdateMasterAccessControlEntryDeferred deferred = new UpdateMasterAccessControlEntryDeferred();
-        boolean updateSuccess = domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry);
-        if (updateSuccess) {
-            fireMasterAccessControlEntryChanged(ChangeType.UPDATE, updatedMasterAccessControlEntry);
+
+        // Unless the userId has Role.MASTER, they may not change Master ACL
+        // TODO: we need the user ID of the user that is updating the ACE
+        if (!hasRoleMaster(DUMMY_USERID, updatedMasterAccessControlEntry.getDomain())) {
+            deferred.resolve(false);
+        } else {
+            boolean updateSuccess = domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry);
+            if (updateSuccess) {
+                fireMasterAccessControlEntryChanged(ChangeType.UPDATE, updatedMasterAccessControlEntry);
+            }
+            deferred.resolve(updateSuccess);
         }
-        deferred.resolve(updateSuccess);
         return new Promise<UpdateMasterAccessControlEntryDeferred>(deferred);
+    }
+
+    // Indicates if the given user has master role for the given domain
+    private boolean hasRoleMaster(String userId, String domain) {
+
+        DomainRoleEntry domainRole = domainAccessStore.getDomainRole(userId, Role.MASTER);
+        if (domainRole == null || !domainRole.getDomains().contains(domain)) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -158,11 +178,18 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateMediatorAccessControlEntryDeferred> updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAccessControlEntry) {
         UpdateMediatorAccessControlEntryDeferred deferred = new UpdateMediatorAccessControlEntryDeferred();
-        boolean updateSuccess = domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry);
-        if (updateSuccess) {
-            fireMediatorAccessControlEntryChanged(ChangeType.UPDATE, updatedMediatorAccessControlEntry);
+
+        // Unless the userId has Role.MASTER, they may not change Mediator ACL
+        // TODO: we need the user ID of the user that is updating the ACE
+        if (!hasRoleMaster(DUMMY_USERID, updatedMediatorAccessControlEntry.getDomain())) {
+            deferred.resolve(false);
+        } else {
+            boolean updateSuccess = domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry);
+            if (updateSuccess) {
+                fireMediatorAccessControlEntryChanged(ChangeType.UPDATE, updatedMediatorAccessControlEntry);
+            }
+            deferred.resolve(updateSuccess);
         }
-        deferred.resolve(updateSuccess);
         return new Promise<UpdateMediatorAccessControlEntryDeferred>(deferred);
     }
 
@@ -218,11 +245,18 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<UpdateOwnerAccessControlEntryDeferred> updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAccessControlEntry) {
         UpdateOwnerAccessControlEntryDeferred deferred = new UpdateOwnerAccessControlEntryDeferred();
-        boolean updateSuccess = domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry);
-        if (updateSuccess) {
-            fireOwnerAccessControlEntryChanged(ChangeType.UPDATE, updatedOwnerAccessControlEntry);
+
+        // Unless the userId has Role.MASTER, they may not change Owner ACL
+        // TODO: we need the user ID of the user that is updating the ACE
+        if (!hasRoleMaster(DUMMY_USERID, updatedOwnerAccessControlEntry.getDomain())) {
+            deferred.resolve(false);
+        } else {
+            boolean updateSuccess = domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry);
+            if (updateSuccess) {
+                fireOwnerAccessControlEntryChanged(ChangeType.UPDATE, updatedOwnerAccessControlEntry);
+            }
+            deferred.resolve(updateSuccess);
         }
-        deferred.resolve(updateSuccess);
         return new Promise<UpdateOwnerAccessControlEntryDeferred>(deferred);
     }
 

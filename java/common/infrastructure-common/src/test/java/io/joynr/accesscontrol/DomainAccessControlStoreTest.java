@@ -36,7 +36,6 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 public class DomainAccessControlStoreTest {
 
@@ -53,7 +52,6 @@ public class DomainAccessControlStoreTest {
     private static DomainAccessControlStore store;
     private MasterAccessControlEntry expectedMasterAccessControlEntry;
     private OwnerAccessControlEntry expectedOwnerAccessControlEntry;
-    private DomainRoleEntry dummyUserDomainRoleEntry;
     private DomainRoleEntry expectedUserDomainRoleEntry;
 
     @BeforeClass
@@ -83,10 +81,6 @@ public class DomainAccessControlStoreTest {
                                                                       TrustLevel.LOW,
                                                                       OPERATION1,
                                                                       Permission.NO);
-        // dummyUser DREs to prepare for ACE validation workaround
-        dummyUserDomainRoleEntry = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                       Arrays.asList(DOMAIN1),
-                                                       Role.MASTER);
     }
 
     @After
@@ -127,7 +121,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testGetMasterAce() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
         assertEquals("Master ACE associated to UID1 from Master ACL should be the same as expectedMasterAccessControlEntry",
@@ -159,7 +152,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testGetMasterAceWithWildcardOperation() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         expectedMasterAccessControlEntry.setOperation(WILDCARD);
         store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
@@ -170,7 +162,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testGetEditableMasterAcl() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         expectedUserDomainRoleEntry.setDomains(Arrays.asList(DOMAIN1));
         expectedUserDomainRoleEntry.setRole(Role.MASTER);
         store.updateDomainRole(expectedUserDomainRoleEntry);
@@ -183,7 +174,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testEditableMasterAccessControlEntryNoMatchingDre() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         expectedMasterAccessControlEntry.setUid(UID2);
         store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
@@ -192,24 +182,7 @@ public class DomainAccessControlStoreTest {
     }
 
     @Test
-    public void testUpdateMasterAccessControlEntryWithAndWithoutRoleMaster() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
-
-        assertFalse("Update master ACE should return false if DUMMY_USERID has not Role.MASTER",
-                    store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry));
-
-        DomainRoleEntry dummyUserDomainRoleEntryMaster = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                                             Arrays.asList(DOMAIN1),
-                                                                             Role.MASTER);
-        store.updateDomainRole(dummyUserDomainRoleEntryMaster);
-        assertTrue("Update master ACE should return true while DUMMY_USERID has Role.MASTER",
-                   store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry));
-    }
-
-    @Test
     public void testUpdateMasterAccessControlEntry() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         expectedMasterAccessControlEntry.setDefaultConsumerPermission(Permission.YES);
         boolean expectedUpdateResult = true;
 
@@ -225,7 +198,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testRemoveMasterAccessControlEntry() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
         boolean expectedRemoveResult = true;
 
@@ -240,8 +212,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testGetOwnerAccessControlEntry() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 
         assertEquals("Owner ACE for UID1 should be equal to expectedOwnerAccessControlEntry",
@@ -264,8 +234,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testEditableOwnerAccessControlEntry() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         expectedUserDomainRoleEntry.setDomains(Arrays.asList(DOMAIN1));
         store.updateDomainRole(expectedUserDomainRoleEntry);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
@@ -277,8 +245,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testEditableOwnerAccessControlEntryNoMatchingDre() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         store.updateDomainRole(expectedUserDomainRoleEntry);
         expectedOwnerAccessControlEntry.setUid(UID2);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
@@ -288,23 +254,7 @@ public class DomainAccessControlStoreTest {
     }
 
     @Test
-    public void testUpdateOwnerAccessControlEntryWithAndWithoutRoleOwner() throws Exception {
-        store.updateDomainRole(dummyUserDomainRoleEntry);
-        assertFalse("Update owner ACE should return false if DUMMY_USERID has not Role.OWNER",
-                    store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry));
-
-        DomainRoleEntry dummyUserDomainRoleEntryOwner = new DomainRoleEntry(DomainAccessControlStoreEhCache.DUMMY_USERID,
-                                                                            Arrays.asList(DOMAIN1),
-                                                                            Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntryOwner);
-        assertTrue("Update owner ACE should return true while UID1 has Role.OWNER",
-                   store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry));
-    }
-
-    @Test
     public void testUpdateOwnerAccessControlEntry() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         expectedOwnerAccessControlEntry.setConsumerPermission(Permission.YES);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 
@@ -316,8 +266,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testRemoveOwnerAccessControlEntry() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
         boolean expectedRemoveResult = true;
 
@@ -332,8 +280,6 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testGetWildcardUser() throws Exception {
-        dummyUserDomainRoleEntry.setRole(Role.OWNER);
-        store.updateDomainRole(dummyUserDomainRoleEntry);
         OwnerAccessControlEntry expectedOwnerAccessControlEntryWildcard = new OwnerAccessControlEntry(WILDCARD,
                                                                                                       DOMAIN1,
                                                                                                       INTERFACEX,
