@@ -81,35 +81,35 @@ class InterfaceProviderAsyncTemplate implements InterfaceTemplate{
 package «packagePath»;
 
 «IF needsListImport(serviceInterface)»
-import java.util.List;
+	import java.util.List;
 «ENDIF»
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute(serviceInterface)»
-import io.joynr.provider.Promise;
+	import io.joynr.provider.Promise;
 «ENDIF»
 «IF hasReadAttribute(serviceInterface)»
-import io.joynr.provider.Deferred;
+	import io.joynr.provider.Deferred;
 «ENDIF»
 «IF !getMethods(serviceInterface).isEmpty»
-import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
+	import io.joynr.dispatcher.rpc.Callback;
+	import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «ENDIF»
 // TODO: remove end
 «IF !uniqueMethodsToCreateDeferreds.isEmpty»
-import io.joynr.provider.AbstractDeferred;
+	import io.joynr.provider.AbstractDeferred;
 «ENDIF»
 «IF hasWriteAttribute(serviceInterface) || hasMethodWithArguments(serviceInterface)»
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 «ENDIF»
 «IF hasWriteAttribute(serviceInterface) || hasMethodWithoutReturnValue(serviceInterface)»
-import io.joynr.provider.DeferredVoid;
+	import io.joynr.provider.DeferredVoid;
 «ENDIF»
 
 import io.joynr.provider.JoynrProviderAsync;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
-import «datatype»;
+	import «datatype»;
 «ENDFOR»
 
 public interface «className» extends JoynrInterface, JoynrProviderAsync {
@@ -119,13 +119,13 @@ public interface «className» extends JoynrInterface, JoynrProviderAsync {
 		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
 
 		«IF isReadable(attribute)»
-		Promise<Deferred<«attributeType»>> get«attributeName.toFirstUpper»();
+			Promise<Deferred<«attributeType»>> get«attributeName.toFirstUpper»();
 		«ENDIF»
 		«IF isWritable(attribute)»
-		Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
+			Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
 		«ENDIF»
 		«IF isNotifiable(attribute)»
-		public void «attributeName»Changed(«attributeType» «attributeName»);
+			public void «attributeName»Changed(«attributeType» «attributeName»);
 		«ENDIF»
 	«ENDFOR»
 	«FOR method : getMethods(serviceInterface)»
