@@ -53,7 +53,7 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 		«ENDIF»
 		«ENDIF»
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, false)»
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true, false)»
 			import «datatype»;
 		«ENDFOR»
 
@@ -68,7 +68,7 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 		«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
-			«IF isReadable(attribute)»
+			«IF isNotifiable(attribute)»
 
 				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
 				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);

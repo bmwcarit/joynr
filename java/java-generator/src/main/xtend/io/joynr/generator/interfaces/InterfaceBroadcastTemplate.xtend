@@ -42,7 +42,7 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, false, true)»
 	import «datatype»;
 «ENDFOR»
 

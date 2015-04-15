@@ -44,7 +44,7 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 		import io.joynr.provider.AbstractJoynrProvider;
 		import «joynTypePackagePrefix».types.ProviderQos;
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, true)»
+		«FOR datatype : getRequiredIncludesFor(serviceInterface)»
 			import «datatype»;
 		«ENDFOR»
 

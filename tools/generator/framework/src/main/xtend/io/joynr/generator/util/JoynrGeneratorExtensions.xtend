@@ -287,10 +287,18 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true)
+		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts){
+	def getAllComplexAndEnumTypes(
+			FInterface fInterface,
+			Boolean includingTransitiveTypes,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
 		val typeList = new HashSet<Object>();
 		if (methods){
 			for (method : fInterface.methods) {
@@ -309,7 +317,10 @@ abstract class JoynrGeneratorExtensions {
 		}
 
 		for (attribute : getAttributes(fInterface)) {
-			if ((readAttributes && attribute.readable) || writeAttributes && attribute.writable){
+			if ((readAttributes && attribute.readable)
+					|| (writeAttributes && attribute.writable)
+					|| (notifyAttributes && attribute.notifiable)
+			) {
 				if (isComplex(attribute.type) || isEnum(attribute.type)) {
 					typeList.add(getDatatype(attribute.type));
 				}
@@ -357,8 +368,15 @@ abstract class JoynrGeneratorExtensions {
 		getAllComplexAndEnumTypes(fInterface, false)
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts) {
-		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, broadcasts)
+	def getAllComplexAndEnumTypes(
+			FInterface fInterface,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
+		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
 	}
 
 	def getDataTypes(FModel fModel) {

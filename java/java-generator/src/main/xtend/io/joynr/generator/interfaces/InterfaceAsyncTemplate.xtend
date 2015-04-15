@@ -59,7 +59,7 @@ import io.joynr.proxy.Future;
 import io.joynr.exceptions.JoynrArbitrationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 

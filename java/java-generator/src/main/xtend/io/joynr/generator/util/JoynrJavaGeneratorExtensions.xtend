@@ -344,13 +344,20 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return typeList;
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface){
-		getRequiredIncludesFor(serviceInterface, true, true, true, true);
+	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface) {
+		getRequiredIncludesFor(serviceInterface, true, true, true, true, true);
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts){
+	def Iterable<String> getRequiredIncludesFor(
+			FInterface serviceInterface,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
 		val includeSet = new TreeSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, broadcasts)){
+		for(datatype : getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
 			if (datatype instanceof FType){
 				includeSet.add(getIncludeOf(datatype));
 			}
