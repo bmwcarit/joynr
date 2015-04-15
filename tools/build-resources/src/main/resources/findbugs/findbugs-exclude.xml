@@ -20,6 +20,12 @@
 
 <FindBugsFilter>
 	<Match>
+		<!-- This method is enhanced (added to bytecode) by OpenJPA. Known issue since 2009-->
+		<Class name="~io\.joynr\..*\.entities\..*Entity"/>
+		<Method name="pcIsDetached" />
+		<Bug pattern="NP_BOOLEAN_RETURN_NULL"/>
+	</Match>
+	<Match>
 		<Class name="~.*\.R\$.*"/>
 		<Bug code="Nm"/>
 	</Match>
