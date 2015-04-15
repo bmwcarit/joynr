@@ -21,7 +21,7 @@ package io.joynr.dispatcher;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.dispatcher.rpc.JsonRequestInterpreter;
+import io.joynr.dispatcher.rpc.RequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrException;
@@ -85,7 +85,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private MessagingEndpointDirectory messagingEndpointDirectory;
     protected RequestReplySender messageSender;
 
-    private JsonRequestInterpreter jsonRequestInterpreter;
+    private RequestInterpreter requestInterpreter;
 
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyDispatcherImpl.class);
 
@@ -113,7 +113,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       ObjectMapper objectMapper,
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
-                                      JsonRequestInterpreter jsonRequestInterpreter,
+                                      RequestInterpreter requestInterpreter,
                                       @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         // CHECKSTYLE:ON
         this.messageSender = messageSender;
@@ -124,7 +124,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.objectMapper = objectMapper;
         this.publicationManager = publicationManager;
         this.subscriptionManager = subscriptionManager;
-        this.jsonRequestInterpreter = jsonRequestInterpreter;
+        this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
 
         // TODO would be better not to have this in the constructor to prevent
@@ -465,7 +465,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
             if (requestCaller instanceof RequestCallerAsync) {
-                jsonRequestInterpreter.execute(new Callback<Reply>() {
+                requestInterpreter.execute(new Callback<Reply>() {
 
                     @Override
                     public void onSuccess(Reply reply) {
@@ -487,10 +487,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                         logger.error("Error processing message: \r\n {} ; error: {}", message, error);
                     }
                 },
-                                               (RequestCallerAsync) requestCaller,
-                                               request);
+                                           (RequestCallerAsync) requestCaller,
+                                           request);
             } else if (requestCaller instanceof RequestCallerSync) {
-                Reply reply = jsonRequestInterpreter.execute((RequestCallerSync) requestCaller, request);
+                Reply reply = requestInterpreter.execute((RequestCallerSync) requestCaller, request);
                 sendReply(message, reply);
             } else {
                 logger.error("Error processing message: \r\n {}. RequestCaller type {} unknown.",

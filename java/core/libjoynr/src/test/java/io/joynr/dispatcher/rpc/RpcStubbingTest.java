@@ -153,7 +153,7 @@ public class RpcStubbingTest {
                                         new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
                                         new DispatcherTestModule());
 
-        final JsonRequestInterpreter jsonRequestInterpreter = injector.getInstance(JsonRequestInterpreter.class);
+        final RequestInterpreter requestInterpreter = injector.getInstance(RequestInterpreter.class);
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);
 
         when(messageSender.sendSyncRequest(eq(fromParticipantId),
@@ -177,7 +177,7 @@ public class RpcStubbingTest {
                     }
                 }
 
-                return jsonRequestInterpreter.execute(requestCaller, request);
+                return requestInterpreter.execute(requestCaller, request);
             }
         });
 

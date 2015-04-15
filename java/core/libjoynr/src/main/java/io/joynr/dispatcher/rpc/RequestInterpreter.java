@@ -43,12 +43,12 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-public class JsonRequestInterpreter {
-    private static final Logger logger = LoggerFactory.getLogger(JsonRequestInterpreter.class);
+public class RequestInterpreter {
+    private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
     private ObjectMapper objectMapper;
 
     @Inject
-    public JsonRequestInterpreter(ObjectMapper objectMapper) {
+    public RequestInterpreter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
 
     }
