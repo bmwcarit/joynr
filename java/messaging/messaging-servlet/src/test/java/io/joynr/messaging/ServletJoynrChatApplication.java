@@ -22,7 +22,7 @@ package io.joynr.messaging;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.runtime.AbstractJoynrApplication;
-import joynr.chat.DefaultMessengerProviderAsync;
+import joynr.chat.DefaultMessengerProvider;
 import joynr.chat.Message;
 import joynr.chat.MessengerProvider;
 
@@ -32,11 +32,11 @@ public class ServletJoynrChatApplication extends AbstractJoynrApplication {
     // @Named("DummyJoynApplication.participantId")
     // String participantId;
 
-    private DefaultMessengerProviderAsync provider;
+    private DefaultMessengerProvider provider;
 
     @Override
     public void run() {
-        provider = new DefaultMessengerProviderAsync() {
+        provider = new DefaultMessengerProvider() {
             @Override
             public Promise<DeferredVoid> setMessage(Message message) {
                 DeferredVoid deferred = new DeferredVoid();

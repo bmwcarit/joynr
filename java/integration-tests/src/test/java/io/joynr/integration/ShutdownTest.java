@@ -35,7 +35,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.util.Properties;
 
-import joynr.tests.DefaulttestProviderAsync;
+import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProvider;
 import joynr.tests.testProxy;
 
@@ -77,7 +77,7 @@ public class ShutdownTest {
                                                                                 }
                                                                             }).createApplication(DummyJoynrApplication.class);
 
-        provider = new DefaulttestProviderAsync();
+        provider = new DefaulttestProvider();
     }
 
     @Test(expected = JoynrShutdownException.class)

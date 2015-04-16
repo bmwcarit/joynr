@@ -38,7 +38,7 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.UUID;
 
-import joynr.tests.DefaulttestProviderAsync;
+import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 
 import org.eclipse.jetty.server.Server;
@@ -67,7 +67,7 @@ public class SSLEnd2EndTest {
     private DummyJoynrApplication dummyProviderApplication;
     private DummyJoynrApplication dummyConsumerApplication;
 
-    DefaulttestProviderAsync provider;
+    DefaulttestProvider provider;
     String domain;
 
     private MessagingQos messagingQos;
@@ -146,7 +146,7 @@ public class SSLEnd2EndTest {
 
         dummyConsumerApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigConsumer).createApplication(DummyJoynrApplication.class);
 
-        provider = new DefaulttestProviderAsync();
+        provider = new DefaulttestProvider();
         domain = "SSLEnd2EndTest." + methodName + System.currentTimeMillis();
 
         dummyProviderApplication.getRuntime().registerCapability(domain,

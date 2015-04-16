@@ -66,7 +66,7 @@ class ProviderGenerator {
 
 		generateFile(
 			fsa,
-			path + "Default" + serviceName + "ProviderAsync.java",
+			path + "Default" + serviceName + "Provider.java",
 			defaultInterfaceProvider,
 			fInterface
 		);

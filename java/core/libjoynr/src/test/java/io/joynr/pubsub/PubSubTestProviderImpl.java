@@ -25,11 +25,11 @@ import io.joynr.provider.Promise;
 import java.util.ArrayList;
 import java.util.List;
 
-import joynr.tests.DefaulttestProviderAsync;
+import joynr.tests.DefaulttestProvider;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 
-public class PubSubTestProviderImpl extends DefaulttestProviderAsync {
+public class PubSubTestProviderImpl extends DefaulttestProvider {
 
     List<Integer> list = new ArrayList<Integer>();
 

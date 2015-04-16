@@ -43,7 +43,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
-import joynr.tests.DefaulttestProviderAsync;
+import joynr.tests.DefaulttestProvider;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProviderAsync;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
@@ -73,7 +73,7 @@ public class BroadcastEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static DefaulttestProviderAsync provider;
+    private static DefaulttestProvider provider;
     private static String domain;
     private static testProxy proxy;
 
@@ -133,7 +133,7 @@ public class BroadcastEnd2EndTest {
                 + UUID.randomUUID().toString());
         providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
 
-        provider = new DefaulttestProviderAsync();
+        provider = new DefaulttestProvider();
         providingApplication.getRuntime()
                             .registerCapability(domain, provider, testProviderAsync.class, "BroadcastEnd2End")
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);

@@ -60,7 +60,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.tests.AnotherDerivedStruct;
 import joynr.tests.ComplexTestType;
 import joynr.tests.ComplexTestType2;
-import joynr.tests.DefaulttestProviderAsync;
+import joynr.tests.DefaulttestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
@@ -202,7 +202,7 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    protected static class TestProvider extends DefaulttestProviderAsync {
+    protected static class TestProvider extends DefaulttestProvider {
         public static final String answer = "Answer to: ";
 
         public TestProvider() {
@@ -308,7 +308,7 @@ public class ProviderProxyEnd2EndTest {
         }
     }
 
-    protected static class TestAsyncProviderImpl extends DefaulttestProviderAsync {
+    protected static class TestAsyncProviderImpl extends DefaulttestProvider {
 
         @Override
         public Promise<MethodWithEnumReturnValueDeferred> methodWithEnumReturnValue() {

@@ -37,7 +37,7 @@ class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
 		val interfaceName =  serviceInterface.joynrName
-		val className = "Default" + interfaceName + "ProviderAsync"
+		val className = "Default" + interfaceName + "Provider"
 		val abstractProviderName = interfaceName + "AbstractProviderAsync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
