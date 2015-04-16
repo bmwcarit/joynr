@@ -54,14 +54,15 @@ public class JoynrUtil {
     };
 
     public static String getStringFromOS(OS os) {
-        if (os == OS.WIN32)
+        if (os == OS.WIN32) {
             return "win32";
-        else if (os == OS.LINUX) {
+        } else if (os == OS.LINUX) {
             return "linux";
         } else if (os == OS.TEST) {
             return "test";
-        } else
+        } else {
             return "undefined";
+        }
     }
 
     @CheckForNull
@@ -129,6 +130,10 @@ public class JoynrUtil {
             }
 
             String[] children = sourceLocation.list();
+            if (children == null) {
+                return;
+            }
+
             for (int i = 0; i < children.length; i++) {
                 copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
             }
@@ -140,10 +145,12 @@ public class JoynrUtil {
                 out = new FileOutputStream(targetLocation);
                 copyStream(in, out);
             } finally {
-                if (in != null)
+                if (in != null) {
                     in.close();
-                if (out != null)
+                }
+                if (out != null) {
                     out.close();
+                }
             }
         }
     }
@@ -181,14 +188,15 @@ public class JoynrUtil {
     }
 
     public static OS getOSFromString(String os) {
-        if (os.equalsIgnoreCase("win32"))
+        if (os.equalsIgnoreCase("win32")) {
             return OS.WIN32;
-        else if (os.equalsIgnoreCase("linux")) {
+        } else if (os.equalsIgnoreCase("linux")) {
             return OS.LINUX;
         } else if (os.equalsIgnoreCase("test")) {
             return OS.TEST;
-        } else
+        } else {
             return OS.UNDEFINED;
+        }
     }
 
     public static void copyDirectoryFromJar(String jarName, String srcDir, File tmpDir) throws IOException {

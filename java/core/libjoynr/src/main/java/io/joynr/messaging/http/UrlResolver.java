@@ -32,12 +32,12 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import joynr.types.ChannelUrlInformation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.name.Named;
-
-import joynr.types.ChannelUrlInformation;
 
 public class UrlResolver {
 
@@ -68,7 +68,7 @@ public class UrlResolver {
 
             int port = originalUrl.getPort();
             if (mappedHostInfo.length >= 2) {
-                port = Integer.valueOf(mappedHostInfo[1]);
+                port = Integer.parseInt(mappedHostInfo[1]);
             }
 
             String path = originalUrl.getFile();

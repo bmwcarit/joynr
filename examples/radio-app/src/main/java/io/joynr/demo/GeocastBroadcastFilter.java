@@ -58,7 +58,7 @@ public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFi
         }
         int radiusOfInterestArea = 0;
         try {
-            radiusOfInterestArea = new Integer(filterParameters.getRadiusOfInterestArea());
+            radiusOfInterestArea = Integer.parseInt(filterParameters.getRadiusOfInterestArea());
         } catch (NumberFormatException e) {
             LOG.error("Unable to parse radius of interest area from filter parameters. DISABLING filter.", e);
             return true;

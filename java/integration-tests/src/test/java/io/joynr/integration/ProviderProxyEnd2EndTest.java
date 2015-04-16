@@ -245,7 +245,7 @@ public class ProviderProxyEnd2EndTest {
 
         @Override
         public List<TestEnum> methodWithEnumListReturn(Integer input) {
-            return Arrays.asList(new TestEnum[]{ TestEnum.ordinalToEnumValues.get(input) });
+            return Arrays.asList(new TestEnum[]{ TestEnum.getEnumValue(input) });
         }
 
         @Override

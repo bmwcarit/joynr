@@ -111,8 +111,7 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                     if (remoteChannelUrlInformation != null) {
                         channelUrlInformation.setUrls(remoteChannelUrlInformation.getUrls());
                     }
-                    if (remoteChannelUrlInformation == null || remoteChannelUrlInformation.getUrls() == null
-                            || remoteChannelUrlInformation.getUrls().size() == 0) {
+                    if (remoteChannelUrlInformation.getUrls().size() == 0) {
                         logger.error("No channelurls found for channel {}", channelId);
                     }
                 }

@@ -45,7 +45,7 @@ public enum «typeName» {
 	«enumValue.joynrName»
 	«ENDFOR»;
 
-	public static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
+	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
 
 	static{
 		«var i = -1»

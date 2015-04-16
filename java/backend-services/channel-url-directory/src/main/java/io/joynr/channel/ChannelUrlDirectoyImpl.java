@@ -26,6 +26,7 @@ import io.joynr.provider.AbstractJoynrProvider;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.CheckForNull;
@@ -45,8 +46,8 @@ import com.google.inject.name.Named;
 
 /**
  * The channelurldirectory stores channelIds mapped to channelUrls.
- * 
- * 
+ *
+ *
  * channelurls are stored in a concurrentHashMap. Using a in memory database could be possible optimization.
  */
 // TODO Evaluate pro /cons of a in memory database
@@ -97,8 +98,9 @@ public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements Cha
                 } else {
                     long currentTime = System.currentTimeMillis();
                     long timeToSleep = -1;
-                    for (String channelId : inactiveChannelIds.keySet()) {
-                        long passedTime = currentTime - inactiveChannelIds.get(channelId);
+                    for (Entry<String, Long> inactiveChannelId : inactiveChannelIds.entrySet()) {
+                        String channelId = inactiveChannelId.getKey();
+                        long passedTime = currentTime - inactiveChannelId.getValue();
                         if (passedTime >= channelurInactiveTimeInMS) {
                             logger.debug("GLOBAL unregisterChannelUrls channelId: {}", channelId);
                             registeredChannels.remove(channelId);
