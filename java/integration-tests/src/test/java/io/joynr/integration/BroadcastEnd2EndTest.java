@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testBroadcastInterface;
-import joynr.tests.testProviderAsync;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
@@ -135,7 +134,7 @@ public class BroadcastEnd2EndTest {
 
         provider = new DefaulttestProvider();
         providingApplication.getRuntime()
-                            .registerCapability(domain, provider, testProviderAsync.class, "BroadcastEnd2End")
+                            .registerCapability(domain, provider, joynr.tests.testProvider.class, "BroadcastEnd2End")
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 

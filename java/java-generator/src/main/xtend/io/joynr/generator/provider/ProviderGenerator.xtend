@@ -32,18 +32,10 @@ class ProviderGenerator {
 	InterfaceProviderTemplate interfaceProvider
 
 	@Inject
-	InterfaceProviderAsyncTemplate interfaceProviderAsync
-
-	@Inject
 	DefaultInterfaceProviderTemplate defaultInterfaceProvider
 
-	// TODO: remove begin
 	@Inject
 	InterfaceAbstractProviderTemplate interfaceAbstractProvider
-	// TODO: remove end
-
-	@Inject
-	InterfaceAbstractProviderAsyncTemplate interfaceAbstractProviderAsync
 
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
@@ -59,13 +51,6 @@ class ProviderGenerator {
 
 		generateFile(
 			fsa,
-			path + serviceName + "ProviderAsync.java",
-			interfaceProviderAsync,
-			fInterface
-		);
-
-		generateFile(
-			fsa,
 			path + "Default" + serviceName + "Provider.java",
 			defaultInterfaceProvider,
 			fInterface
@@ -75,13 +60,6 @@ class ProviderGenerator {
 			fsa,
 			path + serviceName + "AbstractProvider.java",
 			interfaceAbstractProvider,
-			fInterface
-		);
-
-		generateFile(
-			fsa,
-			path + serviceName + "AbstractProviderAsync.java",
-			interfaceAbstractProviderAsync,
 			fInterface
 		);
 	}

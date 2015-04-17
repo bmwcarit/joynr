@@ -18,19 +18,19 @@ package io.joynr.examples.android_example;
  * limitations under the License.
  * #L%
  */
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
-import joynr.vehicle.GpsAbstractProvider;
+import joynr.vehicle.DefaultGpsProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MyGpsProvider extends GpsAbstractProvider {
+public class MyGpsProvider extends DefaultGpsProvider {
     private static final String PRINT_BORDER = "\n####################\n";
     private static final Logger LOG = LoggerFactory.getLogger(MyGpsProvider.class);
 
-    private GpsLocation location;
     private int time = 0;
 
     public MyGpsProvider() {
@@ -50,22 +50,12 @@ public class MyGpsProvider extends GpsAbstractProvider {
     }
 
     @Override
-    public void restartWithRetries(Integer gpsfix) throws JoynrArbitrationException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public Integer calculateAvailableSatellites() throws JoynrArbitrationException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public GpsLocation getLocation() {
+    public Promise<Deferred<GpsLocation>> getLocation() {
+        Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
         location.setTime(time++);
         LOG.info(PRINT_BORDER + "getLocation -> " + location + PRINT_BORDER);
-        return location;
+        deferred.resolve(location);
+        return new Promise<Deferred<GpsLocation>>(deferred);
     }
 
     public void notifyLocationUpdate() {

@@ -24,7 +24,7 @@ import io.joynr.exceptions.JoynrException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import joynr.tests.testProviderAsync;
+import joynr.tests.testProvider;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,8 +56,8 @@ public class PromiseKeeperTest {
 
     @Test
     public void keeperStateIsCorrectOnFulfillment() {
-        testProviderAsync.MethodWithNoInputParametersDeferred deferred = new testProviderAsync.MethodWithNoInputParametersDeferred();
-        Promise<testProviderAsync.MethodWithNoInputParametersDeferred> promise = new Promise<testProviderAsync.MethodWithNoInputParametersDeferred>(deferred);
+        testProvider.MethodWithNoInputParametersDeferred deferred = new testProvider.MethodWithNoInputParametersDeferred();
+        Promise<testProvider.MethodWithNoInputParametersDeferred> promise = new Promise<testProvider.MethodWithNoInputParametersDeferred>(deferred);
         PromiseKeeper keeper = new PromiseKeeper();
 
         promise.then(keeper);
@@ -114,8 +114,8 @@ public class PromiseKeeperTest {
 
     @Test
     public void getValuesWaitsForFulfillment() throws InterruptedException {
-        final testProviderAsync.MethodWithNoInputParametersDeferred deferred = new testProviderAsync.MethodWithNoInputParametersDeferred();
-        Promise<testProviderAsync.MethodWithNoInputParametersDeferred> promise = new Promise<testProviderAsync.MethodWithNoInputParametersDeferred>(deferred);
+        final testProvider.MethodWithNoInputParametersDeferred deferred = new testProvider.MethodWithNoInputParametersDeferred();
+        Promise<testProvider.MethodWithNoInputParametersDeferred> promise = new Promise<testProvider.MethodWithNoInputParametersDeferred>(deferred);
         PromiseKeeper keeper = new PromiseKeeper();
         final Integer expectedValue = 42;
 

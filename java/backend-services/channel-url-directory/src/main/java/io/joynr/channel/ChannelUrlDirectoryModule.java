@@ -22,12 +22,16 @@ package io.joynr.channel;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.provider.PromiseKeeper;
+import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProviderAsync;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 import joynr.types.ChannelUrlInformation;
 
@@ -47,7 +51,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(ChannelUrlDirectoryAbstractProviderAsync.class).to(ChannelUrlDirectoyImpl.class);
+        bind(ChannelUrlDirectoryAbstractProvider.class).to(ChannelUrlDirectoyImpl.class);
         bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
                         .toInstance(5000l);
     }
@@ -78,7 +82,18 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
             @Override
             public ChannelUrlInformation getUrlsForChannel(String channelId) {
-                return channelUrlDirectory.getUrlsForChannel(channelId);
+                try {
+                    PromiseKeeper keeper = new PromiseKeeper();
+                    channelUrlDirectory.getUrlsForChannel(channelId).then(keeper);
+                    Object[] outValues = keeper.getValues();
+                    if (outValues == null) {
+                        throw new JoynrIllegalStateException("Calling method with out parameters didn't return anything.");
+                    }
+                    return (ChannelUrlInformation) outValues[0];
+                } catch (InterruptedException e) {
+                    throw new JoynrRequestInterruptedException("interrupted while calling getUrlsForChannel("
+                            + channelId + ")");
+                }
             }
 
             @Override
@@ -90,30 +105,68 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+            public void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
                                               @JoynrRpcParam("channelId") String channelId) {
-                channelUrlDirectory.unregisterChannelUrls(channelId);
-                callback.onSuccess(null);
+                channelUrlDirectory.unregisterChannelUrls(channelId).then(new PromiseListener() {
+
+                    @Override
+                    public void onRejection(JoynrException error) {
+                        callback.onFailure(error);
+                    }
+
+                    @Override
+                    public void onFulfillment(Object... values) {
+                        callback.onSuccess(null);
+                    }
+                });
+                ;
             }
 
             @Override
-            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserialisationType = joynr.infrastructure.ChannelUrlDirectorySync.ChannelUrlInformationToken.class) Callback<ChannelUrlInformation> callback,
+            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserialisationType = joynr.infrastructure.ChannelUrlDirectorySync.ChannelUrlInformationToken.class) final Callback<ChannelUrlInformation> callback,
                                                                    @JoynrRpcParam("channelId") String channelId) {
-                callback.onSuccess(channelUrlDirectory.getUrlsForChannel(channelId));
-                Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
-                future.onSuccess(channelUrlDirectory.getUrlsForChannel(channelId));
+                final Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
+                channelUrlDirectory.getUrlsForChannel(channelId).then(new PromiseListener() {
+
+                    @Override
+                    public void onRejection(JoynrException error) {
+                        callback.onFailure(error);
+                        future.onFailure(error);
+                    }
+
+                    @Override
+                    public void onFulfillment(Object... values) {
+                        ChannelUrlInformation channelUrlInfo = (ChannelUrlInformation) values[0];
+                        callback.onSuccess(channelUrlInfo);
+                        future.onSuccess(channelUrlInfo);
+                    }
+                });
                 return future;
             }
 
             @Override
             public void registerChannelUrls(@JoynrRpcParam("channelId") String channelId,
                                             @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
-                channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
+                PromiseKeeper keeper = new PromiseKeeper();
+                channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation).then(keeper);
+                try {
+                    keeper.waitForSettlement();
+                } catch (InterruptedException e) {
+                    throw new JoynrRequestInterruptedException("interrupted while calling registerChannelUrls("
+                            + channelId + ", " + channelUrlInformation + ")");
+                }
             }
 
             @Override
             public void unregisterChannelUrls(@JoynrRpcParam("channelId") String channelId) {
-                channelUrlDirectory.unregisterChannelUrls(channelId);
+                PromiseKeeper keeper = new PromiseKeeper();
+                channelUrlDirectory.unregisterChannelUrls(channelId).then(keeper);
+                try {
+                    keeper.waitForSettlement();
+                } catch (InterruptedException e) {
+                    throw new JoynrRequestInterruptedException("interrupted while calling unregisterChannelUrls("
+                            + channelId + ")");
+                }
             }
 
         };

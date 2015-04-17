@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.DispatcherTestModule;
-import io.joynr.dispatcher.RequestCallerSync;
+import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
@@ -36,12 +36,17 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.JoynrProviderAsync;
+import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
+import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.runtime.PropertyLoader;
 
@@ -94,7 +99,7 @@ public class RpcStubbingTest {
 
     private static final long DEFAULT_TTL = 2000L;
 
-    public static interface TestSyncInterface extends JoynrSyncInterface {
+    public static interface TestSync extends JoynrSyncInterface {
         public GpsLocation returnsGpsLocation();
 
         public List<GpsLocation> returnsGpsLocationList();
@@ -104,16 +109,14 @@ public class RpcStubbingTest {
         public void noParamsNoReturnValue();
     }
 
-    public static interface TestAsyncInterface extends JoynrAsyncInterface {
+    public static interface TestProvider extends JoynrInterface, JoynrProviderAsync {
+        public Promise<Deferred<GpsLocation>> returnsGpsLocation();
 
-    }
+        public Promise<Deferred<List<GpsLocation>>> returnsGpsLocationList();
 
-    public static interface TestInterface extends JoynrInterface, TestSyncInterface, TestAsyncInterface {
+        public Promise<DeferredVoid> takesTwoSimpleParams(@JoynrRpcParam("a") Integer a, @JoynrRpcParam("b") String b);
 
-    }
-
-    public interface TestProviderInterface extends TestInterface, JoynrProvider {
-
+        public Promise<DeferredVoid> noParamsNoReturnValue();
     }
 
     @Mock
@@ -124,7 +127,7 @@ public class RpcStubbingTest {
     private RequestReplySender messageSender;
 
     @Mock
-    private TestProviderInterface testMock;
+    private TestProvider testMock;
 
     // private String domain;
     // private String interfaceName;
@@ -142,8 +145,16 @@ public class RpcStubbingTest {
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                        JsonMappingException, IOException, JoynrMessageNotSentException {
 
-        when(testMock.returnsGpsLocation()).thenReturn(gpsValue);
-        when(testMock.returnsGpsLocationList()).thenReturn(gpsList);
+        Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
+        deferredGpsLocation.resolve(gpsValue);
+        when(testMock.returnsGpsLocation()).thenReturn(new Promise<Deferred<GpsLocation>>(deferredGpsLocation));
+        Deferred<List<GpsLocation>> deferredGpsLocationList = new Deferred<List<GpsLocation>>();
+        deferredGpsLocationList.resolve(gpsList);
+        when(testMock.returnsGpsLocationList()).thenReturn(new Promise<Deferred<List<GpsLocation>>>(deferredGpsLocationList));
+        DeferredVoid deferredVoid = new DeferredVoid();
+        deferredVoid.resolve();
+        when(testMock.noParamsNoReturnValue()).thenReturn(new Promise<DeferredVoid>(deferredVoid));
+        when(testMock.takesTwoSimpleParams(any(Integer.class), any(String.class))).thenReturn(new Promise<DeferredVoid>(deferredVoid));
 
         fromParticipantId = UUID.randomUUID().toString();
         toParticipantId = UUID.randomUUID().toString();
@@ -163,8 +174,7 @@ public class RpcStubbingTest {
                                            any(SynchronizedReplyCaller.class),
                                            eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
 
-            private RequestCallerSync requestCaller = (RequestCallerSync) requestCallerFactory.create(testMock,
-                                                                                                      TestSyncInterface.class);
+            private RequestCaller requestCaller = requestCallerFactory.create(testMock, TestProvider.class);
 
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
@@ -176,8 +186,21 @@ public class RpcStubbingTest {
                         break;
                     }
                 }
+                final Future<Reply> future = new Future<Reply>();
+                Callback<Reply> callback = new Callback<Reply>() {
 
-                return requestInterpreter.execute(requestCaller, request);
+                    @Override
+                    public void onSuccess(Reply result) {
+                        future.onSuccess(result);
+                    }
+
+                    @Override
+                    public void onFailure(JoynrException error) {
+                        future.onFailure(error);
+                    }
+                };
+                requestInterpreter.execute(callback, requestCaller, request);
+                return future.getReply();
             }
         });
 
@@ -198,8 +221,7 @@ public class RpcStubbingTest {
                                       IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "noParamsNoReturnValue";
-        Object result = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName,
-                                                                                              new Class<?>[]{}),
+        Object result = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName, new Class<?>[]{}),
                                                     new Object[]{});
 
         assertNull(result);
@@ -225,9 +247,9 @@ public class RpcStubbingTest {
 
         String methodName = "takesTwoSimpleParams";
         Object[] args = new Object[]{ 3, "abc" };
-        Object response = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName,
-                                                                                                Integer.class,
-                                                                                                String.class), args);
+        Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName,
+                                                                                       Integer.class,
+                                                                                       String.class), args);
 
         // no return value expected
         assertNull(response);
@@ -252,8 +274,7 @@ public class RpcStubbingTest {
                                 IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocation";
-        Object response = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName),
-                                                      new Object[]{});
+        Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),
@@ -275,8 +296,7 @@ public class RpcStubbingTest {
                                     IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocationList";
-        Object response = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName),
-                                                      new Object[]{});
+        Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),

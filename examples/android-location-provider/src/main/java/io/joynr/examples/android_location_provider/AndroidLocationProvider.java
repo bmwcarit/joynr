@@ -20,10 +20,9 @@ package io.joynr.examples.android_location_provider;
  */
 
 import io.joynr.arbitration.ArbitrationConstants;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
 import io.joynr.examples.android_location_provider.MyLocation.LocationResult;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -34,13 +33,13 @@ import joynr.types.CustomParameter;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 import joynr.types.ProviderQos;
-import joynr.vehicle.GpsAbstractProvider;
+import joynr.vehicle.DefaultGpsProvider;
 import android.content.Context;
 import android.location.Location;
 
 import com.google.common.collect.Lists;
 
-public class AndroidLocationProvider extends GpsAbstractProvider {
+public class AndroidLocationProvider extends DefaultGpsProvider {
 
     private Context applicationContext;
 
@@ -53,7 +52,6 @@ public class AndroidLocationProvider extends GpsAbstractProvider {
     public AndroidLocationProvider(String keyword, Context applicationContext, Output output) {
         this.applicationContext = applicationContext;
         this.output = output;
-        providerQos = new ProviderQos();
         List<CustomParameter> qosParameterList = Lists.newArrayList();
         qosParameterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword));
         providerQos.setCustomParameters(qosParameterList);
@@ -98,27 +96,16 @@ public class AndroidLocationProvider extends GpsAbstractProvider {
     }
 
     @Override
-    public GpsLocation getLocation() {
+    public Promise<Deferred<GpsLocation>> getLocation() {
+        Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
         logToOutput("Method getLocation was called. Sending the location: " + location.toString());
-        return location;
+        deferred.resolve(location);
+        return new Promise<Deferred<GpsLocation>>(deferred);
     }
 
     @Override
     public ProviderQos getProviderQos() {
         return providerQos;
-    }
-
-    @Override
-    public void restartWithRetries(@JoynrRpcParam("gpsfix") Integer gpsfix) throws JoynrArbitrationException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    @JoynrRpcReturn(deserialisationType = IntegerToken.class)
-    public Integer calculateAvailableSatellites() throws JoynrArbitrationException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     private void logToOutput(String string) {

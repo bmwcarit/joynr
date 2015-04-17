@@ -20,7 +20,7 @@ package io.joynr.provider;
  */
 
 import io.joynr.exceptions.JoynrException;
-import joynr.tests.testProviderAsync;
+import joynr.tests.testProvider;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,8 +49,8 @@ public class PromiseTest {
 
     @Test
     public void promiseStateIsCorrectOnFulfillment() {
-        testProviderAsync.MethodWithNoInputParametersDeferred deferred = new testProviderAsync.MethodWithNoInputParametersDeferred();
-        Promise<testProviderAsync.MethodWithNoInputParametersDeferred> promise = new Promise<testProviderAsync.MethodWithNoInputParametersDeferred>(deferred);
+        testProvider.MethodWithNoInputParametersDeferred deferred = new testProvider.MethodWithNoInputParametersDeferred();
+        Promise<testProvider.MethodWithNoInputParametersDeferred> promise = new Promise<testProvider.MethodWithNoInputParametersDeferred>(deferred);
 
         Assert.assertFalse(promise.isSettled());
         Assert.assertFalse(promise.isRejected());
@@ -107,8 +107,8 @@ public class PromiseTest {
 
     @Test
     public void promiseNotifiesListenersOnFulfillment() {
-        testProviderAsync.MethodWithNoInputParametersDeferred deferred = new testProviderAsync.MethodWithNoInputParametersDeferred();
-        Promise<testProviderAsync.MethodWithNoInputParametersDeferred> promise = new Promise<testProviderAsync.MethodWithNoInputParametersDeferred>(deferred);
+        testProvider.MethodWithNoInputParametersDeferred deferred = new testProvider.MethodWithNoInputParametersDeferred();
+        Promise<testProvider.MethodWithNoInputParametersDeferred> promise = new Promise<testProvider.MethodWithNoInputParametersDeferred>(deferred);
         PromiseListener listener = Mockito.mock(PromiseListener.class);
 
         Integer expectedValue = 42;
@@ -123,8 +123,8 @@ public class PromiseTest {
 
     @Test
     public void fulfilledPromiseNotifiesListener() {
-        testProviderAsync.MethodWithNoInputParametersDeferred deferred = new testProviderAsync.MethodWithNoInputParametersDeferred();
-        Promise<testProviderAsync.MethodWithNoInputParametersDeferred> promise = new Promise<testProviderAsync.MethodWithNoInputParametersDeferred>(deferred);
+        testProvider.MethodWithNoInputParametersDeferred deferred = new testProvider.MethodWithNoInputParametersDeferred();
+        Promise<testProvider.MethodWithNoInputParametersDeferred> promise = new Promise<testProvider.MethodWithNoInputParametersDeferred>(deferred);
         PromiseListener listener = Mockito.mock(PromiseListener.class);
 
         Integer expectedValue = 42;

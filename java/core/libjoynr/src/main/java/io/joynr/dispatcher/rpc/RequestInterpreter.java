@@ -20,8 +20,6 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestCallerAsync;
-import io.joynr.dispatcher.RequestCallerSync;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
@@ -66,11 +64,7 @@ public class RequestInterpreter {
         return new Reply(request.getRequestReplyId(), response);
     }
 
-    public Reply execute(RequestCallerSync requestCaller, Request request) {
-        return createReply(request, invokeMethod(requestCaller, request));
-    }
-
-    public void execute(final Callback<Reply> callback, RequestCallerAsync requestCaller, final Request request) {
+    public void execute(final Callback<Reply> callback, RequestCaller requestCaller, final Request request) {
         Promise<? extends AbstractDeferred> promise = (Promise<?>) invokeMethod(requestCaller, request);
         promise.then(new PromiseListener() {
 

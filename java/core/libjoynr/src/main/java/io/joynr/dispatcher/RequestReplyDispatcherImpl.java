@@ -464,39 +464,30 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             Request request = objectMapper.readValue(message.getPayload(), Request.class);
             logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
-            if (requestCaller instanceof RequestCallerAsync) {
-                requestInterpreter.execute(new Callback<Reply>() {
+            requestInterpreter.execute(new Callback<Reply>() {
 
-                    @Override
-                    public void onSuccess(Reply reply) {
-                        try {
-                            if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
-                                sendReply(message, reply);
-                            } else {
-                                logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message {} has been reached.",
-                                             reply,
-                                             new Date(message.getExpiryDate()));
-                            }
-                        } catch (Exception e) {
-                            logger.error("Error processing message: \r\n {} : error : {}", message, e);
+                @Override
+                public void onSuccess(Reply reply) {
+                    try {
+                        if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
+                            sendReply(message, reply);
+                        } else {
+                            logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message {} has been reached.",
+                                         reply,
+                                         new Date(message.getExpiryDate()));
                         }
+                    } catch (Exception e) {
+                        logger.error("Error processing message: \r\n {} : error : {}", message, e);
                     }
+                }
 
-                    @Override
-                    public void onFailure(JoynrException error) {
-                        logger.error("Error processing message: \r\n {} ; error: {}", message, error);
-                    }
-                },
-                                           (RequestCallerAsync) requestCaller,
-                                           request);
-            } else if (requestCaller instanceof RequestCallerSync) {
-                Reply reply = requestInterpreter.execute((RequestCallerSync) requestCaller, request);
-                sendReply(message, reply);
-            } else {
-                logger.error("Error processing message: \r\n {}. RequestCaller type {} unknown.",
-                             message,
-                             requestCaller.getClass().getName());
-            }
+                @Override
+                public void onFailure(JoynrException error) {
+                    logger.error("Error processing message: \r\n {} ; error: {}", message, error);
+                }
+            },
+                                       requestCaller,
+                                       request);
         } catch (Throwable e) {
             logger.error("Error processing message: \r\n {}", message, e);
         }

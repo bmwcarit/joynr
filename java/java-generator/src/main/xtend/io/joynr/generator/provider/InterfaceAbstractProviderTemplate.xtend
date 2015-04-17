@@ -34,59 +34,38 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
 		'''
-		«warning()»
-		package «packagePath»;
+«warning()»
+package «packagePath»;
 
-		import java.util.List;
-		import java.util.ArrayList;
-		import java.util.Map;
+import java.util.List;
 
-		import io.joynr.provider.AbstractJoynrProvider;
-		import «joynTypePackagePrefix».types.ProviderQos;
+import io.joynr.provider.AbstractJoynrProvider;
 
-		«FOR datatype : getRequiredIncludesFor(serviceInterface)»
-			import «datatype»;
-		«ENDFOR»
+«FOR datatype : getRequiredIncludesFor(serviceInterface, false, false, false, true, true)»
+	import «datatype»;
+«ENDFOR»
 
-		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the franca model.
-		@SuppressWarnings("unused")
-
-		public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
-			// TODO: remove begin moved into Default<Interface>Provider
-			// NOTE: <attribute>Changed is still needed without attribute assignment
-			«IF getAttributes(serviceInterface).size() > 0»
-			//attributes
-			«ENDIF»
-			«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.joynrName»
-			«val attributeType = getMappedDatatypeOrList(attribute)»
-			protected «attributeType» «attributeName»;
-			«ENDFOR»
-
-			«IF getAttributes(serviceInterface).size() > 0»
-				//setter & abstract getter
-			«ENDIF»
-			«FOR attribute: getAttributes(serviceInterface)»
-				«val attributeName = attribute.joynrName»
-				«val attributeType = getMappedDatatypeOrList(attribute)»
-				«IF isNotifiable(attribute)»
-					@Override
-					public final void «attributeName»Changed(«attributeType» «attributeName») {
-						this.«attributeName» = «attributeName»;
-						onAttributeValueChanged("«attributeName»", this.«attributeName»);
-					}
-				«ENDIF»
-			«ENDFOR»
-			// TODO: remove end
-
-			«FOR broadcast: serviceInterface.broadcasts»
-			«var broadcastName = broadcast.joynrName»
-			public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
-				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
+public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
+	«FOR attribute : getAttributes(serviceInterface)»
+		«val attributeName = attribute.joynrName»
+		«val attributeType = getMappedDatatypeOrList(attribute)»
+		«IF isNotifiable(attribute)»
+			@Override
+			public final void «attributeName»Changed(«attributeType» «attributeName») {
+				onAttributeValueChanged("«attributeName»", «attributeName»);
 			}
+		«ENDIF»
+	«ENDFOR»
 
-			«ENDFOR»
-			}
+	«FOR broadcast : serviceInterface.broadcasts»
+		«var broadcastName = broadcast.joynrName»
+		@Override
+		public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
+			fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
+		}
+
+	«ENDFOR»
+}
 		'''
 	}
 }

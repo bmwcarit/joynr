@@ -19,17 +19,17 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
-import com.google.inject.Inject;
 import io.joynr.accesscontrol.DomainAccessControlStore;
+import io.joynr.provider.Promise;
+import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
 import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.MasterRegistrationControlEntry;
+import joynr.infrastructure.OwnerAccessControlEntry;
 import joynr.infrastructure.OwnerRegistrationControlEntry;
 import joynr.infrastructure.Role;
 
-import java.util.List;
+import com.google.inject.Inject;
 
 /**
  * Manages the Access Control Lists for all providers.
@@ -44,164 +44,218 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     }
 
     @Override
-    public List<DomainRoleEntry> getDomainRoles(String uid) {
-        return domainAccessStore.getDomainRoles(uid);
+    public Promise<GetDomainRolesDeferred> getDomainRoles(String uid) {
+        GetDomainRolesDeferred deferred = new GetDomainRolesDeferred();
+        deferred.resolve(domainAccessStore.getDomainRoles(uid));
+        return new Promise<GetDomainRolesDeferred>(deferred);
     }
 
     @Override
-    public Boolean updateDomainRole(DomainRoleEntry updatedEntry) {
-        return domainAccessStore.updateDomainRole(updatedEntry);
+    public Promise<UpdateDomainRoleDeferred> updateDomainRole(DomainRoleEntry updatedEntry) {
+        UpdateDomainRoleDeferred deferred = new UpdateDomainRoleDeferred();
+        deferred.resolve(domainAccessStore.updateDomainRole(updatedEntry));
+        return new Promise<UpdateDomainRoleDeferred>(deferred);
     }
 
     @Override
-    public Boolean removeDomainRole(String uid, Role role) {
-        return domainAccessStore.removeDomainRole(uid, role);
+    public Promise<RemoveDomainRoleDeferred> removeDomainRole(String uid, Role role) {
+        RemoveDomainRoleDeferred deferred = new RemoveDomainRoleDeferred();
+        deferred.resolve(domainAccessStore.removeDomainRole(uid, role));
+        return new Promise<RemoveDomainRoleDeferred>(deferred);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid) {
-        return domainAccessStore.getMasterAccessControlEntries(uid);
+    public Promise<GetMasterAccessControlEntries1Deferred> getMasterAccessControlEntries(String uid) {
+        GetMasterAccessControlEntries1Deferred deferred = new GetMasterAccessControlEntries1Deferred();
+        deferred.resolve(domainAccessStore.getMasterAccessControlEntries(uid));
+        return new Promise<GetMasterAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getEditableMasterAccessControlEntries(String uid) {
-        return domainAccessStore.getEditableMasterAccessControlEntries(uid);
+    public Promise<GetEditableMasterAccessControlEntriesDeferred> getEditableMasterAccessControlEntries(String uid) {
+        GetEditableMasterAccessControlEntriesDeferred deferred = new GetEditableMasterAccessControlEntriesDeferred();
+        deferred.resolve(domainAccessStore.getEditableMasterAccessControlEntries(uid));
+        return new Promise<GetEditableMasterAccessControlEntriesDeferred>(deferred);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String domain, String interfaceName) {
-        return domainAccessStore.getMasterAccessControlEntries(domain, interfaceName);
+    public Promise<GetMasterAccessControlEntries1Deferred> getMasterAccessControlEntries(String domain,
+                                                                                         String interfaceName) {
+        GetMasterAccessControlEntries1Deferred deferred = new GetMasterAccessControlEntries1Deferred();
+        deferred.resolve(domainAccessStore.getMasterAccessControlEntries(domain, interfaceName));
+        return new Promise<GetMasterAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
-    public Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAccessControlEntry) {
-        return domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry);
+    public Promise<UpdateMasterAccessControlEntryDeferred> updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAccessControlEntry) {
+        UpdateMasterAccessControlEntryDeferred deferred = new UpdateMasterAccessControlEntryDeferred();
+        deferred.resolve(domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry));
+        return new Promise<UpdateMasterAccessControlEntryDeferred>(deferred);
     }
 
     @Override
-    public Boolean removeMasterAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return domainAccessStore.removeMasterAccessControlEntry(uid, domain, interfaceName, operation);
+    public Promise<RemoveMasterAccessControlEntryDeferred> removeMasterAccessControlEntry(String uid,
+                                                                                          String domain,
+                                                                                          String interfaceName,
+                                                                                          String operation) {
+        RemoveMasterAccessControlEntryDeferred deferred = new RemoveMasterAccessControlEntryDeferred();
+        deferred.resolve(domainAccessStore.removeMasterAccessControlEntry(uid, domain, interfaceName, operation));
+        return new Promise<RemoveMasterAccessControlEntryDeferred>(deferred);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid) {
-        return domainAccessStore.getMediatorAccessControlEntries(uid);
+    public Promise<GetMediatorAccessControlEntries1Deferred> getMediatorAccessControlEntries(String uid) {
+        GetMediatorAccessControlEntries1Deferred deferred = new GetMediatorAccessControlEntries1Deferred();
+        deferred.resolve(domainAccessStore.getMediatorAccessControlEntries(uid));
+        return new Promise<GetMediatorAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getEditableMediatorAccessControlEntries(String uid) {
-        return domainAccessStore.getEditableMediatorAccessControlEntries(uid);
+    public Promise<GetEditableMediatorAccessControlEntriesDeferred> getEditableMediatorAccessControlEntries(String uid) {
+        GetEditableMediatorAccessControlEntriesDeferred deferred = new GetEditableMediatorAccessControlEntriesDeferred();
+        deferred.resolve(domainAccessStore.getEditableMediatorAccessControlEntries(uid));
+        return new Promise<GetEditableMediatorAccessControlEntriesDeferred>(deferred);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String domain, String interfaceName) {
-        return domainAccessStore.getMediatorAccessControlEntries(domain, interfaceName);
+    public Promise<GetMediatorAccessControlEntries1Deferred> getMediatorAccessControlEntries(String domain,
+                                                                                             String interfaceName) {
+        GetMediatorAccessControlEntries1Deferred deferred = new GetMediatorAccessControlEntries1Deferred();
+        deferred.resolve(domainAccessStore.getMediatorAccessControlEntries(domain, interfaceName));
+        return new Promise<GetMediatorAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
-    public Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAccessControlEntry) {
-        return domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry);
+    public Promise<UpdateMediatorAccessControlEntryDeferred> updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAccessControlEntry) {
+        UpdateMediatorAccessControlEntryDeferred deferred = new UpdateMediatorAccessControlEntryDeferred();
+        deferred.resolve(domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry));
+        return new Promise<UpdateMediatorAccessControlEntryDeferred>(deferred);
     }
 
     @Override
-    public Boolean removeMediatorAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return domainAccessStore.removeMediatorAccessControlEntry(uid, domain, interfaceName, operation);
+    public Promise<RemoveMediatorAccessControlEntryDeferred> removeMediatorAccessControlEntry(String uid,
+                                                                                              String domain,
+                                                                                              String interfaceName,
+                                                                                              String operation) {
+        RemoveMediatorAccessControlEntryDeferred deferred = new RemoveMediatorAccessControlEntryDeferred();
+        deferred.resolve(domainAccessStore.removeMediatorAccessControlEntry(uid, domain, interfaceName, operation));
+        return new Promise<RemoveMediatorAccessControlEntryDeferred>(deferred);
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid) {
-        return domainAccessStore.getOwnerAccessControlEntries(uid);
+    public Promise<GetOwnerAccessControlEntries1Deferred> getOwnerAccessControlEntries(String uid) {
+        GetOwnerAccessControlEntries1Deferred deferred = new GetOwnerAccessControlEntries1Deferred();
+        deferred.resolve(domainAccessStore.getOwnerAccessControlEntries(uid));
+        return new Promise<GetOwnerAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain, String interfaceName) {
-        return domainAccessStore.getOwnerAccessControlEntries(domain, interfaceName);
+    public Promise<GetOwnerAccessControlEntries1Deferred> getOwnerAccessControlEntries(String domain,
+                                                                                       String interfaceName) {
+        GetOwnerAccessControlEntries1Deferred deferred = new GetOwnerAccessControlEntries1Deferred();
+        deferred.resolve(domainAccessStore.getOwnerAccessControlEntries(domain, interfaceName));
+        return new Promise<GetOwnerAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(String uid) {
-        return domainAccessStore.getEditableOwnerAccessControlEntries(uid);
+    public Promise<GetEditableOwnerAccessControlEntriesDeferred> getEditableOwnerAccessControlEntries(String uid) {
+        GetEditableOwnerAccessControlEntriesDeferred deferred = new GetEditableOwnerAccessControlEntriesDeferred();
+        deferred.resolve(domainAccessStore.getEditableOwnerAccessControlEntries(uid));
+        return new Promise<GetEditableOwnerAccessControlEntriesDeferred>(deferred);
     }
 
     @Override
-    public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAccessControlEntry) {
-        return domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry);
+    public Promise<UpdateOwnerAccessControlEntryDeferred> updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAccessControlEntry) {
+        UpdateOwnerAccessControlEntryDeferred deferred = new UpdateOwnerAccessControlEntryDeferred();
+        deferred.resolve(domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry));
+        return new Promise<UpdateOwnerAccessControlEntryDeferred>(deferred);
     }
 
     @Override
-    public Boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
-        return domainAccessStore.removeOwnerAccessControlEntry(uid, domain, interfaceName, operation);
+    public Promise<RemoveOwnerAccessControlEntryDeferred> removeOwnerAccessControlEntry(String uid,
+                                                                                        String domain,
+                                                                                        String interfaceName,
+                                                                                        String operation) {
+        RemoveOwnerAccessControlEntryDeferred deferred = new RemoveOwnerAccessControlEntryDeferred();
+        deferred.resolve(domainAccessStore.removeOwnerAccessControlEntry(uid, domain, interfaceName, operation));
+        return new Promise<RemoveOwnerAccessControlEntryDeferred>(deferred);
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid) {
+    public Promise<GetMasterRegistrationControlEntriesDeferred> getMasterRegistrationControlEntries(String uid) {
         assert false : "method not implemented";
         return null;
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getEditableMasterRegistrationControlEntries(String uid) {
+    public Promise<GetEditableMasterRegistrationControlEntriesDeferred> getEditableMasterRegistrationControlEntries(String uid) {
         assert false : "method not implemented";
         return null;
     }
 
     @Override
-    public Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
-        assert false : "method not implemented";
-        return false;
-    }
-
-    @Override
-    public Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        assert false : "method not implemented";
-        return false;
-    }
-
-    @Override
-    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid) {
+    public Promise<UpdateMasterRegistrationControlEntryDeferred> updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
         assert false : "method not implemented";
         return null;
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getEditableMediatorRegistrationControlEntries(String uid) {
+    public Promise<RemoveMasterRegistrationControlEntryDeferred> removeMasterRegistrationControlEntry(String uid,
+                                                                                                      String domain,
+                                                                                                      String interfaceName) {
         assert false : "method not implemented";
         return null;
     }
 
     @Override
-    public Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
-        assert false : "method not implemented";
-        return false;
-    }
-
-    @Override
-    public Boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        assert false : "method not implemented";
-        return false;
-    }
-
-    @Override
-    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid) {
+    public Promise<GetMediatorRegistrationControlEntriesDeferred> getMediatorRegistrationControlEntries(String uid) {
         assert false : "method not implemented";
         return null;
     }
 
     @Override
-    public List<OwnerRegistrationControlEntry> getEditableOwnerRegistrationControlEntries(String uid) {
+    public Promise<GetEditableMediatorRegistrationControlEntriesDeferred> getEditableMediatorRegistrationControlEntries(String uid) {
         assert false : "method not implemented";
         return null;
     }
 
     @Override
-    public Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
+    public Promise<UpdateMediatorRegistrationControlEntryDeferred> updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
         assert false : "method not implemented";
-        return false;
+        return null;
     }
 
     @Override
-    public Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
+    public Promise<RemoveMediatorRegistrationControlEntryDeferred> removeMediatorRegistrationControlEntry(String uid,
+                                                                                                          String domain,
+                                                                                                          String interfaceName) {
         assert false : "method not implemented";
-        return false;
+        return null;
+    }
+
+    @Override
+    public Promise<GetOwnerRegistrationControlEntriesDeferred> getOwnerRegistrationControlEntries(String uid) {
+        assert false : "method not implemented";
+        return null;
+    }
+
+    @Override
+    public Promise<GetEditableOwnerRegistrationControlEntriesDeferred> getEditableOwnerRegistrationControlEntries(String uid) {
+        assert false : "method not implemented";
+        return null;
+    }
+
+    @Override
+    public Promise<UpdateOwnerRegistrationControlEntryDeferred> updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
+        assert false : "method not implemented";
+        return null;
+    }
+
+    @Override
+    public Promise<RemoveOwnerRegistrationControlEntryDeferred> removeOwnerRegistrationControlEntry(String uid,
+                                                                                                    String domain,
+                                                                                                    String interfaceName) {
+        assert false : "method not implemented";
+        return null;
     }
 }

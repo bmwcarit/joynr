@@ -64,7 +64,7 @@ import joynr.tests.DefaulttestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
-import joynr.tests.testProviderAsync;
+import joynr.tests.testProvider;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
@@ -170,13 +170,13 @@ public class ProviderProxyEnd2EndTest {
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domain, provider, testProviderAsync.class, "authToken")
+                                .registerCapability(domain, provider, testProvider.class, "authToken")
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domainAsync, providerAsync, testProviderAsync.class, "authToken")
+                                .registerCapability(domainAsync, providerAsync, testProvider.class, "authToken")
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
 
         messagingQos = new MessagingQos(5000);

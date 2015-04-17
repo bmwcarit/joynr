@@ -20,7 +20,7 @@ package io.joynr.capabilities;
  */
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.dispatcher.rpc.RpcStubbingTest.TestAsyncInterface;
+import io.joynr.dispatcher.rpc.RpcStubbingTest.TestProvider;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import org.junit.Before;
@@ -44,9 +44,9 @@ public class ParticipantIdStorageTest {
 
     @Test
     public void test() {
-        storage.getProviderParticipantId("domain", TestAsyncInterface.class, "token1", TOKEN1_PARTICIPANT);
+        storage.getProviderParticipantId("domain", TestProvider.class, "token1", TOKEN1_PARTICIPANT);
         String participant2 = storage.getProviderParticipantId("domain",
-                                                               TestAsyncInterface.class,
+                                                               TestProvider.class,
                                                                "token2",
                                                                TOKEN2_PARTICIPANT);
 

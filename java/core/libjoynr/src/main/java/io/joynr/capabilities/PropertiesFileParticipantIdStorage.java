@@ -32,9 +32,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.infrastructure.ChannelUrlDirectoryProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProviderAsync;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,11 +87,9 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (defaultValue != null) {
             participantId = defaultValue;
             // if no default value, generate one and save it to the persistence file
-        } else if (ChannelUrlDirectoryProvider.class.isAssignableFrom(providedInterface)
-                || ChannelUrlDirectoryProviderAsync.class.isAssignableFrom(providedInterface)) {
+        } else if (ChannelUrlDirectoryProvider.class.isAssignableFrom(providedInterface)) {
             participantId = channelUrlDirectoryParticipantId;
-        } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)
-                || GlobalCapabilitiesDirectoryProviderAsync.class.isAssignableFrom(providedInterface)) {
+        } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)) {
             participantId = capabiliitesDirectoryParticipantId;
         } else {
 

@@ -28,7 +28,7 @@ import io.joynr.runtime.AbstractJoynrApplication;
 
 import java.util.HashMap;
 
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProviderAsync;
+import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.ChannelUrlInformation;
 
@@ -44,7 +44,7 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(ChannelUrlDirectoryAbstractProviderAsync.class).to(ChannelUrlDirectoyImpl.class);
+        bind(ChannelUrlDirectoryAbstractProvider.class).to(ChannelUrlDirectoyImpl.class);
         bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
                         .toInstance(5000l);
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);

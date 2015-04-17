@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProviderAsync;
+import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ import com.google.inject.name.Named;
 // TODO Evaluate pro /cons of a in memory database
 
 @Singleton
-public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProviderAsync {
+public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoyImpl.class);
 
     public static final String CHANNELURL_INACTIVE_TIME_IN_MS = "joynr.channel.channelurlinactivetime";

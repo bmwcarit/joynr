@@ -22,13 +22,14 @@ package io.joynr.capabilities.directory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
 
 import java.util.Collection;
 import java.util.List;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.CapabilityInformation;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,11 +58,13 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public void add(CapabilityInformation capabilityInformation) {
-
+    public Promise<DeferredVoid> add(CapabilityInformation capabilityInformation) {
+        DeferredVoid deferred = new DeferredVoid();
         CapabilityEntry capabilityEntry = capabilityInformation2Entry(capabilityInformation);
         logger.debug("registered capability: {}", capabilityEntry);
         capabiltiesStore.add(capabilityEntry);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 
     private CapabilityEntry capabilityInformation2Entry(CapabilityInformation capabilityInformation) {
@@ -69,7 +72,8 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public void add(List<CapabilityInformation> capabilitiesInformation) {
+    public Promise<DeferredVoid> add(List<CapabilityInformation> capabilitiesInformation) {
+        DeferredVoid deferred = new DeferredVoid();
         // TODO check interfaces before adding them
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
         for (CapabilityInformation capInfo : capabilitiesInformation) {
@@ -79,48 +83,53 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         logger.debug("registered capabilities: interface {}", capabilityEntries.toString());
 
         capabiltiesStore.add(capabilityEntries);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public void remove(String participantId) {
+    public Promise<DeferredVoid> remove(String participantId) {
+        DeferredVoid deferred = new DeferredVoid();
         logger.debug("removed capability with participantId: {}", participantId);
         capabiltiesStore.remove(participantId);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public void remove(List<String> capabilities) {
+    public Promise<DeferredVoid> remove(List<String> capabilities) {
+        DeferredVoid deferred = new DeferredVoid();
         // TODO who is allowed to remove capabilities
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
         logger.debug("Removing capabilities: Capabilities {}", capabilityEntries);
         capabiltiesStore.remove(capabilities);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public List<CapabilityInformation> lookup(final String domain, final String interfaceName) {
+    public Promise<Lookup1Deferred> lookup(final String domain, final String interfaceName) {
+        Lookup1Deferred deferred = new Lookup1Deferred();
         logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
         List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
         Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain, interfaceName);
         for (CapabilityEntry entry : entryCollection) {
             capabilityInformationList.add(entry.toCapabilityInformation());
         }
-        return capabilityInformationList;
+        deferred.resolve(capabilityInformationList);
+        return new Promise<Lookup1Deferred>(deferred);
     }
 
     @Override
-    public CapabilityInformation lookup(String forParticipantId) {
+    public Promise<Lookup2Deferred> lookup(String forParticipantId) {
+        Lookup2Deferred deferred = new Lookup2Deferred();
         logger.debug("Searching capabilities for participantId: {}", forParticipantId);
         CapabilityEntry capEntry = capabiltiesStore.lookup(forParticipantId, DiscoveryQos.NO_FILTER.getCacheMaxAge());
         if (capEntry == null) {
-            return null;
+            deferred.resolve(null);
         } else {
-            return capEntry.toCapabilityInformation();
+            deferred.resolve(capEntry.toCapabilityInformation());
         }
+        return new Promise<Lookup2Deferred>(deferred);
     }
-
-    @Override
-    public ProviderQos getProviderQos() {
-        // TODO set capDirImpl provider QoS
-        return providerQos;
-    }
-
 }

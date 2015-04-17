@@ -29,7 +29,7 @@ import java.util.ArrayList
 class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension InterfaceProviderAsyncTemplate
+	@Inject extension InterfaceProviderTemplate
 
 	override generate(FInterface serviceInterface) {
 		var methodToDeferredName = new HashMap<FMethod, String>();
@@ -38,7 +38,7 @@ class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 
 		val interfaceName =  serviceInterface.joynrName
 		val className = "Default" + interfaceName + "Provider"
-		val abstractProviderName = interfaceName + "AbstractProviderAsync"
+		val abstractProviderName = interfaceName + "AbstractProvider"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
 		'''

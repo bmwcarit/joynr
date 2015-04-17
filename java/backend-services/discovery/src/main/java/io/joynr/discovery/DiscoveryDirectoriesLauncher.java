@@ -26,8 +26,8 @@ import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.util.Properties;
 
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProviderAsync;
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
+import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
+import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 
@@ -38,7 +38,7 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
     private static final String AUTH_TOKEN = "DiscoveryDirectoryLauncher";
 
     @Inject
-    private ChannelUrlDirectoryAbstractProviderAsync channelUrlDirectoryProvider;
+    private ChannelUrlDirectoryAbstractProvider channelUrlDirectoryProvider;
 
     @Inject
     private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
@@ -69,7 +69,7 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
     public void run() {
         runtime.registerCapability(localDomain,
                                    channelUrlDirectoryProvider,
-                                   ChannelUrlDirectoryProviderAsync.class,
+                                   ChannelUrlDirectoryProvider.class,
                                    AUTH_TOKEN);
 
         runtime.registerCapability(localDomain,

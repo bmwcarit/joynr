@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync.GetUrlsForChannelDeferred;
+import joynr.infrastructure.ChannelUrlDirectoryProvider.GetUrlsForChannelDeferred;
 import joynr.types.ChannelUrlInformation;
 
 import org.junit.Assert;

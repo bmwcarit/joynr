@@ -20,11 +20,12 @@ package io.joynr.capabilities.directory;
  */
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
+import io.joynr.provider.PromiseKeeper;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import joynr.types.CapabilityInformation;
@@ -67,23 +68,36 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void registerMultipleCapabilities() {
+    public void registerMultipleCapabilities() throws InterruptedException {
+        List<CapabilityInformation> expectedLookupThisInterface = new ArrayList<CapabilityInformation>();
+        expectedLookupThisInterface.add(capInfo1);
+        List<CapabilityInformation> expectedLookupAnotherInterface = new ArrayList<CapabilityInformation>();
+        expectedLookupAnotherInterface.add(capInfo2);
 
         capabilitiesDirectory.add(singleInterface);
         capabilitiesDirectory.add(multipleInterfaces);
 
-        assertEquals(multipleInterfaces.get(0), capabilitiesDirectory.lookup(domain, thisInterface).get(0));
-        assertTrue(capabilitiesDirectory.lookup(domain, thisInterface).contains(multipleInterfaces.get(0)));
-        assertEquals(multipleInterfaces.get(1), capabilitiesDirectory.lookup(domain, anotherInterface).get(0));
-        assertTrue(capabilitiesDirectory.lookup(domain, anotherInterface).contains(multipleInterfaces.get(1)));
+        PromiseKeeper lookupThisInterface = new PromiseKeeper();
+        capabilitiesDirectory.lookup(domain, thisInterface).then(lookupThisInterface);
+        assertEquals(expectedLookupThisInterface, lookupThisInterface.getValues()[0]);
+
+        PromiseKeeper lookupAnotherInterface = new PromiseKeeper();
+        capabilitiesDirectory.lookup(domain, anotherInterface).then(lookupAnotherInterface);
+        assertEquals(expectedLookupAnotherInterface, lookupAnotherInterface.getValues()[0]);
     }
 
     @Test
     public void registerCapabilityAndRequestChannels() throws Exception {
-        capabilitiesDirectory.add(singleInterface);
-        assertEquals(singleInterface.get(0), capabilitiesDirectory.lookup(domain, thisInterface).get(0));
-        assertEquals(true, capabilitiesDirectory.lookup(domain, thisInterface).contains(singleInterface.get(0)));
+        List<CapabilityInformation> expectedLookupThisInterface = new ArrayList<CapabilityInformation>();
+        expectedLookupThisInterface.add(capInfo1);
 
+        PromiseKeeper addSingleInterface = new PromiseKeeper();
+        capabilitiesDirectory.add(singleInterface).then(addSingleInterface);
+        addSingleInterface.waitForSettlement();
+
+        PromiseKeeper lookupThisInterface = new PromiseKeeper();
+        capabilitiesDirectory.lookup(domain, thisInterface).then(lookupThisInterface);
+        assertEquals(expectedLookupThisInterface, lookupThisInterface.getValues()[0]);
     }
 
     String getRandomParticipantId() {
