@@ -3,7 +3,7 @@ package io.joynr.exceptions;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,5 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrRuntimeException extends RuntimeException implements JoynrException {
-    private static final long serialVersionUID = 1L;
-
-    public JoynrRuntimeException() {
-        super();
-    }
-
-    public JoynrRuntimeException(String message) {
-        super(message);
-    }
-
-    public JoynrRuntimeException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public JoynrRuntimeException(Throwable cause) {
-        super(cause);
-    }
+public interface JoynrException {
 }
