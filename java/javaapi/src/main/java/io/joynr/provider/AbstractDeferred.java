@@ -19,7 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public abstract class AbstractDeferred {
     };
 
     private State state = State.PENDING;
-    private JoynrException error = null;
+    private JoynrRuntimeException error = null;
     private Object[] values = null;
 
     private List<DeferredListener> listeners = new ArrayList<DeferredListener>();
@@ -65,7 +65,7 @@ public abstract class AbstractDeferred {
      * @return true if the promise is rejected; false in case the promise is
      *      already settled.
      */
-    public synchronized boolean reject(JoynrException error) {
+    public synchronized boolean reject(JoynrRuntimeException error) {
         if (isSettled()) {
             return false;
         }
@@ -80,7 +80,7 @@ public abstract class AbstractDeferred {
      *      deferred is not in rejected state.
      */
     @Nullable
-    public JoynrException getError() {
+    public JoynrRuntimeException getError() {
         return error;
     }
 

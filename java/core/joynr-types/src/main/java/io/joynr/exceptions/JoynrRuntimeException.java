@@ -19,22 +19,22 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrException extends RuntimeException {
+public class JoynrRuntimeException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public JoynrException() {
+    public JoynrRuntimeException() {
         super();
     }
 
-    public JoynrException(String message) {
+    public JoynrRuntimeException(String message) {
         super(message);
     }
 
-    public JoynrException(String message, Throwable cause) {
+    public JoynrRuntimeException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public JoynrException(Throwable cause) {
+    public JoynrRuntimeException(Throwable cause) {
         super(cause);
     }
 }

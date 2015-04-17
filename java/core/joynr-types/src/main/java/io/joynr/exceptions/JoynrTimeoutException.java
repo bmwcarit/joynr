@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
  * #L%
  */
 
-public class JoynrTimeoutException extends JoynrException {
+public class JoynrTimeoutException extends JoynrRuntimeException {
     private static final long serialVersionUID = 1L;
     private static final ThreadLocal<DateFormat> DateFormatter = new ThreadLocal<DateFormat>() {
         @Override

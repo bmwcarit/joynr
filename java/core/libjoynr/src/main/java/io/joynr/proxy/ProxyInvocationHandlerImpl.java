@@ -26,7 +26,7 @@ import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -112,11 +112,11 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 }
                 return connector.executeSyncMethod(method, args);
             }
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             throw e;
 
         } catch (Throwable e) {
-            throw new JoynrException(e);
+            throw new JoynrRuntimeException(e);
         }
 
         throw new JoynrArbitrationException("Arbitration and Connector failed: domain: " + domain + " interface: "
@@ -192,18 +192,18 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 currentSubscription.getFuture().onFailure(e);
 
             } catch (JsonGenerationException e) {
-                currentSubscription.getFuture().onFailure(new JoynrException(e));
+                currentSubscription.getFuture().onFailure(new JoynrRuntimeException(e));
 
             } catch (JsonMappingException e) {
-                currentSubscription.getFuture().onFailure(new JoynrException(e));
+                currentSubscription.getFuture().onFailure(new JoynrRuntimeException(e));
 
             } catch (IOException e) {
-                currentSubscription.getFuture().onFailure(new JoynrException(e));
+                currentSubscription.getFuture().onFailure(new JoynrRuntimeException(e));
             }
         }
     }
 
-    private void setFutureErrorState(Invocation invocation, JoynrException e) {
+    private void setFutureErrorState(Invocation invocation, JoynrRuntimeException e) {
         invocation.getFuture().onFailure(e);
     }
 
@@ -226,13 +226,13 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 currentRPC.getFuture().onFailure(e);
 
             } catch (JsonGenerationException e) {
-                currentRPC.getFuture().onFailure(new JoynrException(e));
+                currentRPC.getFuture().onFailure(new JoynrRuntimeException(e));
 
             } catch (JsonMappingException e) {
-                currentRPC.getFuture().onFailure(new JoynrException(e));
+                currentRPC.getFuture().onFailure(new JoynrRuntimeException(e));
 
             } catch (IOException e) {
-                currentRPC.getFuture().onFailure(new JoynrException(e));
+                currentRPC.getFuture().onFailure(new JoynrRuntimeException(e));
             }
 
         }
@@ -293,13 +293,13 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 setFutureErrorState(attributeSubscription, e);
             } catch (JsonGenerationException e) {
                 logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
-                setFutureErrorState(attributeSubscription, new JoynrException(e));
+                setFutureErrorState(attributeSubscription, new JoynrRuntimeException(e));
             } catch (JsonMappingException e) {
                 logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
-                setFutureErrorState(attributeSubscription, new JoynrException(e));
+                setFutureErrorState(attributeSubscription, new JoynrRuntimeException(e));
             } catch (IOException e) {
                 logger.error("error executing attribute subscription: {} : {}", method.getName(), e.getMessage());
-                setFutureErrorState(attributeSubscription, new JoynrException(e));
+                setFutureErrorState(attributeSubscription, new JoynrRuntimeException(e));
             }
 
             return attributeSubscription.getSubscriptionId();
@@ -345,13 +345,13 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 setFutureErrorState(broadcastSubscription, e);
             } catch (JsonGenerationException e) {
                 logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
-                setFutureErrorState(broadcastSubscription, new JoynrException(e));
+                setFutureErrorState(broadcastSubscription, new JoynrRuntimeException(e));
             } catch (JsonMappingException e) {
                 logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
-                setFutureErrorState(broadcastSubscription, new JoynrException(e));
+                setFutureErrorState(broadcastSubscription, new JoynrRuntimeException(e));
             } catch (IOException e) {
                 logger.error("error executing broadcast subscription: {} : {}", method.getName(), e.getMessage());
-                setFutureErrorState(broadcastSubscription, new JoynrException(e));
+                setFutureErrorState(broadcastSubscription, new JoynrRuntimeException(e));
             }
             return broadcastSubscription.getSubscriptionId();
         } else if (method.getName().startsWith("unsubscribeFrom")) {
@@ -407,17 +407,17 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             logger.error("error executing unsubscription: {} : {}",
                          unsubscribeInvocation.getSubscriptionId(),
                          e.getMessage());
-            setFutureErrorState(unsubscribeInvocation, new JoynrException(e));
+            setFutureErrorState(unsubscribeInvocation, new JoynrRuntimeException(e));
         } catch (JsonMappingException e) {
             logger.error("error executing unsubscription: {} : {}",
                          unsubscribeInvocation.getSubscriptionId(),
                          e.getMessage());
-            setFutureErrorState(unsubscribeInvocation, new JoynrException(e));
+            setFutureErrorState(unsubscribeInvocation, new JoynrRuntimeException(e));
         } catch (IOException e) {
             logger.error("error executing unsubscription: {} : {}",
                          unsubscribeInvocation.getSubscriptionId(),
                          e.getMessage());
-            setFutureErrorState(unsubscribeInvocation, new JoynrException(e));
+            setFutureErrorState(unsubscribeInvocation, new JoynrRuntimeException(e));
         }
 
         return unsubscribeInvocation;

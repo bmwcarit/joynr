@@ -19,7 +19,7 @@ package io.joynr.util;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -303,7 +303,7 @@ public class JoynrUtil {
 
     }
 
-    private static Object getResource(InputStream inputStream, boolean asByteArray) throws JoynrException {
+    private static Object getResource(InputStream inputStream, boolean asByteArray) throws JoynrRuntimeException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
         byte[] bytes = new byte[512];
 
@@ -328,7 +328,7 @@ public class JoynrUtil {
             outputStream.close();
             return result;
         } catch (IOException e) {
-            throw new JoynrException(e.getMessage(), e) {
+            throw new JoynrRuntimeException(e.getMessage(), e) {
                 private static final long serialVersionUID = 1L;
             };
         }

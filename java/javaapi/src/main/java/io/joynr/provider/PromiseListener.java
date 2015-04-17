@@ -19,12 +19,12 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 public interface PromiseListener {
 
     public void onFulfillment(Object... values);
 
-    public void onRejection(JoynrException error);
+    public void onRejection(JoynrRuntimeException error);
 
 }

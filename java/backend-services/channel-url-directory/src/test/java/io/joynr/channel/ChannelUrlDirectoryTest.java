@@ -19,7 +19,7 @@ package io.joynr.channel;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 
@@ -45,7 +45,7 @@ public class ChannelUrlDirectoryTest {
     private abstract class TestPromiseListener implements PromiseListener {
 
         @Override
-        public void onRejection(JoynrException error) {
+        public void onRejection(JoynrRuntimeException error) {
             Assert.fail(error.getLocalizedMessage());
         }
 

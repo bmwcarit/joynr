@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller.exception;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 /**
  * Thrown if an assignment of a channel to a bounce proxy instance failed.
@@ -28,7 +28,7 @@ import io.joynr.exceptions.JoynrException;
  * @author christina.strobel
  *
  */
-public class JoynrChannelNotAssignableException extends JoynrException {
+public class JoynrChannelNotAssignableException extends JoynrRuntimeException {
 
     private static final long serialVersionUID = 212450268038844695L;
 

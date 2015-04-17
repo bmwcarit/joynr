@@ -21,7 +21,7 @@ package io.joynr.messaging;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.types.ChannelUrlInformation;
 
@@ -77,14 +77,14 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                 }
 
                 @Override
-                public void onFailure(JoynrException e) {
+                public void onFailure(JoynrRuntimeException e) {
                     //Currently not retrying. Using long TTL instead.
                     logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
 
                 }
             }, channelId, channelUrlInformation);
 
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
         }
     }

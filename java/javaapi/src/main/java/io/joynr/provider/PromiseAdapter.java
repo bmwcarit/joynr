@@ -19,7 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 public class PromiseAdapter implements PromiseListener {
 
@@ -29,7 +29,7 @@ public class PromiseAdapter implements PromiseListener {
     }
 
     @Override
-    public void onRejection(JoynrException error) {
+    public void onRejection(JoynrRuntimeException error) {
         // empty implementation
     }
 

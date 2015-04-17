@@ -37,7 +37,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingModule;
@@ -196,7 +196,7 @@ public class RpcStubbingTest {
                     }
 
                     @Override
-                    public void onFailure(JoynrException error) {
+                    public void onFailure(JoynrRuntimeException error) {
                         future.onFailure(error);
                     }
                 };

@@ -23,7 +23,7 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -86,8 +86,8 @@ public class JoynrAndroidExampleLauncher {
                                logToOutput("Arbitration failed!\n");
                            } catch (JoynrCommunicationException e) {
                                logToOutput(e.getMessage() + "\n");
-                           } catch (JoynrException e) {
-                               logToOutput("Caught unhandled JoynException : " + e.getMessage() + "\n");
+                           } catch (JoynrRuntimeException e) {
+                               logToOutput("Caught unhandled JoynrRuntimeException : " + e.getMessage() + "\n");
                            }
 
                        }

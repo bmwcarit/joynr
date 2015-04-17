@@ -21,7 +21,7 @@ package io.joynr.proxy;
 
 import io.joynr.dispatcher.rpc.RequestStatus;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 
 import java.util.concurrent.TimeUnit;
@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Future<T> {
 
     private T reply;
-    private JoynrException exception = null;
+    private JoynrRuntimeException exception = null;
     RequestStatus status = new RequestStatus(RequestStatusCode.IN_PROGRESS);
     private Lock statusLock = new ReentrantLock();
     private Condition statusLockChangedCondition = statusLock.newCondition();
@@ -103,7 +103,7 @@ public class Future<T> {
             statusLockChangedCondition.signalAll();
         } catch (Throwable e) {
             status = new RequestStatus(RequestStatusCode.ERROR);
-            exception = new JoynrException(e);
+            exception = new JoynrRuntimeException(e);
         } finally {
             statusLock.unlock();
         }
@@ -115,7 +115,7 @@ public class Future<T> {
      * @param exception
      *            that caused the failure
      */
-    public void onFailure(JoynrException newException) {
+    public void onFailure(JoynrRuntimeException newException) {
         exception = newException;
         status = new RequestStatus(RequestStatusCode.ERROR);
         try {

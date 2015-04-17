@@ -1,6 +1,6 @@
 package io.joynr.dispatcher.rpc;
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import javax.annotation.CheckForNull;
 
@@ -26,6 +26,6 @@ import javax.annotation.CheckForNull;
 public interface Callback<T> {
     void onSuccess(@CheckForNull T result);
 
-    void onFailure(JoynrException error);
+    void onFailure(JoynrRuntimeException error);
 
 }

@@ -28,7 +28,7 @@ import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -279,7 +279,7 @@ public class LocalCapabilitiesDirectoryTest {
             public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
                 Future<Void> result = new Future<Void>();
                 Object[] args = invocation.getArguments();
-                ((Callback<Void>) args[0]).onFailure(new JoynrException("Simulating a JoynrException on callback"));
+                ((Callback<Void>) args[0]).onFailure(new JoynrRuntimeException("Simulating a JoynrRuntimeException on callback"));
                 result.onSuccess(null);
                 return result;
             }

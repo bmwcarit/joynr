@@ -21,7 +21,7 @@ package io.joynr.arbitration;
 
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 
 import java.util.concurrent.Semaphore;
@@ -72,7 +72,7 @@ public abstract class Arbitrator {
         } catch (JoynrShutdownException e) {
             logger.warn("CapabilitiesCallback onError: " + e.getMessage(), e);
 
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             restartArbitrationIfNotExpired();
         } catch (Throwable e) {
             logger.error("CapabilitiesCallback onError thowable: " + e.getMessage(), e);

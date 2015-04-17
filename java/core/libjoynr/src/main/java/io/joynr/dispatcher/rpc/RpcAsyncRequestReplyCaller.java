@@ -20,7 +20,7 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.ReplyCaller;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrInvalidInnvocationException;
 import io.joynr.proxy.Future;
 
@@ -83,19 +83,19 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
     @Override
     public void error(Throwable error) {
-        JoynrException joynrException;
-        // wrap non-joynr exceptions in a JoynException
-        if (error instanceof JoynrException) {
-            joynrException = (JoynrException) error;
+        JoynrRuntimeException joynrRuntimeException;
+        // wrap non-joynr exceptions in a JoynrRuntimeException
+        if (error instanceof JoynrRuntimeException) {
+            joynrRuntimeException = (JoynrRuntimeException) error;
         } else {
-            joynrException = new JoynrException(error);
+            joynrRuntimeException = new JoynrRuntimeException(error);
         }
 
         if (callback != null) {
-            callback.onFailure(joynrException);
+            callback.onFailure(joynrRuntimeException);
         }
         if (future != null) {
-            future.onFailure(joynrException);
+            future.onFailure(joynrRuntimeException);
         }
     }
 

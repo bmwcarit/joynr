@@ -21,7 +21,7 @@ package io.joynr.dispatcher;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.common.ExpiryDate;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 
@@ -74,7 +74,7 @@ public class ReplyCallerDirectory {
             if (shutdown) {
                 throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
             }
-            throw new JoynrException(e);
+            throw new JoynrRuntimeException(e);
         }
 
     }

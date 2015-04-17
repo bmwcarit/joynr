@@ -24,7 +24,7 @@ import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -482,7 +482,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 }
 
                 @Override
-                public void onFailure(JoynrException error) {
+                public void onFailure(JoynrRuntimeException error) {
                     logger.error("Error processing message: \r\n {} ; error: {}", message, error);
                 }
             },

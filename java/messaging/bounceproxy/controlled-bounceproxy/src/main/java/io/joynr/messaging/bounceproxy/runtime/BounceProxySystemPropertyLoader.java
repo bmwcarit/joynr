@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.runtime;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 import io.joynr.runtime.PropertyLoader;
 
@@ -69,7 +69,7 @@ public class BounceProxySystemPropertyLoader {
      * properties have precedence over the file.
      * 
      * @return
-     * @throws JoynrException
+     * @throws JoynrRuntimeException
      *             if not all of the properties were set so that bounce proxy
      *             won't be able to start up correctly
      */
@@ -86,7 +86,7 @@ public class BounceProxySystemPropertyLoader {
                 value = loadPropertyFromFile(key);
 
                 if (value == null) {
-                    throw new JoynrException("No value for system property '" + key
+                    throw new JoynrRuntimeException("No value for system property '" + key
                             + "' set. Unable to start Bounce Proxy");
                 }
             }
@@ -127,7 +127,7 @@ public class BounceProxySystemPropertyLoader {
      * @return a string in which each occurrence of <code>${variable}</code> is
      *         replaced by {@link System#getProperty(String)} with
      *         <code>variable</code> as property key.
-     * @throws JoynrException
+     * @throws JoynrRuntimeException
      *             if the property key for the variable does not exist
      */
     @CheckForNull
@@ -146,7 +146,7 @@ public class BounceProxySystemPropertyLoader {
             String systemProperty = System.getProperty(propertyName);
 
             if (systemProperty == null) {
-                throw new JoynrException("No value for system property '" + propertyName
+                throw new JoynrRuntimeException("No value for system property '" + propertyName
                         + "' set as defined in property file. Unable to start Bounce Proxy");
             } else {
                 value = value.substring(0, startVariableIndex) + systemProperty + value.substring(endVariableIndex + 1);

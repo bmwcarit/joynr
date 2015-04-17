@@ -22,7 +22,7 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
@@ -517,7 +517,7 @@ public class PublicationManagerImpl implements PublicationManager {
                                                            publication,
                                                            messagingQos);
             // TODO handle exceptions during publication. See JOYNR-2113
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             logger.error("sendPublication error: {}", e.getMessage());
         } catch (JsonGenerationException e) {
             logger.error("sendPublication error: {}", e.getMessage());

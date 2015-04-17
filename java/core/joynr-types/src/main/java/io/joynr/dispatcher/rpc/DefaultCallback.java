@@ -1,6 +1,6 @@
 package io.joynr.dispatcher.rpc;
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import javax.annotation.CheckForNull;
 
@@ -28,7 +28,7 @@ public class DefaultCallback<T> implements Callback<T> {
     }
 
     @Override
-    public void onFailure(JoynrException error) {
+    public void onFailure(JoynrRuntimeException error) {
     }
 
 }

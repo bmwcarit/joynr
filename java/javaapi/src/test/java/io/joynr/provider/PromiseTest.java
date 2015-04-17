@@ -19,7 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.tests.testProvider;
 
 import org.junit.Assert;
@@ -40,7 +40,7 @@ public class PromiseTest {
         Assert.assertFalse(promise.isSettled());
         Assert.assertFalse(promise.isRejected());
         Assert.assertFalse(promise.isFulfilled());
-        deferred.reject(new JoynrException());
+        deferred.reject(new JoynrRuntimeException());
 
         Assert.assertTrue(promise.isSettled());
         Assert.assertTrue(promise.isRejected());
@@ -69,7 +69,7 @@ public class PromiseTest {
         Promise<AbstractDeferred> promise = new Promise<AbstractDeferred>(deferred);
 
         promise.then(null);
-        deferred.reject(new JoynrException("test exception"));
+        deferred.reject(new JoynrRuntimeException("test exception"));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class PromiseTest {
         Promise<AbstractDeferred> promise = new Promise<AbstractDeferred>(deferred);
         PromiseListener listener = Mockito.mock(PromiseListener.class);
 
-        JoynrException expectedError = new JoynrException("test exception");
+        JoynrRuntimeException expectedError = new JoynrRuntimeException("test exception");
 
         promise.then(listener);
         Assert.assertFalse(promise.isSettled());
@@ -96,7 +96,7 @@ public class PromiseTest {
         Promise<AbstractDeferred> promise = new Promise<AbstractDeferred>(deferred);
         PromiseListener listener = Mockito.mock(PromiseListener.class);
 
-        JoynrException expectedError = new JoynrException("test exception");
+        JoynrRuntimeException expectedError = new JoynrRuntimeException("test exception");
 
         deferred.reject(expectedError);
         Assert.assertTrue(promise.isRejected());

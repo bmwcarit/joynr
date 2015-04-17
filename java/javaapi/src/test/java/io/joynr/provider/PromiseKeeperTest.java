@@ -19,7 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +47,7 @@ public class PromiseKeeperTest {
         Assert.assertFalse(keeper.isSettled());
         Assert.assertFalse(keeper.isRejected());
         Assert.assertFalse(keeper.isFulfilled());
-        deferred.reject(new JoynrException());
+        deferred.reject(new JoynrRuntimeException());
 
         Assert.assertTrue(keeper.isSettled());
         Assert.assertTrue(keeper.isRejected());
@@ -91,7 +91,7 @@ public class PromiseKeeperTest {
         };
         Promise<AbstractDeferred> promise = new Promise<AbstractDeferred>(deferred);
         PromiseKeeper keeper = new PromiseKeeper();
-        final JoynrException expectedError = new JoynrException("test exception");
+        final JoynrRuntimeException expectedError = new JoynrRuntimeException("test exception");
 
         promise.then(keeper);
         executer.submit(new Runnable() {
@@ -107,7 +107,7 @@ public class PromiseKeeperTest {
                 deferred.reject(expectedError);
             }
         });
-        JoynrException error = keeper.getError();
+        JoynrRuntimeException error = keeper.getError();
 
         Assert.assertEquals(expectedError, error);
     }

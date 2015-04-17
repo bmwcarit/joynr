@@ -22,7 +22,7 @@ package io.joynr.channel;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -110,7 +110,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
                 channelUrlDirectory.unregisterChannelUrls(channelId).then(new PromiseListener() {
 
                     @Override
-                    public void onRejection(JoynrException error) {
+                    public void onRejection(JoynrRuntimeException error) {
                         callback.onFailure(error);
                     }
 
@@ -129,7 +129,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
                 channelUrlDirectory.getUrlsForChannel(channelId).then(new PromiseListener() {
 
                     @Override
-                    public void onRejection(JoynrException error) {
+                    public void onRejection(JoynrRuntimeException error) {
                         callback.onFailure(error);
                         future.onFailure(error);
                     }

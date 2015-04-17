@@ -31,7 +31,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
@@ -419,7 +419,7 @@ public class ProviderProxyEnd2EndTest {
         }
         Assert.assertEquals(true, timeoutExceptionThrown);
         Assert.assertEquals(RequestStatusCode.ERROR, waitTooLongFuture.getStatus().getCode());
-        verify(callback).onFailure(any(JoynrException.class));
+        verify(callback).onFailure(any(JoynrRuntimeException.class));
         verifyNoMoreInteractions(callback);
 
     }
@@ -454,8 +454,8 @@ public class ProviderProxyEnd2EndTest {
             }
 
             @Override
-            public void onFailure(JoynrException error) {
-                future.onFailure(new JoynrException());
+            public void onFailure(JoynrRuntimeException error) {
+                future.onFailure(new JoynrRuntimeException());
             }
 
         });

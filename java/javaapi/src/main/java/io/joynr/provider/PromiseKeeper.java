@@ -23,7 +23,7 @@ import java.util.Arrays;
 
 import javax.annotation.CheckForNull;
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 public class PromiseKeeper implements PromiseListener {
     private enum State {
@@ -32,7 +32,7 @@ public class PromiseKeeper implements PromiseListener {
 
     private State state = State.PENDING;
     private Object[] values = null;
-    private JoynrException error = null;
+    private JoynrRuntimeException error = null;
 
     @Override
     public void onFulfillment(Object... values) {
@@ -44,7 +44,7 @@ public class PromiseKeeper implements PromiseListener {
     }
 
     @Override
-    public void onRejection(JoynrException error) {
+    public void onRejection(JoynrRuntimeException error) {
         synchronized (this) {
             this.error = error;
             state = State.REJECTED;
@@ -93,7 +93,7 @@ public class PromiseKeeper implements PromiseListener {
      * @throws InterruptedException
      */
     @CheckForNull
-    public JoynrException getError() throws InterruptedException {
+    public JoynrRuntimeException getError() throws InterruptedException {
         return getError(0);
     }
 
@@ -107,7 +107,7 @@ public class PromiseKeeper implements PromiseListener {
      * @throws InterruptedException
      */
     @CheckForNull
-    public JoynrException getError(long timeout) throws InterruptedException {
+    public JoynrRuntimeException getError(long timeout) throws InterruptedException {
         if (!isSettled()) {
             synchronized (this) {
                 wait(timeout);

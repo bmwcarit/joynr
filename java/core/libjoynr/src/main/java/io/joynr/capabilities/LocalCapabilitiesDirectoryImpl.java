@@ -26,7 +26,7 @@ import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Future;
@@ -152,7 +152,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                     }
 
                     @Override
-                    public void onFailure(JoynrException exception) {
+                    public void onFailure(JoynrRuntimeException exception) {
                         ret.setStatus(RegistrationStatus.ERROR);
 
                     }
@@ -186,7 +186,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
                     }
 
                     @Override
-                    public void onFailure(JoynrException error) {
+                    public void onFailure(JoynrRuntimeException error) {
                         //do nothing
                     }
                 };
@@ -314,7 +314,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
             @Override
             public void onError(Throwable e) {
-                lookupFuture.onFailure(new JoynrException(e));
+                lookupFuture.onFailure(new JoynrRuntimeException(e));
             }
         });
         CapabilityEntry retrievedCapabilitiyEntry = null;
@@ -354,7 +354,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             }
 
             @Override
-            public void onFailure(JoynrException exception) {
+            public void onFailure(JoynrRuntimeException exception) {
                 capabilitiesCallback.onError(exception);
 
             }
@@ -387,7 +387,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             }
 
             @Override
-            public void onFailure(JoynrException exception) {
+            public void onFailure(JoynrRuntimeException exception) {
                 capabilitiesCallback.onError(exception);
             }
         }, domain, interfaceName, discoveryTimeout);
