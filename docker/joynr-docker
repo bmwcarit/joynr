@@ -1,0 +1,90 @@
+#!/bin/bash
+
+function usage
+{
+    echo "usage: joynr-docker build | push | pull [--repository mydockerrepo.org --version versionnumber]"
+}
+
+repository=
+version=
+command=$1
+shift
+echo "after command: $1"
+
+echo "in params: $1"
+# if repository is set, add a single trailing slash
+# if it was passed in with the slash, this is removed first
+while [ "$1" != "" ]; do
+echo "PARAM is: $1"
+    case $1 in
+        -r | --repository )     shift
+                                echo "REPO"
+                                repository=${1%/}/
+                                ;;
+        -v | --version )        shift
+                                version=":$1"
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+function build
+{
+    echo "building repository: $repository$version"
+
+    docker build -t ${repository}joynr-base${version} joynr-base/
+    docker tag -f ${repository}joynr-base${version} ${repository}joynr-base:latest
+    docker tag -f ${repository}joynr-base${version} joynr-base:latest
+
+    docker build -t ${repository}joynr-java${version} joynr-java/
+    docker tag -f ${repository}joynr-java${version} ${repository}joynr-java:latest
+    docker tag -f ${repository}joynr-java${version} joynr-java:latest
+
+    docker build -t ${repository}joynr-android${version} joynr-android/
+    docker tag -f ${repository}joynr-android${version} ${repository}joynr-android:latest
+    docker tag -f ${repository}joynr-android${version} joynr-android:latest
+}
+
+function pull
+{
+    echo "pulling from repository: $repository for version:$version"
+
+    docker pull ${repository}joynr-base${version}
+    docker tag -f ${repository}joynr-base${version} joynr-base:latest
+
+    docker pull ${repository}joynr-java${version}
+    docker tag -f ${repository}joynr-java${version} joynr-java
+
+    docker pull ${repository}joynr-android${version}
+    docker tag -f ${repository}joynr-android${version} joynr-android
+}
+
+function push
+{
+    echo "pushing to repository: $repository with version:$version"
+
+    docker push ${repository}joynr-base${version}
+    docker push ${repository}joynr-java${version}
+    docker push ${repository}joynr-android${version}
+}
+
+
+case $command in
+    build )                 build
+                            exit
+                            ;;
+    push )                  push
+                            exit
+                            ;;
+    pull )                  pull
+                            exit
+                            ;;
+    * )                     usage
+                            exit 1
+esac

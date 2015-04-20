@@ -1,0 +1,11 @@
+#/bin/bash
+
+cd /data/src
+
+(
+  echo "install build-resources"
+  cd tools/build-resources
+  mvn install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+)
+
+mvn java-formatter:format

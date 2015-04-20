@@ -1,0 +1,7 @@
+java:
+        image: docker.bmw-carit.de/bmwcarit/joynr-android:latest
+        volumes:
+                - ..:/data/src
+                - ~/.m2:/home/joynr/.m2
+                - ../install:/data/install
+        hostname: joynr-build
