@@ -18,7 +18,7 @@ package io.joynr.dispatcher;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.JsonRequestInterpreter;
@@ -114,7 +114,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
                                       JsonRequestInterpreter jsonRequestInterpreter,
-                                      @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+                                      @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         // CHECKSTYLE:ON
         this.messageSender = messageSender;
         this.messageReceiver = messageReceiver;

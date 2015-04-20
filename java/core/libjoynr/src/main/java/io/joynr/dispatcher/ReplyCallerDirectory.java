@@ -19,6 +19,7 @@ package io.joynr.dispatcher;
  * #L%
  */
 
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -52,7 +53,7 @@ public class ReplyCallerDirectory {
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
-    public ReplyCallerDirectory(@Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+    public ReplyCallerDirectory(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         this.cleanupScheduler = cleanupScheduler;
     }
 

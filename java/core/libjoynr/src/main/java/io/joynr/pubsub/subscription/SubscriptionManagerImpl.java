@@ -18,7 +18,7 @@ package io.joynr.pubsub.subscription;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
@@ -56,7 +56,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
-    public SubscriptionManagerImpl(@Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+    public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();

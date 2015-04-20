@@ -18,7 +18,7 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplyDispatcherImpl;
@@ -74,7 +74,7 @@ public class DefaultRuntimeModule extends AbstractModule {
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
-        bind(ScheduledExecutorService.class).annotatedWith(Names.named("joynr.scheduler.cleanup"))
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
     }
 

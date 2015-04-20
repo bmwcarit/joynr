@@ -18,7 +18,7 @@ package io.joynr.pubsub.publication;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
@@ -150,7 +150,7 @@ public class PublicationManagerImpl implements PublicationManager {
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   RequestReplySender requestReplySender,
-                                  @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+                                  @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.requestReplySender = requestReplySender;
         this.cleanupScheduler = cleanupScheduler;
