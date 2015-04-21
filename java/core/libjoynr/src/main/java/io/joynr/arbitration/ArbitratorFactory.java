@@ -18,7 +18,7 @@ package io.joynr.arbitration;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrArbitrationException;
 
@@ -28,7 +28,7 @@ import com.google.inject.name.Named;
 public final class ArbitratorFactory {
 
     @Inject
-    @Named("joynr.arbitration.minimumretrydelay")
+    @Named(PROPERTY_ARBITRATION_MINIMUMRETRYDELAY)
     private static long minimumArbitrationRetryDelay;
 
     private ArbitratorFactory() {
@@ -37,7 +37,7 @@ public final class ArbitratorFactory {
 
     /**
      * Creates an arbitrator defined by the arbitrationStrategy set in the discoveryQos.
-     * 
+     *
      * @param domain
      *            Domain of the provider.
      * @param interfaceName
