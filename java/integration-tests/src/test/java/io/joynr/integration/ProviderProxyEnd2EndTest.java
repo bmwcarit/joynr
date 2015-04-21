@@ -131,7 +131,8 @@ public class ProviderProxyEnd2EndTest {
         jettyServer = ServersUtil.startServers();
         // keep delays and timeout low for tests
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
-        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "1000");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
     }
 
     @AfterClass
@@ -216,6 +217,7 @@ public class ProviderProxyEnd2EndTest {
         }
 
         // change visibility from protected to public for testing purposes
+        @Override
         public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
             super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
