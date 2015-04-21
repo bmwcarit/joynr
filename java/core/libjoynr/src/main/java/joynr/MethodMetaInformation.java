@@ -57,11 +57,7 @@ public class MethodMetaInformation {
                 if (findCallbackAnnotation(parameterAnnotation)) {
                     callbackIndex = i;
                 } else {
-                    try {
-                        joynrAnnotations.add(findJoynrRpcParam(parameterAnnotation));
-                    } catch (JsonMappingException e) {
-                        // TODO remove
-                    }
+                    joynrAnnotations.add(findJoynrRpcParam(parameterAnnotation));
                 }
 
             }
@@ -115,11 +111,10 @@ public class MethodMetaInformation {
     }
 
     public boolean isMethodWithoutParameters() {
-        return method.getParameterTypes().length == 0;
-        //        if ((joynrAnnotations == null) || (joynrAnnotations.size() == 0)) {
-        //            return true;
-        //        }
-        //        return false;
+        if ((joynrAnnotations == null) || (joynrAnnotations.size() == 0)) {
+            return true;
+        }
+        return false;
     }
 
     @CheckForNull

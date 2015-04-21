@@ -25,15 +25,11 @@ import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.Request;
 
@@ -58,7 +54,7 @@ public class RequestInterpreter {
     // >
     // TODO move methodMetaInformation to a central place, save metaInformations in a cache (e.g. with predefined max
     // size)
-    private final ConcurrentMap<String, ConcurrentMap<List<String>, MethodMetaInformation>> methodMetaInformationMap = new ConcurrentHashMap<String, ConcurrentMap<List<String>, MethodMetaInformation>>();
+    private final ConcurrentMap<MethodSignature, Method> methodSignatureToMethodMap = new ConcurrentHashMap<MethodSignature, Method>();
 
     private Reply createReply(Request request, Object response) {
         return new Reply(request.getRequestReplyId(), response);
@@ -86,40 +82,28 @@ public class RequestInterpreter {
     }
 
     private Object invokeMethod(RequestCaller requestCaller, Request request) {
-        // A method is identified by its name and the types of its arguments
-        List<String> methodSignature = new ArrayList<String>();
+        // A method is identified by its defining request caller, its name and the types of its arguments
+        MethodSignature methodSignature = new MethodSignature(requestCaller,
+                                                              request.getMethodName(),
+                                                              request.getFullyQualifiedParamDatatypes());
 
-        methodSignature.add(request.getMethodName());
+        ensureMethodMetaInformationPresent(request, methodSignature);
 
-        if (request.hasParamDatatypes()) {
-            List<String> paramDatatypes = request.getFullyQualifiedParamDatatypes();
-            methodSignature.addAll(paramDatatypes);
+        Method method = methodSignatureToMethodMap.get(methodSignature);
+
+        Object[] params = null;
+
+        if (method.getParameterTypes().length > 0) {
+            // method with parameters
+            params = request.getParams();
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            for (int i = 0; i < params.length; i++) {
+                params[i] = objectMapper.convertValue(params[i], parameterTypes[i]);
+            }
         }
 
-        ensureMethodMetaInformationPresent(request, requestCaller, methodSignature);
-
-        MethodMetaInformation methodMetaInformation = methodMetaInformationMap.get(requestCaller.getClass().toString())
-                                                                              .get(methodSignature);
-
-        if (methodMetaInformation.isMethodWithoutParameters()) {
-            return invokeMethod(request, requestCaller, methodMetaInformation, null);
-        }
-
-        Object[] params = request.getParams();
-        Class<?>[] parameterTypes = methodMetaInformation.getMethod().getParameterTypes();
-        for (int i = 0; i < params.length; i++) {
-            params[i] = objectMapper.convertValue(params[i], parameterTypes[i]);
-        }
-
-        return invokeMethod(request, requestCaller, methodMetaInformation, params);
-    }
-
-    private Object invokeMethod(Request request,
-                                RequestCaller requestCaller,
-                                MethodMetaInformation methodMetaInformation,
-                                Object[] params) {
         try {
-            return methodMetaInformation.getMethod().invoke(requestCaller, params);
+            return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
             throw new RuntimeException(e);
@@ -130,28 +114,17 @@ public class RequestInterpreter {
         }
     }
 
-    private void ensureMethodMetaInformationPresent(Request request,
-                                                    RequestCaller requestCaller,
-                                                    List<String> methodSignature) {
+    private void ensureMethodMetaInformationPresent(Request request, MethodSignature methodSignature) {
         try {
-            String interfaceName = requestCaller.getClass().toString();
-            if (!methodMetaInformationMap.containsKey(interfaceName)) {
-                methodMetaInformationMap.putIfAbsent(interfaceName,
-                                                     new ConcurrentHashMap<List<String>, MethodMetaInformation>());
-            }
-            if (!methodMetaInformationMap.get(interfaceName).containsKey(methodSignature)) {
+            if (!methodSignatureToMethodMap.containsKey(methodSignature)) {
                 Method method;
-                method = ReflectionUtils.findMethodByParamTypeNames(requestCaller.getClass(),
-                                                                    methodSignature.get(0),
-                                                                    methodSignature.subList(1, methodSignature.size()));
-                methodMetaInformationMap.get(interfaceName).putIfAbsent(methodSignature,
-                                                                        new MethodMetaInformation(method));
+                method = ReflectionUtils.findMethodByParamTypeNames(methodSignature.getRequestCaller().getClass(),
+                                                                    methodSignature.getMethodName(),
+                                                                    methodSignature.getFullyQualifiedParameterTypeNames());
+                methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
         } catch (NoSuchMethodException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non existing method {}", request);
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            logger.error("RequestInterpreter: IOException: {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
