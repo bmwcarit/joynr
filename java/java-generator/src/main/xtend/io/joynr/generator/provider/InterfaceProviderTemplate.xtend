@@ -107,12 +107,13 @@ import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 
 import io.joynr.provider.JoynrProviderAsync;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.provider.JoynrProvider;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 	import «datatype»;
 «ENDFOR»
 
-public interface «className» extends JoynrInterface, JoynrProviderAsync {
+public interface «className» extends JoynrInterface, JoynrProviderAsync, JoynrProvider {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 	«FOR attribute : getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
