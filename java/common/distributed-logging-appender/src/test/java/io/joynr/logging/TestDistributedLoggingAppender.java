@@ -76,7 +76,7 @@ public class TestDistributedLoggingAppender {
     public void setUp() throws Exception {
         final JoynrRuntime runtime = mock(JoynrRuntime.class);
         @SuppressWarnings("unchecked")
-        ProxyBuilder<LoggingProxy> proxyBuilder = (ProxyBuilder<LoggingProxy>) mock(ProxyBuilder.class);
+        ProxyBuilder<LoggingProxy> proxyBuilder = mock(ProxyBuilder.class);
         loggingProxy = mock(LoggingProxy.class);
         when(runtime.getProxyBuilder(isA(String.class), eq(LoggingProxy.class))).thenReturn(proxyBuilder);
         when(proxyBuilder.setMessagingQos(isA(MessagingQos.class))).thenReturn(proxyBuilder);
@@ -175,7 +175,7 @@ public class TestDistributedLoggingAppender {
             logger.debug("test" + i);
         }
 
-        Thread.sleep(1010);
+        Thread.sleep(1500);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<JoynrLogEvent>> argument = ArgumentCaptor.forClass((Class) List.class);

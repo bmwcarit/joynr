@@ -199,16 +199,4 @@ public class SubscriptionManagerTest {
         Mockito.verify(subscriptionStates).get(Mockito.eq(subscriptionId));
         Mockito.verify(subscriptionState).stop();
     }
-
-    @Test
-    public void touchSubscriptionState() {
-        Mockito.when(subscriptionStates.containsKey(subscriptionId)).thenReturn(true);
-        Mockito.when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
-        subscriptionManager.touchSubscriptionState(subscriptionId);
-
-        Mockito.verify(subscriptionStates).containsKey(subscriptionId);
-        Mockito.verify(subscriptionStates).get(subscriptionId);
-        Mockito.verify(subscriptionState).updateTimeOfLastPublication();
-
-    }
 }
