@@ -52,7 +52,7 @@ public:
         proxyEvent->unsubscribe(proxyEventSubscription);
     }
 
-    bool isProxyAvailabe()
+    bool isProxyAvailable()
     {
         return proxy && proxy->isAvailable();
     }
@@ -129,14 +129,18 @@ protected:
 
         // wait until proxy is available or timeout (1000ms)
         int8_t retries = 0;
-        while (!isProxyAvailabe() && retries < 10) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        int8_t max_retries = 10;
+        int8_t retry_delay = 100;
+        while (!isProxyAvailable() && retries < max_retries) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay));
             retries++;
         }
 
         // if proxy not available log and exit
-        if (!isProxyAvailabe()) {
-            LOG_ERROR(logger, "Could not connect proxy!");
+        if (!isProxyAvailable()) {
+            LOG_ERROR(logger,
+                      QString("Could not connect to proxy within %1ms!")
+                              .arg(max_retries * retry_delay));
             assert(false);
         }
     }

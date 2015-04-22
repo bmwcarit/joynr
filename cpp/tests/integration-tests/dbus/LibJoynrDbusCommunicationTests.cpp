@@ -146,7 +146,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
 
     // get stub
     DbusMessagingStubAdapter* msgStub = new DbusMessagingStubAdapter(ccMessagingAddress);
-    ASSERT_TRUE(msgStub->isProxyAvailabe());
+    ASSERT_TRUE(msgStub->isProxyAvailable());
 
     // call method
     LOG_INFO(logger, "Transmit message: should work");
@@ -182,12 +182,12 @@ TEST_F(LibJoynrDbusCommunicationTests, DISABLED_connection_test) {
 
     // get stub
     DbusMessagingStubAdapter* msgStub = new DbusMessagingStubAdapter(ccMessagingAddress);
-    ASSERT_TRUE(msgStub->isProxyAvailabe());
+    ASSERT_TRUE(msgStub->isProxyAvailable());
 
     // delete skeleton
     delete msgSkeleton;
 
-    ASSERT_FALSE(msgStub->isProxyAvailabe());
+    ASSERT_FALSE(msgStub->isProxyAvailable());
     delete msgStub;
 }
 
@@ -201,7 +201,7 @@ TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
 
     // get stub
     DbusMessagingStubAdapter* msgStub = new DbusMessagingStubAdapter(ccMessagingAddress);
-    ASSERT_TRUE(msgStub->isProxyAvailabe());
+    ASSERT_TRUE(msgStub->isProxyAvailable());
 
     // create message
     JoynrMessage msg;
@@ -219,7 +219,7 @@ TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
     msgStub->transmit(msg);
 
     // stub not availabe
-    ASSERT_FALSE(msgStub->isProxyAvailabe());
+    ASSERT_FALSE(msgStub->isProxyAvailable());
 
     delete msgStub;
     delete msgMock;
