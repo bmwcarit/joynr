@@ -389,6 +389,7 @@ void ResolveCallBack::onFailure(const RequestStatus status)
     LOG_ERROR(logger,
               "Failed to resolve next hop for participant " + destinationPartId + ": " +
                       status.toString());
+    // TODO error handling in case of failing submission (?)
 }
 
 void ResolveCallBack::onSuccess(const RequestStatus status, bool resolved)
