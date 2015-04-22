@@ -124,4 +124,9 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
         // TODO Auto-generated method stub
 
     }
+
+    @Override
+    public Class<?> getProvidedInterface() {
+        return getClass();
+    }
 }

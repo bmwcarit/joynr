@@ -51,6 +51,11 @@ public class ProviderTest {
         public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
             super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
+
+        @Override
+        public Class<?> getProvidedInterface() {
+            return getClass();
+        }
     }
 
     @Before
