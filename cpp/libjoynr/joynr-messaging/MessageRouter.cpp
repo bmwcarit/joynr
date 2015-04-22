@@ -421,7 +421,9 @@ void MessageRunnable::run()
     if (!isExpired()) {
         messagingStub->transmit(message);
     } else {
-        LOG_ERROR(logger, "Message expired: dropping!");
+        LOG_ERROR(
+                logger,
+                QString("Message with ID %1 expired: dropping!").arg(message.getHeaderMessageId()));
     }
 }
 
