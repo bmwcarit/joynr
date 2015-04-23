@@ -44,7 +44,6 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import joynr.tests.testSync;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +99,7 @@ public class PushingPublicationTest {
         publication = new SubscriptionPublication(testAttribute, subscriptionId);
 
         requestCallerFactory = new RequestCallerFactory();
-        requestCaller = requestCallerFactory.create(provider, testSync.class);
+        requestCaller = requestCallerFactory.create(provider);
         setupMocks();
     }
 

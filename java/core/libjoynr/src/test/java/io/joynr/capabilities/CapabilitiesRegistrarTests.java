@@ -23,6 +23,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.rpc.JoynrInterface;
@@ -89,8 +90,9 @@ public class CapabilitiesRegistrarTests {
     public void registerWithCapRegistrar() {
 
         when(provider.getProviderQos()).thenReturn(providerQos);
+        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
-        when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
+        when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
         registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
         verify(localCapabilitiesDirectory).add(eq(new CapabilityEntry(domain,
@@ -98,7 +100,7 @@ public class CapabilitiesRegistrarTests {
                                                                       providerQos,
                                                                       participantId,
                                                                       System.currentTimeMillis())));
-        verify(requestCallerFactory).create(provider, ProvidedInterface.class);
+        verify(requestCallerFactory).create(provider);
 
         verify(dispatcher).addRequestCaller(participantId, requestCaller);
     }

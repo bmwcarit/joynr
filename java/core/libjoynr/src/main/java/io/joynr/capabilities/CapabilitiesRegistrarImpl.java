@@ -70,7 +70,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                               provider.getProviderQos(),
                                                               participantId,
                                                               System.currentTimeMillis());
-        RequestCaller requestCaller = requestCallerFactory.create(provider, providedInterface);
+        RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         dispatcher.addRequestCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);

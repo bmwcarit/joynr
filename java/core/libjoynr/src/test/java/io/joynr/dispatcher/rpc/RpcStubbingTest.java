@@ -26,6 +26,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.DispatcherTestModule;
 import io.joynr.dispatcher.RequestCaller;
@@ -144,6 +145,7 @@ public class RpcStubbingTest {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                        JsonMappingException, IOException, JoynrMessageNotSentException {
+        doReturn(TestProvider.class).when(testMock).getProvidedInterface();
 
         Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
         deferredGpsLocation.resolve(gpsValue);
@@ -174,10 +176,9 @@ public class RpcStubbingTest {
                                            any(SynchronizedReplyCaller.class),
                                            eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
 
-            private RequestCaller requestCaller = requestCallerFactory.create(testMock, TestProvider.class);
-
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
+                RequestCaller requestCaller = requestCallerFactory.create(testMock);
                 Object[] args = invocation.getArguments();
                 Request request = null;
                 for (Object arg : args) {
