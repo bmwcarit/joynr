@@ -35,7 +35,7 @@ public abstract class AbstractDeferred {
 
     private State state = State.PENDING;
     private JoynrException error = null;
-    protected Object[] values = null;
+    private Object[] values = null;
 
     private List<DeferredListener> listeners = new ArrayList<DeferredListener>();
 
@@ -48,10 +48,11 @@ public abstract class AbstractDeferred {
      * @return true if the promise is resolved; false in case the promise is
      *      already settled.
      */
-    protected synchronized boolean resolve() {
+    protected synchronized boolean resolve(Object... values) {
         if (isSettled()) {
             return false;
         }
+        this.values = values;
         state = State.FULFILLED;
         notifyListeners();
         return true;

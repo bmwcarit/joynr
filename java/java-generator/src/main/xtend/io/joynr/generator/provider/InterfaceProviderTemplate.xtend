@@ -151,8 +151,7 @@ public interface «className» extends JoynrInterface, JoynrProvider {
 			«var outParameterName = method.outputParameters.iterator.next.name»
 			«var outParameterType = getObjectDataTypeForPlainType(method.outputParameters.iterator.next.mappedDatatypeOrList.objectDataTypeForPlainType)»
 			public synchronized boolean resolve(«outParameterType» «outParameterName») {
-				values = new Object[] { «outParameterName» };
-				return super.resolve();
+				return super.resolve(«outParameterName»);
 			}
 		«ENDIF»
 		}
