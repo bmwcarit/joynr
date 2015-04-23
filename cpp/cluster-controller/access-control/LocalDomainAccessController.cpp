@@ -190,7 +190,7 @@ void LocalDomainAccessController::getConsumerPermission(
         const QString& domain,
         const QString& interfaceName,
         TrustLevel::Enum trustLevel,
-        QSharedPointer<IConsumerPermissionCallback> callback)
+        QSharedPointer<IGetConsumerPermissionCallback> callback)
 {
     LOG_DEBUG(logger, QString("Entering getConsumerPermission with unknown operation"));
 

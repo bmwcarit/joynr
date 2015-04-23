@@ -23,6 +23,8 @@
 #include <gmock/gmock.h>
 #include "PrettyPrint.h"
 
+#include "cluster-controller/access-control/IAccessController.h"
+#include "cluster-controller/access-control/LocalDomainAccessController.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testRequestCaller.h"
@@ -43,6 +45,8 @@
 #include "joynr/ISubscriptionListener.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
@@ -801,6 +805,63 @@ public:
                                                                  joynr::infrastructure::MasterAccessControlEntry>>,
                      QSharedPointer<joynr::OnChangeSubscriptionQos>));
 
+};
+
+class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
+public:
+    MockLocalDomainAccessController(joynr::LocalDomainAccessStore* store):
+        LocalDomainAccessController(store){}
+
+    MOCK_METHOD5(getConsumerPermission,
+                 void(
+                     const QString& userId,
+                     const QString& domain,
+                     const QString& interfaceName,
+                     joynr::infrastructure::TrustLevel::Enum trustLevel,
+                     QSharedPointer<joynr::LocalDomainAccessController::IGetConsumerPermissionCallback> callback));
+
+    MOCK_METHOD5(getConsumerPermission,
+                 joynr::infrastructure::Permission::Enum(
+                     const QString& userId,
+                     const QString& domain,
+                     const QString& interfaceName,
+                     const QString& operation,
+                     joynr::infrastructure::TrustLevel::Enum trustLevel));
+};
+
+class MockMessagingSettings : public joynr::MessagingSettings {
+public:
+    MockMessagingSettings(QSettings& settings):
+        MessagingSettings(settings){}
+    MOCK_METHOD0(
+            getDiscoveryDirectoriesDomain,
+            QString());
+    MOCK_METHOD0(
+            getCapabilitiesDirectoryParticipantId,
+            QString());
+};
+
+class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
+public:
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
+        LocalCapabilitiesDirectory(messagingSettings,NULL,*messageRouter){}
+
+    MOCK_METHOD3(
+            lookup,
+            void(
+                joynr::RequestStatus& joynrInternalStatus,
+                joynr::system::DiscoveryEntry& result,
+                QString participantId
+            ));
+
+private:
+    joynr::MessageRouter* messageRouter;
+};
+
+class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
+{
+public:
+    MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
 };
 
 #ifdef _MSC_VER

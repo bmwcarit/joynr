@@ -52,29 +52,29 @@ class GlobalDomainAccessControllerProxy;
 class LocalDomainAccessStore;
 
 /**
- * The LocalDomainAccessController gets consumer permissions asynchronously.
- * When using the LocalDomainAccessController the caller provides a callback object.
- */
-class IConsumerPermissionCallback
-{
-public:
-    virtual ~IConsumerPermissionCallback()
-    {
-    }
-
-    // Called with the result of a consumer permission request
-    virtual void consumerPermission(infrastructure::Permission::Enum permission) = 0;
-
-    // Called when an operation is needed to get the consumer permission
-    virtual void operationNeeded() = 0;
-};
-
-/**
  * Object that controls access to providers
  */
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessController
 {
 public:
+    /**
+     * The LocalDomainAccessController gets consumer permissions asynchronously.
+     * When using the LocalDomainAccessController the caller provides a callback object.
+     */
+    class IGetConsumerPermissionCallback
+    {
+    public:
+        virtual ~IGetConsumerPermissionCallback()
+        {
+        }
+
+        // Called with the result of a consumer permission request
+        virtual void consumerPermission(infrastructure::Permission::Enum permission) = 0;
+
+        // Called when an operation is needed to get the consumer permission
+        virtual void operationNeeded() = 0;
+    };
+
     LocalDomainAccessController(LocalDomainAccessStore* localDomainAccessStore);
     virtual ~LocalDomainAccessController();
     /**
@@ -114,7 +114,7 @@ public:
                                        const QString& domain,
                                        const QString& interfaceName,
                                        infrastructure::TrustLevel::Enum trustLevel,
-                                       QSharedPointer<IConsumerPermissionCallback> callback);
+                                       QSharedPointer<IGetConsumerPermissionCallback> callback);
 
     /**
       * Get consumer permission to access an interface operation
@@ -482,7 +482,7 @@ private:
         QString domain;
         QString interfaceName;
         infrastructure::TrustLevel::Enum trustLevel;
-        QSharedPointer<IConsumerPermissionCallback> callbacks;
+        QSharedPointer<IGetConsumerPermissionCallback> callbacks;
     };
 
     QHash<QString, QList<ConsumerPermissionRequest>> consumerPermissionRequests;

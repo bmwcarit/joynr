@@ -31,7 +31,7 @@ using namespace joynr;
 using namespace joynr::infrastructure;
 
 // Consumer permissions are obtained asynchronously
-class ConsumerPermissionCallback : public IConsumerPermissionCallback
+class ConsumerPermissionCallback : public LocalDomainAccessController::IGetConsumerPermissionCallback
 {
 public:
     ConsumerPermissionCallback() :
