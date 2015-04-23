@@ -35,6 +35,10 @@ public:
     }
 
     virtual QString getCurrentProcessUserId();
+    virtual JoynrMessage sign(JoynrMessage message);
+    virtual bool validate(const JoynrMessage& message) const;
+    virtual QByteArray encrypt(const QByteArray& unencryptedBytes);
+    virtual QByteArray decrypt(const QByteArray& encryptedBytes);
 
 private:
     static joynr_logging::Logger* logger;
