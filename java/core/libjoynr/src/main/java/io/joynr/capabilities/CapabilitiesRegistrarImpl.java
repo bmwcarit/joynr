@@ -63,7 +63,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                             final Class<T> providedInterface,
                                                                             String authenticationToken) {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             providedInterface,
+                                                                             provider.getProvidedInterface(),
                                                                              authenticationToken);
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,
@@ -84,7 +84,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                 final Class<T> providedInterface,
                                                                 String authenticationToken) {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             providedInterface,
+                                                                             provider.getProvidedInterface(),
                                                                              authenticationToken);
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
                                                               providedInterface,

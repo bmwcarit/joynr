@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -71,10 +70,10 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
      * java.lang.String)
      */
     @Override
-    public <T extends JoynrInterface> String getProviderParticipantId(String domain,
-                                                                      Class<T> providedInterface,
-                                                                      String authenticationToken,
-                                                                      String defaultValue) {
+    public String getProviderParticipantId(String domain,
+                                           Class<?> providedInterface,
+                                           String authenticationToken,
+                                           String defaultValue) {
 
         String token = getProviderParticipantIdKey(domain, providedInterface, authenticationToken);
 
@@ -114,9 +113,9 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static <T extends JoynrInterface> String getProviderParticipantIdKey(String domain,
-                                                                                 Class<T> providedInterface,
-                                                                                 String authenticationToken) {
+    private static String getProviderParticipantIdKey(String domain,
+                                                      Class<?> providedInterface,
+                                                      String authenticationToken) {
         String interfaceName = providedInterface.getName();
         try {
             if (providedInterface.getField("INTERFACE_NAME") != null) {
@@ -129,9 +128,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     }
 
     @Override
-    public <T extends JoynrInterface> String getProviderParticipantId(String domain,
-                                                                      Class<T> providedInterface,
-                                                                      String authenticationToken) {
+    public String getProviderParticipantId(String domain, Class<?> providedInterface, String authenticationToken) {
         String defaultParticipantId = null;
         String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface, authenticationToken).toLowerCase();
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
