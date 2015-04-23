@@ -37,7 +37,9 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 «warning()»
 package «packagePath»;
 
-import java.util.List;
+«IF needsListImport(serviceInterface, false, true)»
+	import java.util.List;
+«ENDIF»
 
 import io.joynr.provider.AbstractJoynrProvider;
 
