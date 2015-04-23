@@ -21,10 +21,12 @@ package io.joynr.accesscontrol.global;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import io.joynr.accesscontrol.DomainAccessControlStore;
 import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.MasterAccessControlEntry;
 import joynr.infrastructure.OwnerAccessControlEntry;
@@ -37,6 +39,8 @@ import javax.servlet.ServletContextEvent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+
+import static org.mockito.Matchers.eq;
 
 /**
  *  ServletContextListener for AclServletTest. Creates test data and a mock-up for the acl store and a guice
@@ -84,12 +88,19 @@ public class TestContextListener extends GuiceServletContextListener {
                                                                                                          Permission.ASK,
                                                                                                          Arrays.asList(Permission.ASK));
 
+    // Create a dummy domain role entry to allow the servlet access to add/update/delete
+    private static final String DUMMY_USER_ID = "dummyUserId";
+    private static final DomainRoleEntry DUMMY_DOMAIN_ROLE = new DomainRoleEntry(DUMMY_USER_ID,
+                                                                                 Arrays.asList(domain1, domain2),
+                                                                                 Role.MASTER);
+
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
         Mockito.when(mockedStore.getAllDomainRoleEntries()).thenReturn(createDomainRoleEntryList());
         Mockito.when(mockedStore.getAllMasterAclEntries()).thenReturn(createMasterACLEntryList());
         Mockito.when(mockedStore.getAllOwnerAclEntries()).thenReturn(createOwnerACLEntryList());
+        Mockito.when(mockedStore.getDomainRole(eq(DUMMY_USER_ID), eq(Role.MASTER))).thenReturn(DUMMY_DOMAIN_ROLE);
         servletContextEvent.getServletContext().setAttribute("DomainAccessStore", mockedStore);
         super.contextInitialized(servletContextEvent);
     }
@@ -124,6 +135,11 @@ public class TestContextListener extends GuiceServletContextListener {
                     bind(resource);
                 }
 
+                bindConstant().annotatedWith(Names.named("joynr.messaging.domainaccesscontrollerchannelid"))
+                              .to("gdac_channelid");
+                bindConstant().annotatedWith(Names.named("joynr.messaging.discoverydirectoriesdomain")).to("com.bmw");
+
+                bind(DomainAccessControlStore.class).toInstance(mockedStore);
                 bind(GlobalDomainAccessStoreAdmin.class).toInstance(mockedStore);
                 serve("/*").with(GuiceContainer.class);
                 serve("/accesscontrol/*").with(AccessControlEditorServlet.class);

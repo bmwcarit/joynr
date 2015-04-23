@@ -51,12 +51,17 @@ public class AccessControlEditorServlet extends HttpServlet {
     public static final String OWNER_ACL_PATH = "/owneracl";
     public static final String MASTER_ACL_PATH = "/masteracl";
 
-    // This servlet cannot be serialized
+    // Bulk get requests are made directly to the domainAccessStore
+    // Updates must be done through the domainAccessController so that changes can be broadcast
+    // This servlet cannot be serialized and injected objects are marked as transient
     private transient GlobalDomainAccessStoreAdmin domainAccessStore;
+    private transient GlobalDomainAccessControllerProviderImpl domainAccessControllerProvider;
 
     @Inject
-    public AccessControlEditorServlet(@InjectParam GlobalDomainAccessStoreAdmin domainAccessStore) {
+    public AccessControlEditorServlet(@InjectParam GlobalDomainAccessStoreAdmin domainAccessStore,
+                                      @InjectParam GlobalDomainAccessControllerProviderImpl domainAccessControllerProvider) {
         this.domainAccessStore = domainAccessStore;
+        this.domainAccessControllerProvider = domainAccessControllerProvider;
     }
 
     /**
@@ -107,7 +112,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Path(DOMAIN_ROLE_PATH + "/{userId}/{role}")
     public void deleteDRTEntry(@PathParam("userId") String userId, @PathParam("role") Role role) {
         logger.info("Deleting DRT entry for " + userId + "/" + role);
-        domainAccessStore.removeDomainRole(userId, role);
+        domainAccessControllerProvider.removeDomainRole(userId, role);
     }
 
     /**
@@ -124,7 +129,7 @@ public class AccessControlEditorServlet extends HttpServlet {
                                      @PathParam("interfaceName") String interfaceName,
                                      @PathParam("operation") String operation) {
         logger.info("Deleting Master ACL entry for " + userId + "/" + domain + "/" + interfaceName + "/" + operation);
-        domainAccessStore.removeMasterAccessControlEntry(userId, domain, interfaceName, operation);
+        domainAccessControllerProvider.removeMasterAccessControlEntry(userId, domain, interfaceName, operation);
     }
 
     /**
@@ -141,7 +146,7 @@ public class AccessControlEditorServlet extends HttpServlet {
                                     @PathParam("interfaceName") String interfaceName,
                                     @PathParam("operation") String operation) {
         logger.info("Deleting Owner ACL entry for " + userId + "/" + domain + "/" + interfaceName + "/" + operation);
-        domainAccessStore.removeOwnerAccessControlEntry(userId, domain, interfaceName, operation);
+        domainAccessControllerProvider.removeOwnerAccessControlEntry(userId, domain, interfaceName, operation);
     }
 
     /**
@@ -153,7 +158,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateDrtEntry(DomainRoleEntry domainRoleEntry) {
         logger.info("Updating DRT entry: " + domainRoleEntry);
-        domainAccessStore.updateDomainRole(domainRoleEntry);
+        domainAccessControllerProvider.updateDomainRole(domainRoleEntry);
     }
 
     /**
@@ -165,7 +170,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateMasterAclEntry(MasterAccessControlEntry masterAccessControlEntry) {
         logger.info("Updating Master ACL entry: " + masterAccessControlEntry);
-        domainAccessStore.updateMasterAccessControlEntry(masterAccessControlEntry);
+        domainAccessControllerProvider.updateMasterAccessControlEntry(masterAccessControlEntry);
     }
 
     /**
@@ -177,7 +182,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateMasterAclEntry(OwnerAccessControlEntry ownerAccessControlEntry) {
         logger.info("Updating Owner ACL entry: " + ownerAccessControlEntry);
-        domainAccessStore.updateOwnerAccessControlEntry(ownerAccessControlEntry);
+        domainAccessControllerProvider.updateOwnerAccessControlEntry(ownerAccessControlEntry);
     }
 
     public void destroy() {

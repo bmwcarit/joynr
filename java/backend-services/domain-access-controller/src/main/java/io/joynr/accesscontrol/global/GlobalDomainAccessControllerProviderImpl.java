@@ -19,6 +19,7 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
+import com.google.inject.Singleton;
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.provider.Promise;
 import joynr.infrastructure.DomainRoleEntry;
@@ -35,6 +36,7 @@ import com.google.inject.Inject;
 /**
  * Manages the Access Control Lists for all providers.
  */
+@Singleton
 public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccessControllerAbstractProvider {
 
     private static final String DUMMY_USERID = "dummyUserId";
