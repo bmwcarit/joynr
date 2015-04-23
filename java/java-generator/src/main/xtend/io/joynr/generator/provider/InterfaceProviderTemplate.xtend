@@ -105,7 +105,6 @@ import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
 
-import io.joynr.provider.JoynrProviderAsync;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 
@@ -113,7 +112,7 @@ import io.joynr.provider.JoynrProvider;
 	import «datatype»;
 «ENDFOR»
 
-public interface «className» extends JoynrInterface, JoynrProviderAsync, JoynrProvider {
+public interface «className» extends JoynrInterface, JoynrProvider {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 	«FOR attribute : getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»

@@ -43,7 +43,7 @@ import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.JoynrProviderAsync;
+import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.proxy.Future;
@@ -109,7 +109,7 @@ public class RpcStubbingTest {
         public void noParamsNoReturnValue();
     }
 
-    public static interface TestProvider extends JoynrInterface, JoynrProviderAsync {
+    public static interface TestProvider extends JoynrInterface, JoynrProvider {
         public Promise<Deferred<GpsLocation>> returnsGpsLocation();
 
         public Promise<Deferred<List<GpsLocation>>> returnsGpsLocationList();
