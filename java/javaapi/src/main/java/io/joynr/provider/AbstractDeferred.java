@@ -94,7 +94,7 @@ public abstract class AbstractDeferred {
         return values;
     }
 
-    protected void notifyListeners() {
+    private void notifyListeners() {
         for (DeferredListener listener : listeners) {
             listener.onSettlement();
         }
