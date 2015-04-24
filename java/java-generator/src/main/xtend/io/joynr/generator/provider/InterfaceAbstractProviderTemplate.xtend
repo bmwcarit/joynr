@@ -54,6 +54,11 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		return «providerInterfaceName».class;
 	}
 
+	@Override
+	public String getInterfaceName() {
+		return «providerInterfaceName».INTERFACE_NAME;
+	}
+
 	«FOR attribute : getAttributes(serviceInterface)»
 		«val attributeName = attribute.joynrName»
 		«val attributeType = getMappedDatatypeOrList(attribute)»

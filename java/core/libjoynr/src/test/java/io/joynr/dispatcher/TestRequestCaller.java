@@ -129,4 +129,9 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
     public Class<?> getProvidedInterface() {
         return getClass();
     }
+
+    @Override
+    public String getInterfaceName() {
+        return "test";
+    }
 }

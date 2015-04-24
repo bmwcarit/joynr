@@ -56,6 +56,11 @@ public class ProviderTest {
         public Class<?> getProvidedInterface() {
             return getClass();
         }
+
+        @Override
+        public String getInterfaceName() {
+            return "myproviderclass";
+        }
     }
 
     @Before

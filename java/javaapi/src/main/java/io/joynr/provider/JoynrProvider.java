@@ -94,4 +94,10 @@ public interface JoynrProvider {
      * @return the interface class implemted by the provider.
      */
     Class<?> getProvidedInterface();
+
+    /**
+     * @return The name of the provided interface as defined in the Franca
+     *      model.
+     */
+    String getInterfaceName();
 }

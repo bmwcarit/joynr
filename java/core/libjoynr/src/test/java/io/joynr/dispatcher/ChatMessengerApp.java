@@ -131,6 +131,11 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
             return getClass();
         }
 
+        @Override
+        public String getInterfaceName() {
+            return "chatmessagnerapp";
+        }
+
     }
 
     public static void main(String[] args) throws JoynrMessageNotSentException {
