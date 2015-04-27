@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,11 @@ typeCollection RadioTypes {
 **>
 interface Radio {
 	/*
-	 * NOTE: Currently Franca only allows definitions of elements in the
-	 * following sequence: attributes, methods and broadcasts. Other
-	 * sequences or mixed definitions are currently not possible.
-	 * This is probably a bug in the Franca tooling.
+	 * NOTE: According to the Franca User Guide (Release 0.3.0) chapter 4.3
+	 * Interface definition, definitions of elements are only allowed in the
+	 * following sequence: attributes, methods, broadcasts, contract, type
+	 * definitions. Other sequences or mixed definitions are currently not
+	 * possible.
 	 */
 	<**
 		@description: Represents the station that is currently
