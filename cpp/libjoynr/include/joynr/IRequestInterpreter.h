@@ -42,10 +42,11 @@ public:
       * Executes method \param methodName with parameters \param methodParams
       * on the \param requestCaller object.
       */
-    virtual QVariant execute(QSharedPointer<RequestCaller> requestCaller,
-                             const QString& methodName,
-                             const QList<QVariant>& paramValues,
-                             const QList<QVariant>& paramTypes) = 0;
+    virtual void execute(QSharedPointer<RequestCaller> requestCaller,
+                         const QString& methodName,
+                         const QList<QVariant>& paramValues,
+                         const QList<QVariant>& paramTypes,
+                         std::function<void(const QVariant& x)> callbackFct) = 0;
 };
 
 } // namespace joynr

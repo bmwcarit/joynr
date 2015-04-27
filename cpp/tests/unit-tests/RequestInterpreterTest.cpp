@@ -63,7 +63,8 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     QVariantList paramValues;
     QVariantList paramDatatypes;
 
-    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes);
+    std::function<void(const QVariant& response)> callbackFct = [] (const QVariant& response) {};
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, callbackFct);
 }
 
 

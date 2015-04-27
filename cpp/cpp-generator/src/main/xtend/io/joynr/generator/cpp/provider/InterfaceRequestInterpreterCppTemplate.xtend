@@ -63,11 +63,12 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 			«ENDFOR»
 		}
 		
-		QVariant «interfaceName»RequestInterpreter::execute(
+		void «interfaceName»RequestInterpreter::execute(
 		        QSharedPointer<joynr::RequestCaller> requestCaller,
 		        const QString& methodName,
 		        const QList<QVariant>& paramValues,
-		        const QList<QVariant>& paramTypes)
+		        const QList<QVariant>& paramTypes,
+		        std::function<void (const QVariant& x)> callbackFct)
 		{
 			«val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 			Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
@@ -89,10 +90,11 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 						«requestCallerName»->get«attributeName.toFirstUpper»(status, returnValue);
 						// convert typed return value into variant
 						«IF isArray(attribute)»
-							return joynr::Util::convertListToVariantList(returnValue);
+							QVariant returnValueQVar(joynr::Util::convertListToVariantList(returnValue));
 						«ELSE»
-							return QVariant::fromValue(returnValue);
+							QVariant returnValueQVar(QVariant::fromValue(returnValue));
 						«ENDIF»
+						callbackFct(returnValueQVar);
 					} else if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 						QVariant «attributeName»QVar = paramValues.at(0);
 						«IF isEnum(attribute.type)»
@@ -110,16 +112,15 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 						«ENDIF»
 						«requestCallerName»->set«attributeName.toFirstUpper»(status, typedInput«attributeName.toFirstUpper»);
 						QVariant returnValue("void");
-						return returnValue;
+						callbackFct(returnValue);
 
 				«ENDFOR»
-				}«IF methods.size>0» else«ENDIF»
+				} else «IF methods.empty»{«ENDIF»
 			«ENDIF»
 			«IF methods.size>0»
 				«FOR method: getMethods(serviceInterface) SEPARATOR "\n} else"»
 					«val outputParameterType = getMappedOutputParameter(method).head»
 					«val inputParameterList = getCommaSeperatedTypedParameterList(method)»
-					  
 					«val methodName = method.joynrName»
 					«val inputParams = getInputParameters(method)»
 					«var iterator = -1»
@@ -132,12 +133,11 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 							«getMappedOutputParameter(method).head» typedReturnValue;
 							«requestCallerName»->«methodName»(status, typedReturnValue);
 							«IF isArray(getOutputParameters(method).head)»
-								QList<QVariant> returnValue = joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue);
-								return returnValue;
+								QVariant returnValue(joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue));
 							«ELSE»
-								return QVariant::fromValue(typedReturnValue);
+								QVariant returnValue(QVariant::fromValue(typedReturnValue));
 							«ENDIF»
-							
+							callbackFct(returnValue);
 						«ELSE»
 							«var iterator2 = -1»
 							«FOR input : inputParams»
@@ -177,25 +177,25 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 							«IF outputParameterType == "void"»
 								QVariant returnValue(QVariant::Invalid);
-								return returnValue;
 							«ELSEIF isArray(getOutputParameters(method).head) && isEnum(getOutputParameters(method).head.type)»
-								QList<QVariant> returnValue = joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue);
-								return returnValue;
+								QVariant returnValue(joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue));
 							«ELSEIF isArray(getOutputParameters(method).head)»
-								QList<QVariant> returnValue = joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue);
-								return returnValue;
+								QVariant returnValue(joynr::Util::convertListToVariantList<«getMappedDatatype( getOutputParameters(method).head)»>(typedReturnValue));
 							«ELSEIF isEnum(getOutputParameters(method).head.type)»
-								return QVariant::fromValue(typedReturnValue);
+								QVariant returnValue(QVariant::fromValue(typedReturnValue));
 							«ELSE»
-								return QVariant::fromValue(typedReturnValue);
-							«ENDIF»		
+								QVariant returnValue(QVariant::fromValue(typedReturnValue));
+							«ENDIF»
+							callbackFct(returnValue);
 						«ENDIF»
 				«ENDFOR»
-				}
+				} else {
 			«ENDIF»
-			LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
-			assert(false);
-			return QVariant();
+				LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
+				assert(false);
+				QVariant returnValue(QVariant::Invalid);
+				callbackFct(returnValue);
+			}
 		}
 		
 		«getNamespaceEnder(serviceInterface)» 

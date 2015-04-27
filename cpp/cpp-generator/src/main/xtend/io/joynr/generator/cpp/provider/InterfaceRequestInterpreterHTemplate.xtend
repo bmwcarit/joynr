@@ -61,10 +61,11 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 		      * Executes method \param methodName with parameters \param methodParams
 		      * on the \param requestCaller object.
 		      */
-		    QVariant execute(QSharedPointer<joynr::RequestCaller> requestCaller,
+		    void execute(QSharedPointer<joynr::RequestCaller> requestCaller,
 		                     const QString& methodName,
 		                     const QList<QVariant>& paramValues,
-		                     const QList<QVariant>& paramTypes);
+		                     const QList<QVariant>& paramTypes,
+		                     std::function<void (const QVariant& x)> callbackFct);
 		
 		private:
 		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

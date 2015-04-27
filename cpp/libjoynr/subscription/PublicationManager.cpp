@@ -895,19 +895,23 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
                 InterfaceRegistrar::instance().getRequestInterpreter(
                         requestCaller->getInterfaceName()));
 
+        std::function<void(const QVariant&)> callbackFct =
+                [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
+                        const QVariant& response) {
+            sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
+
+            // Reschedule the next poll
+            if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
+                LOG_DEBUG(logger,
+                          QString("rescheduling runnable with delay: %1").arg(publicationInterval));
+                delayedScheduler->schedule(
+                        new PublisherRunnable(*this, subscriptionId), publicationInterval);
+            }
+        };
+
         LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
-        QVariant response(requestInterpreter->execute(
-                requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>()));
-
-        sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
-
-        // Reschedule the next poll
-        if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
-            LOG_DEBUG(logger,
-                      QString("rescheduling runnable with delay: %1").arg(publicationInterval));
-            delayedScheduler->schedule(
-                    new PublisherRunnable(*this, subscriptionId), publicationInterval);
-        }
+        requestInterpreter->execute(
+                requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>(), callbackFct);
     }
 }
 

@@ -162,22 +162,30 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                           .arg(QString::fromUtf8(jsonRequest)));
         return;
     }
+
     QString requestReplyId = request->getRequestReplyId();
+    qint64 requestExpiryDate = message.getHeaderExpiryDate().toMSecsSinceEpoch();
 
+    std::function<void(const QVariant&)> callbackFct =
+            [requestReplyId, requestExpiryDate, this, senderId, receiverId](
+                    const QVariant& returnValueQVar) {
+        Reply reply;
+        reply.setRequestReplyId(requestReplyId);
+        reply.setResponse(returnValueQVar);
+        // send reply back to the original sender (ie. sender and receiver ids are reversed on
+        // purpose)
+        qint64 ttl = requestExpiryDate - QDateTime::currentMSecsSinceEpoch();
+        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
+                                 senderId,   // sender of request is receiver of reply
+                                 MessagingQos(ttl),
+                                 reply);
+    };
     // execute request
-    QVariant returnValueQVar = requestInterpreter->execute(
-            caller, request->getMethodName(), request->getParams(), request->getParamDatatypes());
-
-    // send reply back to the original sender (ie. sender and receiver ids are reversed on purpose)
-    Reply reply;
-    reply.setRequestReplyId(requestReplyId);
-    reply.setResponse(returnValueQVar);
-    qint64 ttl =
-            message.getHeaderExpiryDate().toMSecsSinceEpoch() - QDateTime::currentMSecsSinceEpoch();
-    messageSender->sendReply(receiverId, // receiver of the request is sender of reply
-                             senderId,   // sender of request is receiver of reply
-                             MessagingQos(ttl),
-                             reply);
+    requestInterpreter->execute(caller,
+                                request->getMethodName(),
+                                request->getParams(),
+                                request->getParamDatatypes(),
+                                callbackFct);
 
     delete request;
 }
