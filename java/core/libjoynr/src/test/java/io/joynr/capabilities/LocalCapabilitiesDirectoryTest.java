@@ -129,7 +129,7 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = "testParticipantId";
         String domain = "domain";
         capabilityEntry = new CapabilityEntry(domain,
-                                              TestInterface.class,
+                                              TestInterface.INTERFACE_NAME,
                                               providerQos,
                                               participantId,
                                               System.currentTimeMillis(),

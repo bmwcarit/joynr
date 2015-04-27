@@ -66,7 +66,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              providedInterface,
+                                                              provider.getInterfaceName(),
                                                               provider.getProviderQos(),
                                                               participantId,
                                                               System.currentTimeMillis());
@@ -87,7 +87,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);
         CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              providedInterface,
+                                                              provider.getInterfaceName(),
                                                               provider.getProviderQos(),
                                                               participantId,
                                                               System.currentTimeMillis());

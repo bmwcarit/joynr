@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
@@ -32,9 +31,6 @@ import javax.annotation.CheckForNull;
 
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 // used as super-type token to present type erasure from generics
@@ -51,8 +47,6 @@ class EndpointList extends ArrayList<EndpointAddressBase> {
 
 public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializable {
     private static final long serialVersionUID = 1L;
-
-    private static final Logger logger = LoggerFactory.getLogger(CapabilityEntry.class);
 
     protected enum Origin {
         LOCAL, REMOTE
@@ -85,28 +79,6 @@ public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializabl
         this.domain = domain;
         this.dateWhenRegistered = dateWhenRegistered;
         origin = Origin.LOCAL;
-    }
-
-    public <T extends JoynrInterface> CapabilityEntry(String domain,
-                                                      Class<T> providedInterface,
-                                                      ProviderQos providerQos,
-                                                      String participantId,
-                                                      long dateWhenRegistered,
-                                                      EndpointAddressBase... endpointAddresses) {
-        this(domain, "", providerQos, participantId, System.currentTimeMillis(), endpointAddresses);
-        String name = null;
-        String reason = "shadow field INTERFACE_NAME in your interface";
-        try {
-            name = (String) providedInterface.getField("INTERFACE_NAME").get(String.class);
-        } catch (Exception e) {
-            reason = reason + ": " + e.getMessage();
-        }
-
-        if (name == null) {
-            logger.error("INTERFACE_NAME not set in class {}", providedInterface.getSimpleName());
-            throw new IllegalArgumentException(reason);
-        }
-        this.interfaceName = name;
     }
 
     public static CapabilityEntry fromCapabilityInformation(CapabilityInformation capInfo) {

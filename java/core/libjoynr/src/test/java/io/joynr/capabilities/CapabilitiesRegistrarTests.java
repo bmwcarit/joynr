@@ -96,7 +96,7 @@ public class CapabilitiesRegistrarTests {
 
         registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
         verify(localCapabilitiesDirectory).add(eq(new CapabilityEntry(domain,
-                                                                      TestInterface.class,
+                                                                      TestInterface.INTERFACE_NAME,
                                                                       providerQos,
                                                                       participantId,
                                                                       System.currentTimeMillis())));
@@ -112,7 +112,7 @@ public class CapabilitiesRegistrarTests {
         registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
 
         verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntry(domain,
-                                                                         TestInterface.class,
+                                                                         TestInterface.INTERFACE_NAME,
                                                                          providerQos,
                                                                          participantId,
                                                                          System.currentTimeMillis())));

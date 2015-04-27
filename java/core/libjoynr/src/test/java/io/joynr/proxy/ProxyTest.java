@@ -152,7 +152,7 @@ public class ProxyTest {
                 Object[] args = invocation.getArguments();
                 ArrayList<CapabilityEntry> fakeCapabilitiesResult = new ArrayList<CapabilityEntry>();
                 fakeCapabilitiesResult.add(new CapabilityEntry(domain,
-                                                               TestInterface.class,
+                                                               TestInterface.INTERFACE_NAME,
                                                                new ProviderQos(),
                                                                "TestParticipantId",
                                                                System.currentTimeMillis(),

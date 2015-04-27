@@ -95,7 +95,7 @@ public class ArbitrationTest {
         providerQos.setCustomParameters(qosParamterList);
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos,
                                                  expectedParticipantId,
                                                  System.currentTimeMillis(),
@@ -107,7 +107,7 @@ public class ArbitrationTest {
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos2,
                                                  "wrongParticipantId",
                                                  System.currentTimeMillis(),
@@ -141,7 +141,7 @@ public class ArbitrationTest {
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos,
                                                  expectedParticipantId,
                                                  System.currentTimeMillis(),
@@ -153,7 +153,7 @@ public class ArbitrationTest {
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos2,
                                                  "wrongParticipantId",
                                                  System.currentTimeMillis(),
@@ -193,7 +193,7 @@ public class ArbitrationTest {
         providerQos.setSupportsOnChangeSubscriptions(false);
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos,
                                                  "wrongParticipantId",
                                                  System.currentTimeMillis(),
@@ -208,7 +208,7 @@ public class ArbitrationTest {
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos2,
                                                  "expectedParticipantId",
                                                  System.currentTimeMillis(),
@@ -240,7 +240,7 @@ public class ArbitrationTest {
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos,
                                                  expectedParticipantId,
                                                  System.currentTimeMillis(),
@@ -251,7 +251,7 @@ public class ArbitrationTest {
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos2,
                                                  "wrongParticipantId",
                                                  System.currentTimeMillis(),
@@ -264,7 +264,7 @@ public class ArbitrationTest {
         ArrayList<EndpointAddressBase> thirdEndpointAddresses = new ArrayList<EndpointAddressBase>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos3,
                                                  "thirdParticipantId",
                                                  System.currentTimeMillis(),
@@ -297,7 +297,7 @@ public class ArbitrationTest {
         ArrayList<EndpointAddressBase> expectedEndpointAddresses = new ArrayList<EndpointAddressBase>();
         expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos,
                                                  expectedParticipantId,
                                                  System.currentTimeMillis(),
@@ -307,7 +307,7 @@ public class ArbitrationTest {
 
         EndpointAddressBase otherEndpointAddress = new JoynrMessagingEndpointAddress("otherChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos2,
                                                  "wrongParticipantId",
                                                  System.currentTimeMillis(),
@@ -318,7 +318,7 @@ public class ArbitrationTest {
 
         EndpointAddressBase thirdEndpointAddress = new JoynrMessagingEndpointAddress("thirdChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos3,
                                                  "thirdParticipantId",
                                                  System.currentTimeMillis(),
@@ -353,7 +353,7 @@ public class ArbitrationTest {
 
         expectedEndpointAddress = new JoynrMessagingEndpointAddress("testChannelId");
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos,
                                                  expectedParticipantId,
                                                  System.currentTimeMillis(),
@@ -368,7 +368,7 @@ public class ArbitrationTest {
         ArrayList<EndpointAddressBase> otherEndpointAddresses = new ArrayList<EndpointAddressBase>();
         otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos2,
                                                  "wrongParticipantId",
                                                  System.currentTimeMillis(),
@@ -383,7 +383,7 @@ public class ArbitrationTest {
         ArrayList<EndpointAddressBase> thirdEndpointAddresses = new ArrayList<EndpointAddressBase>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new CapabilityEntry(domain,
-                                                 TestInterface.class,
+                                                 TestInterface.INTERFACE_NAME,
                                                  providerQos3,
                                                  "thirdParticipantId",
                                                  System.currentTimeMillis(),
