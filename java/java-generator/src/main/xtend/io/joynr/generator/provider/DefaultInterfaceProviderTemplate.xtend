@@ -62,7 +62,7 @@ import io.joynr.provider.Promise;
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 
