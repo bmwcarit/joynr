@@ -83,18 +83,12 @@ package «packagePath»;
 «IF needsListImport(serviceInterface)»
 	import java.util.List;
 «ENDIF»
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute(serviceInterface)»
 	import io.joynr.provider.Promise;
 «ENDIF»
 «IF hasReadAttribute(serviceInterface)»
 	import io.joynr.provider.Deferred;
 «ENDIF»
-«IF !getMethods(serviceInterface).isEmpty»
-	import io.joynr.dispatcher.rpc.Callback;
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-«ENDIF»
-// TODO: remove end
 «IF !uniqueMethodsToCreateDeferreds.isEmpty»
 	import io.joynr.provider.AbstractDeferred;
 «ENDIF»
@@ -105,14 +99,13 @@ import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
 	import «datatype»;
 «ENDFOR»
 
-public interface «className» extends JoynrInterface, JoynrProvider {
+public interface «className» extends JoynrProvider {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 	«FOR attribute : getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
