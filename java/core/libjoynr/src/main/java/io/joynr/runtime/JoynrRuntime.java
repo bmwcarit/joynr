@@ -39,16 +39,11 @@ public interface JoynrRuntime {
      *            the provider.
      * @param provider
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @param providedInterface
-     *            Provided interface class.
      * @param authenticationToken
      *            Token to authenticate the provider. Should be persistent between application startups.
      * @return Returns a RegistrationFuture which can be used to check the local and global registration status.
      */
-    <T extends JoynrInterface> RegistrationFuture registerCapability(String domain,
-                                                                     JoynrProvider provider,
-                                                                     Class<T> providedInterface,
-                                                                     String authenticationToken);
+    RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
@@ -57,13 +52,8 @@ public interface JoynrRuntime {
      *            The domain the provider was registered for.
      * @param provider
      *            The provider instance.
-     * @param providedInterface
-     *            The provided interface class.
      */
-    <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                         JoynrProvider provider,
-                                                         Class<T> providedInterface,
-                                                         String authenticationToken);
+    void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Returns a proxy builder instance to build a proxy object.

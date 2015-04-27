@@ -19,7 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.provider.JoynrProvider;
 
@@ -42,12 +41,9 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.
      */
-    public <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                                JoynrProvider provider,
-                                                                Class<T> providedInterface,
-                                                                String authenticationToken) {
+    public void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken) {
         try {
-            super.unregisterCapability(domain, provider, providedInterface, authenticationToken);
+            super.unregisterCapability(domain, provider, authenticationToken);
         } catch (JoynrCommunicationException e) {
 
         }

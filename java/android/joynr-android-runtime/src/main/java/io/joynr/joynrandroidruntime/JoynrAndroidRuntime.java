@@ -68,32 +68,26 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> RegistrationFuture registerCapability(String domain,
-                                                                            JoynrProvider provider,
-                                                                            Class<T> providedInterface,
-                                                                            String authenticationToken) {
+    public RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long 
         JoynrRuntime runtime = getJoynrRuntime();
 
         // registration of providers is asynchronously
-        RegistrationFuture future = runtime.registerCapability(domain, provider, providedInterface, authenticationToken);
+        RegistrationFuture future = runtime.registerCapability(domain, provider, authenticationToken);
 
         return future;
     }
 
     @Override
-    public <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                                JoynrProvider provider,
-                                                                Class<T> providedInterface,
-                                                                String autheticationToken) {
+    public void unregisterCapability(String domain, JoynrProvider provider, String autheticationToken) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
         // this will not block to long 
         JoynrRuntime runtime = getJoynrRuntime();
 
-        runtime.unregisterCapability(domain, provider, providedInterface, autheticationToken);
+        runtime.unregisterCapability(domain, provider, autheticationToken);
     }
 
     @Override

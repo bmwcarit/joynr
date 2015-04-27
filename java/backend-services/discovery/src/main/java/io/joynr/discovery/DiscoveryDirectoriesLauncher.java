@@ -27,9 +27,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 
 import com.google.inject.Inject;
 
@@ -67,15 +65,9 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        runtime.registerCapability(localDomain,
-                                   channelUrlDirectoryProvider,
-                                   ChannelUrlDirectoryProvider.class,
-                                   AUTH_TOKEN);
+        runtime.registerCapability(localDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
 
-        runtime.registerCapability(localDomain,
-                                   capabilitiesDirectoryProvider,
-                                   GlobalCapabilitiesDirectoryProvider.class,
-                                   AUTH_TOKEN);
+        runtime.registerCapability(localDomain, capabilitiesDirectoryProvider, AUTH_TOKEN);
 
     }
 

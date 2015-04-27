@@ -149,10 +149,7 @@ public class SSLEnd2EndTest {
         provider = new DefaulttestProvider();
         domain = "SSLEnd2EndTest." + methodName + System.currentTimeMillis();
 
-        dummyProviderApplication.getRuntime().registerCapability(domain,
-                                                                 provider,
-                                                                 joynr.tests.testSync.class,
-                                                                 "authToken");
+        dummyProviderApplication.getRuntime().registerCapability(domain, provider, "authToken");
 
         messagingQos = new MessagingQos(5000);
         discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);

@@ -104,19 +104,13 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> RegistrationFuture registerCapability(String domain,
-                                                                            JoynrProvider provider,
-                                                                            Class<T> providedInterface,
-                                                                            String authenticationToken) {
-        return capabilitiesRegistrar.registerCapability(domain, provider, providedInterface, authenticationToken);
+    public RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken) {
+        return capabilitiesRegistrar.registerCapability(domain, provider, authenticationToken);
     }
 
     @Override
-    public <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                                JoynrProvider provider,
-                                                                Class<T> providedInterface,
-                                                                String authenticationToken) {
-        capabilitiesRegistrar.unregisterCapability(domain, provider, providedInterface, authenticationToken);
+    public void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken) {
+        capabilitiesRegistrar.unregisterCapability(domain, provider, authenticationToken);
 
     }
 

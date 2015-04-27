@@ -21,7 +21,6 @@ package io.joynr.capabilities;
 
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.publication.PublicationManager;
@@ -58,10 +57,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public <T extends JoynrInterface> RegistrationFuture registerCapability(final String domain,
-                                                                            JoynrProvider provider,
-                                                                            final Class<T> providedInterface,
-                                                                            String authenticationToken) {
+    public RegistrationFuture registerCapability(final String domain, JoynrProvider provider, String authenticationToken) {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);
@@ -79,10 +75,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                                JoynrProvider provider,
-                                                                final Class<T> providedInterface,
-                                                                String authenticationToken) {
+    public void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken) {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);

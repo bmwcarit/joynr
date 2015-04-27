@@ -94,7 +94,7 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
-        registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
+        registrar.registerCapability(domain, provider, "registerWithCapRegistrar");
         verify(localCapabilitiesDirectory).add(eq(new CapabilityEntry(domain,
                                                                       TestInterface.INTERFACE_NAME,
                                                                       providerQos,
@@ -109,7 +109,7 @@ public class CapabilitiesRegistrarTests {
     public void unregisterCapability() {
         when(provider.getProviderQos()).thenReturn(providerQos);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
-        registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
+        registrar.unregisterCapability(domain, provider, "unregisterWithRegistrar");
 
         verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntry(domain,
                                                                          TestInterface.INTERFACE_NAME,

@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
-import joynr.vehicle.RadioProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +140,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provider = new MyRadioProvider();
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
-        runtime.registerCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+        runtime.registerCapability(localDomain, provider, AUTH_TOKEN);
 
         ConsoleReader console;
         try {
@@ -175,7 +174,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         LOG.info("shutting down");
         if (provider != null) {
             try {
-                runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+                runtime.unregisterCapability(localDomain, provider, AUTH_TOKEN);
             } catch (JoynrException e) {
                 LOG.error("unable to unregister capabilities {}", e.getMessage());
             }

@@ -36,7 +36,6 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.testProvider;
 import joynr.tests.testProxy;
 
 import org.junit.Before;
@@ -85,7 +84,6 @@ public class ShutdownTest {
         dummyApplication.shutdown();
         dummyApplication.getRuntime().registerCapability("ShutdownTestdomain",
                                                          provider,
-                                                         testProvider.class,
                                                          "ShutdownTestauthenticationToken");
     }
 
@@ -97,7 +95,6 @@ public class ShutdownTest {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
         dummyApplication.getRuntime().registerCapability("ShutdownTestdomain",
                                                          provider,
-                                                         testProvider.class,
                                                          "ShutdownTestauthenticationToken");
         ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
                                                                                              testProxy.class);

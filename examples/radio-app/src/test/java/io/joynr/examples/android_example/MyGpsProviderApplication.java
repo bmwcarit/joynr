@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
-import joynr.vehicle.GpsProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +140,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
     @Override
     public void run() {
         provider = new MyGpsProvider();
-        runtime.registerCapability(localDomain, provider, GpsProvider.class, AUTH_TOKEN);
+        runtime.registerCapability(localDomain, provider, AUTH_TOKEN);
 
         ConsoleReader console;
         try {
@@ -169,7 +168,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         LOG.info("shutting down");
         if (provider != null) {
             try {
-                runtime.unregisterCapability(localDomain, provider, GpsProvider.class, AUTH_TOKEN);
+                runtime.unregisterCapability(localDomain, provider, AUTH_TOKEN);
             } catch (JoynrException e) {
                 LOG.error("unable to unregister capabilities {}", e.getMessage());
             }

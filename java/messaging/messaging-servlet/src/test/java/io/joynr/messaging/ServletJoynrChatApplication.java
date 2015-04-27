@@ -24,7 +24,6 @@ import io.joynr.provider.Promise;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.chat.DefaultMessengerProvider;
 import joynr.chat.Message;
-import joynr.chat.MessengerProvider;
 
 public class ServletJoynrChatApplication extends AbstractJoynrApplication {
 
@@ -48,12 +47,12 @@ public class ServletJoynrChatApplication extends AbstractJoynrApplication {
             }
 
         };
-        runtime.registerCapability(localDomain, provider, MessengerProvider.class, "ServletJoynChatApplication");
+        runtime.registerCapability(localDomain, provider, "ServletJoynChatApplication");
     }
 
     @Override
     public void shutdown() {
-        runtime.unregisterCapability(localDomain, provider, MessengerProvider.class, "ServletJoynChatApplication");
+        runtime.unregisterCapability(localDomain, provider, "ServletJoynChatApplication");
 
     }
 }

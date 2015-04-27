@@ -19,15 +19,16 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
-import com.google.inject.Inject;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
-import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 
 import java.util.Properties;
+
+import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+
+import com.google.inject.Inject;
 
 public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplication {
 
@@ -58,20 +59,14 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     @Override
     public void run() {
 
-        runtime.registerCapability(localDomain,
-                                   globalDomainAccessSyncProvider,
-                                   GlobalDomainAccessControllerProvider.class,
-                                   AUTH_TOKEN);
+        runtime.registerCapability(localDomain, globalDomainAccessSyncProvider, AUTH_TOKEN);
     }
 
     @Override
     public void shutdown() {
 
         if (globalDomainAccessSyncProvider != null) {
-            runtime.unregisterCapability(localDomain,
-                                         globalDomainAccessSyncProvider,
-                                         GlobalDomainAccessControllerProvider.class,
-                                         AUTH_TOKEN);
+            runtime.unregisterCapability(localDomain, globalDomainAccessSyncProvider, AUTH_TOKEN);
         }
         super.shutdown();
     }

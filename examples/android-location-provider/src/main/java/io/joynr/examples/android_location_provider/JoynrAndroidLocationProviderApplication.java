@@ -24,8 +24,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 
 import java.util.Properties;
 
-import joynr.vehicle.GpsProvider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +58,7 @@ public class JoynrAndroidLocationProviderApplication extends Application {
         if (runtime != null) {
             logToOutput("Registering provider on domain \"" + domain + "\".");
             // registers the provider at the global capabilities directory
-            runtime.registerCapability(domain, androidLocationProvider, GpsProvider.class, "android-location-provider");
+            runtime.registerCapability(domain, androidLocationProvider, "android-location-provider");
         } else {
             logToOutput("Failed to bind service. Can not register provider\n");
         }
@@ -74,10 +72,7 @@ public class JoynrAndroidLocationProviderApplication extends Application {
         if (runtime != null) {
             logToOutput("Unegistering provider from domain \"" + domain + "\".");
             // registers the provider at the global capabilities directory
-            runtime.unregisterCapability(domain,
-                                         androidLocationProvider,
-                                         GpsProvider.class,
-                                         "android-location-provider");
+            runtime.unregisterCapability(domain, androidLocationProvider, "android-location-provider");
         } else {
             logToOutput("Failed to bind service. Can not register provider\n");
         }

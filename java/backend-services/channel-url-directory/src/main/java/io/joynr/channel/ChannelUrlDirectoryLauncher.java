@@ -28,7 +28,6 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,10 +61,7 @@ public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
     }
 
     public void run() {
-        runtime.registerCapability(discoveryDirectoriesDomain,
-                                   channelUrlDirectoryProvider,
-                                   ChannelUrlDirectoryProvider.class,
-                                   AUTH_TOKEN);
+        runtime.registerCapability(discoveryDirectoriesDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
     }
 
     public void shutdown() {

@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 
 public interface CapabilitiesRegistrar {
@@ -32,20 +31,11 @@ public interface CapabilitiesRegistrar {
      *            Domain of the provided service.
      * @param provider
      *            Provider instance.
-     * @param providedInterface
-     *            Interface class which is implemented by the provider and should be accessible by proxies. The provider
-     *            only has to implement the sync interface.
      * @return
      */
-    <T extends JoynrInterface> RegistrationFuture registerCapability(String domain,
-                                                                     JoynrProvider provider,
-                                                                     Class<T> providedInterface,
-                                                                     String authenticationToken);
+    RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken);
 
-    <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                         JoynrProvider provider,
-                                                         Class<T> providedInterface,
-                                                         String authenticationToken);
+    void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.
