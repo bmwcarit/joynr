@@ -27,7 +27,7 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
@@ -36,7 +36,7 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"RequestCaller_h").toUpperCase
 		'''
 		«warning()»
-		
+
 		#ifndef «headerGuard»
 		#define «headerGuard»
 
@@ -45,30 +45,30 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 		#include "joynr/RequestCaller.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include <QSharedPointer>
-		
+
 		«getNamespaceStarter(serviceInterface)»
-	
+
 		class «interfaceName»Provider;
 
 		class «getDllExportMacro()» «interfaceName»RequestCaller : public joynr::RequestCaller, public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Sync {
 		public:
-		    explicit «interfaceName»RequestCaller(QSharedPointer<«interfaceName»Provider> provider);
-		
-		    virtual ~«interfaceName»RequestCaller(){}
-		    
-		    «FOR attribute: getAttributes(serviceInterface)»
-		    «var attributeName = attribute.joynrName»
-		    	virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»);
-		    	virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
-		    	
+			explicit «interfaceName»RequestCaller(QSharedPointer<«interfaceName»Provider> provider);
+
+			virtual ~«interfaceName»RequestCaller(){}
+
+			«FOR attribute: getAttributes(serviceInterface)»
+				«var attributeName = attribute.joynrName»
+				virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»);
+				virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
+
 			«ENDFOR»
 			«FOR method: getMethods(serviceInterface)»
 				«val outputParameterType = getMappedOutputParameter(method).head»
 				«var methodName = method.joynrName»
 				«IF outputParameterType=="void"»
-					virtual void  «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» );
-				«ELSE»				
-					virtual void  «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+					virtual void «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
+				«ELSE»
+					virtual void «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
 				«ENDIF»
 			«ENDFOR»
 
@@ -77,12 +77,12 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
 			void registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener);
 			void unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener);
-			
+
 		private:
-		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
-		    QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider;
+			DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
+			QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider;
 		};
-		
+
 		«getNamespaceEnder(serviceInterface)»
 		#endif // «headerGuard»
 		'''
