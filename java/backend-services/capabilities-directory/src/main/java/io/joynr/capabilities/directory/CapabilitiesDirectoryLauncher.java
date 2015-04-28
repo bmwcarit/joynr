@@ -29,10 +29,12 @@ import java.util.Properties;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
     private static final String AUTH_TOKEN = "CapabilitiesDirectoryLauncher";
+    private static JoynrInjectorFactory injectorFactory;
     @Inject
     private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
 
@@ -44,7 +46,8 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     public static void start(Properties joynrConfig) {
 
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
-        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, new CapabilitiesDirectoryModule());
+        injectorFactory = new JoynrInjectorFactory(joynrConfig, new CapabilitiesDirectoryModule());
+
         JoynrApplication capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
                                                                                                                       CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();
@@ -62,5 +65,13 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     public void shutdown() {
         // no need to send unregister capabilites request to itself
 
+    }
+
+    static Injector getInjector() {
+        if (injectorFactory == null) {
+            throw new IllegalStateException("start the launcher first by calling start()");
+        }
+
+        return injectorFactory.getInjector();
     }
 }

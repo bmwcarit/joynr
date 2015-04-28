@@ -20,12 +20,11 @@ package io.joynr.capabilities.directory;
  */
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.capabilities.CapabilitiesStoreImpl;
-import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
 import io.joynr.provider.PromiseKeeper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 import joynr.types.CapabilityInformation;
@@ -34,6 +33,8 @@ import joynr.types.ProviderQos;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.inject.Injector;
 
 public class CapabilitiesDirectoryTest {
 
@@ -54,7 +55,10 @@ public class CapabilitiesDirectoryTest {
 
     @Before
     public void setUp() {
-        capabilitiesDirectory = new CapabilitiesDirectoryImpl(new CapabilitiesStoreImpl(new DefaultCapabilitiesProvisioning()));
+        CapabilitiesDirectoryLauncher.start(new Properties());
+        Injector injector = CapabilitiesDirectoryLauncher.getInjector();
+
+        capabilitiesDirectory = injector.getInstance(CapabilitiesDirectoryImpl.class);
         providerQos.setPriority((long) 123);
         capInfo1 = new CapabilityInformation(domain, thisInterface, providerQos, mcId, participantId1);
         capInfo2 = new CapabilityInformation(domain, anotherInterface, providerQos, mcId, participantId2);
