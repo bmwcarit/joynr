@@ -165,10 +165,12 @@ inherit from the generated classes `joynr.vehicle.RadioAbsctractProvider` (locat
 public class MyRadioProvider extends RadioAbstractProvider {
     ...
     @Override
-    public Boolean addFavouriteStation(RadioStation radioStation) throws JoynrArbitrationException {
+    public Promise<AddFavouriteStationDeferred> addFavouriteStation(RadioStation radioStation) {
+        AddFavouriteStationDeferred deferred = new AddFavouriteStationDeferred();
         LOG.info(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
         stationsList.add(radioStation);
-        return true;
+        deferred.resolve(true);
+        return new Promise<AddFavouriteStationDeferred>(deferred);
     }
     ...
 }
@@ -258,13 +260,13 @@ public static void main(String[] args) {
 @Override
 public void run() {
     provider = new MyRadioProvider();
-    runtime.registerCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+    runtime.registerCapability(localDomain, provider, AUTH_TOKEN);
 }
 
 @Override
 public void shutdown() {
     if (provider != null) {
-        runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+        runtime.unregisterCapability(localDomain, provider, AUTH_TOKEN);
     }
     runtime.shutdown(true);
 }
