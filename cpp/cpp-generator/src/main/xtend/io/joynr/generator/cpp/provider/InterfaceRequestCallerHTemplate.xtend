@@ -18,10 +18,11 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 
 class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
@@ -50,7 +51,7 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
 		class «interfaceName»Provider;
 
-		class «getDllExportMacro()» «interfaceName»RequestCaller : public joynr::RequestCaller, public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Sync {
+		class «getDllExportMacro()» «interfaceName»RequestCaller : public joynr::RequestCaller {
 		public:
 			explicit «interfaceName»RequestCaller(QSharedPointer<«interfaceName»Provider> provider);
 
@@ -63,15 +64,9 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
 			«ENDFOR»
 			«FOR method: getMethods(serviceInterface)»
-				«val outputParameterType = getMappedOutputParameter(method).head»
-				«var methodName = method.joynrName»
-				«IF outputParameterType=="void"»
-					virtual void «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-				«ELSE»
-					virtual void «methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-				«ENDIF»
-			«ENDFOR»
+				«method.createRequestCallerSignature»
 
+			«ENDFOR»
 			void registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener);
 			void unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener);
 
@@ -87,4 +82,10 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 		#endif // «headerGuard»
 		'''
 	}
+	def createRequestCallerSignature(FMethod method)
+'''
+	«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method, true))»
+	«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+	virtual void «method.joynrName»(std::function<void(joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct«inputTypedParamList»);
+'''
 }

@@ -41,6 +41,9 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			#include "«datatype»"
 		«ENDFOR»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+		«IF !serviceInterface.methods.empty»
+			#include "joynr/RequestStatus.h"
+		«ENDIF»
 
 		«getNamespaceStarter(serviceInterface)»
 		«interfaceName»RequestCaller::«interfaceName»RequestCaller(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
@@ -61,18 +64,19 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
-			«val outputParameterType = getMappedOutputParameter(method)»
+			«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method, true))»
+			«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
+			«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+			«val inputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
 			«val methodName = method.joynrName»
-			«IF outputParameterType.head=="void"»
-				void «interfaceName»RequestCaller::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» ){
-					provider->«methodName»(status«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»);
-				}
-			«ELSE»
-				void «interfaceName»RequestCaller::«methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»){
-					provider->«methodName»(joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»);
-				}
-			«ENDIF»
-
+			void «interfaceName»RequestCaller::«methodName»(std::function<void(joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct«inputTypedParamList»){
+				joynr::RequestStatus status;
+				«FOR parameter : method.getOutputParameters»
+					«parameter.getMappedDatatypeOrList» «parameter.joynrName»;
+				«ENDFOR»
+				provider->«methodName»(status«outputUntypedParamList»«inputUntypedParamList»);
+				callbackFct(status«outputUntypedParamList»);
+			}
 		«ENDFOR»
 
 		void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)

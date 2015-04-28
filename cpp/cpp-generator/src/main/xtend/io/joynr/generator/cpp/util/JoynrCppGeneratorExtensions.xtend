@@ -129,6 +129,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	def getCommaSeperatedTypedOutputParameterList(
 		Iterable<FArgument> arguments,
 		boolean constParameters,
+		boolean parameterAsReference,
 		boolean linebreak
 	) {
 		val returnStringBuilder = new StringBuilder();
@@ -139,7 +140,12 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 			}
 
 			returnStringBuilder.append(getMappedDatatypeOrList(argument));
-			returnStringBuilder.append("& ");
+
+			if (parameterAsReference) {
+				returnStringBuilder.append("&");
+			}
+
+			returnStringBuilder.append(" ");
 			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(",");
 
@@ -160,15 +166,19 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, false)
+		return getCommaSeperatedTypedOutputParameterList(method, true)
+	}
+
+	def getCommaSeperatedTypedOutputParameterList(FMethod method, boolean parameterAsReference) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, parameterAsReference, false)
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false, false)
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false, true, false)
 	}
 
 	def getCommaSeperatedTypedOutputParameterListConstLinebreak(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true, true)
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true, true, true)
 	}
 
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
