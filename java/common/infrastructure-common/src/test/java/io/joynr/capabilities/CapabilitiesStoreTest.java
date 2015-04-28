@@ -119,81 +119,6 @@ public class CapabilitiesStoreTest {
     }
 
     @Test
-    public void testCapabilitiesStoreEndPointAddressQuery() {
-        testCapabilitiesStoreEndPointAddressQueryInternal(CapabilityScope.LOCALONLY);
-        testCapabilitiesStoreEndPointAddressQueryInternal(CapabilityScope.LOCALGLOBAL);
-        testCapabilitiesStoreEndPointAddressQueryInternal(CapabilityScope.REMOTE);
-    }
-
-    private void testCapabilitiesStoreEndPointAddressQueryInternal(CapabilityScope scope) {
-        HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
-        Assert.assertEquals(0, capabilities.size());
-
-        String domain = "testDomain";
-        String participantId = "testparticipantId";
-        ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, ProviderScope.GLOBAL, true);
-        EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId + "1",
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
-        store.add(capabilityEntry1);
-
-        capabilities = store.getAllCapabilities();
-        Assert.assertEquals(1, capabilities.size());
-
-        DiscoveryQos discoveryQos = DiscoveryQos.NO_FILTER;
-
-        Collection<CapabilityEntry> newlyEnteredCaps = store.findCapabilitiesForEndpointAddress(endpointAddress,
-                                                                                                discoveryQos.getCacheMaxAge());
-
-        Assert.assertEquals(1, newlyEnteredCaps.size());
-        Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
-
-        CapabilityEntry capEntryFake = new CapabilityEntry(domain, GpsAsync.INTERFACE_NAME, providerQos, participantId
-                + "Fake", System.currentTimeMillis());
-        capEntryFake.addEndpoint(new JoynrMessagingEndpointAddress("testChannelFake"));
-        store.add(capEntryFake);
-
-        capabilities = store.getAllCapabilities();
-        Assert.assertEquals(2, capabilities.size());
-
-        newlyEnteredCaps = store.findCapabilitiesForEndpointAddress(endpointAddress, discoveryQos.getCacheMaxAge());
-
-        Assert.assertEquals(1, newlyEnteredCaps.size());
-        Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
-
-        store.remove(capEntryFake.getParticipantId());
-
-        capabilities = store.getAllCapabilities();
-        Assert.assertEquals(1, capabilities.size());
-
-        CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
-                                                               NavigationAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId + "2",
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
-        store.add(capabilityEntry2);
-
-        // check if newly created Entry overrides old one
-        capabilities = store.getAllCapabilities();
-        Assert.assertEquals(2, capabilities.size());
-
-        newlyEnteredCaps = store.findCapabilitiesForEndpointAddress(endpointAddress, discoveryQos.getCacheMaxAge());
-        Assert.assertEquals(2, newlyEnteredCaps.size());
-        Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry1));
-        Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry2));
-
-        store.remove(Lists.newArrayList(capabilityEntry1.getParticipantId(), capabilityEntry2.getParticipantId()));
-        Assert.assertEquals(0, store.getAllCapabilities().size());
-        Assert.assertEquals(0, store.findCapabilitiesForEndpointAddress(endpointAddress, discoveryQos.getCacheMaxAge())
-                                    .size());
-    }
-
-    @Test
     public void testCapabilitiesStoreInterfaceAddressQuery() {
         testCapabilitiesStoreInterfaceAddressQueryInternal(ProviderScope.LOCAL);
         testCapabilitiesStoreInterfaceAddressQueryInternal(ProviderScope.GLOBAL);
@@ -304,8 +229,6 @@ public class CapabilitiesStoreTest {
 
         store.remove(Lists.newArrayList(capabilityEntry1.getParticipantId(), capabilityEntry2.getParticipantId()));
         Assert.assertEquals(0, store.getAllCapabilities().size());
-        Assert.assertEquals(0, store.findCapabilitiesForEndpointAddress(endpointAddress, discoveryQos.getCacheMaxAge())
-                                    .size());
     }
 
     @Test

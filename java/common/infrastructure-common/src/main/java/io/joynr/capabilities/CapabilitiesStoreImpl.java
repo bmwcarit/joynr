@@ -291,51 +291,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
-     * (io.joynr.capabilities.EndpointAddressBase)
-     */
-    @Override
-    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint) {
-        return findCapabilitiesForEndpointAddress(endpoint, DiscoveryQos.NO_MAX_AGE);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
-     * (io.joynr.capabilities.EndpointAddressBase, long)
-     */
-    @Override
-    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint, long cacheMaxAge) {
-        ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
-
-        synchronized (capsLock) {
-            List<String> mapping = endPointAddressToCapabilityMapping.get(endpoint);
-            if (mapping != null) {
-                for (String capId : mapping) {
-                    CapabilityEntry ce = capabilityKeyToCapabilityMapping.get(capId);
-                    if (ce == null) {
-                        logger.warn("no mapping found for {}", capId);
-                        continue;
-                    }
-                    if (checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge)) {
-                        for (EndpointAddressBase ep : ce.endpointAddresses) {
-                            if (ep.equals(endpoint)) {
-                                capabilitiesList.add(ce);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        logger.debug("Capabilities for endpoint {} found: {}", endpoint, capabilitiesList.toString());
-
-        return capabilitiesList;
-    }
-
     private boolean checkAge(Long timeStamp, long maxAcceptedAge) {
         return timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge);
     }

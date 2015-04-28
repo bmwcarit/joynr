@@ -19,9 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.endpoints.EndpointAddressBase;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -36,11 +33,6 @@ public interface CapabilitiesStore {
     public abstract boolean remove(String participantId);
 
     public abstract void remove(Collection<String> participantIds);
-
-    public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint,
-                                                                                  long cacheMaxAge);
-
-    public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint);
 
     public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName, long cacheMaxAge);
 
