@@ -35,30 +35,29 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	var interfaceName = serviceInterface.joynrName;
 	'''
 		«warning()»
-		
-		
+
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 			#include "«datatype»"
 		«ENDFOR»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-		
+
 		«getNamespaceStarter(serviceInterface)»
 		«interfaceName»RequestCaller::«interfaceName»RequestCaller(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
 		    : joynr::RequestCaller(I«interfaceName»::getInterfaceName()),
 		      provider(provider)
 		{
 		}
-		
-		«FOR attribute: getAttributes(serviceInterface)»
-		«var attributeName = attribute.joynrName»
-		   	void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»){
-		   		provider->get«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»); 
-		   	}
 
-		   	void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»){
-		   		provider->set«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»);
-		   	}
+		«FOR attribute: getAttributes(serviceInterface)»
+			«var attributeName = attribute.joynrName»
+			void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»){
+				provider->get«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»);
+			}
+
+			void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»){
+				provider->set«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»);
+			}
 
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
@@ -66,21 +65,21 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			«val methodName = method.joynrName»
 			«IF outputParameterType.head=="void"»
 				void «interfaceName»RequestCaller::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» ){
-					provider->«methodName»(status«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»); 
+					provider->«methodName»(status«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»);
 				}
 			«ELSE»
 				void «interfaceName»RequestCaller::«methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»){
-					provider->«methodName»(joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»); 
+					provider->«methodName»(joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»);
 				}
 			«ENDIF»
 
 		«ENDFOR»
-		
+
 		void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
 		{
 			provider->registerAttributeListener(attributeName, attributeListener);
 		}
-		
+
 		void «interfaceName»RequestCaller::unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
 		{
 			provider->unregisterAttributeListener(attributeName, attributeListener);
@@ -95,7 +94,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 		{
 			provider->unregisterBroadcastListener(broadcastName, broadcastListener);
 		}
-		
+
 		«getNamespaceEnder(serviceInterface)»
 	'''
 	}
