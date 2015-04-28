@@ -32,7 +32,7 @@ sample code for more information.
 ## Java Development
 
 * JDK 1.7
-* Maven 3
+* Maven 3.2
 
 NOTE: we implement in Eclipse with the following plugins:
 * M2E - Maven Integration for Eclipse
