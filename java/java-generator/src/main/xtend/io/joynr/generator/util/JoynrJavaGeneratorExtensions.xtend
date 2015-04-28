@@ -543,7 +543,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		val typeName = enumType.joynrName
 '''
 public enum «typeName» {
-	«FOR enumValue : getEnumElements(enumType) SEPARATOR ","»
+	«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType) SEPARATOR ","»
 	«enumValue.joynrName»
 	«ENDFOR»;
 
@@ -551,7 +551,7 @@ public enum «typeName» {
 
 	static{
 		«var i = -1»
-		«FOR enumValue : getEnumElements(enumType)»
+		«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType)»
 		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
 		«ENDFOR»
 	}

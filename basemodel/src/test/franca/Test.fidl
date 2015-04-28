@@ -29,6 +29,11 @@ typeCollection testTypes {
 		TWO = "2"
 	}
 
+	enumeration TestEnumExtended extends TestEnum {
+		THREE = "3"
+		FOUR = "4"
+	}
+
 	struct ComplexTestType {
 		Int32 a 
 		Int32 b
@@ -350,8 +355,20 @@ interface test{
 		error testTypes.ErrorEnumBase
 	}
 
+	method methodWithErrorEnumExtended {
+		error extends testTypes.ErrorEnumBase {
+			IMPLICIT_ERROR_TYPECOLLECTION
+		}
+	}
+
 	method methodWithInterfaceErrorEnum {
 		error ErrorEnumInterface
+	}
+
+	method methodWithInterfaceErrorEnumExtended {
+		error extends ErrorEnumInterface {
+			IMPLICIT_ERROR_INTERFACE
+		}
 	}
 
 	method methodWithImplicitErrorEnum {

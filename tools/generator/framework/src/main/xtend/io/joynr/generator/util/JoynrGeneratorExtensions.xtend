@@ -51,6 +51,9 @@ import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.common.util.BasicEList
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 abstract class JoynrGeneratorExtensions {
 
@@ -403,6 +406,20 @@ abstract class JoynrGeneratorExtensions {
 
 	def getEnumElements(FEnumerationType enumType) {
 		enumType.enumerators
+	}
+
+	def EList<FEnumerator> getEnumElementsAndBaseEnumElements(FEnumerationType enumType) {
+		if (hasExtendsDeclaration(enumType)) {
+			val baseEnumType = getExtendedType(enumType)
+			var enumAndBaseEnumElements = new BasicEList<FEnumerator>()
+			val baseEnumElements = getEnumElementsAndBaseEnumElements(baseEnumType)
+			enumAndBaseEnumElements.addAll(EcoreUtil.copyAll(baseEnumElements))
+			val enumElements = getEnumElements(enumType)
+			enumAndBaseEnumElements.addAll(EcoreUtil.copyAll(enumElements))
+			return enumAndBaseEnumElements
+		} else {
+			return getEnumElements(enumType)
+		}
 	}
 
 	def Iterable<FField> getMembersRecursive(FType datatype) {
@@ -761,11 +778,25 @@ abstract class JoynrGeneratorExtensions {
 		return false
 	}
 
+	def boolean hasExtendsDeclaration(FEnumerationType datatype) {
+		if (datatype.base!=null) {
+			return true
+		}
+		return false
+	}
+
 	def FCompoundType getExtendedType(FCompoundType datatype) {
 		if (datatype instanceof FStructType && (datatype as FStructType).base!=null) {
 			return (datatype as FStructType).base
 		} else if (datatype instanceof FUnionType && (datatype as FUnionType).base!=null) {
 			return (datatype as FUnionType).base
+		}
+		return null
+	}
+
+	def FEnumerationType getExtendedType(FEnumerationType datatype) {
+		if (datatype.base!=null) {
+			return datatype.base
 		}
 		return null
 	}
