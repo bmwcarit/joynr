@@ -21,8 +21,8 @@ import com.google.inject.Inject
 import org.franca.core.franca.FInterface
 
 class InterfaceUtil {
-	@Inject	extension JoynrCppGeneratorExtensions
-	
+	@Inject extension JoynrCppGeneratorExtensions
+
 	def printFutureParamDefinition()
 	'''
 		* @param future With this object, you will be able to query the joynrInternalStatus and result of
@@ -35,13 +35,13 @@ class InterfaceUtil {
 		* This class will be called, together with a return value when the request succeeds
 		* or fails.
 	'''
-	
+
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
-			 
+
 			/**
 			* @brief Synchronous getter for the «attributeName» attribute.
 			*
@@ -52,16 +52,16 @@ class InterfaceUtil {
 					joynr::RequestStatus& joynrInternalStatus,
 					«returnType»& result
 			)«IF pure»=0«ENDIF»;
-			
+
 		«ENDFOR»
-	'''		
+	'''
 
 	def produceAsyncGetters(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
-			 
+
 			/**
 			* @brief Asynchronous getter for the «attributeName» attribute.
 			*
@@ -70,7 +70,7 @@ class InterfaceUtil {
 			virtual void get«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ICallback<«returnType»> > callback
 			)«IF pure»=0«ENDIF»;
-			 
+
 			/**
 			* @brief Asynchronous getter for the location attribute.
 			*
@@ -83,7 +83,7 @@ class InterfaceUtil {
 					QSharedPointer<joynr::Future<«returnType»> > future,
 					QSharedPointer<joynr::ICallback<«returnType»> > callback
 			)«IF pure»=0«ENDIF»;
-			 
+
 			/**
 			* @brief Asynchronous getter for the location attribute.
 			*
@@ -93,14 +93,14 @@ class InterfaceUtil {
 					QSharedPointer<joynr::Future<«returnType»> > future
 			)«IF pure»=0«ENDIF»;
 		«ENDFOR»
-	'''		
+	'''
 
 	def produceSyncSetters(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
-			 
+
 			/**
 			* @brief Synchronous setter for the «attributeName» attribute.
 			*
@@ -112,14 +112,14 @@ class InterfaceUtil {
 					const «returnType»& «attributeName.toFirstLower»
 			)«IF pure»=0«ENDIF»;
 		«ENDFOR»
-	'''		
+	'''
 
 	def produceAsyncSetters(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			«val attributeName = attribute.joynrName»
-			 
+
 			/**
 			* @brief Asynchronous setter for the «attributeName» attribute.
 			*
@@ -130,7 +130,7 @@ class InterfaceUtil {
 					QSharedPointer<joynr::ICallback<void> > callback,
 					«returnType» «attributeName.toFirstLower»
 			)«IF pure»=0«ENDIF»;
-			 
+
 			/**
 			* @brief Asynchronous setter for the «attributeName» attribute.
 			*
@@ -143,7 +143,7 @@ class InterfaceUtil {
 					QSharedPointer<joynr::ICallback<void> > callback,
 					«returnType» «attributeName.toFirstLower»
 			)«IF pure»=0«ENDIF»;
-			 
+
 			/**
 			* @brief Asynchronous setter for the «attributeName» attribute.
 			*
@@ -155,13 +155,13 @@ class InterfaceUtil {
 					«returnType» «attributeName.toFirstLower»
 			)«IF pure»=0«ENDIF»;
 		«ENDFOR»
-	'''		
-		
+	'''
+
 	def produceSyncMethods(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR method: getMethods(serviceInterface)»
 			«IF getMappedOutputParameter(method).head=="void"»
-				 
+
 				/**
 				* @brief Synchronous operation «method.joynrName».
 				*
@@ -171,7 +171,7 @@ class InterfaceUtil {
 						joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 				)«IF pure»=0«ENDIF»;
 			«ELSE»
-				 
+
 				/**
 				* @brief Synchronous operation «method.joynrName».
 				*
@@ -182,14 +182,14 @@ class InterfaceUtil {
 						joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 				)«IF pure»=0«ENDIF»;
 			«ENDIF»
-		«ENDFOR»	
+		«ENDFOR»
 	'''
 
 	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
 	'''
 		«FOR method: getMethods(serviceInterface)»
-			«var returnType = getMappedOutputParameter(method).head» 
-			 
+			«var returnType = getMappedOutputParameter(method).head»
+
 			/**
 			* @brief Asynchronous operation «method.joynrName».
 			*
@@ -198,7 +198,7 @@ class InterfaceUtil {
 			virtual void «method.joynrName»(
 					QSharedPointer<joynr::ICallback<«returnType»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			)«IF pure»=0«ENDIF»;
-			 
+
 			/**
 			* @brief Asynchronous operation «method.joynrName».
 			*
@@ -209,16 +209,16 @@ class InterfaceUtil {
 					QSharedPointer<joynr::Future<«returnType»> > future,
 					QSharedPointer<joynr::ICallback<«returnType»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			)«IF pure»=0«ENDIF»;
-			 
-			/** 
+
+			/**
 			* @brief Asynchronous operation «method.joynrName».
 			«printFutureParamDefinition»
 			«printCallbackParamDefinition»
 			*/
-			
+
 			virtual void «method.joynrName»(
 					QSharedPointer<joynr::Future<«returnType»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			)«IF pure»=0«ENDIF»;
-		«ENDFOR»	
-	'''	
+		«ENDFOR»
+	'''
 }
