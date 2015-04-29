@@ -73,7 +73,7 @@ public:
 };
 
 TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
-    LOG_TRACE(logger, "staring test");
+    LOG_TRACE(logger, "starting test");
     qint64 delay = 500;
     DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
     bool wasTooEarly(false);
@@ -91,7 +91,7 @@ TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
 }
 
 TEST(SingleThreadedDelayedSchedulerTest, runnableCanBeStoppedBeforeRun) {
-    LOG_TRACE(logger, "staring test");
+    LOG_TRACE(logger, "starting test");
     qint64 delay = 300;
     DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
     bool triggered(false);

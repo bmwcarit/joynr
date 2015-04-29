@@ -27,8 +27,6 @@
 #include "joynr/exceptions.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "cluster-controller/capabilities-client/GlobalCapabilitiesInformationCallback.h"
-#include "cluster-controller/capabilities-client/GlobalCapabilityInformationCallback.h"
 #include "joynr/Future.h"
 
 #include <QString>
@@ -36,6 +34,9 @@
 
 namespace joynr
 {
+
+joynr_logging::Logger* CapabilitiesClient::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "CapabilitiesClient");
 
 CapabilitiesClient::CapabilitiesClient(const QString& localChannelId)
         : defaultRequestTTL(30000),
@@ -73,10 +74,16 @@ void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInf
         RequestStatus rs;
         // TM switching from sync to async
         // capabilitiesProxy->add(rs, capabilitiesInformationList);
-        QSharedPointer<Future<void>> future(new Future<void>());
-        capabilitiesProxy->add(future, capabilitiesInformationList);
 
-        // check requestStatus?
+        std::function<void(const RequestStatus& status)> callbackFct =
+                [](const RequestStatus& status) {
+            // check requestStatus?
+            if (!status.successful()) {
+                LOG_ERROR(logger,
+                          QString("Error occured during the execution of capabilitiesProxy->add"));
+            }
+        };
+        capabilitiesProxy->add(capabilitiesInformationList, callbackFct);
     }
 }
 
@@ -108,33 +115,32 @@ QList<types::CapabilityInformation> CapabilitiesClient::lookup(const QString& do
     return result;
 }
 
-void CapabilitiesClient::lookup(const QString& domain,
-                                const QString& interfaceName,
-                                QSharedPointer<IGlobalCapabilitiesCallback> callback)
+void CapabilitiesClient::lookup(
+        const QString& domain,
+        const QString& interfaceName,
+        std::function<void(const RequestStatus& status,
+                           const QList<joynr::types::CapabilityInformation>& result)> callbackFct)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
 
-    // This callback in a callback is a workaround, see GlobalCapabilitiesInformationCallback.h for
-    // details
-    QSharedPointer<ICallback<QList<types::CapabilityInformation>>> capabilitiesCallback(
-            new GlobalCapabilitiesInformationCallback(callback));
-    capabilitiesProxy->lookup(
-            capabilitiesCallback, domain, interfaceName); // QList QString is needed, because
-                                                          // capabilititiesInterface on java expects
-                                                          // a map<string, string>
+    capabilitiesProxy->lookup(domain, interfaceName, callbackFct);
 }
 
-void CapabilitiesClient::lookup(const QString& participantId,
-                                QSharedPointer<IGlobalCapabilitiesCallback> callback)
+void CapabilitiesClient::lookup(
+        const QString& participantId,
+        std::function<void(const RequestStatus& status,
+                           const QList<joynr::types::CapabilityInformation>& result)> callbackFct)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
-    // This callback in a callback is a workaround, see GlobalCapabilityInformationCallback.h for
-    // details
-    QSharedPointer<ICallback<types::CapabilityInformation>> capabilitiesCallback(
-            new GlobalCapabilityInformationCallback(callback));
-    capabilitiesProxy->lookup(capabilitiesCallback, participantId);
+    capabilitiesProxy->lookup(participantId,
+                              [callbackFct](const RequestStatus& status,
+                                            const joynr::types::CapabilityInformation& capability) {
+        QList<joynr::types::CapabilityInformation> result;
+        result.push_back(capability);
+        callbackFct(status, result);
+    });
 }
 
 void CapabilitiesClient::init(

@@ -152,14 +152,14 @@ public:
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
 
-        MockGpsLocationCallback* callback = new MockGpsLocationCallback();
-        QSharedPointer<ICallback<joynr::types::GpsLocation> > spCallback = QSharedPointer<ICallback<joynr::types::GpsLocation> > (callback);
+        MockCallback<joynr::types::GpsLocation>* callback = new MockCallback<joynr::types::GpsLocation>();
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation");
-        asyncTestFixture->getLocation(spCallback);
+        asyncTestFixture->getLocation(
+                [callback] (const joynr::RequestStatus& status, const joynr::types::GpsLocation& location) {
+                    callback->callbackFct(status, location);
+                });
     }
-
-
 
     void testSync_setAttributeNotCached() {
         tests::Itest* testFixture = createFixture(false);
@@ -203,8 +203,7 @@ public:
     void testAsync_getAttributeCached() {
         asyncTestFixture = createFixture(true);
 
-        MockGpsLocationCallback* callback = new MockGpsLocationCallback();
-        QSharedPointer<ICallback<types::GpsLocation> > spCallback = QSharedPointer<ICallback<types::GpsLocation> > (callback);
+        MockCallback<joynr::types::GpsLocation>* callback = new MockCallback<joynr::types::GpsLocation>();
 
         setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
 
@@ -213,7 +212,10 @@ public:
 
         ON_CALL(mockClientCache, lookUp(_,_)).WillByDefault(Return(qvariant));
 
-        asyncTestFixture->getLocation(spCallback);
+        asyncTestFixture->getLocation(
+                [callback] (const RequestStatus& status, const types::GpsLocation& location) {
+                    callback->callbackFct(status, location);
+                });
     }
 
     void testSync_getAttributeCached() {
@@ -236,12 +238,14 @@ public:
     void testAsync_OperationWithNoArguments() {
         asyncTestFixture = createFixture(false);
 
-        MockIntCallback* callback = new MockIntCallback();
-        QSharedPointer<ICallback<int> > spCallback = QSharedPointer<ICallback<int> > (callback);
+        MockCallback<int>* callback = new MockCallback<int>();
 
         setExpectationsForSendRequestCall("int", "methodWithNoInputParameters");
 
-        asyncTestFixture->methodWithNoInputParameters(spCallback);
+        asyncTestFixture->methodWithNoInputParameters(
+                [callback] (const RequestStatus& status, const int& value) {
+                    callback->callbackFct(status, value);
+                });
     }
 
     void testSync_OperationWithNoArguments() {

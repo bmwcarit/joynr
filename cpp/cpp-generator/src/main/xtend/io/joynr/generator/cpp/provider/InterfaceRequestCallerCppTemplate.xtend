@@ -65,12 +65,12 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
-			«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method, true))»
+			«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 			«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 			«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 			«val inputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
 			«val methodName = method.joynrName»
-			void «interfaceName»RequestCaller::«methodName»(std::function<void(joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct«inputTypedParamList»){
+			void «interfaceName»RequestCaller::«methodName»(std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct«inputTypedParamList»){
 				joynr::RequestStatus status;
 				«FOR parameter : method.getOutputParameters»
 					«parameter.getMappedDatatypeOrList» «parameter.joynrName»;

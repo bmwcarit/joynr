@@ -113,8 +113,7 @@ void LongPollingMessageReceiver::run()
     LOG_INFO(logger,
              "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
                      urls.first());
-    QSharedPointer<Future<void>> future(new Future<void>());
-    channelUrlDirectory->registerChannelUrls(future, channelId, urlInformation);
+    channelUrlDirectory->registerChannelUrls(channelId, urlInformation);
 
     while (!isInterrupted()) {
 

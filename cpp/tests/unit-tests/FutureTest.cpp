@@ -93,30 +93,30 @@ TEST_F(FutureTest, getStatusForVoidBeforeOperationFinishes) {
 }
 
 TEST_F(FutureTest, checkDelegateToCallbackOnSuccess) {
-    QSharedPointer<MockIntCallback> mockIntCallback = QSharedPointer<MockIntCallback>(new MockIntCallback());
-    intFuture.setCallback(mockIntCallback);
-    EXPECT_CALL(*(mockIntCallback), onSuccess(Property(&RequestStatus::getCode, RequestStatusCode::OK), 7));
+    QSharedPointer<MockCallback<int>> mockIntCallback(new MockCallback<int>());
+    intFuture.setCallback([mockIntCallback](const RequestStatus& status, const int& value) { mockIntCallback->callbackFct(status, value);});
+    EXPECT_CALL(*(mockIntCallback), callbackFct(Property(&RequestStatus::getCode, RequestStatusCode::OK), 7));
     intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 7);
 }
 
 TEST_F(FutureTest, checkDelegateToCallbackOnFailure) {
-    QSharedPointer<MockIntCallback> mockIntCallback = QSharedPointer<MockIntCallback>(new MockIntCallback());
-    intFuture.setCallback(mockIntCallback);
-    EXPECT_CALL(*(mockIntCallback), onFailure(Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
+    QSharedPointer<MockCallback<int>> mockIntCallback(new MockCallback<int>());
+    intFuture.setCallback([mockIntCallback](const RequestStatus& status, const int& value) { mockIntCallback->callbackFct(status, value);});
+    EXPECT_CALL(*(mockIntCallback), callbackFct(Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE), _));
     intFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
 }
 
 TEST_F(FutureTest, checkDelegateToVoidCallbackOnSuccess) {
-    QSharedPointer<MockVoidCallback> mockVoidCallback = QSharedPointer<MockVoidCallback>(new MockVoidCallback());
-    voidFuture.setCallback(mockVoidCallback);
-    EXPECT_CALL(*(mockVoidCallback), onSuccess(Property(&RequestStatus::getCode, RequestStatusCode::OK)));
+    QSharedPointer<MockCallback<void>> mockVoidCallback(new MockCallback<void>());
+    voidFuture.setCallback([mockVoidCallback](const RequestStatus& status) { mockVoidCallback->callbackFct(status);});
+    EXPECT_CALL(*(mockVoidCallback), callbackFct(Property(&RequestStatus::getCode, RequestStatusCode::OK)));
     voidFuture.onSuccess(RequestStatus(RequestStatusCode::OK));
 }
 
 TEST_F(FutureTest, checkDelegateToVoidCallbackOnFailure) {
-    QSharedPointer<MockVoidCallback> mockVoidCallback = QSharedPointer<MockVoidCallback>(new MockVoidCallback());
-    voidFuture.setCallback(mockVoidCallback);
-    EXPECT_CALL(*(mockVoidCallback), onFailure(Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
+    QSharedPointer<MockCallback<void>> mockVoidCallback(new MockCallback<void>());
+    voidFuture.setCallback([mockVoidCallback](const RequestStatus& status) { mockVoidCallback->callbackFct(status);});
+    EXPECT_CALL(*(mockVoidCallback), callbackFct(Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
     voidFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
 }
 

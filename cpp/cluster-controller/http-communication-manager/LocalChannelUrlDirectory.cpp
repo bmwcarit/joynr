@@ -69,26 +69,30 @@ void LocalChannelUrlDirectory::init()
                       "Channel URL Directory").arg(capabilitiesDirectoryUrl));
 }
 
-void LocalChannelUrlDirectory::registerChannelUrls(
-        QSharedPointer<Future<void>> future,
+QSharedPointer<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrls(
         const QString& channelId,
-        types::ChannelUrlInformation channelUrlInformation)
+        types::ChannelUrlInformation channelUrlInformation,
+        std::function<void(const RequestStatus& status)> callbackFct)
 {
     LOG_INFO(logger, "registering Urls for id=" + channelId);
-    channelUrlDirectoryProxy->registerChannelUrls(future, channelId, channelUrlInformation);
+    return channelUrlDirectoryProxy->registerChannelUrls(
+            channelId, channelUrlInformation, callbackFct);
 }
 
-void LocalChannelUrlDirectory::unregisterChannelUrls(QSharedPointer<Future<void>> future,
-                                                     const QString& channelId)
+QSharedPointer<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrls(
+        const QString& channelId,
+        std::function<void(const RequestStatus& status)> callbackFct)
 {
     LOG_TRACE(logger, "unregistering ALL Urls for id=" + channelId);
-    channelUrlDirectoryProxy->unregisterChannelUrls(future, channelId);
+    return channelUrlDirectoryProxy->unregisterChannelUrls(channelId, callbackFct);
 }
 
-void LocalChannelUrlDirectory::getUrlsForChannel(
-        QSharedPointer<Future<types::ChannelUrlInformation>> future,
-        const QString& channelId,
-        const qint64& timeout_ms)
+QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
+        getUrlsForChannel(
+                const QString& channelId,
+                const qint64& timeout_ms,
+                std::function<void(const RequestStatus& status,
+                                   const types::ChannelUrlInformation& channelUrls)> callbackFct)
 {
     LOG_TRACE(logger, "trying to getUrlsForChannel for id=" + channelId);
 
@@ -96,11 +100,17 @@ void LocalChannelUrlDirectory::getUrlsForChannel(
         LOG_TRACE(logger, "using cached Urls for id=" + channelId);
         RequestStatus status;
         status.setCode(RequestStatusCode::OK);
+        QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> future(
+                new joynr::Future<joynr::types::ChannelUrlInformation>());
         future->onSuccess(status, localCache.value(channelId));
-        return;
+        if (callbackFct) {
+            callbackFct(status, localCache.value(channelId));
+        }
+        return future;
     }
     assert(!channelUrlDirectoryProxy.isNull());
-    channelUrlDirectoryProxy->getUrlsForChannel(future, channelId);
+    QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> future(
+            channelUrlDirectoryProxy->getUrlsForChannel(channelId, callbackFct));
     future->waitForFinished(timeout_ms);
 
     if (future->getStatus().successful()) {
@@ -112,6 +122,7 @@ void LocalChannelUrlDirectory::getUrlsForChannel(
                  "FAILED to receive remote url information for channelId=" + channelId +
                          " . Status: " + future->getStatus().toString());
     }
+    return future;
 }
 
 } // namespace joynr

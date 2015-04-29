@@ -134,7 +134,6 @@ public:
                             QSharedPointer<joynr::system::Address> inprocessAddress);
 
     friend class MessageRunnable;
-    friend class ResolveCallBack;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
@@ -159,32 +158,14 @@ private:
     void sendMessage(const JoynrMessage& message,
                      QSharedPointer<joynr::system::Address> destAddress);
 
-    void sendMessages(QString& destinationPartId, QSharedPointer<joynr::system::Address> address);
+    void sendMessages(const QString& destinationPartId,
+                      QSharedPointer<joynr::system::Address> address);
 
     bool isChildMessageRouter();
 
     void addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address);
 
-    void removeRunningParentResolvers(QString& destinationPartId);
-};
-
-/**
- * Class to handle callbacks from resolve requests to the parent message router.
- */
-
-class ResolveCallBack : public joynr::ICallback<bool>
-{
-public:
-    ResolveCallBack(MessageRouter& messageRouter, QString destinationParticipantId);
-
-    void onFailure(const RequestStatus status);
-
-    void onSuccess(const RequestStatus status, bool resolved);
-
-private:
-    MessageRouter& messageRouter;
-    QString destinationPartId;
-    static joynr_logging::Logger* logger;
+    void removeRunningParentResolvers(const QString& destinationPartId);
 };
 
 /**

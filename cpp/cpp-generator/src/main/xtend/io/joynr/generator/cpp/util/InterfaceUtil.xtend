@@ -23,17 +23,16 @@ import org.franca.core.franca.FInterface
 class InterfaceUtil {
 	@Inject extension JoynrCppGeneratorExtensions
 
-	def printFutureParamDefinition()
+	def printFutureReturnDefinition()
 	'''
-		* @param future With this object, you will be able to query the joynrInternalStatus and result of
-		* the request.
+		* @returns A future representing the result of the asynchronous method call. It provides methods
+		* to wait for completion, to get the result or the request status object.
 	'''
 
-	def printCallbackParamDefinition()
+	def printCallbackFctParamDefinition()
 	'''
-		* @param callback A callback typed according to the expected return value type.
-		* This class will be called, together with a return value when the request succeeds
-		* or fails.
+		* @param callbackFct A callback function to be called once the asynchronous computation has
+		* finished. It must expect a request status object as well as the method out parameters.
 	'''
 
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
@@ -65,32 +64,11 @@ class InterfaceUtil {
 			/**
 			* @brief Asynchronous getter for the «attributeName» attribute.
 			*
-			«printCallbackParamDefinition»
+			«printCallbackFctParamDefinition»
+			«printFutureReturnDefinition»
 			*/
-			virtual void get«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::ICallback<«returnType»> > callback
-			)«IF pure»=0«ENDIF»;
-
-			/**
-			* @brief Asynchronous getter for the location attribute.
-			*
-			* @param future With this object, you will be able to query the joynrInternalStatus and result of
-			* the request.
-			«printCallbackParamDefinition»
-			«printFutureParamDefinition»
-			*/
-			virtual void get«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::Future<«returnType»> > future,
-					QSharedPointer<joynr::ICallback<«returnType»> > callback
-			)«IF pure»=0«ENDIF»;
-
-			/**
-			* @brief Asynchronous getter for the location attribute.
-			*
-			«printFutureParamDefinition»
-			*/
-			virtual void get«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::Future<«returnType»> > future
+			virtual QSharedPointer<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»(
+					std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct = nullptr
 			)«IF pure»=0«ENDIF»;
 		«ENDFOR»
 	'''
@@ -123,36 +101,13 @@ class InterfaceUtil {
 			/**
 			* @brief Asynchronous setter for the «attributeName» attribute.
 			*
-			«printCallbackParamDefinition»
 			* @param «returnType.toFirstLower» The value to set.
+			«printCallbackFctParamDefinition»
+			«printFutureReturnDefinition»
 			*/
-			virtual void set«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::ICallback<void> > callback,
-					«returnType» «attributeName.toFirstLower»
-			)«IF pure»=0«ENDIF»;
-
-			/**
-			* @brief Asynchronous setter for the «attributeName» attribute.
-			*
-			«printFutureParamDefinition»
-			«printCallbackParamDefinition»
-			* @param «returnType.toFirstLower» The value to set.
-			*/
-			virtual void set«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::Future<void> > future,
-					QSharedPointer<joynr::ICallback<void> > callback,
-					«returnType» «attributeName.toFirstLower»
-			)«IF pure»=0«ENDIF»;
-
-			/**
-			* @brief Asynchronous setter for the «attributeName» attribute.
-			*
-			«printFutureParamDefinition»
-			* @param «returnType.toFirstLower» The value to set.
-			*/
-			virtual void set«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::Future<void> > future,
-					«returnType» «attributeName.toFirstLower»
+			virtual QSharedPointer<joynr::Future<void> > set«attributeName.toFirstUpper»(
+					«returnType» «attributeName.toFirstLower»,
+					std::function<void(const joynr::RequestStatus& status)> callbackFct = nullptr
 			)«IF pure»=0«ENDIF»;
 		«ENDFOR»
 	'''
@@ -189,36 +144,17 @@ class InterfaceUtil {
 	'''
 		«FOR method: getMethods(serviceInterface)»
 			«var returnType = getMappedOutputParameter(method).head»
+			«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 
 			/**
 			* @brief Asynchronous operation «method.joynrName».
 			*
-			«printCallbackParamDefinition»
-			*/
-			virtual void «method.joynrName»(
-					QSharedPointer<joynr::ICallback<«returnType»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			)«IF pure»=0«ENDIF»;
-
-			/**
-			* @brief Asynchronous operation «method.joynrName».
-			*
-			«printFutureParamDefinition»
-			«printCallbackParamDefinition»
-			*/
-			virtual void «method.joynrName»(
-					QSharedPointer<joynr::Future<«returnType»> > future,
-					QSharedPointer<joynr::ICallback<«returnType»> > callback «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			)«IF pure»=0«ENDIF»;
-
-			/**
-			* @brief Asynchronous operation «method.joynrName».
-			«printFutureParamDefinition»
-			«printCallbackParamDefinition»
+			«printCallbackFctParamDefinition»
+			«printFutureReturnDefinition»
 			*/
 
-			virtual void «method.joynrName»(
-					QSharedPointer<joynr::Future<«returnType»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			)«IF pure»=0«ENDIF»;
+			virtual QSharedPointer<joynr::Future<«returnType»> > «method.joynrName»(«getCommaSeperatedTypedParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+					std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
 		«ENDFOR»
 	'''
 }

@@ -27,10 +27,10 @@ namespace joynr
 
 using namespace joynr_logging;
 
-Logger* DbusMessagingSkeleton::logger = Logging::getInstance()->getLogger("MSG", "DbusMessagingSkeleton");
+Logger* DbusMessagingSkeleton::logger =
+        Logging::getInstance()->getLogger("MSG", "DbusMessagingSkeleton");
 
-DbusMessagingSkeleton::DbusMessagingSkeleton(IMessaging& callBack)
-        : callBack(callBack)
+DbusMessagingSkeleton::DbusMessagingSkeleton(IMessaging& callBack) : callBack(callBack)
 {
 }
 
@@ -40,7 +40,8 @@ void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage 
     JoynrMessage joynrMessage;
     DbusMessagingUtil::copyDbusMsgToJoynrMsg(message, joynrMessage);
     // callback
-    LOG_INFO(logger, QString("transmit incoming message: %1").arg(joynrMessage.getHeaderMessageId()));
+    LOG_INFO(logger,
+             QString("transmit incoming message: %1").arg(joynrMessage.getHeaderMessageId()));
     callBack.transmit(joynrMessage);
 }
 

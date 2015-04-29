@@ -50,33 +50,37 @@ public:
      *
      * @param channelId
      * @param channelUrlInformation
-     * @param status
+     * @param callbackFct
      */
-    virtual void registerChannelUrls(QSharedPointer<Future<void>> future,
-                                     const QString& channelId,
-                                     types::ChannelUrlInformation channelUrlInformation);
+    virtual QSharedPointer<joynr::Future<void>> registerChannelUrls(
+            const QString& channelId,
+            types::ChannelUrlInformation channelUrlInformation,
+            std::function<void(const RequestStatus& status)> callbackFct = nullptr);
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
      *
-     * @param status
      * @param channelId
+     * @param callbackFct
      */
-    virtual void unregisterChannelUrls(QSharedPointer<Future<void>> future,
-                                       const QString& channelId);
+    virtual QSharedPointer<joynr::Future<void>> unregisterChannelUrls(
+            const QString& channelId,
+            std::function<void(const RequestStatus& status)> callbackFct = nullptr);
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
      * entry is obtained it is stored and returned from there on (instead of starting another remote
      *request).
      *
-     * @param future
      * @param channelId
      * @param timeout
+     * @param callbackFct
      */
-    virtual void getUrlsForChannel(QSharedPointer<Future<types::ChannelUrlInformation>> future,
-                                   const QString& channelId,
-                                   const qint64& timeout_ms);
+    virtual QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannel(
+            const QString& channelId,
+            const qint64& timeout_ms,
+            std::function<void(const RequestStatus& status,
+                               const types::ChannelUrlInformation& channelUrls)> = nullptr);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);

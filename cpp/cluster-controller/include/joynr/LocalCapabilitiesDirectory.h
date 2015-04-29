@@ -154,6 +154,10 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
+    void capabilitiesReceived(const QList<types::CapabilityInformation>& results,
+                              QList<CapabilityEntry> cachedLocalCapabilies,
+                              QSharedPointer<ILocalCapabilitiesCallback> callback,
+                              joynr::system::DiscoveryScope::Enum discoveryScope);
 
     bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
                                        const joynr::system::DiscoveryQos& discoveryQos,

@@ -181,12 +181,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        QSharedPointer<Future<int> >gpsFuture (new Future<int>());
         QList<int> list;
         list.append(2);
         list.append(4);
         list.append(8);
-        testProxy->sumInts(gpsFuture, list);
+        QSharedPointer<Future<int> >gpsFuture (testProxy->sumInts(list));
         gpsFuture->waitForFinished();
         int expectedValue = 2+4+8;
         ASSERT_TRUE(gpsFuture->getStatus().successful());
@@ -204,8 +203,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
         types::Trip inputTrip;
         inputTrip.setLocations(inputLocationList);
-        QSharedPointer<Future<types::Trip> > tripFuture (new Future<types::Trip>());
-        testProxy->optimizeTrip(tripFuture, inputTrip);
+        QSharedPointer<Future<types::Trip> > tripFuture (testProxy->optimizeTrip(inputTrip));
         tripFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
         EXPECT_EQ(inputTrip, tripFuture->getValue());
@@ -257,8 +255,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputGpsLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
         inputGpsLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
         inputGpsLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
-        QSharedPointer<Future<QList<types::GpsLocation> > > listLocationFuture (new Future<QList<types::GpsLocation> > ());
-        testProxy->optimizeLocationList(listLocationFuture, inputGpsLocationList);
+        QSharedPointer<Future<QList<types::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
         listLocationFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
         EXPECT_EQ(inputGpsLocationList, listLocationFuture->getValue());
@@ -342,8 +339,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
-        QSharedPointer<Future<int> > testFuture(new Future<int>());
-        testProxy->addNumbers(testFuture, 1, 2, 3);
+        QSharedPointer<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
         testFuture->waitForFinished();
         ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
         //TODO CA: shared pointer for proxy builder?
@@ -729,15 +725,13 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     QThreadSleep::msleep(150);
-    QSharedPointer<Future<int> > testFuture(new Future<int>());
-    testProxy->addNumbers(testFuture, 1, 2, 3);
+    QSharedPointer<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
     testFuture->waitForFinished();
 
     runtime1->deleteChannel();
     runtime2->deleteChannel();
 
-    QSharedPointer<Future<int> > gpsFuture2(new Future<int>());
-    testProxy->addNumbers(gpsFuture2, 1, 2, 3);
+    QSharedPointer<Future<int> > gpsFuture2(testProxy->addNumbers(1, 2, 3));
     gpsFuture2->waitForFinished(1000);
 
     delete testProxyBuilder;
@@ -955,14 +949,13 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-    // Setup a mock callback
-    QSharedPointer<MockVoidOperationCallback> callback(new MockVoidOperationCallback());
-    EXPECT_CALL(*callback, onSuccess(_));
-    EXPECT_CALL(*callback, onFailure(_)).Times(0);
+    // Setup a callbackFct
+    std::function<void(const joynr::RequestStatus& status)> callbackFct = [] (const joynr::RequestStatus& status){
+       ASSERT_TRUE(status.successful());
+    };
 
     // Asynchonously call the void operation
-    QSharedPointer<Future<void> > future (new Future<void>());
-    testProxy->voidOperation(future, callback);
+    QSharedPointer<Future<void> > future (testProxy->voidOperation(callbackFct));
 
     // Wait for the operation to finish and check for a successful callback
     future->waitForFinished();
@@ -1002,14 +995,13 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     runtime1->stopMessaging();
     QThreadSleep::msleep(5000);
 
-    // Setup a mock callback
-    QSharedPointer<MockVoidOperationCallback> callback(new MockVoidOperationCallback());
-    EXPECT_CALL(*callback, onFailure(_));
-    EXPECT_CALL(*callback, onSuccess(_)).Times(0);
+    // Setup a callbackFct
+    std::function<void(const joynr::RequestStatus&)> callbackFct = [] (const joynr::RequestStatus& status) {
+        ASSERT_FALSE(status.successful());
+    };
 
     // Asynchonously call the void operation
-    QSharedPointer<Future<void> > future (new Future<void>());
-    testProxy->voidOperation(future, callback);
+    QSharedPointer<Future<void> > future (testProxy->voidOperation(callbackFct));
 
     // Wait for the operation to finish and check for a failure callback
     future->waitForFinished();

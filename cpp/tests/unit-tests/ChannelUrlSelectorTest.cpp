@@ -32,16 +32,19 @@ using ::testing::Between;
 using ::testing::SetArgReferee;
 using ::testing::Return;
 using ::testing::Invoke;
+using ::testing::WithArgs;
 
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-void pseudoGetChannelUrls(QSharedPointer<Future<types::ChannelUrlInformation> > future , const QString&  channelId, const qint64& timeout) {
+QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const QString&  channelId, const qint64& timeout) {
     types::ChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);
+    QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
     future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
+    return future;
 }
 
 
@@ -80,10 +83,15 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                 mockDirectory,
                 *settings);
 
-    EXPECT_CALL(*mockDir, getUrlsForChannel(A<QSharedPointer<Future<types::ChannelUrlInformation> > >(), A<const QString&>(), A<const qint64&>()))
-            .WillOnce(Invoke(pseudoGetChannelUrls));
+    EXPECT_CALL(*mockDir, getUrlsForChannel(
+                    A<const QString&>(),
+                    A<const qint64&>(),
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const types::ChannelUrlInformation& urls)>>()))
+            .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    RequestStatus* status = new RequestStatus();  
+    RequestStatus* status = new RequestStatus();
     QString channelId = "testChannelId";
 
     QString url = urlCache->obtainUrl(channelId,*status, 20000);
@@ -117,8 +125,13 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                 mockDirectory,
                 *settings);
 
-    EXPECT_CALL(*mockDir, getUrlsForChannel(A<QSharedPointer<Future<types::ChannelUrlInformation> > >(), A<const QString&>(),A<const qint64&>()))
-            .WillOnce(Invoke(pseudoGetChannelUrls));
+    EXPECT_CALL(*mockDir, getUrlsForChannel(
+                    A<const QString&>(),
+                    A<const qint64&>(),
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const types::ChannelUrlInformation& urls)>>()))
+            .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
     QString channelId = "testChannelId";
@@ -168,8 +181,13 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                 mockDirectory,
                 *settings);
 
-    EXPECT_CALL(*mockDir, getUrlsForChannel(A<QSharedPointer<Future<types::ChannelUrlInformation> > >(), A<const QString&>(),A<const qint64&>()))
-            .WillOnce(Invoke(pseudoGetChannelUrls));
+    EXPECT_CALL(*mockDir, getUrlsForChannel(
+                    A<const QString&>(),
+                    A<const qint64&>(),
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const types::ChannelUrlInformation& urls)>>()))
+            .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
     QString channelId = "testChannelId";

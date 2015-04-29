@@ -23,6 +23,7 @@
 
 namespace joynr
 {
+class RequestStatus;
 template <class T>
 class Future;
 namespace types
@@ -48,33 +49,36 @@ public:
      *
      * @param channelId
      * @param channelUrlInformation
-     * @param status
+     * @param callbackFct
      */
-    virtual void registerChannelUrls(QSharedPointer<Future<void>> future,
-                                     const QString& channelId,
-                                     types::ChannelUrlInformation channelUrlInformation) = 0;
+    virtual QSharedPointer<joynr::Future<void>> registerChannelUrls(
+            const QString& channelId,
+            types::ChannelUrlInformation channelUrlInformation,
+            std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
      *
-     * @param status
      * @param channelId
+     * @param callbackFct
      */
-    virtual void unregisterChannelUrls(QSharedPointer<Future<void>> future,
-                                       const QString& channelId) = 0;
+    virtual QSharedPointer<joynr::Future<void>> unregisterChannelUrls(
+            const QString& channelId,
+            std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
      * entry is obtained it is stored and returned from there on (instead of starting another remote
      *request).
      *
-     * @param future
      * @param channelId
-     * @param timeout
+     * @param callbackFct
      */
-    virtual void getUrlsForChannel(QSharedPointer<Future<types::ChannelUrlInformation>> future,
-                                   const QString& channelId,
-                                   const qint64& timeout_ms) = 0;
+    virtual QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannel(
+            const QString& channelId,
+            const qint64& timeout_ms,
+            std::function<void(const joynr::RequestStatus&, const types::ChannelUrlInformation&)>
+                    callbackFct = nullptr) = 0;
 };
 
 } // namespace joynr

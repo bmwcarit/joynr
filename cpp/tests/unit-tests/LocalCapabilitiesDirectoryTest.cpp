@@ -90,43 +90,72 @@ public:
         delete capabilitiesClient;
     }
 
-    void fakeLookupZeroResultsForInterfaceAddress(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback){
+    void fakeLookupZeroResultsForInterfaceAddress(
+            const QString& domain,
+            const QString& interfaceName,
+            std::function<void(
+                const RequestStatus& status,
+                const QList<types::CapabilityInformation>& capability)> callbackFct){
         Q_UNUSED(domain);
         Q_UNUSED(interfaceName);
-        callback->capabilitiesReceived(QList<types::CapabilityInformation>());
+        RequestStatus status(RequestStatusCode::OK);
+        QList<types::CapabilityInformation> result;
+        callbackFct(status, result);
     }
 
-    void fakeLookupZeroResults(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback){
+    void fakeLookupZeroResults(
+            const QString& participantId,
+            std::function<void(
+                const RequestStatus& status,
+                const QList<types::CapabilityInformation>& capabilities)> callbackFct){
         Q_UNUSED(participantId);
-        callback->capabilitiesReceived(QList<types::CapabilityInformation>());
+        RequestStatus status(RequestStatusCode::OK);
+        QList<types::CapabilityInformation> result;
+        callbackFct(status, result);
     }
 
-    void fakeLookupWithResults(const QString& domain, const QString& interfaceName, QSharedPointer<IGlobalCapabilitiesCallback> callback){
+    void fakeLookupWithResults(
+            const QString& domain,
+            const QString& interfaceName,
+            std::function<void(
+                const RequestStatus& status,
+                const QList<types::CapabilityInformation>& capabilities)> callbackFct){
         Q_UNUSED(domain);
         Q_UNUSED(interfaceName);
         types::ProviderQos qos;
         QList<types::CapabilityInformation> capInfoList;
         capInfoList.append(types::CapabilityInformation(DOMAIN_1_NAME ,INTERFACE_1_NAME, qos,  EXTERNAL_CHANNEL_ID,dummyParticipantId1));
         capInfoList.append(types::CapabilityInformation(DOMAIN_1_NAME ,INTERFACE_1_NAME, qos,  LOCAL_CHANNEL_ID, dummyParticipantId2));
-        callback->capabilitiesReceived(capInfoList);
+        RequestStatus status(RequestStatusCode::OK);
+        callbackFct(status,capInfoList);
     }
 
-    void fakeLookupWithTwoResults(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback){
-       types::ProviderQos qos;
+    void fakeLookupWithTwoResults(
+            const QString& participantId,
+            std::function<void(
+                const RequestStatus& status,
+                const QList<types::CapabilityInformation>& capabilities)> callbackFct){
+        types::ProviderQos qos;
         QList<types::CapabilityInformation> capInfoList;
         capInfoList.append(types::CapabilityInformation(DOMAIN_1_NAME ,INTERFACE_1_NAME, qos,  LOCAL_CHANNEL_ID, participantId));
         capInfoList.append(types::CapabilityInformation(DOMAIN_2_NAME ,INTERFACE_2_NAME, qos,  LOCAL_CHANNEL_ID, participantId));
-        callback->capabilitiesReceived(capInfoList);
+        RequestStatus status(RequestStatusCode::OK);
+        callbackFct(status,capInfoList);
     }
 
-    void fakeLookupWithThreeResults(const QString& participantId, QSharedPointer<IGlobalCapabilitiesCallback> callback){
+    void fakeLookupWithThreeResults(
+            const QString& participantId,
+            std::function<void(
+                const RequestStatus& status,
+                const QList<types::CapabilityInformation>& capabilities)> callbackFct){
         Q_UNUSED(participantId);
         types::ProviderQos qos;
         QList<types::CapabilityInformation> capInfoList;
         capInfoList.append(types::CapabilityInformation(DOMAIN_1_NAME ,INTERFACE_1_NAME, qos,  LOCAL_CHANNEL_ID,dummyParticipantId1));
         capInfoList.append(types::CapabilityInformation(DOMAIN_2_NAME ,INTERFACE_2_NAME, qos,  LOCAL_CHANNEL_ID,dummyParticipantId1));
         capInfoList.append(types::CapabilityInformation(DOMAIN_3_NAME ,INTERFACE_3_NAME, qos,  EXTERNAL_CHANNEL_ID, dummyParticipantId1));
-        callback->capabilitiesReceived(capInfoList);
+        RequestStatus status(RequestStatusCode::OK);
+        callbackFct(status,capInfoList);
     }
 
     void simulateTimeout(){
@@ -187,7 +216,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
-    EXPECT_CALL(*capabilitiesClient, lookup(dummyParticipantId1,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >())).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    dummyParticipantId1,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<joynr::types::CapabilityInformation>& capabilities)>>()))
+            .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
     joynr::system::DiscoveryEntry entry(
         DOMAIN_1_NAME,
@@ -203,7 +237,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) {
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >())).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<joynr::types::CapabilityInformation>& capabilities)>>()))
+            .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
@@ -242,7 +281,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
     QList<QString> participantIdsToRemove;
     participantIdsToRemove.append(dummyParticipantId1);
     EXPECT_CALL(*capabilitiesClient, remove(participantIdsToRemove)).Times(1);
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<joynr::types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
 
@@ -288,14 +330,23 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME, callback, discoveryQos);
     callback->clearResults();
     //enries are now in cache, capabilitiesClient should not be called.
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >())).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<joynr::types::CapabilityInformation>& capabilities)>>()))
+            .Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(TIMEOUT).size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapabilitiesClient) {
     //simulate global capability directory would store two entries.
-    EXPECT_CALL(*capabilitiesClient, lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    DOMAIN_1_NAME ,
+                    INTERFACE_1_NAME,
+                    _))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
 
@@ -326,13 +377,22 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues) {
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     callback->clearResults();
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >())).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
+            .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     QList<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(2, capabilities.size());
@@ -341,7 +401,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabilitiesClient) {
 
-    EXPECT_CALL(*capabilitiesClient, lookup(dummyParticipantId1, A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    dummyParticipantId1,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithThreeResults));
 
@@ -367,7 +431,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
 
 TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
@@ -377,7 +445,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
     // this should remove all entries in the cache
     localCapabilitiesDirectory->cleanCache(100);
     // retrieving capabilities will force a call to the backend as the cache is empty
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >())).Times(1);
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
+            .Times(1);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
 
 }
@@ -387,10 +460,20 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
     QList<types::CapabilityInformation> firstCapInfoList;
     QList<types::CapabilityInformation> secondCapInfoList;
     types::ProviderQos qos;
-    types::CapabilityInformation capInfo1(types::CapabilityInformation(DOMAIN_1_NAME, INTERFACE_1_NAME, qos,  LOCAL_CHANNEL_ID, dummyParticipantId1));
+    types::CapabilityInformation capInfo1(types::CapabilityInformation(
+                                              DOMAIN_1_NAME,
+                                              INTERFACE_1_NAME,
+                                              qos,
+                                              LOCAL_CHANNEL_ID,
+                                              dummyParticipantId1));
     firstCapInfoList.append(capInfo1);
     secondCapInfoList.append(capInfo1);
-    secondCapInfoList.append(types::CapabilityInformation(DOMAIN_2_NAME, INTERFACE_1_NAME, qos,  LOCAL_CHANNEL_ID, dummyParticipantId2));
+    secondCapInfoList.append(types::CapabilityInformation(
+                                 DOMAIN_2_NAME,
+                                 INTERFACE_1_NAME,
+                                 qos,
+                                 LOCAL_CHANNEL_ID,
+                                 dummyParticipantId2));
 
     {
         InSequence inSequence;
@@ -445,7 +528,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
     types::ProviderQos qos;
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
             .Times(0);
 
     joynr::system::DiscoveryEntry entry(
@@ -462,7 +549,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
 
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,A<QSharedPointer<joynr::IGlobalCapabilitiesCallback> >()))
+    EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
+                    A<std::function<void(
+                        const RequestStatus& status,
+                        const QList<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;

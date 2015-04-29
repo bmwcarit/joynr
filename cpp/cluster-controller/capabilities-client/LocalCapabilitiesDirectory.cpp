@@ -19,7 +19,6 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IChannelUrlDirectory.h"
-#include "cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h"
 #include "joynr/ProxyQos.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/system/ChannelAddress.h"
@@ -29,6 +28,8 @@
 #include "joynr/system/Address.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/types/CapabilityInformation.h"
+#include "common/InterfaceAddress.h"
 
 #include <QMutexLocker>
 
@@ -261,20 +262,60 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(
     return false;
 }
 
+void LocalCapabilitiesDirectory::capabilitiesReceived(
+        const QList<types::CapabilityInformation>& results,
+        QList<CapabilityEntry> cachedLocalCapabilies,
+        QSharedPointer<ILocalCapabilitiesCallback> callback,
+        joynr::system::DiscoveryScope::Enum discoveryScope)
+{
+    QMap<QString, CapabilityEntry> capabilitiesMap;
+    QList<CapabilityEntry> mergedEntries;
+
+    foreach (types::CapabilityInformation capInfo, results) {
+        QList<joynr::system::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        CapabilityEntry capEntry(capInfo.getDomain(),
+                                 capInfo.getInterfaceName(),
+                                 capInfo.getProviderQos(),
+                                 capInfo.getParticipantId(),
+                                 connections,
+                                 true);
+        capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
+        mergedEntries.append(capEntry);
+    }
+    registerReceivedCapabilities(capabilitiesMap);
+
+    if (discoveryScope == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL ||
+        discoveryScope == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
+        // look if in the meantime there are some local providers registered
+        // lookup in the local directory to get local providers which were registered in the
+        // meantime.
+        mergedEntries += cachedLocalCapabilies;
+    }
+    callback->capabilitiesReceived(mergedEntries);
+}
+
 void LocalCapabilitiesDirectory::lookup(const QString& participantId,
                                         QSharedPointer<ILocalCapabilitiesCallback> callback)
 {
     joynr::system::DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryScope(joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
     // get the local and cached entries
-    bool recieverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
+    bool receiverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
 
     // if no reciever is called, use the global capabilities directory
-    if (!recieverCalled) {
+    if (!receiverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallback(
-                new LocalCapabilitiesCallbackWrapper(this, callback, participantId, discoveryQos));
-        this->capabilitiesClient->lookup(participantId, wrappedCallback);
+        auto callbackFct = [this, participantId, callback](
+                const RequestStatus& status,
+                const QList<joynr::types::CapabilityInformation>& result) {
+            Q_UNUSED(status);
+            this->capabilitiesReceived(result,
+                                       getCachedLocalCapabilities(participantId),
+                                       callback,
+                                       joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL);
+        };
+        this->capabilitiesClient->lookup(participantId, callbackFct);
     }
 }
 
@@ -286,15 +327,20 @@ void LocalCapabilitiesDirectory::lookup(const QString& domain,
     InterfaceAddress interfaceAddress(domain, interfaceName);
 
     // get the local and cached entries
-    bool recieverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
+    bool receiverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
 
     // if no reciever is called, use the global capabilities directory
-    if (!recieverCalled) {
+    if (!receiverCalled) {
         // search for global entires in the global capabilities directory
-        QSharedPointer<LocalCapabilitiesCallbackWrapper> wrappedCallBack(
-                new LocalCapabilitiesCallbackWrapper(
-                        this, callback, interfaceAddress, discoveryQos));
-        this->capabilitiesClient->lookup(domain, interfaceName, wrappedCallBack);
+        auto callbackFct = [this, interfaceAddress, callback, discoveryQos](
+                RequestStatus status, QList<joynr::types::CapabilityInformation> capabilities) {
+            Q_UNUSED(status);
+            this->capabilitiesReceived(capabilities,
+                                       getCachedLocalCapabilities(interfaceAddress),
+                                       callback,
+                                       discoveryQos.getDiscoveryScope());
+        };
+        this->capabilitiesClient->lookup(domain, interfaceName, callbackFct);
     }
 }
 

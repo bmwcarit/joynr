@@ -166,8 +166,7 @@ TEST_F(End2EndDbusTest, call_async_method)
     // connect the proxy
     connectProxy();
 
-    QSharedPointer<Future<QString>> sayHelloFuture(new Future<QString>());
-    testProxy->sayHello(sayHelloFuture);
+    QSharedPointer<Future<QString>> sayHelloFuture(testProxy->sayHello());
     sayHelloFuture->waitForFinished();
     ASSERT_TRUE(sayHelloFuture->isOk());
     ASSERT_EQ(sayHelloFuture->getValue(), "Hello World");
@@ -201,13 +200,11 @@ TEST_F(End2EndDbusTest, get_set_attribute_async)
     connectProxy();
 
     // asynchronous
-    QSharedPointer<Future<void>> setAttributeFuture(new Future<void>());
-    testProxy->setTestAttribute(setAttributeFuture, 18);
+    QSharedPointer<Future<void>> setAttributeFuture(testProxy->setTestAttribute(18));
     setAttributeFuture->waitForFinished();
     ASSERT_TRUE(setAttributeFuture->isOk());
 
-    QSharedPointer<Future<int>> getAttributeFuture(new Future<int>());
-    testProxy->getTestAttribute(getAttributeFuture);
+    QSharedPointer<Future<int>> getAttributeFuture(testProxy->getTestAttribute());
     getAttributeFuture->waitForFinished();
     ASSERT_TRUE(getAttributeFuture->isOk());
     ASSERT_EQ(getAttributeFuture->getValue(), 18);
@@ -250,13 +247,12 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     int numberOfMessages = 500;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){
-        testFutureList.append(QSharedPointer<Future<int> >(new Future<int>() ) );
         QList<int> list;
         list.append(2);
         list.append(4);
         list.append(8);
         list.append(i);
-        testProxy->sumInts(testFutureList.at(i), list);
+        testFutureList.append(testProxy->sumInts(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){

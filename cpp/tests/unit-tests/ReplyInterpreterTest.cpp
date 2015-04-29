@@ -59,15 +59,16 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     registrar.registerMetaType<types::GpsLocation>();
 
     // Create a mock callback
-    QSharedPointer<ICallback<types::GpsLocation> > callback(new MockGpsCallBack());
+    QSharedPointer<MockCallback<joynr::types::GpsLocation>> callback(new MockCallback<joynr::types::GpsLocation>());
     int myAltitude = 13;
-    EXPECT_CALL(*callback.dynamicCast<MockGpsCallBack>(),
-                onSuccess(_, Property(&types::GpsLocation::getAltitude,myAltitude )))
+    EXPECT_CALL(*callback, callbackFct(_, Property(&types::GpsLocation::getAltitude, myAltitude)))
                 .Times(1);
 
     // Create a reply caller
-    QSharedPointer<IReplyCaller> icaller =
-            QSharedPointer< ReplyCaller<types::GpsLocation> >(new ReplyCaller<types::GpsLocation>(callback));
+    QSharedPointer<IReplyCaller> icaller(new ReplyCaller<types::GpsLocation>(
+            [callback](const RequestStatus& status, const types::GpsLocation& location) {
+                callback->callbackFct(status, location);
+            }));
 
     // Create a reply
     types::GpsLocation location;

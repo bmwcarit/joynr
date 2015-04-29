@@ -123,15 +123,19 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     //sync methods are not yet implemented
 //    QList<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
-    QSharedPointer<IGlobalCapabilitiesCallbackMock> callback(new IGlobalCapabilitiesCallbackMock());
+    QSharedPointer<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
     QSemaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<QList<types::CapabilityInformation> >()))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const joynr::RequestStatus&>(), A<const QList<types::CapabilityInformation>&>()))
+           .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    std::function<void(const joynr::RequestStatus&, const QList<types::CapabilityInformation>&)> callbackFct =
+            [&](const joynr::RequestStatus& status, const QList<types::CapabilityInformation>& capabilities) {
+                callback->capabilitiesReceived(status, capabilities);
+            };
 
     LOG_DEBUG(logger,"get capabilities");
-    capabilitiesClient->lookup(capDomain, capInterface, callback);
+    capabilitiesClient->lookup(capDomain, capInterface, callbackFct);
     semaphore.tryAcquire(1,10000);
     LOG_DEBUG(logger,"finished get capabilities");
 

@@ -166,11 +166,11 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		return getCommaSeperatedTypedOutputParameterList(method, true)
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, true, false)
 	}
 
-	def getCommaSeperatedTypedOutputParameterList(FMethod method, boolean parameterAsReference) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, parameterAsReference, false)
+	def getCommaSeperatedConstTypedOutputParameterList(FMethod method) {
+		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), true, true, false)
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {

@@ -130,14 +130,14 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 						&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 						«ENDFOR»
 					) {
-						«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method, true))»
-						std::function<void(joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
-								[callbackFct](joynr::RequestStatus status«outputTypedParamList»){
+						«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+						std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
+								[callbackFct](const joynr::RequestStatus& status«outputTypedParamList»){
 									Q_UNUSED(status);
 									«IF method.outputParameters.empty»
 										QVariant returnValue(QVariant::Invalid);
 									«ELSE»
-										QVariant returnValue(«FOR param : method.outputParameters SEPARATOR ','»«IF isArray(param)»«joynrGenerationPrefix»::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)«ELSE»QVariant::fromValue(«param.joynrName»)«ENDIF»«ENDFOR»);
+										QVariant returnValue(«FOR param : method.outputParameters SEPARATOR ','»«IF isArray(param)»joynr::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)«ELSE»QVariant::fromValue(«param.joynrName»)«ENDIF»«ENDFOR»);
 									«ENDIF»
 									callbackFct(returnValue);
 								};

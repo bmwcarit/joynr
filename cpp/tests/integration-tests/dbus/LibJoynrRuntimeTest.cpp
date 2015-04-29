@@ -290,8 +290,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     QList<int> ints;
     ints << 4 << 6 << 12;
     int expectedSum = 22;
-    QSharedPointer<Future<int> > future(new Future<int>());
-    testProxy->sumInts(future, ints);
+    QSharedPointer<Future<int> > future(testProxy->sumInts(ints));
     future->waitForFinished(500);
 
     ASSERT_TRUE(future->getStatus().successful());

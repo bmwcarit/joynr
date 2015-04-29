@@ -58,11 +58,9 @@ bool AbstractJoynrMessagingConnector::usesClusterController() const
     return true;
 }
 
-void AbstractJoynrMessagingConnector::operationRequest(RequestStatus& status,
-                                                       QSharedPointer<IReplyCaller> replyCaller,
+void AbstractJoynrMessagingConnector::operationRequest(QSharedPointer<IReplyCaller> replyCaller,
                                                        const Request& request)
 {
-    status.setCode(RequestStatusCode::IN_PROGRESS);
     sendRequest(request, replyCaller);
 }
 

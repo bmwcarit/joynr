@@ -92,12 +92,18 @@ public:
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
-    virtual void lookup(const QString& domain,
-                        const QString& interfaceName,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(
+            const QString& domain,
+            const QString& interfaceName,
+            std::function<void(const RequestStatus& status,
+                               const QList<joynr::types::CapabilityInformation>& result)>
+                    callbackFct);
 
-    virtual void lookup(const QString& participantId,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(
+            const QString& participantId,
+            std::function<void(const RequestStatus& status,
+                               const QList<joynr::types::CapabilityInformation>& result)>
+                    callbackFct);
 
     virtual ~CapabilitiesClient();
 
@@ -121,6 +127,8 @@ private:
 
     // capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
+
+    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

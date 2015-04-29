@@ -38,8 +38,9 @@ template <class T>
 class ReplyCaller : public IReplyCaller
 {
 public:
-    ReplyCaller(QSharedPointer<ICallback<T>> callback)
-            : callback(callback), hasTimeOutOccurred(false)
+    ReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)>
+                        callbackFct)
+            : callbackFct(callbackFct), hasTimeOutOccurred(false)
     {
     }
 
@@ -49,15 +50,17 @@ public:
 
     void returnValue(const T& payload)
     {
-        if (!hasTimeOutOccurred) {
-            callback->onSuccess(RequestStatus(RequestStatusCode::OK), payload);
+        if (!hasTimeOutOccurred && callbackFct) {
+            RequestStatus status(RequestStatusCode::OK);
+            callbackFct(status, payload);
         }
     }
 
     void timeOut()
     {
         hasTimeOutOccurred = true;
-        callback->onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
+        callbackFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE),
+                    defaultValue);
     }
 
     QString getTypeName() const
@@ -72,9 +75,13 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<T>> callback;
+    std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct;
     bool hasTimeOutOccurred;
+    static T defaultValue;
 };
+
+template <class T>
+T ReplyCaller<T>::defaultValue;
 
 template <>
 /**
@@ -84,8 +91,8 @@ template <>
 class ReplyCaller<void> : public IReplyCaller
 {
 public:
-    ReplyCaller(QSharedPointer<ICallback<void>> callback)
-            : callback(callback), hasTimeOutOccurred(false)
+    ReplyCaller(std::function<void(const joynr::RequestStatus& status)> callbackFct)
+            : callbackFct(callbackFct), hasTimeOutOccurred(false)
     {
     }
 
@@ -95,15 +102,15 @@ public:
 
     void returnValue()
     {
-        if (!hasTimeOutOccurred) {
-            callback->onSuccess(RequestStatus(RequestStatusCode::OK));
+        if (!hasTimeOutOccurred && callbackFct) {
+            callbackFct(RequestStatus(RequestStatusCode::OK));
         }
     }
 
     void timeOut()
     {
         hasTimeOutOccurred = true;
-        callback->onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
+        callbackFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
     }
 
     QString getTypeName() const
@@ -118,7 +125,7 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<void>> callback;
+    std::function<void(const joynr::RequestStatus& status)> callbackFct;
     bool hasTimeOutOccurred;
 };
 

@@ -21,7 +21,6 @@
 
 #include "joynr/RequestStatus.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/ICallback.h"
 
 #include <QSemaphore>
 #include <QSharedPointer>
@@ -39,16 +38,15 @@ template <class T>
  *
  * Applications instantiate this class and pass it to asynchronous proxy methods.
  */
-class Future : public ICallback<T>
+class Future
 {
 
 public:
     Future<T>()
-            : callback(NULL),
+            : callbackFct(nullptr),
               status(RequestStatusCode::IN_PROGRESS),
               result(),
-              resultReceived(0),
-              callbackSupplied(false)
+              resultReceived(0)
     {
         LOG_INFO(logger,
                  QString("resultReceived.available():") +
@@ -105,10 +103,10 @@ public:
      *
      * @param callback A shared pointer to the real application callback.
      */
-    void setCallback(QSharedPointer<ICallback<T>> callback)
+    void setCallback(
+            std::function<void(const RequestStatus& satus, const T& returnValue)> callbackFct)
     {
-        callbackSupplied = true;
-        this->callback = callback;
+        this->callbackFct = callbackFct;
     }
 
     /**
@@ -156,36 +154,35 @@ public:
     /**
      * @brief Callback which indicates the operation has finished and is successful.
      */
-    void onSuccess(const RequestStatus status, T result)
+    void onSuccess(const RequestStatus& status, T result)
     {
         LOG_INFO(logger, "onSuccess has been invoked");
         this->status = RequestStatus(status);
         this->result = result;
         resultReceived.release();
-        if (callbackSupplied) {
-            callback->onSuccess(status, result);
+        if (callbackFct) {
+            callbackFct(status, result);
         }
     }
 
     /**
      * @brief Callback which indicates the operation has finished and has failed.
      */
-    void onFailure(const RequestStatus status)
+    void onFailure(const RequestStatus& status)
     {
         LOG_INFO(logger, "onFailure has been invoked");
         this->status = RequestStatus(status);
         resultReceived.release();
-        if (callbackSupplied) {
-            callback->onFailure(status);
+        if (callbackFct) {
+            callbackFct(status, result);
         }
     }
 
 private:
-    QSharedPointer<ICallback<T>> callback;
+    std::function<void(const RequestStatus& status, const T& returnValue)> callbackFct;
     RequestStatus status;
     T result;
     QSemaphore resultReceived;
-    bool callbackSupplied;
 
     static joynr_logging::Logger* logger;
 };
@@ -199,15 +196,11 @@ template <>
  * @brief The void specialisation of this class.
  *
  */
-class Future<void> : public ICallback<void>
+class Future<void>
 {
 
 public:
-    Future<void>()
-            : callback(NULL),
-              status(RequestStatusCode::IN_PROGRESS),
-              resultReceived(0),
-              callbackSupplied(false)
+    Future<void>() : callbackFct(nullptr), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
     {
     }
 
@@ -216,10 +209,9 @@ public:
         return status;
     }
 
-    void setCallback(QSharedPointer<ICallback<void>> callback)
+    void setCallback(std::function<void(const RequestStatus& status)> callbackFct)
     {
-        callbackSupplied = true;
-        this->callback = callback;
+        this->callbackFct = callbackFct;
     }
 
     RequestStatus waitForFinished(int timeOut)
@@ -242,29 +234,28 @@ public:
         return status.successful();
     }
 
-    void onSuccess(const RequestStatus status)
+    void onSuccess(const RequestStatus& status)
     {
         this->status = RequestStatus(status);
         resultReceived.release(1);
-        if (callbackSupplied) {
-            callback->onSuccess(status);
+        if (callbackFct) {
+            callbackFct(status);
         }
     }
 
-    void onFailure(const RequestStatus status)
+    void onFailure(const RequestStatus& status)
     {
         this->status = RequestStatus(status);
         resultReceived.release(1);
-        if (callbackSupplied) {
-            callback->onFailure(status);
+        if (callbackFct) {
+            callbackFct(status);
         }
     }
 
 private:
-    QSharedPointer<ICallback<void>> callback;
+    std::function<void(const RequestStatus& status)> callbackFct;
     RequestStatus status;
     QSemaphore resultReceived;
-    bool callbackSupplied;
 };
 
 } // namespace joynr

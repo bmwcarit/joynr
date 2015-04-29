@@ -148,8 +148,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<Future<types::GpsLocation> > future(new Future<types::GpsLocation>());
-    testProxy->getLocation(future);
+    QSharedPointer<Future<types::GpsLocation> > future(testProxy->getLocation());
     future->waitForFinished(500);
 
     EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
@@ -193,8 +192,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<Future<int> > future(new Future<int>());
-    testProxy->sumInts(future, ints);
+    QSharedPointer<Future<int> > future(testProxy->sumInts(ints));
     future->waitForFinished(500);
 
     EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());

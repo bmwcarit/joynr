@@ -159,7 +159,7 @@ void MessageRouter::route(const JoynrMessage& message)
     */
 
     // search for the destination address
-    QString destinationPartId = message.getHeaderTo();
+    const QString destinationPartId = message.getHeaderTo();
     QSharedPointer<joynr::system::Address> destAddress(NULL);
     {
         QMutexLocker locker(&routingTableMutex);
@@ -180,20 +180,36 @@ void MessageRouter::route(const JoynrMessage& message)
         QMutexLocker locker(&parentResolveMutex);
         if (!runningParentResolves->contains(destinationPartId)) {
             runningParentResolves->insert(destinationPartId);
-            auto callBack =
-                    QSharedPointer<ICallback<bool>>(new ResolveCallBack(*this, destinationPartId));
-            parentRouter->resolveNextHop(callBack, destinationPartId);
+            std::function<void(const joynr::RequestStatus&, const bool&)> callbackFct =
+                    [this, destinationPartId](
+                            const joynr::RequestStatus& status, const bool& resolved) {
+                if (status.successful() && resolved) {
+                    LOG_INFO(this->logger,
+                             "Got destination address for participant " + destinationPartId);
+                    // save next hop in the routing table
+                    this->addProvisionedNextHop(destinationPartId, this->parentAddress);
+                    this->removeRunningParentResolvers(destinationPartId);
+                    this->sendMessages(destinationPartId, this->parentAddress);
+                } else {
+                    LOG_ERROR(this->logger,
+                              "Failed to resolve next hop for participant " + destinationPartId +
+                                      ": " + status.toString());
+                    // TODO error handling in case of failing submission (?)
+                }
+            };
+
+            parentRouter->resolveNextHop(destinationPartId, callbackFct);
         }
     }
 }
 
-void MessageRouter::removeRunningParentResolvers(QString& destinationPartId)
+void MessageRouter::removeRunningParentResolvers(const QString& destinationPartId)
 {
     QMutexLocker locker(&parentResolveMutex);
     runningParentResolves->remove(destinationPartId);
 }
 
-void MessageRouter::sendMessages(QString& destinationPartId,
+void MessageRouter::sendMessages(const QString& destinationPartId,
                                  QSharedPointer<joynr::system::Address> address)
 {
     while (true) {
@@ -371,36 +387,6 @@ void MessageRouter::resolveNextHop(joynr::RequestStatus& joynrInternalStatus,
         resolved = routingTable.contains(participantId);
     }
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
-}
-
-/**
- * IMPLEMENTATION of ResolveCallBack class
- */
-
-Logger* ResolveCallBack::logger = Logging::getInstance()->getLogger("MSG", "ResolveCallBack");
-
-ResolveCallBack::ResolveCallBack(MessageRouter& messageRouter, QString destinationPartId)
-        : messageRouter(messageRouter), destinationPartId(destinationPartId)
-{
-}
-
-void ResolveCallBack::onFailure(const RequestStatus status)
-{
-    LOG_ERROR(logger,
-              "Failed to resolve next hop for participant " + destinationPartId + ": " +
-                      status.toString());
-    // TODO error handling in case of failing submission (?)
-}
-
-void ResolveCallBack::onSuccess(const RequestStatus status, bool resolved)
-{
-    if (status.successful() && resolved) {
-        LOG_INFO(logger, "Got destination address for participant " + destinationPartId);
-        // save next hop in the routing table
-        messageRouter.addProvisionedNextHop(destinationPartId, messageRouter.parentAddress);
-        messageRouter.removeRunningParentResolvers(destinationPartId);
-        messageRouter.sendMessages(destinationPartId, messageRouter.parentAddress);
-    }
 }
 
 /**

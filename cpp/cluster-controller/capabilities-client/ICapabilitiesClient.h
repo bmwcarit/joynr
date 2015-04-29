@@ -29,7 +29,7 @@ namespace joynr
 {
 
 class IGlobalCapabilitiesCallback;
-
+class RequestStatus;
 class ICapabilitiesClient
 {
 public:
@@ -41,11 +41,17 @@ public:
     virtual void remove(QList<QString> capabilitiesInformationList) = 0;
     virtual QList<types::CapabilityInformation> lookup(const QString& domain,
                                                        const QString& interfaceName) = 0;
-    virtual void lookup(const QString& domain,
-                        const QString& interfaceName,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback) = 0;
-    virtual void lookup(const QString& participantId,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback) = 0;
+    virtual void lookup(
+            const QString& domain,
+            const QString& interfaceName,
+            std::function<void(const joynr::RequestStatus& status,
+                               const QList<joynr::types::CapabilityInformation>& capabilities)>
+                    callbackFct) = 0;
+    virtual void lookup(
+            const QString& participantId,
+            std::function<void(const joynr::RequestStatus& status,
+                               const QList<joynr::types::CapabilityInformation>& capabilities)>
+                    callbackFct) = 0;
     virtual QString getLocalChannelId() = 0;
 };
 

@@ -22,11 +22,15 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.InterfaceUtil
 
 class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension InterfaceUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -95,23 +99,13 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
 		    virtual ~«interfaceName»JoynrMessagingConnector(){}
 
+		    «produceSyncGetters(serviceInterface, false)»
+		    «produceAsyncGetters(serviceInterface, false)»
+		    «produceSyncSetters(serviceInterface, false)»
+		    «produceAsyncSetters(serviceInterface, false)»
 		    «FOR attribute: getAttributes(serviceInterface)»
 		    	«val returnType = getMappedDatatypeOrList(attribute)»
 		    	«val attributeName = attribute.joynrName»
-		    	«IF attribute.readable»
-
-		    	virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatypeOrList(attribute)»& «attributeName»);
-		    	virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future, QSharedPointer< joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
-		    	virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<«getMappedDatatypeOrList(attribute)»> > future);
-		    	virtual void get«attributeName.toFirstUpper»(QSharedPointer<joynr::ICallback<«getMappedDatatypeOrList(attribute)»> > callBack);
-		    	«ENDIF»
-		    	«IF attribute.writable»
-
-		    	virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName»);
-		    	virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus &status, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
-		    	virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callBack, «getMappedDatatypeOrList(attribute)» «attributeName»);
-		    	virtual void set«attributeName.toFirstUpper»(QSharedPointer<joynr::Future<void> > future, «getMappedDatatypeOrList(attribute)» «attributeName»);
-		    	«ENDIF»
 		    	«IF attribute.notifiable»
 		    	virtual QString subscribeTo«attributeName.toFirstUpper»(
 		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
@@ -124,17 +118,8 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		    	«ENDIF»
 		    «ENDFOR»
 
-		    «FOR method: getMethods(serviceInterface)»
-		    	«val methodName = method.joynrName»
-		    	«IF getMappedOutputParameter(method).head == "void"»
-		    		virtual void «methodName» (joynr::RequestStatus &status «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-		    	«ELSE»
-		    		virtual void «methodName» (joynr::RequestStatus &status«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-		    	«ENDIF»
-		    	virtual void «methodName» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future, QSharedPointer< joynr::ICallback<«getMappedOutputParameter(method).head» > > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-		    	virtual void «methodName» (QSharedPointer<joynr::Future<«getMappedOutputParameter(method).head»> > future «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-		    	virtual void «methodName» (QSharedPointer<joynr::ICallback<«getMappedOutputParameter(method).head»> > callBack «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-		    «ENDFOR»
+		    «produceSyncMethods(serviceInterface, false)»
+		    «produceAsyncMethods(serviceInterface, false)»
 
 		    «FOR broadcast: serviceInterface.broadcasts»
 

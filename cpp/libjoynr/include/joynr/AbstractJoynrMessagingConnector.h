@@ -66,16 +66,12 @@ public:
      * @brief Makes a request and returns the received response via the callback.
      *
      * @param methodName
-     * @param status
      * @param replyCaller
-     * @return Reply
+
      */
     template <typename T>
-    void attributeRequest(QString methodName,
-                          RequestStatus& status,
-                          QSharedPointer<IReplyCaller> replyCaller)
+    void attributeRequest(QString methodName, QSharedPointer<IReplyCaller> replyCaller)
     {
-        status.setCode(RequestStatusCode::IN_PROGRESS);
         QString attributeID = domain + ":" + interfaceName + ":" + methodName;
 
         if (cached) {
@@ -103,16 +99,10 @@ public:
     /**
      * @brief Makes a request and returns the received response via the callback.
      *
-     * @param methodName
-     * @param status
      * @param replyCaller
-     * @param params
-     * @param paramOrder
-     * @return Reply
+     * @param request
      */
-    void operationRequest(RequestStatus& status,
-                          QSharedPointer<IReplyCaller> replyCaller,
-                          const Request& request);
+    void operationRequest(QSharedPointer<IReplyCaller> replyCaller, const Request& request);
 
 protected:
     IJoynrMessageSender* joynrMessageSender;

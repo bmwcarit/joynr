@@ -44,7 +44,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		#include "joynr/Reply.h"
 		#include <cassert>
 
-		«getNamespaceStarter(fInterface)» 
+		«getNamespaceStarter(fInterface)»
 		«asyncClassName»::«asyncClassName»(
 		        QSharedPointer<joynr::system::Address> messagingAddress,
 		        joynr::ConnectorFactory* connectorFactory,
@@ -62,119 +62,70 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		«FOR attribute: getAttributes(fInterface)»
 			«var attributeName = attribute.joynrName»
 			«var attributeType = getMappedDatatypeOrList(attribute)»
-
 			«IF attribute.readable»
 			«var getAttribute = "get" + attributeName.toFirstUpper»
 			/*
 			 * «getAttribute»
 			 */
 
-			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::Future< «attributeType» > > future, QSharedPointer< joynr::ICallback< «attributeType» > > callback)
+			QSharedPointer<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»(
+			        std::function<void(const joynr::RequestStatus& status, const «attributeType»& «attributeName»)> callbackFct)
 			{
-			    assert (!future.isNull());
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
+			        //TODO error reaction for this case?
+			        QSharedPointer<joynr::Future<«attributeType»> > future;
+			        return future;
 			    }
 			    else{
-			        connector->«getAttribute»(future, callback);
-			    }
-			}
-			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::Future< «attributeType» > > future)
-			{
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«getAttribute»(future);
+			        return connector->«getAttribute»(callbackFct);
 			    }
 			}
 
-			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::ICallback< «attributeType» > > callback)
-			{
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«getAttribute»(callback);
-			    }
-			}
 			«ENDIF»
-
 			«IF attribute.writable»
-			«var setAttribute = "set" + attributeName.toFirstUpper» 
+			«var setAttribute = "set" + attributeName.toFirstUpper»
 			/*
 			 * «setAttribute»
 			 */
 
-			void «asyncClassName»::«setAttribute»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callback, «attributeType» attributeValue) {
-			    assert (!future.isNull());
+			QSharedPointer<joynr::Future<void>> «asyncClassName»::«setAttribute»(
+			        «attributeType» «attributeName»,
+			        std::function<void(const joynr::RequestStatus& status)> callbackFct)
+			{
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
+			        //TODO error reaction for this case?
+			        QSharedPointer<joynr::Future<void> > future;
+			        return future;
 			    }
 			    else{
-			        connector->«setAttribute»(future, callback, attributeValue);
+			        return connector->«setAttribute»(«attributeName», callbackFct);
 			    }
 			}
 
-			void «asyncClassName»::«setAttribute»(QSharedPointer<joynr::Future<void> > future, «attributeType» attributeValue) {
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«setAttribute»(future, attributeValue);
-			    }
-			}
-
-			void «asyncClassName»::«setAttribute»(QSharedPointer< joynr::ICallback<void> > callBack, «attributeType» attributeValue) {
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«setAttribute»(callBack, attributeValue);
-			    }
-			}
 			«ENDIF»
-
 		«ENDFOR»
 		«FOR method: getMethods(fInterface)»
 			«var methodName = method.joynrName»
-			«var outType = getMappedOutputParameter(method).head»
-			«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
-
+			«var outputParameter = getMappedOutputParameter(method)»
+			«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+			«var inputParamList = getCommaSeperatedUntypedParameterList(method)»
 			/*
 			 * «methodName»
 			 */
-
-			void «asyncClassName»::«methodName»(QSharedPointer<joynr::Future<«outType»> > future, QSharedPointer< joynr::ICallback<«outType»> > callback «paramsSignature»)
+			QSharedPointer<joynr::Future<«outputParameter.head»> > «asyncClassName»::«methodName»(
+					«IF !method.inputParameters.empty»«getCommaSeperatedTypedParameterList(method)»,«ENDIF»
+					std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 			{
-			    assert (!future.isNull());
 			    if (connector==NULL){
 			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
+			        //TODO error reaction for this case?
+			        QSharedPointer<joynr::Future<«outputParameter.head»> > future;
+			        return future;
 			    }
 			    else{
-			        connector->«methodName»(future, callback «params»);
-			    }
-			}
-
-			void «asyncClassName»::«methodName»(QSharedPointer<joynr::Future<«outType»> > future «paramsSignature») {
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«methodName»(future «params»);
-			    }
-			}
-
-			void «asyncClassName»::«methodName»(QSharedPointer<joynr::ICallback<«outType»> > callback «paramsSignature») { 
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«methodName»(callback «params»);
+			        return connector->«methodName»(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»callbackFct);
 			    }
 			}
 
