@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,14 @@ package joynr;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrException;
+
 /**
  * Value class for the response of a JSON-RPC function call.
  */
 public class Reply implements JoynrMessageType {
     private Object response;
+    private JoynrException error;
     private String requestReplyId;
 
     public Reply() {
@@ -34,8 +37,17 @@ public class Reply implements JoynrMessageType {
         this.response = response;
     }
 
+    public Reply(String requestReplyId, JoynrException error) {
+        this.requestReplyId = requestReplyId;
+        this.error = error;
+    }
+
     public Object getResponse() {
         return response;
+    }
+
+    public JoynrException getError() {
+        return error;
     }
 
     public String getRequestReplyId() {
@@ -44,30 +56,42 @@ public class Reply implements JoynrMessageType {
 
     @Override
     public String toString() {
-        return "Reply: " + "requestReplyId: " + requestReplyId + ", response: " + response;
+        return "Reply: " + "requestReplyId: " + requestReplyId + ", response: " + response + ", error: " + error;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
-
+        }
         Reply other = (Reply) obj;
-
-        // always non null
-        if (!requestReplyId.equals(other.requestReplyId)) {
+        if (error == null) {
+            if (other.error != null) {
+                return false;
+            }
+        } else if (!error.equals(other.error)) {
             return false;
         }
-
-        // always non-null
-        if (!response.equals(other.response)) {
+        if (requestReplyId == null) {
+            if (other.requestReplyId != null) {
+                return false;
+            }
+        } else if (!requestReplyId.equals(other.requestReplyId)) {
             return false;
         }
-
+        if (response == null) {
+            if (other.response != null) {
+                return false;
+            }
+        } else if (!response.equals(other.response)) {
+            return false;
+        }
         return true;
     }
 
@@ -75,6 +99,7 @@ public class Reply implements JoynrMessageType {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((error == null) ? 0 : error.hashCode());
         result = prime * result + ((requestReplyId == null) ? 0 : requestReplyId.hashCode());
         result = prime * result + ((response == null) ? 0 : response.hashCode());
         return result;
