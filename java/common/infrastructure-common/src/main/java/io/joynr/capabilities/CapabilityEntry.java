@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,246 +20,35 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
 
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 
-@SuppressWarnings("serial")
-// used as super-type token to present type erasure from generics
-class EndpointList extends ArrayList<EndpointAddressBase> {
-    public EndpointList() {
-        super();
-    }
+public interface CapabilityEntry {
 
-    public EndpointList(EndpointAddressBase initialEntry) {
-        this();
-        this.add(initialEntry);
-    }
-}
-
-public class CapabilityEntry implements Comparable<CapabilityEntry>, Serializable {
-    private static final long serialVersionUID = 1L;
-
-    protected enum Origin {
+    enum Origin {
         LOCAL, REMOTE
     };
 
-    protected ProviderQos providerQos;
-    protected EndpointList endpointAddresses = new EndpointList();
-    protected String participantId;
-    protected String domain;
-    protected String interfaceName;
+    public CapabilityInformation toCapabilityInformation();
 
-    protected long dateWhenRegistered;
-    protected Origin origin;
+    public ProviderQos getProviderQos();
 
-    public CapabilityEntry() {
-        origin = Origin.LOCAL;
-    }
+    public List<EndpointAddressBase> getEndpointAddresses();
 
-    public CapabilityEntry(String domain,
-                           String interfaceName,
-                           ProviderQos providerQos,
-                           String participantId,
-                           long dateWhenRegistered,
-                           EndpointAddressBase... endpointAddresses) {
-        this.interfaceName = interfaceName;
+    public String getParticipantId();
 
-        this.providerQos = providerQos;
-        this.endpointAddresses.addAll(Arrays.asList(endpointAddresses));
-        this.participantId = participantId;
-        this.domain = domain;
-        this.dateWhenRegistered = dateWhenRegistered;
-        origin = Origin.LOCAL;
-    }
+    public String getDomain();
 
-    public static CapabilityEntry fromCapabilityInformation(CapabilityInformation capInfo) {
-        return new CapabilityEntry(capInfo.getDomain(),
-                                   capInfo.getInterfaceName(),
-                                   capInfo.getProviderQos(),
-                                   capInfo.getParticipantId(),
-                                   System.currentTimeMillis(),
-                                   // Assume the Capability entry is not local because it has been serialized
-                                   new JoynrMessagingEndpointAddress(capInfo.getChannelId()));
-    }
+    public String getInterfaceName();
 
-    @CheckForNull
-    public CapabilityInformation toCapabilityInformation() {
-        String channelId = null;
-        for (EndpointAddressBase endpointAddress : getEndpointAddresses()) {
-            if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
-                channelId = ((JoynrMessagingEndpointAddress) endpointAddress).getChannelId();
-                break;
-            }
-        }
-        if (channelId == null) {
-            return null;
-        }
-        return new CapabilityInformation(getDomain(),
-                                         getInterfaceName(),
-                                         getProviderQos(),
-                                         channelId,
-                                         getParticipantId());
-    }
+    public long getDateWhenRegistered();
 
-    public ProviderQos getProviderQos() {
-        return providerQos;
-    }
+    public void setDateWhenRegistered(long dateWhenRegistered);
 
-    public List<EndpointAddressBase> getEndpointAddresses() {
-        return endpointAddresses;
-    }
+    public void setOrigin(Origin remote);
 
-    public String getParticipantId() {
-        return participantId;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public long getDateWhenRegistered() {
-        return dateWhenRegistered;
-    }
-
-    protected Origin getOrigin() {
-        return origin;
-    }
-
-    public void setDateWhenRegistered(long dateWhenRegistered) {
-        this.dateWhenRegistered = dateWhenRegistered;
-    }
-
-    protected void setOrigin(Origin origin) {
-        this.origin = origin;
-    }
-
-    protected final void setProviderQos(ProviderQos providerQos) {
-        this.providerQos = providerQos;
-    }
-
-    protected final void setEndpointAddresses(EndpointList endpointAddresses) {
-        this.endpointAddresses = endpointAddresses;
-    }
-
-    protected final void setParticipantId(String participantId) {
-        this.participantId = participantId;
-    }
-
-    protected final void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    protected final void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("CapabilityEntry [providerQos=")
-               .append(providerQos)
-               .append(", endpointAddresses=")
-               .append(endpointAddresses)
-               .append(", participantId=")
-               .append(participantId)
-               .append(", domain=")
-               .append(domain)
-               .append(", interfaceName=")
-               .append(interfaceName)
-               .append(", dateWhenRegistered=")
-               .append(getDateWhenRegistered())
-               .append("]");
-        return builder.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (int) (getDateWhenRegistered() ^ (getDateWhenRegistered() >>> 32));
-        result = prime * result + ((domain == null) ? 0 : domain.hashCode());
-        result = prime * result + ((endpointAddresses == null) ? 0 : endpointAddresses.hashCode());
-        result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
-        result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
-        result = prime * result + ((providerQos == null) ? 0 : providerQos.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        CapabilityEntry other = (CapabilityEntry) obj;
-        if (getDateWhenRegistered() != other.getDateWhenRegistered()) {
-            return false;
-        }
-        if (domain == null) {
-            if (other.domain != null) {
-                return false;
-            }
-        } else if (!domain.equals(other.domain)) {
-            return false;
-        }
-        if (endpointAddresses == null) {
-            if (other.endpointAddresses != null) {
-                return false;
-            }
-        } else if (!endpointAddresses.equals(other.endpointAddresses)) {
-            return false;
-        }
-        if (interfaceName == null) {
-            if (other.interfaceName != null) {
-                return false;
-            }
-        } else if (!interfaceName.equals(other.interfaceName)) {
-            return false;
-        }
-        if (participantId == null) {
-            if (other.participantId != null) {
-                return false;
-            }
-        } else if (!participantId.equals(other.participantId)) {
-            return false;
-        }
-        if (providerQos == null) {
-            if (other.providerQos != null) {
-                return false;
-            }
-        } else if (!providerQos.equals(other.providerQos)) {
-            return false;
-        }
-        return true;
-    }
-
-    public void addEndpoint(EndpointAddressBase endpointAddress) {
-        endpointAddresses.add(endpointAddress);
-
-    }
-
-    @Override
-    public int compareTo(CapabilityEntry o) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
+    public void addEndpoint(EndpointAddressBase endpointAddress);
 }

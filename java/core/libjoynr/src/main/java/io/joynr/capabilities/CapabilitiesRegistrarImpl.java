@@ -61,11 +61,11 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              provider.getInterfaceName(),
-                                                              provider.getProviderQos(),
-                                                              participantId,
-                                                              System.currentTimeMillis());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+                                                                  provider.getInterfaceName(),
+                                                                  provider.getProviderQos(),
+                                                                  participantId,
+                                                                  System.currentTimeMillis());
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         dispatcher.addRequestCaller(participantId, requestCaller);
@@ -79,11 +79,11 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              provider.getInterfaceName(),
-                                                              provider.getProviderQos(),
-                                                              participantId,
-                                                              System.currentTimeMillis());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+                                                                  provider.getInterfaceName(),
+                                                                  provider.getProviderQos(),
+                                                                  participantId,
+                                                                  System.currentTimeMillis());
         localCapabilitiesDirectory.remove(capabilityEntry);
         dispatcher.removeRequestCaller(participantId);
         publicationManager.stopPublicationByProviderId(participantId);

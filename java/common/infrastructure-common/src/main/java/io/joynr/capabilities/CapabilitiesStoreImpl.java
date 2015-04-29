@@ -76,21 +76,21 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Override
     public void add(CapabilityEntry capabilityEntry) {
         if (capabilityEntry.getDomain() == null || capabilityEntry.getInterfaceName() == null
-                || capabilityEntry.participantId == null || capabilityEntry.endpointAddresses == null
-                || capabilityEntry.endpointAddresses.isEmpty()) {
+                || capabilityEntry.getParticipantId() == null || capabilityEntry.getEndpointAddresses() == null
+                || capabilityEntry.getEndpointAddresses().isEmpty()) {
             String message = "capabilityEntry being registered is not complete: " + capabilityEntry;
             logger.error(message);
             throw new JoynrCommunicationException(message);
         }
 
         synchronized (capsLock) {
-            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.domain,
-                                                                                      capabilityEntry.interfaceName,
-                                                                                      capabilityEntry.participantId);
+            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.getDomain(),
+                                                                                      capabilityEntry.getInterfaceName(),
+                                                                                      capabilityEntry.getParticipantId());
             CapabilityEntry entry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
             // check if a capabilityEntry with the same ID already exists
             if (entry != null) {
-                remove(capabilityEntry.participantId);
+                remove(capabilityEntry.getParticipantId());
             }
 
             // update participantId to capability mapping
@@ -104,8 +104,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
             registeredCapabilitiesTime.put(capabilityEntryId, System.currentTimeMillis());
 
             // update interfaceDomain to capability mapping
-            String domainInterfaceId = getInterfaceAddressKeyForCapability(capabilityEntry.domain,
-                                                                           capabilityEntry.interfaceName);
+            String domainInterfaceId = getInterfaceAddressKeyForCapability(capabilityEntry.getDomain(),
+                                                                           capabilityEntry.getInterfaceName());
 
             // if domainInterfaceId not in the mapping, map it to an empty map,
             // otherwise use the mapping that is
@@ -122,7 +122,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
             mapping.add(capabilityEntryId);
 
             // update participantId to capability mapping
-            String participantId = capabilityEntry.participantId;
+            String participantId = capabilityEntry.getParticipantId();
 
             participantIdToCapabilityMapping.put(participantId, capabilityEntryId);
 
@@ -414,9 +414,9 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Override
     public boolean hasCapability(CapabilityEntry capabilityEntry) {
         synchronized (capsLock) {
-            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.domain,
-                                                                                      capabilityEntry.interfaceName,
-                                                                                      capabilityEntry.participantId);
+            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.getDomain(),
+                                                                                      capabilityEntry.getInterfaceName(),
+                                                                                      capabilityEntry.getParticipantId());
             return registeredCapabilitiesTime.containsKey(capabilityEntryId);
         }
     }

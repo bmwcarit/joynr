@@ -76,11 +76,11 @@ public class CapabilitiesStoreTest {
     public void testInvalidEntry() throws Exception {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        CapabilityEntry capabilityEntry = new CapabilityEntry(null,
-                                                              GpsAsync.INTERFACE_NAME,
-                                                              providerQos,
-                                                              "",
-                                                              System.currentTimeMillis());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(null,
+                                                                  GpsAsync.INTERFACE_NAME,
+                                                                  providerQos,
+                                                                  "",
+                                                                  System.currentTimeMillis());
         boolean thrown = false;
         DiscoveryQos discoveryQos = new DiscoveryQos(1000, ArbitrationStrategy.NotSet, 1000);
         try {
@@ -100,19 +100,19 @@ public class CapabilitiesStoreTest {
 
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, ProviderScope.GLOBAL, true);
         EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId,
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+                                                                   GpsAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId,
+                                                                   System.currentTimeMillis(),
+                                                                   endpointAddress);
 
-        CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
-                                                               NavigationAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId,
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(domain,
+                                                                   NavigationAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId,
+                                                                   System.currentTimeMillis(),
+                                                                   endpointAddress);
         store.add(Lists.newArrayList(capabilityEntry1, capabilityEntry2));
         Assert.assertEquals(2, store.getAllCapabilities().size());
 
@@ -133,12 +133,12 @@ public class CapabilitiesStoreTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, ProviderScope.LOCAL, true);
         EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId,
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+                                                                   GpsAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId,
+                                                                   System.currentTimeMillis(),
+                                                                   endpointAddress);
         store.add(capabilityEntry1);
 
         // check that the entry was stored
@@ -167,12 +167,12 @@ public class CapabilitiesStoreTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, scope, true);
         EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId + "1",
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+                                                                   GpsAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId + "1",
+                                                                   System.currentTimeMillis(),
+                                                                   endpointAddress);
         store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
@@ -187,12 +187,12 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry capEntryFake = new CapabilityEntry(domain,
-                                                           NavigationAsync.INTERFACE_NAME,
-                                                           providerQos,
-                                                           participantId,
-                                                           System.currentTimeMillis(),
-                                                           endpointAddress);
+        CapabilityEntry capEntryFake = new CapabilityEntryImpl(domain,
+                                                               NavigationAsync.INTERFACE_NAME,
+                                                               providerQos,
+                                                               participantId,
+                                                               System.currentTimeMillis(),
+                                                               endpointAddress);
 
         store.add(capEntryFake);
 
@@ -209,11 +209,11 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId + "2",
-                                                               System.currentTimeMillis());
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(domain,
+                                                                   GpsAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId + "2",
+                                                                   System.currentTimeMillis());
         capabilityEntry2.addEndpoint(new JoynrMessagingEndpointAddress("testChannel2"));
 
         store.add(capabilityEntry2);
@@ -249,12 +249,12 @@ public class CapabilitiesStoreTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, scope, true);
         EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId,
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress);
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+                                                                   GpsAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId,
+                                                                   System.currentTimeMillis(),
+                                                                   endpointAddress);
         store.add(capabilityEntry1);
 
         capabilities = store.getAllCapabilities();
@@ -271,8 +271,11 @@ public class CapabilitiesStoreTest {
         CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
         Assert.assertEquals(capabilityEntry1, newEnteredCapability);
 
-        CapabilityEntry capEntryFake = new CapabilityEntry(domain, GpsAsync.INTERFACE_NAME, providerQos, participantId
-                + "Fake", System.currentTimeMillis());
+        CapabilityEntry capEntryFake = new CapabilityEntryImpl(domain,
+                                                               GpsAsync.INTERFACE_NAME,
+                                                               providerQos,
+                                                               participantId + "Fake",
+                                                               System.currentTimeMillis());
         capEntryFake.addEndpoint(new JoynrMessagingEndpointAddress("testChannelFake"));
         store.add(capEntryFake);
 
@@ -285,12 +288,12 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, capabilities.size());
 
         EndpointAddressBase endpointAddress2 = new JoynrMessagingEndpointAddress("testChannelOverride");
-        CapabilityEntry capabilityEntry2 = new CapabilityEntry(domain,
-                                                               GpsAsync.INTERFACE_NAME,
-                                                               providerQos,
-                                                               participantId,
-                                                               System.currentTimeMillis(),
-                                                               endpointAddress2);
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(domain,
+                                                                   GpsAsync.INTERFACE_NAME,
+                                                                   providerQos,
+                                                                   participantId,
+                                                                   System.currentTimeMillis(),
+                                                                   endpointAddress2);
         store.add(capabilityEntry2);
 
         // check if newly created Entry overrides old one

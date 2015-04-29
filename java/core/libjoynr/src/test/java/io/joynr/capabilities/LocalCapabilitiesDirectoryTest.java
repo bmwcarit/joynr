@@ -128,12 +128,12 @@ public class LocalCapabilitiesDirectoryTest {
         EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress(channelId);
         String participantId = "testParticipantId";
         String domain = "domain";
-        capabilityEntry = new CapabilityEntry(domain,
-                                              TestInterface.INTERFACE_NAME,
-                                              providerQos,
-                                              participantId,
-                                              System.currentTimeMillis(),
-                                              endpointAddress);
+        capabilityEntry = new CapabilityEntryImpl(domain,
+                                                  TestInterface.INTERFACE_NAME,
+                                                  providerQos,
+                                                  participantId,
+                                                  System.currentTimeMillis(),
+                                                  endpointAddress);
         capabilityInformation = new CapabilityInformation(domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
@@ -179,11 +179,11 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = LocalCapabilitiesDirectoryTest.class.getName()
                 + ".addGlobalCapSucceeds_NextAddShallNotAddGlobalAgain";
         String domain = "testDomain";
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              TestInterface.INTERFACE_NAME,
-                                                              providerQos,
-                                                              participantId,
-                                                              System.currentTimeMillis());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+                                                                  TestInterface.INTERFACE_NAME,
+                                                                  providerQos,
+                                                                  participantId,
+                                                                  System.currentTimeMillis());
         capabilityInformation = new CapabilityInformation(domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
@@ -215,11 +215,11 @@ public class LocalCapabilitiesDirectoryTest {
 
         String participantId = LocalCapabilitiesDirectoryTest.class.getName() + ".addLocalAndThanGlobalShallWork";
         String domain = "testDomain";
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              TestInterface.INTERFACE_NAME,
-                                                              providerQos,
-                                                              participantId,
-                                                              System.currentTimeMillis());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+                                                                  TestInterface.INTERFACE_NAME,
+                                                                  providerQos,
+                                                                  participantId,
+                                                                  System.currentTimeMillis());
         capabilityInformation = new CapabilityInformation(domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
@@ -315,11 +315,11 @@ public class LocalCapabilitiesDirectoryTest {
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        CapabilityEntry capEntry = new CapabilityEntry(domain1,
-                                                       interfaceName1,
-                                                       providerQos,
-                                                       "localParticipant",
-                                                       System.currentTimeMillis());
+        CapabilityEntry capEntry = new CapabilityEntryImpl(domain1,
+                                                           interfaceName1,
+                                                           providerQos,
+                                                           "localParticipant",
+                                                           System.currentTimeMillis());
         localCapabilitiesDirectory.add(capEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
@@ -429,11 +429,11 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        CapabilityEntry capEntry = new CapabilityEntry(domain1,
-                                                       interfaceName1,
-                                                       providerQos,
-                                                       "localParticipant",
-                                                       System.currentTimeMillis());
+        CapabilityEntry capEntry = new CapabilityEntryImpl(domain1,
+                                                           interfaceName1,
+                                                           providerQos,
+                                                           "localParticipant",
+                                                           System.currentTimeMillis());
         localCapabilitiesDirectory.add(capEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
@@ -507,11 +507,11 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        CapabilityEntry expectedCapabilityEntry = new CapabilityEntry(domain1,
-                                                                      interfaceName1,
-                                                                      providerQos,
-                                                                      participantId1,
-                                                                      System.currentTimeMillis());
+        CapabilityEntry expectedCapabilityEntry = new CapabilityEntryImpl(domain1,
+                                                                          interfaceName1,
+                                                                          providerQos,
+                                                                          participantId1,
+                                                                          System.currentTimeMillis());
         localCapabilitiesDirectory.add(expectedCapabilityEntry);
         CapabilityEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
         Assert.assertEquals(expectedCapabilityEntry, retrievedCapabilityEntry);
@@ -545,11 +545,11 @@ public class LocalCapabilitiesDirectoryTest {
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        CapabilityEntry capEntry = new CapabilityEntry(domain1,
-                                                       interfaceName1,
-                                                       providerQos,
-                                                       "localParticipant",
-                                                       System.currentTimeMillis());
+        CapabilityEntry capEntry = new CapabilityEntryImpl(domain1,
+                                                           interfaceName1,
+                                                           providerQos,
+                                                           "localParticipant",
+                                                           System.currentTimeMillis());
         localCapabilitiesDirectory.add(capEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),

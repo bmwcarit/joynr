@@ -84,19 +84,19 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         this.messagingEndpointDirectory = messagingEndpointDirectory;
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
-        this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
-                                                             GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                             new ProviderQos(),
-                                                             capabilitiesDirectoryParticipantId,
-                                                             System.currentTimeMillis(),
-                                                             new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId)));
+        this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
+                                                                 GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                 new ProviderQos(),
+                                                                 capabilitiesDirectoryParticipantId,
+                                                                 System.currentTimeMillis(),
+                                                                 new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId)));
 
-        this.globalCapabilitiesCache.add(new CapabilityEntry(discoveryDirectoriesDomain,
-                                                             ChannelUrlDirectory.INTERFACE_NAME,
-                                                             new ProviderQos(),
-                                                             channelUrlDirectoryParticipantId,
-                                                             System.currentTimeMillis(),
-                                                             new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId)));
+        this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
+                                                                 ChannelUrlDirectory.INTERFACE_NAME,
+                                                                 new ProviderQos(),
+                                                                 channelUrlDirectoryParticipantId,
+                                                                 System.currentTimeMillis(),
+                                                                 new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId)));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
                                                                          this,
@@ -111,7 +111,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     @Override
     public RegistrationFuture add(final CapabilityEntry capabilityEntry) {
         JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
-        capabilityEntry.endpointAddresses.add(joynrMessagingEndpointAddress);
+        capabilityEntry.addEndpoint(joynrMessagingEndpointAddress);
 
         messagingEndpointDirectory.put(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
 
@@ -131,7 +131,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
         }
 
         // Register globally
-        if (capabilityEntry.providerQos.getScope().equals(ProviderScope.GLOBAL)) {
+        if (capabilityEntry.getProviderQos().getScope().equals(ProviderScope.GLOBAL)) {
 
             ret.setStatus(RegistrationStatus.REGISTERING_GLOBALLY);
 
@@ -174,7 +174,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
             // Currently Endpoint address needs to be added for remove on server side to work correctly.
             // TODO Modify removeCapability in CapDirImpl to accept any endpoint address list
             JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
-            capEntry.endpointAddresses.add(joynrMessagingEndpointAddress);
+            capEntry.addEndpoint(joynrMessagingEndpointAddress);
 
             CapabilityInformation capabilityInformation = capabilityEntry2Information(capEntry);
             if (capabilityInformation != null) {
@@ -346,7 +346,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
 
             @Override
             public void onSuccess(CapabilityInformation capInfo) {
-                CapabilityEntry capEntry = CapabilityEntry.fromCapabilityInformation(capInfo);
+                CapabilityEntry capEntry = new CapabilityEntryImpl(capInfo);
                 registerIncomingEndpoints(Lists.newArrayList(capEntry));
                 globalCapabilitiesCache.add(capEntry);
 
@@ -401,7 +401,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     private Collection<CapabilityEntry> capabilityInformationList2Entries(List<CapabilityInformation> capInfoList) {
         Collection<CapabilityEntry> capEntryCollection = Lists.newArrayList();
         for (CapabilityInformation capInfo : capInfoList) {
-            capEntryCollection.add(CapabilityEntry.fromCapabilityInformation(capInfo));
+            capEntryCollection.add(new CapabilityEntryImpl(capInfo));
         }
         return capEntryCollection;
     }

@@ -58,12 +58,12 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
             });
             List<CapabilityInformation> castedEntries = (List<CapabilityInformation>) newEntries;
             for (CapabilityInformation capabilityInformation : castedEntries) {
-                capabilityEntries.add(new CapabilityEntry(capabilityInformation.getDomain(),
-                                                          capabilityInformation.getInterfaceName(),
-                                                          capabilityInformation.getProviderQos(),
-                                                          capabilityInformation.getParticipantId(),
-                                                          System.currentTimeMillis(),
-                                                          new JoynrMessagingEndpointAddress(capabilityInformation.getChannelId())));
+                capabilityEntries.add(new CapabilityEntryImpl(capabilityInformation.getDomain(),
+                                                              capabilityInformation.getInterfaceName(),
+                                                              capabilityInformation.getProviderQos(),
+                                                              capabilityInformation.getParticipantId(),
+                                                              System.currentTimeMillis(),
+                                                              new JoynrMessagingEndpointAddress(capabilityInformation.getChannelId())));
             }
         } catch (Exception e) {
             logger.error("unable to load provisioned capabilities. "

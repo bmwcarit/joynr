@@ -22,6 +22,7 @@ package io.joynr.capabilities.directory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
@@ -60,15 +61,11 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> add(CapabilityInformation capabilityInformation) {
         DeferredVoid deferred = new DeferredVoid();
-        CapabilityEntry capabilityEntry = capabilityInformation2Entry(capabilityInformation);
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(capabilityInformation);
         logger.debug("registered capability: {}", capabilityEntry);
         capabiltiesStore.add(capabilityEntry);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
-    }
-
-    private CapabilityEntry capabilityInformation2Entry(CapabilityInformation capabilityInformation) {
-        return CapabilityEntry.fromCapabilityInformation(capabilityInformation);
     }
 
     @Override
@@ -77,7 +74,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         // TODO check interfaces before adding them
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
         for (CapabilityInformation capInfo : capabilitiesInformation) {
-            capabilityEntries.add(capabilityInformation2Entry(capInfo));
+            capabilityEntries.add(new CapabilityEntryImpl(capInfo));
         }
 
         logger.debug("registered capabilities: interface {}", capabilityEntries.toString());

@@ -26,6 +26,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.JoynrMessageFactory;
@@ -104,12 +105,12 @@ public class AccessControllerTest {
                                                replyToChannelId);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DomainAccessControlStoreEhCache.DUMMY_USERID);
 
-        CapabilityEntry capabilityEntry = new CapabilityEntry(testDomain,
-                                                              testInterface,
-                                                              new ProviderQos(),
-                                                              toParticipantId,
-                                                              System.currentTimeMillis(),
-                                                              new JoynrMessagingEndpointAddress("11111"));
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(testDomain,
+                                                                  testInterface,
+                                                                  new ProviderQos(),
+                                                                  toParticipantId,
+                                                                  System.currentTimeMillis(),
+                                                                  new JoynrMessagingEndpointAddress("11111"));
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(capabilityEntry);
     }
 

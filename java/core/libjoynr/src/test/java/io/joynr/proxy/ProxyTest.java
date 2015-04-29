@@ -32,6 +32,7 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
@@ -151,19 +152,21 @@ public class ProxyTest {
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
                 ArrayList<CapabilityEntry> fakeCapabilitiesResult = new ArrayList<CapabilityEntry>();
-                fakeCapabilitiesResult.add(new CapabilityEntry(domain,
-                                                               TestInterface.INTERFACE_NAME,
-                                                               new ProviderQos(),
-                                                               "TestParticipantId",
-                                                               System.currentTimeMillis(),
-                                                               new JoynrMessagingEndpointAddress("testChannelId")));
+                fakeCapabilitiesResult.add(new CapabilityEntryImpl(domain,
+                                                                   TestInterface.INTERFACE_NAME,
+                                                                   new ProviderQos(),
+                                                                   "TestParticipantId",
+                                                                   System.currentTimeMillis(),
+                                                                   new JoynrMessagingEndpointAddress("testChannelId")));
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
-                                           Mockito.<String> any(),
-                                           Mockito.<DiscoveryQos> any(),
-                                           Mockito.<CapabilitiesCallback> any());
+        })
+               .when(capabilitiesClient)
+               .lookup(Mockito.<String> any(),
+                       Mockito.<String> any(),
+                       Mockito.<DiscoveryQos> any(),
+                       Mockito.<CapabilitiesCallback> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
