@@ -19,8 +19,8 @@ package io.joynr.discovery;
  * #L%
  */
 
-import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
-import io.joynr.channel.ChannelUrlDirectoyImpl;
+import io.joynr.capabilities.directory.CapabilitiesDirectoryModule;
+import io.joynr.channel.ChannelUrlDirectoryModule;
 import io.joynr.messaging.ChannelUrlStore;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -28,15 +28,14 @@ import io.joynr.runtime.AbstractJoynrApplication;
 
 import java.util.HashMap;
 
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.ChannelUrlInformation;
 
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
-import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
 
 public class DiscoveryDirectoriesModule extends AbstractModule {
 
@@ -44,52 +43,57 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(ChannelUrlDirectoryAbstractProvider.class).to(ChannelUrlDirectoyImpl.class);
-        bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
-                        .toInstance(5000l);
-        bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-    }
-
-    @Provides
-    @Named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)
-    String provideCapabilitiesDirectoryDomain(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoryDomain) {
-        return discoveryDirectoryDomain;
-    }
-
-    @Provides
-    @Named(MessagingPropertyKeys.CHANNELID)
-    String provideCapabilitiesDirectoryChannelId(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String discoveryDirectoriesChannelId) {
-        return discoveryDirectoriesChannelId;
-    }
-
-    // An empty store.
-    // The ChannelUrlDirectory's joynlib should not use a cache, but rather ask the real ChannelUrlDirectory Provider when trying to resolve channelUrls
-    @Provides
-    ChannelUrlStore provideChannelUrlStore() {
-        return new ChannelUrlStore() {
+        AbstractModule discoveryDirectoryModule = new AbstractModule() {
 
             @Override
-            public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
+            protected void configure() {
             }
 
-            @Override
-            public void removeChannelUrls(String channelId) {
+            @Provides
+            @Named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)
+            String provideCapabilitiesDirectoryDomain(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoryDomain) {
+                return discoveryDirectoryDomain;
             }
 
-            @Override
-            public ChannelUrlInformation findChannelEntry(String channelId) {
-                return new ChannelUrlInformation();
+            @Provides
+            @Named(MessagingPropertyKeys.CHANNELID)
+            String provideCapabilitiesDirectoryChannelId(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String discoveryDirectoriesChannelId) {
+                return discoveryDirectoriesChannelId;
             }
 
-            @Override
-            public HashMap<String, ChannelUrlInformation> getAllChannelUrls() {
-                return emptyChannelUrlMap;
-            }
+            // An empty store.
+            // The ChannelUrlDirectory's joynlib should not use a cache, but rather ask the real ChannelUrlDirectory Provider when trying to resolve channelUrls
+            @Provides
+            ChannelUrlStore provideChannelUrlStore() {
+                return new ChannelUrlStore() {
 
-            @Override
-            public void registerChannelUrl(String channelId, String channelUrl) {
+                    @Override
+                    public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
+                    }
+
+                    @Override
+                    public void removeChannelUrls(String channelId) {
+                    }
+
+                    @Override
+                    public ChannelUrlInformation findChannelEntry(String channelId) {
+                        return new ChannelUrlInformation();
+                    }
+
+                    @Override
+                    public HashMap<String, ChannelUrlInformation> getAllChannelUrls() {
+                        return emptyChannelUrlMap;
+                    }
+
+                    @Override
+                    public void registerChannelUrl(String channelId, String channelUrl) {
+                    }
+                };
             }
         };
+        Module combinedDirectoriesModule = Modules.override(new ChannelUrlDirectoryModule())
+                                                  .with(new CapabilitiesDirectoryModule());
+        install(Modules.override(combinedDirectoriesModule).with(discoveryDirectoryModule));
     }
 
 }
