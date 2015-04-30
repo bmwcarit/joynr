@@ -887,14 +887,15 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
+        LOG_DEBUG(parent.logger, QString("Changed MasterAce: %1").arg(changedMasterAce.toString()));
     } else {
         parent.localDomainAccessStore->removeMasterAccessControlEntry(
                 changedMasterAce.getUid(),
                 changedMasterAce.getDomain(),
                 changedMasterAce.getInterfaceName(),
                 changedMasterAce.getOperation());
+        LOG_DEBUG(parent.logger, QString("Removed MasterAce: %1").arg(changedMasterAce.toString()));
     }
-    LOG_DEBUG(parent.logger, QString("Changed MasterAce: %1").arg(changedMasterAce.toString()));
 }
 
 void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError()
