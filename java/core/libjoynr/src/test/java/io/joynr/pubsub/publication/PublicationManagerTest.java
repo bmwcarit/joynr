@@ -106,7 +106,7 @@ public class PublicationManagerTest {
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider);
 
-        when(attributePollInterpreter.execute(eq(requestCaller), any(Method.class))).thenReturn(valueToPublish);
+        when(attributePollInterpreter.execute(any(RequestCaller.class), any(Method.class))).thenReturn(valueToPublish);
     }
 
     @Test(timeout = 3000)
