@@ -60,7 +60,9 @@ angular.module("acl-editor").service("DataService", ["$log", "$q", "$http", func
 
     this.deleteDrtEntry = function(data) {
         return $q(function(resolve, reject) {
-            $http['delete'](restUrl + "/domainroles/" + data.uid + "/" + data.role
+            var uid = encodeURIComponent(data.uid)
+            var role = encodeURIComponent(data.role)
+            $http['delete'](restUrl + "/domainroles/" + uid + "/" + role
                     ).success(function(response) {
                         $log.info("Deleted DRT entry");
                         resolve(response);
@@ -105,7 +107,11 @@ angular.module("acl-editor").service("DataService", ["$log", "$q", "$http", func
 
      this.deleteMasterAclEntry = function(data) {
          return $q(function(resolve, reject) {
-             $http['delete'](restUrl + "/masteracl/" + data.uid + "/" + data.domain + "/" + data.interfaceName + "/" + data.operation
+             var uid = encodeURIComponent(data.uid)
+             var domain = encodeURIComponent(data.domain)
+             var interfaceName = encodeURIComponent(data.interfaceName)
+             var operation = encodeURIComponent(data.operation)
+             $http['delete'](restUrl + "/masteracl/" + uid + "/" + domain + "/" + interfaceName + "/" + operation
                  ).success(function(response) {
                          $log.info("Deleted master acl entry");
                          resolve(response);
@@ -149,7 +155,11 @@ angular.module("acl-editor").service("DataService", ["$log", "$q", "$http", func
 
      this.deleteOwnerAclEntry = function(data) {
          return $q(function(resolve, reject) {
-             $http['delete'](restUrl + "/owneracl/" + data.uid + "/" + data.domain + "/" + data.interfaceName + "/" + data.operation
+             var uid = encodeURIComponent(data.uid)
+             var domain = encodeURIComponent(data.domain)
+             var interfaceName = encodeURIComponent(data.interfaceName)
+             var operation = encodeURIComponent(data.operation)
+             $http['delete'](restUrl + "/owneracl/" + uid + "/" + domain + "/" + interfaceName + "/" + operation
                     ).success(function(response) {
                          $log.info("Deleted owner acl entry");
                          resolve(response);
