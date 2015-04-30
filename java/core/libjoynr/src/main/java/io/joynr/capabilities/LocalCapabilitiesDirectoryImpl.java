@@ -34,9 +34,9 @@ import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
@@ -409,7 +409,7 @@ public class LocalCapabilitiesDirectoryImpl implements LocalCapabilitiesDirector
     @Override
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
         if (unregisterAllRegisteredCapabilities) {
-            HashSet<CapabilityEntry> allCapabilities = localCapabilitiesStore.getAllCapabilities();
+            Set<CapabilityEntry> allCapabilities = localCapabilitiesStore.getAllCapabilities();
 
             List<CapabilityInformation> capInfoList = new ArrayList<CapabilityInformation>(allCapabilities.size());
 

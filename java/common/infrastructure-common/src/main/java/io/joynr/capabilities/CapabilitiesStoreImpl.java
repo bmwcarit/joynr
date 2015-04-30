@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.CheckForNull;
@@ -370,20 +371,22 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
      * @see io.joynr.capabilities.CapabilitiesStore#getAllCapabilities()
      */
     @Override
-    public HashSet<CapabilityEntry> getAllCapabilities() {
+    public Set<CapabilityEntry> getAllCapabilities() {
         synchronized (capsLock) {
-            return new HashSet<CapabilityEntry>(Collections2.transform(registeredCapabilitiesTime.keySet(),
-                                                                       new Function<String, CapabilityEntry>() {
-                                                                           @Override
-                                                                           public CapabilityEntry apply(String input) {
-                                                                               // prevent warning about potential use of null as
-                                                                               // param to capabilityKeyToCapabilityMapping.get(input)
-                                                                               if (input == null) {
-                                                                                   return null;
+            Set<String> keySet = registeredCapabilitiesTime.keySet();
+            Collection<CapabilityEntry> transform = Collections2.transform(keySet,
+                                                                           new Function<String, CapabilityEntry>() {
+                                                                               @Override
+                                                                               public CapabilityEntry apply(String input) {
+                                                                                   // prevent warning about potential use of null as
+                                                                                   // param to capabilityKeyToCapabilityMapping.get(input)
+                                                                                   if (input == null) {
+                                                                                       return null;
+                                                                                   }
+                                                                                   return capabilityKeyToCapabilityMapping.get(input);
                                                                                }
-                                                                               return capabilityKeyToCapabilityMapping.get(input);
-                                                                           }
-                                                                       }));
+                                                                           });
+            return new HashSet<CapabilityEntry>(transform);
         }
     }
 

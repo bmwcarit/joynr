@@ -28,7 +28,7 @@ import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Set;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -126,7 +126,7 @@ public class CapabilitiesStoreTest {
 
     @Test
     public void testCapabilitiesStoreCleanRegisterAndUnregister() {
-        HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
+        Set<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 
         String domain = "testDomain";
@@ -160,7 +160,7 @@ public class CapabilitiesStoreTest {
     }
 
     private void testCapabilitiesStoreInterfaceAddressQueryInternal(ProviderScope scope) {
-        HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
+        Set<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 
         String domain = "testDomain";
@@ -242,7 +242,7 @@ public class CapabilitiesStoreTest {
     }
 
     private void testAddCapabilityEntryWithSameDomainInterfaceNameParticipantIdremovesOldEntryInternal(ProviderScope scope) {
-        HashSet<CapabilityEntry> capabilities = store.getAllCapabilities();
+        Set<CapabilityEntry> capabilities = store.getAllCapabilities();
         Assert.assertEquals(0, capabilities.size());
 
         String domain = "testDomain";
