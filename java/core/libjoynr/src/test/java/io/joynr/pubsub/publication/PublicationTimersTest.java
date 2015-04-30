@@ -29,9 +29,12 @@ import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import io.joynr.pubsub.PubSubTestProviderImpl;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -39,9 +42,11 @@ import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +76,15 @@ public class PublicationTimersTest {
 
     @Mock
     private PubSubTestProviderImpl provider;
+
+    @Before
+    public void setUp() {
+        Deferred<String> testAttributeDeferred = new Deferred<String>();
+        testAttributeDeferred.resolve("testAttributeValue");
+        Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+                                                                                      any(Method.class));
+    }
 
     @Test(timeout = 4000)
     public void publicationsSentUntilExpiryDate() throws InterruptedException, JoynrSendBufferFullException,

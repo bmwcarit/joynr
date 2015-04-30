@@ -25,12 +25,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.PubSubTestProviderImpl;
 import io.joynr.pubsub.SubscriptionQos;
@@ -50,6 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -129,7 +131,11 @@ public class PushingPublicationTest {
 
     void setupMocks() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
                      JsonMappingException, IOException {
-        when(attributePollInterpreter.execute(any(RequestCaller.class), any(Method.class))).thenReturn(testAttribute);
+        Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
+        testAttributeDeferred.resolve(testAttribute);
+        Promise<Deferred<Integer>> testAttributePromise = new Promise<Deferred<Integer>>(testAttributeDeferred);
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+                                                                                      any(Method.class));
 
         doAnswer(new Answer<Object>() {
             @Override

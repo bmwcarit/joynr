@@ -20,11 +20,13 @@ package io.joynr.pubsub.publication;
  */
 
 import io.joynr.dispatcher.RequestCaller;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.provider.Promise;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,18 +35,49 @@ public class AttributePollInterpreter {
 
     private static final Logger logger = LoggerFactory.getLogger(AttributePollInterpreter.class);
 
-    @CheckForNull
-    public Object execute(RequestCaller requestCaller, Method method) {
+    @Nonnull
+    public Promise<?> execute(RequestCaller requestCaller, Method method) {
+        Object returnValueFromProvider = null;
         try {
-            return method.invoke(requestCaller);
-
+            returnValueFromProvider = method.invoke(requestCaller);
         } catch (IllegalAccessException e) {
-            logger.error("AttributePollInterpreter: Publication tried to invoke non public method", e);
+            String message = String.format("Method \"%s\" is not accessible on \"%s\" provider.",
+                                           method.getName(),
+                                           requestCaller.getInterfaceName());
+            logger.error(message, e);
+            throw new JoynrRuntimeException(message, e);
         } catch (IllegalArgumentException e) {
-            logger.error("AttributePollInterpreter: Publication tried to access method with wrong arguments", e);
+            String message = String.format("Provider of interface \"%s\" does not declare method \"%s\"",
+                                           requestCaller.getInterfaceName(),
+                                           method.getName());
+            logger.error(message, e);
+            throw new JoynrRuntimeException(message, e);
         } catch (InvocationTargetException e) {
-            logger.error("AttributePollInterpreter: InvocationTargetException on publication", e);
+            String message = String.format("Calling method \"%s\" on \"%s\" provider throwed an exception.",
+                                           method.getName(),
+                                           requestCaller.getInterfaceName());
+            logger.error(message, e);
+            throw new JoynrRuntimeException(message, e);
         }
-        return null;
+
+        if (returnValueFromProvider == null) {
+            String message = String.format("Calling method \"%s\" on \"%s\" provider returned \"null\".",
+                                           method.getName(),
+                                           requestCaller.getInterfaceName());
+            logger.error(message);
+            throw new JoynrRuntimeException(message);
+        }
+
+        Promise<?> returnedPromiseFromProvider = null;
+        try {
+            returnedPromiseFromProvider = (Promise<?>) returnValueFromProvider;
+        } catch (ClassCastException e) {
+            String message = String.format("Calling method \"%s\" on \"%s\" provider did not return a promise.",
+                                           method.getName(),
+                                           requestCaller.getInterfaceName());
+            logger.error(message, e);
+            throw new JoynrRuntimeException(message, e);
+        }
+        return returnedPromiseFromProvider;
     }
 }

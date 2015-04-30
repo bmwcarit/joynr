@@ -33,7 +33,9 @@ import static org.mockito.Mockito.doReturn;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -94,10 +96,13 @@ public class PublicationManagerTest {
     @Mock
     private JoynrProvider provider;
 
-    Object valueToPublish = "valuePublished";
+    String valueToPublish = "valuePublished";
 
     @Before
     public void setUp() {
+        Deferred<String> valueToPublishDeferred = new Deferred<String>();
+        valueToPublishDeferred.resolve(valueToPublish);
+        Promise<Deferred<String>> valueToPublishPromise = new Promise<Deferred<String>>(valueToPublishDeferred);
         doReturn(testProvider.class).when(provider).getProvidedInterface();
 
         cleanupScheduler = new ScheduledThreadPoolExecutor(1);
@@ -106,7 +111,8 @@ public class PublicationManagerTest {
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider);
 
-        when(attributePollInterpreter.execute(any(RequestCaller.class), any(Method.class))).thenReturn(valueToPublish);
+        doReturn(valueToPublishPromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+                                                                               any(Method.class));
     }
 
     @Test(timeout = 3000)

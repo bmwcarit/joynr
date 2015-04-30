@@ -22,8 +22,11 @@ package io.joynr.pubsub.publication;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubTimerBase;
 import io.joynr.pubsub.SubscriptionQos;
@@ -108,10 +111,25 @@ public class PublicationTimer extends PubSubTimerBase {
                 } else {
                     logger.debug("run: executing attributePollInterpreter for attribute "
                             + publicationInformation.getSubscribedToName());
+                    Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+                    attributeGetterPromise.then(new PromiseListener() {
 
-                    sendPublication();
+                        @Override
+                        public void onRejection(JoynrRuntimeException error) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onFulfillment(Object... values) {
+                            // attribute getters only return a single value
+                            SubscriptionPublication publication = new SubscriptionPublication(values[0],
+                                                                                              publicationInformation.getSubscriptionId());
+                            sendPublication(publication);
+                        }
+                    });
+
                     delayUntilNextPublication = period;
-
                 }
 
                 if (delayUntilNextPublication >= 0) {
@@ -122,13 +140,6 @@ public class PublicationTimer extends PubSubTimerBase {
                 }
             }
         }
-    }
-
-    protected void sendPublication() {
-        SubscriptionPublication publication = new SubscriptionPublication(attributePollInterpreter.execute(requestCaller,
-                                                                                                           method),
-                                                                          publicationInformation.getSubscriptionId());
-        sendPublication(publication);
     }
 
     protected void sendPublication(SubscriptionPublication publication) {

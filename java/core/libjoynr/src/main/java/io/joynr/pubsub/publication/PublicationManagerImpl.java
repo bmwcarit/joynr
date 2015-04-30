@@ -24,6 +24,8 @@ import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
@@ -528,10 +530,24 @@ public class PublicationManagerImpl implements PublicationManager {
         }
     }
 
-    private void triggerPublication(PublicationInformation publicationInformation,
+    private void triggerPublication(final PublicationInformation publicationInformation,
                                     RequestCaller requestCaller,
                                     Method method) {
-        sendPublication(attributePollInterpreter.execute(requestCaller, method), publicationInformation);
+        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+        attributeGetterPromise.then(new PromiseListener() {
+
+            @Override
+            public void onRejection(JoynrRuntimeException error) {
+                // TODO transmit application layer exception to proxy
+
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                // attribute getters only return a single value
+                sendPublication(values[0], publicationInformation);
+            }
+        });
     }
 
     private Method findGetterForAttributeName(Class<?> clazz, String attributeName) throws NoSuchMethodException {
