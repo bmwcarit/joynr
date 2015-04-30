@@ -54,6 +54,7 @@ import java.util.UUID;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.tests.TestEnum;
 import joynr.tests.testProxy;
 import joynr.types.GpsLocation;
 
@@ -208,6 +209,27 @@ public class SubscriptionEnd2EndTest {
         verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttributeSync()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void subscribeToEnumAttribute() throws InterruptedException {
+        AttributeSubscriptionListener<TestEnum> testEnumListener = mock(AttributeSubscriptionListener.class);
+        TestEnum expectedTestEnum = TestEnum.TWO;
+        provider.setEnumAttribute(expectedTestEnum);
+
+        int subscriptionDuration = (period_ms * 4);
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
+        Thread.sleep(subscriptionDuration);
+        // 100 2100 4100 6100
+        verify(testEnumListener, times(0)).onError();
+        verify(testEnumListener, atLeast(4)).onReceive(eq(expectedTestEnum));
+
+        proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
 
     @SuppressWarnings("unchecked")
