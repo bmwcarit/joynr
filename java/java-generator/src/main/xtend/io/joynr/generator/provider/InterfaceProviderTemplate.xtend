@@ -159,7 +159,7 @@ public interface «className» extends JoynrProvider {
 	}
 
 	/**
-	 * @return a message signature that is unique in terms of method name, out
+	 * @return a method signature that is unique in terms of method name, out
 	 *      parameter names and out parameter types.
 	 */
 	def createMethodSignature(FMethod method) {
@@ -174,22 +174,5 @@ public interface «className» extends JoynrProvider {
 			nameStringBuilder.append(typeName.toString());
 		}
 		return nameStringBuilder.toString;
-	}
-
-	/**
-	 * @return a mapping from method names to the number of their overloads.
-	 */
-	def overloadedMethodCounts(Iterable<FMethod> methods) {
-		var methodNameToCount = new HashMap<String, Integer>();
-
-		for (FMethod method : methods) {
-			var Integer count = 1;
-			if (methodNameToCount.containsKey(method.name)) {
-				count = methodNameToCount.get(method.name);
-				count++;
-			}
-			methodNameToCount.put(method.name, count);
-		}
-		return methodNameToCount;
 	}
 }

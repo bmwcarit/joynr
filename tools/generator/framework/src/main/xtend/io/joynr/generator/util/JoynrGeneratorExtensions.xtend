@@ -921,6 +921,23 @@ abstract class JoynrGeneratorExtensions {
 		return broadcast.selective != null
 	}
 
+	/**
+	 * @return a mapping from method names to the number of their overloads.
+	 */
+	def overloadedMethodCounts(Iterable<FMethod> methods) {
+		var methodNameToCount = new HashMap<String, Integer>();
+
+		for (FMethod method : methods) {
+			var Integer count = 1;
+			if (methodNameToCount.containsKey(method.name)) {
+				count = methodNameToCount.get(method.name);
+				count++;
+			}
+			methodNameToCount.put(method.name, count);
+		}
+		return methodNameToCount;
+	}
+
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
