@@ -29,7 +29,6 @@ class EnumTypeTemplate implements EnumTemplate{
 	@Inject extension TemplateBase
 
 	override generate(FEnumerationType enumType) {
-		val typeName = enumType.joynrName
 		val packagePath = getPackagePathWithJoynrPrefix(enumType, ".")
 		'''
 		«warning()»
@@ -40,37 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public enum «typeName» {
-	«FOR enumValue : getEnumElements(enumType) SEPARATOR ","»
-	«enumValue.joynrName»
-	«ENDFOR»;
-
-	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
-
-	static{
-		«var i = -1»
-		«FOR enumValue : getEnumElements(enumType)»
-		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
-		«ENDFOR»
-	}
-
-	public static «typeName» getEnumValue(Integer ordinal) {
-		return ordinalToEnumValues.get(ordinal);
-	}
-
-	public Integer getOrdinal() {
-		// TODO should we use a bidirectional map from a third-party library?
-		Integer ordinal = null;
-		for(Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
-			if(this == entry.getValue()) {
-				ordinal = entry.getKey();
-				break;
-			}
-		}
-		return ordinal;
-	}
-}
-
+«generateEnumCode(enumType)»
 '''
 	}
 }

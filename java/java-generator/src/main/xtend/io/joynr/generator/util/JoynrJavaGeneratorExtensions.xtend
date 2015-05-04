@@ -31,6 +31,7 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FBroadcast
+import org.franca.core.franca.FEnumerationType
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -527,5 +528,41 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
+	}
+
+	def generateEnumCode(FEnumerationType enumType) {
+		val typeName = enumType.joynrName
+'''
+public enum «typeName» {
+	«FOR enumValue : getEnumElements(enumType) SEPARATOR ","»
+	«enumValue.joynrName»
+	«ENDFOR»;
+
+	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
+
+	static{
+		«var i = -1»
+		«FOR enumValue : getEnumElements(enumType)»
+		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
+		«ENDFOR»
+	}
+
+	public static «typeName» getEnumValue(Integer ordinal) {
+		return ordinalToEnumValues.get(ordinal);
+	}
+
+	public Integer getOrdinal() {
+		// TODO should we use a bidirectional map from a third-party library?
+		Integer ordinal = null;
+		for(Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
+			if(this == entry.getValue()) {
+				ordinal = entry.getKey();
+				break;
+			}
+		}
+		return ordinal;
+	}
+}
+'''
 	}
 }
