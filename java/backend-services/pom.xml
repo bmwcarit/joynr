@@ -36,7 +36,6 @@
 	</properties>
 
 	<modules>
-		<module>discovery</module>
 		<module>discovery-directory-servlet</module>
 		<module>capabilities-directory</module>
 		<module>channel-url-directory</module>

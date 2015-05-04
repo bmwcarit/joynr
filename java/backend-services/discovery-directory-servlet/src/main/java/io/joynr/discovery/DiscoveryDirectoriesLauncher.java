@@ -20,16 +20,11 @@ package io.joynr.discovery;
  */
 
 import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.JoynrApplication;
-import io.joynr.runtime.JoynrApplicationModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-
-import java.util.Properties;
-
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 
 import com.google.inject.Inject;
+import com.google.inject.persist.PersistService;
 
 public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
 
@@ -41,40 +36,23 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
     @Inject
     private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
 
-    public static void main(String[] args) {
-        DiscoveryDirectoriesLauncher.start();
-    }
+    private PersistService persistService;
 
-    public static DiscoveryDirectoriesLauncher start() {
-        return start(new Properties());
-    }
-
-    public static DiscoveryDirectoriesLauncher start(Properties joynrConfig) {
-
-        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, new DiscoveryDirectoriesModule());
-
-        JoynrApplication discoveryDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule(AUTH_TOKEN,
-                                                                                                                   DiscoveryDirectoriesLauncher.class));
-        discoveryDirectoryLauncher.run();
-
-        return (DiscoveryDirectoriesLauncher) discoveryDirectoryLauncher;
-    }
-
-    public DiscoveryDirectoriesLauncher() {
+    @Inject
+    public DiscoveryDirectoriesLauncher(PersistService persistService) {
+        this.persistService = persistService;
+        persistService.start();
     }
 
     @Override
     public void run() {
         runtime.registerCapability(localDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
-
         runtime.registerCapability(localDomain, capabilitiesDirectoryProvider, AUTH_TOKEN);
-
     }
 
     @Override
     public void shutdown() {
-        // TODO Auto-generated method stub
         super.shutdown();
+        persistService.stop();
     }
-
 }

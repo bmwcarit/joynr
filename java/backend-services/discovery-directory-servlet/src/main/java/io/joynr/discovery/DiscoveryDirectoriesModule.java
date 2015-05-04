@@ -35,6 +35,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
 
 public class DiscoveryDirectoriesModule extends AbstractModule {
@@ -43,6 +44,7 @@ public class DiscoveryDirectoriesModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        install(new JpaPersistModule("Discovery"));
         AbstractModule discoveryDirectoryModule = new AbstractModule() {
 
             @Override
