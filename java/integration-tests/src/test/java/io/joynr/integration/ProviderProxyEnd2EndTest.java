@@ -31,8 +31,8 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.integration.util.DummyJoynrApplication;
@@ -64,7 +64,6 @@ import joynr.tests.DefaulttestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
-import joynr.tests.testProvider;
 import joynr.tests.testProxy;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
@@ -327,7 +326,6 @@ public class ProviderProxyEnd2EndTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    @Ignore
     public void registerProviderCreateProxyAndCallMethod() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
         int result;
@@ -340,7 +338,6 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void sendObjectsAsArgumentAndReturnValue() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                      InterruptedException {
@@ -438,7 +435,6 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testVoidOperation() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -464,7 +460,7 @@ public class ProviderProxyEnd2EndTest {
         assertTrue(reply);
     }
 
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testAsyncProviderCall() {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domainAsync,
                                                                                                      testProxy.class);
