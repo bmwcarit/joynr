@@ -7,17 +7,16 @@ interface Gps{
 	version {major 0 minor 1}
 
 	attribute GpsLocation location readonly // NOTIFYREADONLY
-	
-	/* this name is not good, as SET and GET should be reserved for attributes. */
+
 	method restartWithRetries {
 		in {
 			Int32 gpsfix
 		}
-	} 
-	
+	}
+
 	method calculateAvailableSatellites {
 		out {
 			Int32 result
 		}
-	} 
+	}
 }

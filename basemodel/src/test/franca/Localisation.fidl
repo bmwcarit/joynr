@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,23 @@ interface Gps{
 
 	version {major 0 minor 1}
 
-	/* this name is not good, as SET and GET should be reserved for attributes. */
 	method restartWithRetries {
 		in {
 			Int32 gpsfix
 		}
-	} 
-	
+	}
+
 	method calculateAvailableSatellites {
 		out {
 			Int32 result
 		}
-	} 
+	}
 }
 
 interface Localisation {
 	version {major 0 minor 1}
 
-	attribute GpsPosition gPSPosition readonly // NOTIFYREADONLY 
+	attribute GpsPosition gPSPosition readonly // NOTIFYREADONLY
 	attribute GpsPositionExtended gPSExtendedInfo readonly // NOTIFYREADONLY
 	attribute PositionDetailedInfo currentPositionDetailedInfo readonly // NOTIFYREADONLY
 }
