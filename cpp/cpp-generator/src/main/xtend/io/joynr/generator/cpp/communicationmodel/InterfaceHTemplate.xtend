@@ -44,7 +44,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 	#ifndef «headerGuard»
 	#define «headerGuard»
-	
+
 	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
 			«IF isComplex(datatype)»
@@ -54,16 +54,15 @@ class InterfaceHTemplate implements InterfaceTemplate{
 			«ENDIF»
 		«ENDIF»
 	«ENDFOR»
-	
+
 	«getDllExportIncludeStatement()»
 
 	#include <QString>
 	#include <QSharedPointer>
 
-	namespace joynr {	
+	namespace joynr {
 		class RequestStatus;
-		template <class T> class Future;		
-		template <class T> class ICallback;		
+		template <class T> class Future;
 	}
 
 	«getNamespaceStarter(serviceInterface)»
@@ -72,60 +71,59 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	 * @brief Base interface.
 	 */
 	class «getDllExportMacro()» I«interfaceName»Base {
-	public: 
+	public:
 		I«interfaceName»Base();
 		virtual ~I«interfaceName»Base() { }
-		
+
 		// Visual C++ does not export static const variables from DLLs
 		// This getter is used instead
 		static const QString getInterfaceName();
 	};
-	
+
 	/**
 	 * @brief This is the «interfaceName» synchronous interface.
 	 *
-	 */		
+	 */
 	class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 	public:
-	    virtual ~I«interfaceName»Sync(){ }
-	    «produceSyncGetters(serviceInterface,true)»
+		virtual ~I«interfaceName»Sync(){ }
+		«produceSyncGetters(serviceInterface,true)»
 		«produceSyncSetters(serviceInterface,true)»
 		«produceSyncMethods(serviceInterface,true)»
 	};
-	
-	
+
 	/**
 	 * @brief This is the «interfaceName» asynchronous interface.
 	 *
-	 */		
+	 */
 	class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 	public:
-	    virtual ~I«interfaceName»Async(){ }
+		virtual ~I«interfaceName»Async(){ }
 		«produceAsyncGetters(serviceInterface,true)»
 		«produceAsyncSetters(serviceInterface,true)»
 		«produceAsyncMethods(serviceInterface,true)»
 	};
-	
+
 	class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 	public:
-	    virtual ~I«interfaceName»(){ }
+		virtual ~I«interfaceName»(){ }
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributeName = attribute.name.toFirstUpper»
 			«IF attribute.readable»
-			using I«interfaceName»Sync::get«attributeName»;
-			using I«interfaceName»Async::get«attributeName»;
+				using I«interfaceName»Sync::get«attributeName»;
+				using I«interfaceName»Async::get«attributeName»;
 			«ENDIF»
 			«IF attribute.writable»
-			using I«interfaceName»Sync::set«attributeName»;
-			using I«interfaceName»Async::set«attributeName»;
+				using I«interfaceName»Sync::set«attributeName»;
+				using I«interfaceName»Async::set«attributeName»;
 			«ENDIF»
-	    «ENDFOR»
+		«ENDFOR»
 		«FOR methodName: getUniqueMethodNames(serviceInterface)»
 			using I«interfaceName»Sync::«methodName»;
 			using I«interfaceName»Async::«methodName»;
 		«ENDFOR»
 	};
-	
+
 	«getNamespaceEnder(serviceInterface)»
 	#endif // «headerGuard»
 	'''

@@ -665,13 +665,6 @@ public:
                                          callbackFct));
 };
 
-class MockVoidOperationCallback : public joynr::ICallback<void> {
-public:
-    ~MockVoidOperationCallback() {}
-    MOCK_METHOD1(onSuccess, void(const joynr::RequestStatus status));
-    MOCK_METHOD1(onFailure, void(const joynr::RequestStatus status));
-};
-
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
     MockParticipantIdStorage() : ParticipantIdStorage(QString("mock filename")) {

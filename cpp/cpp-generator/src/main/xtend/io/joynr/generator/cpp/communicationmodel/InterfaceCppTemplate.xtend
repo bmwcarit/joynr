@@ -46,7 +46,6 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 		«ENDFOR»
 
 		#include "joynr/Future.h"
-		#include "joynr/ICallback.h"
 
 		«getNamespaceStarter(serviceInterface)»
 
@@ -86,7 +85,6 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 				registrar.registerBroadcastMetaType<«getMappedOutputParameterTypesCommaSeparated(broadcast)»>();
 			«ENDFOR»
 		}
-
 
 		static const QString INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
 

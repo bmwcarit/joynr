@@ -32,7 +32,6 @@
 #include "joynr/IClientCache.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/ICallback.h"
 #include "joynr/IConnector.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ReplyCaller.h"
@@ -123,10 +122,6 @@ private:
     // Request jsonRequest;
     void sendRequest(const Request& request, QSharedPointer<IReplyCaller> replyCaller);
 
-    Reply makeRequest(QString methodName,
-                      RequestStatus* status,
-                      ICallback<Reply>* callBack,
-                      QVariantMap params);
     Reply makeRequest(QString methodName, RequestStatus* status, QVariantMap params);
 };
 

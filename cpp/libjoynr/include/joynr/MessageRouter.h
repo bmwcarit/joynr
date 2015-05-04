@@ -28,7 +28,6 @@
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingProvider.h"
 #include "joynr/RequestStatus.h"
-#include "joynr/ICallback.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
 

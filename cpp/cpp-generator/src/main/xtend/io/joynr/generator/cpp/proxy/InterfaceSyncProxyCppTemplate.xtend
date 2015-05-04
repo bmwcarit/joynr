@@ -33,7 +33,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 		val syncClassName = interfaceName + "SyncProxy"
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«syncClassName».h"
 		#include "joynr/Request.h"
 		#include "joynr/Reply.h"
@@ -45,7 +45,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 		«FOR datatype: getRequiredIncludesFor(fInterface)»
 			#include "«datatype»"
 		«ENDFOR»
-		
+
 		«getNamespaceStarter(fInterface)» 
 		// The proxies will contain all arbitration checks
 		// the connectors will contain the JSON related code
@@ -92,7 +92,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 			    }
 			}
 			«ENDIF»
-			
+
 		«ENDFOR»
 		«FOR method: getMethods(fInterface)»
 			«var methodName = method.name»

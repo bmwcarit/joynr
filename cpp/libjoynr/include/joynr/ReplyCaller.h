@@ -20,11 +20,11 @@
 #define REPLYCALLER_H
 
 #include "joynr/IReplyCaller.h"
-#include "joynr/ICallback.h"
 
 #include <typeinfo>
 #include <QMetaType>
 #include <QSharedPointer>
+#include "joynr/RequestStatus.h"
 
 namespace joynr
 {

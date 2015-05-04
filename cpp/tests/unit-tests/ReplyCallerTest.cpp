@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/ICallback.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::Property;
