@@ -29,7 +29,6 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.subtypes.JoynrType;
 
 import java.util.Set;
@@ -62,8 +61,6 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     private RequestReplySender messageSender;
     @Inject
     private RequestReplyDispatcher dispatcher;
-    @Inject
-    private SubscriptionManager subscriptionManager;
     @Inject
     public ObjectMapper objectMapper;
     @Inject
