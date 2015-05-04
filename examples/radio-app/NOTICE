@@ -51,5 +51,5 @@ This project has dependencies to:
   Reflections under WTFPL
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 
