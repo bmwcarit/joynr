@@ -92,7 +92,11 @@ public:
     }
 
     void TearDown(){
+        delete publicationManager;
         delete publicationSender;
+        delete subscriptionBroadcastListener;
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.data()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.data()));
     }
 
 protected:
