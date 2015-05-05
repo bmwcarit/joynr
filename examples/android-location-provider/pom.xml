@@ -131,7 +131,7 @@
 				<configuration>
 					<dex>
 						<jvmArguments>
-							<jvmArgument>-Xmx4096M</jvmArgument>
+							<jvmArgument>-Xmx2048M</jvmArgument>
 						</jvmArguments>
 						<multiDex>true</multiDex>
 					</dex>
