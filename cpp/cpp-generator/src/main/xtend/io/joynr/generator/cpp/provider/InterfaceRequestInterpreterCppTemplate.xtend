@@ -36,24 +36,24 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
-		
+
 		#include "joynr/Request.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 		#include "joynr/DeclareMetatypeUtil.h"
 		#include "joynr/Util.h"
 		#include "joynr/RequestStatus.h"
 		#include <cassert>
-		
+
 		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 			#include "«parameterType»"
 		«ENDFOR»
-		
-		«getNamespaceStarter(serviceInterface)» 
-		
+
+		«getNamespaceStarter(serviceInterface)»
+
 		joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joynr::joynr_logging::Logging::getInstance()->getLogger("SDMO", "«interfaceName»RequestInterpreter");
-		
+
 		«interfaceName»RequestInterpreter::«interfaceName»RequestInterpreter()
 		{
 			«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
@@ -62,7 +62,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 				«ENDIF»
 			«ENDFOR»
 		}
-		
+
 		void «interfaceName»RequestInterpreter::execute(
 		        QSharedPointer<joynr::RequestCaller> requestCaller,
 		        const QString& methodName,
@@ -76,7 +76,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 			// cast generic RequestCaller to «interfaceName»Requestcaller
 			QSharedPointer<«interfaceName»RequestCaller> «requestCallerName» =
 					requestCaller.dynamicCast<«interfaceName»RequestCaller>();
-			
+
 			joynr::RequestStatus status;
 			// execute operation
 			// TODO need to put the status code into the reply
@@ -164,15 +164,15 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 							«IF outputParameterType != "void"»
 								«getMappedOutputParameter(method).head» typedReturnValue;
 								«requestCallerName»->«methodName»(
-									status, 
-									typedReturnValue«IF inputParams.size>0»,«ENDIF» 
+									status,
+									typedReturnValue«IF inputParams.size>0»,«ENDIF»
 							«ELSE»
 								«requestCallerName»->«methodName»(
-									status«IF inputParams.size>0»,«ENDIF» 
-							«ENDIF»		
+									status«IF inputParams.size>0»,«ENDIF»
+							«ENDIF»
 								«FOR input : inputParams SEPARATOR ','»
 									typedInput«input.joynrName.toFirstUpper»
-								«ENDFOR» 
+								«ENDFOR»
 							);
 
 							«IF outputParameterType == "void"»
@@ -197,9 +197,9 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 				callbackFct(returnValue);
 			}
 		}
-		
-		«getNamespaceEnder(serviceInterface)» 
+
+		«getNamespaceEnder(serviceInterface)»
 		'''
 	}
-	
+
 }
