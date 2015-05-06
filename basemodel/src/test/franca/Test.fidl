@@ -349,6 +349,12 @@ interface test{
 		}
 	}
 
+	broadcast broadcastWithEnumOutput {
+		out {
+			testTypes.TestEnum testEnum
+		}
+	}
+
 	broadcast locationUpdate {
 		out {
 			GpsLocation location

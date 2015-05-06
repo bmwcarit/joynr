@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
@@ -53,6 +54,7 @@ import joynr.types.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -221,6 +223,35 @@ public class BroadcastEnd2EndTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeToBroadcastWithEnumOutput() throws InterruptedException {
+        final Semaphore broadcastReceived = new Semaphore(0);
+        final TestEnum expectedTestEnum = TestEnum.TWO;
+
+        long minInterval = 0;
+        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
+        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        proxy.subscribeToBroadcastWithEnumOutputBroadcast(new testBroadcastInterface.BroadcastWithEnumOutputBroadcastListener() {
+
+                                                              @Override
+                                                              public void onReceive(TestEnum testEnum) {
+                                                                  assertEquals(expectedTestEnum, testEnum);
+                                                                  broadcastReceived.release();
+                                                              }
+
+                                                              @Override
+                                                              public void onError() {
+                                                                  Assert.fail("Error while receiving broadcast");
+                                                              }
+                                                          },
+                                                          subscriptionQos);
+        Thread.sleep(300);
+
+        provider.fireBroadcastWithEnumOutput(expectedTestEnum);
+        broadcastReceived.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeAndUnsubscribeFromBroadcast() throws InterruptedException {
 
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -255,6 +286,7 @@ public class BroadcastEnd2EndTest {
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
         proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId);
+        Thread.sleep(300);
         provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
     }

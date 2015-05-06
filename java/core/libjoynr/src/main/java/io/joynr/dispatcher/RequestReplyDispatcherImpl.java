@@ -305,24 +305,32 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         try {
             publication = objectMapper.readValue(message.getPayload(), SubscriptionPublication.class);
             String subscriptionId = publication.getSubscriptionId();
-            Class<?> receivedType = subscriptionManager.getType(subscriptionId);
-
-            Object receivedObject;
-            if (TypeReference.class.isAssignableFrom(receivedType)) {
-                TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
-                receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
-            } else {
-                receivedObject = objectMapper.convertValue(publication.getResponse(), receivedType);
-            }
-
-            subscriptionManager.touchSubscriptionState(subscriptionId);
-
             if (subscriptionManager.isBroadcast(subscriptionId)) {
-                callBroadcastListener(subscriptionId, receivedObject);
+                Class<?>[] broadcastOutParameterTypes = subscriptionManager.getBroadcastOutParameterTypes(subscriptionId);
+                List<?> broadcastOutParamterValues = (List<?>) publication.getResponse();
+                if (broadcastOutParameterTypes.length != broadcastOutParamterValues.size()) {
+                    throw new JoynrRuntimeException("number of received broadcast out parameter values do not match with number of broadcast out parameter types.");
+                }
+                Object[] broadcastValues = new Object[broadcastOutParameterTypes.length];
+                for (int i = 0; i < broadcastOutParameterTypes.length; i++) {
+                    broadcastValues[i] = objectMapper.convertValue(broadcastOutParamterValues.get(i),
+                                                                   broadcastOutParameterTypes[i]);
+                }
+                callBroadcastListener(subscriptionId, broadcastValues);
             } else {
+                Class<?> receivedType = subscriptionManager.getAttributeType(subscriptionId);
+
+                Object receivedObject;
+                if (TypeReference.class.isAssignableFrom(receivedType)) {
+                    TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
+                    receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
+                } else {
+                    receivedObject = objectMapper.convertValue(publication.getResponse(), receivedType);
+                }
+
+                subscriptionManager.touchSubscriptionState(subscriptionId);
                 callSubscriptionListener(subscriptionId, receivedObject);
             }
-
         } catch (Exception e) {
             logger.error("Error delivering publication: {} : {}", e.getClass(), e.getMessage());
         }
@@ -337,13 +345,11 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
-    private void callBroadcastListener(String subscriptionId, Object receivedObject) throws NoSuchMethodException,
-                                                                                    IllegalAccessException,
-                                                                                    InvocationTargetException {
+    private void callBroadcastListener(String subscriptionId, Object[] broadcastValues) throws NoSuchMethodException,
+                                                                                       IllegalAccessException,
+                                                                                       InvocationTargetException {
         BroadcastSubscriptionListener broadcastSubscriptionListener = subscriptionManager.getBroadcastSubscriptionListener(subscriptionId);
 
-        List<?> receivedList = (List<?>) receivedObject;
-        Object[] broadcastValues = receivedList.toArray(new Object[receivedList.size()]);
         Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
         Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("onReceive", broadcastTypes);
         if (!receive.isAccessible()) {

@@ -19,8 +19,9 @@ package io.joynr.proxy.invocation;
  * #L%
  */
 
+import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
-import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
@@ -38,31 +39,29 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     private final String broadcastName;
     private final OnChangeSubscriptionQos qos;
     private final BroadcastFilterParameters filterParameters;
+    private final Class<?>[] outParameterTypes;
 
     public BroadcastSubscribeInvocation(Method method, Object[] args, Future<?> future) {
         super(future);
         JoynrRpcBroadcast broadcastAnnotation = method.getAnnotation(JoynrRpcBroadcast.class);
         broadcastName = broadcastAnnotation.broadcastName();
-        int argumentCounter = 0;
+        boolean isSelectiveBroadcast = args.length > 2 && args[2] instanceof BroadcastFilterParameters;
 
-        broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[argumentCounter++];
-        qos = (OnChangeSubscriptionQos) args[argumentCounter++];
+        // For broadcast subscriptions the args array contains the following entries:
+        // args[0] : BroadcastSubscriptionListener
+        // args[1] : OnChangeSubscriptionQos
+        // args[2] : (isSelectiveBroadcast) ? BroadcastFilterParameter : optional subscription ID
+        // args[3] : (isSelectiveBroadcast) ? optional subscription ID : not available
+        broadcastSubscriptionListener = (BroadcastSubscriptionListener) args[0];
+        outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);
+        qos = (OnChangeSubscriptionQos) args[1];
 
-        if (args.length > argumentCounter) {
-            if (args[argumentCounter] instanceof BroadcastFilterParameters) {
-                filterParameters = (BroadcastFilterParameters) args[argumentCounter++];
-            } else {
-                filterParameters = new BroadcastFilterParameters();
-            }
-            if (args.length > argumentCounter) {
-                if (args[argumentCounter] instanceof String) {
-                    subscriptionId = (String) args[argumentCounter++];
-                } else {
-                    throw new JoynrIllegalStateException("Third parameter of subscribeTo... has to be of type String");
-                }
-            }
+        if (isSelectiveBroadcast) {
+            filterParameters = (BroadcastFilterParameters) args[2];
+            subscriptionId = (args.length == 4) ? (String) args[3] : "";
         } else {
             filterParameters = new BroadcastFilterParameters();
+            subscriptionId = (args.length == 3) ? (String) args[2] : "";
         }
     }
 
@@ -75,6 +74,21 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         this.filterParameters = null;
         this.qos = qos;
         this.broadcastSubscriptionListener = broadcastSubscriptionListener;
+        outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);
+    }
+
+    private static Class<?>[] extractOutParameterTypes(BroadcastSubscriptionListener listener) {
+        try {
+            Method onReceiveListenerMethod = ReflectionUtils.findMethod(listener.getClass(), "onReceive");
+            Class<?>[] outParameterTypes = onReceiveListenerMethod.getParameterTypes();
+            return outParameterTypes;
+        } catch (NoSuchMethodException e) {
+            // this should not happen since a broadcast listener must have an
+            // onReceive method
+            String message = String.format("Unable to find \"onReceive\" method on subscription listener object of type \"%s\".",
+                                           listener.getClass().getName());
+            throw new JoynrRuntimeException(message, e);
+        }
     }
 
     @Override
@@ -100,5 +114,10 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
 
     public String getBroadcastName() {
         return broadcastName;
+    }
+
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "BroadcastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
+    public Class<?>[] getOutParameterTypes() {
+        return outParameterTypes;
     }
 }
