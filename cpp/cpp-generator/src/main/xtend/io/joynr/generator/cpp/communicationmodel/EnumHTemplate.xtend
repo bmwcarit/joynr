@@ -42,6 +42,7 @@ class EnumHTemplate implements EnumTemplate{
 		«getDllExportIncludeStatement()»
 		#include <QObject>
 		#include <QMetaType>
+		#include "joynr/Util.h"
 
 		«getNamespaceStarter(type)»
 		
@@ -60,8 +61,14 @@ class EnumHTemplate implements EnumTemplate{
 		};
 
 		«getNamespaceEnder(type)»
-		
 
+		namespace joynr {
+		template <>
+		inline «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» joynr::Util::valueOf<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()»>(const QVariant& variant)
+		{
+		  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant);
+		}
+		}
 		// Metatype for the wrapper class	
 		typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
 		Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)

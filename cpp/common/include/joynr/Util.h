@@ -153,6 +153,9 @@ public:
     template <typename... Ts>
     static int getBroadcastTypeId();
 
+    template <typename T>
+    static T valueOf(const QVariant& variant);
+
     template <int TupleSize>
     struct ExpandTupleIntoFunctionArguments
     {
@@ -207,12 +210,18 @@ private:
     template <typename T, typename... Ts>
     static std::tuple<T, Ts...> toValueTuple_split(QList<QVariant> list)
     {
-        T value = list.first().value<T>();
+        T value = valueOf<T>(list.first());
         list.removeFirst();
 
         return std::tuple_cat(std::make_tuple(value), toValueTuple<Ts...>(list));
     }
 };
+
+template <typename T>
+inline T Util::valueOf(const QVariant& variant)
+{
+    return variant.value<T>();
+}
 
 template <typename... Ts>
 inline int Util::getBroadcastTypeId()

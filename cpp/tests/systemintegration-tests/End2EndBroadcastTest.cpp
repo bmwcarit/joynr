@@ -154,6 +154,63 @@ private:
 
 };
 
+TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
+    tests::TestEnum::Enum expectedTestEnum = tests::TestEnum::TWO;
+    MockSubscriptionListenerOneType<tests::TestEnum::Enum>* mockListener =
+            new MockSubscriptionListenerOneType<tests::TestEnum::Enum>();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    ON_CALL(*mockListener, onReceive(Eq(expectedTestEnum)))
+            .WillByDefault(ReleaseSemaphore(&semaphore));
+
+    QSharedPointer<ISubscriptionListener<tests::TestEnum::Enum>> subscriptionListener(
+                    mockListener);
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(2);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
+
+    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    // before the register has finished.
+    QThreadSleep::msleep(registerCapabilityWait);
+
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQos.setDiscoveryTimeout(1000);
+
+    qlonglong qosRoundTripTTL = 500;
+    qlonglong qosCacheDataFreshnessMs = 400000;
+
+    // Send a message and expect to get a result
+    tests::testProxy* testProxy = testProxyBuilder
+            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+            ->setCached(false)
+            ->setDiscoveryQos(discoveryQos)
+            ->build();
+
+    qint64 minInterval_ms = 50;
+    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+                                    500000,   // validity_ms
+                                    minInterval_ms));  // minInterval_ms
+
+    testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
+
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "broadcastWithEnumOutput");
+
+    testProvider->fireBroadcastWithEnumOutput(expectedTestEnum);
+
+    // Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+
+    delete testProxyBuilder;
+    delete testProxy;
+}
+
 TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
