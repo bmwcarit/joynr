@@ -99,7 +99,7 @@ abstract class JoynrGeneratorExtensions {
 
 	// Convert an collection of output parameters to their typenames
 	def Iterable<String> mapOutputParameters(Iterable<FArgument> parameters) {
-		val result = new HashSet<String>();
+		val result = new ArrayList<String>();
 		if (parameters.empty) {
 			result.add("void");
 		} else {
