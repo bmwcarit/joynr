@@ -35,6 +35,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	var interfaceName = serviceInterface.joynrName;
 	'''
 		«warning()»
+		#include <functional>
 
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 		«FOR datatype: getRequiredIncludesFor(serviceInterface)»

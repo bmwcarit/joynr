@@ -37,6 +37,7 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"RequestCaller_h").toUpperCase
 		'''
 		«warning()»
+		#include <functional>
 
 		#ifndef «headerGuard»
 		#define «headerGuard»

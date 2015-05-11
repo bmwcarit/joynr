@@ -36,6 +36,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 		val interfaceName = serviceInterface.joynrName
 		'''
 		«warning()»
+		#include <functional>
 
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 

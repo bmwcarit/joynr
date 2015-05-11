@@ -36,6 +36,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		'''
 		«var interfaceName = serviceInterface.joynrName»
 		«warning()»
+		#include <functional>
+
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»InProcessConnector.h"
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 		#include "joynr/DeclareMetatypeUtil.h"

@@ -19,6 +19,7 @@
 #ifndef IREQUESTINTERPRETER_H
 #define IREQUESTINTERPRETER_H
 
+#include <functional>
 #include <QVariant>
 #include <QMap>
 #include <QSharedPointer>
