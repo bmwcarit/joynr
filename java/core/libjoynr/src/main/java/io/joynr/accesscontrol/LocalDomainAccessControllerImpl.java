@@ -73,10 +73,35 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private final String discoveryDirectoriesDomain;
     private AccessControlAlgorithm accessControlAlgorithm = new AccessControlAlgorithm();
     private static final String WILDCARD = "*";
-    private Map<UserDomainInterfaceOperationKey, String> subsciptionsMap = new HashMap<UserDomainInterfaceOperationKey, String>();
+    private Map<UserDomainInterfaceOperationKey, AceSubscription> subscriptionsMap = new HashMap<UserDomainInterfaceOperationKey, AceSubscription>();
     private GlobalDomainAccessControllerClient globalDomainAccessControllerClient;
 
     private DomainAccessControlStore localDomainAccessStore;
+
+    // Class that holds subscription ids.
+    class AceSubscription {
+        private final String masterSubscriptionId;
+        private final String mediatorSubscriptionId;
+        private final String ownerSubscriptionId;
+
+        public AceSubscription(String masterSubscriptionId, String mediatorSubscriptionId, String ownerSubscriptionId) {
+            this.masterSubscriptionId = masterSubscriptionId;
+            this.mediatorSubscriptionId = mediatorSubscriptionId;
+            this.ownerSubscriptionId = ownerSubscriptionId;
+        }
+
+        public String getMasterSubscriptionId() {
+            return masterSubscriptionId;
+        }
+
+        public String getMediatorSubscriptionId() {
+            return mediatorSubscriptionId;
+        }
+
+        public String getOwnerSubscriptionId() {
+            return ownerSubscriptionId;
+        }
+    }
 
     @Inject
     public LocalDomainAccessControllerImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
@@ -118,9 +143,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             return specialPermission;
         }
 
-        if (subsciptionsMap.get(subscriptionKey) == null) {
+        if (subscriptionsMap.get(subscriptionKey) == null) {
             initializeLocalDomainAccessStore(userId, domain, interfaceName);
-            subsciptionsMap.put(subscriptionKey, subscribeForAceChange(domain, interfaceName));
+            subscriptionsMap.put(subscriptionKey, subscribeForAceChange(domain, interfaceName));
         }
 
         List<MasterAccessControlEntry> masterAces = localDomainAccessStore.getMasterAccessControlEntries(userId,
@@ -444,7 +469,14 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     @Override
     public void unsubscribeFromAceChanges(String domain, String interfaceName) {
-        // TODO: unregister broadcast subscriptions for this domain/interface
+        UserDomainInterfaceOperationKey subscriptionKey = new UserDomainInterfaceOperationKey(null,
+                                                                                              domain,
+                                                                                              interfaceName,
+                                                                                              null);
+        AceSubscription subscriptions = subscriptionsMap.get(subscriptionKey);
+        globalDomainAccessControllerClient.unsubscribeFromMasterAccessControlEntryChangedBroadcast(subscriptions.getMasterSubscriptionId());
+        globalDomainAccessControllerClient.unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptions.getMediatorSubscriptionId());
+        globalDomainAccessControllerClient.unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptions.getOwnerSubscriptionId());
     }
 
     private void subscribeForDreChange(String userId) {
@@ -459,7 +491,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                                                                       domainRoleFilterParameters);
     }
 
-    private String subscribeForAceChange(String domain, String interfaceName) {
+    private AceSubscription subscribeForAceChange(String domain, String interfaceName) {
         long wsbExpiryDate = System.currentTimeMillis() + QOS_DURATION_MS;
         OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos(QOS_MIN_INTERVAL_MS,
                                                                                        wsbExpiryDate,
@@ -467,30 +499,30 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters = new MasterAccessControlEntryChangedBroadcastFilterParameters();
         masterAcefilterParameters.setDomainOfInterest(domain);
         masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
-        String subscriptionId = globalDomainAccessControllerClient.subscribeToMasterAccessControlEntryChangedBroadcast(new LdacMasterAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
-                                                                                                                       broadcastSubscriptionQos,
-                                                                                                                       masterAcefilterParameters);
+        String masterSubscriptionId = globalDomainAccessControllerClient.subscribeToMasterAccessControlEntryChangedBroadcast(new LdacMasterAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
+                                                                                                                             broadcastSubscriptionQos,
+                                                                                                                             masterAcefilterParameters);
 
         MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters = new MediatorAccessControlEntryChangedBroadcastFilterParameters();
         mediatorAceFilterParameters.setDomainOfInterest(domain);
         mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
-        globalDomainAccessControllerClient.subscribeToMediatorAccessControlEntryChangedBroadcast(new LdacMediatorAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
-                                                                                                 broadcastSubscriptionQos,
-                                                                                                 mediatorAceFilterParameters,
-                                                                                                 subscriptionId);
+        String mediatorSubscriptionId = globalDomainAccessControllerClient.subscribeToMediatorAccessControlEntryChangedBroadcast(new LdacMediatorAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
+                                                                                                                                 broadcastSubscriptionQos,
+                                                                                                                                 mediatorAceFilterParameters);
 
         OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters = new OwnerAccessControlEntryChangedBroadcastFilterParameters();
         ownerAceFilterParameters.setDomainOfInterest(domain);
         ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
-        globalDomainAccessControllerClient.subscribeToOwnerAccessControlEntryChangedBroadcast(new LdacOwnerAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
-                                                                                              broadcastSubscriptionQos,
-                                                                                              ownerAceFilterParameters,
-                                                                                              subscriptionId);
+        String ownerSubscriptionId = globalDomainAccessControllerClient.subscribeToOwnerAccessControlEntryChangedBroadcast(new LdacOwnerAccessControlEntryChangedBroadcastListener(localDomainAccessStore),
+                                                                                                                           broadcastSubscriptionQos,
+                                                                                                                           ownerAceFilterParameters);
 
-        return subscriptionId;
+        return new AceSubscription(masterSubscriptionId, mediatorSubscriptionId, ownerSubscriptionId);
     }
 
     private void initializeLocalDomainAccessStore(String userId, String domain, String interfaceName) {
+        LOG.debug("initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
+
         List<DomainRoleEntry> domainRoleEntries = globalDomainAccessControllerClient.getDomainRoles(userId);
         for (DomainRoleEntry entry : domainRoleEntries) {
             localDomainAccessStore.updateDomainRole(entry);
@@ -513,5 +545,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
             localDomainAccessStore.updateOwnerAccessControlEntry(entry);
         }
+
+        LOG.debug("Finished initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
     }
 }

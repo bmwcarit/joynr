@@ -35,6 +35,7 @@ import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.SearchAttribute;
 import net.sf.ehcache.config.Searchable;
 import net.sf.ehcache.search.Attribute;
+import net.sf.ehcache.search.Direction;
 import net.sf.ehcache.search.Query;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
@@ -337,10 +338,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Attribute<String> interfaceAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.INTERFACE);
         Attribute<String> operationAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.OPERATION);
         Query queryAllOperations = cache.createQuery()
-                                        .addCriteria(uidAttribute.eq(uid))
+                                        .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
                                         .addCriteria(domainAttribute.eq(domain))
                                         .addCriteria(interfaceAttribute.eq(interfaceName))
                                         .addCriteria(operationAttribute.eq(operation))
+                                        // have specific user ids appear before wildcards
+                                        .addOrderBy(uidAttribute, Direction.DESCENDING)
                                         .includeKeys()
                                         .end();
         Results results = queryAllOperations.execute();
@@ -358,8 +361,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         // here search on uid take place
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         // query is the fastest if you search for keys and if you need value then call Cache.get(key)
-        Query queryRequestedUid = cache.createQuery()
-                                       .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
+        Query queryRequestedUid = cache.createQuery().addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
+        // have specific user ids appear before wildcards
+                                       .addOrderBy(uidAttribute, Direction.DESCENDING)
                                        .includeKeys()
                                        .end();
         Results results = queryRequestedUid.execute();
@@ -384,7 +388,8 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                           .end();
         Results results = queryDomainInterface.execute();
         for (Result result : results.all()) {
-            aces.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
+            T ace = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey()));
+            aces.add(ace);
         }
 
         return aces;
@@ -395,19 +400,27 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
         Attribute<String> interfaceAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.INTERFACE);
-        Attribute<String> operationAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.OPERATION);
         Query queryAllOperations = cache.createQuery()
-                                        .addCriteria(uidAttribute.eq(uid))
+                                        .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
                                         .addCriteria(domainAttribute.eq(domain))
                                         .addCriteria(interfaceAttribute.eq(interfaceName))
-                                        .addCriteria(operationAttribute.ilike("*"))
-                                        // use EhCache Wildcard search to get entries with any operation
+                                        // have specific user ids appear before wildcards
+                                        .addOrderBy(uidAttribute, Direction.DESCENDING)
                                         .includeKeys()
                                         .end();
         Results results = queryAllOperations.execute();
         List<T> aces = new ArrayList<T>();
+        String currentUid = null;
         for (Result result : results.all()) {
             T ace = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey()));
+
+            // Don't add uid wildcards if a specific uid has been added to the results
+            if (currentUid == null) {
+                currentUid = ace.getUid();
+            } else if (!currentUid.equals(ace.getUid())) {
+                break;
+            }
+
             aces.add(ace);
         }
 

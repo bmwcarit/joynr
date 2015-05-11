@@ -76,6 +76,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
     @Override
     public void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken) {
+
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);

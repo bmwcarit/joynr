@@ -231,24 +231,20 @@ public class GlobalDomainAccessControllerClient {
                                                                                                masterAcefilterParameters);
     }
 
-    public void subscribeToMediatorAccessControlEntryChangedBroadcast(LdacMediatorAccessControlEntryChangedBroadcastListener ldacMediatorAccessControlEntryChangedBroadcastListener,
-                                                                      OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                      MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters,
-                                                                      String subscriptionId) {
-        getProxy(TTL_30_DAYS_IN_MS).subscribeToMediatorAccessControlEntryChangedBroadcast(ldacMediatorAccessControlEntryChangedBroadcastListener,
-                                                                                          broadcastSubscriptionQos,
-                                                                                          mediatorAceFilterParameters,
-                                                                                          subscriptionId);
+    public String subscribeToMediatorAccessControlEntryChangedBroadcast(LdacMediatorAccessControlEntryChangedBroadcastListener ldacMediatorAccessControlEntryChangedBroadcastListener,
+                                                                        OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                        MediatorAccessControlEntryChangedBroadcastFilterParameters mediatorAceFilterParameters) {
+        return getProxy(TTL_30_DAYS_IN_MS).subscribeToMediatorAccessControlEntryChangedBroadcast(ldacMediatorAccessControlEntryChangedBroadcastListener,
+                                                                                                 broadcastSubscriptionQos,
+                                                                                                 mediatorAceFilterParameters);
     }
 
-    public void subscribeToOwnerAccessControlEntryChangedBroadcast(LdacOwnerAccessControlEntryChangedBroadcastListener ldacOwnerAccessControlEntryChangedBroadcastListener,
-                                                                   OnChangeSubscriptionQos broadcastSubscriptionQos,
-                                                                   OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters,
-                                                                   String subscriptionId) {
-        getProxy(TTL_30_DAYS_IN_MS).subscribeToOwnerAccessControlEntryChangedBroadcast(ldacOwnerAccessControlEntryChangedBroadcastListener,
-                                                                                       broadcastSubscriptionQos,
-                                                                                       ownerAceFilterParameters,
-                                                                                       subscriptionId);
+    public String subscribeToOwnerAccessControlEntryChangedBroadcast(LdacOwnerAccessControlEntryChangedBroadcastListener ldacOwnerAccessControlEntryChangedBroadcastListener,
+                                                                     OnChangeSubscriptionQos broadcastSubscriptionQos,
+                                                                     OwnerAccessControlEntryChangedBroadcastFilterParameters ownerAceFilterParameters) {
+        return getProxy(TTL_30_DAYS_IN_MS).subscribeToOwnerAccessControlEntryChangedBroadcast(ldacOwnerAccessControlEntryChangedBroadcastListener,
+                                                                                              broadcastSubscriptionQos,
+                                                                                              ownerAceFilterParameters);
 
     }
 
@@ -266,5 +262,17 @@ public class GlobalDomainAccessControllerClient {
 
     public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain, String interfaceName) {
         return getProxy(TTL_30_DAYS_IN_MS).getOwnerAccessControlEntries(domain, interfaceName);
+    }
+
+    public void unsubscribeFromMasterAccessControlEntryChangedBroadcast(String subscriptionId) {
+        getProxy(TTL_30_DAYS_IN_MS).unsubscribeFromMasterAccessControlEntryChangedBroadcast(subscriptionId);
+    }
+
+    public void unsubscribeFromMediatorAccessControlEntryChangedBroadcast(String subscriptionId) {
+        getProxy(TTL_30_DAYS_IN_MS).unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptionId);
+    }
+
+    public void unsubscribeFromOwnerAccessControlEntryChangedBroadcast(String subscriptionId) {
+        getProxy(TTL_30_DAYS_IN_MS).unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptionId);
     }
 }

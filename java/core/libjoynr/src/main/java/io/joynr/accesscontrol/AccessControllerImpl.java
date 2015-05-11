@@ -82,12 +82,15 @@ public class AccessControllerImpl implements AccessController {
             return false;
         }
 
+        String domain = capabilityEntry.getDomain();
+        String interfaceName = capabilityEntry.getInterfaceName();
+
         // try determine permission without expensive message deserialization
         // since obtaining trust level from message header is still not supported use TrustLevel.HIGH
         String msgCreatorUid = message.getHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID);
         Permission permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                                                  capabilityEntry.getDomain(),
-                                                                                  capabilityEntry.getInterfaceName(),
+                                                                                  domain,
+                                                                                  interfaceName,
                                                                                   TrustLevel.HIGH);
 
         // if permission still not defined, have to deserialize message and try again
@@ -99,8 +102,8 @@ public class AccessControllerImpl implements AccessController {
 
                 // Get the permission for the requested operation
                 permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                                               capabilityEntry.getDomain(),
-                                                                               capabilityEntry.getInterfaceName(),
+                                                                               domain,
+                                                                               interfaceName,
                                                                                operation,
                                                                                TrustLevel.HIGH);
             } catch (IOException e) {
@@ -116,6 +119,8 @@ public class AccessControllerImpl implements AccessController {
         case YES:
             return true;
         default:
+            logger.warn("Message {} to domain {}, interface {} failed AccessControl check", new Object[]{
+                    message.getId(), capabilityEntry.getDomain(), capabilityEntry.getInterfaceName() });
             return false;
         }
     }
