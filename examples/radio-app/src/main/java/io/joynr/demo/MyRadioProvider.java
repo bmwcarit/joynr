@@ -72,7 +72,8 @@ public class MyRadioProvider extends RadioAbstractProvider {
         RadioStation oldStation = currentStation;
         currentStationIndex++;
         currentStationIndex = currentStationIndex % stationsList.size();
-        currentStationChanged(stationsList.get(currentStationIndex));
+        currentStation = stationsList.get(currentStationIndex);
+        currentStationChanged(currentStation);
         LOG.info(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -93,7 +94,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
     }
 
     public void fireNewStationDiscoveredEvent() {
-        RadioStation discoveredStation = stationsList.get(currentStationIndex);
+        RadioStation discoveredStation = currentStation;
         GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
         LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
                 + PRINT_BORDER);
