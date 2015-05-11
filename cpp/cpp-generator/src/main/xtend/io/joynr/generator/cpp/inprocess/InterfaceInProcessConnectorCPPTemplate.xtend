@@ -91,20 +91,35 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 			void «interfaceName»InProcessConnector::«getAttributeName»(
 			            joynr::RequestStatus& status,
-			            «returnType»& result
+			            «returnType»& attributeValue
 			) {
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
+
+			    QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+
+			    std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> requestCallerCallbackFct =
+			            [future] (const joynr::RequestStatus& internalStatus, const «returnType»& «attributeName») {
+			                if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
+			                    future->onSuccess(internalStatus, «attributeName»);
+			                } else {
+			                    future->onFailure(internalStatus);
+			                }
+			            };
+
 			    //see header for more information
-			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«getAttributeName»(Future) is synchronous.");
-			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);
+			    «serviceInterface.interfaceCaller»->«getAttributeName»(requestCallerCallbackFct);
+			    status = future->waitForFinished();
+			    if (status.successful()) {
+			        attributeValue = future->getValue();
+			    }
 			}
 
 			QSharedPointer<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»(
-			        std::function<void(const joynr::RequestStatus& status, const «returnType»& «getAttributeName»)> callbackFct
+			        std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> callbackFct
 			) {
 			    assert(!address.isNull());
 			    QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -112,23 +127,22 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
 
-			    QSharedPointer<joynr::Future<«returnType»>> future(new joynr::Future<«returnType»>());
+			    QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+
+			    std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> requestCallerCallbackFct =
+			            [future, callbackFct] (const joynr::RequestStatus& internalStatus, const «returnType»& «attributeName») {
+			                if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
+			                    future->onSuccess(internalStatus, «attributeName»);
+			                } else {
+			                    future->onFailure(internalStatus);
+			                }
+			                if (callbackFct) {
+			                    callbackFct(internalStatus, «attributeName»);
+			                }
+			            };
 
 			    //see header for more information
-			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«getAttributeName»(Future) is synchronous.");
-			    joynr::RequestStatus status;
-			    «returnType» result;
-			    «serviceInterface.interfaceCaller»->«getAttributeName»(status, result);
-			    if (status.getCode()== joynr::RequestStatusCode::OK){
-			        future->onSuccess(status, result);
-			    } else {
-			        future->onFailure(status);
-			    }
-
-			    if (callbackFct){
-			        callbackFct(status, result);
-			    }
-
+			    «serviceInterface.interfaceCaller»->«getAttributeName»(requestCallerCallbackFct);
 			    return future;
 			}
 
@@ -145,20 +159,21 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    assert(!«serviceInterface.interfaceCaller».isNull());
 
 			    QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
+			    std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
+			            [future, callbackFct] (const joynr::RequestStatus& internalStatus) {
+			                if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
+			                    future->onSuccess(internalStatus);
+			                } else {
+			                    future->onFailure(internalStatus);
+			                }
+			                if (callbackFct) {
+			                    callbackFct(internalStatus);
+			                }
+			            };
 
 			    //see header for more information
 			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			    joynr::RequestStatus status;
-			    «serviceInterface.interfaceCaller»->«setAttributeName»(status, input);
-			    if (status.getCode()== joynr::RequestStatusCode::OK){
-			        future->onSuccess(status);
-			    } else {
-			        future->onFailure(status);
-			    }
-			    if (callbackFct){
-			        callbackFct(status);
-			    }
-
+			    «serviceInterface.interfaceCaller»->«setAttributeName»(input, requestCallerCallbackFct);
 			    return future;
 			}
 
@@ -171,9 +186,20 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 			    assert(!caller.isNull());
 			    QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			    assert(!«serviceInterface.interfaceCaller».isNull());
+
+			    QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
+			    std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
+			            [future] (const joynr::RequestStatus& internalStatus) {
+			                if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
+			                    future->onSuccess(internalStatus);
+			                } else {
+			                    future->onFailure(internalStatus);
+			                }
+			            };
+
 			    //see header for more information
-			    LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			    «serviceInterface.interfaceCaller»->«setAttributeName»(status, input);
+			    «serviceInterface.interfaceCaller»->«setAttributeName»(input, requestCallerCallbackFct);
+			    status = future->waitForFinished();
 			}
 
 			«ENDIF»

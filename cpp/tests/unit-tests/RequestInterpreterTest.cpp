@@ -55,7 +55,7 @@ protected:
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     QSharedPointer<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
     EXPECT_CALL(*mockCaller,
-                getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
+                getLocation(A<std::function<void(const RequestStatus&, const types::GpsLocation&)>>()))
             .Times(1);
 
     tests::testRequestInterpreter interpreter;

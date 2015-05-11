@@ -87,16 +87,15 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 				joynr::RequestStatus status;
 				«FOR attribute: attributes SEPARATOR "\n} else"»
 					«val attributeName = attribute.joynrName»
+					«val returnType = getMappedDatatypeOrList(attribute)»
 					if (methodName == "get«attributeName.toFirstUpper»"){
-						«getMappedDatatypeOrList(attribute)» returnValue;
-						«requestCallerName»->get«attributeName.toFirstUpper»(status, returnValue);
-						// convert typed return value into variant
-						«IF isArray(attribute)»
-							QVariant returnValueQVar(«joynrGenerationPrefix»::Util::convertListToVariantList(returnValue));
-						«ELSE»
-							QVariant returnValueQVar(QVariant::fromValue(returnValue));
-						«ENDIF»
-						callbackFct(returnValueQVar);
+						std::function<void(const joynr::RequestStatus& status, «returnType» «attributeName»)> requestCallerCallbackFct =
+								[callbackFct](const joynr::RequestStatus& status, «returnType» «attributeName»){
+									Q_UNUSED(status);
+									QVariant returnValue(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«getMappedDatatype(attribute)»>(«attributeName»)«ELSE»QVariant::fromValue(«attributeName»)«ENDIF»);
+									callbackFct(returnValue);
+								};
+						«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerCallbackFct);
 					} else if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 						QVariant «attributeName»QVar(paramValues.at(0));
 						«IF isEnum(attribute.type)»
@@ -112,9 +111,13 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 							assert(«attributeName»QVar.canConvert<«getMappedDatatypeOrList(attribute)»>());
 							«getMappedDatatypeOrList(attribute)» typedInput«attributeName.toFirstUpper» = «attributeName»QVar.value<«getMappedDatatypeOrList(attribute)»>();
 						«ENDIF»
-						«requestCallerName»->set«attributeName.toFirstUpper»(status, typedInput«attributeName.toFirstUpper»);
-						QVariant returnValue("void");
-						callbackFct(returnValue);
+						std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
+								[callbackFct](const joynr::RequestStatus& status){
+									Q_UNUSED(status);
+									QVariant returnValue("void");
+									callbackFct(returnValue);
+								};
+						«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerCallbackFct);
 
 				«ENDFOR»
 				} else «IF methods.empty»{«ENDIF»
@@ -165,7 +168,9 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 							«ENDIF»
 						«ENDFOR»
 
-						«requestCallerName»->«methodName»(«IF !method.inputParameters.empty»«inputUntypedParamList», «ENDIF»requestCallerCallbackFct);
+						«requestCallerName»->«methodName»(
+								«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+								requestCallerCallbackFct);
 				«ENDFOR»
 				} else {
 			«ENDIF»

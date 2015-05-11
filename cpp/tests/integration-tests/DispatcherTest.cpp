@@ -73,6 +73,11 @@ public:
     void TearDown(){
     }
 
+    void invokeCallbackWithGpsLocation(
+            std::function<void(const joynr::RequestStatus& status, const joynr::types::GpsLocation& location)> callbackFct) {
+        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), gpsLocation1);
+    }
+
 protected:
     joynr_logging::Logger* logger;
     QSharedPointer<MockMessageRouter> mockMessageRouter;
@@ -106,10 +111,9 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     EXPECT_CALL(
                 *mockRequestCaller,
                 getLocation(
-                    A<RequestStatus&>(),
-                    A<types::GpsLocation&>()
+                    A<std::function<void(const joynr::RequestStatus&, const joynr::types::GpsLocation&)>>()
                 )
-    ).WillOnce(SetArgReferee<1>(gpsLocation1));
+    ).WillOnce(Invoke(this, &DispatcherTest::invokeCallbackWithGpsLocation));
 
     qos.setTtl(1000);
     // build request for location from mock Gps Provider

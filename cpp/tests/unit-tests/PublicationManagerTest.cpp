@@ -76,17 +76,13 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>("tests/Test");
 
     MockPublicationSender mockPublicationSender;
-    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(Between(3, 5));
 
     // NOTE: it depends on the timing and especially on the CPU load of
     // the current machine how often the publication is exectuted. Hence,
     // we expect the publication to haben between 3 or 5 times.
     EXPECT_CALL(mockPublicationSender,
                 sendSubscriptionPublication(_,_,_,_))
-            .Times(Between(3, 5));
-
-    EXPECT_CALL(*mockTestRequestCaller,
-                getLocation(_,_))
             .Times(Between(3, 5));
 
     QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
@@ -118,17 +114,13 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
 TEST_F(PublicationManagerTest, stop_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
-    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(mockPublicationSender,
                 sendSubscriptionPublication(_,_,_,_))
-            .Times(AtMost(2));
-
-    EXPECT_CALL(*mockTestRequestCaller,
-                getLocation(_,_))
             .Times(AtMost(2));
 
     QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
@@ -166,17 +158,13 @@ TEST_F(PublicationManagerTest, stop_publications) {
 TEST_F(PublicationManagerTest, remove_all_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
-    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     EXPECT_CALL(mockPublicationSender,
                 sendSubscriptionPublication(_,_,_,_))
-            .Times(AtMost(2));
-
-    EXPECT_CALL(*mockTestRequestCaller,
-                getLocation(_,_))
             .Times(AtMost(2));
 
     QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
@@ -211,22 +199,15 @@ TEST_F(PublicationManagerTest, restore_publications) {
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
-    QSharedPointer<MockTestRequestCaller> requestCaller(new MockTestRequestCaller());
+    QSharedPointer<MockTestRequestCaller> requestCaller(new MockTestRequestCaller(Between(1,3)));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    EXPECT_CALL(*requestCaller,
-                getLocation(_,_))
-            .Times(Between(1,3));
 
     //the second publicationManager will get this requestCaller
     //if restoring works, this caller will be called as well.
-    QSharedPointer<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller());
-
-    EXPECT_CALL(*requestCaller2,
-                getLocation(_,_))
-            .Times(AtLeast(2));
+    QSharedPointer<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(2)));
 
     PublicationManager* publicationManager = new PublicationManager() ;
 

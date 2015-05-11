@@ -563,19 +563,34 @@ public:
 
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
-//    MockTestRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
-    MockTestRequestCaller() : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {}
-    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
+    void invokeCallbackFct (std::function<void(const joynr::RequestStatus&, const joynr::types::GpsLocation&)> callbackFct) {
+        joynr::types::GpsLocation location;
+        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), location);
+    }
+
+    MockTestRequestCaller() : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {
+        EXPECT_CALL(*this,
+                    getLocation(_)).
+                WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeCallbackFct));
+    }
+    MockTestRequestCaller(testing::Cardinality getLocationCardinality) : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {
+        EXPECT_CALL(*this,
+                    getLocation(_))
+                .Times(getLocationCardinality)
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeCallbackFct));
+    }
+    MOCK_METHOD1(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::GpsLocation& location)>));
     MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterBroadcastListener, void(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener));
+
 };
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
 public:
     MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
-    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& location));
+    MOCK_METHOD1(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::GpsLocation& location)>));
     MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
 };

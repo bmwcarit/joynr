@@ -59,9 +59,15 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 			virtual ~«interfaceName»RequestCaller(){}
 
 			«FOR attribute: getAttributes(serviceInterface)»
-				«var attributeName = attribute.joynrName»
-				virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»);
-				virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
+				«val attributeName = attribute.joynrName»
+				«val returnType = getMappedDatatypeOrList(attribute)»
+				virtual void get«attributeName.toFirstUpper»(
+						std::function<void(
+								const joynr::RequestStatus& status,
+								const «returnType»& «attributeName.toFirstLower»)> callbackFct);
+				virtual void set«attributeName.toFirstUpper»(
+						«returnType» «attributeName.toFirstLower»,
+						std::function<void(const joynr::RequestStatus& status)> callbackFct);
 
 			«ENDFOR»
 			«FOR method: getMethods(serviceInterface)»

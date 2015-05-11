@@ -42,7 +42,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			#include "«datatype»"
 		«ENDFOR»
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-		«IF !serviceInterface.methods.empty»
+		«IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
 			#include "joynr/RequestStatus.h"
 		«ENDIF»
 
@@ -55,12 +55,21 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeName = attribute.joynrName»
-			void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»){
-				provider->get«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»);
+			«val returnType = getMappedDatatypeOrList(attribute)»
+			void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
+					std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct){
+				joynr::RequestStatus joynrInternalStatus;
+				«returnType» «attributeName.toFirstLower»;
+				provider->get«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName.toFirstLower»);
+				callbackFct(joynrInternalStatus, «attributeName.toFirstLower»);
 			}
 
-			void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»){
-				provider->set«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»);
+			void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
+					«returnType» «attributeName.toFirstLower»,
+					std::function<void(const joynr::RequestStatus& status)> callbackFct){
+				joynr::RequestStatus joynrInternalStatus;
+				provider->set«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName.toFirstLower»);
+				callbackFct(joynrInternalStatus);
 			}
 
 		«ENDFOR»
