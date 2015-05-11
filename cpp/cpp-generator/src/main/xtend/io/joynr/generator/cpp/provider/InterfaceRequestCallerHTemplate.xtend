@@ -86,7 +86,9 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 	def createRequestCallerSignature(FMethod method)
 '''
 	«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-	«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-	virtual void «method.joynrName»(std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct«inputTypedParamList»);
+	«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+	virtual void «method.joynrName»(
+			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+			std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct);
 '''
 }

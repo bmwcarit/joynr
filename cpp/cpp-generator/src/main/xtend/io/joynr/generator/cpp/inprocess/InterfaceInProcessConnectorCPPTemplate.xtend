@@ -267,7 +267,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		«var methodname = method.joynrName»
 		«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
 		«var outputParameter = getMappedOutputParameter(method)»
-		«var inputParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
+		«var inputParamList = getCommaSeperatedUntypedParameterList(method)»
 		«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 		«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 
@@ -290,7 +290,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		                }
 		            };
 
-		    «serviceInterface.interfaceCaller»->«methodname»(requestCallerCallbackFct«inputParamList»);
+		    «serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»requestCallerCallbackFct);
 		    status = future->waitForFinished();
 		    «IF !method.outputParameters.empty»
 		    if (status.successful()) {
@@ -321,7 +321,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 		                    callbackFct(status«outputUntypedParamList»);
 		                }
 		            };
-		    «serviceInterface.interfaceCaller»->«methodname»(requestCallerCallbackFct«inputParamList»);
+		    «serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»requestCallerCallbackFct);
 		    return future;
 		}
 

@@ -121,7 +121,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 			«ENDIF»
 			«IF methods.size>0»
 				«FOR method: getMethods(serviceInterface) SEPARATOR "\n} else"»
-					«val inputUntypedParamList = prependCommaIfNotEmpty(method.getCommaSeperatedUntypedParameterList)»
+					«val inputUntypedParamList = method.getCommaSeperatedUntypedParameterList»
 					«val methodName = method.joynrName»
 					«val inputParams = getInputParameters(method)»
 					«var iterator = -1»
@@ -165,7 +165,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 							«ENDIF»
 						«ENDFOR»
 
-						«requestCallerName»->«methodName»(requestCallerCallbackFct«inputUntypedParamList»);
+						«requestCallerName»->«methodName»(«IF !method.inputParameters.empty»«inputUntypedParamList», «ENDIF»requestCallerCallbackFct);
 				«ENDFOR»
 				} else {
 			«ENDIF»
