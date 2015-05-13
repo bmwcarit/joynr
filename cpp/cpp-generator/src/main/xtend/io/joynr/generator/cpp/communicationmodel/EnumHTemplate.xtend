@@ -31,58 +31,57 @@ class EnumHTemplate implements EnumTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FEnumerationType type){
-		val typeName = type.joynrName;
-		val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase
-	'''
-		«warning»
-		#ifndef «headerGuard»
-		#define «headerGuard»
+	override generate(FEnumerationType type)
+'''
+«val typeName = type.joynrName»
+«val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase»
+«warning»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		«getDllExportIncludeStatement()»
-		#include <QObject>
-		#include <QMetaType>
-		#include "joynr/Util.h"
+«getDllExportIncludeStatement()»
+#include <QObject>
+#include <QMetaType>
+#include "joynr/Util.h"
 
-		«getNamespaceStarter(type)»
-		
-		class «getDllExportMacro()» «typeName» : public QObject {
-			Q_OBJECT
-			Q_ENUMS(«getNestedEnumName()»)
-		public:
-			enum «getNestedEnumName()» {
-				«FOR enumtype : getEnumElements(type) SEPARATOR ','»
-					«enumtype.joynrName»
-				«ENDFOR»
-			};
-			// Constructors required by QT metatype system
-			«typeName»() : QObject() {}
-			«typeName»(const «typeName»& o) : QObject() { Q_UNUSED(o); }
-		};
+«getNamespaceStarter(type)»
 
-		«getNamespaceEnder(type)»
+class «getDllExportMacro()» «typeName» : public QObject {
+	Q_OBJECT
+	Q_ENUMS(«getNestedEnumName()»)
+public:
+	enum «getNestedEnumName()» {
+		«FOR enumtype : getEnumElements(type) SEPARATOR ','»
+			«enumtype.joynrName»
+		«ENDFOR»
+	};
+	// Constructors required by QT metatype system
+	«typeName»() : QObject() {}
+	«typeName»(const «typeName»& o) : QObject() { Q_UNUSED(o); }
+};
 
-		namespace joynr {
-		template <>
-		inline «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» joynr::Util::valueOf<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()»>(const QVariant& variant)
-		{
-		  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant);
-		}
-		}
-		// Metatype for the wrapper class	
-		typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
-		Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)
+«getNamespaceEnder(type)»
 
-		// Metatypes for the «getNestedEnumName()»
-		typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»;
-		Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»)
-		Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»>)
+namespace joynr {
+template <>
+inline «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» joynr::Util::valueOf<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()»>(const QVariant& variant)
+{
+  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant);
+}
+}
+// Metatype for the wrapper class
+typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
+Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)
 
-		inline uint qHash(«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» key, uint seed = 0) {
-		    return uint(key) ^ seed;
-		}
+// Metatypes for the «getNestedEnumName()»
+typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»;
+Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»)
+Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»>)
 
-		#endif // «headerGuard»
-	'''
-	}
+inline uint qHash(«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» key, uint seed = 0) {
+	return uint(key) ^ seed;
+}
+
+#endif // «headerGuard»
+'''
 }

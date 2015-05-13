@@ -24,96 +24,95 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
 
 class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
-    @Inject	extension JoynrCppGeneratorExtensions
+	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
-		val className = interfaceName + "ProxyBase"
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"ProxyBase_h").toUpperCase
-		'''
-		«warning()»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName =  serviceInterface.joynrName»
+«val className = interfaceName + "ProxyBase"»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"ProxyBase_h").toUpperCase»
+«warning()»
 
-		#ifndef «headerGuard»
-		#define «headerGuard»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-		#include "«parameterType»"
-		«ENDFOR»
-		«getDllExportIncludeStatement()»
-		#include "joynr/ProxyBase.h"
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "joynr/PrivateCopyAssign.h"
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+#include "«parameterType»"
+«ENDFOR»
+«getDllExportIncludeStatement()»
+#include "joynr/ProxyBase.h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 
-		«getNamespaceStarter(serviceInterface)» 
-		class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
-		public:
-		    «className»(
-		            QSharedPointer<joynr::system::Address> messagingAddress,
-		            joynr::ConnectorFactory* connectorFactory,
-		            joynr::IClientCache* cache,
-		            const QString& domain,
-		            const joynr::MessagingQos& qosSettings,
-		            bool cached
-		    );
+«getNamespaceStarter(serviceInterface)»
+class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
+public:
+	«className»(
+			QSharedPointer<joynr::system::Address> messagingAddress,
+			joynr::ConnectorFactory* connectorFactory,
+			joynr::IClientCache* cache,
+			const QString& domain,
+			const joynr::MessagingQos& qosSettings,
+			bool cached
+	);
 
-		    ~«className»();
+	~«className»();
 
-		    void handleArbitrationFinished(
-		            const QString &participantId,
-		            const joynr::system::CommunicationMiddleware::Enum& connection
-		    );
-		    «FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		    	«val returnType = getMappedDatatypeOrList(attribute)»
-		    	«var attributeName = attribute.joynrName»
-		    	QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-		    	QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		    	            QString& subcriptionId);
-		    	void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
-		    «ENDFOR»
+	void handleArbitrationFinished(
+			const QString &participantId,
+			const joynr::system::CommunicationMiddleware::Enum& connection
+	);
+	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+		«val returnType = getMappedDatatypeOrList(attribute)»
+		«var attributeName = attribute.joynrName»
+		QString subscribeTo«attributeName.toFirstUpper»(
+					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+		QString subscribeTo«attributeName.toFirstUpper»(
+					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					QString& subcriptionId);
+		void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
+	«ENDFOR»
 
-		    «FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: serviceInterface.broadcasts»
+		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«var broadcastName = broadcast.joynrName»
+		«IF isSelective(broadcast)»
+			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
 
-		    	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
-		    	«var broadcastName = broadcast.joynrName»
-		    	«IF isSelective(broadcast)»
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QString& subscriptionId);
+		«ELSE»
+			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
 
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId);
-		    	«ELSE»
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QString& subscriptionId);
+		«ENDIF»
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
 
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId);
-		    	«ENDIF»
+	«ENDFOR»
 
-		    	void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
-		    «ENDFOR»
+protected:
+	QSharedPointer<joynr::system::Address> messagingAddress;
+	I«interfaceName»Connector* connector;
 
-		protected:
-		    QSharedPointer<joynr::system::Address> messagingAddress;
-		    I«interfaceName»Connector* connector;
-
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«className»);
-		};
-		«getNamespaceEnder(serviceInterface)»
-		#endif // «headerGuard»
-		'''
-	}
+private:
+	DISALLOW_COPY_AND_ASSIGN(«className»);
+};
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+'''
 }

@@ -27,11 +27,11 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
-	override generate(FInterface fInterface) {
-		val interfaceName =  fInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val syncClassName = interfaceName + "SyncProxy"
+	override generate(FInterface fInterface)
 '''
+«val interfaceName =  fInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«syncClassName».h"
@@ -89,7 +89,6 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 				connector->«setAttribute»(status, value);
 			}
 		}
-
 	«ENDIF»
 
 «ENDFOR»
@@ -125,5 +124,4 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 «ENDFOR»
 «getNamespaceEnder(fInterface)»
 '''
-	}
 }

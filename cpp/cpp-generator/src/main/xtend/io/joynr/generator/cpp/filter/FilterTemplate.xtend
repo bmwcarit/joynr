@@ -48,63 +48,61 @@ class FilterTemplate implements BroadcastTemplate {
 		}
 	}
 
-	override generate(FInterface serviceInterface, FBroadcast broadcast) {
-		val broadcastName =  broadcast.joynrName
-		val className = serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"
-		val headerGuard = ("GENERATED_BROADCAST_FILTER_"+getPackagePathWithJoynrPrefix(broadcast, "_")+"_"+broadcastName+"_H").toUpperCase
-		'''
-		«warning()»
+	override generate(FInterface serviceInterface, FBroadcast broadcast)
+'''
+«val broadcastName =  broadcast.joynrName»
+«val className = serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+«val headerGuard = ("GENERATED_BROADCAST_FILTER_"+getPackagePathWithJoynrPrefix(broadcast, "_")+
+	"_"+broadcastName+"_H").toUpperCase»
+«warning()»
 
-		#ifndef «headerGuard»
-		#define «headerGuard»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-		#include "«parameterType»"
-		«ENDFOR»
+#include "joynr/PrivateCopyAssign.h"
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+#include "«parameterType»"
+«ENDFOR»
 
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
-		#include "joynr/IBroadcastFilter.h"
-		«getDllExportIncludeStatement()»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
+#include "joynr/IBroadcastFilter.h"
+«getDllExportIncludeStatement()»
 
-		«getNamespaceStarter(serviceInterface)»
-		class «getDllExportMacro()» «className» : public IBroadcastFilter {
-		public:
-			«className»() :
-				IBroadcastFilter("«broadcastName»") { }
+«getNamespaceStarter(serviceInterface)»
+class «getDllExportMacro()» «className» : public IBroadcastFilter {
+public:
+	«className»() :
+		IBroadcastFilter("«broadcastName»") { }
 
-			~«className»() {}
+	~«className»() {}
 
-			/*
-			* Override this method to provide a filter logic implementation.
-			*/
-			virtual bool filter(
-					«getCommaSeperatedTypedOutputParameterListConstLinebreak(broadcast)»,
-					const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters) {
-						return true;
-			}
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«className»);
-
-			virtual bool filter(
-					const QList<QVariant>& eventValues,
-					const BroadcastFilterParameters& filterParameters) {
-
-				«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
-				params.setFilterParameters(filterParameters.getFilterParameters());
-
-				return filter(
-						«getCommaSeperatedEventArgumentListFromQList(getOutputParameters(broadcast))»,
-						params);
-			}
-		};
-
-		«getNamespaceEnder(serviceInterface)»
-
-		#endif // «headerGuard»
-		'''
+	/*
+	* Override this method to provide a filter logic implementation.
+	*/
+	virtual bool filter(
+			«getCommaSeperatedTypedOutputParameterListConstLinebreak(broadcast)»,
+			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters) {
+				return true;
 	}
+private:
+	DISALLOW_COPY_AND_ASSIGN(«className»);
 
+	virtual bool filter(
+			const QList<QVariant>& eventValues,
+			const BroadcastFilterParameters& filterParameters) {
 
+		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
+		params.setFilterParameters(filterParameters.getFilterParameters());
+
+		return filter(
+				«getCommaSeperatedEventArgumentListFromQList(getOutputParameters(broadcast))»,
+				params);
+	}
+};
+
+«getNamespaceEnder(serviceInterface)»
+
+#endif // «headerGuard»
+'''
 }

@@ -27,53 +27,53 @@ import io.joynr.generator.util.InterfaceTemplate
 class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	
-	@Inject extension InterfaceSubscriptionUtil
-	override generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.joynrName
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"Connector_h").toUpperCase
-		'''
-		«warning()»
-		
-		#ifndef «headerGuard»
-		#define «headerGuard»
-		
-		«getDllExportIncludeStatement()»
-		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-		#include "«parameterType»"
-		«ENDFOR»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-		#include "joynr/ISubscriptionListener.h"
-		#include "joynr/IConnector.h"
 
-		namespace joynr {
-		    template <class T, class... Ts> class ISubscriptionListener;
-		    class ISubscriptionCallback;
-		    class SubscriptionQos;
-		    class OnChangeSubscriptionQos;
-		}
-		
-		«getNamespaceStarter(serviceInterface)»
-		class «getDllExportMacro()» I«interfaceName»Subscription{
-		    /**
-		      * in  - subscriptionListener      QSharedPointer to a SubscriptionListener which will receive the updates.
-		      * in  - subscriptionQos           SubscriptionQos parameters like interval and end date.
-		      * out - assignedSubscriptionId    Buffer for the assigned subscriptionId.
-		      */
-		public:
-		    virtual ~I«interfaceName»Subscription() {}
-		    
-		    «produceSubscribeUnsubscribeMethods(serviceInterface, true)»
-		};
-		
-		class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
-		
-		public:
-		    virtual ~I«interfaceName»Connector() {}
-		};
-		
-		«getNamespaceEnder(serviceInterface)»
-		#endif // «headerGuard»
-		'''
-	}
+	@Inject extension InterfaceSubscriptionUtil
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName = serviceInterface.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_I"+interfaceName+"Connector_h").toUpperCase»
+«warning()»
+
+#ifndef «headerGuard»
+#define «headerGuard»
+
+«getDllExportIncludeStatement()»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+	#include "«parameterType»"
+«ENDFOR»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/IConnector.h"
+
+namespace joynr {
+	template <class T, class... Ts> class ISubscriptionListener;
+	class ISubscriptionCallback;
+	class SubscriptionQos;
+	class OnChangeSubscriptionQos;
+}
+
+«getNamespaceStarter(serviceInterface)»
+class «getDllExportMacro()» I«interfaceName»Subscription{
+	/**
+	  * in  - subscriptionListener      QSharedPointer to a SubscriptionListener which will receive the updates.
+	  * in  - subscriptionQos           SubscriptionQos parameters like interval and end date.
+	  * out - assignedSubscriptionId    Buffer for the assigned subscriptionId.
+	  */
+public:
+	virtual ~I«interfaceName»Subscription() {}
+
+	«produceSubscribeUnsubscribeMethods(serviceInterface, true)»
+};
+
+class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
+
+public:
+	virtual ~I«interfaceName»Connector() {}
+};
+
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+'''
 }

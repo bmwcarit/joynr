@@ -38,12 +38,12 @@ abstract class CommonApiJoynrGeneratorExtensions extends JoynrGeneratorExtension
 			case FBasicTypeId::STRING: "QString"
 			case FBasicTypeId::BYTE_BUFFER: "CommonAPI::ByteBuffer"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.getName)
-        }
+		}
 		// francaExtensions.getPrimitiveTypeName(basicType)
 	}
-	
-    override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
 
-    override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
+	override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
+
+	override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
 
 }

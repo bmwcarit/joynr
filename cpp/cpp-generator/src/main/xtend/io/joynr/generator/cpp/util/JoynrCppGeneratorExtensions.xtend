@@ -37,7 +37,7 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 
 class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
-	
+
 	@Inject @Named("generationId")
 	String dllExportName;
 
@@ -62,7 +62,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	def String getNamespaceEnder(FInterface interfaceType) {
 		getNamespaceEnder(getPackageNames(interfaceType));
 	}
-	
+
 	def String getNamespaceEnder(FType datatype) {
 		getNamespaceEnder(getPackageNames(datatype));
 	}
@@ -156,13 +156,13 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 				returnStringBuilder.append(" ");
 			}
 		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
-        }
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
+		}
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
@@ -187,13 +187,13 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 			returnStringBuilder.append(argument.joynrName);
 			returnStringBuilder.append(", ");
 		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
-        }
+		val returnString = returnStringBuilder.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ,
+		}
 	}
 
 	def getCommaSeperatedTypedParameterList(FMethod method) {
@@ -292,7 +292,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 
 	}
 
-
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
 		val members = getComplexAndEnumMembers(datatype);
 
@@ -355,7 +354,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 
 		switch datatype {
 		case isArray(element)     : "List"
-		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") + 
+		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") +
 									"." + datatype.joynrName
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
@@ -364,9 +363,9 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		case isFloat(predefined)  : "Double"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
-		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") + 
+		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") +
 									"." + datatype.joynrName
-        default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
+		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
 

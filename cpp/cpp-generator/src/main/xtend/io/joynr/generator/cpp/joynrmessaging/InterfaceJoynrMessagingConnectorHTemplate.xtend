@@ -35,151 +35,151 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.joynrName;
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"JoynrMessagingConnector_h").toUpperCase
-		'''
-		«warning()»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName = serviceInterface.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"JoynrMessagingConnector_h").toUpperCase»
+«warning()»
 
-		#ifndef «headerGuard»
-		#define «headerGuard»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		«getDllExportIncludeStatement()»
-		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-		#include "«parameterType»"
-		«ENDFOR»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
-		#include "joynr/AbstractJoynrMessagingConnector.h"
-		#include "joynr/JoynrMessagingConnectorFactory.h"
-		#include "joynr/SubscriptionRequest.h"
-		#include "joynr/BroadcastSubscriptionRequest.h"
+«getDllExportIncludeStatement()»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+	#include "«parameterType»"
+«ENDFOR»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "joynr/AbstractJoynrMessagingConnector.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 
-		namespace joynr {
-		    class MessagingQos;
-		    class IJoynrMessageSender;
-		    class SubscriptionManager;
-		}
+namespace joynr {
+	class MessagingQos;
+	class IJoynrMessageSender;
+	class SubscriptionManager;
+}
 
-		«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(serviceInterface)»
 
 
-		class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
-		private:
-		«FOR attribute: getAttributes(serviceInterface)»
+class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
+private:
+	«FOR attribute: getAttributes(serviceInterface)»
 		«val returnType = getMappedDatatypeOrList(attribute)»
 		«val attributeName = attribute.joynrName»
-		    «IF attribute.notifiable»
-		    QString subscribeTo«attributeName.toFirstUpper»(
-		            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		            SubscriptionRequest& subscriptionRequest);
-		    «ENDIF»
-		«ENDFOR»
-		«FOR broadcast: serviceInterface.broadcasts»
+		«IF attribute.notifiable»
+			QString subscribeTo«attributeName.toFirstUpper»(
+					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					SubscriptionRequest& subscriptionRequest);
+		«ENDIF»
+	«ENDFOR»
+	«FOR broadcast: serviceInterface.broadcasts»
 		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
 		«val broadcastName = broadcast.joynrName»
-		    QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-		            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		            BroadcastSubscriptionRequest& subscriptionRequest);
-		«ENDFOR»
-		public:
-		    «interfaceName»JoynrMessagingConnector(
-		        joynr::IJoynrMessageSender* messageSender,
-		        joynr::SubscriptionManager* subscriptionManager,
-		        const QString &domain,
-		        const QString proxyParticipantId,
-		        const QString& providerParticipantId,
-		        const joynr::MessagingQos &qosSettings,
-		        joynr::IClientCache *cache,
-		        bool cached);
+		QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+				QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+				BroadcastSubscriptionRequest& subscriptionRequest);
+	«ENDFOR»
+public:
+	«interfaceName»JoynrMessagingConnector(
+		joynr::IJoynrMessageSender* messageSender,
+		joynr::SubscriptionManager* subscriptionManager,
+		const QString &domain,
+		const QString proxyParticipantId,
+		const QString& providerParticipantId,
+		const joynr::MessagingQos &qosSettings,
+		joynr::IClientCache *cache,
+		bool cached);
 
-		    virtual bool usesClusterController() const;
+	virtual bool usesClusterController() const;
 
-		    virtual ~«interfaceName»JoynrMessagingConnector(){}
+	virtual ~«interfaceName»JoynrMessagingConnector(){}
 
-		    «produceSyncGetters(serviceInterface, false)»
-		    «produceAsyncGetters(serviceInterface, false)»
-		    «produceSyncSetters(serviceInterface, false)»
-		    «produceAsyncSetters(serviceInterface, false)»
-		    «FOR attribute: getAttributes(serviceInterface)»
-		    	«val returnType = getMappedDatatypeOrList(attribute)»
-		    	«val attributeName = attribute.joynrName»
-		    	«IF attribute.notifiable»
-		    	virtual QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-		    	virtual QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId);
-		    	virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
-		    	«ENDIF»
-		    «ENDFOR»
+	«produceSyncGetters(serviceInterface, false)»
+	«produceAsyncGetters(serviceInterface, false)»
+	«produceSyncSetters(serviceInterface, false)»
+	«produceAsyncSetters(serviceInterface, false)»
+	«FOR attribute: getAttributes(serviceInterface)»
+		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val attributeName = attribute.joynrName»
+		«IF attribute.notifiable»
+			virtual QString subscribeTo«attributeName.toFirstUpper»(
+						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+						QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+			virtual QString subscribeTo«attributeName.toFirstUpper»(
+						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+						QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+						QString& subscriptionId);
+			virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
+		«ENDIF»
+	«ENDFOR»
 
-		    «produceSyncMethods(serviceInterface, false)»
-		    «produceAsyncMethods(serviceInterface, false)»
+	«produceSyncMethods(serviceInterface, false)»
+	«produceAsyncMethods(serviceInterface, false)»
 
-		    «FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: serviceInterface.broadcasts»
 
-		    	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
-		    	«val broadcastName = broadcast.joynrName»
-		    	«IF isSelective(broadcast)»
-		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
-		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId);
-		    	«ELSE»
-		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
-		    	virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId);
-		    	«ENDIF»
-		    	virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
-		    «ENDFOR»
-		};
-		«getNamespaceEnder(serviceInterface)»
+		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val broadcastName = broadcast.joynrName»
+		«IF isSelective(broadcast)»
+			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QString& subscriptionId);
+		«ELSE»
+			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QString& subscriptionId);
+		«ENDIF»
+		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
+	«ENDFOR»
+};
+«getNamespaceEnder(serviceInterface)»
 
-		namespace joynr {
+namespace joynr {
 
-		// Helper class for use by the JoynrMessagingConnectorFactory
-		// This class creates instances of «interfaceName»JoynrMessagingConnector
-		template <>
-		class JoynrMessagingConnectorFactoryHelper <«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Connector> {
-		public:
-		    «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector* create(
-		            joynr::IJoynrMessageSender* messageSender,
-		            joynr::SubscriptionManager* subscriptionManager,
-		            const QString &domain,
-		            const QString proxyParticipantId,
-		            const QString& providerParticipantId,
-		            const joynr::MessagingQos &qosSettings,
-		            joynr::IClientCache *cache,
-		            bool cached
-		    ) {
-		        return new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector(
-		                    messageSender,
-		                    subscriptionManager,
-		                    domain,
-		                    proxyParticipantId,
-		                    providerParticipantId,
-		                    qosSettings,
-		                    cache,
-		                    cached
-		        );
-		    }
-		};
-
-		} // namespace joynr
-		#endif // «headerGuard»
-		'''
+// Helper class for use by the JoynrMessagingConnectorFactory
+// This class creates instances of «interfaceName»JoynrMessagingConnector
+template <>
+class JoynrMessagingConnectorFactoryHelper <«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Connector> {
+public:
+	«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector* create(
+			joynr::IJoynrMessageSender* messageSender,
+			joynr::SubscriptionManager* subscriptionManager,
+			const QString &domain,
+			const QString proxyParticipantId,
+			const QString& providerParticipantId,
+			const joynr::MessagingQos &qosSettings,
+			joynr::IClientCache *cache,
+			bool cached
+	) {
+		return new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector(
+					messageSender,
+					subscriptionManager,
+					domain,
+					proxyParticipantId,
+					providerParticipantId,
+					qosSettings,
+					cache,
+					cached
+		);
 	}
+};
+
+} // namespace joynr
+#endif // «headerGuard»
+'''
 }

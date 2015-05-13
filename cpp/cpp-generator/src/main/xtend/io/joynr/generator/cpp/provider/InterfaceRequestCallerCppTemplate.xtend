@@ -31,80 +31,79 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface){
-	var interfaceName = serviceInterface.joynrName;
-	'''
-		«warning()»
-		#include <functional>
+	override generate(FInterface serviceInterface)
+'''
+«var interfaceName = serviceInterface.joynrName»
+«warning()»
+#include <functional>
 
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
-			#include "«datatype»"
-		«ENDFOR»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-		«IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
-			#include "joynr/RequestStatus.h"
-		«ENDIF»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+	#include "«datatype»"
+«ENDFOR»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+«IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
+	#include "joynr/RequestStatus.h"
+«ENDIF»
 
-		«getNamespaceStarter(serviceInterface)»
-		«interfaceName»RequestCaller::«interfaceName»RequestCaller(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
-		    : joynr::RequestCaller(I«interfaceName»::getInterfaceName()),
-		      provider(provider)
-		{
-		}
+«getNamespaceStarter(serviceInterface)»
+«interfaceName»RequestCaller::«interfaceName»RequestCaller(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
+	: joynr::RequestCaller(I«interfaceName»::getInterfaceName()),
+	  provider(provider)
+{
+}
 
-		«FOR attribute: getAttributes(serviceInterface)»
-			«var attributeName = attribute.joynrName»
-			«val returnType = getMappedDatatypeOrList(attribute)»
-			void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
-					std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct){
-				provider->get«attributeName.toFirstUpper»(callbackFct);
-			}
-
-			void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
-					«returnType» «attributeName.toFirstLower»,
-					std::function<void(const joynr::RequestStatus& status)> callbackFct){
-				provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», callbackFct);
-			}
-
-		«ENDFOR»
-		«FOR method: getMethods(serviceInterface)»
-			«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
-			«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
-			«val inputUntypedParamList = getCommaSeperatedUntypedParameterList(method)»
-			«val methodName = method.joynrName»
-			void «interfaceName»RequestCaller::«methodName»(
-					«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
-					std::function<void(
-							const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-							«outputTypedParamList»)> callbackFct){
-				provider->«methodName»(
-						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-						callbackFct);
-			}
-		«ENDFOR»
-
-		void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
-		{
-			provider->registerAttributeListener(attributeName, attributeListener);
-		}
-
-		void «interfaceName»RequestCaller::unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
-		{
-			provider->unregisterAttributeListener(attributeName, attributeListener);
-		}
-
-		void «interfaceName»RequestCaller::registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
-		{
-			provider->registerBroadcastListener(broadcastName, broadcastListener);
-		}
-
-		void «interfaceName»RequestCaller::unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
-		{
-			provider->unregisterBroadcastListener(broadcastName, broadcastListener);
-		}
-
-		«getNamespaceEnder(serviceInterface)»
-	'''
+«FOR attribute: getAttributes(serviceInterface)»
+	«var attributeName = attribute.joynrName»
+	«val returnType = getMappedDatatypeOrList(attribute)»
+	void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
+			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct){
+		provider->get«attributeName.toFirstUpper»(callbackFct);
 	}
+
+	void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
+			«returnType» «attributeName.toFirstLower»,
+			std::function<void(const joynr::RequestStatus& status)> callbackFct){
+		provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», callbackFct);
+	}
+
+«ENDFOR»
+«FOR method: getMethods(serviceInterface)»
+	«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+	«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+	«val inputUntypedParamList = getCommaSeperatedUntypedParameterList(method)»
+	«val methodName = method.joynrName»
+	void «interfaceName»RequestCaller::«methodName»(
+			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+			std::function<void(
+					const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
+					«outputTypedParamList»)> callbackFct){
+			provider->«methodName»(
+					«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+					callbackFct);
+	}
+«ENDFOR»
+
+void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
+{
+	provider->registerAttributeListener(attributeName, attributeListener);
+}
+
+void «interfaceName»RequestCaller::unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
+{
+	provider->unregisterAttributeListener(attributeName, attributeListener);
+}
+
+void «interfaceName»RequestCaller::registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
+{
+	provider->registerBroadcastListener(broadcastName, broadcastListener);
+}
+
+void «interfaceName»RequestCaller::unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
+{
+	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
+}
+
+«getNamespaceEnder(serviceInterface)»
+'''
 }

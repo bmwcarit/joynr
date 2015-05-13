@@ -27,51 +27,48 @@ import io.joynr.generator.util.InterfaceTemplate
 class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	
+
 	@Inject extension InterfaceUtil
-	
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val asyncClassName = interfaceName + "AsyncProxy"
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"AsyncProxy_h").toUpperCase
-		
-		'''
-		«warning()»
-		
-		#ifndef «headerGuard»
-		#define «headerGuard»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«getDllExportIncludeStatement()»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
-		
-		«getNamespaceStarter(serviceInterface)» 
-		class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
-		public:
-		    «asyncClassName»(
-		            QSharedPointer<joynr::system::Address> messagingAddress,
-		            joynr::ConnectorFactory* connectorFactory,
-		            joynr::IClientCache* cache,
-		            const QString& domain,
-		            const joynr::MessagingQos& qosSettings,
-		            bool cached
-		    );
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName =  serviceInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val asyncClassName = interfaceName + "AsyncProxy"»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"AsyncProxy_h").toUpperCase»
+«warning()»
 
-			«produceAsyncGetters(serviceInterface, false)»
-			«produceAsyncSetters(serviceInterface, false)»
-			«produceAsyncMethods(serviceInterface, false)»
-		
-		    friend class «className»;
-		
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«asyncClassName»);
-		};
-		«getNamespaceEnder(serviceInterface)»
-		#endif // «headerGuard»
-		
-		'''	
-	}	
-	
-			
+#ifndef «headerGuard»
+#define «headerGuard»
+
+#include "joynr/PrivateCopyAssign.h"
+«getDllExportIncludeStatement()»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+
+«getNamespaceStarter(serviceInterface)»
+class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
+public:
+	«asyncClassName»(
+			QSharedPointer<joynr::system::Address> messagingAddress,
+			joynr::ConnectorFactory* connectorFactory,
+			joynr::IClientCache* cache,
+			const QString& domain,
+			const joynr::MessagingQos& qosSettings,
+			bool cached
+	);
+
+	«produceAsyncGetters(serviceInterface, false)»
+	«produceAsyncSetters(serviceInterface, false)»
+	«produceAsyncMethods(serviceInterface, false)»
+
+	friend class «className»;
+
+private:
+	DISALLOW_COPY_AND_ASSIGN(«asyncClassName»);
+};
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+
+'''
 }

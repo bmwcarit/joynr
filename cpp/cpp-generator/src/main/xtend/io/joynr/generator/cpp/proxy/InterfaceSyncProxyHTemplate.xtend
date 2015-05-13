@@ -27,49 +27,47 @@ import io.joynr.generator.util.InterfaceTemplate
 class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject	extension TemplateBase
-	
+
 	@Inject extension InterfaceUtil
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val syncClassName = interfaceName + "SyncProxy"
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"SyncProxy_h").toUpperCase
-		'''
-		«warning()»
-		
-		#ifndef «headerGuard»
-		#define «headerGuard»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName =  serviceInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val syncClassName = interfaceName + "SyncProxy"»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"SyncProxy_h").toUpperCase»
+«warning()»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«getDllExportIncludeStatement()»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
-		
-		«getNamespaceStarter(serviceInterface)» 
-		class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
-		public:
-		    «syncClassName»(
-		            QSharedPointer<joynr::system::Address> messagingAddress,
-		            joynr::ConnectorFactory* connectorFactory,
-		            joynr::IClientCache* cache,
-		            const QString& domain,
-		            const joynr::MessagingQos& qosSettings,
-		            bool cached
-		    );
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		    «produceSyncGetters(serviceInterface, false)»
-		    «produceSyncSetters(serviceInterface, false)»
-		    «produceSyncMethods(serviceInterface, false)»
-		
-		    friend class «className»;
-		
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«syncClassName»);
-		};
-		«getNamespaceEnder(serviceInterface)»
-		#endif // «headerGuard»
-		'''	
-	}	
-	
-			
+#include "joynr/PrivateCopyAssign.h"
+«getDllExportIncludeStatement()»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+
+«getNamespaceStarter(serviceInterface)»
+class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
+public:
+	«syncClassName»(
+			QSharedPointer<joynr::system::Address> messagingAddress,
+			joynr::ConnectorFactory* connectorFactory,
+			joynr::IClientCache* cache,
+			const QString& domain,
+			const joynr::MessagingQos& qosSettings,
+			bool cached
+	);
+
+	«produceSyncGetters(serviceInterface, false)»
+	«produceSyncSetters(serviceInterface, false)»
+	«produceSyncMethods(serviceInterface, false)»
+
+	friend class «className»;
+
+private:
+	DISALLOW_COPY_AND_ASSIGN(«syncClassName»);
+};
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+'''
 }
