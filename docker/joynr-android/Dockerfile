@@ -5,13 +5,11 @@ USER root
 # install android sdk
 ###################################################
 RUN yum  install -y \
-#	ncurses-libs.i686 \
-#	zlib.i686 \
-	glibc.i686 \
-	glibc-devel.i686 \
-	libstdc++.i686 \
-	zlib-devel.i686 \
-	ncurses-devel.i686 \
+    glibc.i686 \
+    glibc-devel.i686 \
+    libstdc++.i686 \
+    zlib-devel.i686 \
+    ncurses-devel.i686 \
     && yum clean all
 
 ENV ANDROID_SDK_FILENAME android-sdk_r24.1.2-linux.tgz
@@ -25,10 +23,13 @@ RUN cd /opt \
     && tar -xzf ${ANDROID_SDK_FILENAME} \
     && rm ${ANDROID_SDK_FILENAME}
 
-# set this date to cause android to be updated
-ENV REFRESHED_ANDROID_AT 2015-04-21
-RUN echo y | android update sdk --no-ui -a --filter tools,platform-tools,${ANDROID_API_LEVELS},build-tools-${ANDROID_BUILD_TOOLS_VERSION}
 RUN chown -R root:root ${ANDROID_HOME} \
     && chmod -R 755 ${ANDROID_HOME}
+
+# set this date to cause android to be updated
+ENV REFRESHED_ANDROID_AT 2015-05-13
+RUN echo y | android update sdk --no-ui -a --filter ${ANDROID_API_LEVELS}
+RUN echo y | android update sdk --no-ui -a --filter build-tools-${ANDROID_BUILD_TOOLS_VERSION}
+RUN echo y | android update sdk --no-ui -a --filter platform-tools
 
 RUN date -R > /data/timestamp
