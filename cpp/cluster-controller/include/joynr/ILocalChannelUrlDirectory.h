@@ -20,6 +20,7 @@
 #define ILOCALCHANNELURLDIRECTORY_H_
 #include <QString>
 #include <QSharedPointer>
+#include <functional>
 
 namespace joynr
 {

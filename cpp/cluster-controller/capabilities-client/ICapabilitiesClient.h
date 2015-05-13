@@ -24,6 +24,7 @@
 #include <QString>
 #include <QList>
 #include <QSharedPointer>
+#include <functional>
 
 namespace joynr
 {

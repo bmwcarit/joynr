@@ -25,6 +25,7 @@
 #include <QSemaphore>
 #include <QSharedPointer>
 #include <cassert>
+#include <functional>
 
 namespace joynr
 {

@@ -25,6 +25,7 @@
 #include <QMetaType>
 #include <QSharedPointer>
 #include "joynr/RequestStatus.h"
+#include <functional>
 
 namespace joynr
 {

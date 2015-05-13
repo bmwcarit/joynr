@@ -74,6 +74,8 @@ class FilterTemplate implements BroadcastTemplate {
 			«className»() :
 				IBroadcastFilter("«broadcastName»") { }
 
+			~«className»() {}
+
 			/*
 			* Override this method to provide a filter logic implementation.
 			*/

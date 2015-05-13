@@ -59,6 +59,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 #include <QString>
 #include <QSharedPointer>
+#include <functional>
 
 namespace joynr {
 	class RequestStatus;

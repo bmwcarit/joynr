@@ -43,6 +43,9 @@ public:
     IBroadcastFilter(QString name) : name(name)
     {
     }
+    virtual ~IBroadcastFilter()
+    {
+    }
 
     virtual bool filter(const QList<QVariant>& eventValues,
                         const BroadcastFilterParameters& filterParameters) = 0;
