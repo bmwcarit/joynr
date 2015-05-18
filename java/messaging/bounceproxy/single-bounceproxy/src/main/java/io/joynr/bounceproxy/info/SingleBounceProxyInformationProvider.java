@@ -37,9 +37,9 @@ import com.google.inject.name.Named;
 /**
  * Builds a {@link BounceProxyInformation} object from either a hostpath set as
  * property or from the host path given in the servlet request.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class SingleBounceProxyInformationProvider implements Provider<BounceProxyInformation> {
 
@@ -51,14 +51,17 @@ public class SingleBounceProxyInformationProvider implements Provider<BounceProx
     private URI hostPathFromRequest = null;
 
     @Inject(optional = true)
-    public void setHostPath(@Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath) {
+    public void setHostPath(@Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
+                            HttpServletRequest request) {
         this.hostPath = hostPath;
+
+        String servletContext = request.getServletContext().getContextPath();
 
         if (this.hostPath != null) {
             log.info("Using bounceproxy URL {} from property {}",
                      hostPath,
                      MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
-            bpInfo = new BounceProxyInformation(hostPath, URI.create(hostPath));
+            bpInfo = new BounceProxyInformation(hostPath, URI.create(hostPath + servletContext));
         }
     }
 

@@ -38,17 +38,11 @@ public class SingleBounceProxyHostPathTest {
 
     @Before
     public void setUp() throws Exception {
-        String bounceproxyUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
-        if (bounceproxyUrl == null) {
-            bounceproxyUrl = "http://some-joyn-test-server.io/bounceproxy/";
-        }
-        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, bounceproxyUrl);
-
+        serverUrl = "http://my-public-internet-domain.com:8119";
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, serverUrl);
         server = ServersUtil.startBounceproxy();
-
-        serverUrl = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
-
-        RestAssured.baseURI = serverUrl;
+        String bounceproxyUrlString = System.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
+        RestAssured.baseURI = bounceproxyUrlString;
     }
 
     @After
@@ -69,8 +63,8 @@ public class SingleBounceProxyHostPathTest {
                                        .post("/channels/");
 
         String servletHostpath = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
-        Assert.assertEquals(servletHostpath + "channels/some-channel-Id/", response.header("Location"));
-        Assert.assertEquals(servletHostpath + "channels/some-channel-Id/", response.body().asString());
+        Assert.assertEquals(servletHostpath + "/bounceproxy/channels/some-channel-Id/", response.header("Location"));
+        Assert.assertEquals(servletHostpath + "/bounceproxy/channels/some-channel-Id/", response.body().asString());
     }
 
 }
