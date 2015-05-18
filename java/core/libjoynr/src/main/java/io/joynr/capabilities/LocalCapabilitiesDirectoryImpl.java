@@ -300,11 +300,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (localCapability != null) {
                 capabilityCallback.processCapabilityReceived(localCapability);
             } else {
-                asyncGetGlobalCapabilitity(participantId, discoveryQos.getDiscoveryTimeout(), capabilityCallback);
+                asyncGetGlobalCapabilitity(participantId, discoveryQos, capabilityCallback);
             }
             break;
         case GLOBAL_ONLY:
-            asyncGetGlobalCapabilitity(participantId, discoveryQos.getDiscoveryTimeout(), capabilityCallback);
+            asyncGetGlobalCapabilitity(participantId, discoveryQos, capabilityCallback);
             break;
         default:
             break;
@@ -349,26 +349,34 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private void asyncGetGlobalCapabilitity(final String participantId,
-                                            long discoveryTimeout,
+                                            DiscoveryQos discoveryQos,
                                             final CapabilityCallback capabilitiesCallback) {
 
-        globalCapabilitiesClient.lookup(new Callback<CapabilityInformation>() {
+        CapabilityEntry cachedGlobalCapability = globalCapabilitiesCache.lookup(participantId,
+                                                                                discoveryQos.getCacheMaxAge());
 
-            @Override
-            public void onSuccess(CapabilityInformation capInfo) {
-                CapabilityEntry capEntry = new CapabilityEntryImpl(capInfo);
-                registerIncomingEndpoints(Lists.newArrayList(capEntry));
-                globalCapabilitiesCache.add(capEntry);
+        if (cachedGlobalCapability != null) {
+            capabilitiesCallback.processCapabilityReceived(cachedGlobalCapability);
+        } else {
+            globalCapabilitiesClient.lookup(new Callback<CapabilityInformation>() {
 
-                capabilitiesCallback.processCapabilityReceived(capEntry);
-            }
+                @Override
+                public void onSuccess(CapabilityInformation capInfo) {
+                    CapabilityEntry capEntry = new CapabilityEntryImpl(capInfo);
+                    registerIncomingEndpoints(Lists.newArrayList(capEntry));
+                    globalCapabilitiesCache.add(capEntry);
 
-            @Override
-            public void onFailure(JoynrRuntimeException exception) {
-                capabilitiesCallback.onError(exception);
+                    capabilitiesCallback.processCapabilityReceived(capEntry);
+                }
 
-            }
-        }, participantId, discoveryTimeout);
+                @Override
+                public void onFailure(JoynrRuntimeException exception) {
+                    capabilitiesCallback.onError(exception);
+
+                }
+            }, participantId, discoveryQos.getDiscoveryTimeout());
+        }
+
     }
 
     /**
