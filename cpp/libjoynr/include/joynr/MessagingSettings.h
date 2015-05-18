@@ -65,6 +65,15 @@ public:
     static const QString& SETTING_LONGPOLL_TIMEOUT_MS();
     static const QString& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const QString& SETTING_BOUNCEPROXY_TIMEOUT_MS();
+    /**
+     * @brief SETTING_DISCOVERY_MESSAGES_TTL_MS Time-to-live of messages used
+     * in communication between the local discovery service and the discovery
+     * backend service.
+     *
+     * @return the TTL used for discovery messages send to the backend
+     * discovery service.
+     */
+    static const QString& SETTING_DISCOVERY_MESSAGES_TTL_MS();
     static const QString& SETTING_SEND_MESSAGE_MAX_TTL();
 
     static const QString& DEFAULT_MESSAGING_SETTINGS_FILENAME();
@@ -72,6 +81,7 @@ public:
     static qint64 DEFAULT_LONGPOLL_TIMEOUT_MS();
     static qint64 DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
     static qint64 DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
+    static qint64 DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static qint64 DEFAULT_SEND_MESSAGE_MAX_TTL();
 
     BounceProxyUrl getBounceProxyUrl() const;
@@ -117,6 +127,8 @@ public:
     void setHttpConnectTimeout(qint64 timeout_ms);
     qint64 getBounceProxyTimeout() const;
     void setBounceProxyTimeout(qint64 timeout_ms);
+    qint64 getDiscoveryMessagesTtl() const;
+    void setDiscoveryMessagesTtl(qint64 ttl_ms);
     qint64 getSendMsgMaxTtl() const;
     void setSendMsgMaxTtl(qint64 ttl_ms);
 

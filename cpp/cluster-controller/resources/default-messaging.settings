@@ -2,6 +2,9 @@
 bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy/
 
 discovery-directories-domain=com.bmw
+# TTL in msecs of messages used in communication between local discovery service
+# and backend discovery service
+discovery-messages-ttl=40000
 
 channel-url-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
 channel-url-directory-channelid=discoverydirectory_channelid

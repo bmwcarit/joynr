@@ -243,6 +243,18 @@ qint64 MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
     return value;
 }
 
+const QString& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
+{
+    static const QString value("messaging/discovery-messages-ttl");
+    return value;
+}
+
+qint64 MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
+{
+    static const qint64 value(40 * 1000); // 40 seconds
+    return value;
+}
+
 const QString& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
 {
     static const QString value("messaging/max-send-ttl");
@@ -420,6 +432,16 @@ void MessagingSettings::setBounceProxyTimeout(qint64 timeout_ms)
     settings.setValue(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
 }
 
+qint64 MessagingSettings::getDiscoveryMessagesTtl() const
+{
+    return settings.value(SETTING_DISCOVERY_MESSAGES_TTL_MS()).toLongLong();
+}
+
+void MessagingSettings::setDiscoveryMessagesTtl(qint64 ttl_ms)
+{
+    settings.setValue(SETTING_DISCOVERY_MESSAGES_TTL_MS(), ttl_ms);
+}
+
 qint64 MessagingSettings::getSendMsgMaxTtl() const
 {
     return settings.value(SETTING_SEND_MESSAGE_MAX_TTL()).toLongLong();
@@ -489,6 +511,10 @@ void MessagingSettings::checkSettings() const
     if (!settings.contains(SETTING_PERSISTENCE_FILENAME())) {
         settings.setValue(SETTING_PERSISTENCE_FILENAME(), DEFAULT_PERSISTENCE_FILENAME());
     }
+    if (!settings.contains(SETTING_DISCOVERY_MESSAGES_TTL_MS())) {
+        settings.setValue(
+                SETTING_DISCOVERY_MESSAGES_TTL_MS(), DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS());
+    }
 }
 
 void MessagingSettings::printSettings() const
@@ -540,6 +566,10 @@ void MessagingSettings::printSettings() const
     LOG_DEBUG(logger,
               "SETTING: " + SETTING_PERSISTENCE_FILENAME() + " = " +
                       settings.value(SETTING_PERSISTENCE_FILENAME()).toString());
+
+    LOG_DEBUG(logger,
+              "SETTING: " + SETTING_DISCOVERY_MESSAGES_TTL_MS() + " = " +
+                      settings.value(SETTING_DISCOVERY_MESSAGES_TTL_MS()).toString());
 }
 
 } // namespace joynr

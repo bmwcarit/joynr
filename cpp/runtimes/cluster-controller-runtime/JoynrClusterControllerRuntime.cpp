@@ -270,6 +270,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /**
      * Finish initialising Capabilitiesclient by building a Proxy and passing it
      */
+    qint64 discoveryMessagesTtl = messagingSettings->getDiscoveryMessagesTtl();
 
     if (usingRealCapabilitiesClient) {
         ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
@@ -280,7 +281,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
                                                                       // should be available
         QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
-                capabilitiesProxyBuilder->setRuntimeQos(MessagingQos(40000)) // TODO magic values.
+                capabilitiesProxyBuilder->setRuntimeQos(MessagingQos(discoveryMessagesTtl))
                         ->setCached(true)
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
@@ -296,8 +297,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
                                                                   // should be available
     channelUrlDirectoryProxy = QSharedPointer<infrastructure::ChannelUrlDirectoryProxy>(
-            channelUrlDirectoryProxyBuilder->setRuntimeQos(
-                                                     MessagingQos(15000)) // TODO magic values.
+            channelUrlDirectoryProxyBuilder->setRuntimeQos(MessagingQos(discoveryMessagesTtl))
                     ->setCached(true)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
