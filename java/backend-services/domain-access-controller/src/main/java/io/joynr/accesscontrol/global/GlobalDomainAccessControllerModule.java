@@ -19,17 +19,20 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.name.Named;
+import io.joynr.accesscontrol.DomainAccessControlProvisioning;
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.accesscontrol.DomainAccessControlStoreEhCache;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.Configuration;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
 
 public class GlobalDomainAccessControllerModule extends AbstractModule {
 
@@ -38,6 +41,7 @@ public class GlobalDomainAccessControllerModule extends AbstractModule {
 
         bind(GlobalDomainAccessControllerAbstractProvider.class).to(GlobalDomainAccessControllerProviderImpl.class);
         bind(DomainAccessControlStore.class).to(DomainAccessControlStoreEhCache.class);
+        bind(DomainAccessControlProvisioning.class).to(StaticDomainAccessControlProvisioning.class);
     }
 
     @Provides

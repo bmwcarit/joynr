@@ -80,7 +80,8 @@ public class LocalDomainAccessControllerTest {
     @Before
     public void setup() {
         cacheManager = CacheManager.create();
-        domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager);
+        domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager,
+                                                                       new DefaultDomainAccessControlProvisioning());
 
         String accessControlDomain = "accessControlDomain";
         when(proxyInvocationHandlerFactoryMock.create(any(String.class),

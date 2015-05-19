@@ -19,14 +19,20 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import com.google.inject.Inject;
 import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
 import io.joynr.accesscontrol.primarykey.UserRoleKey;
-import joynr.infrastructure.Role;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import joynr.infrastructure.ControlEntry;
+import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.MasterAccessControlEntry;
 import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.ControlEntry;
+import joynr.infrastructure.Role;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
@@ -39,12 +45,11 @@ import net.sf.ehcache.search.Direction;
 import net.sf.ehcache.search.Query;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.inject.Inject;
 
 /**
  * Uses EhCache to implement a GlobalDomainAccessStore.
@@ -72,8 +77,18 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Inject
-    public DomainAccessControlStoreEhCache(CacheManager ehCacheManager) {
+    public DomainAccessControlStoreEhCache(CacheManager ehCacheManager,
+                                           DomainAccessControlProvisioning domainAccessControlProvisioning) {
         this.cacheManager = ehCacheManager;
+        Collection<DomainRoleEntry> domainRoleEntries = domainAccessControlProvisioning.getDomainRoleEntries();
+        for (DomainRoleEntry provisionedDomainRoleEntry : domainRoleEntries) {
+            updateDomainRole(provisionedDomainRoleEntry);
+        }
+
+        Collection<MasterAccessControlEntry> masterAccessControlEntries = domainAccessControlProvisioning.getMasterAccessControlEntries();
+        for (MasterAccessControlEntry provisionedMasterAccessControlEntry : masterAccessControlEntries) {
+            updateMasterAccessControlEntry(provisionedMasterAccessControlEntry);
+        }
     }
 
     @Override

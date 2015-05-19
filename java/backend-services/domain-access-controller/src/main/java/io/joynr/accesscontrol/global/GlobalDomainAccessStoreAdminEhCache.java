@@ -19,20 +19,24 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import io.joynr.accesscontrol.DomainAccessControlProvisioning;
 import io.joynr.accesscontrol.DomainAccessControlStoreEhCache;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.MasterAccessControlEntry;
 import joynr.infrastructure.OwnerAccessControlEntry;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * Uses EhCache to implement a GlobalDomainAccessStore.
@@ -44,8 +48,9 @@ public class GlobalDomainAccessStoreAdminEhCache extends DomainAccessControlStor
         GlobalDomainAccessStoreAdmin {
 
     @Inject
-    public GlobalDomainAccessStoreAdminEhCache(CacheManager ehCacheManager) {
-        super(ehCacheManager);
+    public GlobalDomainAccessStoreAdminEhCache(CacheManager ehCacheManager,
+                                               DomainAccessControlProvisioning domainAccessControlProvisioning) {
+        super(ehCacheManager, domainAccessControlProvisioning);
     }
 
     @Override
@@ -85,7 +90,7 @@ public class GlobalDomainAccessStoreAdminEhCache extends DomainAccessControlStor
         Map<Object, Element> roleMap = roleCache.getAll(roleCache.getKeys());
         Iterator<Map.Entry<Object, Element>> iterator = roleMap.entrySet().iterator();
         while (iterator.hasNext()) {
-            Element thisElement = (Element) iterator.next().getValue();
+            Element thisElement = iterator.next().getValue();
             DomainRoleEntry objectValue = getElementValue(thisElement);
             result.add(objectValue);
         }

@@ -19,23 +19,24 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.TrustLevel;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.Permission;
-import net.sf.ehcache.CacheManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import joynr.infrastructure.DomainRoleEntry;
+import joynr.infrastructure.MasterAccessControlEntry;
+import joynr.infrastructure.OwnerAccessControlEntry;
+import joynr.infrastructure.Permission;
+import joynr.infrastructure.Role;
+import joynr.infrastructure.TrustLevel;
+import net.sf.ehcache.CacheManager;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class DomainAccessControlStoreTest {
 
@@ -57,7 +58,7 @@ public class DomainAccessControlStoreTest {
     @BeforeClass
     public static void setupTestSuite() {
         cacheManager = CacheManager.create();
-        store = new DomainAccessControlStoreEhCache(cacheManager);
+        store = new DomainAccessControlStoreEhCache(cacheManager, new DefaultDomainAccessControlProvisioning());
     }
 
     @Before
