@@ -42,6 +42,7 @@ file(
 file(
     GLOB_RECURSE JoynrClusterController_PRIVATE_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "access-control/*.h"
     "capabilities-client/*.h"
     "http-communication-manager/*.h"
     "httpnetworking/*.h"
@@ -62,6 +63,7 @@ set(
 file(
     GLOB JoynrClusterController_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "access-control/*.cpp"
     "capabilities-client/*.cpp"
     "http-communication-manager/*.cpp"
     "httpnetworking/*.cpp"
@@ -100,6 +102,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
+        Qt5::Sql
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)

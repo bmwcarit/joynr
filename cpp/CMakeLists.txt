@@ -144,6 +144,11 @@ message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
 include_directories(
     SYSTEM ${Qt5Core_INCLUDE_DIRS} ${Qt5WebSockets_INCLUDE_DIRS}
 )
+find_package(Qt5Sql REQUIRED)
+message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
+message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
+message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
+message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
 
 message(STATUS "############ Import: cURL ############")
 if(${WIN32})
