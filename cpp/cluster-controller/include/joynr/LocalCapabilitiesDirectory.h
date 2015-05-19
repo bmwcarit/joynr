@@ -151,6 +151,22 @@ public:
     // inherited method from joynr::system::DiscoveryProvider
     virtual void remove(joynr::RequestStatus& joynrInternalStatus, QString participantId);
 
+    /*
+     * Objects that wish to receive provider register/unregister events can attach
+     * themselves as observers
+     */
+    class IProviderRegistrationObserver
+    {
+    public:
+        virtual ~IProviderRegistrationObserver()
+        {
+        }
+        virtual void onProviderAdd(const system::DiscoveryEntry& discoveryEntry) = 0;
+        virtual void onProviderRemove(const system::DiscoveryEntry& discoveryEntry) = 0;
+    };
+
+    void attach(QSharedPointer<IProviderRegistrationObserver> observer);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
@@ -204,6 +220,10 @@ private:
 
     QList<types::CapabilityInformation> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
+    QList<QSharedPointer<IProviderRegistrationObserver>> observers;
+
+    void informObserversOnAdd(const system::DiscoveryEntry& discoveryEntry);
+    void informObserversOnRemove(const system::DiscoveryEntry& discoveryEntry);
 };
 
 // NOTE: This future is used to convert the synchronous call of the middleware

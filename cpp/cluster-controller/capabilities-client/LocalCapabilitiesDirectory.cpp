@@ -39,7 +39,7 @@ namespace joynr
 using namespace joynr_logging;
 
 Logger* LocalCapabilitiesDirectory::logger =
-        Logging::getInstance()->getLogger("MSG", "LocalCapabilitiesClient");
+        Logging::getInstance()->getLogger("MSG", "LocalCapabilitiesDirectory");
 
 const qint64& LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ()
 {
@@ -71,7 +71,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           interfaceAddress2LocalCapabilities(),
           participantId2LocalCapability(),
           registeredGlobalCapabilities(),
-          messageRouter(messageRouter)
+          messageRouter(messageRouter),
+          observers()
 {
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
@@ -123,6 +124,9 @@ void LocalCapabilitiesDirectory::add(joynr::system::DiscoveryEntry& discoveryEnt
     // register locally
     this->insertInCache(discoveryEntry, isGlobal, true, isGlobal);
 
+    // Inform observers
+    informObserversOnAdd(discoveryEntry);
+
     // register globally
     if (isGlobal) {
         types::CapabilityInformation capInfo(discoveryEntry.getDomain(),
@@ -147,6 +151,9 @@ void LocalCapabilitiesDirectory::remove(const QString& domain,
     QList<CapabilityEntry> entries =
             interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
     QList<QString> participantIdsToRemove;
+
+    system::DiscoveryEntry discoveryEntry;
+
     for (int i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
@@ -163,6 +170,9 @@ void LocalCapabilitiesDirectory::remove(const QString& domain,
         }
         participantId2LocalCapability.remove(entry.getParticipantId(), entry);
         interfaceAddress2LocalCapabilities.remove(InterfaceAddress(domain, interfaceName), entry);
+
+        convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
+        informObserversOnRemove(discoveryEntry);
     }
     if (!participantIdsToRemove.isEmpty()) {
         capabilitiesClient->remove(participantIdsToRemove);
@@ -180,6 +190,10 @@ void LocalCapabilitiesDirectory::remove(const QString& participantId)
         interfaceAddress2GlobalCapabilities.remove(
                 InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
     }
+
+    system::DiscoveryEntry discoveryEntry;
+    convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
+    informObserversOnRemove(discoveryEntry);
 
     capabilitiesClient->remove(participantId);
 }
@@ -411,11 +425,20 @@ void LocalCapabilitiesDirectory::lookup(joynr::RequestStatus& joynrInternalStatu
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
     QList<CapabilityEntry> capabilities = future->get();
-    assert(capabilities.size() <= 1);
-    if (capabilities.size() <= 1) {
-        convertCapabilityEntryIntoDiscoveryEntry(capabilities.first(), result);
+    if (capabilities.size() > 1) {
+        LOG_ERROR(logger,
+                  QString("participantId %1 has more than 1 capability entry:\n %2\n %3")
+                          .arg(participantId)
+                          .arg(capabilities[0].toString())
+                          .arg(capabilities[1].toString()));
     }
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+    if (!capabilities.isEmpty()) {
+        convertCapabilityEntryIntoDiscoveryEntry(capabilities.first(), result);
+        joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+    } else {
+        joynrInternalStatus.setCode(joynr::RequestStatusCode::ERROR);
+    }
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -424,6 +447,12 @@ void LocalCapabilitiesDirectory::remove(joynr::RequestStatus& joynrInternalStatu
 {
     remove(participantId);
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+}
+
+void LocalCapabilitiesDirectory::attach(
+        QSharedPointer<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
+{
+    observers.append(observer);
 }
 
 /**
@@ -537,6 +566,21 @@ void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
         joynr::system::DiscoveryEntry discoveryEntry;
         convertCapabilityEntryIntoDiscoveryEntry(capabilityEntry, discoveryEntry);
         discoveryEntries.append(discoveryEntry);
+    }
+}
+
+void LocalCapabilitiesDirectory::informObserversOnAdd(const system::DiscoveryEntry& discoveryEntry)
+{
+    foreach (const QSharedPointer<IProviderRegistrationObserver>& observer, observers) {
+        observer->onProviderAdd(discoveryEntry);
+    }
+}
+
+void LocalCapabilitiesDirectory::informObserversOnRemove(
+        const system::DiscoveryEntry& discoveryEntry)
+{
+    foreach (const QSharedPointer<IProviderRegistrationObserver>& observer, observers) {
+        observer->onProviderRemove(discoveryEntry);
     }
 }
 
