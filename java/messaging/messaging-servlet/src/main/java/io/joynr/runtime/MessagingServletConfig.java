@@ -19,16 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Injector;
-import com.google.inject.Scopes;
-import com.google.inject.Guice;
-import com.google.inject.servlet.GuiceServletContextListener;
-import com.google.inject.util.Modules;
-import com.sun.jersey.guice.JerseyServletModule;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
@@ -39,34 +29,46 @@ import io.joynr.messaging.MessagingService;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
 import io.joynr.servlet.JoynrWebServlet;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServlet;
-import java.util.Properties;
-import java.util.Set;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Scopes;
+import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.util.Modules;
+import com.sun.jersey.guice.JerseyServletModule;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
 /**
- * 
+ *
  * http://code.google.com/p/google-guice/wiki/ServletModule
- * 
+ *
  * To use this class to configue guice binding within jersey, add it as a listener in the web.xml file
- * 
+ *
  * <pre>
  * {@code
- * 
+ *
  *  <listener>
  *      <listener-class>io.joynr.runtime.MessagingServletConfig</listener-class>
  *  </listener>
  * }
  * </pre>
- * 
- * 
+ *
+ *
  */
 
 public class MessagingServletConfig extends GuiceServletContextListener {
@@ -120,7 +122,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // * all plugin application classes implementing the JoynApplication interface
         // * all servlets annotated as WebServlet
         // * the class implementing JoynrInjectorFactory (should be only one)
-        String[] appPackages = mergeAppPackages(properties);
+        Object[] appPackages = mergeAppPackages(properties);
 
         // Add Java system properties (set with -D)
         properties.putAll(System.getProperties());
@@ -129,7 +131,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // Maven,
         // then work on the previously scanned data
         // see: https://code.google.com/p/reflections/wiki/UseCases
-        Reflections reflections = new Reflections("io.joynr.runtime", "io.joynr.discovery", appPackages);
+        Reflections reflections = new Reflections("io.joynr.runtime", appPackages);
         final Set<Class<?>> classesAnnotatedWithWebServlet = reflections.getTypesAnnotatedWith(JoynrWebServlet.class);
         final Set<Class<?>> classesAnnotatedWithProvider = reflections.getTypesAnnotatedWith(javax.ws.rs.ext.Provider.class);
 
@@ -224,7 +226,6 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         String[] appPackages = appPackagesSetting != null ? appPackagesSetting.split(";") : null;
         String[] systemAppPackages = systemAppPackagesSetting != null ? systemAppPackagesSetting.split(";") : null;
         appPackages = (String[]) ArrayUtils.addAll(appPackages, systemAppPackages);
-        System.getProperties().setProperty(IO_JOYNR_APPS_PACKAGES, StringUtils.join(appPackages, ';'));
         return appPackages;
     }
 
