@@ -49,8 +49,6 @@ namespace joynr_logging
 {
 class Logger;
 }
-class DelayedScheduler;
-class ThreadPoolDelayedScheduler;
 class MessageQueueCleanerRunnable;
 namespace system
 {
@@ -74,13 +72,11 @@ class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider
 {
 public:
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                  int messageSendRetryInterval = 500,
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
                   QSharedPointer<joynr::system::Address> incomingAddress,
-                  int messageSendRetryInterval = 500,
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
@@ -140,7 +136,6 @@ private:
     Directory<QString, joynr::system::Address> routingTable;
     QMutex routingTableMutex;
     QThreadPool threadPool;
-    ThreadPoolDelayedScheduler* delayedScheduler;
     joynr::system::RoutingProxy* parentRouter;
     QSharedPointer<joynr::system::Address> parentAddress;
     QSharedPointer<joynr::system::Address> incomingAddress;
@@ -151,7 +146,7 @@ private:
     QSet<QString>* runningParentResolves;
     mutable QMutex parentResolveMutex;
 
-    void init(int messageSendRetryInterval, int maxThreads);
+    void init(int maxThreads);
     void addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId);
 
     void sendMessage(const JoynrMessage& message,

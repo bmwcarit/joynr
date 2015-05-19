@@ -21,7 +21,6 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Directory.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/DelayedScheduler.h"
 #include "joynr/system/Address.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatusCode.h"
@@ -44,14 +43,12 @@ MessageRouter::~MessageRouter()
     if (parentRouter != NULL) {
         delete parentRouter;
     }
-    delete delayedScheduler;
     delete messagingStubFactory;
     delete messageQueue;
     delete runningParentResolves;
 }
 
 MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                             int messageSendRetryInterval,
                              int maxThreads,
                              MessageQueue* messageQueue)
         : joynr::system::RoutingProvider(joynr::types::ProviderQos(
@@ -65,7 +62,6 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           routingTable(QString("MessageRouter-RoutingTable")),
           routingTableMutex(),
           threadPool(),
-          delayedScheduler(),
           parentRouter(NULL),
           parentAddress(NULL),
           incomingAddress(),
@@ -74,12 +70,11 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           runningParentResolves(new QSet<QString>()),
           parentResolveMutex()
 {
-    init(messageSendRetryInterval, maxThreads);
+    init(maxThreads);
 }
 
 MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
                              QSharedPointer<joynr::system::Address> incomingAddress,
-                             int messageSendRetryInterval,
                              int maxThreads,
                              MessageQueue* messageQueue)
         : joynr::system::RoutingProvider(joynr::types::ProviderQos(
@@ -93,7 +88,6 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           routingTable(QString("MessageRouter-RoutingTable")),
           routingTableMutex(),
           threadPool(),
-          delayedScheduler(),
           parentRouter(NULL),
           parentAddress(NULL),
           incomingAddress(incomingAddress),
@@ -102,14 +96,12 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           runningParentResolves(new QSet<QString>()),
           parentResolveMutex()
 {
-    init(messageSendRetryInterval, maxThreads);
+    init(maxThreads);
 }
 
-void MessageRouter::init(int messageSendRetryInterval, int maxThreads)
+void MessageRouter::init(int maxThreads)
 {
     threadPool.setMaxThreadCount(maxThreads);
-    delayedScheduler = new ThreadPoolDelayedScheduler(
-            threadPool, QString("MessageRouter-DelayedScheduler"), messageSendRetryInterval);
     threadPool.start(messageQueueCleanerRunnable);
 }
 
