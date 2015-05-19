@@ -30,6 +30,7 @@ This project has dependencies to:
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
+  Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   grizzly-framework under CDDL+GPL
   grizzly-http under CDDL+GPL
@@ -81,5 +82,5 @@ This project has dependencies to:
   Reflections under WTFPL
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 
