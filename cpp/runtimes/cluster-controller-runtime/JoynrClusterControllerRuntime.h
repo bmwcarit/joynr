@@ -63,6 +63,7 @@ class MessagingSettings;
 class Dispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
+class IPlatformSecurityManager;
 
 namespace infrastructure
 {
@@ -146,6 +147,7 @@ protected:
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
     WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
+    IPlatformSecurityManager* securityManager;
 
     static joynr_logging::Logger* logger;
 

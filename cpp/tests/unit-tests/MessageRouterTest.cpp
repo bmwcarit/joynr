@@ -37,7 +37,7 @@ public:
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
         messageQueue(new MessageQueue()),
-        messageRouter(new MessageRouter(new MessagingStubFactory(), 6, messageQueue)),
+        messageRouter(new MessageRouter(new MessagingStubFactory(), NULL, 6, messageQueue)),
         joynrMessage()
     {
         // provision global capabilities directory

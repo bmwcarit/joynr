@@ -45,6 +45,7 @@ namespace joynr
 
 class IMessagingStubFactory;
 class JoynrMessagingEndpointAddress;
+class IPlatformSecurityManager;
 namespace joynr_logging
 {
 class Logger;
@@ -72,6 +73,7 @@ class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider
 {
 public:
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
+                  IPlatformSecurityManager* securityManager,
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
@@ -144,6 +146,7 @@ private:
     MessageQueue* messageQueue;
     MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
     QSet<QString>* runningParentResolves;
+    IPlatformSecurityManager* securityManager;
     mutable QMutex parentResolveMutex;
 
     void init(int maxThreads);

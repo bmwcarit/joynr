@@ -25,6 +25,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 #include <QMutexLocker>
 
@@ -46,9 +47,11 @@ MessageRouter::~MessageRouter()
     delete messagingStubFactory;
     delete messageQueue;
     delete runningParentResolves;
+    delete securityManager;
 }
 
 MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
+                             IPlatformSecurityManager* securityManager,
                              int maxThreads,
                              MessageQueue* messageQueue)
         : joynr::system::RoutingProvider(joynr::types::ProviderQos(
@@ -68,6 +71,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
           runningParentResolves(new QSet<QString>()),
+          securityManager(securityManager),
           parentResolveMutex()
 {
     init(maxThreads);
@@ -94,6 +98,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
           runningParentResolves(new QSet<QString>()),
+          securityManager(NULL),
           parentResolveMutex()
 {
     init(maxThreads);
@@ -145,6 +150,13 @@ void MessageRouter::route(const JoynrMessage& message)
         LOG_WARN(logger,
                  QString("Received expired message. Dropping the message (ID: %1).")
                          .arg(message.getHeaderMessageId()));
+        return;
+    }
+
+    // Validate the message if possible
+    if (securityManager != NULL && !securityManager->validate(message)) {
+        LOG_ERROR(logger,
+                  QString("messageId %1 failed validation").arg(message.getHeaderMessageId()));
         return;
     }
 

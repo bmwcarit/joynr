@@ -51,6 +51,7 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
 #include <QCoreApplication>
 #include <QThread>
@@ -102,7 +103,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           ccDbusMessageRouterAdapter(NULL),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*settings),
-          wsCcMessagingSkeleton(NULL)
+          wsCcMessagingSkeleton(NULL),
+          securityManager(NULL)
 {
     /*
       * WARNING - metatypes are not registered yet here.
@@ -130,6 +132,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     libjoynrSettings->printSettings();
     wsSettings.printSettings();
 
+    // Initialise security manager
+    securityManager = new DummyPlatformSecurityManager();
+
     // CAREFUL: the factory creates an old style dispatcher, not the new one!
 
     inProcessDispatcher = new InProcessDispatcher();
@@ -141,7 +146,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
     // init message router
-    messageRouter = QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory));
+    messageRouter =
+            QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory, securityManager));
     // provision global capabilities directory
     QSharedPointer<joynr::system::Address> globalCapabilitiesDirectoryAddress(
             new system::ChannelAddress(messagingSettings->getCapabilitiesDirectoryChannelId()));

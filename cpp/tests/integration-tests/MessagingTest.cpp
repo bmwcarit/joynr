@@ -82,7 +82,7 @@ public:
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(new MessagingStubFactory()),
-        messageRouter(new MessageRouter(messagingStubFactory))
+        messageRouter(new MessageRouter(messagingStubFactory, NULL))
     {
         // provision global capabilities directory
         QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
