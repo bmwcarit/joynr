@@ -39,6 +39,9 @@
 namespace joynr
 {
 
+/**
+ * Class that handles provider registration/deregistration
+ */
 class JOYNR_EXPORT CapabilitiesRegistrar
 {
 public:
@@ -55,9 +58,11 @@ public:
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
+        QString interfaceName = T::getInterfaceName();
+
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId = participantIdStorage->getProviderParticipantId(
-                domain, T::getInterfaceName(), authenticationToken);
+                domain, interfaceName, authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
@@ -69,11 +74,8 @@ public:
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
         connections.append(joynr::system::CommunicationMiddleware::JOYNR);
         joynr::RequestStatus status;
-        joynr::system::DiscoveryEntry entry(domain,
-                                            T::getInterfaceName(),
-                                            participantId,
-                                            provider->getProviderQos(),
-                                            connections);
+        joynr::system::DiscoveryEntry entry(
+                domain, interfaceName, participantId, provider->getProviderQos(), connections);
         discoveryProxy.add(status, entry);
         if (!status.successful()) {
             LOG_ERROR(logger,
@@ -82,7 +84,7 @@ public:
                               "to discovery. Status code: %4.")
                               .arg(participantId)
                               .arg(domain)
-                              .arg(T::getInterfaceName())
+                              .arg(interfaceName)
                               .arg(status.getCode().toString()));
         }
 
@@ -99,9 +101,11 @@ public:
     {
         Q_UNUSED(provider)
 
+        QString interfaceName = T::getInterfaceName();
+
         // Get the provider participant Id - the persisted provider Id has priority
         QString participantId = participantIdStorage->getProviderParticipantId(
-                domain, T::getInterfaceName(), authenticationToken);
+                domain, interfaceName, authenticationToken);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
@@ -119,7 +123,7 @@ public:
                               "to discovery. Status code: %4.")
                               .arg(participantId)
                               .arg(domain)
-                              .arg(T::getInterfaceName())
+                              .arg(interfaceName)
                               .arg(status.getCode().toString()));
         }
 
@@ -129,6 +133,7 @@ public:
                       QString("Unable to remove next hop (participant ID: %1) from message router.")
                               .arg(participantId));
         }
+
         return participantId;
     }
 
