@@ -71,13 +71,12 @@ public:
     }
 
     void SetUp() {
-        runtime->startMessaging();
-        runtime->waitForChannelCreation();
+        runtime->start();
     }
 
     void TearDown() {
-        runtime->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime->stopMessaging();
+        bool deleteChannel = true;
+        runtime->stop(deleteChannel);
     }
 
     ~CapabilitiesClientTest(){
@@ -90,9 +89,6 @@ private:
 };
 
 TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    LOG_TRACE(logger, "Waiting for Channel creation");
-    runtime->waitForChannelCreation();
-    LOG_TRACE(logger, "Finished Waiting for Channel creation");
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(

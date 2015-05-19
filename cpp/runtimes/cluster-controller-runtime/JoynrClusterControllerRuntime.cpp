@@ -402,10 +402,7 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* 
     QCoreApplication* coreApplication = new QCoreApplication(argc, argv);
     JoynrClusterControllerRuntime* runtime =
             new JoynrClusterControllerRuntime(coreApplication, settings);
-    runtime->startMessaging();
-    runtime->waitForChannelCreation();
-    runtime->registerRoutingProvider();
-    runtime->registerDiscoveryProvider();
+    runtime->start();
     return runtime;
 }
 
@@ -413,6 +410,22 @@ void JoynrClusterControllerRuntime::unregisterCapability(QString participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(participantId);
+}
+
+void JoynrClusterControllerRuntime::start()
+{
+    startMessaging();
+    waitForChannelCreation();
+    registerRoutingProvider();
+    registerDiscoveryProvider();
+}
+
+void JoynrClusterControllerRuntime::stop(bool deleteChannel)
+{
+    if (deleteChannel) {
+        this->deleteChannel();
+    }
+    stopMessaging();
 }
 
 void JoynrClusterControllerRuntime::waitForChannelCreation()

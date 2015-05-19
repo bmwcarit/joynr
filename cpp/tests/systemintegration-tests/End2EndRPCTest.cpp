@@ -64,14 +64,13 @@ public:
     }
     // Sets up the test fixture.
     void SetUp(){
-       runtime->startMessaging();
-       runtime->waitForChannelCreation();
+       runtime->start();
     }
 
     // Tears down the test fixture.
     void TearDown(){
-        runtime->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime->stopMessaging();
+        bool deleteChannel = true;
+        runtime->stop(deleteChannel);
 
         // Remove participant id persistence file
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());

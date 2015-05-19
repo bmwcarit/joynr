@@ -84,10 +84,14 @@ public:
     virtual ~JoynrClusterControllerRuntime();
 
     void unregisterCapability(QString participantId);
+    void start();
+    void stop(bool deleteChannel = false);
 
+    void runForever();
+
+    // Functions used by integration tests
     void startMessaging();
     void stopMessaging();
-    void runForever();
     void waitForChannelCreation();
     void deleteChannel();
     void registerRoutingProvider();

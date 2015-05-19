@@ -113,17 +113,14 @@ public:
     }
 
     void SetUp() {
-        runtime1->startMessaging();
-        runtime1->waitForChannelCreation();
-        runtime2->startMessaging();
-        runtime2->waitForChannelCreation();
+        runtime1->start();
+        runtime2->start();
     }
 
     void TearDown() {
-        runtime1->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime2->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime1->stopMessaging();
-        runtime2->stopMessaging();
+        bool deleteChannel = true;
+        runtime1->stop(deleteChannel);
+        runtime2->stop(deleteChannel);
 
         // Delete the persisted participant ids so that each test uses different participant ids
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
