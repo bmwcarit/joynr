@@ -50,6 +50,7 @@ public:
             new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
+        joynrMessage.setHeaderExpiryDate(QDateTime::currentDateTimeUtc().addMSecs(100));
     }
 
     ~MessageRouterTest() {

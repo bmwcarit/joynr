@@ -141,14 +141,12 @@ bool MessageRouter::isChildMessageRouter()
 void MessageRouter::route(const JoynrMessage& message)
 {
     assert(messagingStubFactory != NULL);
-    // neither JoynrMessage nor MessagingQos give a decaytime, so it doesn't make sense to check for
-    // a passed TTL. The TTL itself is only relative, not absolute, so it cannot be used here.
-    /*
-    if (QDateTime::currentMSecsSinceEpoch() >  qos.getRoundTripTtl_ms()) {
-        LOG_DEBUG(logger, "received an expired Message. Dropping the message");
+    if (QDateTime::currentDateTimeUtc() > message.getHeaderExpiryDate()) {
+        LOG_WARN(logger,
+                 QString("Received expired message. Dropping the message (ID: %1).")
+                         .arg(message.getHeaderMessageId()));
         return;
     }
-    */
 
     // search for the destination address
     const QString destinationPartId = message.getHeaderTo();
