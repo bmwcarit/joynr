@@ -67,7 +67,7 @@ private:
 
     static joynr_logging::Logger* logger;
 
-    class InternalConsumerPermissionCallback;
+    class LdacConsumerPermissionCallback;
 };
 
 } // namespace joynr

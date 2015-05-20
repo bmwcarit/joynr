@@ -46,13 +46,13 @@ Logger* AccessController::logger = Logging::getInstance()->getLogger("MSG", "Acc
 
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
-class AccessController::InternalConsumerPermissionCallback
+class AccessController::LdacConsumerPermissionCallback
         : public LocalDomainAccessController::IGetConsumerPermissionCallback
 {
 
 public:
-    InternalConsumerPermissionCallback(
-            AccessController& parent,
+    LdacConsumerPermissionCallback(
+            AccessController& owningAccessController,
             const JoynrMessage& message,
             const QString& domain,
             const QString& interfaceName,
@@ -64,7 +64,7 @@ public:
     void operationNeeded();
 
 private:
-    AccessController& parent;
+    AccessController& owningAccessController;
     JoynrMessage message;
     QString domain;
     QString interfaceName;
@@ -74,14 +74,14 @@ private:
     bool convertToBool(Permission::Enum permission);
 };
 
-AccessController::InternalConsumerPermissionCallback::InternalConsumerPermissionCallback(
+AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
         AccessController& parent,
         const JoynrMessage& message,
         const QString& domain,
         const QString& interfaceName,
         TrustLevel::Enum trustlevel,
         QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback)
-        : parent(parent),
+        : owningAccessController(parent),
           message(message),
           domain(domain),
           interfaceName(interfaceName),
@@ -90,7 +90,7 @@ AccessController::InternalConsumerPermissionCallback::InternalConsumerPermission
 {
 }
 
-void AccessController::InternalConsumerPermissionCallback::consumerPermission(
+void AccessController::LdacConsumerPermissionCallback::consumerPermission(
         Permission::Enum permission)
 {
     bool hasPermission = convertToBool(permission);
@@ -105,7 +105,7 @@ void AccessController::InternalConsumerPermissionCallback::consumerPermission(
     callback->hasConsumerPermission(hasPermission);
 }
 
-void AccessController::InternalConsumerPermissionCallback::operationNeeded()
+void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
     // Deserialize the message to get the operation
     QByteArray jsonRequest = message.getPayload();
@@ -120,8 +120,9 @@ void AccessController::InternalConsumerPermissionCallback::operationNeeded()
     QString operation = request->getMethodName();
 
     // Get the permission for given operation
-    Permission::Enum permission = parent.localDomainAccessController.getConsumerPermission(
-            message.getHeaderCreatorUserId(), domain, interfaceName, operation, trustlevel);
+    Permission::Enum permission =
+            owningAccessController.localDomainAccessController.getConsumerPermission(
+                    message.getHeaderCreatorUserId(), domain, interfaceName, operation, trustlevel);
 
     bool hasPermission = convertToBool(permission);
 
@@ -137,8 +138,7 @@ void AccessController::InternalConsumerPermissionCallback::operationNeeded()
     callback->hasConsumerPermission(hasPermission);
 }
 
-bool AccessController::InternalConsumerPermissionCallback::convertToBool(
-        Permission::Enum permission)
+bool AccessController::LdacConsumerPermissionCallback::convertToBool(Permission::Enum permission)
 {
     switch (permission) {
     case Permission::YES:
@@ -187,12 +187,12 @@ void AccessController::hasConsumerPermission(
 
     // Create a callback object
     QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> internalCallback(
-            new InternalConsumerPermissionCallback(*this,
-                                                   message,
-                                                   discoveryEntry.getDomain(),
-                                                   discoveryEntry.getInterfaceName(),
-                                                   TrustLevel::HIGH,
-                                                   callback));
+            new LdacConsumerPermissionCallback(*this,
+                                               message,
+                                               discoveryEntry.getDomain(),
+                                               discoveryEntry.getInterfaceName(),
+                                               TrustLevel::HIGH,
+                                               callback));
 
     // Try to determine permission without expensive message deserialization
     // For now TrustLevel::HIGH is assumed.
