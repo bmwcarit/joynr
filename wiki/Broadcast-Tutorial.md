@@ -54,7 +54,7 @@ discovered.
 ...
 <**
 	@description: Event that is fired when new radio stations
-		are discovered. The event includes information obout
+		are discovered. The event includes information about
 		the discovered station and the geo position where the
 		station was discovered.
 		The interface provider offers a geocast and a traffic

@@ -31,7 +31,7 @@ sample code for more information.
 
 ## Java Development
 
-* JDK 1.7
+* JDK 1.8
 * Maven 3.2
 
 NOTE: we implement in Eclipse with the following plugins:
@@ -54,7 +54,7 @@ to regenerate the interfaces etc.
 * CMake (2.8.12)
 * Qt SDK (5.3.2, http://qt-project.org/downloads)
 * cURL (7.32.0)
-* GNU (4.8.3)
+* GCC (4.9)
 
 Versions mentioned in parentheses are currently used to build joynr by our continuous integration
 system and therefore verified to be working. However, also slightly different versions of these
@@ -126,7 +126,7 @@ Centralized directory to discover providers for a given domain and interface.
 Run the discovery directories locally along with the bounceproxy:
 
 1. Use maven to build and install the whole joynr project from the root directory
-1. start directories and bounceproxy on default jetty port 8080
+1. start directories **and** bounceproxy on default jetty port 8080
 
 ```bash
 <JOYNR>$ mvn clean install -DskipTests
