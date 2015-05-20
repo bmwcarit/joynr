@@ -22,6 +22,8 @@
 
 #include "joynr/infrastructure/TrustLevel.h"
 
+#include <QSharedPointer>
+
 QT_BEGIN_NAMESPACE
 class QString;
 QT_END_NAMESPACE
@@ -64,7 +66,7 @@ public:
      * Does the given request message have permission to reach the provider?
      *
      * \param message The message to check
-     * \return true if the message has permission, false otherwise
+     * \param callback An object that will be called back with the result
      */
     virtual void hasConsumerPermission(const JoynrMessage& message,
                                        QSharedPointer<IHasConsumerPermissionCallback> callback) = 0;

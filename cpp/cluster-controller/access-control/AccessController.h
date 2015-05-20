@@ -28,10 +28,13 @@
 
 namespace joynr
 {
-
 class LocalCapabilitiesDirectory;
 class LocalDomainAccessController;
-class CapabilityEntry;
+
+namespace system
+{
+class DiscoveryEntry;
+}
 
 namespace joynr_logging
 {
@@ -60,14 +63,17 @@ public:
                                        const QString& interfaceName);
 
 private:
+    class LdacConsumerPermissionCallback;
+    class ProviderRegistrationObserver;
+
     DISALLOW_COPY_AND_ASSIGN(AccessController);
+    bool needsPermissionCheck(const JoynrMessage& message);
 
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;
+    QSharedPointer<ProviderRegistrationObserver> providerRegistrationObserver;
 
     static joynr_logging::Logger* logger;
-
-    class LdacConsumerPermissionCallback;
 };
 
 } // namespace joynr

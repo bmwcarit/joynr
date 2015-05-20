@@ -165,7 +165,8 @@ public:
         virtual void onProviderRemove(const system::DiscoveryEntry& discoveryEntry) = 0;
     };
 
-    void attach(QSharedPointer<IProviderRegistrationObserver> observer);
+    void addProviderRegistrationObserver(QSharedPointer<IProviderRegistrationObserver> observer);
+    void removeProviderRegistrationObserver(QSharedPointer<IProviderRegistrationObserver> observer);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);

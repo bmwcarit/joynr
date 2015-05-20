@@ -449,10 +449,16 @@ void LocalCapabilitiesDirectory::remove(joynr::RequestStatus& joynrInternalStatu
     joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 }
 
-void LocalCapabilitiesDirectory::attach(
+void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
         QSharedPointer<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
     observers.append(observer);
+}
+
+void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
+        QSharedPointer<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
+{
+    observers.removeAll(observer);
 }
 
 /**

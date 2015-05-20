@@ -20,13 +20,16 @@
 #include "AccessController.h"
 
 #include "LocalDomainAccessController.h"
+#include "joynr/LocalCapabilitiesDirectory.h"
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/system/DiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Request.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/system/Address.h"
 #include "joynr/joynrlogging.h"
 
 #include <QByteArray>
@@ -107,17 +110,40 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 
 void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
+
+    QString operation;
+    QString messageType = message.getType();
+
     // Deserialize the message to get the operation
     QByteArray jsonRequest = message.getPayload();
-    QScopedPointer<Request> request(JsonSerializer::deserialize<Request>(jsonRequest));
 
-    if (request.isNull()) {
+    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
+
+        QScopedPointer<Request> request(JsonSerializer::deserialize<Request>(jsonRequest));
+        if (!request.isNull()) {
+            operation = request->getMethodName();
+        }
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+
+        QScopedPointer<SubscriptionRequest> request(
+                JsonSerializer::deserialize<SubscriptionRequest>(jsonRequest));
+        if (!request.isNull()) {
+            operation = request->getSubscribeToName();
+        }
+    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+
+        QScopedPointer<BroadcastSubscriptionRequest> request(
+                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonRequest));
+        if (!request.isNull()) {
+            operation = request->getSubscribeToName();
+        }
+    }
+
+    if (operation.isEmpty()) {
         LOG_ERROR(logger, "Could not deserialize request");
         callback->hasConsumerPermission(false);
         return;
     }
-
-    QString operation = request->getMethodName();
 
     // Get the permission for given operation
     Permission::Enum permission =
@@ -156,22 +182,67 @@ bool AccessController::LdacConsumerPermissionCallback::convertToBool(Permission:
 
 //--------- AccessController ---------------------------------------------------
 
+class AccessController::ProviderRegistrationObserver
+        : public LocalCapabilitiesDirectory::IProviderRegistrationObserver
+{
+public:
+    ProviderRegistrationObserver(LocalDomainAccessController& localDomainAccessController)
+            : localDomainAccessController(localDomainAccessController)
+    {
+    }
+    virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
+    {
+        Q_UNUSED(discoveryEntry)
+        // Ignored
+    }
+
+    virtual void onProviderRemove(const DiscoveryEntry& discoveryEntry)
+    {
+        localDomainAccessController.unregisterProvider(
+                discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
+    }
+
+private:
+    LocalDomainAccessController& localDomainAccessController;
+};
+
 AccessController::AccessController(LocalCapabilitiesDirectory& localCapabilitiesDirectory,
                                    LocalDomainAccessController& localDomainAccessController)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
-          localDomainAccessController(localDomainAccessController)
+          localDomainAccessController(localDomainAccessController),
+          providerRegistrationObserver(
+                  new ProviderRegistrationObserver(localDomainAccessController))
 {
+    localCapabilitiesDirectory.addProviderRegistrationObserver(providerRegistrationObserver);
 }
 
 AccessController::~AccessController()
 {
+    localCapabilitiesDirectory.removeProviderRegistrationObserver(providerRegistrationObserver);
+}
+
+bool AccessController::needsPermissionCheck(const JoynrMessage& message)
+{
+    QString messageType = message.getType();
+    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
+        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
+        // reply messages don't need permission check
+        // they are filtered by request reply ID or subscritpion ID
+        return false;
+    }
+
+    // If this point is reached, checking is required
+    return true;
 }
 
 void AccessController::hasConsumerPermission(
         const JoynrMessage& message,
         QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback)
 {
-    assert(message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
+    if (!needsPermissionCheck(message)) {
+        callback->hasConsumerPermission(true);
+        return;
+    }
 
     // Get the domain and interface of the message destination
     DiscoveryEntry discoveryEntry;
@@ -185,23 +256,25 @@ void AccessController::hasConsumerPermission(
         return;
     }
 
+    QString domain = discoveryEntry.getDomain();
+    QString interfaceName = discoveryEntry.getInterfaceName();
+
+    // TODO: remove this shortcut used for system integration tests
+    if (interfaceName == "tests/test") {
+        callback->hasConsumerPermission(true);
+        return;
+    }
+
     // Create a callback object
-    QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> internalCallback(
-            new LdacConsumerPermissionCallback(*this,
-                                               message,
-                                               discoveryEntry.getDomain(),
-                                               discoveryEntry.getInterfaceName(),
-                                               TrustLevel::HIGH,
-                                               callback));
+    QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
+            new LdacConsumerPermissionCallback(
+                    *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
 
     // Try to determine permission without expensive message deserialization
     // For now TrustLevel::HIGH is assumed.
     QString msgCreatorUid = message.getHeaderCreatorUserId();
-    localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                      discoveryEntry.getDomain(),
-                                                      discoveryEntry.getInterfaceName(),
-                                                      TrustLevel::HIGH,
-                                                      internalCallback);
+    localDomainAccessController.getConsumerPermission(
+            msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
 }
 
 bool AccessController::hasProviderPermission(const QString& userId,
