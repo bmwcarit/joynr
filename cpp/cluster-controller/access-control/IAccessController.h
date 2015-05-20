@@ -85,6 +85,14 @@ public:
                                        infrastructure::TrustLevel::Enum trustLevel,
                                        const QString& domain,
                                        const QString& interfaceName) = 0;
+    /**
+     * @brief addParticipantToWhitelist Adds a participant to the internal
+     * whitelist. Access control to participants on the whitelist is always
+     * granted.
+     *
+     * @param participantId the participant ID to add to the whitelist.
+     */
+    virtual void addParticipantToWhitelist(const QString& participantId) = 0;
 };
 
 } // namespace joynr

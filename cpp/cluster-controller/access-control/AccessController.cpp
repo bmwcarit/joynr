@@ -211,7 +211,8 @@ AccessController::AccessController(LocalCapabilitiesDirectory& localCapabilities
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           localDomainAccessController(localDomainAccessController),
           providerRegistrationObserver(
-                  new ProviderRegistrationObserver(localDomainAccessController))
+                  new ProviderRegistrationObserver(localDomainAccessController)),
+          whitelistParticipantIds()
 {
     localCapabilitiesDirectory.addProviderRegistrationObserver(providerRegistrationObserver);
 }
@@ -221,8 +222,17 @@ AccessController::~AccessController()
     localCapabilitiesDirectory.removeProviderRegistrationObserver(providerRegistrationObserver);
 }
 
+void AccessController::addParticipantToWhitelist(const QString& participantId)
+{
+    whitelistParticipantIds.append(participantId);
+}
+
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 {
+    if (whitelistParticipantIds.contains(message.getHeaderTo())) {
+        return false;
+    }
+
     QString messageType = message.getType();
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
         messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {

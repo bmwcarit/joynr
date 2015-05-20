@@ -25,6 +25,7 @@
 #include "joynr/infrastructure/TrustLevel.h"
 
 #include <QSharedPointer>
+#include <QList>
 
 namespace joynr
 {
@@ -62,6 +63,8 @@ public:
                                        const QString& domain,
                                        const QString& interfaceName);
 
+    virtual void addParticipantToWhitelist(const QString& participantId);
+
 private:
     class LdacConsumerPermissionCallback;
     class ProviderRegistrationObserver;
@@ -72,6 +75,7 @@ private:
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;
     QSharedPointer<ProviderRegistrationObserver> providerRegistrationObserver;
+    QList<QString> whitelistParticipantIds;
 
     static joynr_logging::Logger* logger;
 };
