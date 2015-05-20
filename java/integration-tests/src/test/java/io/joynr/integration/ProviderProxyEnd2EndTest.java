@@ -117,8 +117,11 @@ public class ProviderProxyEnd2EndTest {
 
     private static Server jettyServer;
 
+    private static Properties originalProperties;
+
     @BeforeClass
     public static void startServer() throws Exception {
+        originalProperties = System.getProperties();
         // keep delays and timeout low for tests
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
@@ -130,6 +133,7 @@ public class ProviderProxyEnd2EndTest {
     @AfterClass
     public static void stopServer() throws Exception {
         jettyServer.stop();
+        System.setProperties(originalProperties);
     }
 
     @Before
