@@ -45,6 +45,7 @@ namespace joynr
 
 class IMessagingStubFactory;
 class JoynrMessagingEndpointAddress;
+class IAccessController;
 class IPlatformSecurityManager;
 namespace joynr_logging
 {
@@ -123,6 +124,8 @@ public:
     void addProvisionedNextHop(QString participantId,
                                QSharedPointer<joynr::system::Address> address);
 
+    void setAccessController(QSharedPointer<IAccessController> accessController);
+
     void setParentRouter(joynr::system::RoutingProxy* parentRouter,
                          QSharedPointer<joynr::system::Address> parentAddress,
                          QString parentParticipantId);
@@ -131,6 +134,7 @@ public:
                             QSharedPointer<joynr::system::Address> inprocessAddress);
 
     friend class MessageRunnable;
+    friend class ConsumerPermissionCallback;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
@@ -146,6 +150,7 @@ private:
     MessageQueue* messageQueue;
     MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
     QSet<QString>* runningParentResolves;
+    QSharedPointer<IAccessController> accessController;
     IPlatformSecurityManager* securityManager;
     mutable QMutex parentResolveMutex;
 

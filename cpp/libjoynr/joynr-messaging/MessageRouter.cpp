@@ -25,6 +25,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"
+#include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
 
 #include <QMutexLocker>
@@ -36,6 +37,25 @@ namespace joynr
 
 using namespace joynr_logging;
 Logger* MessageRouter::logger = Logging::getInstance()->getLogger("MSG", "MessageRouter");
+
+//------ ConsumerPermissionCallback --------------------------------------------
+
+class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermissionCallback
+{
+public:
+    ConsumerPermissionCallback(MessageRouter& owningMessageRouter,
+                               const JoynrMessage& message,
+                               QSharedPointer<system::Address> destination);
+
+    void hasConsumerPermission(bool hasPermission);
+
+private:
+    MessageRouter& owningMessageRouter;
+    JoynrMessage message;
+    QSharedPointer<system::Address> destination;
+};
+
+//------ MessageRouter ---------------------------------------------------------
 
 MessageRouter::~MessageRouter()
 {
@@ -71,6 +91,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
           runningParentResolves(new QSet<QString>()),
+          accessController(NULL),
           securityManager(securityManager),
           parentResolveMutex()
 {
@@ -98,6 +119,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
           runningParentResolves(new QSet<QString>()),
+          accessController(NULL),
           securityManager(NULL),
           parentResolveMutex()
 {
@@ -114,6 +136,11 @@ void MessageRouter::addProvisionedNextHop(QString participantId,
                                           QSharedPointer<joynr::system::Address> address)
 {
     addToRoutingTable(participantId, address);
+}
+
+void MessageRouter::setAccessController(QSharedPointer<IAccessController> accessController)
+{
+    this->accessController = accessController;
 }
 
 void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter,
@@ -168,41 +195,59 @@ void MessageRouter::route(const JoynrMessage& message)
         destAddress = routingTable.lookup(destinationPartId);
     }
 
-    // schedule message for sending
-    if (!destAddress.isNull()) {
-        sendMessage(message, destAddress);
+    // if destination address is not known
+    if (destAddress.isNull()) {
+        // save the message for later delivery
+        messageQueue->queueMessage(message);
+
+        // and try to resolve destination address via parent message router
+        if (isChildMessageRouter()) {
+            QMutexLocker locker(&parentResolveMutex);
+            if (!runningParentResolves->contains(destinationPartId)) {
+                runningParentResolves->insert(destinationPartId);
+                std::function<void(const joynr::RequestStatus&, const bool&)> callbackFct =
+                        [this, destinationPartId](
+                                const joynr::RequestStatus& status, const bool& resolved) {
+                    if (status.successful() && resolved) {
+                        LOG_INFO(this->logger,
+                                 "Got destination address for participant " + destinationPartId);
+                        // save next hop in the routing table
+                        this->addProvisionedNextHop(destinationPartId, this->parentAddress);
+                        this->removeRunningParentResolvers(destinationPartId);
+                        this->sendMessages(destinationPartId, this->parentAddress);
+                    } else {
+                        LOG_ERROR(this->logger,
+                                  "Failed to resolve next hop for participant " +
+                                          destinationPartId + ": " + status.toString());
+                        // TODO error handling in case of failing submission (?)
+                    }
+                };
+
+                parentRouter->resolveNextHop(destinationPartId, callbackFct);
+            }
+        } else {
+            // no parent message router to resolve destination address
+            LOG_WARN(logger,
+                     QString("No routing information found for destination participant ID \"%1\" "
+                             "so far. Waiting for participant registration. "
+                             "Queueing message (ID : %2)")
+                             .arg(destinationPartId)
+                             .arg(message.getHeaderMessageId()));
+        }
         return;
     }
 
-    // save message for later delivery
-    messageQueue->queueMessage(message);
-
-    // try to resolve destination address via parent message router
-    if (isChildMessageRouter()) {
-        QMutexLocker locker(&parentResolveMutex);
-        if (!runningParentResolves->contains(destinationPartId)) {
-            runningParentResolves->insert(destinationPartId);
-            std::function<void(const joynr::RequestStatus&, const bool&)> callbackFct =
-                    [this, destinationPartId](
-                            const joynr::RequestStatus& status, const bool& resolved) {
-                if (status.successful() && resolved) {
-                    LOG_INFO(this->logger,
-                             "Got destination address for participant " + destinationPartId);
-                    // save next hop in the routing table
-                    this->addProvisionedNextHop(destinationPartId, this->parentAddress);
-                    this->removeRunningParentResolvers(destinationPartId);
-                    this->sendMessages(destinationPartId, this->parentAddress);
-                } else {
-                    LOG_ERROR(this->logger,
-                              "Failed to resolve next hop for participant " + destinationPartId +
-                                      ": " + status.toString());
-                    // TODO error handling in case of failing submission (?)
-                }
-            };
-
-            parentRouter->resolveNextHop(destinationPartId, callbackFct);
-        }
+    if (!accessController.isNull()) {
+        // Access control checks are asynchronous, callback will send message
+        // if access is granted
+        QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback(
+                new ConsumerPermissionCallback(*this, message, destAddress));
+        accessController->hasConsumerPermission(message, callback);
+        return;
     }
+
+    // If this point is reached, the message can be sent without delay
+    sendMessage(message, destAddress);
 }
 
 void MessageRouter::removeRunningParentResolvers(const QString& destinationPartId)
@@ -413,6 +458,24 @@ void MessageRunnable::run()
         LOG_ERROR(
                 logger,
                 QString("Message with ID %1 expired: dropping!").arg(message.getHeaderMessageId()));
+    }
+}
+
+/**
+ * IMPLEMENTATION of ConsumerPermissionCallback class
+ */
+
+ConsumerPermissionCallback::ConsumerPermissionCallback(MessageRouter& owningMessageRouter,
+                                                       const JoynrMessage& message,
+                                                       QSharedPointer<system::Address> destination)
+        : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
+{
+}
+
+void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
+{
+    if (hasPermission) {
+        owningMessageRouter.sendMessage(message, destination);
     }
 }
 
