@@ -44,9 +44,6 @@ import com.google.inject.Module;
 
 /**
  * Scans all subpackages under "de.bmw" for instances of AbstractJoynApplication, which are then injected and run.
- * 
- * @author david.katz
- * 
  */
 public class JoynrApplicationLauncher {
 
@@ -105,7 +102,7 @@ public class JoynrApplicationLauncher {
 
     /**
      * If clear, then deregister etc.
-     * 
+     *
      * @param clear
      */
     // TODO support clear properly
@@ -117,17 +114,16 @@ public class JoynrApplicationLauncher {
         if (joynrInjector != null) {
             // switch to lp receiver and call servlet shutdown to be able to receive responses
             ServletMessageReceiver servletReceiver = joynrInjector.getInstance(ServletMessageReceiver.class);
+            servletReceiver.switchToLongPolling();
 
-            if (servletReceiver.switchToLongPolling()) {
-                for (JoynrApplication app : apps) {
-                    try {
-                        app.shutdown();
-                    } catch (Exception e) {
-                        logger.error("error shutting down app: {} reason: {}", app.getClass(), e.getMessage());
-                    }
+            for (JoynrApplication app : apps) {
+                try {
+                    app.shutdown();
+                } catch (Exception e) {
+                    logger.error("error shutting down app: {} reason: {}", app.getClass(), e.getMessage());
                 }
-                servletReceiver.shutdown(clear);
             }
+            servletReceiver.shutdown(clear);
         }
         try {
             if (executionQueue != null) {

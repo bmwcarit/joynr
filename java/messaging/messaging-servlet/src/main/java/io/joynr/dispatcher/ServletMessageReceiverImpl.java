@@ -66,6 +66,8 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     private String hostPath;
 
+    private boolean skipLongPollForDeregistration = false;
+
     private void setRegistered(boolean registered) {
         this.registered = registered;
     }
@@ -84,6 +86,11 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         this.hostPath = hostPath;
         this.servletShutdownTimeout_ms = servletShutdownTimeout_ms;
         this.started = false;
+    }
+
+    @Inject(optional = true)
+    public void setSkipLongPollForDeregistration(@Named(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION) boolean skipLongPollForDeregistration) {
+        this.skipLongPollForDeregistration = skipLongPollForDeregistration;
     }
 
     @Override
@@ -128,6 +135,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         Callable<Void> unregisterChannelCallale = new Callable<Void>() {
+            @Override
             public Void call() {
                 unregisterChannel();
                 return null;
@@ -155,6 +163,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         return started;
     }
 
+    @Override
     public void receive(JoynrMessage message) {
         if (message != null) {
 
@@ -195,6 +204,11 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
     @Override
     public boolean switchToLongPolling() {
+        if (skipLongPollForDeregistration) {
+            logger.info("not using long poll for deregistration");
+            return true;
+        }
+
         try {
             // switching to longPolling before the servlet is destroyed, to be able to unregister
             longPollingReceiver.registerMessageListener(messageListener);
