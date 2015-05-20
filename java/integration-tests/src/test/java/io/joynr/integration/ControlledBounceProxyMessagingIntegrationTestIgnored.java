@@ -33,10 +33,11 @@ public class ControlledBounceProxyMessagingIntegrationTestIgnored extends Abstra
 
     @BeforeClass
     public static void startServer() throws Exception {
-        bounceProxyControllerServer = ServersUtil.startBounceproxyController();
-        bounceProxyServerXY = ServersUtil.startControlledBounceproxy("X.Y");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+
+        bounceProxyControllerServer = ServersUtil.startBounceproxyController();
+        bounceProxyServerXY = ServersUtil.startControlledBounceproxy("X.Y");
     }
 
     @AfterClass

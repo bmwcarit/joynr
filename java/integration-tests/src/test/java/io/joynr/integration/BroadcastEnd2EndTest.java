@@ -21,7 +21,6 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -53,6 +52,7 @@ import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,14 +75,14 @@ public class BroadcastEnd2EndTest {
     public TestName name = new TestName();
 
     private static DefaulttestProvider provider;
-    private static String domain;
     private static testProxy proxy;
+    private String domain;
 
     // private SubscriptionQos subscriptionQos;
-    private static DummyJoynrApplication providingApplication;
-    private static DummyJoynrApplication consumingApplication;
+    private DummyJoynrApplication providingApplication;
+    private DummyJoynrApplication consumingApplication;
 
-    private static Server server;
+    private static Server jettyServer;
     private static GpsLocation expectedLocation = new GpsLocation(1.0,
                                                                   2.0,
                                                                   3.0,
@@ -97,41 +97,48 @@ public class BroadcastEnd2EndTest {
     private static Double expectedSpeed = 100.0;
 
     @BeforeClass
-    public static void setupEndpoints() throws Exception {
-        server = ServersUtil.startServers();
-        domain = "TestDomain" + System.currentTimeMillis();
-        setupProvidingApplication();
-        setupConsumingApplication();
+    public static void startServer() throws Exception {
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+
+        jettyServer = ServersUtil.startServers();
+
     }
 
     @Before
     public void setUp() throws JoynrArbitrationException, InterruptedException, IOException {
-        Thread.sleep(200);
-        Object methodName = name.getMethodName();
+        String methodName = name.getMethodName();
+        domain = "ProviderDomain-BroadcastEnd2End-" + methodName + "-" + System.currentTimeMillis();
+        setupProvidingApplication(methodName);
+        setupConsumingApplication(methodName);
         logger.info("Starting {} ...", methodName);
     }
 
-    @AfterClass
-    public static void tearDownEndpoints() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         providingApplication.shutdown();
         providingApplication = null;
         Thread.sleep(200);
         consumingApplication.shutdown();
         consumingApplication = null;
-        server.stop();
     }
 
-    private static void setupProvidingApplication() throws InterruptedException {
+    @AfterClass
+    public static void stopServer() throws Exception {
+        jettyServer.stop();
+    }
+
+    private void setupProvidingApplication(String methodName) throws InterruptedException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Provider-BroadcastEnd2EndTest";
+                + "-Provider-BroadcastEnd2EndTest-" + methodName;
 
         factoryPropertiesProvider = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
-                + UUID.randomUUID().toString());
+        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
@@ -140,15 +147,15 @@ public class BroadcastEnd2EndTest {
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
-    private static void setupConsumingApplication() throws JoynrArbitrationException, JoynrIllegalStateException,
-                                                   InterruptedException {
+    private void setupConsumingApplication(String methodName) throws JoynrArbitrationException,
+                                                             JoynrIllegalStateException, InterruptedException {
         String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Consumer-BroadcastEnd2EndTest";
+                + "-Consumer-BroadcastEnd2EndTest-" + methodName;
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
+        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
         consumingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesB).createApplication(DummyJoynrApplication.class);
@@ -165,12 +172,6 @@ public class BroadcastEnd2EndTest {
         proxy.getFirstPrime();
         logger.trace("Sync call to proxy finished");
 
-    }
-
-    @Test
-    public void testSystemPropertiesUnchanged() {
-        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) == null);
-        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) == null);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
