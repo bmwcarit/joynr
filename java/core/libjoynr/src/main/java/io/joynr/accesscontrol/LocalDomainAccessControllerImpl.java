@@ -79,7 +79,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private DomainAccessControlStore localDomainAccessStore;
 
     // Class that holds subscription ids.
-    class AceSubscription {
+    static class AceSubscription {
         private final String masterSubscriptionId;
         private final String mediatorSubscriptionId;
         private final String ownerSubscriptionId;
