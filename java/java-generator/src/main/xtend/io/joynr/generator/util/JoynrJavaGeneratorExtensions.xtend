@@ -92,6 +92,15 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return false
 	}
 
+	def boolean hasMethodWithImplicitErrorEnum(FInterface interfaceType){
+		for(method: interfaceType.methods){
+			if (method.errors != null) {
+				return true
+			}
+		}
+		return false
+	}
+
 	def boolean hasMethodWithArguments(FInterface interfaceType){
 		for(method: interfaceType.methods){
 			if (getInputParameters(method).size>0){
