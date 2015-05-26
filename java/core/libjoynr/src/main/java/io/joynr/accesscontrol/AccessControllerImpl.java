@@ -135,10 +135,10 @@ public class AccessControllerImpl implements AccessController {
     private CapabilityEntry getCapabilityEntry(JoynrMessage message) {
 
         long cacheMaxAge = Long.MAX_VALUE;
-        DiscoveryQos discoveryQos = new DiscoveryQos(0,
+        DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryQos.NO_MAX_AGE,
                                                      ArbitrationStrategy.NotSet,
                                                      cacheMaxAge,
-                                                     DiscoveryScope.LOCAL_ONLY);
+                                                     DiscoveryScope.LOCAL_THEN_GLOBAL);
 
         String participantId = message.getTo();
         return localCapabilitiesDirectory.lookup(participantId, discoveryQos);
