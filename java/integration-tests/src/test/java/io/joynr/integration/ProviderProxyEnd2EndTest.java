@@ -26,8 +26,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import io.joynr.accesscontrol.DomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.Callback;
@@ -86,8 +85,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.AbstractModule;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
@@ -166,7 +163,8 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
 
-        dummyProviderApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigProvider).createApplication(DummyJoynrApplication.class);
+        dummyProviderApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigProvider,
+                                                                                    new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."

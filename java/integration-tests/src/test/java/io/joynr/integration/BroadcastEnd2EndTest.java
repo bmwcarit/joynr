@@ -21,6 +21,7 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -146,7 +147,8 @@ public class BroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
-        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
+        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
+                                                                                new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
         providingApplication.getRuntime()

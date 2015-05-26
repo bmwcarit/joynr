@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.integration.util.DummyJoynrApplication;
@@ -141,7 +142,8 @@ public class SSLEnd2EndTest extends JoynrEnd2EndTest {
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
 
-        dummyProviderApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigProvider).createApplication(DummyJoynrApplication.class);
+        dummyProviderApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigProvider,
+                                                                                    new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."

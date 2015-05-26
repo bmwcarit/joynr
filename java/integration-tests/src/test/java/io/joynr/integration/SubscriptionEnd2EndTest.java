@@ -27,6 +27,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -145,7 +146,8 @@ public class SubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
-        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
+        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
+                                                                                new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         provider = new PubSubTestProviderImpl();
         providingApplication.getRuntime()

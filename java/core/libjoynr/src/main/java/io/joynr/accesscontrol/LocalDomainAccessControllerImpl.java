@@ -177,12 +177,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             }
         }
 
-        // TODO: remove test permissions below
-        // In the future it should be possible for an application to set access control entries
-        if (interfaceName.equals("tests/test")) {
-            return Permission.YES;
-        }
-
         return null;
     }
 
