@@ -891,6 +891,25 @@
 										<ignore></ignore>
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											com.googlecode.jslint4java
+										</groupId>
+										<artifactId>
+											jslint4java-maven-plugin
+										</artifactId>
+										<versionRange>
+											[2.0.3,)
+										</versionRange>
+										<goals>
+											<goal>lint</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
