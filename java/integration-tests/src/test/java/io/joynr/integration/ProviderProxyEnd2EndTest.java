@@ -26,6 +26,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.accesscontrol.DomainAccessControlProvisioning;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.Callback;
@@ -85,8 +87,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.AbstractModule;
+
 @RunWith(MockitoJUnitRunner.class)
-public class ProviderProxyEnd2EndTest {
+public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(ProviderProxyEnd2EndTest.class);
 
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
@@ -128,6 +132,7 @@ public class ProviderProxyEnd2EndTest {
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
 
+        provisionDiscoveryDirectoryAccessControlEntries();
         jettyServer = ServersUtil.startServers();
     }
 
@@ -143,6 +148,11 @@ public class ProviderProxyEnd2EndTest {
         // prints the tests name in the log so we know what we are testing
         String methodName = name.getMethodName();
         logger.info(methodName + " setup beginning...");
+
+        domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
+        domainAsync = domain + "Async";
+        provisionPermissiveAccessControlEntry(domain, TestProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domainAsync, TestProvider.INTERFACE_NAME);
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
@@ -167,10 +177,8 @@ public class ProviderProxyEnd2EndTest {
         dummyConsumerApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigConsumer).createApplication(DummyJoynrApplication.class);
 
         provider = new TestProvider();
-        domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
 
         providerAsync = new TestAsyncProviderImpl();
-        domainAsync = domain + "Async";
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();

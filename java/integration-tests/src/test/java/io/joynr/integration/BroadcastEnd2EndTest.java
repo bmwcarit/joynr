@@ -35,7 +35,6 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
@@ -66,7 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BroadcastEnd2EndTest {
+public class BroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(BroadcastEnd2EndTest.class);
 
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
@@ -107,14 +106,16 @@ public class BroadcastEnd2EndTest {
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
 
+        provisionDiscoveryDirectoryAccessControlEntries();
         jettyServer = ServersUtil.startServers();
 
     }
 
     @Before
-    public void setUp() throws JoynrArbitrationException, InterruptedException, IOException {
+    public void setUp() throws Exception {
         String methodName = name.getMethodName();
         domain = "ProviderDomain-BroadcastEnd2End-" + methodName + "-" + System.currentTimeMillis();
+        provisionPermissiveAccessControlEntry(domain, DefaulttestProvider.INTERFACE_NAME);
         setupProvidingApplication(methodName);
         setupConsumingApplication(methodName);
         logger.info("Starting {} ...", methodName);

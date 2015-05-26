@@ -57,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SSLEnd2EndTest {
+public class SSLEnd2EndTest extends JoynrEnd2EndTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SSLEnd2EndTest.class);
 
@@ -103,6 +103,7 @@ public class SSLEnd2EndTest {
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
 
+        provisionDiscoveryDirectoryAccessControlEntries();
         jettyServer = ServersUtil.startSSLServers(settings);
 
     }
@@ -120,10 +121,13 @@ public class SSLEnd2EndTest {
     }
 
     @Before
-    public void setup() throws InterruptedException {
+    public void setup() throws Exception {
 
         String methodName = name.getMethodName();
         logger.info("{} setup beginning...", methodName);
+
+        domain = "SSLEnd2EndTest." + methodName + System.currentTimeMillis();
+        provisionPermissiveAccessControlEntry(domain, DefaulttestProvider.INTERFACE_NAME);
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
@@ -148,7 +152,6 @@ public class SSLEnd2EndTest {
         dummyConsumerApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigConsumer).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
-        domain = "SSLEnd2EndTest." + methodName + System.currentTimeMillis();
 
         dummyProviderApplication.getRuntime().registerCapability(domain, provider, "authToken");
 
