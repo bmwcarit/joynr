@@ -28,6 +28,7 @@ public interface LocalCapabilitiesDirectory {
      * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
      * capabilities directory.
      *
+     * @param capabilityEntry The capability to be added.
      * @return future to get the async result of the call
      */
     RegistrationFuture add(CapabilityEntry capabilityEntry);
@@ -54,10 +55,10 @@ public interface LocalCapabilitiesDirectory {
     /**
      * Searches for capabilities by domain and interface name.
      *
-     * @param domain
-     * @param interfaceName
-     * @param discoveryQos
-     * @param capabilitiesCallback
+     * @param domain The Domain for which the search is to be done.
+     * @param interfaceName The interface for which the search is to be done.
+     * @param discoveryQos The discovery quality of service for the search.
+     * @param capabilitiesCallback Callback to deliver the results asynchronously.
      */
     void lookup(String domain,
                 String interfaceName,
@@ -67,8 +68,8 @@ public interface LocalCapabilitiesDirectory {
     /**
      * Searches for capability by participantId. This is an asynchronous method.
      *
-     * @param participantId
-     * @param discoveryQos
+     * @param participantId The participant id to search for.
+     * @param discoveryQos The discovery quality of service for the search.
      * @param callback called if the capability with the given participant ID
      *      is retrieved. Or null if not found.
      */
@@ -78,8 +79,8 @@ public interface LocalCapabilitiesDirectory {
     /**
      * Searches for capability by participantId.
      *
-     * @param participantId
-     * @param discoveryQos
+     * @param participantId The participant id to search for.
+     * @param discoveryQos The discovery quality of service for the search.
      * @return the capability with the given participant ID. Or null if not found.
      */
     @CheckForNull

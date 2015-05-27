@@ -25,7 +25,7 @@ import com.google.common.collect.Maps;
 
 /**
  * Storage class to pass all settings to an arbitrator defining the strategy and conditions for provider arbitration.
- * 
+ *
  */
 
 public class DiscoveryQos {
@@ -119,7 +119,7 @@ public class DiscoveryQos {
     /**
      * The discovery process outputs a list of matching providers. The arbitration strategy then chooses one or more of
      * them to be used by the proxy.
-     * 
+     *
      * @param arbitrationStrategy
      *            Defines the strategy used to choose the "best" provider.
      */
@@ -130,7 +130,7 @@ public class DiscoveryQos {
     /**
      * The discovery process outputs a list of matching providers. The arbitration strategy then chooses one or more of
      * them to be used by the proxy.
-     * 
+     *
      * @return the arbitration strategy used to pick the "best" provider of the list of matching providers
      */
     public ArbitrationStrategy getArbitrationStrategy() {
@@ -141,7 +141,7 @@ public class DiscoveryQos {
      * As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers is triggered. If the
      * discovery process does not find matching providers within the arbitration timeout duration it will be terminated
      * and you will get an arbitration exception.
-     * 
+     *
      * @param discoveryTimeout
      *            Sets the amount of time the arbitrator keeps trying to find a suitable provider. The arbitration
      *            lookup might happen multiple times during this time span.
@@ -154,7 +154,7 @@ public class DiscoveryQos {
      * As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers is triggered. If the
      * discovery process does not find matching providers within the arbitration timeout duration it will be terminated
      * and you will get an arbitration exception.
-     * 
+     *
      * @return the duration used to discover matching providers
      */
     public long getDiscoveryTimeout() {
@@ -164,7 +164,7 @@ public class DiscoveryQos {
     /**
      * addCustomParameter allows to add special parameters to the DiscoveryQos which will be used only by some
      * strategies.
-     * 
+     *
      * @param key
      *            String to identify the arbitration parameter
      * @param value
@@ -176,7 +176,8 @@ public class DiscoveryQos {
 
     /**
      * getCustomParameter returns the parameters previously specified by addParameter
-     * 
+     *
+     * @param key key to identify the custom parameter
      * @return Returns the value to which the specified key is mapped, or null if the map of additional parameters
      *         contains no mapping for the key
      */
@@ -192,7 +193,7 @@ public class DiscoveryQos {
      * NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities directory. Therefore,
      * providers registered with the global capabilities after the last lookup and before the cacheMaxAge expires will
      * not be discovered.
-     * 
+     *
      * @return the maximum age of locally cached provider entries to be used during discovery and arbitration before
      *         refreshing from the global directory
      */
@@ -208,7 +209,7 @@ public class DiscoveryQos {
      * NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities directory. Therefore,
      * providers registered with the global capabilities after the last lookup and before the cacheMaxAge expires will
      * not be discovered.
-     * 
+     *
      * @param cacheMaxAge
      *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
      *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
@@ -222,7 +223,7 @@ public class DiscoveryQos {
     }
 
     /**
-     * 
+     *
      * @return the interval used for retrying discovery if the previous attempt was unsuccessful
      */
     public long getRetryInterval() {
@@ -240,7 +241,7 @@ public class DiscoveryQos {
 
     /**
      * Indicates if arbitration should only consider providers that support onChange subscriptions
-     * 
+     *
      * @return true if only providers that support onChange subscriptions are considered
      */
     public boolean getProviderMustSupportOnChange() {
@@ -249,7 +250,7 @@ public class DiscoveryQos {
 
     /**
      * Indicates if arbitration should only consider providers that support onChange subscriptions
-     * 
+     *
      * @param providerMustSupportOnChange
      *            true if only providers that support onChange subscriptions should be considered
      */

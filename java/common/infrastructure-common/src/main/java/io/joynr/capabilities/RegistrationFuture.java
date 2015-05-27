@@ -41,6 +41,7 @@ public class RegistrationFuture {
 
     /**
      * Create a new Future that assumes that local registration is already in progress
+     * @param participantId The participant id to be used.
      */
     public RegistrationFuture(String participantId) {
         this(RegistrationStatus.REGISTERING_LOCALLY, participantId);
@@ -48,6 +49,8 @@ public class RegistrationFuture {
 
     /**
      * Create a new Future with the given status
+     * @param status The status to be used.
+     * @param participantId The participant id to be used.
      */
     public RegistrationFuture(RegistrationStatus status, String participantId) {
         this.status = status;
@@ -71,6 +74,7 @@ public class RegistrationFuture {
 
     /**
      * Set the current status of the registration
+     * @param status The new status to be set.
      */
     public void setStatus(RegistrationStatus status) {
         statusLock.lock();

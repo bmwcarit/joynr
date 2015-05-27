@@ -135,10 +135,10 @@ public interface DomainAccessControlStore {
     /**
      * Remove master access control entry uniquely identified with uid, domain, interface and operation.
      *
-     * @param uid
-     * @param domain
-     * @param interfaceName
-     * @param operation
+     * @param uid The user id for which the entry should be removed.
+     * @param domain The domain for which the entry should be removed.
+     * @param interfaceName The interface for which the entry should be removed.
+     * @param operation The operation for which the entry should be removed.
      * @return false if remove fails or master ACE that match given parameters was not found.
      */
     Boolean removeMasterAccessControlEntry(String uid, String domain, String interfaceName, String operation);
@@ -211,10 +211,10 @@ public interface DomainAccessControlStore {
     /**
      * Remove master ACE from MediatorACL identified with uid, domain, interface and operation.
      *
-     * @param uid
-     * @param domain
-     * @param interfaceName
-     * @param operation
+     * @param uid The user id for which the master ACE should be removed.
+     * @param domain The domain for which the master ACE should be removed.
+     * @param interfaceName The interface for which the master ACE should be removed.
+     * @param operation The operation for which the master ACE should be removed.
      * @return false if remove fails or master ACE that match given parameters was not found.
      */
     Boolean removeMediatorAccessControlEntry(String uid, String domain, String interfaceName, String operation);
@@ -284,10 +284,10 @@ public interface DomainAccessControlStore {
     /**
      * Remove ownerAce ACE identified with uid, domain, interface and operation.
      *
-     * @param uid
-     * @param domain
-     * @param interfaceName
-     * @param operation
+     * @param uid The user id for which the ownerACE should be removed.
+     * @param domain The domain for which the ownerACE should be removed.
+     * @param interfaceName The interface for which the ownerACE should be removed.
+     * @param operation The operation for which the ownerACE should be removed.
      * @return false if remove fails or ownerAce ACE that match given parameters was not found.
      */
     Boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation);
