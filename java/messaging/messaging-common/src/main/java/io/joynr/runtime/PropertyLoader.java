@@ -37,9 +37,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Loads properties using this class's classloader
- * 
+ *
  * @author david.katz
- * 
+ *
  */
 
 public class PropertyLoader {
@@ -73,9 +73,9 @@ public class PropertyLoader {
     }
 
     /**
-     * 
-     * @param fileName
-     * @return
+     * load properties from file
+     * @param fileName The filename of the file in which the properties are stored
+     * @return The loaded properties.
      */
     public static Properties loadProperties(String fileName) {
         LowerCaseProperties properties = new LowerCaseProperties();

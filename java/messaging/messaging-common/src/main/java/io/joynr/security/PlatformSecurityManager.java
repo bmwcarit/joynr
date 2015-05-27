@@ -28,25 +28,29 @@ public interface PlatformSecurityManager {
     String getCurrentProcessUserId();
 
     /**
-     * @param message
+     * Signs a Joynr message
+     * @param message The message to be signed
      * @return signed JoynrMessage
      */
     JoynrMessage sign(JoynrMessage message);
 
     /**
-     * @param message
+     * Validates a Joynr message
+     * @param message The message to be validated
      * @return if message is valid returns true
      */
     boolean validate(JoynrMessage message);
 
     /**
-     * @param message
+     * Encrypts a Joynr message
+     * @param message The message to be encrypted
      * @return encrypted JoynrMessage
      */
     JoynrMessage encrypt(JoynrMessage message);
 
     /**
-     * @param message
+     * Decrypts a Joynr message
+     * @param message The message to be decrypted
      * @return decrypted JoynrMessage
      */
     JoynrMessage decrypt(JoynrMessage message);
