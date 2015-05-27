@@ -67,7 +67,7 @@ public class ServersUtil {
             // use existing bounceproxy
             return;
         }
-        String serverUrl = System.getProperties().getProperty("hostPath");
+        String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         String bounceProxyUrl = serverUrl + BOUNCEPROXY_CONTEXT + "/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
     }
@@ -78,7 +78,7 @@ public class ServersUtil {
             // use existing discovery
             return;
         }
-        String serverUrl = System.getProperties().getProperty("hostPath");
+        String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
 
         System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
@@ -170,16 +170,16 @@ public class ServersUtil {
     }
 
     private static Server startServer(ContextHandlerCollection contexts, int port) throws IOException, Exception {
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:" + port);
+        setBounceProxyUrl();
+        setDirectoriesUrl();
+        logger.info("HOST PATH: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));
 
-        logger.info("PORT: http://localhost:{}", port);
         final Server jettyServer = new Server();
         ServerConnector connector = new ServerConnector(jettyServer, new HttpConnectionFactory(new HttpConfiguration()));
         connector.setPort(port);
         connector.setAcceptQueueSize(1);
         jettyServer.setConnectors(new Connector[]{ connector });
-
-        String serverUrl = "http://localhost:" + port;
-        System.getProperties().setProperty("hostPath", serverUrl);
 
         jettyServer.setHandler(contexts);
         jettyServer.start();
@@ -191,7 +191,7 @@ public class ServersUtil {
                                                                                                            throws IOException,
                                                                                                            Exception {
 
-        logger.info("PORT: https://localhost:{}", port);
+        logger.info("PORT: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));
         final Server jettyServer = new Server();
 
         HttpConfiguration https_config = new HttpConfiguration();
@@ -217,7 +217,7 @@ public class ServersUtil {
         jettyServer.setConnectors(new Connector[]{ connector });
 
         String serverUrl = "https://localhost:" + port;
-        System.getProperties().setProperty("hostPath", serverUrl);
+        System.getProperties().setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, serverUrl);
 
         jettyServer.setHandler(contexts);
         jettyServer.start();
@@ -271,7 +271,7 @@ public class ServersUtil {
      * Creates a context path with slashes set at the right positions, i.e. a
      * leading slash, a single slash between each context and no slash at the
      * end.
-     * 
+     *
      * @param contexts
      *            the contexts to add to the path. The contexts are added in the
      *            same order as given as parameters.
@@ -309,7 +309,7 @@ public class ServersUtil {
     /**
      * Waits until all bounce proxies are registered with a single bounce proxy
      * controller or until the timeout is reached.
-     * 
+     *
      * @param timeout_ms
      *            the timeout in milliseconds
      * @param wait_time_ms

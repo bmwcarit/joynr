@@ -19,6 +19,7 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.servlet.ServletUtil;
 
 import java.util.Random;
@@ -70,7 +71,7 @@ public class MessagingJettyLauncher {
         logger.info("starting server on port: {}", port);
 
         String hostPath = host + ":" + port;
-        System.setProperty("hostPath", hostPath);
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, hostPath);
 
         // Create the server.
         server = new Server(port);
