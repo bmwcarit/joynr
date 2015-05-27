@@ -46,9 +46,8 @@ public final class ArbitratorFactory {
      *            Arbitration settings like arbitration strategy, timeout and strategy specific parameters.
      * @param capabilitiesSource
      *            Source for capabilities lookup.
-     * @param minimumArbitrationRetryDelay
-     * @return
-     * @throws JoynrArbitrationException
+     * @return the created Arbitrator object
+     * @throws JoynrArbitrationException if arbitration strategy is unknown
      */
     public static Arbitrator create(final String domain,
                                     final String interfaceName,

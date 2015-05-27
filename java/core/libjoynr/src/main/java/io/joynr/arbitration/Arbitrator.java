@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Base class for provider arbitrators. Concrete arbitrators have to provide implementations for startArbitration() and
- * selectProvider(ArrayList<CapabilityEntry> capabilities) which set the ArbitrationStatus and call
+ * {@literal selectProvider(ArrayList<CapabilityEntry> capabilities)} which set the ArbitrationStatus and call
  * notifyArbitrationStatusChanged() or set the ArbitrationResult and call updateArbitrationResultAtListener(). The base
  * class offers a CapabilitiesCallback which is used for async requests.
  * 
@@ -96,7 +96,7 @@ public abstract class Arbitrator {
      * If the arbitration is already running or even finished the current state and in case of a successful arbitration
      * the result is set at the newly registered listener.
      * 
-     * @param arbitrationListener
+     * @param arbitrationListener the arbitration listener
      */
     public void setArbitrationListener(ArbitrationCallback arbitrationListener) {
 
