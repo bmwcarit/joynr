@@ -31,7 +31,9 @@ public interface CapabilitiesRegistrar {
      *            Domain of the provided service.
      * @param provider
      *            Provider instance.
-     * @return
+     * @param authenticationToken
+     *            Token for authentication
+     * @return registration future
      */
     RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken);
 
