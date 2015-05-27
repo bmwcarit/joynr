@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.google.inject.Module;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -124,12 +123,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // them on the JoynApplicationModule.
         Properties appConfig = new Properties();
 
-        // the following line is required in case of java<->javascript use case,
-        // as long as javascript is not using channelurldirectory and
-        // globalcapabilitiesdirectory
-        Module[] modules = new Module[]{}; // new DefaultUrlDirectoryModule()};
-        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, modules).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
-                                                                                                                                        appConfig));
+        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
+                                                                                                                               appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();
