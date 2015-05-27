@@ -64,19 +64,15 @@ public class JoynrMessagingConnectorFactory {
      * Creates a connector (java reflection dynamic proxy object) to execute remote procedure calls. Internally uses
      * JoynMessaging to transmit calls.
      * 
-     * @param clazz
-     *            Interface which should be stubbed.
-     * @param dispatcher
-     *            Dispatcher used to send JoynrMessages.
      * @param fromParticipantId
      *            Participant Id of the created stub.
      * @param toParticipantId
      *            Participant of the Provider/Receiver.
-     * @param channelId
-     *            ChannelId to send to.
-     * @param ttl_ms
-     *            Time to live in milliseconds.
-     * @return
+     * @param endpointAddress
+     *            End point
+     * @param qosSettings
+     *            MessagingQos settings
+     * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
                                                            final String toParticipantId,

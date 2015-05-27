@@ -41,11 +41,27 @@ public interface RequestReplySender {
 
     /**
      * Sends a request, the reply message is passed to the specified callBack in a different thread.
-     * 
+     *
+     * @param fromParticipantId
+     *            ParticipantId of the sending endpoint.
+     * @param toParticipantId
+     *            ParticipantId of the endpoint to send to
+     * @param endpointAddress
+     *            Address of end point
+     * @param request
+     *            Request to be send
+     * @param ttl_ms
+     *            Time to live in milliseconds.
      * @throws IOException
+     *            in case of I/O error
      * @throws JsonMappingException
+     *            in case JSON could not be mapped
      * @throws JsonGenerationException
-     * @throws
+     *            in case JSON could not be generated
+     * @throws JoynrMessageNotSentException
+     *            in case message could not be sent
+     * @throws JoynrSendBufferFullException
+     *            in case send buffer is full
      */
 
     public abstract void sendRequest(final String fromParticipantId,
@@ -58,15 +74,30 @@ public interface RequestReplySender {
     /**
      * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
      * an error occures or no response arrives in time an JoynCommunicationException is thrown.
-     * 
+     *
+     * @param fromParticipantId
+     *            ParticipantId of the sending endpoint.
+     * @param toParticipantId
+     *            ParticipantId of the endpoint to send to
      * @param endpointAddress
-     * @param jsonRequest 
-     * 
-     * @throws JoynrSendBufferFullException
+     *            Address of end point
+     * @param request
+     *            Request to be send
+     * @param synchronizedReplyCaller
+     *            Synchronized reply caller
+     * @param ttl_ms
+     *            Time to live in milliseconds.
+     * @return response object
      * @throws IOException
+     *            in case of I/O error
      * @throws JsonMappingException
+     *            in case JSON could not be mapped
      * @throws JsonGenerationException
+     *            in case JSON could not be generated
      * @throws JoynrMessageNotSentException
+     *            in case message could not be sent
+     * @throws JoynrSendBufferFullException
+     *            in case send buffer is full
      */
 
     public abstract Object sendSyncRequest(final String fromParticipantId,
@@ -80,7 +111,7 @@ public interface RequestReplySender {
 
     /**
      * Send a one way message.
-     * 
+     *
      * @param fromParticipantId
      *            ParticipantId of the endpoint to send to
      * @param toParticipantId
@@ -90,9 +121,15 @@ public interface RequestReplySender {
      * @param ttl_ms
      *            Time to live in milliseconds.
      * @throws IOException
+     *            in case of I/O error
      * @throws JsonMappingException
+     *            in case of mapping error
      * @throws JsonGenerationException
-     * @throws
+     *            in case JSON could not be generated
+     * @throws JoynrMessageNotSentException
+     *            in case message could not be sent
+     * @throws JoynrSendBufferFullException
+     *            in case send buffer is full
      */
 
     public abstract void sendOneWay(final String fromParticipantId,

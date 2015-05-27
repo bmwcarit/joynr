@@ -39,6 +39,7 @@ public interface RequestReplyDispatcher extends MessageArrivedListener {
 
     /**
      * Removes the listener registered for the interface address.
+     * @param participantId participant id
      */
     public void removeListener(final String participantId);
 
