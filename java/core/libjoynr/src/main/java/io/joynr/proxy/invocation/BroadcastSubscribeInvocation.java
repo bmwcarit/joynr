@@ -31,7 +31,7 @@ import joynr.BroadcastFilterParameters;
 import joynr.OnChangeSubscriptionQos;
 
 /**
- * BroadcastSubscribeInvocation contains the queuable information for a subscribeTo<broadcast> call
+ * BroadcastSubscribeInvocation contains the queuable information for a {@literal subscribeTo<broadcast>} call
  */
 public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     private String subscriptionId = "";

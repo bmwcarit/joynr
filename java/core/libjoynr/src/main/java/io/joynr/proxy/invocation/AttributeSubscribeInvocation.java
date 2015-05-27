@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
- * AttributeSubscribeInvocation contains the queuable information for a subscribeTo<attribute> call
+ * AttributeSubscribeInvocation contains the queuable information for a {@literal subscribeTo<attribute>} call
  */
 public class AttributeSubscribeInvocation extends SubscriptionInvocation {
     private final AttributeSubscriptionListener<?> attributeSubscriptionListener;

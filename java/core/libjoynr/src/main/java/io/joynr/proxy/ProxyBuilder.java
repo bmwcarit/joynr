@@ -25,7 +25,7 @@ import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.messaging.MessagingQos;
 
 /**
- * Builds a proxy instance for the given interface <T>. Default proxy properties can be overwritten by the set...Qos
+ * Builds a proxy instance for the given interface {@literal <T>}. Default proxy properties can be overwritten by the set...Qos
  * methods. After calling build the proxy can be used like a local instance of the provider. All invocations will be
  * queued until either the message TTL expires or the arbitration finishes successfully. Synchronous calls will block
  * until the arbitration is done.
@@ -38,21 +38,21 @@ public interface ProxyBuilder<T extends JoynrInterface> {
     /**
      * Callback for async proxy creation
      * 
-     * @param <T>
+     * @param <T> Provided interface
      */
     public interface ProxyCreatedCallback<T extends JoynrInterface> {
 
         /**
          * Called when the proxy is created and ready to use. Does not ensure successful arbitration.
          * 
-         * @param result
+         * @param result result of proxy creation
          */
         public void onProxyCreated(T result);
 
         /**
          * Called when an error occurred during proxy creation.
          * 
-         * @param errorMessage
+         * @param errorMessage error message
          */
         public void onProxyCreationError(String errorMessage);
     }
@@ -68,16 +68,16 @@ public interface ProxyBuilder<T extends JoynrInterface> {
     /**
      * Sets arbitration strategy, timeout and strategy specific parameters.
      * 
-     * @param discoveryQos
+     * @param discoveryQos discovery quality of service
      * @return Returns the ProxyBuilder
-     * @throws JoynrArbitrationException
+     * @throws JoynrArbitrationException in case arbitration fails
      */
     public abstract ProxyBuilder<T> setDiscoveryQos(DiscoveryQos discoveryQos) throws JoynrArbitrationException;
 
     /**
      * Sets the MessagingQos (e.g. request timeouts) which will be used by the created proxy.
      * 
-     * @param messagingQos
+     * @param messagingQos messaging quality of service
      * @return Returns the ProxyBuilder
      */
     public abstract ProxyBuilder<T> setMessagingQos(MessagingQos messagingQos);
@@ -88,16 +88,13 @@ public interface ProxyBuilder<T extends JoynrInterface> {
      * 
      * @return Returns a dynamic proxy object, implementing all methods of the interfaces passed in when the
      *         proxyBuilder was created.
-     * @throws JoynrArbitrationException
-     * @throws JoynrIllegalStateException
-     * @throws InterruptedException
      */
     public abstract T build();
 
     /**
      * Async version of {@link build}
      * 
-     * @param callback
+     * @param callback callback for asynchronous handling
      */
     public abstract void build(ProxyCreatedCallback<T> callback);
 

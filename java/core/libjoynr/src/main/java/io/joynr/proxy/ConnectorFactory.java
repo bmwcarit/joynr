@@ -49,15 +49,10 @@ public class ConnectorFactory {
      * Creates a new connector object using concrete connector factories chosen by the endpointAddress which is passed
      * in.
      * 
-     * @param clazz
-     * @param dispatcher
-     * @param messageSender
-     * @param fromParticipantId
-     * @param toParticipantId
-     * @param qosSettings
-     * @param subscriptionManager
-     * @param endpointAddress
-     * @return
+     * @param fromParticipantId origin participant id
+     * @param arbitrationResult result of arbitration
+     * @param qosSettings QOS settings
+     * @return connector object
      */
     @CheckForNull
     public ConnectorInvocationHandler create(final String fromParticipantId,

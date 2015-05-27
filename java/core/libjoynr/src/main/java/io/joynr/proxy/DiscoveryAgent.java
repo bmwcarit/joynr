@@ -56,6 +56,8 @@ public class DiscoveryAgent implements ArbitrationCallback {
     /**
      * setArbitrationResult should be called by the arbitrator when a valid
      * arbitrationResult is available.
+     * @param arbitrationStatus arbitration status to be set
+     * @param arbitrationResult arbitration result to be set
      */
     @Override
     public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
@@ -76,6 +78,7 @@ public class DiscoveryAgent implements ArbitrationCallback {
      * This method should be called by the ProxyBuilder when creating the
      * ProxyInvocationHandler Is is necessary because the DiscoveryAgents needs
      * to set the connector for this ProxyInvocationHandler
+     * @param proxyInvocationHandler invocation handler to be set
      */
     public void setProxyInvocationHandler(ProxyInvocationHandler proxyInvocationHandler) {
         this.proxyInvocationHandler = proxyInvocationHandler;

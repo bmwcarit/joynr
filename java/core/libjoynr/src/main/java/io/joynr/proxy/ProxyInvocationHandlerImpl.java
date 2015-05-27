@@ -131,7 +131,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * 
      * @return True if the connector was finished successfully in time, False if the connector failed or could not be
      *         finished in time.
-     * @throws InterruptedException
+     * @throws InterruptedException in case thread is interrupted
      */
     public boolean waitForConnectorFinished() throws InterruptedException {
         connectorStatusLock.lock();
