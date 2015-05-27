@@ -381,6 +381,7 @@ public interface LocalDomainAccessController {
      * @param domain        The domain where interface belongs
      * @param interfaceName The interface that is being accessed
      * @param trustLevel    The trust level of the device accessing the interface
+     * @return provider permission
      */
     Permission getProviderPermission(String uid, String domain, String interfaceName, TrustLevel trustLevel);
 
