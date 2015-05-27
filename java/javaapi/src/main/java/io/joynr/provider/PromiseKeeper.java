@@ -56,8 +56,8 @@ public class PromiseKeeper implements PromiseListener {
      * Get the resolved values of the promise. If the promise is not settled,
      * the call blocks until the promise is settled.
      *
-     * @param timeout the maximum time to wait in milliseconds.
      * @return the resolved values or null in case of timeout.
+     * @throws InterruptedException if the thread is interrupted.
      */
     @CheckForNull
     public Object[] getValues() throws InterruptedException {
@@ -70,7 +70,7 @@ public class PromiseKeeper implements PromiseListener {
      *
      * @param timeout the maximum time to wait in milliseconds.
      * @return the resolved values or null in case of timeout.
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      */
     @CheckForNull
     public Object[] getValues(long timeout) throws InterruptedException {
@@ -90,7 +90,7 @@ public class PromiseKeeper implements PromiseListener {
      * settled, the call blocks until the promise is settled.
      *
      * @return the error causing rejection or null in case of timeout.
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      */
     @CheckForNull
     public JoynrRuntimeException getError() throws InterruptedException {
@@ -104,7 +104,7 @@ public class PromiseKeeper implements PromiseListener {
      *
      * @param timeout the maximum time to wait in milliseconds.
      * @return the error causing rejection or null in case of timeout.
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      */
     @CheckForNull
     public JoynrRuntimeException getError(long timeout) throws InterruptedException {
@@ -119,7 +119,7 @@ public class PromiseKeeper implements PromiseListener {
     /**
      * Blocks until the promise is settled.
      *
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      */
     public void waitForSettlement() throws InterruptedException {
         waitForSettlement(0);
@@ -129,7 +129,7 @@ public class PromiseKeeper implements PromiseListener {
      * Blocks until the promise is settled or timeout is reached.
      *
      * @param timeout the maximum time to wait in milliseconds.
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      */
     public void waitForSettlement(long timeout) throws InterruptedException {
         if (!isSettled()) {

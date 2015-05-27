@@ -45,6 +45,7 @@ public abstract class AbstractDeferred {
     /**
      * Resolves the promise. NOTE: The thread resolving the promise will be
      * used to execute waiting listeners.
+     * @param values the return values.
      * @return true if the promise is resolved; false in case the promise is
      *      already settled.
      */

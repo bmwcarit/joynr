@@ -41,7 +41,7 @@ public class Promise<T extends AbstractDeferred> {
      * Adds a listener that is called once the promise is settled. NOTE: If the
      * promise is already settled when adding the listener, the thread adding
      * the listener will be used to execute the listener.
-     * @param listener
+     * @param listener the listener to be added
      */
     public void then(PromiseListener listener) {
         if (listener == null) {

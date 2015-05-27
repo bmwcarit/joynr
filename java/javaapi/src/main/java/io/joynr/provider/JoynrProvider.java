@@ -81,7 +81,7 @@ public interface JoynrProvider {
     /**
      * Adds multiple broadcast filters to the provider.
      *
-     * @see JoynrProvider.addBroadcastFilter(BroadcastFilterImpl filter)
+     * @see JoynrProvider#addBroadcastFilter(BroadcastFilterImpl filter)
      *
      * @param filters the filters to add.
      */
