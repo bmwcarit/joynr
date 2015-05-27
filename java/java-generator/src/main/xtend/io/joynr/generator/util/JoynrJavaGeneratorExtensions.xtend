@@ -405,6 +405,18 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return sb.toString
 	}
 
+	def String getJavadocCommentsParameterListJavaRpc(FMethod method){
+		var sb = new StringBuilder();
+		val params = getInputParameters(method)
+		var i = 0;
+		while (i < params.size) {
+			val param = params.get(i);
+			sb.append(" * @param " + param.joynrName + " the parameter " + param.joynrName + "\n");
+			i = i+1;
+		}
+		return sb.toString
+	}
+
 	def String getTypedParameterListJavaTypeReference(FMethod method){
 		val sb = new StringBuilder()
 		val params = getInputParameters(method)

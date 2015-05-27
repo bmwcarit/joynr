@@ -124,9 +124,12 @@ public interface «className» extends JoynrProvider {
 	«FOR method : getMethods(serviceInterface)»
 		«var methodName = method.joynrName»
 		«var params = getTypedParameterListJavaRpc(method)»
+		«var comments = getJavadocCommentsParameterListJavaRpc(method)»
 
 		/**
 		 * «methodName»
+		«IF !comments.equals("")»«comments»«ENDIF»
+		 * @return promise for asynchronous handling
 		 */
 		public Promise<«methodToDeferredName.get(method)»> «methodName»(
 				«IF !params.equals("")»«params»«ENDIF»
