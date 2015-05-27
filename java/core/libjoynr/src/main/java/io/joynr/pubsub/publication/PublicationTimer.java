@@ -46,8 +46,8 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
+ * Timer object to handle periodic subscriptions
  * @author david.katz
- * 
  */
 public class PublicationTimer extends PubSubTimerBase {
 
@@ -63,11 +63,12 @@ public class PublicationTimer extends PubSubTimerBase {
     private final long period;
 
     /**
-     * @param publicationInformation
-     * @param method
-     * @param requestCaller
-     * @param requestReplySender
-     * @param attributePollInterpreter
+     * Constructor for PublicationTimer object, see (@link PublicationTimer)
+     * @param publicationInformation information about the requested subscription, see {@link io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation}
+     * @param method method to be invoked to retrieve the requested information
+     * @param requestCaller request caller
+     * @param requestReplySender request reply sender to send publication messages
+     * @param attributePollInterpreter attribute poll interpreter to execute method
      */
     public PublicationTimer(PublicationInformation publicationInformation,
                             Method method,
