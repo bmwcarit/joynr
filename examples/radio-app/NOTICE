@@ -32,6 +32,7 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
