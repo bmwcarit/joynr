@@ -527,7 +527,7 @@ public class LongPollingChannelLifecycle {
     /**
      * true if the channel has been created on the bounceproxy
      * 
-     * @return
+     * @return boolean value, true if the channel has been created on the bounceproxy
      */
     public boolean isChannelCreated() {
         return channelCreated;

@@ -113,7 +113,7 @@ public class MessageScheduler {
     /**
      * Stops the scheduler thread pool and the execution thread.
      * 
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread has been interrupted
      */
     public synchronized void shutdown() throws InterruptedException {
         synchronized (scheduler) {
