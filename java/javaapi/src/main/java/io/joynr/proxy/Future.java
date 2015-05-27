@@ -42,7 +42,7 @@ public class Future<T> {
      * @param timeout_ms
      *            time to wait until throwing a JoynWaitExpiredException
      * @return the result of the method call
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      * @throws JoynrWaitExpiredException
      *             if timeout_ms expires
      */
@@ -92,8 +92,8 @@ public class Future<T> {
     /**
      * Resolves the future using the given result
      * 
-     * @param status
      * @param result
+     *            the result of the asynchronous call
      */
     public void onSuccess(T result) {
         try {
@@ -112,7 +112,7 @@ public class Future<T> {
     /**
      * Terminates the future in error
      * 
-     * @param exception
+     * @param newException
      *            that caused the failure
      */
     public void onFailure(JoynrRuntimeException newException) {
