@@ -92,18 +92,21 @@ public class ServersUtil {
         System.setProperty("log4j.configuration", Resources.getResource("log4j_backend.properties").toString());
 
         Server server = startServer(contexts);
-        setBounceProxyUrl();
-        setDirectoriesUrl();
         return server;
     }
 
     public static Server startSSLServers(SSLSettings settings) throws Exception {
+        final int port = ServletUtil.findFreePort();
+        return startSSLServers(settings, port);
+    }
+
+    public static Server startSSLServers(SSLSettings settings, int port) throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
-
-        Server server = startSSLServer(contexts, settings);
+        Server server = startSSLServer(contexts, settings, port);
         setBounceProxyUrl();
         setDirectoriesUrl();
+
         return server;
     }
 
@@ -111,8 +114,8 @@ public class ServersUtil {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp() });
 
-        Server server = startServer(contexts);
-        setBounceProxyUrl();
+        final int port = ServletUtil.findFreePort();
+        Server server = startServer(contexts, port);
         return server;
     }
 
@@ -151,25 +154,20 @@ public class ServersUtil {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyControllerWebApp(warFileName, "", null) });
 
-        Server server = startServer(contexts);
-        String serverUrl = System.getProperties().getProperty("hostPath");
+        final int port = ServletUtil.findFreePort();
+        Server server = startServer(contexts, port);
+        String serverUrl = "http://localhost:" + port;
         String bounceProxyUrl = serverUrl + "/controller/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
         return server;
     }
 
-    private static Server startServer(ContextHandlerCollection contexts) throws IOException, Exception {
+    private static Server startServer(ContextHandlerCollection contexts) throws Exception {
         final int port = ServletUtil.findFreePort();
         return startServer(contexts, port);
     }
 
-    private static Server startSSLServer(ContextHandlerCollection contexts, SSLSettings settings) throws IOException,
-                                                                                                 Exception {
-        final int port = ServletUtil.findFreePort();
-        return startSSLServer(contexts, settings, port);
-    }
-
-    private static Server startServer(ContextHandlerCollection contexts, int port) throws IOException, Exception {
+    private static Server startServer(ContextHandlerCollection contexts, int port) throws Exception {
         System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:" + port);
         setBounceProxyUrl();
         setDirectoriesUrl();
@@ -191,6 +189,7 @@ public class ServersUtil {
                                                                                                            throws IOException,
                                                                                                            Exception {
 
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:" + port);
         logger.info("PORT: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));
         final Server jettyServer = new Server();
 
