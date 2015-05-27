@@ -57,6 +57,7 @@ public class ServersUtil {
     public static final String BOUNCEPROXY_CONTEXT = "/bounceproxy";
 
     public static final String DISCOVERY_CONTEXT = "/discovery";
+    public static final String ACCESSCONTROL_CONTEXT = "/accesscontrol";
 
     public static final String BOUNCEPROXYCONTROLLER_CONTEXT = "/controller";
 
@@ -87,7 +88,7 @@ public class ServersUtil {
 
     public static Server startServers() throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp(), accessControlWebApp() });
 
         System.setProperty("log4j.configuration", Resources.getResource("log4j_backend.properties").toString());
 
@@ -102,7 +103,7 @@ public class ServersUtil {
 
     public static Server startSSLServers(SSLSettings settings, int port) throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp(), accessControlWebApp() });
         Server server = startSSLServer(contexts, settings, port);
         setBounceProxyUrl();
         setDirectoriesUrl();
@@ -303,6 +304,13 @@ public class ServersUtil {
         discoveryWebapp.setContextPath(DISCOVERY_CONTEXT);
         discoveryWebapp.setWar("target/discovery.war");
         return discoveryWebapp;
+    }
+
+    private static WebAppContext accessControlWebApp() {
+        WebAppContext accessControlWebapp = new WebAppContext();
+        accessControlWebapp.setContextPath(ACCESSCONTROL_CONTEXT);
+        accessControlWebapp.setWar("target/accesscontrol.war");
+        return accessControlWebapp;
     }
 
     /**
