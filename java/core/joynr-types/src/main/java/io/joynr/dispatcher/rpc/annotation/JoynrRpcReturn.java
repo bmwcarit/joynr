@@ -34,8 +34,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @Target(ElementType.METHOD)
 public @interface JoynrRpcReturn {
     /**
-     * A type token. This is needed to correctly deserialize collection types because their type information is erased
+     * Returns the derserialisation type token.
+     * This is needed to correctly deserialize collection types because their type information is erased
      * after compilation in Java
+     * @return The deserialization type.
      */
     Class<? extends TypeReference<?>> deserialisationType();
 }

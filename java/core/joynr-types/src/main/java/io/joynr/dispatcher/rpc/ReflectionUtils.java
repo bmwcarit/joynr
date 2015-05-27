@@ -163,6 +163,9 @@ public class ReflectionUtils {
     /**
      * Utility function to find all annotations on the parameters of the specified method and merge them with the same
      * annotations on all base classes and interfaces.
+     *
+     * @param method the method in question
+     * @return the list of annotations for this method
      */
     public static List<List<Annotation>> findAndMergeParameterAnnotations(Method method) {
         List<List<Annotation>> res = new ArrayList<List<Annotation>>(method.getParameterTypes().length);
