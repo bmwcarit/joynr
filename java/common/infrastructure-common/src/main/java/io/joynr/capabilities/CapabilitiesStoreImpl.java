@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
@@ -45,6 +46,7 @@ import com.google.inject.Inject;
  * Capability informations are stored in a concurrentHashMap. Using a in memory
  * database could be possible optimization.
  */
+@Singleton
 public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesStoreImpl.class);
