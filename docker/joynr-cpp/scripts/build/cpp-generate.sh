@@ -9,7 +9,7 @@ mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -Dski
 
 log "GENERATE CPP SOURCES"
 cd /data/src/cpp
-mvn clean generate-sources -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+mvn clean process-test-sources -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
