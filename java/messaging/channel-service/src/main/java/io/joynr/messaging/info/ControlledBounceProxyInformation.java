@@ -42,12 +42,12 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
      * location.
      * 
      * @param bpId
-     *            bounce proxy ID in the format &lt;clusterId>.&lt;instanceId>
+     *   bounce proxy ID in the format {@literal <clusterId><instanceId>}
      * @param location
-     *            bounce proxy url for both cluster controllers and bounce proxy
-     *            controllers
+     *   bounce proxy url for both cluster controllers and bounce proxy
+     *   controllers
      * @throws IllegalArgumentException
-     *             if bounce proxy ID has the wrong format
+     *   if bounce proxy ID has the wrong format
      */
     public ControlledBounceProxyInformation(String bpId, URI location) {
         this(bpId, location, location);
@@ -58,15 +58,15 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
      * locations for cluster controllers and bounce proxy controllers.
      * 
      * @param bpId
-     *            bounce proxy ID in the format &lt;clusterId>.&lt;instanceId>
+     *   bounce proxy ID in the format {@literal <clusterId><instanceId>}
      * @param locationForCCs
-     *            bounce proxy url for cluster controllers that are somewhere on
-     *            the internet
+     *   bounce proxy url for cluster controllers that are somewhere on
+     *   the internet
      * @param locationForBpc
-     *            bounce proxy url for bounce proxy controller that is possibly
-     *            on the same subnet
+     *   bounce proxy url for bounce proxy controller that is possibly
+     *   on the same subnet
      * @throws IllegalArgumentException
-     *             if bounce proxy ID has the wrong format
+     *   if bounce proxy ID has the wrong format
      */
     public ControlledBounceProxyInformation(String bpId, URI locationForCCs, URI locationForBpc) {
         super(bpId, locationForCCs);
@@ -88,10 +88,12 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
      * location.
      * 
      * @param clusterId
+     *   the id of the cluster
      * @param instanceId
+     *   the id of the instance
      * @param location
-     *            bounce proxy url for both cluster controllers and bounce proxy
-     *            controllers
+     *   bounce proxy url for both cluster controllers and bounce proxy
+     *   controllers
      */
     public ControlledBounceProxyInformation(String clusterId, String instanceId, URI location) {
         this(clusterId, instanceId, location, location);
@@ -99,13 +101,15 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
 
     /**
      * @param clusterId
+     *   the id of the cluster
      * @param instanceId
+     *   the id of the instance
      * @param locationForCCs
-     *            bounce proxy url for cluster controllers that are somewhere on
-     *            the internet
+     *   bounce proxy url for cluster controllers that are somewhere on
+     *   the internet
      * @param locationForBpc
-     *            bounce proxy url for bounce proxy controller that is possibly
-     *            on the same subnet
+     *   bounce proxy url for bounce proxy controller that is possibly
+     *   on the same subnet
      */
     public ControlledBounceProxyInformation(String clusterId, String instanceId, URI locationForCCs, URI locationForBpc) {
         super(clusterId + "." + instanceId, locationForCCs);
@@ -117,7 +121,7 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
     /**
      * Returns the identifier of the bounce proxy instance.
      * 
-     * @return
+     * @return the id of the bounce proxy instance
      */
     public String getInstanceId() {
         return this.instanceId;
@@ -127,7 +131,7 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
      * Returns the identifier of the server cluster that the bounce proxy is
      * running on.
      * 
-     * @return
+     * @return the cluster id
      */
     public String getClusterId() {
         return clusterId;
@@ -148,7 +152,7 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
     /**
      * Returns the location for bounce proxy controllers.
      * 
-     * @return
+     * @return the location for bounce proxy controllers
      */
     public URI getLocationForBpc() {
         return locationForBpc;
