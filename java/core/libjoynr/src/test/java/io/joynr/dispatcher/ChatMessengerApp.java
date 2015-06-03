@@ -79,7 +79,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         }
     }
 
-    static class ChatMessangerAppRequestCaller implements RequestCaller {
+    static class ChatMessengerAppRequestCaller implements RequestCaller {
 
         public Object respond(Object payload) {
             return "Reply to " + payload.toString();
@@ -191,7 +191,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         // TODO register EndpointAddresses for participantIds
 
         // dispatcher.addListener(ownParticipant, this);
-        dispatcher.addRequestCaller(ownParticipant, new ChatMessangerAppRequestCaller());
+        dispatcher.addRequestCaller(ownParticipant, new ChatMessengerAppRequestCaller());
 
         try {
             messageSender.sendOneWay(ownParticipant,
