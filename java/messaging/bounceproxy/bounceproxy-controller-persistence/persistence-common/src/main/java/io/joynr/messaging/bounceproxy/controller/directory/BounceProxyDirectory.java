@@ -28,31 +28,32 @@ import java.util.List;
 /**
  * The directory stores all bounce proxy instances that are registered with the
  * bounce proxy controller.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public interface BounceProxyDirectory {
 
     /**
      * Returns all bounce proxy instances that have the right status to take new
      * channels. I.e. they must not be in a shutdown or excluded state.
-     * 
-     * @return
+     *
+     * @return list of bound proxy instances that have the right status to
+     * take new channels.
      */
     public List<BounceProxyRecord> getAssignableBounceProxies();
 
     /**
      * Updates the channel assignment for a bounce proxy, i.e. registers that a
      * channel was assigned to the bounce proxy instance.
-     * 
+     *
      * If there's no directory entry for the bounce proxy, the call is simply
      * ignored without warning. Make sure before calling this method that the
      * bounce proxy is registered.
-     * 
-     * @param ccid
-     * @param bpInfo
-     * 
+     *
+     * @param ccid the channel id
+     * @param bpInfo the bounce proxy information
+     *
      * @throws IllegalArgumentException
      *             if no bounce proxy with this ID is registered in the
      *             directory or if no channel with ccid is registered in the {@link ChannelDirectory}.
@@ -63,7 +64,7 @@ public interface BounceProxyDirectory {
      * Gets a record of a bounce proxy. Before calling this method, it should be
      * checked with {@link #containsBounceProxy(String)} if a bounce proxy with
      * this ID has been added to the directory.
-     * 
+     *
      * @param bpId
      *            the identifier of the bounce proxy
      * @return a bounce proxy record with this ID
@@ -75,7 +76,7 @@ public interface BounceProxyDirectory {
 
     /**
      * Checks whether a certain bounce proxy is registered in the directory.
-     * 
+     *
      * @param bpId
      *            the identifier of the bounce proxy
      * @return <code>true</code> if there is a record for this bounce proxy,
@@ -88,7 +89,7 @@ public interface BounceProxyDirectory {
      * directory. Before adding a new bounce proxy, it should be checked with
      * {@link #containsBounceProxy(String)} whether a bounce proxy with this
      * identifier is already registered.
-     * 
+     *
      * @param bpInfo
      *            information about the bounce proxy.
      * @throws IllegalArgumentException
@@ -100,7 +101,7 @@ public interface BounceProxyDirectory {
      * Updates the record about an existing bounce proxy. The bounce proxy
      * record to be updated should be retrieved by
      * {@link #getBounceProxy(String)} before.
-     * 
+     *
      * @param bpRecord
      *            the updated record of a bounce proxy
      * @throws IllegalArgumentException
@@ -112,8 +113,9 @@ public interface BounceProxyDirectory {
     /**
      * Returns the list of registered bounce proxies including information such
      * as performance measures, freshness and status.
-     * 
-     * @return
+     *
+     * @return list of registered bounce proxies including information such
+     * as performance measures, freshness and status.
      */
     public List<BounceProxyStatusInformation> getBounceProxyStatusInformation();
 }
