@@ -1,9 +1,7 @@
-@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
 package io.joynr.messaging.info;
 
 /*
  * #%L
- * joynr::java::messaging::service-common
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%
