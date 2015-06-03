@@ -40,7 +40,7 @@ public class ChannelUrlUtil {
      *            information of the bounce proxy
      * @param ccid
      *            channel identifier
-     * @param channelUrl
+     * @param location
      *            the channel URL as returned by the bounce proxy instance that
      *            created the channel
      * @return channel url that can be used by cluster controllers to do

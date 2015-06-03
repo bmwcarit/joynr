@@ -38,7 +38,7 @@ public class JoynrChannelNotAssignableException extends JoynrRuntimeException {
     private String ccid;
 
     /**
-     * @param message
+     * @param message problem description
      * @param ccid the channel ID that could not be assigned.
      */
     public JoynrChannelNotAssignableException(String message, String ccid) {
