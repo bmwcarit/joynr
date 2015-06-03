@@ -51,20 +51,15 @@ public interface JoynrRuntime {
      *            The domain the provider was registered for.
      * @param provider
      *            The provider instance.
+     * @param authenticationToken
+     *            Token to authenticate the provider. Should be persistent between application startups.
      */
     void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Returns a proxy builder instance to build a proxy object.
      * 
-     * @param participantId
-     *            ParticipantId for the created proxy.
-     * @param proxyInterface
-     *            Interface the proxy should implement (extending async, sync & subscription interfaces)
-     * @param syncInterface
-     *            Synchronous interface of the service.
-     * @param asyncInterface
-     *            Asynchronous interface of the service.
+     * @param <T> interface
      * @param domain
      *            Domain of the provider.
      * @param interfaceClass

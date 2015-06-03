@@ -51,7 +51,7 @@ public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
      * during object injection/creation.
      *
      * @param joynrProperties joynr configuration properties to be used by this injector factory
-     * @param modules (optional parameter) for <b>joynr internal use only</b>
+     * @param joynrModules (optional parameter) for <b>joynr internal use only</b>
      */
     public JoynrInjectorFactory(Properties joynrProperties, Module... joynrModules) {
         super(new JoynrBaseModule(joynrProperties, joynrModules));
