@@ -21,7 +21,6 @@ package io.joynr.joynrandroidruntime;
 
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
@@ -51,7 +50,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     private JoynrRuntime getJoynrRuntime() {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
-        // this will not block to long 
+        // this will not block to long
         JoynrRuntime runtime;
         try {
             runtime = runtimeInitTask.get();
@@ -71,7 +70,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     public RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
-        // this will not block to long 
+        // this will not block to long
         JoynrRuntime runtime = getJoynrRuntime();
 
         // registration of providers is asynchronously
@@ -84,15 +83,14 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     public void unregisterCapability(String domain, JoynrProvider provider, String autheticationToken) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
-        // this will not block to long 
+        // this will not block to long
         JoynrRuntime runtime = getJoynrRuntime();
 
         runtime.unregisterCapability(domain, provider, autheticationToken);
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass)
-                                                                                                             throws JoynrIllegalStateException {
+    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return new AndroidProxyBuilder<T>(runtimeInitTask, domain, interfaceClass, uiLogger);
     }
 

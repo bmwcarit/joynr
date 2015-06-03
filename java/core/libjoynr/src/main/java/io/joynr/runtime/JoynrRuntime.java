@@ -21,7 +21,6 @@ package io.joynr.runtime;
 
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 
@@ -72,10 +71,8 @@ public interface JoynrRuntime {
      *            Interface the provider offers.
      * @return After setting arbitration, proxy and messaging QoS parameters the returned ProxyBuilder can be used to
      *         build the proxy instance.
-     * @throws JoynrIllegalStateException
      */
-    <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass)
-                                                                                                                  throws JoynrIllegalStateException;
+    <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
 
     /**
      * Shutdown the joynr instance:
