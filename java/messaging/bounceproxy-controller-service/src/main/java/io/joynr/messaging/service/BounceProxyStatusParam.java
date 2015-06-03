@@ -43,14 +43,14 @@ public class BounceProxyStatusParam {
      * 
      * @param status
      *            a status parameter as string. If it is one of the
-     *            {@link BounceProxyStatus} enumeration values (case insensitiv)
-     *            except {@link BounceProxyStatus.UNRESOLVED}, then this is set
+     *            {@link io.joynr.messaging.info.BounceProxyStatus} enumeration values (case insensitiv)
+     *            except {@link io.joynr.messaging.info.BounceProxyStatus#UNRESOLVED}, then this is set
      *            as internal status. If <code>null</code>, the internal
-     *            {@link BounceProxyStatus} is <code>null</code>, too. If a
+     *            {@link io.joynr.messaging.info.BounceProxyStatus} is <code>null</code>, too. If a
      *            string is passed in that won't resolve to any of
-     *            {@link BounceProxyStatus} except
-     *            {@link BounceProxyStatus.UNRESOLVED}, then
-     *            {@link BounceProxyStatus.UNRESOLVED} is set.
+     *            {@link io.joynr.messaging.info.BounceProxyStatus} except
+     *            {@link io.joynr.messaging.info.BounceProxyStatus#UNRESOLVED}, then
+     *            {@link io.joynr.messaging.info.BounceProxyStatus#UNRESOLVED} is set.
      */
     public BounceProxyStatusParam(String status) {
         this.passedInStatus = status;
@@ -67,9 +67,9 @@ public class BounceProxyStatusParam {
     }
 
     /**
-     * Returns the wrapped {@link BounceProxyStatus}.
+     * Returns the wrapped {@link io.joynr.messaging.info.BounceProxyStatus}.
      * 
-     * @return
+     * @return the bounce proxy status {@link io.joynr.messaging.info.BounceProxyStatus}
      */
     public BounceProxyStatus getStatus() {
         return this.status;
@@ -77,10 +77,11 @@ public class BounceProxyStatusParam {
 
     /**
      * Returns the parameter that was passed in to create a
-     * {@link BounceProxyStatus} object that is returned by {@link #getStatus()}
+     * {@link io.joynr.messaging.info.BounceProxyStatus} object that is returned by {@link #getStatus()}
      * .
      * 
-     * @return
+     * @return e parameter that was passed in to create a
+     * {@link io.joynr.messaging.info.BounceProxyStatus} object that is returned by {@link #getStatus()}
      */
     public String getPassedInStatus() {
         return this.passedInStatus;

@@ -33,14 +33,14 @@ public interface BounceProxyStatusInformation {
     /**
      * Returns the identifier of a bounce proxy.
      * 
-     * @return
+     * @return the id of the bounce proxy
      */
     public String getBounceProxyId();
 
     /**
      * Returns the current status of a proxy.
      * 
-     * @return
+     * @return the current status of the proxy
      */
     public BounceProxyStatus getStatus();
 
@@ -48,14 +48,14 @@ public interface BounceProxyStatusInformation {
      * Returns the freshness of this information, i.e. the timestamp when status
      * information about this bounce proxy was updated last.
      * 
-     * @return
+     * @return the freshness of this information (Date)
      */
     public Date getFreshness();
 
     /**
      * Returns performance measures of this bounce proxy instance.
      * 
-     * @return
+     * @return the performane measures information of this bounce proxy
      */
     public PerformanceMeasures getPerformanceMeasures();
 }

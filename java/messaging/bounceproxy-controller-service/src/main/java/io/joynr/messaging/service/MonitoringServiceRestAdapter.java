@@ -47,13 +47,13 @@ import com.google.inject.Inject;
 
 /**
  * RESTful web service to control bounce proxy instances.
- * 
+ *
  * It offers methods for bounce proxies to report their status and also
  * performance measures. Based on these reports the bounce proxy controller will
  * be able to determine whether bounce proxy instances can handle more channels.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 @Path("/bounceproxies")
 public class MonitoringServiceRestAdapter {
@@ -64,8 +64,9 @@ public class MonitoringServiceRestAdapter {
     /**
      * Returns a list of bounce proxies that are registered with the bounceproxy
      * controller.
-     * 
-     * @return
+     *
+     * @return a list of bounce proxies that are registered with the bounceproxy
+     * controller
      */
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
@@ -78,14 +79,15 @@ public class MonitoringServiceRestAdapter {
      * Reports that a new bounce proxy instance has just been started. <br>
      * The BP instance is either completely new or is re-started after a
      * previous shutdown.
-     * 
+     *
      * @param bpId
      *            the identifier of the bounce proxy
      * @param urlForCc
      *            the bounce proxy URL used by cluster controllers
      * @param urlForBpc
      *            the bounce proxy URL used by the bounce proxy controller
-     * @return
+     * @return emtpy response in case of crash or shutdown, otherwise response
+     * containing bounce proxy URL used by the bounce proxy controller
      */
     @PUT
     @Produces({ MediaType.TEXT_PLAIN })
@@ -109,12 +111,12 @@ public class MonitoringServiceRestAdapter {
 
     /**
      * Refreshes the status of a bounce proxy instance, e.g. signals a shutdown.
-     * 
+     *
      * @param bpId
      *            the identifier of the bounce proxy
      * @param statusParam
      *            the status to be reported
-     * @return
+     * @return empty response
      */
     @PUT
     @Path("/{bpid: ([A-Z,a-z,0-9,_,\\-]+)(\\.)([A-Z,a-z,0-9,_,\\-]+)}/lifecycle")
@@ -144,12 +146,12 @@ public class MonitoringServiceRestAdapter {
     /**
      * Refreshes the performance measures of a bounce proxy instance, e.g.
      * active long polls.
-     * 
+     *
      * @param bpId
      *            the identifier of the bounce proxy
      * @param performanceMap
      *            key-value pairs of performance measures
-     * @return
+     * @return empty response
      */
     @POST
     @Path("/{bpid: ([A-Z,a-z,0-9,_,\\-]+)(\\.)([A-Z,a-z,0-9,_,\\-]+)}/performance")
