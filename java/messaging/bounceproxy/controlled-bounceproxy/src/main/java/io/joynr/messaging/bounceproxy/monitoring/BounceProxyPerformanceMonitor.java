@@ -33,7 +33,7 @@ public interface BounceProxyPerformanceMonitor {
     /**
      * Returns performance measures as key value pairs.
      * 
-     * @return
+     * @return performance measures as map of string-integer key-value pairs
      */
     public Map<String, Integer> getAsKeyValuePairs();
 

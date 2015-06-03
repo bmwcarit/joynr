@@ -27,9 +27,9 @@ import java.util.List;
 /**
  * Property keys for the configuration of a bounce proxy instance in a java
  * properties file.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class BounceProxyPropertyKeys {
 
@@ -51,8 +51,9 @@ public class BounceProxyPropertyKeys {
      * Returns the keys for all properties that should be configured as system
      * properties. These typically are properties that don't have default values
      * and that should only be determined at runtime.
-     * 
-     * @return
+     *
+     * @return the keys of all bounce proxy properties that should be configured
+     * as system properties
      */
     public static List<String> getPropertyKeysForSystemProperties() {
         // make sure that the list is read-only
