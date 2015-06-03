@@ -80,13 +80,13 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public void unregisterCapability(String domain, JoynrProvider provider, String autheticationToken) {
+    public void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
         // this will not block to long
         JoynrRuntime runtime = getJoynrRuntime();
 
-        runtime.unregisterCapability(domain, provider, autheticationToken);
+        runtime.unregisterCapability(domain, provider, authenticationToken);
     }
 
     @Override
