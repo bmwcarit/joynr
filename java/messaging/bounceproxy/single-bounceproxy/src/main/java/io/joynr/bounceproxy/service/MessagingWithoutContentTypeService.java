@@ -81,6 +81,12 @@ public class MessagingWithoutContentTypeService {
     /**
      * Send a message to the given cluster controller like the above method
      * postMessage
+     * @param ccid the channel id
+     * @param messageString the message to be sent
+     * @return response builder object with the URL that can be queried to get the message
+     * @throws IOException on I/O error
+     * @throws JsonParseException on parsing problems due to non-well formed content
+     * @throws JsonMappingException on fatal problems with mapping of content
      */
     @POST
     @Consumes({ MediaType.TEXT_PLAIN })
