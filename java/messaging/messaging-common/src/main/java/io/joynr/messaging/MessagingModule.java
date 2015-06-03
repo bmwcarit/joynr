@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import io.joynr.messaging.serialize.NumberSerializer;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -44,6 +45,12 @@ public class MessagingModule extends AbstractModule {
     // private static final Logger logger = LoggerFactory.getLogger(MessagingModule.class);
 
     private ObjectMapper objectMapper;
+
+    public abstract class ThrowableMixIn {
+        // force serialization of detailMessage
+        @JsonProperty()
+        private String detailMessage;
+    }
 
     public MessagingModule() {
         objectMapper = new ObjectMapper();
@@ -68,6 +75,7 @@ public class MessagingModule extends AbstractModule {
                                                                                            null);
 
         module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
+        module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);
         objectMapper.registerModule(module);
 
     }

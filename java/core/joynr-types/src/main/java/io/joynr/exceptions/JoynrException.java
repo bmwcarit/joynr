@@ -19,7 +19,13 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public interface JoynrException {
+import io.joynr.subtypes.JoynrType;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+@JsonAutoDetect(getterVisibility = Visibility.NONE)
+public interface JoynrException extends JoynrType {
 
     public boolean equals(Object obj);
 
