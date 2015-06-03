@@ -35,7 +35,7 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
 
     /**
      * @param modules a list of modules to be used for the injector creation
-     * 
+     *
      * Basic constructor for the Injectorfactory
      */
     public InjectorFactory(Module... modules) {
@@ -59,8 +59,8 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
 
     /**
      * @param applicationModule the mandatory application properties binded via this module
-     * @param applicationSpecificModules modules allowing to further configure the application specific injector used for the creation of the application 
-     * @return a new instance of <S extends IApplication>
+     * @param applicationSpecificModules modules allowing to further configure the application specific injector used for the creation of the application
+     * @return a new instance of {@literal <S extends IApplication>}
      */
     @SuppressWarnings("unchecked")
     public S createApplication(T applicationModule, Module... applicationSpecificModules) {
@@ -77,9 +77,10 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
     }
 
     /**
-     * @return a new instance of <S extends IApplication>
-     * 
-     * Create a new instance of <S extends IApplcation>, based on the default injector configurations of the InjectorFactory
+     * @return a new instance of {@literal <S extends IApplication>}
+     *
+     * Create a new instance of {@literal <S extends IApplcation>},
+     * based on the default injector configurations of the InjectorFactory
      */
     @SuppressWarnings("unchecked")
     public S createApplication() {
@@ -88,7 +89,7 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
 
     /**
      * @param rootInjector the new rootInjector
-     * 
+     *
      * Allows to adapt the root injector of the InjectorFactory
      */
     protected void setRootInjector(Injector rootInjector) {
@@ -100,7 +101,7 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
     }
 
     /**
-     * @return the injector created by the InjectorFactory based on the configured modules 
+     * @return the injector created by the InjectorFactory based on the configured modules
      */
     public Injector getInjector() {
         if (fInjector == null) {
