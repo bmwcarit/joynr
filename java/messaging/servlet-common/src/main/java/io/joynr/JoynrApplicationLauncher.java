@@ -104,6 +104,8 @@ public class JoynrApplicationLauncher {
      * If clear, then deregister etc.
      *
      * @param clear
+     *   indicates whether the messageListener of the servlet receiver
+     *   should be dropped and the channel closed
      */
     // TODO support clear properly
     public void shutdown(boolean clear) {

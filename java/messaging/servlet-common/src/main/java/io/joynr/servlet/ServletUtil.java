@@ -52,7 +52,7 @@ public class ServletUtil {
      * Find a free port on the test system to be used by the servlet engine
      * 
      * @return the socket number
-     * @throws IOException
+     * @throws IOException in case of I/O failure
      */
     public static int findFreePort() throws IOException {
         ServerSocket socket = null;
