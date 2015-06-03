@@ -92,7 +92,7 @@ public class AccessControlEditorServlet extends HttpServlet {
 
     /**
      * Getter for all Owner ACL entries to list them in editor web app.
-     * @return
+     * @return list of owner ACL entries
      */
     @GET
     @Path(OWNER_ACL_PATH)
@@ -118,9 +118,13 @@ public class AccessControlEditorServlet extends HttpServlet {
     /**
      * Deletes a single master acl entry identified by /{userId}/{domain}/{interfaceName}/{operation}
      * @param userId
+     *   user part of the key that identifies the master acl entry to be deleted
      * @param domain
+     *   domain part of the key that identifies the master acl entry to be deleted
      * @param interfaceName
+     *   interface name part that identifies the master acl entry to be deleted
      * @param operation
+     *   operation part that identifies the master acl entry entry to be deleted
      */
     @DELETE
     @Path(MASTER_ACL_PATH + "/{userId}/{domain}/{interfaceName}/{operation}")
@@ -135,9 +139,13 @@ public class AccessControlEditorServlet extends HttpServlet {
     /**
      * Deletes a single owner acl entry identified by /{userId}/{domain}/{interfaceName}/{operation}
      * @param userId
+     *   user part of the key that identifies the own acl entry to be deleted
      * @param domain
+     *   domain part of the key that identifies the own acl entry to be deleted
      * @param interfaceName
+     *   interface name part that identifies the own acl entry to be deleted
      * @param operation
+     *   operation part that identifies the own acl entry entry to be deleted
      */
     @DELETE
     @Path(OWNER_ACL_PATH + "/{userId}/{domain}/{interfaceName}/{operation}")
@@ -150,8 +158,11 @@ public class AccessControlEditorServlet extends HttpServlet {
     }
 
     /**
-     * Updates an existing DRT entry. Identifies the entry to update by the userId and role of the updated.
-     * @param domainRoleEntry Updated entry. UserId and role may not be changed or the entry to update can not be found
+     * Updates an existing DRT entry.
+     *   Identifies the entry to update by the userId and role of the updated.
+     * @param domainRoleEntry
+     *   Updated entry. UserId and role may not be changed or the entry to
+     *   update can not be found
      */
     @POST
     @Path(DOMAIN_ROLE_PATH + "/")
@@ -162,8 +173,12 @@ public class AccessControlEditorServlet extends HttpServlet {
     }
 
     /**
-     * Updates an existing Master ACL entry. Identifies the entry to update by the userId, domain, interfaceName and operation of the updated.
-     * @param masterAccessControlEntry Updated entry. userId, domain, interfaceName and operation may not be changed or the entry to update can not be found
+     * Updates an existing Master ACL entry.
+     *   Identifies the entry to update by the userId, domain, interfaceName and
+     *   operation of the updated.
+     * @param masterAccessControlEntry
+     *   Updated entry. userId, domain, interfaceName and operation may not be
+     *   changed or the entry to update can not be found
      */
     @POST
     @Path(MASTER_ACL_PATH + "/")
@@ -174,8 +189,11 @@ public class AccessControlEditorServlet extends HttpServlet {
     }
 
     /**
-     * Updates an existing Owner ACL entry. Identifies the entry to update by the userId, domain, interfaceName and operation of the updated.
-     * @param ownerAccessControlEntry Updated entry. userId, domain, interfaceName and operation may not be changed or the entry to update can not be found
+     * Updates an existing Owner ACL entry.Identifies the entry to update by
+     * the userId, domain, interfaceName and operation of the updated.
+     * @param ownerAccessControlEntry
+     *   Updated entry. userId, domain, interfaceName and operation may not
+     *   be changed or the entry to update can not be found
      */
     @POST
     @Path(OWNER_ACL_PATH + "/")
