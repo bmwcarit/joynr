@@ -101,6 +101,12 @@ public class MessagingService {
 
     /**
      * Send a message to the servlet
+     * @param ccid the channel id
+     * @param messageString the message to be send
+     * @return Response
+     * @throws IOException in case of IO error occurred
+     * @throws JsonParseException in case JSON could not be parsed
+     * @throws JsonMappingException in case JSON could not be mapped
      */
     @POST
     @Consumes({ MediaType.TEXT_PLAIN })
@@ -173,7 +179,8 @@ public class MessagingService {
 
     /**
      * Register the default channelId with the channelUrlDirectory
-     * 
+     * @param channelId the id of the channel to be registered
+     * @return Response ok, if successfull (otherwise throws exception)
      */
     @POST
     @Path("/register")
