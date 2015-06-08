@@ -283,6 +283,7 @@ template <>
 inline std::tuple<> Util::toValueTuple<>(QList<QVariant> list)
 {
     assert(list.empty());
+    Q_UNUSED(list);
     return std::make_tuple();
 }
 
