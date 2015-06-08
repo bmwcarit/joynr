@@ -46,7 +46,7 @@ Logger* LocalDomainAccessController::logger =
 
 qint64 LocalDomainAccessController::broadcastMinIntervalMs = 1 * 1000;
 qint64 LocalDomainAccessController::broadcastSubscriptionValidityMs =
-        10 * 365 * 24 * 3600 * 1000L; // 10 years
+        10 * 365 * 24 * 3600 * 1000LL; // 10 years
 qint64 LocalDomainAccessController::broadcastPublicationTtlMs = 5 * 1000;
 
 //--- Declarations of nested classes -------------------------------------------
