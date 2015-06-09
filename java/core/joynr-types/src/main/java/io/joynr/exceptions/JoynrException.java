@@ -20,4 +20,8 @@ package io.joynr.exceptions;
  */
 
 public interface JoynrException {
+
+    public boolean equals(Object obj);
+
+    public int hashCode();
 }

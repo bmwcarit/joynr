@@ -4,7 +4,7 @@ package io.joynr.messaging.bounceproxy.controller.exception;
  * #%L
  * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,5 +48,35 @@ public class JoynrChannelNotAssignableException extends JoynrRuntimeException {
 
     public String getChannelId() {
         return ccid;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((ccid == null) ? 0 : ccid.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        JoynrChannelNotAssignableException other = (JoynrChannelNotAssignableException) obj;
+        if (ccid == null) {
+            if (other.ccid != null) {
+                return false;
+            }
+        } else if (!ccid.equals(other.ccid)) {
+            return false;
+        }
+        return true;
     }
 }
