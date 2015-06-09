@@ -23,13 +23,13 @@ public class JoynrApplicationException extends Exception implements JoynrExcepti
 
     private static final long serialVersionUID = 6620625652713563976L;
 
-    Enum error;
+    Enum<?> error;
 
-    public JoynrApplicationException(Enum error) {
+    public JoynrApplicationException(Enum<?> error) {
         this.error = error;
     }
 
-    public Enum getError() {
+    public Enum<?> getError() {
         return this.error;
     }
 }
