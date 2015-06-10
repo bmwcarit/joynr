@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrApplicationException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
@@ -37,6 +36,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.BroadcastSubscriptionRequest;
+import joynr.JoynrApplicationException;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;

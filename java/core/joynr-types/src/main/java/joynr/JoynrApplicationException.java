@@ -1,4 +1,4 @@
-package io.joynr.exceptions;
+package joynr;
 
 /*
  * #%L
@@ -18,6 +18,8 @@ package io.joynr.exceptions;
  * limitations under the License.
  * #L%
  */
+
+import io.joynr.exceptions.JoynrException;
 
 import java.io.IOException;
 
