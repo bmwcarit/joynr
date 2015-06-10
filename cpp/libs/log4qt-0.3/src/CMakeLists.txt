@@ -19,6 +19,11 @@ if(${WIN32})
     endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 endif(${WIN32})
 
+# Suppress "... may be used uninitialized" warnings from GNU C++ compiler
+if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "-Wno-maybe-uninitialized")
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(log4qt_HEADERS
