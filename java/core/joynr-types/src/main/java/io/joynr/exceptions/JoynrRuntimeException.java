@@ -57,13 +57,6 @@ public class JoynrRuntimeException extends RuntimeException implements JoynrExce
         } else if (!getMessage().equals(other.getMessage())) {
             return false;
         }
-        if (getCause() == null) {
-            if (other.getCause() != null) {
-                return false;
-            }
-        } else if (!getCause().equals(other.getCause())) {
-            return false;
-        }
         return true;
     }
 
@@ -72,7 +65,6 @@ public class JoynrRuntimeException extends RuntimeException implements JoynrExce
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getMessage() == null) ? 0 : getMessage().hashCode());
-        result = prime * result + ((getCause() == null) ? 0 : getCause().hashCode());
         return result;
     }
 }

@@ -1,4 +1,4 @@
-package io.joynr.messaging.bounceproxy.controller.exception;
+package io.joynr.exceptions;
 
 /*
  * #%L
@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller.exception;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrRuntimeException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Thrown if an assignment of a channel to a bounce proxy instance failed.
@@ -35,7 +35,15 @@ public class JoynrChannelNotAssignableException extends JoynrRuntimeException {
     /**
      * The channel that could not be assigned to a bounce proxy.
      */
+    @JsonProperty
     private String ccid;
+
+    /**
+     * Constructor for deserializer
+     */
+    protected JoynrChannelNotAssignableException() {
+        super();
+    }
 
     /**
      * @param message problem description

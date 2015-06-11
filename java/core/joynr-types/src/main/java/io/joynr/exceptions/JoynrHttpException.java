@@ -24,6 +24,14 @@ public class JoynrHttpException extends JoynrCommunicationException {
     private static final long serialVersionUID = -855603266419595137L;
     public final int statusCode;
 
+    /**
+     * Constructor for deserializer
+     */
+    protected JoynrHttpException() {
+        super();
+        statusCode = 0;
+    }
+
     public JoynrHttpException(int statusCode, String message) {
         super(message);
         this.statusCode = statusCode;
