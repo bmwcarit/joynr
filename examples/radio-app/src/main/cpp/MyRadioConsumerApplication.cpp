@@ -229,7 +229,8 @@ int main(int argc, char* argv[])
             new RadioStationListener());
 
     // Subscribe to the radio station.
-    QString subscriptionId = proxy->subscribeToCurrentStation(listener, subscriptionQos);
+    QString currentStationSubscriptionId =
+            proxy->subscribeToCurrentStation(listener, subscriptionQos);
 
     // broadcast subscription
 
@@ -303,7 +304,7 @@ int main(int argc, char* argv[])
     }
 
     // unsubscribe
-    proxy->unsubscribeFromCurrentStation(subscriptionId);
+    proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
 
     delete proxy;
     delete proxyBuilder;
