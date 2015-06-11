@@ -125,61 +125,6 @@ private:
     Logger* logger;
 };
 
-// Run a subscription
-QString runSubscription(vehicle::RadioProxy* proxy)
-{
-    Logger* logger = Logging::getInstance()->getLogger(
-            "DEMO", "MyRadioConsumerApplication::runSubscription");
-
-    // Set the Quality of Service parameters for the subscription
-
-    // The provider will send a notification whenever the value changes. The number of sent
-    // notifications
-    // may be limited by the min interval QoS.
-    // NOTE: The provider must support on-change notifications in order to use this feature by
-    // calling
-    //       the <attribute>Changed method of the <interface>AbstractProvider class whenever the
-    //       <attribute>
-    //       value changes.
-    QSharedPointer<OnChangeWithKeepAliveSubscriptionQos> subscriptionQos(
-            new OnChangeWithKeepAliveSubscriptionQos());
-    // The provider will maintain at least a minimum interval idle time in milliseconds between
-    // successive notifications, even if on-change notifications are enabled and the value changes
-    // more
-    // often. This prevents the consumer from being flooded by updated values. The filtering happens
-    // on
-    // the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos->setMinInterval(5 * 1000);
-    // The provider will send notifications every maximum interval in milliseconds, even if the
-    // value didn't
-    // change. It will send notifications more often if on-change notifications are enabled,
-    // the value changes more often, and the minimum interval QoS does not prevent it. The maximum
-    // interval
-    // can thus be seen as a sort of heart beat.
-    subscriptionQos->setMaxInterval(8 * 1000);
-    // The provider will send notifications until the end date is reached. The consumer will not
-    // receive any
-    // notifications (neither value notifications nor missed publication notifications) after
-    // this date.
-    // setValidity_ms will set the end date to current time millis + validity_ms
-    subscriptionQos->setValidity(60 * 1000);
-    // Notification messages will be sent with this time-to-live. If a notification message can not
-    // be
-    // delivered within its TTL, it will be deleted from the system.
-    // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
-    //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos->setAlertAfterInterval(10 * 1000);
-
-    // Subscriptions go to a listener object
-    QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> listener(
-            new RadioStationListener());
-
-    // Subscribe to the radio station.
-    QString subscriptionId = proxy->subscribeToCurrentStation(listener, subscriptionQos);
-
-    return subscriptionId;
-}
-
 //------- Main entry point -------------------------------------------------------
 
 int main(int argc, char* argv[])
