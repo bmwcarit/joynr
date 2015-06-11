@@ -253,7 +253,8 @@ int main(int argc, char* argv[])
     weakSignalBroadcastSubscriptionQos->setValidity(60 * 1000);
     QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
-    proxy->subscribeToWeakSignalBroadcast(
+    QString weakSignalBroadcastSubscriptionId =
+        proxy->subscribeToWeakSignalBroadcast(
             weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
@@ -271,7 +272,8 @@ int main(int argc, char* argv[])
     QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
     newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-    proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFilterParams,
+    QString newStationDiscoveredBroadcastSubscriptionId =
+        proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFilterParams,
                                                     newStationDiscoveredBroadcastListener,
                                                     newStationDiscoveredBroadcastSubscriptionQos);
     // add favorite radio station
@@ -305,6 +307,8 @@ int main(int argc, char* argv[])
 
     // unsubscribe
     proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
+    proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
+    proxy->unsubscribeFromNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastSubscriptionId);
 
     delete proxy;
     delete proxyBuilder;
