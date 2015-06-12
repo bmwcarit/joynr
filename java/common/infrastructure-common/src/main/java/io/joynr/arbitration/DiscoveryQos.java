@@ -258,6 +258,13 @@ public class DiscoveryQos {
         this.providerMustSupportOnChange = providerMustSupportOnChange;
     }
 
+    /**
+     * @param discoveryScope selects capability registries to choose from for provider discovery
+     */
+    public void setDiscoveryScope(DiscoveryScope discoveryScope) {
+        this.discoveryScope = discoveryScope;
+    }
+
     public DiscoveryScope getDiscoveryScope() {
         return discoveryScope;
     }
