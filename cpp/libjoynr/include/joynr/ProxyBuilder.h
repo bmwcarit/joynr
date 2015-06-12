@@ -61,7 +61,7 @@ public:
     ProxyBuilder* setCached(const bool cached);
     ProxyBuilder* setProxyQos(const ProxyQos& proxyQos);
     ProxyBuilder* setRuntimeQos(const MessagingQos& runtimeQos);
-    ProxyBuilder* setDiscoveryQos(DiscoveryQos& discoveryQos);
+    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
@@ -220,7 +220,7 @@ template <class T>
    All parameter that are needed for arbitration should be set, before setDiscoveryQos is called.
    Calling setProxyQos after setDiscoveryQos will result in a false assertion.
 */
-ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(DiscoveryQos& discoveryQos)
+ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos)
 {
     // if DiscoveryQos is set, arbitration will be started. It shall be avoided that the
     // setDiscoveryQos method can be called twice
