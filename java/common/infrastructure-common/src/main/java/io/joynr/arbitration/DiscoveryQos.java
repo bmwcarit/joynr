@@ -265,6 +265,9 @@ public class DiscoveryQos {
         this.discoveryScope = discoveryScope;
     }
 
+    /**
+     * @return scope criteria to select from capability registries for provider discovery
+     */
     public DiscoveryScope getDiscoveryScope() {
         return discoveryScope;
     }
