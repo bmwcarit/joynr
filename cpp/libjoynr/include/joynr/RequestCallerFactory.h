@@ -25,7 +25,6 @@ namespace joynr
 {
 
 class RequestCaller;
-class IRequestCaller;
 
 // Default definition of a RequestCallerFactoryHelper
 // Specializations of this template appear in provider header files
