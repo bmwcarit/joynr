@@ -27,7 +27,6 @@
 namespace joynr
 {
 
-class IMessaging;
 class MessageRouter;
 
 /**
