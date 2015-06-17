@@ -88,7 +88,7 @@ public:
     virtual void setAlertAfterInterval(const qint64& alertAfterInterval);
 
     /**
-     * Resets the alterAfterInterval and disables the alert by setting its value to
+     * Resets the alertAfterInterval and disables the alert by setting its value to
      * NO_ALERT_AFTER_INTERVAL.
      */
     virtual void clearAlertAfterInterval();
@@ -107,7 +107,7 @@ public:
 
 protected:
     qint64 period;
-    qint64 alterAfterInterval;
+    qint64 alertAfterInterval;
 };
 
 } // namespace joynr
