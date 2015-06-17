@@ -90,7 +90,7 @@ public:
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
 		«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
-		«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 				std::function<void(

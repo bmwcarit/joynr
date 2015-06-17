@@ -196,7 +196,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 	}
 
-	def getCommaSeperatedTypedParameterList(FMethod method) {
+	def getCommaSeperatedTypedInputParameterList(FMethod method) {
 		val returnStringBuilder = new StringBuilder();
 		for (param : getInputParameters(method)) {
 			returnStringBuilder.append(getMappedDatatypeOrList(param));

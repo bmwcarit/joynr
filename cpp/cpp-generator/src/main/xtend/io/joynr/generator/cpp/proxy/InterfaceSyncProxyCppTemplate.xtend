@@ -94,7 +94,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 «ENDFOR»
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.name»
-	«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+	«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 	«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
 	/*
 	 * «methodName»

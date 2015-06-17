@@ -84,7 +84,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	«val methodName = method.joynrName»
 	«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
 	«val outputUntypedParamList = method.getCommaSeperatedUntypedOutputParameterList»
-	«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+	«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 	void Default«interfaceName»Provider::«method.joynrName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			std::function<void(

@@ -123,7 +123,7 @@ class InterfaceUtil {
 			* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 			*/
 			virtual void «method.joynrName»(
-					joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+					joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 			)«IF pure»=0«ENDIF»;
 		«ELSE»
 
@@ -134,7 +134,7 @@ class InterfaceUtil {
 			* @param result The result that will be returned to the caller.
 			*/
 			virtual void «method.joynrName»(
-					joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+					joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 			)«IF pure»=0«ENDIF»;
 		«ENDIF»
 	«ENDFOR»
@@ -153,7 +153,7 @@ class InterfaceUtil {
 		«printFutureReturnDefinition»
 		*/
 
-		virtual QSharedPointer<joynr::Future<«returnType»> > «method.joynrName»(«getCommaSeperatedTypedParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+		virtual QSharedPointer<joynr::Future<«returnType»> > «method.joynrName»(«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''

@@ -73,7 +73,7 @@ public:
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
 		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-		«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 		virtual void «method.joynrName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct);

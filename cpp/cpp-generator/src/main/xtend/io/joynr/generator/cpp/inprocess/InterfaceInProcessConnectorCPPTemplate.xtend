@@ -291,7 +291,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 «var methodname = method.joynrName»
-«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 «var outputParameter = getMappedOutputParameter(method)»
 «var inputParamList = getCommaSeperatedUntypedParameterList(method)»
 «var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
@@ -325,7 +325,7 @@ void «interfaceName»InProcessConnector::«methodname»(
 	«ENDIF»
 }
 
-QSharedPointer<joynr::Future<«outputParameter.head»> > «interfaceName»InProcessConnector::«methodname»(«getCommaSeperatedTypedParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+QSharedPointer<joynr::Future<«outputParameter.head»> > «interfaceName»InProcessConnector::«methodname»(«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 {
 	assert(!address.isNull());

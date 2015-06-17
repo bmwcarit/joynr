@@ -284,7 +284,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«var outputTypedConstParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 	«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
 	«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
-	«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
+	«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 	«val outputParameter = getMappedOutputParameter(method)»
 	«val methodName = method.joynrName»
 	void «interfaceName»JoynrMessagingConnector::«methodName»(
@@ -313,7 +313,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	}
 
 	QSharedPointer<joynr::Future<«outputParameter.head»> > «interfaceName»JoynrMessagingConnector::«methodName»(
-			«getCommaSeperatedTypedParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+			«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> callbackFct)
 	{
 		«produceParameterSetters(method)»

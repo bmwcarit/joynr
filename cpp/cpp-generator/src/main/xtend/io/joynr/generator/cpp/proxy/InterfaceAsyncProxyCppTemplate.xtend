@@ -114,7 +114,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	 * «methodName»
 	 */
 	QSharedPointer<joynr::Future<«outputParameter.head»> > «asyncClassName»::«methodName»(
-			«IF !method.inputParameters.empty»«getCommaSeperatedTypedParameterList(method)»,«ENDIF»
+			«IF !method.inputParameters.empty»«getCommaSeperatedTypedInputParameterList(method)»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 	{
 		if (connector==NULL){
