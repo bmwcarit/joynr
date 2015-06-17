@@ -75,7 +75,7 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::add(joynr::RequestStatus& joynrInternalStatus,
-                                   joynr::system::DiscoveryEntry discoveryEntry)
+                                   const joynr::system::DiscoveryEntry& discoveryEntry)
 {
     if (discoveryProxy == NULL) {
         joynrInternalStatus.setCode(RequestStatusCode::ERROR);
@@ -103,9 +103,9 @@ void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnectio
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
                                       QList<joynr::system::DiscoveryEntry>& result,
-                                      QString domain,
-                                      QString interfaceName,
-                                      joynr::system::DiscoveryQos discoveryQos)
+                                      const QString& domain,
+                                      const QString& interfaceName,
+                                      const joynr::system::DiscoveryQos& discoveryQos)
 {
     if (discoveryProxy == NULL) {
         joynrInternalStatus.setCode(RequestStatusCode::ERROR);
@@ -125,7 +125,7 @@ void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
                                       joynr::system::DiscoveryEntry& result,
-                                      QString participantId)
+                                      const QString& participantId)
 {
     if (provisionedDiscoveryEntries.contains(participantId)) {
         joynrInternalStatus.setCode(RequestStatusCode::OK);
@@ -145,7 +145,7 @@ void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::remove(joynr::RequestStatus& joynrInternalStatus,
-                                      QString participantId)
+                                      const QString& participantId)
 {
     if (discoveryProxy == NULL) {
         joynrInternalStatus.setCode(RequestStatusCode::ERROR);

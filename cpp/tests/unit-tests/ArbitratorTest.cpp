@@ -192,9 +192,9 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
                 lookup(
                     A<joynr::RequestStatus&>(),
                     A<QList<joynr::system::DiscoveryEntry>&>(),
-                    A<QString>(),
-                    A<QString>(),
-                    A<joynr::system::DiscoveryQos>()
+                    A<const QString&>(),
+                    A<const QString&>(),
+                    A<const joynr::system::DiscoveryQos&>()
                 )
     )
             .Times(5)

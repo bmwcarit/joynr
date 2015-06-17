@@ -116,7 +116,7 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
     participantId2LocalCapability.cleanup(0);
 }
 
-void LocalCapabilitiesDirectory::add(joynr::system::DiscoveryEntry& discoveryEntry)
+void LocalCapabilitiesDirectory::add(const joynr::system::DiscoveryEntry& discoveryEntry)
 {
     bool isGlobal = discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
 
@@ -395,7 +395,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::add(system::DiscoveryEntry discoveryEntry,
+void LocalCapabilitiesDirectory::add(const system::DiscoveryEntry& discoveryEntry,
                                      std::function<void(const RequestStatus&)> callbackFct)
 {
     add(discoveryEntry);
@@ -404,9 +404,9 @@ void LocalCapabilitiesDirectory::add(system::DiscoveryEntry discoveryEntry,
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
-        QString domain,
-        QString interfaceName,
-        system::DiscoveryQos discoveryQos,
+        const QString& domain,
+        const QString& interfaceName,
+        const system::DiscoveryQos& discoveryQos,
         std::function<void(const RequestStatus&, const QList<system::DiscoveryEntry>&)> callbackFct)
 {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
@@ -419,7 +419,7 @@ void LocalCapabilitiesDirectory::lookup(
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
-        QString participantId,
+        const QString& participantId,
         std::function<void(const RequestStatus&, const system::DiscoveryEntry&)> callbackFct)
 {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
@@ -445,7 +445,7 @@ void LocalCapabilitiesDirectory::lookup(
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::remove(QString participantId,
+void LocalCapabilitiesDirectory::remove(const QString& participantId,
                                         std::function<void(const RequestStatus&)> callbackFct)
 {
     remove(participantId);

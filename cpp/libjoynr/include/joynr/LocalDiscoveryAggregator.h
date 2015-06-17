@@ -63,22 +63,22 @@ public:
 
     // inherited from joynr::system::IDiscoverySync
     virtual void add(joynr::RequestStatus& joynrInternalStatus,
-                     joynr::system::DiscoveryEntry entry);
+                     const joynr::system::DiscoveryEntry& entry);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
                         QList<joynr::system::DiscoveryEntry>& result,
-                        QString domain,
-                        QString interfaceName,
-                        joynr::system::DiscoveryQos discoveryQos);
+                        const QString& domain,
+                        const QString& interfaceName,
+                        const joynr::system::DiscoveryQos& discoveryQos);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
                         joynr::system::DiscoveryEntry& result,
-                        QString participantId);
+                        const QString& participantId);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void remove(joynr::RequestStatus& joynrInternalStatus, QString participantId);
+    virtual void remove(joynr::RequestStatus& joynrInternalStatus, const QString& participantId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);

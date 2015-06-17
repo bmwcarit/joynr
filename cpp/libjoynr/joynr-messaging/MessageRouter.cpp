@@ -277,8 +277,8 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
 }
 
 void MessageRouter::addNextHop(
-        QString participantId,
-        QSharedPointer<joynr::system::Address> inprocessAddress,
+        const QString& participantId,
+        const QSharedPointer<joynr::system::Address>& inprocessAddress,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     addToRoutingTable(participantId, inprocessAddress);
@@ -290,8 +290,8 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
-        QString participantId,
-        joynr::system::ChannelAddress channelAddress,
+        const QString& participantId,
+        const joynr::system::ChannelAddress& channelAddress,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::ChannelAddress> address(
@@ -305,8 +305,8 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
-        QString participantId,
-        joynr::system::CommonApiDbusAddress commonApiDbusAddress,
+        const QString& participantId,
+        const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::CommonApiDbusAddress> address(
@@ -320,8 +320,8 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
-        QString participantId,
-        joynr::system::BrowserAddress browserAddress,
+        const QString& participantId,
+        const joynr::system::BrowserAddress& browserAddress,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::BrowserAddress> address(
@@ -335,8 +335,8 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
-        QString participantId,
-        joynr::system::WebSocketAddress webSocketAddress,
+        const QString& participantId,
+        const joynr::system::WebSocketAddress& webSocketAddress,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::WebSocketAddress> address(
@@ -350,8 +350,8 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
-        QString participantId,
-        joynr::system::WebSocketClientAddress webSocketClientAddress,
+        const QString& participantId,
+        const joynr::system::WebSocketClientAddress& webSocketClientAddress,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::WebSocketClientAddress> address(
@@ -414,7 +414,7 @@ void MessageRouter::addToRoutingTable(QString participantId,
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::removeNextHop(
-        QString participantId,
+        const QString& participantId,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     routingTableLock.lockForWrite();
@@ -431,7 +431,7 @@ void MessageRouter::removeNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::resolveNextHop(
-        QString participantId,
+        const QString& participantId,
         std::function<void(const joynr::RequestStatus& joynrInternalStatus, const bool& resolved)>
                 callbackFct)
 {

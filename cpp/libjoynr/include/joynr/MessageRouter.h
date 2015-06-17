@@ -95,29 +95,29 @@ public:
     virtual void route(const JoynrMessage& message);
 
     virtual void addNextHop(
-            QString participantId,
-            joynr::system::ChannelAddress channelAddress,
+            const QString& participantId,
+            const joynr::system::ChannelAddress& channelAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            QString participantId,
-            joynr::system::CommonApiDbusAddress commonApiDbusAddress,
+            const QString& participantId,
+            const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            QString participantId,
-            joynr::system::BrowserAddress browserAddress,
+            const QString& participantId,
+            const joynr::system::BrowserAddress& browserAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            QString participantId,
-            joynr::system::WebSocketAddress webSocketAddress,
+            const QString& participantId,
+            const joynr::system::WebSocketAddress& webSocketAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            QString participantId,
-            joynr::system::WebSocketClientAddress webSocketClientAddress,
+            const QString& participantId,
+            const joynr::system::WebSocketClientAddress& webSocketClientAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
-    virtual void removeNextHop(QString participantId,
+    virtual void removeNextHop(const QString& participantId,
                                std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
                                        callbackFct = nullptr);
-    virtual void resolveNextHop(QString participantId,
+    virtual void resolveNextHop(const QString& participantId,
                                 std::function<void(const joynr::RequestStatus& joynrInternalStatus,
                                                    const bool& resolved)> callbackFct);
 
@@ -130,8 +130,8 @@ public:
                          QSharedPointer<joynr::system::Address> parentAddress,
                          QString parentParticipantId);
 
-    virtual void addNextHop(QString participantId,
-                            QSharedPointer<joynr::system::Address> inprocessAddress,
+    virtual void addNextHop(const QString& participantId,
+                            const QSharedPointer<joynr::system::Address>& inprocessAddress,
                             std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
                                     callbackFct = nullptr);
 

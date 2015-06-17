@@ -88,7 +88,7 @@ public:
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
 
-    void add(joynr::system::DiscoveryEntry& entry);
+    void add(const joynr::system::DiscoveryEntry& entry);
 
     /*
      * Remove capability from the cache, and for permanent removal from the backend, this method
@@ -137,23 +137,23 @@ public:
 
     // inherited method from joynr::system::DiscoveryProvider
     virtual void add(
-            joynr::system::DiscoveryEntry discoveryEntry,
+            const joynr::system::DiscoveryEntry& discoveryEntry,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
-            QString domain,
-            QString interfaceName,
-            joynr::system::DiscoveryQos discoveryQos,
+            const QString& domain,
+            const QString& interfaceName,
+            const joynr::system::DiscoveryQos& discoveryQos,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus,
                                const QList<joynr::system::DiscoveryEntry>& result)> callbackFct);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
-            QString participantId,
+            const QString& participantId,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus,
                                const joynr::system::DiscoveryEntry& result)> callbackFct);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void remove(
-            QString participantId,
+            const QString& participantId,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
 
     /*

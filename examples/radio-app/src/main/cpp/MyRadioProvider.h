@@ -59,7 +59,7 @@ public:
     /**
       * Add a favourite radio station
       */
-    void addFavouriteStation(joynr::vehicle::RadioStation radioStation,
+    void addFavouriteStation(const joynr::vehicle::RadioStation& radioStation,
                              std::function<void(
                                  const joynr::RequestStatus& status,
                                  const bool& returnValue)> callbackFct);

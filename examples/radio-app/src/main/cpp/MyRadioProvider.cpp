@@ -76,7 +76,7 @@ void MyRadioProvider::shuffleStations(std::function<void(const joynr::RequestSta
     callbackFct(RequestStatus(RequestStatusCode::OK));
 }
 
-void MyRadioProvider::addFavouriteStation(vehicle::RadioStation radioStation,
+void MyRadioProvider::addFavouriteStation(const vehicle::RadioStation& radioStation,
                                           std::function<void(
                                               const joynr::RequestStatus& status,
                                               const bool& returnValue)> callbackFct)

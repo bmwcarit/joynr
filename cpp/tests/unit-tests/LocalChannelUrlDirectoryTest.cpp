@@ -40,7 +40,7 @@ using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
 QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
-        QString channelId,
+        const QString& channelId,
         std::function<void(
             RequestStatus& status,
             types::ChannelUrlInformation& urls)> callbackFct) {
@@ -87,7 +87,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannel(
-                    A<QString>(),
+                    A<const QString&>(),
                     A<std::function<void(const RequestStatus& status, const types::ChannelUrlInformation& urls)>>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
@@ -114,7 +114,7 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrls(
-                    A<QString>(),
+                    A<const QString&>(),
                     _,
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
@@ -131,7 +131,7 @@ TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrls(
-                    A<QString>(),
+                    A<const QString&>(),
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
             .WillOnce(Return(QSharedPointer<joynr::Future<void>>(new joynr::Future<void>())));

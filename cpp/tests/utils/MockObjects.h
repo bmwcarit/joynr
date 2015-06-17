@@ -333,7 +333,7 @@ public:
             add,
             void(
                 joynr::RequestStatus& joynrInternalStatus,
-                joynr::system::DiscoveryEntry entry
+                const joynr::system::DiscoveryEntry& entry
             )
     );
     MOCK_METHOD5(
@@ -341,9 +341,9 @@ public:
             void(
                 joynr::RequestStatus& joynrInternalStatus,
                 QList<joynr::system::DiscoveryEntry> & result,
-                QString domain,
-                QString interfaceName,
-                joynr::system::DiscoveryQos discoveryQos
+                const QString& domain,
+                const QString& interfaceName,
+                const joynr::system::DiscoveryQos& discoveryQos
             )
     );
     MOCK_METHOD3(
@@ -351,27 +351,27 @@ public:
             void(
                 joynr::RequestStatus& joynrInternalStatus,
                 joynr::system::DiscoveryEntry& result,
-                QString participantId
+                const QString& participantId
             )
     );
     MOCK_METHOD2(
             remove,
             void(
                 joynr::RequestStatus& joynrInternalStatus,
-                QString participantId
+                const QString& participantId
             )
     );
     MOCK_METHOD2(
             add,
             QSharedPointer<joynr::Future<void>>(
-                joynr::system::DiscoveryEntry discoveryEntry,
+                const joynr::system::DiscoveryEntry& discoveryEntry,
                 std::function<void(const joynr::RequestStatus& status)> callbackFct
             )
     );
     MOCK_METHOD2(
             lookup,
             QSharedPointer<joynr::Future<joynr::system::DiscoveryEntry>>(
-                QString participantId,
+                const QString& participantId,
                 std::function<void(const joynr::RequestStatus& status, const joynr::system::DiscoveryEntry& result)>
                         callbackFct
             )
@@ -379,9 +379,9 @@ public:
     MOCK_METHOD4(
             lookup,
             QSharedPointer<joynr::Future<QList<joynr::system::DiscoveryEntry>>>(
-                QString domain,
-                QString interfaceName,
-                joynr::system::DiscoveryQos discoveryQos,
+                const QString& domain,
+                const QString& interfaceName,
+                const joynr::system::DiscoveryQos& discoveryQos,
                 std::function<void(const joynr::RequestStatus& status, const QList<joynr::system::DiscoveryEntry>& result)>
                         callbackFct
             )
@@ -389,7 +389,7 @@ public:
     MOCK_METHOD2(
             remove,
             QSharedPointer<joynr::Future<void>>(
-                QString participantId,
+                const QString& participantId,
                 std::function<void(const joynr::RequestStatus& status)> callbackFct
             )
     );
@@ -539,11 +539,11 @@ public:
     MOCK_METHOD2(
             setLocation,
             void(
-                    joynr::types::GpsLocation gpsLocation,
+                    const joynr::types::GpsLocation& gpsLocation,
                     std::function<void(const joynr::RequestStatus& status)> callbackFct));
 
     void sumInts(
-            QList<int> ints,
+            const QList<int>& ints,
             std::function<void(const joynr::RequestStatus& status, const int& result)> callbackFct)
     {
         int result = 0;
@@ -554,7 +554,7 @@ public:
         callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
     }
     void returnPrimeNumbers(
-            int upperBound,
+            const int &upperBound,
             std::function<void(
                 const joynr::RequestStatus& status,
                 const QList<int>& result)> callbackFct)
@@ -566,7 +566,7 @@ public:
         callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
     }
     void optimizeTrip(
-            joynr::types::Trip input,
+            const joynr::types::Trip& input,
             std::function<void(
                 const joynr::RequestStatus& status,
                 const joynr::types::Trip& result)> callbackFct)
@@ -574,7 +574,7 @@ public:
          callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), input);
     }
     void optimizeLocationList(
-            QList<joynr::types::GpsLocation> inputList,
+            const QList<joynr::types::GpsLocation>& inputList,
             std::function<void(
                 const joynr::RequestStatus& status,
                 const QList<joynr::types::GpsLocation>& result)> callbackFct)
@@ -583,7 +583,7 @@ public:
     }
 
     void overloadedOperation(
-            joynr::tests::DerivedStruct input,
+            const joynr::tests::DerivedStruct& input,
             std::function<void(
                 const joynr::RequestStatus& status,
                 const QString& result)> callbackFct)
@@ -593,7 +593,7 @@ public:
     }
 
     void overloadedOperation(
-            joynr::tests::AnotherDerivedStruct input,
+            const joynr::tests::AnotherDerivedStruct& input,
             std::function<void(
                 const joynr::RequestStatus& status,
                 const QString& result)> callbackFct)
@@ -698,14 +698,14 @@ public:
         ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false){}
 
 
-    MOCK_METHOD2(getUrlsForChannel,QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> (QString channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::ChannelUrlInformation& urls)> callbackFct));
+    MOCK_METHOD2(getUrlsForChannel,QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> (const QString& channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::ChannelUrlInformation& urls)> callbackFct));
 
     MOCK_METHOD3(registerChannelUrls, QSharedPointer<joynr::Future<void> >(
-                                           QString channelId,
-                                           joynr::types::ChannelUrlInformation channelUrlInformation,
+                                           const QString& channelId,
+                                           const joynr::types::ChannelUrlInformation& channelUrlInformation,
                                            std::function<void(const joynr::RequestStatus&)> callbackFct));
 
-    MOCK_METHOD2(unregisterChannelUrls, QSharedPointer<joynr::Future<void> >(QString channelId, std::function<void(const joynr::RequestStatus&)> callbackFct));
+    MOCK_METHOD2(unregisterChannelUrls, QSharedPointer<joynr::Future<void> >(const QString& channelId, std::function<void(const joynr::RequestStatus&)> callbackFct));
 };
 
 
@@ -788,7 +788,7 @@ public:
     MOCK_METHOD2(
             getDomainRoles,
             QSharedPointer<joynr::Future<QList<joynr::infrastructure::DomainRoleEntry>>>(
-                    QString uid,
+                    const QString& uid,
                     std::function<void(
                         const joynr::RequestStatus& status,
                         const QList<joynr::infrastructure::DomainRoleEntry>& domainRoleEntries
@@ -799,8 +799,8 @@ public:
     MOCK_METHOD3(
             getMasterAccessControlEntries,
             QSharedPointer<joynr::Future<QList<joynr::infrastructure::MasterAccessControlEntry>>>(
-                    QString domain,
-                    QString interfaceName,
+                    const QString& domain,
+                    const QString& interfaceName,
                     std::function<void(
                         const joynr::RequestStatus& status,
                         const QList<joynr::infrastructure::MasterAccessControlEntry>& masterAces
@@ -811,8 +811,8 @@ public:
     MOCK_METHOD3(
             getMediatorAccessControlEntries,
             QSharedPointer<joynr::Future<QList<joynr::infrastructure::MasterAccessControlEntry>>>(
-                    QString domain,
-                    QString interfaceName,
+                    const QString& domain,
+                    const QString& interfaceName,
                     std::function<void(
                         const joynr::RequestStatus& status,
                         const QList<joynr::infrastructure::MasterAccessControlEntry>& mediatorAces
@@ -823,8 +823,8 @@ public:
     MOCK_METHOD3(
             getOwnerAccessControlEntries,
             QSharedPointer<joynr::Future<QList<joynr::infrastructure::OwnerAccessControlEntry>>>(
-                    QString domain,
-                    QString interfaceName,
+                    const QString& domain,
+                    const QString& interfaceName,
                     std::function<void(
                         const joynr::RequestStatus& status,
                         const QList<joynr::infrastructure::OwnerAccessControlEntry>& ownerAces
@@ -901,7 +901,7 @@ public:
     MOCK_METHOD2(
             lookup,
             void(
-                QString participantId,
+                const QString& participantId,
                 std::function<void(const joynr::RequestStatus&, const joynr::system::DiscoveryEntry&)> lookupCallback
             ));
 
