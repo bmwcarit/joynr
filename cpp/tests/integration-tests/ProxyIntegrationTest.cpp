@@ -57,7 +57,6 @@ public:
         mockClientCache(new MockClientCache()),
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
-        proxyQos(),
         messagingQos(),
         endPointAddress(new system::ChannelAddress("endPointAddress"))
     {
@@ -86,7 +85,6 @@ protected:
     MockClientCache* mockClientCache;
     MockJoynrMessageSender* mockJoynrMessageSender;
     QString domain;
-    ProxyQos proxyQos;
     MessagingQos messagingQos;
     QSharedPointer<system::ChannelAddress> endPointAddress;
 
@@ -103,6 +101,6 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, NULL);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, proxyQos, messagingQos, false);
+    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, messagingQos, false);
     ASSERT_TRUE(proxy != NULL);
 }

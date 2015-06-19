@@ -72,8 +72,7 @@ public:
                     providerParticipantId,
                     MessagingQos(),
                     &mockClientCache,
-                    cacheEnabled,
-                    0);
+                    cacheEnabled);
 
         return dynamic_cast<tests::Itest*>(connector);
     }

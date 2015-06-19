@@ -92,8 +92,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		        const QString& providerParticipantId,
 		        const joynr::MessagingQos &qosSettings,
 		        joynr::IClientCache *cache,
-		        bool cached,
-		        qint64 reqCacheDataFreshness_ms);
+		        bool cached);
 
 		    virtual bool usesClusterController() const;
 
@@ -164,8 +163,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		            const QString& providerParticipantId,
 		            const joynr::MessagingQos &qosSettings,
 		            joynr::IClientCache *cache,
-		            bool cached,
-		            qint64 reqCacheDataFreshness_ms
+		            bool cached
 		    ) {
 		        return new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector(
 		                    messageSender,
@@ -175,8 +173,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 		                    providerParticipantId,
 		                    qosSettings,
 		                    cache,
-		                    cached,
-		                    reqCacheDataFreshness_ms
+		                    cached
 		        );
 		    }
 		};

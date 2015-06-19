@@ -38,8 +38,7 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         const QString& providerParticipantId,
         const MessagingQos& qosSettings,
         IClientCache* cache,
-        bool cached,
-        const qint64 reqCacheDataFreshness_ms)
+        bool cached)
         : joynrMessageSender(joynrMessageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
@@ -48,8 +47,7 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
           providerParticipantId(providerParticipantId),
           qosSettings(qosSettings),
           cache(cache),
-          cached(cached),
-          reqCacheDataFreshness_ms(reqCacheDataFreshness_ms)
+          cached(cached)
 {
 }
 

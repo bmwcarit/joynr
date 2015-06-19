@@ -53,7 +53,6 @@ public:
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached,
-              qint64 reqCacheDataFreshness_ms,
               const joynr::system::CommunicationMiddleware::Enum& connection)
     {
 
@@ -62,13 +61,8 @@ public:
         }
 
         if (joynrMessagingConnectorFactory->canBeCreated(connection)) {
-            return joynrMessagingConnectorFactory->create<T>(domain,
-                                                             proxyParticipantId,
-                                                             providerParticipantId,
-                                                             qosSettings,
-                                                             cache,
-                                                             cached,
-                                                             reqCacheDataFreshness_ms);
+            return joynrMessagingConnectorFactory->create<T>(
+                    domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
         }
 
         LOG_ERROR(logger, "Can not create Connector: Unknown address type.");

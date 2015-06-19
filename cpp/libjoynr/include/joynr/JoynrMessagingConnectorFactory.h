@@ -51,8 +51,7 @@ public:
               const QString& providerParticipantId,
               const MessagingQos& qosSettings,
               IClientCache* cache,
-              bool cached,
-              qint64 reqCacheDataFreshness_ms)
+              bool cached)
     {
         Q_UNUSED(messageSender);
         Q_UNUSED(subscriptionManager);
@@ -63,7 +62,6 @@ public:
         Q_UNUSED(qosSettings);
         Q_UNUSED(cache);
         Q_UNUSED(cached);
-        Q_UNUSED(reqCacheDataFreshness_ms);
         notImplemented();
         return 0;
     }
@@ -85,8 +83,7 @@ public:
               const QString& providerParticipantId,
               const MessagingQos& qosSettings,
               IClientCache* cache,
-              bool cached,
-              qint64 reqCacheDataFreshness_ms)
+              bool cached)
     {
         return JoynrMessagingConnectorFactoryHelper<T>().create(messageSender,
                                                                 subscriptionManager,
@@ -95,8 +92,7 @@ public:
                                                                 providerParticipantId,
                                                                 qosSettings,
                                                                 cache,
-                                                                cached,
-                                                                reqCacheDataFreshness_ms);
+                                                                cached);
     }
 
 private:

@@ -22,7 +22,6 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/ProxyQos.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/system/Address.h"
 #include "joynr/system/CommunicationMiddleware.h"
@@ -41,7 +40,6 @@ public:
               IClientCache* cache,
               const QString& domain,
               const QString& interfaceName,
-              const ProxyQos& proxyQos,
               const MessagingQos& qosSettings,
               bool cached);
     virtual ~ProxyBase();
@@ -68,7 +66,6 @@ protected:
     IClientCache* cache;
     QString domain;
     QString interfaceName;
-    ProxyQos proxyQos;
     MessagingQos qosSettings;
     bool cached;
     QString providerParticipantId;

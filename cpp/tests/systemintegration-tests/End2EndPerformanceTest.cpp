@@ -114,12 +114,10 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 50000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());

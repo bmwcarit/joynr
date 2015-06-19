@@ -49,10 +49,9 @@ public:
     }
     /**
      * Returns the stored object associated with the key 'attributeId',
-     * or an empty QVariant() if the object is either not present or
-     * older than maxAcceptedAgeInMs.
+     * or an empty QVariant() if the object is either not present
      */
-    QVariant lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs);
+    QVariant lookUp(const QString& attributeId);
     /**
       * Inserts 'value' into the cache under the key 'attributeId'.
       * The entry is associated with a time stamp guranteed to be valid for 24hrs.

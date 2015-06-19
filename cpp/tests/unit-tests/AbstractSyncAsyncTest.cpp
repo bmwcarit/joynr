@@ -24,7 +24,6 @@
 #include "joynr/types/GpsLocation.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/IClientCache.h"
-#include "joynr/ProxyQos.h"
 #include "joynr/IMessaging.h"
 #include "joynr/vehicle/GpsJoynrMessagingConnector.h"
 #include "joynr/IJoynrMessageSender.h"
@@ -210,7 +209,7 @@ public:
         QVariant qvariant;
         qvariant.setValue(expectedGpsLocation);
 
-        ON_CALL(mockClientCache, lookUp(_,_)).WillByDefault(Return(qvariant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         asyncTestFixture->getLocation(
                 [callback] (const RequestStatus& status, const types::GpsLocation& location) {
@@ -225,7 +224,7 @@ public:
 
         QVariant qvariant;
         qvariant.setValue(expectedGpsLocation);
-        ON_CALL(mockClientCache, lookUp(_,_)).WillByDefault(Return(qvariant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         RequestStatus status;
         types::GpsLocation gpsLocation;

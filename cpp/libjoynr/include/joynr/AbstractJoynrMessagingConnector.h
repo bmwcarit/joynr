@@ -27,7 +27,6 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ArbitrationStatus.h"
-#include "joynr/ProxyQos.h"
 #include "joynr/IArbitrationListener.h"
 #include "joynr/IClientCache.h"
 #include "joynr/RequestStatus.h"
@@ -54,8 +53,7 @@ public:
                                     const QString& providerParticipantId,
                                     const MessagingQos& qosSettings,
                                     IClientCache* cache,
-                                    bool cached,
-                                    const qint64 reqCacheDataFreshness_ms);
+                                    bool cached);
     virtual bool usesClusterController() const;
     virtual ~AbstractJoynrMessagingConnector()
     {
@@ -74,7 +72,7 @@ public:
         QString attributeID = domain + ":" + interfaceName + ":" + methodName;
 
         if (cached) {
-            QVariant entry = cache->lookUp(attributeID, reqCacheDataFreshness_ms);
+            QVariant entry = cache->lookUp(attributeID);
             if (!entry.isValid()) {
                 LOG_DEBUG(logger, "Cached value for " + methodName + " is not valid");
             } else if (!entry.canConvert<T>()) {
@@ -113,7 +111,6 @@ protected:
     MessagingQos qosSettings;
     IClientCache* cache;
     bool cached;
-    qint64 reqCacheDataFreshness_ms;
     static joynr_logging::Logger* logger;
 
 private:

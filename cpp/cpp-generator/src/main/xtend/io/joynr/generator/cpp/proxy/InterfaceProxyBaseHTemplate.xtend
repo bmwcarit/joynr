@@ -53,7 +53,6 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 		            joynr::ConnectorFactory* connectorFactory,
 		            joynr::IClientCache* cache,
 		            const QString& domain,
-		            const joynr::ProxyQos& proxyQos,
 		            const joynr::MessagingQos& qosSettings,
 		            bool cached
 		    );

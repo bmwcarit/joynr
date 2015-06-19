@@ -89,10 +89,8 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());

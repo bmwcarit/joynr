@@ -87,7 +87,6 @@ public:
                     mockConnectorFactory,
                     &mockClientCache,
                     QString("myDomain"),
-                    ProxyQos(),
                     MessagingQos(),
                     cacheEnabled
                     );

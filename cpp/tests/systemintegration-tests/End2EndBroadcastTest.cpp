@@ -180,12 +180,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -247,12 +245,10 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -407,12 +403,10 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -536,12 +530,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -682,12 +674,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -833,12 +823,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -950,12 +938,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -1098,12 +1084,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 500;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
                                                ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());

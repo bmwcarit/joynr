@@ -182,7 +182,6 @@ int main(int argc, char* argv[])
 
     // Build a proxy
     vehicle::RadioProxy* proxy = proxyBuilder->setRuntimeQos(MessagingQos(qosMsgTtl))
-                                         ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
                                          ->setCached(false)
                                          ->setDiscoveryQos(discoveryQos)
                                          ->build();

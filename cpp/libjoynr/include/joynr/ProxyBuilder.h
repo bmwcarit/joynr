@@ -59,7 +59,6 @@ public:
     T* build();
 
     ProxyBuilder* setCached(const bool cached);
-    ProxyBuilder* setProxyQos(const ProxyQos& proxyQos);
     ProxyBuilder* setRuntimeQos(const MessagingQos& runtimeQos);
     ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos);
 
@@ -117,9 +116,7 @@ private:
 
     QString domain;
     bool cached;
-    bool hasProxyQosSet;
     bool hasArbitrationStarted;
-    ProxyQos proxyQos;
     MessagingQos runtimeQos;
     ProxyFactory* proxyFactory;
     joynr::system::IDiscoverySync& discoveryProxy;
@@ -142,9 +139,7 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
                               QSharedPointer<MessageRouter> messageRouter)
         : domain(domain),
           cached(false),
-          hasProxyQosSet(false),
           hasArbitrationStarted(false),
-          proxyQos(),
           runtimeQos(),
           proxyFactory(proxyFactory),
           discoveryProxy(discoveryProxy),
@@ -178,7 +173,7 @@ ProxyBuilder<T>::~ProxyBuilder()
 template <class T>
 T* ProxyBuilder<T>::build()
 {
-    T* proxy = proxyFactory->createProxy<T>(domain, proxyQos, runtimeQos, cached);
+    T* proxy = proxyFactory->createProxy<T>(domain, runtimeQos, cached);
     waitForArbitration(discoveryTimeout);
     proxy->handleArbitrationFinished(participantId, connection);
     // add next hop to dispatcher
@@ -201,24 +196,9 @@ ProxyBuilder<T>* ProxyBuilder<T>::setRuntimeQos(const MessagingQos& runtimeQos)
 }
 
 template <class T>
-/* Sets the Proxy Qos. Those should be set before arbitration is started (which will happen as soon
-   as discoveryQos are set)
-   Calling setProxyQos after setDiscoveryQos will result in a false assertion.
-*/
-ProxyBuilder<T>* ProxyBuilder<T>::setProxyQos(const ProxyQos& proxyQos)
-{
-    assert(!hasArbitrationStarted); // if DiscoveryQos is set, arbitration will be started. Setting
-                                    // ProxyQos after arbitration has started does not make sense.
-    this->proxyQos = proxyQos;
-    this->hasProxyQosSet = true;
-    return this;
-}
-
-template <class T>
 /* Sets the arbitration Qos and starts arbitration. This way arbitration will be started, before the
    ->build() is called on the proxy Builder.
    All parameter that are needed for arbitration should be set, before setDiscoveryQos is called.
-   Calling setProxyQos after setDiscoveryQos will result in a false assertion.
 */
 ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos)
 {

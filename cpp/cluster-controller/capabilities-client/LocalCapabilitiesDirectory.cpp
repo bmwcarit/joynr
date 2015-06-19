@@ -19,7 +19,6 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IChannelUrlDirectory.h"
-#include "joynr/ProxyQos.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/exceptions.h"

@@ -323,7 +323,7 @@ public:
 
 class MockClientCache : public joynr::IClientCache {
 public:
-   MOCK_METHOD2(lookUp, QVariant(const QString& attributeId, qint64 maxAcceptedAgeInMs));
+   MOCK_METHOD1(lookUp, QVariant(const QString& attributeId));
    MOCK_METHOD2(insert, void(QString attributeId, QVariant value));
 };
 
@@ -649,11 +649,11 @@ public:
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
     MockChannelUrlDirectoryProxy() :
-        ChannelUrlDirectoryProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain",joynr::ProxyQos(), joynr::MessagingQos(), false),
-        joynr::ProxyBase(NULL, NULL, "domain", "INTERFACE_NAME", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::ProxyQos(), joynr::MessagingQos(), false){}
+        ChannelUrlDirectoryProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        joynr::ProxyBase(NULL, NULL, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryProxyBase(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectorySyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false){}
 
 
     MOCK_METHOD2(getUrlsForChannel,QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> (QString channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::ChannelUrlInformation& urls)> callbackFct));
@@ -710,7 +710,6 @@ public:
                 NULL,
                 NULL,
                 "domain",
-                joynr::ProxyQos(),
                 joynr::MessagingQos(),
                 false),
         joynr::ProxyBase(
@@ -718,7 +717,6 @@ public:
                 NULL,
                 "domain",
                 "INTERFACE_NAME",
-                joynr::ProxyQos(),
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
@@ -726,7 +724,6 @@ public:
                 NULL,
                 NULL,
                 "domain",
-                joynr::ProxyQos(),
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerSyncProxy(
@@ -734,7 +731,6 @@ public:
                 NULL,
                 NULL,
                 "domain",
-                joynr::ProxyQos(),
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerAsyncProxy(
@@ -742,7 +738,6 @@ public:
                 NULL,
                 NULL,
                 "domain",
-                joynr::ProxyQos(),
                 joynr::MessagingQos(),
                 false)
     {

@@ -172,7 +172,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
         reply.setResponse(returnValueQVar);
-        // send reply back to the original sender (ie. sender and receiver ids are reversed on
+        // send reply back to the original sender (ie. sender and receiver ids are reversed
+        // on
         // purpose)
         qint64 ttl = requestExpiryDate - QDateTime::currentMSecsSinceEpoch();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply

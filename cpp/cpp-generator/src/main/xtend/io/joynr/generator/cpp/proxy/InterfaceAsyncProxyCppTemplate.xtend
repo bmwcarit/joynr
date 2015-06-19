@@ -50,12 +50,11 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		        joynr::ConnectorFactory* connectorFactory,
 		        joynr::IClientCache *cache,
 		        const QString &domain,
-		        const joynr::ProxyQos& proxyQos,
 		        const joynr::MessagingQos &qosSettings,
 		        bool cached
 		) :
-		    joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), proxyQos, qosSettings, cached),
-		    «className»Base(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
+		    joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), qosSettings, cached),
+		    «className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
 		{
 		}
 

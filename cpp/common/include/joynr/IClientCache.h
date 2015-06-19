@@ -39,7 +39,7 @@ public:
      * Returns the value stored for the attributeId. If none exists, it return an invalid
      * QVariant object that can be tested for by using the isValid() method of QVariant.
      */
-    virtual QVariant lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs) = 0;
+    virtual QVariant lookUp(const QString& attributeId) = 0;
 
     /*
      * Inserts the key (attributeId) and value into the cache.  If the attributeId already

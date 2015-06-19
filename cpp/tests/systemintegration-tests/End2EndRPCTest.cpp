@@ -101,10 +101,8 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
@@ -132,10 +130,8 @@ TEST_F(End2EndRPCTest, call_void_operation)
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     tests::testProxy* testProxy = testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -165,10 +161,8 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
             ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());

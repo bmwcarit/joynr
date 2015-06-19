@@ -48,11 +48,10 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 		        joynr::ConnectorFactory* connectorFactory,
 		        joynr::IClientCache *cache,
 		        const QString &domain,
-		        const joynr::ProxyQos &proxyQos,
 		        const joynr::MessagingQos &qosSettings,
 		        bool cached
 		) :
-		        joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, proxyQos, qosSettings, cached),
+		        joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, qosSettings, cached),
 		        messagingAddress(messagingAddress),
 		        connector(NULL)
 		{
@@ -73,7 +72,6 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 		                qosSettings,
 		                cache,
 		                cached,
-		                proxyQos.getReqCacheDataFreshness_ms(),
 		                connection
 		    );
 

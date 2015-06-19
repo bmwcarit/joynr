@@ -30,16 +30,13 @@ ClientQCache::ClientQCache() : cache(), mutex()
     cache.setMaxCost(MAX_CUMMULATIVE_CACHE_COST);
 }
 
-QVariant ClientQCache::lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs)
+QVariant ClientQCache::lookUp(const QString& attributeId)
 {
     QMutexLocker locker(&mutex);
     if (!cache.contains(attributeId)) {
         return QVariant();
     }
     CachedValue<QVariant>* entry = cache.object(attributeId);
-    if (elapsed(entry->getTimestamp()) > maxAcceptedAgeInMs) {
-        return QVariant();
-    }
     return entry->getValue();
 }
 

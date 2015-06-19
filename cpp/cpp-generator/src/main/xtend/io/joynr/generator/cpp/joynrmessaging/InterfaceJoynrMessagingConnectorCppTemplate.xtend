@@ -88,9 +88,8 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 		        const QString& providerParticipantId,
 		        const joynr::MessagingQos &qosSettings,
 		        joynr::IClientCache *cache,
-		        bool cached,
-		        qint64 reqCacheDataFreshness_ms)
-		    : joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, getInterfaceName(), proxyParticipantId, providerParticipantId, qosSettings, cache, cached, reqCacheDataFreshness_ms)
+		        bool cached)
+		    : joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, getInterfaceName(), proxyParticipantId, providerParticipantId, qosSettings, cache, cached)
 		{
 		}
 
