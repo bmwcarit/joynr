@@ -116,16 +116,6 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         return this;
     }
 
-    // Proxy Qos not yet supported
-    // /**
-    // * @param proxyQos
-    // * @return
-    // */
-    // public ProxyBuilder<T> setProxyQos(final ProxyQos proxyQos) {
-    // this.proxyQos = proxyQos;
-    // return this;
-    // }
-
     /*
      * (non-Javadoc)
      * 
