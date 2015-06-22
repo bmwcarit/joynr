@@ -1,0 +1,23 @@
+@startuml
+
+title Java Proxy Hierarchy
+
+interface "<Interface>" {
+	+String INTERFACE_NAME
+}
+
+interface "<Interface>Async" {
+}
+
+interface "<Interface>Sync" {
+}
+
+interface "<Interface>Proxy" {
+}
+
+"<Interface>" <|.. "<Interface>Async"
+"<Interface>" <|.. "<Interface>Sync"
+"<Interface>Sync" <|.. "<Interface>Proxy"
+"<Interface>Async" <|.. "<Interface>Proxy"
+
+@enduml
