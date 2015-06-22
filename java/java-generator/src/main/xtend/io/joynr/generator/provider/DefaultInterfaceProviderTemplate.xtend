@@ -112,8 +112,7 @@ public class «className» extends «abstractProviderName» {
 		«var deferredName = methodToDeferredName.get(method)»
 		«var params = getTypedParameterListJavaRpc(method)»
 		«val outputParameters = getOutputParameters(method)»
-		«val outputParameterType = mapOutputParameters(outputParameters).iterator.next»
-		«val outputParameter = if (!outputParameters.isEmpty) outputParameters.iterator.next else null»
+
 		/*
 		* «methodName»
 		*/
@@ -124,28 +123,10 @@ public class «className» extends «abstractProviderName» {
 			logger.warn("* «className».«methodName» called");
 			logger.warn("**********************************************");
 			«deferredName» deferred = new «deferredName»();
-
-			«IF outputParameterType=="void"»
-				deferred.resolve();
-			«ELSEIF outputParameterType=="String"»
-				deferred.resolve("Hello World");
-			«ELSEIF outputParameterType=="Boolean"»
-				deferred.resolve(false);
-			«ELSEIF outputParameterType=="Integer"»
-				deferred.resolve(42);
-			«ELSEIF outputParameterType=="Double"»
-				deferred.resolve(3.1415);
-			«ELSEIF outputParameterType=="Long"»
-				deferred.resolve((long) 42);
-			«ELSEIF outputParameterType=="Byte"»
-				deferred.resolve((byte) 42);
-			«ELSEIF outputParameterType.startsWith("List<")»
-				deferred.resolve(new Array«outputParameterType»());
-			«ELSEIF isEnum(outputParameter.type)»
-				deferred.resolve(«outputParameterType».«getEnumElements(getEnumType(outputParameter.type)).iterator.next.joynrName»);
-			«ELSE»
-				deferred.resolve(new «outputParameterType»());
-			«ENDIF»
+			«FOR outputParameter : outputParameters»
+				«getMappedDatatypeOrList(outputParameter)» «outputParameter.name» = «getDefaultValueForType(outputParameter)»;
+			«ENDFOR»
+			deferred.resolve(«getOutputParametersCommaSeparated(method)»);
 			return new Promise<«deferredName»>(deferred);
 		}
 	«ENDFOR»

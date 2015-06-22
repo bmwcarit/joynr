@@ -144,10 +144,8 @@ public interface «className» extends JoynrProvider {
 				return super.resolve();
 			}
 		«ELSE»
-			«var outParameterName = method.outputParameters.iterator.next.name»
-			«var outParameterType = getObjectDataTypeForPlainType(method.outputParameters.iterator.next.mappedDatatypeOrList.objectDataTypeForPlainType)»
-			public synchronized boolean resolve(«outParameterType» «outParameterName») {
-				return super.resolve(«outParameterName»);
+			public synchronized boolean resolve(«getCommaSeperatedTypedOutputParameterList(method)») {
+				return super.resolve(«getCommaSeperatedUntypedOutputParameterList(method)»);
 			}
 		«ENDIF»
 		}
