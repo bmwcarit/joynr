@@ -23,7 +23,6 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.StringReader
 import java.util.ArrayList
-import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
@@ -77,8 +76,7 @@ abstract class JoynrGeneratorExtensions {
 			return new HashSet<FArgument>
 		}
 		else{
-			// method.getOutArgs().filterNull
-			Arrays::asList(method.getOutArgs().filterNull.head)
+			return method.outArgs.filterNull
 		}
 	}
 
@@ -240,8 +238,23 @@ abstract class JoynrGeneratorExtensions {
 			return returnString.substring(0, returnString.length() - 1); //remove the last ","
 		}
 	}
-	
-		def String getOutputParametersCommaSeparated(FBroadcast broadcast) {
+
+	def String getOutputParametersCommaSeparated(FMethod method) {
+		val commaSeparatedParams = new StringBuilder();
+		for (parameter : getOutputParameters(method)) {
+			commaSeparatedParams.append(parameter.name);
+			commaSeparatedParams.append(", ");
+		}
+		val returnString = commaSeparatedParams.toString();
+		if (returnString.length() == 0) {
+			return "";
+		}
+		else{
+			return returnString.substring(0, returnString.length() - 2); //remove the last ","
+		}
+	}
+
+	def String getOutputParametersCommaSeparated(FBroadcast broadcast) {
 		val commaSeparatedParams = new StringBuilder();
 		for (parameter : getOutputParameters(broadcast)) {
 			commaSeparatedParams.append(parameter.name);
@@ -253,6 +266,38 @@ abstract class JoynrGeneratorExtensions {
 		}
 		else{
 			return returnString.substring(0, returnString.length() - 2); //remove the last ","
+		}
+	}
+	
+	def String getDefaultValueForType(FTypedElement typedElement) {
+		var typeName = getMappedDatatypeOrList(typedElement);
+
+		if (typeName=="String") {
+			return "\"Hello World\"";
+		}
+		else if (typeName=="Boolean") {
+			return "false";
+		}
+		else if (typeName=="Integer") {
+			return "42";
+		}
+		else if (typeName=="Double") {
+			return "3.1415";
+		}
+		else if (typeName=="Long") {
+			return "(long) 42";
+		}
+		else if (typeName=="Byte") {
+			return "(byte) 42";
+		}
+		else if(typeName.startsWith("List<")) {
+			return "new Array" + typeName + "()";
+		}
+		else if (isEnum(typedElement.type)) {
+			return typeName + "." + getEnumElements(getEnumType(typedElement.type)).iterator.next.joynrName;
+		}
+		else {
+			return "new " + typeName + "()";
 		}
 	}
 
