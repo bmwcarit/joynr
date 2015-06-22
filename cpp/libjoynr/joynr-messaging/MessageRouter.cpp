@@ -172,6 +172,10 @@ bool MessageRouter::isChildMessageRouter()
 void MessageRouter::route(const JoynrMessage& message)
 {
     assert(messagingStubFactory != NULL);
+    LOG_DEBUG(logger,
+              QString("Route message with Id %1 and payload %2")
+                      .arg(message.getHeaderMessageId())
+                      .arg(QString(message.getPayload())));
     if (QDateTime::currentDateTimeUtc() > message.getHeaderExpiryDate()) {
         LOG_WARN(logger,
                  QString("Received expired message. Dropping the message (ID: %1).")
@@ -197,6 +201,7 @@ void MessageRouter::route(const JoynrMessage& message)
     if (destAddress.isNull()) {
         // save the message for later delivery
         messageQueue->queueMessage(message);
+        LOG_DEBUG(logger, QString("message queued: %1").arg(QString(message.getPayload())));
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {

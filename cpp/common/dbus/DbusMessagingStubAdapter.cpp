@@ -39,7 +39,9 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress)
 
 void DbusMessagingStubAdapter::transmit(JoynrMessage& message)
 {
-    logMethodCall("transmit message with ID: " + message.getHeaderMessageId());
+    logMethodCall(QString("transmit message with ID: %1 and payload: %2")
+                          .arg(message.getHeaderMessageId())
+                          .arg(QString(message.getPayload())));
     // copy joynr message
     joynr::messaging::IMessaging::JoynrMessage dbusMsg;
     DbusMessagingUtil::copyJoynrMsgToDbusMsg(message, dbusMsg);

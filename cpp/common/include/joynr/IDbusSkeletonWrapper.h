@@ -54,9 +54,9 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger, "SUCCESS");
+            LOG_INFO(logger, QString("registering service %1: SUCCESS").arg(serviceAddress));
         } else {
-            LOG_FATAL(logger, "ERROR");
+            LOG_FATAL(logger, QString("registering service %1: ERROR").arg(serviceAddress));
         }
     }
 
@@ -71,9 +71,9 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger, "SUCCESS");
+            LOG_INFO(logger, QString("unregistering service %1: SUCCESS").arg(serviceAddress));
         } else {
-            LOG_FATAL(logger, "ERROR");
+            LOG_FATAL(logger, QString("unregistering service %1: ERROR").arg(serviceAddress));
         }
     }
 

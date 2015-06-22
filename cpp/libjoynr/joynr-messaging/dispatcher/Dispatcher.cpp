@@ -127,7 +127,8 @@ void Dispatcher::removeReplyCaller(const QString& requestReplyId)
 
 void Dispatcher::receive(const JoynrMessage& message)
 {
-    LOG_DEBUG(logger, "receive: entered");
+    LOG_DEBUG(logger,
+              QString("receive(message). Message payload: %1").arg(QString(message.getPayload())));
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(message, *this);
     handleReceivedMessageThreadPool.start(receivedMessageRunnable);
 }
@@ -175,6 +176,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
         // purpose)
+        LOG_DEBUG(logger,
+                  QString("Got reply from RequestInterpreter for requestReplyId %1")
+                          .arg(requestReplyId));
         qint64 ttl = requestExpiryDate - QDateTime::currentMSecsSinceEpoch();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
