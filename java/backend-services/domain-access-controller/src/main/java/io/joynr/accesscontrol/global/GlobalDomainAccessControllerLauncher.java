@@ -64,10 +64,6 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
 
     @Override
     public void shutdown() {
-
-        if (globalDomainAccessSyncProvider != null) {
-            runtime.unregisterCapability(localDomain, globalDomainAccessSyncProvider, AUTH_TOKEN);
-        }
-        super.shutdown();
+        runtime.shutdown(false);
     }
 }
