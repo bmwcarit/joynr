@@ -56,7 +56,7 @@ public class RequestInterpreter {
     // size)
     private final ConcurrentMap<MethodSignature, Method> methodSignatureToMethodMap = new ConcurrentHashMap<MethodSignature, Method>();
 
-    private Reply createReply(Request request, Object response) {
+    private Reply createReply(Request request, Object... response) {
         return new Reply(request.getRequestReplyId(), response);
     }
 
@@ -71,11 +71,7 @@ public class RequestInterpreter {
 
             @Override
             public void onFulfillment(Object... values) {
-                Object response = null;
-                if (values.length > 0) {
-                    response = values[0];
-                }
-                callback.onSuccess(createReply(request, response));
+                callback.onSuccess(createReply(request, values));
             }
         });
 

@@ -21,20 +21,23 @@ package joynr;
 
 import io.joynr.exceptions.JoynrException;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Value class for the response of a JSON-RPC function call.
  */
 public class Reply implements JoynrMessageType {
-    private Object response;
+    private List<?> response;
     private JoynrException error;
     private String requestReplyId;
 
     public Reply() {
     }
 
-    public Reply(String requestReplyId, Object response) {
+    public Reply(String requestReplyId, Object... response) {
         this.requestReplyId = requestReplyId;
-        this.response = response;
+        this.response = Arrays.asList(response);
     }
 
     public Reply(String requestReplyId, JoynrException error) {
@@ -42,7 +45,7 @@ public class Reply implements JoynrMessageType {
         this.error = error;
     }
 
-    public Object getResponse() {
+    public List<?> getResponse() {
         return response;
     }
 

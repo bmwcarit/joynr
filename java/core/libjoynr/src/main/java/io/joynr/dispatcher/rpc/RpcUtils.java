@@ -21,7 +21,10 @@ package io.joynr.dispatcher.rpc;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import javax.annotation.CheckForNull;
 
 import joynr.MethodMetaInformation;
 import joynr.Reply;
@@ -34,21 +37,38 @@ public class RpcUtils {
     @Inject
     private static ObjectMapper objectMapper;
 
+    @CheckForNull
     public static Object reconstructReturnedObject(Method method,
                                                    MethodMetaInformation methodMetaInformation,
                                                    Reply response) throws InstantiationException,
                                                                   IllegalAccessException {
-        JoynrRpcReturn annotation = methodMetaInformation.getReturnAnnotation();
 
-        // TODO IMPORTANT how to handle a method that returns null?
-        if (annotation == null) {
-            return objectMapper.convertValue(response.getResponse(), method.getReturnType());
+        Object responsePayload = null;
+
+        if (response.getResponse().size() == 1) {
+            JoynrRpcReturn annotation = methodMetaInformation.getReturnAnnotation();
+            if (annotation == null) {
+                responsePayload = objectMapper.convertValue(response.getResponse().get(0), method.getReturnType());
+            } else {
+                responsePayload = objectMapper.convertValue(response.getResponse().get(0), annotation.deserialisationType().newInstance());
+            }
+        } else if (response.getResponse().size() > 1) {
+            try {
+                final Class<?>[] constructorParameterTypes = { Object[].class };
+                Object[] parameters = { response.getResponse().toArray() };
+                responsePayload = method.getReturnType()
+                                        .getConstructor(constructorParameterTypes)
+                                        .newInstance(parameters);
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+                // multi-out containers always have a constructor accepting an object array
+                System.err.println("multiout constructor is corrupted (no object array accepted as parameter)");
+            }
         }
 
-        return objectMapper.convertValue(response.getResponse(), annotation.deserialisationType().newInstance());
-
+        return responsePayload;
     }
 
+    @CheckForNull
     public static Object reconstructCallbackReplyObject(Method method,
                                                         MethodMetaInformation methodMetaInformation,
                                                         Reply response) throws InstantiationException,
@@ -57,9 +77,14 @@ public class RpcUtils {
             throw new IllegalStateException("Received a reply to a rpc method call without callback annotation including deserialisationType");
         }
 
-        return objectMapper.convertValue(response.getResponse(), methodMetaInformation.getCallbackAnnotation()
-                                                                                      .deserialisationType()
-                                                                                      .newInstance());
+        Object responsePayload = null;
 
+        if (response.getResponse().size() == 1) {
+            responsePayload = response.getResponse().get(0);
+        }
+
+        return objectMapper.convertValue(responsePayload, methodMetaInformation.getCallbackAnnotation()
+                                                                               .deserialisationType()
+                                                                               .newInstance());
     }
 }

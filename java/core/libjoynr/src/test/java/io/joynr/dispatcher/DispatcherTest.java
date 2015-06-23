@@ -26,8 +26,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.google.inject.AbstractModule;
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
@@ -70,6 +68,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
@@ -259,7 +258,7 @@ public class DispatcherTest {
         String reply = (String) testRequestCaller.getSentPayloadFor(jsonRequest1);
         ArgumentCaptor<Reply> jsonReply = ArgumentCaptor.forClass(Reply.class);
         verify(replyCaller, timeout(TIME_OUT_MS).times(1)).messageCallBack(jsonReply.capture());
-        assertEquals(reply, jsonReply.getValue().getResponse());
+        assertEquals(reply, jsonReply.getValue().getResponse().get(0));
         assertEquals(2, messageSenderReceiverMock.getSentMessages().size());
     }
 
