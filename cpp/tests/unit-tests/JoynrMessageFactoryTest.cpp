@@ -60,7 +60,9 @@ public:
         request.addParam(42, "java.lang.Integer");
         request.addParam("value", "java.lang.String");
         reply.setRequestReplyId(requestReplyID);
-        reply.setResponse("response");
+        QList<QVariant> response;
+        response.append(QVariant("response"));
+        reply.setResponse(response);
 
         QString subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
@@ -92,7 +94,7 @@ public:
         QString expectedPayload = QString(
                     "{\"_typeName\":\"joynr.Reply\","
                     "\"requestReplyId\":\"%1\","
-                    "\"response\":\"response\"}"
+                    "\"response\":[\"response\"]}"
         );
         expectedPayload = expectedPayload.arg(reply.getRequestReplyId());
         EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));

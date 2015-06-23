@@ -133,9 +133,9 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
     // contains a serialized version of the response with the gps location.
-    QVariant value;
+    QList<QVariant> value;
 
-    value.setValue(gpsLocation1);
+    value.append(QVariant::fromValue(gpsLocation1));
     Reply reply;
     reply.setResponse(value);
     reply.setRequestReplyId(requestReplyId);
@@ -180,8 +180,8 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     //construct a reply containing a GpsLocation
     Reply reply;
     reply.setRequestReplyId(requestReplyId);
-    QVariant response;
-    response.setValue(gpsLocation1);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gpsLocation1));
     reply.setResponse(response);
 
     JoynrMessage msg = messageFactory.createReply(

@@ -41,7 +41,7 @@ public:
     {
         assert(!caller.isNull());
 
-        T value = reply.getResponse().value<T>();
+        T value = reply.getResponse().at(0).value<T>();
         QSharedPointer<ReplyCaller<T>> typedCallerQsp = caller.dynamicCast<ReplyCaller<T>>();
 
         // value is copied in onSuccess
@@ -67,7 +67,7 @@ public:
     {
         assert(!caller.isNull());
 
-        QList<QVariant> qvList = reply.getResponse().value<QList<QVariant>>();
+        QList<QVariant> qvList = reply.getResponse().at(0).value<QList<QVariant>>();
         QSharedPointer<ReplyCaller<QList<T>>> typedCallerQsp =
                 caller.dynamicCast<ReplyCaller<QList<T>>>();
         QList<T> intList = Util::convertVariantListToList<T>(qvList);
@@ -138,7 +138,7 @@ public:
     {
         assert(!caller.isNull());
 
-        QList<QVariant> qvList = reply.getResponse().value<QList<QVariant>>();
+        QList<QVariant> qvList = reply.getResponse().at(0).value<QList<QVariant>>();
         QSharedPointer<ReplyCaller<QList<typename T::Enum>>> typedCallerQsp =
                 caller.dynamicCast<ReplyCaller<QList<typename T::Enum>>>();
         QList<typename T::Enum> enumList = Util::convertVariantListToEnumList<T>(qvList);

@@ -66,7 +66,7 @@ public:
 					 const QString& methodName,
 					 const QList<QVariant>& paramValues,
 					 const QList<QVariant>& paramTypes,
-					 std::function<void (const QVariant& x)> callbackFct);
+					 std::function<void (const QList<QVariant>& outParams)> callbackFct);
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

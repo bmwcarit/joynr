@@ -73,9 +73,10 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     // Create a reply
     types::GpsLocation location;
     location.setAltitude(myAltitude);
-    QVariant locationQvar = QVariant::fromValue(location);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(location));
     Reply reply;
-    reply.setResponse(locationQvar);
+    reply.setResponse(response);
 
     // Interpret the reply
     IReplyInterpreter& interpreter = registrar.getReplyInterpreter(qMetaTypeId<types::GpsLocation>());

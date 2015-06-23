@@ -69,7 +69,7 @@ void «interfaceName»RequestInterpreter::execute(
 		const QString& methodName,
 		const QList<QVariant>& paramValues,
 		const QList<QVariant>& paramTypes,
-		std::function<void (const QVariant&)> callbackFct)
+		std::function<void (const QList<QVariant>&)> callbackFct)
 {
 	«val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
@@ -92,8 +92,10 @@ void «interfaceName»RequestInterpreter::execute(
 				std::function<void(const joynr::RequestStatus& status, «returnType» «attributeName»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status, «returnType» «attributeName»){
 							Q_UNUSED(status);
-							QVariant returnValue(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«getMappedDatatype(attribute)»>(«attributeName»)«ELSE»QVariant::fromValue(«attributeName»)«ENDIF»);
-							callbackFct(returnValue);
+							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«getMappedDatatype(attribute)»>(«attributeName»)«ELSE»QVariant::fromValue(«attributeName»)«ENDIF»);
+							QList<QVariant> outParams;
+							outParams.insert(0, singleOutParam);
+							callbackFct(outParams);
 						};
 				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerCallbackFct);
 			} else if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
@@ -114,8 +116,8 @@ void «interfaceName»RequestInterpreter::execute(
 				std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status){
 							Q_UNUSED(status);
-							QVariant returnValue("void");
-							callbackFct(returnValue);
+							QList<QVariant> outParams;
+							callbackFct(outParams);
 						};
 				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerCallbackFct);
 
@@ -137,12 +139,14 @@ void «interfaceName»RequestInterpreter::execute(
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status«outputTypedParamList»){
 							Q_UNUSED(status);
-							«IF method.outputParameters.empty»
-								QVariant returnValue(QVariant::Invalid);
-							«ELSE»
-								QVariant returnValue(«IF isArray(method.outputParameters.head)»joynr::Util::convertListToVariantList<«method.outputParameters.head.mappedDatatype»>(«method.outputParameters.head.joynrName»)«ELSE»QVariant::fromValue(«method.outputParameters.head.joynrName»)«ENDIF»);
-							«ENDIF»
-							callbackFct(returnValue);
+							QList<QVariant> outParams;
+							«var index = 0»
+							«FOR param : method.outputParameters»
+								«IF index == 0»
+									outParams.insert(«index++»,«IF isArray(param)»joynr::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)«ELSE»QVariant::fromValue(«param.joynrName»)«ENDIF»);
+								«ENDIF»
+							«ENDFOR»
+							callbackFct(outParams);
 						};
 
 				«var iterator2 = -1»
@@ -176,8 +180,8 @@ void «interfaceName»RequestInterpreter::execute(
 	«ENDIF»
 		LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
 		assert(false);
-		QVariant returnValue(QVariant::Invalid);
-		callbackFct(returnValue);
+		QList<QVariant> outParams;
+		callbackFct(outParams);
 	}
 }
 

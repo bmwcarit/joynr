@@ -78,13 +78,15 @@ protected:
         // setup reply object
         Reply reply;
         reply.setRequestReplyId(QString("TEST-requestReplyId"));
-        reply.setResponse(QVariant::fromValue(value));
+        QList<QVariant> response;
+        response.append(QVariant::fromValue(value));
+        reply.setResponse(response);
 
         QString expectedReplyString(
                     "{"
                         "\"_typeName\":\"joynr.Reply\","
                         "\"requestReplyId\":\"%1\","
-                        "\"response\":%2"
+                        "\"response\":[%2]"
                     "}"
         );
         expectedReplyString = expectedReplyString
@@ -98,7 +100,7 @@ protected:
 
         Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-        EXPECT_EQ(value, receivedReply->getResponse().value<T>());
+        EXPECT_EQ(value, receivedReply->getResponse().at(0).value<T>());
 
         // clean up
         delete receivedReply;
@@ -517,13 +519,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     // Expected literal is:
     Reply reply;
     reply.setRequestReplyId(QString("TEST-requestReplyId"));
-    reply.setResponse(QVariant::fromValue(gps1));
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gps1));
+    reply.setResponse(response);
 
     QString expectedReplyString(
                 "{"
                     "\"_typeName\":\"joynr.Reply\","
                     "\"requestReplyId\":\"%1\","
-                    "\"response\":{"
+                    "\"response\":[{"
                         "\"_typeName\":\"joynr.types.GpsLocation\","
                         "\"altitude\":1.3,"
                         "\"bearing\":1.7,"
@@ -536,7 +540,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
                         "\"longitude\":1.1,"
                         "\"quality\":1.5,"
                         "\"time\":110"
-                    "}"
+                    "}]"
                 "}"
     );
 
@@ -549,13 +553,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply->getResponse().canConvert<types::GpsLocation>());
+    EXPECT_TRUE(receivedReply->getResponse().size() == 1);
+    EXPECT_TRUE(receivedReply->getResponse().at(0).canConvert<types::GpsLocation>());
 
 //    GpsLocation gps2;
 
 //    QJson::QObjectHelper::qvariant2qobject(receivedReply->getResponse().value<QVariantMap>(), &gps2);
 
-    types::GpsLocation gps2 = receivedReply->getResponse().value<types::GpsLocation>();
+    types::GpsLocation gps2 = receivedReply->getResponse().at(0).value<types::GpsLocation>();
 
     EXPECT_EQ(gps1, gps2)
             << "Gps locations gps1 " << gps1.toString().toLatin1().data()
@@ -569,7 +574,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
 
     // null response with type invalid
-    QVariant response(QVariant::Invalid);
+    QList<QVariant> response;
     Reply reply;
     reply.setRequestReplyId(QString("TEST-requestReplyId"));
     reply.setResponse(response);
@@ -577,7 +582,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     QString expected(
                 "{\"_typeName\":\"joynr.Reply\","
                 "\"requestReplyId\":\"%1\","
-                "\"response\":null}"
+                "\"response\":[]}"
     );
     expected = expected.arg(reply.getRequestReplyId());
 
@@ -605,7 +610,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
                 "{"
                     "\"_typeName\":\"joynr.Reply\","
                     "\"requestReplyId\":\"%1\","
-                    "\"response\":[{"
+                    "\"response\":[[{"
                         "\"_typeName\":\"joynr.types.GpsLocation\","
                         "\"altitude\":3.3,"
                         "\"bearing\":0.0,"
@@ -631,14 +636,16 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
                         "\"longitude\":4.4,"
                         "\"quality\":0.0,"
                         "\"time\":18"
-                    "}]"
+                    "}]]"
                 "}"
     );
 
     // Expected literal is:
     Reply reply;
     reply.setRequestReplyId(QString("TEST-requestReplyId"));
-    reply.setResponse(QVariant::fromValue(locList));
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(locList));
+    reply.setResponse(response);
     expectedReplyString = expectedReplyString.arg(reply.getRequestReplyId());
     QByteArray expectedReply = expectedReplyString.toUtf8();
 
@@ -648,9 +655,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply->getResponse().canConvert<QList<QVariant> >());
-    QListIterator<QVariant> i_received(receivedReply->getResponse().value<QList<QVariant> >());
-    QListIterator<QVariant> i_origin(reply.getResponse().value<QList<QVariant> >());
+    EXPECT_TRUE(receivedReply->getResponse().at(0).canConvert<QList<QVariant> >());
+    QListIterator<QVariant> i_received(receivedReply->getResponse().at(0).value<QList<QVariant> >());
+    QListIterator<QVariant> i_origin(reply.getResponse().at(0).value<QList<QVariant> >());
     while(i_received.hasNext()) {
         types::GpsLocation receivedIterValue = i_received.next().value<types::GpsLocation>();
         types::GpsLocation originItervalue = i_origin.next().value<types::GpsLocation>();
@@ -769,6 +776,36 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     delete request2;
 }
 
+TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
+    qRegisterMetaType<joynr::Reply>("joynr::Reply");
+    qRegisterMetaType<joynr::types::CapabilityInformation>("joynr::types::CapabilityInformation");
+
+    QList<types::CapabilityInformation> capabilityInformations;
+    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
+    capabilityInformations.append(cap1);
+    capabilityInformations.append(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
+
+    Reply reply;
+
+    QVariantList response;
+    reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
+    //this is the magic code: do not call "append" for lists, because this will append all list elements to the outer list
+    response.insert(0, joynr::Util::convertListToVariantList<joynr::types::CapabilityInformation>(capabilityInformations));
+    reply.setResponse(response);
+ QByteArray serializedContent = JsonSerializer::serialize(reply);
+    LOG_DEBUG(logger, QString::fromUtf8(serializedContent));
+
+    Reply* deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
+
+    response = deserializedReply->getResponse();
+
+    QVariantList receivedCaps = response.at(0).value<QVariantList>();
+    types::CapabilityInformation receivedCap1 = receivedCaps.at(0).value<types::CapabilityInformation>();
+    EXPECT_EQ(receivedCap1, cap1);
+    EXPECT_EQ(deserializedReply->getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
+
+    delete deserializedReply;
+}
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     qRegisterMetaType<joynr::Request>("joynr::Request");

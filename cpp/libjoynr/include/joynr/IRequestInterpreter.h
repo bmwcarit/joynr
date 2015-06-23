@@ -47,7 +47,7 @@ public:
                          const QString& methodName,
                          const QList<QVariant>& paramValues,
                          const QList<QVariant>& paramTypes,
-                         std::function<void(const QVariant& x)> callbackFct) = 0;
+                         std::function<void(const QList<QVariant>& outParams)> callbackFct) = 0;
 };
 
 } // namespace joynr

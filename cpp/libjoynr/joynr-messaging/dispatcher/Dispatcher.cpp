@@ -167,9 +167,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     QString requestReplyId = request->getRequestReplyId();
     qint64 requestExpiryDate = message.getHeaderExpiryDate().toMSecsSinceEpoch();
 
-    std::function<void(const QVariant&)> callbackFct =
+    std::function<void(const QList<QVariant>&)> callbackFct =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                    const QVariant& returnValueQVar) {
+                    const QList<QVariant>& returnValueQVar) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
         reply.setResponse(returnValueQVar);

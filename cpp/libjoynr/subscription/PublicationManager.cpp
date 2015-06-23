@@ -895,10 +895,10 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
                 InterfaceRegistrar::instance().getRequestInterpreter(
                         requestCaller->getInterfaceName()));
 
-        std::function<void(const QVariant&)> callbackFct =
+        std::function<void(const QList<QVariant>&)> callbackFct =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
-                        const QVariant& response) {
-            sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
+                        const QList<QVariant>& response) {
+            sendPublication(publication, subscriptionRequest, subscriptionRequest, response.at(0));
 
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
