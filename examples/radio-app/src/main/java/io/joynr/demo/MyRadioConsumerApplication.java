@@ -31,6 +31,9 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.Callback;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -314,6 +317,30 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             radioProxy.shuffleStations();
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
+
+            // add favourite radio station async
+            RadioStation radioStation = new RadioStation("99.4 AFN", false, Country.GERMANY);
+            Callback<Boolean> callback = new Callback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: callback onSuccess" + PRINT_BORDER);
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: callback onFailure" + PRINT_BORDER);
+                }
+            };
+            Future<Boolean> future = radioProxy.addFavouriteStation(callback, radioStation);
+            try {
+                long timeoutInMilliseconds = 8000;
+                Boolean reply = future.getReply(timeoutInMilliseconds);
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: " + radioStation + ": " + reply
+                        + PRINT_BORDER);
+            } catch (InterruptedException|JoynrRuntimeException e) {
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: " + radioStation
+                        + ": " + e.getClass().getSimpleName() + "!");
+            }
 
             ConsoleReader console;
             try {
