@@ -160,22 +160,4 @@ public interface «className» extends JoynrProvider {
 }
 		'''
 	}
-
-	/**
-	 * @return a method signature that is unique in terms of method name, out
-	 *      parameter names and out parameter types.
-	 */
-	def createMethodSignature(FMethod method) {
-		val nameStringBuilder = new StringBuilder(method.name);
-		for (FArgument outParam : method.outputParameters) {
-			nameStringBuilder.append(outParam.name.toFirstUpper);
-			val typeName = new StringBuilder(outParam.mappedDatatypeOrList.objectDataTypeForPlainType);
-			if (typeName.toString().contains("List")) {
-				typeName.deleteCharAt(4);
-				typeName.deleteCharAt(typeName.length-1);
-			}
-			nameStringBuilder.append(typeName.toString());
-		}
-		return nameStringBuilder.toString;
-	}
 }
