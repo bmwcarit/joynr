@@ -35,5 +35,5 @@ public @interface JoynrRpcCallback {
      *
      * @return the deserialisation class
      */
-    Class<? extends TypeReference<?>> deserialisationType();
+    Class<? extends TypeReference<?>> deserialisationType() default DefaultTypeReference.class;
 }

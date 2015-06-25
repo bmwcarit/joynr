@@ -23,14 +23,60 @@ import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import io.joynr.generator.util.InterfaceTemplate
+import java.util.ArrayList
+import java.util.HashMap
+import org.franca.core.franca.FArgument
 
 class InterfaceAsyncTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, ArrayList<FMethod> uniqueMultioutMethods) {
+		var uniqueMultioutMethodSignatureToCallbackName = new HashMap<String, String>();
+		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
+		var indexForMethod = new HashMap<String, Integer>();
+
+		for (FMethod method : getMethods(serviceInterface)) {
+			if (method.outputParameters.size < 2) {
+				val outputParamterType = getMappedOutputParameter(method).iterator.next;
+				if (outputParamterType == "void") {
+					methodToCallbackName.put(method, "Callback<Void>");
+				} else {
+					methodToCallbackName.put(method, "Callback<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
+				}
+			} else {
+				// Multiple Out Parameters
+				var containerName = method.name.toFirstUpper;
+				if (methodCounts.get(method.name) == 1) {
+				// method not overloaded, so no index needed
+					uniqueMultioutMethods.add(method);
+					containerName += "Callback";
+				} else {
+					// initialize index if not existent
+					if (!indexForMethod.containsKey(method.name)) {
+						indexForMethod.put(method.name, 0);
+					}
+					val methodSignature = createMethodSignature(method);
+					if (!uniqueMultioutMethodSignatureToCallbackName.containsKey(methodSignature)) {
+						var Integer index = indexForMethod.get(method.name);
+						index++;
+						indexForMethod.put(method.name, index);
+						uniqueMultioutMethodSignatureToCallbackName.put(methodSignature, method.name.toFirstUpper + index);
+						uniqueMultioutMethods.add(method);
+					}
+					containerName += uniqueMultioutMethodSignatureToCallbackName.get(methodSignature) + "Callback";
+				}
+				methodToCallbackName.put(method, containerName);
+			}
+		}
+	}
 
 	override generate(FInterface serviceInterface) {
+		var methodToCallbackName = new HashMap<FMethod, String>();
+		var uniqueMultioutMethods = new ArrayList<FMethod>();
+		init(serviceInterface, methodToCallbackName, uniqueMultioutMethods);
 		val interfaceName =  serviceInterface.joynrName
 		val asyncClassName = interfaceName + "Async"
+
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		val hasReadAttribute = hasReadAttribute(serviceInterface);
 		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
@@ -54,6 +100,10 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 «ENDIF»
 «IF hasMethodWithReturnValue || hasReadAttribute || hasWriteAttribute»
 import io.joynr.proxy.Future;
+«ENDIF»
+«IF uniqueMultioutMethods.size > 0»
+import io.joynr.proxy.ICallback;
+import io.joynr.exceptions.JoynrRuntimeException;
 «ENDIF»
 «IF hasWriteAttribute»
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -82,10 +132,35 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 			Future<Void> «setAttribute»(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
 		«ENDIF»
 	«ENDFOR»
+
+	«FOR method: uniqueMultioutMethods»
+	«val callbackName = methodToCallbackName.get(method)»
+	public abstract class «callbackName» implements ICallback {
+		public abstract void onSuccess(«getTypedOutputParametersCommaSeparated(method)»);
+
+		public void resolve(Object... outParameters) {
+			if (outParameters[0] instanceof JoynrRuntimeException) {
+				onFailure((JoynrRuntimeException) outParameters[0]);
+			} else {
+					«var index = 0»
+					onSuccess(
+						«FOR outParameter : method.outputParameters»
+							«IF isEnum(outParameter.type)»
+								«getMappedDatatypeOrList(outParameter)».valueOf((String) outParameters[«index++»])«IF index < method.outputParameters.length»,«ENDIF»
+							«ELSE»
+								(«getMappedDatatypeOrList(outParameter)») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
+							«ENDIF»
+						«ENDFOR»
+				);
+			}
+		}
+	}
+	«ENDFOR»
+
 	«FOR method: getMethods(serviceInterface)»
 		«var methodName = method.joynrName»
 		«var params = getTypedParameterListJavaRpc(method)»
-		«var callbackParameter = getCallbackParameter(method)»
+		«var callbackParameter = getCallbackParameter(method, methodToCallbackName)»
 
 		/*
 		* «methodName»
@@ -114,18 +189,23 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		}
 	}
 
-	def getCallbackParameter(FMethod method) {
+	def getCallbackParameter(FMethod method, HashMap<FMethod, String> methodToCallbackName) {
 		var outPutParameterType = getMappedOutputParameter(method).iterator.next;
+		var callbackType = methodToCallbackName.get(method);
 		var outPutObjectType = getObjectDataTypeForPlainType(outPutParameterType);
-		if (outPutParameterType!="void"){
-			if (outPutObjectType == ""){
-				return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutParameterType)+"Token.class) Callback<"+outPutParameterType+"> callback"
-			}
-			else{
-				return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutObjectType)+"Token.class) Callback<"+outPutParameterType+"> callback"
+		if (method.outputParameters.size < 2) {
+			if (outPutParameterType!="void"){
+				if (outPutObjectType == ""){
+					return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutParameterType)+"Token.class) "+ callbackType + " callback"
+				}
+				else{
+					return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutObjectType)+"Token.class) " + callbackType + " callback"
+				}
+			} else {
+				return "@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback"
 			}
 		} else {
-			return "@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback"
+			return "@JoynrRpcCallback " + callbackType + " callback"
 		}
 	}
 }
