@@ -66,6 +66,7 @@ import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
+import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
 import joynr.types.GpsFixEnum;
 import joynr.types.GpsLocation;
 import joynr.types.Trip;
@@ -94,6 +95,21 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     TestProvider provider;
     String domain;
     String domainAsync;
+
+    public static final String TEST_STRING = "Test String";
+    public static final Integer TEST_INTEGER = 633536;
+    private static final TestEnum TEST_ENUM = TestEnum.TWO;
+    public static final GpsLocation TEST_COMPLEXTYPE = new GpsLocation(1.0,
+                                                                       2.0,
+                                                                       2.5,
+                                                                       GpsFixEnum.MODE2D,
+                                                                       3.0,
+                                                                       4.0,
+                                                                       5.0,
+                                                                       6.0,
+                                                                       7L,
+                                                                       89L,
+                                                                       Integer.MAX_VALUE);
 
     long timeTookToRegisterProvider;
 
@@ -223,6 +239,17 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         @Override
         public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
             super.fireBroadcast(broadcastName, broadcastFilters, values);
+        }
+
+        @Override
+        public Promise<MethodWithMultipleOutputParametersDeferred> methodWithMultipleOutputParameters() {
+            MethodWithMultipleOutputParametersDeferred deferred = new MethodWithMultipleOutputParametersDeferred();
+            String aString = TEST_STRING;
+            Integer aNumber = TEST_INTEGER;
+            GpsLocation aComplexDataType = TEST_COMPLEXTYPE;
+            TestEnum anEnumResult = TEST_ENUM;
+            deferred.resolve(aString, aNumber, aComplexDataType, anEnumResult);
+            return new Promise<MethodWithMultipleOutputParametersDeferred>(deferred);
         }
 
         @Override
@@ -398,6 +425,19 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
 
     }
 
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void calledMethodReturnsMultipleOutputParameters() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        MethodWithMultipleOutputParametersReturned result = proxy.methodWithMultipleOutputParameters();
+        assertEquals(TEST_INTEGER, result.aNumber);
+        assertEquals(TEST_STRING, result.aString);
+        assertEquals(TEST_COMPLEXTYPE, result.aComplexDataType);
+        assertEquals(TEST_ENUM, result.anEnumResult);
+
+    }
+
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithTtlExpiring() throws JoynrArbitrationException, JoynrIllegalStateException,
@@ -463,7 +503,7 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
-                future.onFailure(new JoynrRuntimeException());
+                future.onFailure(error);
             }
 
         });

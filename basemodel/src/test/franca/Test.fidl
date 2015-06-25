@@ -377,6 +377,15 @@ interface test{
 		}
 	}
 
+	method methodWithMultipleOutputParameters {
+		out {
+			String aString
+			Int32 aNumber
+			GpsLocation aComplexDataType
+			testTypes.TestEnum anEnumResult
+		}
+	}
+
 	// Broadcast which has the same name as an attribute for testing possible conflicts.
 	broadcast location {
 		out {
