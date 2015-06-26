@@ -53,7 +53,11 @@ public:
                           QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
-    QString add(const QString& domain, QSharedPointer<T> provider, QString authenticationToken)
+    QString add(const QString& domain,
+                QSharedPointer<T> provider,
+                QString authenticationToken,
+                std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
+                        nullptr)
     {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -89,15 +93,21 @@ public:
         }
 
         // add next hop to dispatcher
-        messageRouter->addNextHop(participantId, dispatcherAddress);
+        messageRouter->addNextHop(participantId, dispatcherAddress, callbackFct);
 
         return participantId;
     }
 
-    void remove(const QString& participantId);
+    void remove(const QString& participantId,
+                std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
+                        nullptr);
 
     template <class T>
-    QString remove(const QString& domain, QSharedPointer<T> provider, QString authenticationToken)
+    QString remove(const QString& domain,
+                   QSharedPointer<T> provider,
+                   QString authenticationToken,
+                   std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
+                           callbackFct = nullptr)
     {
         Q_UNUSED(provider)
 
@@ -127,7 +137,8 @@ public:
                               .arg(status.getCode().toString()));
         }
 
-        messageRouter->removeNextHop(status, participantId);
+        messageRouter->removeNextHop(participantId, callbackFct);
+
         if (!status.successful()) {
             LOG_ERROR(logger,
                       QString("Unable to remove next hop (participant ID: %1) from message router.")

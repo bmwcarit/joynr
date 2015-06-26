@@ -18,10 +18,10 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class DefaultProviderHTemplate implements InterfaceTemplate{
 
@@ -43,44 +43,47 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 		#include "joynr/DeclareMetatypeUtil.h"
 		#include "joynr/joynrlogging.h"
-		
+
 		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 			#include "«parameterType»"
 		«ENDFOR»
-		
+
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-		
-		«getNamespaceStarter(serviceInterface)» 
-		
+
+		«getNamespaceStarter(serviceInterface)»
+
 		class «getDllExportMacro()» Default«interfaceName»Provider: public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider {
-		
+
 		public:
-		    Default«interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
-		    
-		    virtual ~Default«interfaceName»Provider();
-		
+			Default«interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
+
+			virtual ~Default«interfaceName»Provider();
+
 			«FOR attribute: getAttributes(serviceInterface)»
 				// Only use this for pulling providers, not for pushing providers
-				//		void get«attribute.joynrName.toFirstUpper»(joynr::RequestStatus& status, «getMappedDatatype(attribute)»& result);
+				//	void get«attribute.joynrName.toFirstUpper»(
+				//			std::future<void(
+				//					const joynr::RequestStatus&,
+				//					const «getMappedDatatypeOrList(attribute)»)> callbackFct);
 			«ENDFOR»
-			
+
 			«FOR method: getMethods(serviceInterface)»
-				«val methodName = method.joynrName»
-				«val outputParameterType = getMappedOutputParameter(method).head»
-				«IF outputParameterType=="void"»
-					virtual void  «methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» );
-				«ELSE»
-					virtual void  «methodName»(joynr::RequestStatus& status, «outputParameterType»& result«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»);
-				«ENDIF»
-			«ENDFOR»    
+				«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+				«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+				void «method.joynrName»(
+						«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+						std::function<void(
+								const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
+								«outputTypedParamList»)> callbackFct);
+			«ENDFOR»
 
 		private:
-		        static joynr::joynr_logging::Logger* logger;
-		
+			static joynr::joynr_logging::Logger* logger;
+
 		};
-		
-		«getNamespaceEnder(serviceInterface)» 
-		
+
+		«getNamespaceEnder(serviceInterface)»
+
 		#endif // «headerGuard»
 		'''
 	}

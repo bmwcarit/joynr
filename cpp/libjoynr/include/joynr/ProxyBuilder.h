@@ -30,7 +30,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/exceptions.h"
 #include "joynr/system/IDiscovery.h"
-
+#include "Future.h"
 #include <QSemaphore>
 #include <QList>
 #include <cassert>
@@ -177,7 +177,16 @@ T* ProxyBuilder<T>::build()
     waitForArbitration(discoveryTimeout);
     proxy->handleArbitrationFinished(participantId, connection);
     // add next hop to dispatcher
-    messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
+
+    /*
+     * synchronously wait until the proxy participantId is registered in the
+     * routing table(s)
+    */
+    QSharedPointer<Future<void>> future(new Future<void>());
+    auto callbackFct = [future](const joynr::RequestStatus& status) { future->onSuccess(status); };
+    messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, callbackFct);
+
+    future->waitForFinished();
     return proxy;
 }
 

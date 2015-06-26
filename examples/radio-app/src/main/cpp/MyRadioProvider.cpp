@@ -52,16 +52,17 @@ MyRadioProvider::~MyRadioProvider()
 {
 }
 
-void MyRadioProvider::getCurrentStation(RequestStatus& status, vehicle::RadioStation& result)
+void MyRadioProvider::getCurrentStation(std::function<void(
+                                            const joynr::RequestStatus& status,
+                                            const joynr::vehicle::RadioStation& result)> callbackFct)
 {
     QMutexLocker locker(&mutex);
 
-    result = currentStation;
-    MyRadioHelper::prettyLog(logger, QString("getCurrentStation -> %1").arg(result.toString()));
-    status.setCode(RequestStatusCode::OK);
+    MyRadioHelper::prettyLog(logger, QString("getCurrentStation -> %1").arg(currentStation.toString()));
+    callbackFct(RequestStatus(RequestStatusCode::OK), currentStation);
 }
 
-void MyRadioProvider::shuffleStations(RequestStatus& status)
+void MyRadioProvider::shuffleStations(std::function<void(const joynr::RequestStatus& status)> callbackFct)
 {
     QMutexLocker locker(&mutex);
 
@@ -72,20 +73,20 @@ void MyRadioProvider::shuffleStations(RequestStatus& status)
     MyRadioHelper::prettyLog(logger,
                              QString("shuffleStations: %1 -> %2").arg(oldStation.toString()).arg(
                                      currentStation.toString()));
-    status.setCode(RequestStatusCode::OK);
+    callbackFct(RequestStatus(RequestStatusCode::OK));
 }
 
-void MyRadioProvider::addFavouriteStation(RequestStatus& status,
-                                          bool& returnValue,
-                                          vehicle::RadioStation radioStation)
+void MyRadioProvider::addFavouriteStation(vehicle::RadioStation radioStation,
+                                          std::function<void(
+                                              const joynr::RequestStatus& status,
+                                              const bool& returnValue)> callbackFct)
 {
     QMutexLocker locker(&mutex);
 
     MyRadioHelper::prettyLog(
             logger, QString("addFavouriteStation(%1)").arg(radioStation.toString()));
     stationsList.append(radioStation);
-    returnValue = true;
-    status.setCode(RequestStatusCode::OK);
+    callbackFct(RequestStatus(RequestStatusCode::OK), true);
 }
 
 void MyRadioProvider::fireWeakSignalBroadcast()
@@ -106,7 +107,8 @@ void MyRadioProvider::fireNewStationDiscoveredBroadcast()
     fireNewStationDiscovered(discoveredStation, geoPosition);
 }
 
-void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioStation currentStation)
+void MyRadioProvider::setCurrentStation(vehicle::RadioStation currentStation,
+                                        std::function<void(const joynr::RequestStatus& status)> callbackFct)
 {
     QMutexLocker locker(&mutex);
 
@@ -122,5 +124,5 @@ void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioSta
     currentStationChanged(stationsList.at(currentStationIndex));
     MyRadioHelper::prettyLog(
             logger, QString("setCurrentStation(%1)").arg(currentStation.toString()));
-    status.setCode(RequestStatusCode::OK);
+    callbackFct(RequestStatus(RequestStatusCode::OK));
 }

@@ -69,19 +69,27 @@ public:
     template <class T>
     QString registerCapability(const QString& domain,
                                QSharedPointer<T> provider,
-                               const QString& authenticationToken)
+                               const QString& authenticationToken,
+                               std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
+                                       callbackFct = nullptr)
     {
         assert(capabilitiesRegistrar);
         assert(domain != "");
-        return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken, callbackFct);
     }
 
-    virtual void unregisterCapability(QString participantId) = 0;
+    virtual void unregisterCapability(
+            QString participantId,
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
+                    callbackFct = nullptr) = 0;
 
     template <class T>
-    QString unregisterCapability(const QString& domain,
-                                 QSharedPointer<T> provider,
-                                 const QString& authenticationToken)
+    QString unregisterCapability(
+            const QString& domain,
+            QSharedPointer<T> provider,
+            const QString& authenticationToken,
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
+                    nullptr)
     {
         assert(capabilitiesRegistrar);
         assert(domain != "");

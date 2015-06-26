@@ -83,7 +83,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
                   )),
           messagingStubFactory(messagingStubFactory),
           routingTable(QString("MessageRouter-RoutingTable")),
-          routingTableMutex(),
+          routingTableLock(),
           threadPool(),
           parentRouter(NULL),
           parentAddress(NULL),
@@ -111,7 +111,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
                   )),
           messagingStubFactory(messagingStubFactory),
           routingTable(QString("MessageRouter-RoutingTable")),
-          routingTableMutex(),
+          routingTableLock(),
           threadPool(),
           parentRouter(NULL),
           parentAddress(NULL),
@@ -152,9 +152,8 @@ void MessageRouter::setParentRouter(joynr::system::RoutingProxy* parentRouter,
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
-    joynr::RequestStatus status;
     addProvisionedNextHop(parentParticipantId, parentAddress);
-    addNextHopToParent(status, parentRouter->getProxyParticipantId());
+    addNextHopToParent(parentRouter->getProxyParticipantId());
 }
 
 bool MessageRouter::isChildMessageRouter()
@@ -190,11 +189,10 @@ void MessageRouter::route(const JoynrMessage& message)
     // search for the destination address
     const QString destinationPartId = message.getHeaderTo();
     QSharedPointer<joynr::system::Address> destAddress(NULL);
-    {
-        QMutexLocker locker(&routingTableMutex);
-        destAddress = routingTable.lookup(destinationPartId);
-    }
 
+    routingTableLock.lockForRead();
+    destAddress = routingTable.lookup(destinationPartId);
+    routingTableLock.unlock();
     // if destination address is not known
     if (destAddress.isNull()) {
         // save the message for later delivery
@@ -278,162 +276,169 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
     }
 }
 
-void MessageRouter::addNextHop(QString participantId,
-                               QSharedPointer<joynr::system::Address> inprocessAddress)
+void MessageRouter::addNextHop(
+        QString participantId,
+        QSharedPointer<joynr::system::Address> inprocessAddress,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     addToRoutingTable(participantId, inprocessAddress);
 
-    joynr::RequestStatus status;
-    addNextHopToParent(status, participantId);
+    addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, inprocessAddress);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                               QString participantId,
-                               joynr::system::ChannelAddress channelAddress)
+void MessageRouter::addNextHop(
+        QString participantId,
+        joynr::system::ChannelAddress channelAddress,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::ChannelAddress> address(
             new joynr::system::ChannelAddress(channelAddress));
     addToRoutingTable(participantId, address);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                               QString participantId,
-                               joynr::system::CommonApiDbusAddress commonApiDbusAddress)
+void MessageRouter::addNextHop(
+        QString participantId,
+        joynr::system::CommonApiDbusAddress commonApiDbusAddress,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::CommonApiDbusAddress> address(
             new joynr::system::CommonApiDbusAddress(commonApiDbusAddress));
     addToRoutingTable(participantId, address);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                               QString participantId,
-                               joynr::system::BrowserAddress browserAddress)
+void MessageRouter::addNextHop(
+        QString participantId,
+        joynr::system::BrowserAddress browserAddress,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::BrowserAddress> address(
             new joynr::system::BrowserAddress(browserAddress));
     addToRoutingTable(participantId, address);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                               QString participantId,
-                               joynr::system::WebSocketAddress webSocketAddress)
+void MessageRouter::addNextHop(
+        QString participantId,
+        joynr::system::WebSocketAddress webSocketAddress,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::WebSocketAddress> address(
             new joynr::system::WebSocketAddress(webSocketAddress));
     addToRoutingTable(participantId, address);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                               QString participantId,
-                               joynr::system::WebSocketClientAddress webSocketClientAddress)
+void MessageRouter::addNextHop(
+        QString participantId,
+        joynr::system::WebSocketClientAddress webSocketClientAddress,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     QSharedPointer<joynr::system::WebSocketClientAddress> address(
             new joynr::system::WebSocketClientAddress(webSocketClientAddress));
     addToRoutingTable(participantId, address);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
 
-    addNextHopToParent(joynrInternalStatus, participantId);
+    addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
-void MessageRouter::addNextHopToParent(joynr::RequestStatus& joynrInternalStatus,
-                                       QString participantId)
+void MessageRouter::addNextHopToParent(
+        QString participantId,
+        std::function<void(const joynr::RequestStatus& status)> callbackFct)
 {
     // add to parent router
     if (isChildMessageRouter()) {
         if (incomingAddress->inherits("joynr::system::ChannelAddress")) {
             parentRouter->addNextHop(
-                    joynrInternalStatus,
                     participantId,
-                    *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data()));
+                    *dynamic_cast<joynr::system::ChannelAddress*>(incomingAddress.data()),
+                    callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::CommonApiDbusAddress")) {
             parentRouter->addNextHop(
-                    joynrInternalStatus,
                     participantId,
-                    *dynamic_cast<joynr::system::CommonApiDbusAddress*>(incomingAddress.data()));
+                    *dynamic_cast<joynr::system::CommonApiDbusAddress*>(incomingAddress.data()),
+                    callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::BrowserAddress")) {
             parentRouter->addNextHop(
-                    joynrInternalStatus,
                     participantId,
-                    *dynamic_cast<joynr::system::BrowserAddress*>(incomingAddress.data()));
+                    *dynamic_cast<joynr::system::BrowserAddress*>(incomingAddress.data()),
+                    callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::WebSocketAddress")) {
             parentRouter->addNextHop(
-                    joynrInternalStatus,
                     participantId,
-                    *dynamic_cast<joynr::system::WebSocketAddress*>(incomingAddress.data()));
+                    *dynamic_cast<joynr::system::WebSocketAddress*>(incomingAddress.data()),
+                    callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::WebSocketClientAddress")) {
             parentRouter->addNextHop(
-                    joynrInternalStatus,
                     participantId,
-                    *dynamic_cast<joynr::system::WebSocketClientAddress*>(incomingAddress.data()));
+                    *dynamic_cast<joynr::system::WebSocketClientAddress*>(incomingAddress.data()),
+                    callbackFct);
         }
+    } else if (callbackFct) {
+        callbackFct(joynr::RequestStatus(RequestStatusCode::OK));
     }
 }
 
 void MessageRouter::addToRoutingTable(QString participantId,
                                       QSharedPointer<joynr::system::Address> address)
 {
-    QMutexLocker locker(&routingTableMutex);
+    routingTableLock.lockForWrite();
     routingTable.add(participantId, address);
+    routingTableLock.unlock();
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::removeNextHop(joynr::RequestStatus& joynrInternalStatus, QString participantId)
+void MessageRouter::removeNextHop(
+        QString participantId,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
-    {
-        QMutexLocker locker(&routingTableMutex);
-        routingTable.remove(participantId);
-    }
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+    routingTableLock.lockForWrite();
+    routingTable.remove(participantId);
+    routingTableLock.unlock();
 
     // remove from parent router
     if (isChildMessageRouter()) {
-        parentRouter->removeNextHop(joynrInternalStatus, participantId);
+        parentRouter->removeNextHop(participantId, callbackFct);
+    } else if (callbackFct) {
+        callbackFct(joynr::RequestStatus(RequestStatusCode::OK));
     }
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::resolveNextHop(joynr::RequestStatus& joynrInternalStatus,
-                                   bool& resolved,
-                                   QString participantId)
+void MessageRouter::resolveNextHop(
+        QString participantId,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus, const bool& resolved)>
+                callbackFct)
 {
-    {
-        QMutexLocker locker(&routingTableMutex);
-        resolved = routingTable.contains(participantId);
-    }
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+    routingTableLock.lockForRead();
+    bool resolved = routingTable.contains(participantId);
+    routingTableLock.unlock();
+    callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), resolved);
 }
 
 /**

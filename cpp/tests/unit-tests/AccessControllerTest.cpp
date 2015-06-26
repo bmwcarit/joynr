@@ -92,6 +92,13 @@ public:
     ~AccessControllerTest() {
     }
 
+    void invokeCallbackFct (QString participantId,
+                            std::function<void(const joynr::RequestStatus&,
+                                               const joynr::system::DiscoveryEntry&)> callbackFct) {
+        Q_UNUSED(participantId);
+        callbackFct(requestStatus, discoveryEntry);
+    }
+
     void SetUp(){
         request.setMethodName(TEST_OPERATION);
         messagingQos = MessagingQos(5000);
@@ -122,12 +129,11 @@ public:
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
-                lookup(_,_,toParticipantId)
+                lookup(toParticipantId, A<std::function<void(
+                           const joynr::RequestStatus&, const joynr::system::DiscoveryEntry&)>>())
         )
-                .WillOnce(DoAll(
-                          SetArgReferee<0>(requestStatus),
-                          SetArgReferee<1>(discoveryEntry)
-                ));
+                .Times(1)
+                .WillOnce(Invoke(this, &AccessControllerTest::invokeCallbackFct));
     }
 
     void TearDown(){

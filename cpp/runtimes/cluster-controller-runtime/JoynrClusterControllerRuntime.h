@@ -84,7 +84,9 @@ public:
 
     virtual ~JoynrClusterControllerRuntime();
 
-    void unregisterCapability(QString participantId);
+    void unregisterCapability(QString participantId,
+                              std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
+                                      callbackFct = nullptr);
     void start();
     void stop(bool deleteChannel = false);
 

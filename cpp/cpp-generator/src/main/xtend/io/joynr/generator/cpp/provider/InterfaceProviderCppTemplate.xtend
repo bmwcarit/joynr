@@ -39,72 +39,75 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 		#include "joynr/RequestStatus.h"
 
-
 		«getNamespaceStarter(serviceInterface)»
 		«interfaceName»Provider::«interfaceName»Provider(const joynr::types::ProviderQos &providerQos) :
 			I«interfaceName»Base(),
 			«FOR attribute: getAttributes(serviceInterface)»
 				«attribute.joynrName»(),
 			«ENDFOR»
-		    subscriptionManager(NULL),
-		    domain(),
-		    interfaceName(),
-		    providerQos(providerQos)
+			subscriptionManager(NULL),
+			domain(),
+			interfaceName(),
+			providerQos(providerQos)
 		{
 			// Register a request interpreter to interpret requests to this interface
 			joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
 		}
-		
+
 		«interfaceName»Provider::~«interfaceName»Provider()
 		{
 			// Unregister the request interpreter
 			joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
 		}
-		
+
 		void «interfaceName»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {
-		    this->subscriptionManager = subscriptionManager;
+			this->subscriptionManager = subscriptionManager;
 		}
-		
+
 		void «interfaceName»Provider::setDomainAndInterface(const QString &domain, const QString &interfaceName) {
-		    this->domain = domain;
-		    this->interfaceName = interfaceName;
+			this->domain = domain;
+			this->interfaceName = interfaceName;
 		}
-		
+
 		joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
-		    return providerQos;
+			return providerQos;
 		}
-		
+
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeType = getMappedDatatypeOrList(attribute)»
 			«var attributeName = attribute.joynrName»
-			void «interfaceName»Provider::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «attributeType»& result) {
-			    result = «attributeName»;
-			    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+			void «interfaceName»Provider::get«attributeName.toFirstUpper»(
+					std::function<void(
+							const joynr::RequestStatus&,
+							const «getMappedDatatypeOrList(attribute)»&)> callbackFct) {
+				callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), «attributeName»);
 			}
-			
-			void «interfaceName»Provider::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «attributeType»& «attributeName») {
-			    «attributeName»Changed(«attributeName»); 
-			    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+
+			void «interfaceName»Provider::set«attributeName.toFirstUpper»(
+					const «getMappedDatatypeOrList(attribute)»& «attributeName»,
+					std::function<void(const joynr::RequestStatus&)> callbackFct) {
+				«attributeName»Changed(«attributeName»);
+				callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK));
 			}
 
 			void «interfaceName»Provider::«attributeName»Changed(const «attributeType»& «attributeName») {
-			    if(this->«attributeName» == «attributeName») {
-			        // the value didn't change, no need for notification
-			        return;
-			    }
-			    this->«attributeName» = «attributeName»;
-			    onAttributeValueChanged("«attributeName»", QVariant::fromValue(«attributeName»));
+				if(this->«attributeName» == «attributeName») {
+					// the value didn't change, no need for notification
+					return;
+				}
+				this->«attributeName» = «attributeName»;
+				onAttributeValueChanged("«attributeName»", QVariant::fromValue(«attributeName»));
 			}
 		«ENDFOR»
 
 		«FOR broadcast: serviceInterface.broadcasts»
 			«var broadcastName = broadcast.joynrName»
 			void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
-			    QList<QVariant> broadcastValues;
+				QList<QVariant> broadcastValues;
 				«FOR parameter: getOutputParameters(broadcast)»
-				    broadcastValues.append(QVariant::fromValue(«parameter.name»));
+					broadcastValues.append(QVariant::fromValue(«parameter.name»));
 				«ENDFOR»
-			    fireBroadcast("«broadcastName»", broadcastValues);
+				fireBroadcast("«broadcastName»", broadcastValues);
 			}
 		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»

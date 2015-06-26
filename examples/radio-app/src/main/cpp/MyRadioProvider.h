@@ -40,25 +40,29 @@ public:
     /**
       * Get the current radio station
       */
-    void getCurrentStation(joynr::RequestStatus& status, joynr::vehicle::RadioStation& result);
+    void getCurrentStation(std::function<void(
+                               const joynr::RequestStatus& status,
+                               const joynr::vehicle::RadioStation& result)> callbackFct);
 
     /**
       * Set the current radio station
       */
-    void setCurrentStation(joynr::RequestStatus& status,
-                           joynr::vehicle::RadioStation currentStation);
+    void setCurrentStation(
+            joynr::vehicle::RadioStation currentStation,
+            std::function<void(const joynr::RequestStatus& status)> callbackFct);
 
     /**
       * Get the next radio station in a circular list of stations
       */
-    void shuffleStations(joynr::RequestStatus& status);
+    void shuffleStations(std::function<void(const joynr::RequestStatus& status)> callbackFct);
 
     /**
       * Add a favourite radio station
       */
-    void addFavouriteStation(joynr::RequestStatus& status,
-                             bool& returnValue,
-                             joynr::vehicle::RadioStation radioStation);
+    void addFavouriteStation(joynr::vehicle::RadioStation radioStation,
+                             std::function<void(
+                                 const joynr::RequestStatus& status,
+                                 const bool& returnValue)> callbackFct);
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();

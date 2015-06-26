@@ -395,31 +395,32 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::add(RequestStatus& joynrInternalStatus,
-                                     joynr::system::DiscoveryEntry discoveryEntry)
+void LocalCapabilitiesDirectory::add(system::DiscoveryEntry discoveryEntry,
+                                     std::function<void(const RequestStatus&)> callbackFct)
 {
     add(discoveryEntry);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+    callbackFct(RequestStatus(joynr::RequestStatusCode::OK));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                        QList<joynr::system::DiscoveryEntry>& result,
-                                        QString domain,
-                                        QString interfaceName,
-                                        joynr::system::DiscoveryQos discoveryQos)
+void LocalCapabilitiesDirectory::lookup(
+        QString domain,
+        QString interfaceName,
+        system::DiscoveryQos discoveryQos,
+        std::function<void(const RequestStatus&, const QList<system::DiscoveryEntry>&)> callbackFct)
 {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(domain, interfaceName, future, discoveryQos);
     QList<CapabilityEntry> capabilities = future->get();
+    QList<system::DiscoveryEntry> result;
     convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+    callbackFct(RequestStatus(joynr::RequestStatusCode::OK), result);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                        joynr::system::DiscoveryEntry& result,
-                                        QString participantId)
+void LocalCapabilitiesDirectory::lookup(
+        QString participantId,
+        std::function<void(const RequestStatus&, const system::DiscoveryEntry&)> callbackFct)
 {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
@@ -432,20 +433,23 @@ void LocalCapabilitiesDirectory::lookup(joynr::RequestStatus& joynrInternalStatu
                           .arg(capabilities[1].toString()));
     }
 
+    system::DiscoveryEntry result;
+    joynr::RequestStatus joynrInternalStatus;
     if (!capabilities.isEmpty()) {
         convertCapabilityEntryIntoDiscoveryEntry(capabilities.first(), result);
         joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
     } else {
         joynrInternalStatus.setCode(joynr::RequestStatusCode::ERROR);
     }
+    callbackFct(joynrInternalStatus, result);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::remove(joynr::RequestStatus& joynrInternalStatus,
-                                        QString participantId)
+void LocalCapabilitiesDirectory::remove(QString participantId,
+                                        std::function<void(const RequestStatus&)> callbackFct)
 {
     remove(participantId);
-    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
+    callbackFct(RequestStatus(joynr::RequestStatusCode::OK));
 }
 
 void LocalCapabilitiesDirectory::addProviderRegistrationObserver(

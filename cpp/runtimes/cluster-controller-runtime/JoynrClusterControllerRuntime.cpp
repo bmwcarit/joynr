@@ -430,10 +430,12 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* 
     return runtime;
 }
 
-void JoynrClusterControllerRuntime::unregisterCapability(QString participantId)
+void JoynrClusterControllerRuntime::unregisterCapability(
+        QString participantId,
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
 {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId);
+    capabilitiesRegistrar->remove(participantId, callbackFct);
 }
 
 void JoynrClusterControllerRuntime::start()

@@ -58,36 +58,29 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			«val returnType = getMappedDatatypeOrList(attribute)»
 			void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 					std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct){
-				joynr::RequestStatus joynrInternalStatus;
-				«returnType» «attributeName.toFirstLower»;
-				provider->get«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName.toFirstLower»);
-				callbackFct(joynrInternalStatus, «attributeName.toFirstLower»);
+				provider->get«attributeName.toFirstUpper»(callbackFct);
 			}
 
 			void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
 					«returnType» «attributeName.toFirstLower»,
 					std::function<void(const joynr::RequestStatus& status)> callbackFct){
-				joynr::RequestStatus joynrInternalStatus;
-				provider->set«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName.toFirstLower»);
-				callbackFct(joynrInternalStatus);
+				provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», callbackFct);
 			}
 
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
-			«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-			«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
+			«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
 			«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
-			«val inputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
+			«val inputUntypedParamList = getCommaSeperatedUntypedParameterList(method)»
 			«val methodName = method.joynrName»
 			void «interfaceName»RequestCaller::«methodName»(
 					«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
-					std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct){
-				joynr::RequestStatus status;
-				«FOR parameter : method.getOutputParameters»
-					«parameter.getMappedDatatypeOrList» «parameter.joynrName»;
-				«ENDFOR»
-				provider->«methodName»(status«outputUntypedParamList»«inputUntypedParamList»);
-				callbackFct(status«outputUntypedParamList»);
+					std::function<void(
+							const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
+							«outputTypedParamList»)> callbackFct){
+				provider->«methodName»(
+						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+						callbackFct);
 			}
 		«ENDFOR»
 

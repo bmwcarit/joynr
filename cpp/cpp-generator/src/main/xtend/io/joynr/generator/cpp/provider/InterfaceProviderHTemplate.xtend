@@ -18,10 +18,10 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceProviderHTemplate implements InterfaceTemplate{
 	@Inject
@@ -57,21 +57,29 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 	«getNamespaceStarter(serviceInterface)»
 
-	class «getDllExportMacro()» «interfaceName»Provider : public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Sync, public joynr::Provider {
+	class «getDllExportMacro()» «interfaceName»Provider :
+			public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Base,
+			public joynr::Provider
+	{
 
 	public:
-	    //TODO remove default value for ProviderQos and pass in real qos parameters
-	    «interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
-	    //for each Attribute the provider needs setters, sync and async getters.
-	    //They have default implementation for pushing Providers and can be overwritten by pulling Providers.
-	    virtual ~«interfaceName»Provider();
+		//TODO remove default value for ProviderQos and pass in real qos parameters
+		«interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
+		//for each Attribute the provider needs setters, sync and async getters.
+		//They have default implementation for pushing Providers and can be overwritten by pulling Providers.
+		virtual ~«interfaceName»Provider();
 
-	    // request status, result, (params......)*
+		// request status, result, (params......)*
 
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeName = attribute.joynrName»
-			virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)»& result);
-			virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
+			virtual void get«attributeName.toFirstUpper»(
+					std::function<void(
+							const joynr::RequestStatus&,
+							const «getMappedDatatypeOrList(attribute)»&)> callbackFct);
+			virtual void set«attributeName.toFirstUpper»(
+					const «getMappedDatatypeOrList(attribute)»& «attributeName»,
+					std::function<void(const joynr::RequestStatus&)> callbackFct);
 			/**
 			* @brief «attributeName»Changed must be called by a concrete provider to signal attribute
 			* modifications. It is used to implement onchange subscriptions.
@@ -80,12 +88,13 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 			void «attributeName»Changed(const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
-			«val outputParameterType = getMappedOutputParameter(method)»
-			«IF outputParameterType.head=="void"»
-				virtual void «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») = 0;
-			«ELSE»
-				virtual void «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») = 0;
-			«ENDIF»
+			«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+			«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+			virtual void «method.joynrName»(
+					«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+					std::function<void(
+							const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
+							«outputTypedParamList»)> callbackFct) = 0;
 		«ENDFOR»
 
 		«FOR broadcast: serviceInterface.broadcasts»
@@ -98,22 +107,22 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 			void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
 		«ENDFOR»
 
-	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
-	    void setDomainAndInterface(const QString& domain, const QString& interfaceName);
+		void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
+		void setDomainAndInterface(const QString& domain, const QString& interfaceName);
 
-	    joynr::types::ProviderQos getProviderQos() const;
+		joynr::types::ProviderQos getProviderQos() const;
 
 	protected:
 		«FOR attribute: getAttributes(serviceInterface)»
-		    «getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
+			«getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
 		«ENDFOR»
 
 	private:
-	    DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
-	    joynr::SubscriptionManager* subscriptionManager;
-	    QString domain;
-	    QString interfaceName;
-	    joynr::types::ProviderQos providerQos;
+		DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
+		joynr::SubscriptionManager* subscriptionManager;
+		QString domain;
+		QString interfaceName;
+		joynr::types::ProviderQos providerQos;
 	};
 	«getNamespaceEnder(serviceInterface)»
 
@@ -126,9 +135,9 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 	public:
 		QSharedPointer<joynr::RequestCaller> create(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider) {
 			return QSharedPointer<joynr::RequestCaller>(new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»RequestCaller(provider));
-	    }
+		}
 	};
-	} // namespace joynr	
+	} // namespace joynr
 
 	#endif // «headerGuard»
 	'''

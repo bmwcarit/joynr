@@ -38,83 +38,94 @@ class DefaultProviderCppTemplate implements InterfaceTemplate{
 		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/Default«interfaceName»Provider.h"
 		#include "joynr/RequestStatus.h"
 		#include "joynr/joynrlogging.h"
-		
+
 		«getNamespaceStarter(serviceInterface)»
-		
+
 		using namespace joynr::joynr_logging;
-		
+
 		Logger* Default«interfaceName»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«interfaceName»Provider");
-		
+
 		Default«interfaceName»Provider::Default«interfaceName»Provider(const joynr::types::ProviderQos& providerQos) :
 			«interfaceName»Provider(providerQos)
 		{
 		}
-		
+
 		Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		{
 		}
-		
+
 		«FOR attribute: getAttributes(serviceInterface)»
 			«val attributename = attribute.joynrName»
 			«var attributeType = getMappedDatatypeOrList(attribute)»
 			// Only use this for pulling providers, not for pushing providers
-			//void Default«interfaceName»Provider::get«attributename.toFirstUpper»(RequestStatus& status, «getMappedDatatypeOrList(attribute)»& result) {
+			//	void Default«interfaceName»Provider::get«attributename.toFirstUpper»(
+			//		std::function<void(
+			//				const joynr::RequestStatus&,
+			//				const «getMappedDatatypeOrList(attribute)»&)> callbackFct) {
 			// LOG_WARN(logger, "**********************************************");
 			// LOG_WARN(logger, "* Default«interfaceName»Provider::get«attributename.toFirstUpper» called");
 			// LOG_WARN(logger, "**********************************************");
 			«IF attributeType=="QString"»
-				//		result = "Hello World";
+				//		«getMappedDatatypeOrList(attribute)» result = "Hello World";
 			«ELSEIF attributeType=="bool"»
-				//		result = false;
+				//		«getMappedDatatypeOrList(attribute)» result = false;
 			«ELSEIF attributeType=="int"»
-				//		result = 42;
+				//		«getMappedDatatypeOrList(attribute)» result = 42;
 			«ELSEIF attributeType=="double"»
-				//		result = 3.1415;
+				//		«getMappedDatatypeOrList(attribute)» result = 3.1415;
 			«ELSE»
-				//		result = «attributeType»(); 
+				//		«getMappedDatatypeOrList(attribute)» result = «attributeType»();
 			«ENDIF»
-			//    status.setCode(RequestStatusCode::OK);
+			//	callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
 			//}
-			
+
 		«ENDFOR»
 		«FOR method: getMethods(serviceInterface)»
 			«val methodName = method.joynrName»
-			«val outputParameterType = getMappedOutputParameter(method)»
-			«IF outputParameterType.head =="void"»
-				void  Default«interfaceName»Provider::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» ) {
-			«ELSE»
-				void  Default«interfaceName»Provider::«methodName»(joynr::RequestStatus& status, «outputParameterType.head»& result«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») {
-				«IF outputParameterType.head=="QString"»
-					result = "Hello World";
-				«ELSEIF outputParameterType.head=="bool"»
-					result = false;
-				«ELSEIF outputParameterType.head=="int"»
-					result = 42;
-				«ELSEIF outputParameterType.head=="double"»
-				    result = 3.1415;
-				«ELSE»
-				    Q_UNUSED(result);
-				«ENDIF»
-			«ENDIF»
+			«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+			«val outputUntypedParamList = method.getCommaSeperatedUntypedOutputParameterList»
+			«val inputTypedParamList = getCommaSeperatedTypedParameterList(method)»
+			void Default«interfaceName»Provider::«method.joynrName»(
+					«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+					std::function<void(
+							const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
+							«outputTypedParamList»)> callbackFct) {
 				«FOR inputParameter: getInputParameters(method)»
 					Q_UNUSED(«inputParameter.joynrName»);
+				«ENDFOR»
+				«FOR argument : method.outputParameters»
+					«val outputParamType = argument.getMappedDatatypeOrList»
+					«IF outputParamType=="QString"»
+						«outputParamType» «argument.joynrName» = "Hello World";
+					«ELSEIF outputParamType=="bool"»
+						«outputParamType» «argument.joynrName» = false;
+					«ELSEIF outputParamType=="int"»
+						«outputParamType» «argument.joynrName» = 42;
+					«ELSEIF outputParamType=="double"»
+						«outputParamType» «argument.joynrName» = 3.1415;
+					«ELSE»
+						«outputParamType» «argument.joynrName»;
+					«ENDIF»
 				«ENDFOR»
 				LOG_WARN(logger, "**********************************************");
 				LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
 				LOG_WARN(logger, "**********************************************");	
-				status.setCode(joynr::RequestStatusCode::OK);
+				callbackFct(
+						joynr::RequestStatus(joynr::RequestStatusCode::OK)«IF !method.outputParameters.empty»,«ENDIF»
+						«outputUntypedParamList»
+				);
 			}
-			
-		«ENDFOR»    
+
+		«ENDFOR»
 		«getNamespaceEnder(serviceInterface)»
 		'''
 	}
-	
+
 	/**
 	 * add to line 73
-	 * 
-	 * 	«ELSEIF isArray(getOutputParameter(method))»
+	 *
+	 *	«ELSEIF isArray(getOutputParameter(method))»
 	 *	result = QList<«getMappedDatatype(getOutputParameter(method))»>();
-	 * 
+	 *
 	 */
 }

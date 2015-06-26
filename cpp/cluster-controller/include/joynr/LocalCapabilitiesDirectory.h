@@ -136,20 +136,25 @@ public:
     virtual void registerReceivedCapabilities(QMap<QString, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(joynr::RequestStatus& joynrInternalStatus,
-                     joynr::system::DiscoveryEntry entry);
+    virtual void add(
+            joynr::system::DiscoveryEntry discoveryEntry,
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        QList<joynr::system::DiscoveryEntry>& result,
-                        QString domain,
-                        QString interfaceName,
-                        joynr::system::DiscoveryQos discoveryQos);
+    virtual void lookup(
+            QString domain,
+            QString interfaceName,
+            joynr::system::DiscoveryQos discoveryQos,
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus,
+                               const QList<joynr::system::DiscoveryEntry>& result)> callbackFct);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        joynr::system::DiscoveryEntry& result,
-                        QString participantId);
+    virtual void lookup(
+            QString participantId,
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus,
+                               const joynr::system::DiscoveryEntry& result)> callbackFct);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void remove(joynr::RequestStatus& joynrInternalStatus, QString participantId);
+    virtual void remove(
+            QString participantId,
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
 
     /*
      * Objects that wish to receive provider register/unregister events can attach

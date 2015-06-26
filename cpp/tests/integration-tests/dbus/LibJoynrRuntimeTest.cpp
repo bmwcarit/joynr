@@ -174,11 +174,18 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
     QString domain("LibJoynrRuntimeTest.Domain.A");
     QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.A");
 
+    QSharedPointer<joynr::Future<void>> future(new Future<void>());
+    auto callbackFct = [future] (const joynr::RequestStatus& status) {
+        future->onSuccess(RequestStatus(RequestStatusCode::OK));
+    };
+
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
                 mockTestProvider,
-                authenticationToken
+                authenticationToken,
+                callbackFct
     );
+    future->waitForFinished();
     RequestStatus status;
     bool resolved = false;
     routingProxy->resolveNextHop(status, resolved, participantId);
@@ -190,18 +197,33 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     QString domain("LibJoynrRuntimeTest.Domain.B");
     QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.B");
 
+    QSharedPointer<joynr::Future<void>> registerFuture(new Future<void>());
+    auto regiserCallbackFct = [registerFuture] (const joynr::RequestStatus& status) {
+        registerFuture->onSuccess(RequestStatus(RequestStatusCode::OK));
+    };
+
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
                 mockTestProvider,
-                authenticationToken
+                authenticationToken,
+                regiserCallbackFct
     );
+    registerFuture->waitForFinished();
+
     RequestStatus status;
     bool resolved = false;
     routingProxy->resolveNextHop(status, resolved, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 
-    runtime->unregisterCapability(participantId);
+    QSharedPointer<joynr::Future<void>> unregisterFuture(new Future<void>());
+    auto unregisterCallbackFct = [unregisterFuture] (const joynr::RequestStatus& status) {
+        unregisterFuture->onSuccess(RequestStatus(RequestStatusCode::OK));
+    };
+
+    runtime->unregisterCapability(participantId, unregisterCallbackFct);
+
+    unregisterFuture->waitForFinished();
     routingProxy->resolveNextHop(status, resolved, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_FALSE(resolved);

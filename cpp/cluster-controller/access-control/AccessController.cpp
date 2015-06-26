@@ -255,36 +255,39 @@ void AccessController::hasConsumerPermission(
     }
 
     // Get the domain and interface of the message destination
-    DiscoveryEntry discoveryEntry;
-    RequestStatus status;
     QString participantId = message.getHeaderTo();
-    localCapabilitiesDirectory.lookup(status, discoveryEntry, participantId);
-    if (!status.successful()) {
-        LOG_ERROR(logger,
-                  QString("Failed to get capabilities for participantId %1").arg(participantId));
-        callback->hasConsumerPermission(false);
-        return;
-    }
+    std::function<void(const RequestStatus&, const system::DiscoveryEntry&)> lookupCallback =
+            [this, message, callback, participantId](
+                    const RequestStatus status, const system::DiscoveryEntry& discoveryEntry) {
+        if (!status.successful()) {
+            LOG_ERROR(
+                    logger,
+                    QString("Failed to get capabilities for participantId %1").arg(participantId));
+            callback->hasConsumerPermission(false);
+            return;
+        }
 
-    QString domain = discoveryEntry.getDomain();
-    QString interfaceName = discoveryEntry.getInterfaceName();
+        QString domain = discoveryEntry.getDomain();
+        QString interfaceName = discoveryEntry.getInterfaceName();
 
-    // TODO: remove this shortcut used for system integration tests
-    if (interfaceName == "tests/test") {
-        callback->hasConsumerPermission(true);
-        return;
-    }
+        // TODO: remove this shortcut used for system integration tests
+        if (interfaceName == "tests/test") {
+            callback->hasConsumerPermission(true);
+            return;
+        }
 
-    // Create a callback object
-    QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
-            new LdacConsumerPermissionCallback(
-                    *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
+        // Create a callback object
+        QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
+                new LdacConsumerPermissionCallback(
+                        *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
 
-    // Try to determine permission without expensive message deserialization
-    // For now TrustLevel::HIGH is assumed.
-    QString msgCreatorUid = message.getHeaderCreatorUserId();
-    localDomainAccessController.getConsumerPermission(
-            msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
+        // Try to determine permission without expensive message deserialization
+        // For now TrustLevel::HIGH is assumed.
+        QString msgCreatorUid = message.getHeaderCreatorUserId();
+        localDomainAccessController.getConsumerPermission(
+                msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
+    };
+    localCapabilitiesDirectory.lookup(participantId, lookupCallback);
 }
 
 bool AccessController::hasProviderPermission(const QString& userId,

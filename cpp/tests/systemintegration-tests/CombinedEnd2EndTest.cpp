@@ -263,7 +263,15 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         int testPrimeValue = 15;
         RequestStatus status;
         RequestStatus statusOfSet;
-        testProvider->setFirstPrime(statusOfSet, testPrimeValue);
+
+        std::function<void(const joynr::RequestStatus& status)> callbackFct =
+                [] (const joynr::RequestStatus& status) {};
+
+        /*
+         * because of the implementation of the MockTestProvider,
+         * we can use the async API of the testProvider in a sync way
+         */
+        testProvider->setFirstPrime(testPrimeValue, callbackFct);
 
         int primeResult(0);
         testProxy->getFirstPrime(status, primeResult);
@@ -277,7 +285,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         localStrList.append("two 漢語");
         localStrList.append("three ـتـ");
         localStrList.append("four {");
-        testProvider->setListOfStrings(statusOfSet, localStrList);
+        testProvider->setListOfStrings(localStrList, callbackFct);
 
         testProxy->getListOfStrings(status, remoteStrList);
         ASSERT_TRUE(status.successful());
@@ -302,7 +310,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         QList<int> inputIntList;
         inputIntList<<2<<3<<5;
-        testProvider->setListOfInts(statusOfSet,inputIntList);
+        testProvider->setListOfInts(inputIntList, callbackFct);
         QList<int> outputIntLIst;
         testProxy->getListOfInts(status, outputIntLIst);
         ASSERT_TRUE(status.successful());

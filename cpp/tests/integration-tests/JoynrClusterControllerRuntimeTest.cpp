@@ -43,12 +43,26 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     QString settingsFilename;
     JoynrClusterControllerRuntime* runtime;
+    joynr::types::GpsLocation gpsLocation;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
 
     JoynrClusterControllerRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
             runtime(NULL),
+            gpsLocation(
+                1.1,                        // longitude
+                2.2,                        // latitude
+                3.3,                        // altitude
+                types::GpsFixEnum::MODE2D,  // gps fix
+                0.0,                        // heading
+                0.0,                        // quality
+                0.0,                        // elevation
+                0.0,                        // bearing
+                444,                        // gps time
+                444,                        // device time
+                444                         // time
+            ),
             mockMessageReceiver(new MockMessageReceiver()),
             mockMessageSender(new MockMessageSender())
     {
@@ -72,6 +86,14 @@ public:
         runtime->stopMessaging();
         delete runtime;
     }
+
+    void invokeCallbackWithGpsLocation(
+            std::function<void(
+                    const joynr::RequestStatus& status,
+                    const joynr::types::GpsLocation location)> callbackFct) {
+        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), gpsLocation);
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntimeTest);
 };
@@ -108,23 +130,11 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    types::GpsLocation gpsLocation(
-                1.1,                        // longitude
-                2.2,                        // latitude
-                3.3,                        // altitude
-                types::GpsFixEnum::MODE2D,  // gps fix
-                0.0,                        // heading
-                0.0,                        // quality
-                0.0,                        // elevation
-                0.0,                        // bearing
-                444,                        // gps time
-                444,                        // device time
-                444                         // time
-    );
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
-    EXPECT_CALL(*mockTestProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
-            .WillOnce(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
+    EXPECT_CALL(*mockTestProvider,
+                getLocation(A<std::function<void(const joynr::RequestStatus&,
+                                                 const types::GpsLocation&)>>()))
+            .WillOnce(Invoke(this,
+                             &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
     QString participantId = runtime->registerCapability<tests::testProvider>(
@@ -208,24 +218,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    types::GpsLocation gpsLocation(
-                1.1,                        // longitude
-                2.2,                        // latitude
-                3.3,                        // altitude
-                types::GpsFixEnum::MODE2D,  // gps fix
-                0.0,                        // heading
-                0.0,                        // quality
-                0.0,                        // elevation
-                0.0,                        // bearing
-                444,                        // gps time
-                444,                        // device time
-                444                         // time
-    );
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
-    EXPECT_CALL(*mockTestProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
+    EXPECT_CALL(*mockTestProvider,
+                getLocation(A<std::function<void(const joynr::RequestStatus&,
+                                                 const types::GpsLocation&)>>()))
             .Times(Between(1, 2))
-            .WillRepeatedly(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
+            .WillRepeatedly(Invoke(this,
+                                   &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
     QString participantId = runtime->registerCapability<tests::testProvider>(
@@ -277,24 +275,9 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
     QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    types::GpsLocation gpsLocation(
-                1.1,                        // longitude
-                2.2,                        // latitude
-                3.3,                        // altitude
-                types::GpsFixEnum::MODE2D,  // gps fix
-                0.0,                        // heading
-                0.0,                        // quality
-                0.0,                        // elevation
-                0.0,                        // bearing
-                444,                        // gps time
-                444,                        // device time
-                444                         // time
-    );
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
-    EXPECT_CALL(*mockTestProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
+    EXPECT_CALL(*mockTestProvider, getLocation(A<std::function<void(const joynr::RequestStatus&, const types::GpsLocation&)>>()))
             .Times(Between(3, 4))
-            .WillRepeatedly(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
+            .WillRepeatedly(Invoke(this, &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
     QString participantId = runtime->registerCapability<tests::testProvider>(
