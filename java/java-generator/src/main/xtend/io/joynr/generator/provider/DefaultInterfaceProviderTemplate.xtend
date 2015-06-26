@@ -124,7 +124,7 @@ public class «className» extends «abstractProviderName» {
 			logger.warn("**********************************************");
 			«deferredName» deferred = new «deferredName»();
 			«FOR outputParameter : outputParameters»
-				«getMappedDatatypeOrList(outputParameter)» «outputParameter.name» = «getDefaultValueForType(outputParameter)»;
+				«getMappedDatatypeOrList(outputParameter)» «outputParameter.name» = «getDefaultValue(outputParameter)»;
 			«ENDFOR»
 			deferred.resolve(«getOutputParametersCommaSeparated(method)»);
 			return new Promise<«deferredName»>(deferred);

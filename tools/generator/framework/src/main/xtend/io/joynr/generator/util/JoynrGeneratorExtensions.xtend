@@ -285,38 +285,6 @@ abstract class JoynrGeneratorExtensions {
 			return returnString.substring(0, returnString.length() - 2); //remove the last ","
 		}
 	}
-	
-	def String getDefaultValueForType(FTypedElement typedElement) {
-		var typeName = getMappedDatatypeOrList(typedElement);
-
-		if (typeName=="String") {
-			return "\"Hello World\"";
-		}
-		else if (typeName=="Boolean") {
-			return "false";
-		}
-		else if (typeName=="Integer") {
-			return "42";
-		}
-		else if (typeName=="Double") {
-			return "3.1415";
-		}
-		else if (typeName=="Long") {
-			return "(long) 42";
-		}
-		else if (typeName=="Byte") {
-			return "(byte) 42";
-		}
-		else if(typeName.startsWith("List<")) {
-			return "new Array" + typeName + "()";
-		}
-		else if (isEnum(typedElement.type)) {
-			return typeName + "." + getEnumElements(getEnumType(typedElement.type)).iterator.next.joynrName;
-		}
-		else {
-			return "new " + typeName + "()";
-		}
-	}
 
 	def getMethods(FInterface fInterface) {
 		fInterface.methods
