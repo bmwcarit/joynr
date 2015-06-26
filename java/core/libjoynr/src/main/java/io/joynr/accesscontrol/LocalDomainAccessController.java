@@ -19,7 +19,7 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.infrastructure.MasterAccessControlEntry;
 import joynr.infrastructure.MasterRegistrationControlEntry;
@@ -30,6 +30,7 @@ import joynr.infrastructure.Role;
 import joynr.infrastructure.TrustLevel;
 
 import javax.annotation.CheckForNull;
+
 import java.util.List;
 
 /**

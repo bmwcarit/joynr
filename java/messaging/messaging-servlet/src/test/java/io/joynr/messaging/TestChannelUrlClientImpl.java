@@ -19,9 +19,9 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
 import java.util.Map;

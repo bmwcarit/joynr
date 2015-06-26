@@ -46,7 +46,7 @@ import java.util.List;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute»
-import io.joynr.dispatcher.rpc.Callback;
+import io.joynr.proxy.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «ENDIF»
 «IF hasWriteAttribute || hasMethodWithArguments»

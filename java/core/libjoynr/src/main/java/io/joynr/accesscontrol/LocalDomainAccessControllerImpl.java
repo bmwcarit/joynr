@@ -25,8 +25,8 @@ import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryCh
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 

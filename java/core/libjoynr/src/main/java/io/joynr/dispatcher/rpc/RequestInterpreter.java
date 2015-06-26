@@ -24,6 +24,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
+import io.joynr.proxy.Callback;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

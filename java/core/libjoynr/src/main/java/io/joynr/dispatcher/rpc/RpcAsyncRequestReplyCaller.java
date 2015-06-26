@@ -22,6 +22,7 @@ package io.joynr.dispatcher.rpc;
 import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrInvalidInvocationException;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
 import java.lang.reflect.Method;

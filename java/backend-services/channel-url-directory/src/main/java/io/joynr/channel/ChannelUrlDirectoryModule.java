@@ -19,7 +19,6 @@ package io.joynr.channel;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -29,6 +28,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.PromiseKeeper;
 import io.joynr.provider.PromiseListener;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;

@@ -7,8 +7,8 @@ import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChang
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;

@@ -29,9 +29,9 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -43,6 +43,7 @@ import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.proxy.Callback;
 import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
@@ -51,10 +52,10 @@ import io.joynr.security.PlatformSecurityManager;
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
-
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

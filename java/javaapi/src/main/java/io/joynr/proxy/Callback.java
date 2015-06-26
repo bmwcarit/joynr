@@ -1,4 +1,4 @@
-package io.joynr.dispatcher.rpc;
+package io.joynr.proxy;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 

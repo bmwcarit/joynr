@@ -20,8 +20,8 @@ package io.joynr.messaging;
  */
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.types.ChannelUrlInformation;
 

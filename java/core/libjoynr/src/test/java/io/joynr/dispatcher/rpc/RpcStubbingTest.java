@@ -48,6 +48,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.runtime.PropertyLoader;
