@@ -7,7 +7,7 @@ import javax.annotation.CheckForNull;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,9 @@ import javax.annotation.CheckForNull;
  * #L%
  */
 
-public abstract class Callback<T> implements ICallback {
-    public abstract void onSuccess(@CheckForNull T result);
+public interface ICallback {
+    void resolve(@CheckForNull Object... result);
 
-    @Override
-    public void resolve(Object... result) {
-        if (result[0] instanceof JoynrRuntimeException) {
-            onFailure((JoynrRuntimeException) result[0]);
-        } else {
-            onSuccess((T) result[0]);
-        }
-    }
+    void onFailure(JoynrRuntimeException error);
+
 }
