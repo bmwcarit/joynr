@@ -316,7 +316,9 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     future->waitForFinished(500);
 
     ASSERT_TRUE(future->getStatus().successful());
-    EXPECT_EQ(expectedSum, future->getValue());
+    int actualValue;
+    future->getValues(actualValue);
+    EXPECT_EQ(expectedSum, actualValue);
 
     delete testProxyBuilder;
     delete testProxy;

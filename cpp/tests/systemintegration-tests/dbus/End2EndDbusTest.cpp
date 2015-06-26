@@ -169,7 +169,9 @@ TEST_F(End2EndDbusTest, call_async_method)
     QSharedPointer<Future<QString>> sayHelloFuture(testProxy->sayHello());
     sayHelloFuture->waitForFinished();
     ASSERT_TRUE(sayHelloFuture->isOk());
-    ASSERT_EQ(sayHelloFuture->getValue(), "Hello World");
+    QString actualValue;
+    sayHelloFuture->getValues(actualValue);
+    ASSERT_EQ("Hello World", actualValue);
 }
 
 TEST_F(End2EndDbusTest, get_set_attribute_sync)
@@ -207,7 +209,9 @@ TEST_F(End2EndDbusTest, get_set_attribute_async)
     QSharedPointer<Future<int>> getAttributeFuture(testProxy->getTestAttribute());
     getAttributeFuture->waitForFinished();
     ASSERT_TRUE(getAttributeFuture->isOk());
-    ASSERT_EQ(getAttributeFuture->getValue(), 18);
+    int actualValue;
+    getAttributeFuture->getValues(actualValue);
+    ASSERT_EQ(18, actualValue);
 }
 
 TEST_F(End2EndDbusTest, subscriptionlistener)
@@ -260,7 +264,9 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
-            EXPECT_EQ(expectedValue, testFutureList.at(i)->getValue());
+            int actualValue;
+            testFutureList.at(i)->getValues(actualValue);
+            EXPECT_EQ(expectedValue, actualValue);
         }
     }
 

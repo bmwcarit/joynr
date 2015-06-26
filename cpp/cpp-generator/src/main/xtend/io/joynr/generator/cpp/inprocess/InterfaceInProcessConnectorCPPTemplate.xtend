@@ -114,7 +114,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			«serviceInterface.interfaceCaller»->«getAttributeName»(requestCallerCallbackFct);
 			status = future->waitForFinished();
 			if (status.successful()) {
-				attributeValue = future->getValue();
+				future->getValues(attributeValue);
 			}
 		}
 
@@ -321,7 +321,7 @@ void «interfaceName»InProcessConnector::«methodname»(
 	status = future->waitForFinished();
 	«IF !method.outputParameters.empty»
 		if (status.successful()) {
-			«method.outputParameters.head.joynrName» = future->getValue();
+			future->getValues(«method.outputParameters.head.joynrName»);
 		}
 	«ENDIF»
 }

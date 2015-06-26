@@ -101,7 +101,8 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
 
     EXPECT_EQ(true, futureUrls->getStatus().successful());
 
-    types::ChannelUrlInformation channelInf = futureUrls->getValue();
+    types::ChannelUrlInformation channelInf;
+    futureUrls->getValues(channelInf);
     types::ChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";

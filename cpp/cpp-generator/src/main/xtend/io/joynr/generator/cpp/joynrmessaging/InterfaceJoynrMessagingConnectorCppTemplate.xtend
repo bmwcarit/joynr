@@ -120,7 +120,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			attributeRequest<«returnType»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
 			status = future->waitForFinished();
 			if (status.successful()) {
-				«attributeName» = future->getValue();
+				future->getValues(«attributeName»);
 				// add result to caching
 			}
 		}
@@ -307,7 +307,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		status = future->waitForFinished();
 		«IF !method.outputParameters.empty»
 			if (status.successful()) {
-				«getOutputParameters(method).head.joynrName» = future->getValue();
+				future->getValues(«getOutputParameters(method).head.joynrName»);
 			}
 		«ENDIF»
 	}

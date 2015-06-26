@@ -25,7 +25,7 @@
 namespace joynr
 {
 class RequestStatus;
-template <class T>
+template <class... T>
 class Future;
 namespace types
 {

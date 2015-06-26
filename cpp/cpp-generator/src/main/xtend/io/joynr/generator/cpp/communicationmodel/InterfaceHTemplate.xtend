@@ -63,7 +63,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 namespace joynr {
 	class RequestStatus;
-	template <class T> class Future;
+	template <class ... Ts> class Future;
 }
 
 «getNamespaceStarter(serviceInterface)»

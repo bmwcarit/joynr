@@ -115,7 +115,9 @@ QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelU
 
     if (future->getStatus().successful()) {
         LOG_INFO(logger, "Received remote url information for channelId=" + channelId);
-        localCache.insert(channelId, future->getValue());
+        joynr::types::ChannelUrlInformation urls;
+        future->getValues(urls);
+        localCache.insert(channelId, urls);
         LOG_INFO(logger, "Stored url information for channelId=" + channelId);
     } else {
         LOG_INFO(logger,

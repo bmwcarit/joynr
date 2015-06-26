@@ -111,7 +111,8 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     if (status.successful()) {
         LOG_DEBUG(logger,
                   "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = " + channelId);
-        types::ChannelUrlInformation urlInformation = proxyFuture->getValue();
+        types::ChannelUrlInformation urlInformation;
+        proxyFuture->getValues(urlInformation);
         if (urlInformation.getUrls().isEmpty()) {
             LOG_DEBUG(logger, "obtainUrl: empty list of urls obtained from id = " + channelId);
             LOG_DEBUG(logger, "obtainUrl: constructing default url for id = " + channelId);

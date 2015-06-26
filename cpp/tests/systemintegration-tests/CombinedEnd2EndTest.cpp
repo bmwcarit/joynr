@@ -184,7 +184,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         gpsFuture->waitForFinished();
         int expectedValue = 2+4+8;
         ASSERT_TRUE(gpsFuture->getStatus().successful());
-        EXPECT_EQ(expectedValue, gpsFuture->getValue());
+        int actualValue;
+        gpsFuture->getValues(actualValue);
+        EXPECT_EQ(expectedValue, actualValue);
         //TODO CA: shared pointer for proxy builder?
 
      /*
@@ -201,7 +203,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         QSharedPointer<Future<types::Trip> > tripFuture (testProxy->optimizeTrip(inputTrip));
         tripFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
-        EXPECT_EQ(inputTrip, tripFuture->getValue());
+        types::Trip actualTrip;
+        tripFuture->getValues(actualTrip);
+        EXPECT_EQ(inputTrip, actualTrip);
 
      /*
       * Testing Lists in returnvalues
@@ -253,7 +257,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         QSharedPointer<Future<QList<types::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
         listLocationFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
-        EXPECT_EQ(inputGpsLocationList, listLocationFuture->getValue());
+        QList<joynr::types::GpsLocation> actualLocation;
+        listLocationFuture->getValues(actualLocation);
+        EXPECT_EQ(inputGpsLocationList, actualLocation);
 
      /*
       * Testing GetAttribute, when setAttribute has been called locally.

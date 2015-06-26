@@ -52,11 +52,14 @@ protected:
 
 TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
     intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 10);
-    ASSERT_EQ(10, intFuture.getValue());
+    int actualValue;
+    intFuture.getValues(actualValue);
+    ASSERT_EQ(10, actualValue);
     ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 
     // try retrieving the values a second time
-    ASSERT_EQ(10, intFuture.getValue());
+    intFuture.getValues(actualValue);
+    ASSERT_EQ(10, actualValue);
     ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 
 }
@@ -70,12 +73,15 @@ TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
 TEST_F(FutureTest, getValueAndStatusAfterFailiureReceived) {
     intFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
     ASSERT_EQ(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE, intFuture.getStatus().getCode());
-    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValue(), ".");
+    int actualValue;
+
+    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValues(actualValue), ".");
 }
 
 TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
     ASSERT_EQ(RequestStatusCode::IN_PROGRESS, intFuture.getStatus().getCode());
-    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValue(), ".");
+    int actualValue;
+    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValues(actualValue), ".");
 }
 
 TEST_F(FutureTest, getStatusForVoidAfterResultReceived) {
@@ -95,7 +101,8 @@ TEST_F(FutureTest, getStatusForVoidBeforeOperationFinishes) {
 TEST_F(FutureTest, waitForFinishWithTimer) {
     RequestStatus requestStatus = intFuture.waitForFinished(5);
     EXPECT_EQ(RequestStatusCode::IN_PROGRESS, requestStatus.getCode());
-    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValue(), ".");
+    int actualValue;
+    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValues(actualValue), ".");
 }
 
 TEST_F(FutureTest, waitForFinishWithTimerForVoid) {

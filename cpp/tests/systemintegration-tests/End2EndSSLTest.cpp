@@ -100,6 +100,8 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     gpsFuture->waitForFinished();
 
     int expectedValue = 42; //as defined in MockGpsProvider
-    EXPECT_EQ(expectedValue, gpsFuture->getValue());
+    int actualValue;
+    gpsFuture->getValues(actualValue);
+    EXPECT_EQ(expectedValue, actualValue);
     delete gpsProxyBuilder;
 }

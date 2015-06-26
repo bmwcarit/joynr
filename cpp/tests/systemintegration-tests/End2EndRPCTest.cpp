@@ -109,7 +109,9 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     QSharedPointer<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellites());
     gpsFuture->waitForFinished();
     int expectedValue = 42; //as defined in MockGpsProvider
-    EXPECT_EQ(expectedValue, gpsFuture->getValue());
+    int actualValue;
+    gpsFuture->getValues(actualValue);
+    EXPECT_EQ(expectedValue, actualValue);
     //TODO CA: shared pointer for proxy builder?
     delete gpsProxyBuilder;
     // This is not yet implemented in CapabilitiesClient

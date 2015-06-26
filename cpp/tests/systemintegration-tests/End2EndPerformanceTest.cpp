@@ -139,7 +139,9 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
-            EXPECT_EQ(expectedValue, testFutureList.at(i)->getValue());
+            int actualValue;
+            testFutureList.at(i)->getValues(actualValue);
+            EXPECT_EQ(expectedValue, actualValue);
         }
     }
     qint64 stopTime = QDateTime::currentMSecsSinceEpoch();

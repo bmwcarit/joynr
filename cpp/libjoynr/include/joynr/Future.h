@@ -26,11 +26,47 @@
 #include <QSharedPointer>
 #include <cassert>
 #include <functional>
+#include <joynr/Util.h>
 
 namespace joynr
 {
 
-template <class T>
+template <size_t... N>
+struct IntegerList
+{
+    template <size_t M>
+    struct PushBack
+    {
+        typedef IntegerList<N..., M> Type;
+    };
+};
+
+template <size_t MAX>
+struct IndexList
+{
+    typedef typename IndexList<MAX - 1>::Type::template PushBack<MAX>::Type Type;
+};
+
+template <>
+struct IndexList<0>
+{
+    typedef IntegerList<> Type;
+};
+
+template <size_t... Indices, typename Tuple>
+auto tupleSubset(const Tuple& tuple, IntegerList<Indices...>)
+        -> decltype(std::make_tuple(std::get<Indices>(tuple)...))
+{
+    return std::make_tuple(std::get<Indices>(tuple)...);
+}
+
+template <typename Head, typename... Tail>
+std::tuple<Tail...> tail(const std::tuple<Head, Tail...>& tuple)
+{
+    return tupleSubset(tuple, typename IndexList<sizeof...(Tail)>::Type());
+}
+
+template <class... Ts>
 /**
  * @brief This class is used by applications to monitor the status of a request.
  * Applications can periodically ask this class for its status and retrieve
@@ -43,12 +79,34 @@ class Future
 {
 
 public:
-    Future<T>() : status(RequestStatusCode::IN_PROGRESS), result(), resultReceived(0)
+    Future<Ts...>() : status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
                  QString("resultReceived.available():") +
                          QString::number(resultReceived.available()));
     }
+
+    template <typename T, typename Head, typename... Tail>
+    struct ResultCopier;
+
+    template <typename Head, typename... Tail>
+    struct ResultCopier<std::tuple<Head, Tail...>, Head, Tail...>
+    {
+        static void copy(const std::tuple<Head, Tail...>& results, Head& value, Tail&... values)
+        {
+            value = std::get<0>(results);
+            ResultCopier<std::tuple<Tail...>, Tail...>::copy(
+                    tail<Head, Tail...>(results), values...);
+        }
+    };
+    template <typename Head>
+    struct ResultCopier<std::tuple<Head>, Head>
+    {
+        static void copy(const std::tuple<Head>& results, Head& value)
+        {
+            value = std::get<0>(results);
+        }
+    };
 
     /**
      * @brief Retrieves the return value for the request if one exists.
@@ -60,9 +118,9 @@ public:
      *
      * This method returns immediately.
      *
-     * @return T The typed value from the request.
+     * @param Ts&... The typed return values from the request.
      */
-    T getValue()
+    void getValues(Ts&... values)
     {
         if (!resultReceived.tryAcquire(1)) {
             LOG_FATAL(logger, "The request is not yet finished when calling getValue()");
@@ -78,7 +136,7 @@ public:
             assert(false);
         }
 
-        return result;
+        ResultCopier<std::tuple<Ts...>, Ts...>::copy(results, values...);
     }
 
     /**
@@ -136,11 +194,12 @@ public:
     /**
      * @brief Callback which indicates the operation has finished and is successful.
      */
-    void onSuccess(const RequestStatus& status, T result)
+    void onSuccess(const RequestStatus& status, Ts... results)
     {
         LOG_INFO(logger, "onSuccess has been invoked");
         this->status = RequestStatus(status);
-        this->result = result;
+        // transform variadic templates into a std::tuple
+        this->results = std::make_tuple(results...);
         resultReceived.release();
     }
 
@@ -156,14 +215,14 @@ public:
 
 private:
     RequestStatus status;
-    T result;
+    std::tuple<Ts...> results;
     QSemaphore resultReceived;
 
     static joynr_logging::Logger* logger;
 };
 
-template <class T>
-joynr_logging::Logger* Future<T>::logger =
+template <class... Ts>
+joynr_logging::Logger* Future<Ts...>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "Future");
 
 template <>
