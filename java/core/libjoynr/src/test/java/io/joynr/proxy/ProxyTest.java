@@ -46,9 +46,7 @@ import io.joynr.dispatcher.rpc.RpcUtils;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -221,49 +219,37 @@ public class ProxyTest {
 
     @Test
     public void createProxyAndCallAsyncMethodSuccess() throws Exception {
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
-        try {
-            ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
-            TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
+        // messageCallback on it.
+        Mockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
+                                                             IOException {
+                // capture the replyCaller passed into the dispatcher for calling later
+                ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
+                verify(dispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
 
-            // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
-            // messageCallback on it.
-            Mockito.doAnswer(new Answer<Object>() {
-                @Override
-                public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
-                                                                 IOException {
-                    // capture the replyCaller passed into the dispatcher for calling later
-                    ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                    verify(dispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+                String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
+                // pass the response to the replyCaller
+                replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
+                return null;
+            }
+        }).when(requestReplySender).sendRequest(Mockito.<String> any(),
+                                                Mockito.<String> any(),
+                                                Mockito.<EndpointAddressBase> any(),
+                                                Mockito.<Request> any(),
+                                                Mockito.anyLong());
+        final Future<String> future = proxy.asyncMethod(callback);
 
-                    String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
-                    // pass the response to the replyCaller
-                    replyCallerCaptor.getValue()
-                                     .messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
-                    return null;
-                }
-            }).when(requestReplySender).sendRequest(Mockito.<String> any(),
-                                                    Mockito.<String> any(),
-                                                    Mockito.<EndpointAddressBase> any(),
-                                                    Mockito.<Request> any(),
-                                                    Mockito.anyLong());
-            final Future<String> future = proxy.asyncMethod(callback);
+        // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
+        String reply = future.getReply(1000);
 
-            // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
-            String reply = future.getReply(1000);
-
-            verify(callback).resolve(asyncReplyText);
-            Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
-            Assert.assertEquals(asyncReplyText, reply);
-
-        } catch (JoynrArbitrationException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
-        }
-
+        verify(callback).resolve(asyncReplyText);
+        Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
+        Assert.assertEquals(asyncReplyText, reply);
     }
 
     @Test
