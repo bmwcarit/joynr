@@ -43,11 +43,7 @@ class Future
 {
 
 public:
-    Future<T>()
-            : callbackFct(nullptr),
-              status(RequestStatusCode::IN_PROGRESS),
-              result(),
-              resultReceived(0)
+    Future<T>() : status(RequestStatusCode::IN_PROGRESS), result(), resultReceived(0)
     {
         LOG_INFO(logger,
                  QString("resultReceived.available():") +
@@ -93,21 +89,6 @@ public:
     RequestStatus& getStatus()
     {
         return status;
-    }
-
-    /**
-     * @brief Sets the delegating callback.  The future class acts as a wrapper to the real
-     * callback class so that it can report statuses back to the application and provide
-     * convenience wait methods.
-     * This should be set before being wrapped into a ReplyCaller class for the messaging
-     * layer.
-     *
-     * @param callback A shared pointer to the real application callback.
-     */
-    void setCallback(
-            std::function<void(const RequestStatus& satus, const T& returnValue)> callbackFct)
-    {
-        this->callbackFct = callbackFct;
     }
 
     /**
@@ -161,9 +142,6 @@ public:
         this->status = RequestStatus(status);
         this->result = result;
         resultReceived.release();
-        if (callbackFct) {
-            callbackFct(status, result);
-        }
     }
 
     /**
@@ -174,13 +152,9 @@ public:
         LOG_INFO(logger, "onFailure has been invoked");
         this->status = RequestStatus(status);
         resultReceived.release();
-        if (callbackFct) {
-            callbackFct(status, result);
-        }
     }
 
 private:
-    std::function<void(const RequestStatus& status, const T& returnValue)> callbackFct;
     RequestStatus status;
     T result;
     QSemaphore resultReceived;
@@ -201,18 +175,13 @@ class Future<void>
 {
 
 public:
-    Future<void>() : callbackFct(nullptr), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
+    Future<void>() : status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
     {
     }
 
     RequestStatus& getStatus()
     {
         return status;
-    }
-
-    void setCallback(std::function<void(const RequestStatus& status)> callbackFct)
-    {
-        this->callbackFct = callbackFct;
     }
 
     RequestStatus waitForFinished(int timeOut)
@@ -239,22 +208,15 @@ public:
     {
         this->status = RequestStatus(status);
         resultReceived.release(1);
-        if (callbackFct) {
-            callbackFct(status);
-        }
     }
 
     void onFailure(const RequestStatus& status)
     {
         this->status = RequestStatus(status);
         resultReceived.release(1);
-        if (callbackFct) {
-            callbackFct(status);
-        }
     }
 
 private:
-    std::function<void(const RequestStatus& status)> callbackFct;
     RequestStatus status;
     QSemaphore resultReceived;
 };
