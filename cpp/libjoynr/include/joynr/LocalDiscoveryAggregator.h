@@ -55,8 +55,7 @@ public:
      * (discovery proxy) pointer.
      */
     LocalDiscoveryAggregator(IRequestCallerDirectory& requestCallerDirectory,
-                             const SystemServicesSettings& systemServicesSettings,
-                             joynr::system::IDiscoverySync* localCapabilitiesDirectory = NULL);
+                             const SystemServicesSettings& systemServicesSettings);
 
     virtual ~LocalDiscoveryAggregator();
 

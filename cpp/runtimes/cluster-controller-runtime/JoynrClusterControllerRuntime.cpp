@@ -53,6 +53,8 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
+#include "joynr/system/DiscoveryRequestCaller.h"
+#include "joynr/system/DiscoveryInProcessConnector.h"
 #include <QCoreApplication>
 #include <QThread>
 #include <QMutex>
@@ -260,9 +262,25 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     dispatcherAddress = libjoynrMessagingAddress;
     discoveryProxy = new LocalDiscoveryAggregator(
-            *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher),
-            systemServicesSettings,
-            localCapabilitiesDirectory.data());
+            *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
+
+    QString discoveryProviderParticipantId(
+            systemServicesSettings.getCcDiscoveryProviderParticipantId());
+    QSharedPointer<RequestCaller> discoveryRequestCaller(
+            new joynr::system::DiscoveryRequestCaller(localCapabilitiesDirectory));
+    QSharedPointer<InProcessAddress> discoveryProviderAddress(
+            new InProcessAddress(discoveryRequestCaller));
+    joynr::system::DiscoveryInProcessConnector* discoveryInProcessConnector =
+            InProcessConnectorFactoryHelper<joynr::system::IDiscoveryConnector>().create(
+                    subscriptionManager,
+                    publicationManager,
+                    inProcessPublicationSender,
+                    QString(), // can be ignored
+                    discoveryProviderParticipantId,
+                    discoveryProviderAddress);
+
+    discoveryProxy->setDiscoveryProxy(discoveryInProcessConnector);
+
     capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
                                                       *discoveryProxy,
                                                       libjoynrMessagingAddress,

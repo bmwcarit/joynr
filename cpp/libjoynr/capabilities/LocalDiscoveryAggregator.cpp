@@ -33,9 +33,8 @@ namespace joynr
 
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         IRequestCallerDirectory& requestCallerDirectory,
-        const SystemServicesSettings& systemServicesSettings,
-        joynr::system::IDiscoverySync* localCapabilitiesDirectory)
-        : discoveryProxy(localCapabilitiesDirectory),
+        const SystemServicesSettings& systemServicesSettings)
+        : discoveryProxy(NULL),
           hasOwnershipOfDiscoveryProxy(false),
           requestCallerDirectory(requestCallerDirectory),
           provisionedDiscoveryEntries(),
