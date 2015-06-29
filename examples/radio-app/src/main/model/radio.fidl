@@ -85,8 +85,21 @@ interface Radio {
 	}
 
 	<**
+		@description: This method returns the country
+			and location of the current station.
+			This method has no in parameter and multiple out
+			parameter.
+	**>
+	method getLocationOfCurrentStation {
+		out {
+			RadioTypes.Country country
+			RadioTypes.GeoPosition location
+		}
+	}
+
+	<**
 		@description: Event that is fired when radio stations have
-			weak signal strength. 
+			weak signal strength.
 	**>
 	broadcast weakSignal {
 		out {

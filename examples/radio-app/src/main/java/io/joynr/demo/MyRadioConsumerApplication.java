@@ -48,6 +48,7 @@ import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilter
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
+import joynr.vehicle.RadioSync.GetLocationOfCurrentStationReturned;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -350,7 +351,11 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     switch (key) {
                     case 's':
                         radioProxy.shuffleStations();
+                        LOG.info("called shuffleStations");
                         break;
+                    case 'm':
+                        GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
+                        LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country + ", location: " + locationOfCurrentStation.location);
                     default:
                         LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
                         break;

@@ -30,6 +30,7 @@ import java.util.Map;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioAbstractProvider;
+import joynr.vehicle.RadioProvider;
 import joynr.vehicle.RadioStation;
 
 import org.slf4j.Logger;
@@ -99,5 +100,16 @@ public class MyRadioProvider extends RadioAbstractProvider {
         LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
                 + PRINT_BORDER);
         fireNewStationDiscovered(discoveredStation, geoPosition);
+    }
+
+    @Override
+    public Promise<GetLocationOfCurrentStationDeferred> getLocationOfCurrentStation() {
+        Country country = currentStation.getCountry();
+        GeoPosition location = countryGeoPositionMap.get(country);
+        LOG.info(PRINT_BORDER + "getLocationOfCurrentStation: country: " + country.name() + ", location: " + location
+                + PRINT_BORDER);
+        RadioProvider.GetLocationOfCurrentStationDeferred deferred = new GetLocationOfCurrentStationDeferred();
+        deferred.resolve(country, location);
+        return new Promise<RadioProvider.GetLocationOfCurrentStationDeferred>(deferred);
     }
 }

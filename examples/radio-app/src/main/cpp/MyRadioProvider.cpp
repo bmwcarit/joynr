@@ -90,6 +90,21 @@ void MyRadioProvider::addFavouriteStation(const vehicle::RadioStation& radioStat
     callbackFct(RequestStatus(RequestStatusCode::OK), true);
 }
 
+void MyRadioProvider::getLocationOfCurrentStation(
+        std::function<void(const joynr::RequestStatus& joynrInternalStatus,
+                           const joynr::vehicle::Country::Enum& country,
+                           const joynr::vehicle::GeoPosition& location)> callbackFct)
+{
+    joynr::vehicle::Country::Enum country(currentStation.getCountry());
+    joynr::vehicle::GeoPosition location(countryGeoPositionMap.value(country));
+    MyRadioHelper::prettyLog(
+            logger,
+            QString("getLocationOfCurrentStation: return country \"%1\" and location \"%2\"")
+                    .arg(currentStation.getCountryInternal())
+                    .arg(location.toString()));
+    callbackFct(RequestStatus(RequestStatusCode::OK), country, location);
+}
+
 void MyRadioProvider::fireWeakSignalBroadcast()
 {
     MyRadioHelper::prettyLog(

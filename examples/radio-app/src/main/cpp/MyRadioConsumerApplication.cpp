@@ -286,14 +286,25 @@ int main(int argc, char* argv[])
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
     proxy->shuffleStations(status);
-
     // Run until the user hits q
     int key;
+
     while ((key = MyRadioHelper::getch()) != 'q') {
         joynr::RequestStatus status;
+        joynr::vehicle::GeoPosition location;
+        joynr::vehicle::Country::Enum country;
         switch (key) {
         case 's':
             proxy->shuffleStations(status);
+            break;
+        case 'm':
+            proxy->getLocationOfCurrentStation(status, country, location);
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: getLocationOfCurrentStation: country: %1, location: %2")
+                            .arg(joynr::vehicle::Country::staticMetaObject.enumerator(0)
+                                         .valueToKey(country))
+                            .arg(location.toString()));
             break;
         default:
             MyRadioHelper::prettyLog(logger,

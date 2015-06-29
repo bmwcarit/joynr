@@ -64,6 +64,10 @@ public:
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();
+    void getLocationOfCurrentStation(
+            std::function<void(const joynr::RequestStatus& joynrInternalStatus,
+                               const joynr::vehicle::Country::Enum& country,
+                               const joynr::vehicle::GeoPosition& location)> callbackFct);
 
 private:
     // Disallow copy and assign
