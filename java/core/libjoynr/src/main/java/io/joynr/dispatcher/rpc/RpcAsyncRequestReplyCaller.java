@@ -32,6 +32,9 @@ import javax.annotation.CheckForNull;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
     @CheckForNull
@@ -39,7 +42,7 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     private Method method;
     private MethodMetaInformation methodMetaInformation;
     private Future<T> future;
-    // private static final Logger logger = LoggerFactory.getLogger(RpcAsyncRequestReplyCaller.class);
+    private static final Logger logger = LoggerFactory.getLogger(RpcAsyncRequestReplyCaller.class);
     private String requestReplyId;
 
     public RpcAsyncRequestReplyCaller(String requestReplyId,
@@ -77,8 +80,8 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 future.onSuccess((T) reply);
             }
 
-        } catch (Throwable e) {
-            // ignore
+        } catch (Exception e) {
+            logger.error("Error handling async rpc call: {}", e.getMessage());
         }
     }
 
