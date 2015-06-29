@@ -101,27 +101,16 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	/*
 	 * «methodName»
 	 */
-	«IF getMappedOutputParameter(method).head=="void"»
-		void «syncClassName»::«methodName»(joynr::RequestStatus& status «paramsSignature»)
-		{
-			if (connector==NULL){
-				LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
-			}
-			else{
-				connector->«methodName»(status «params»);
-			}
+
+	void «syncClassName»::«methodName»(joynr::RequestStatus& status«outputTypedParamList»«paramsSignature»)
+	{
+		if (connector==NULL){
+			LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
 		}
-	«ELSE»
-		void «syncClassName»::«methodName»(joynr::RequestStatus& status«outputTypedParamList»«paramsSignature»)
-		{
-			if (connector==NULL){
-				LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
-			}
-			else{
-				connector->«methodName»(status«outputUntypedParamList»«params»);
-			}
+		else{
+			connector->«methodName»(status«outputUntypedParamList»«params»);
 		}
-	«ENDIF»
+	}
 
 «ENDFOR»
 «getNamespaceEnder(fInterface)»

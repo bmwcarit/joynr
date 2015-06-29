@@ -122,7 +122,10 @@ class InterfaceUtil {
 		* @brief Synchronous operation «method.joynrName».
 		*
 		* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
-		* @param result The result that will be returned to the caller.
+		«FOR outputParam: method.outputParameters»
+		* @param «outputParam.getMappedDatatypeOrList» «outputParam.joynrName» this is an output parameter
+		*        and will be set within function «method.joynrName»
+		«ENDFOR»
 		*/
 		virtual void «method.joynrName»(
 				joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»«inputTypedParamList»
