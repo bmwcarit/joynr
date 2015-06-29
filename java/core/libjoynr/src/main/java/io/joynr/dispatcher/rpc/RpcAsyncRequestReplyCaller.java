@@ -70,14 +70,7 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
             }
 
             if (future != null) {
-                if (response.length == 0) {
-                    future.onSuccess(null);
-                } else if (response.length == 1) {
-                    future.onSuccess((T) response[0]);
-                } else {
-                    T returnObject = (T) RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response);
-                    future.onSuccess(returnObject);
-                }
+                future.resolve(response);
             }
         } catch (Exception e) {
             logger.error("Error calling async method: {} error: {}", method.getName(), e.getMessage());

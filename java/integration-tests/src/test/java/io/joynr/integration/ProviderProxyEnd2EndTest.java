@@ -476,8 +476,36 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         assertEquals(TEST_INTEGER, result.get("receivedNumber"));
         assertEquals(TEST_STRING, result.get("receivedString"));
         assertEquals(TEST_COMPLEXTYPE, result.get("receivedComplexDataType"));
-        ;
         assertEquals(TEST_ENUM, result.get("receivedEnum"));
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void calledMethodReturnsMultipleOutputParametersAsyncFuture() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        Future<MethodWithMultipleOutputParametersReturned> future = proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
+            }
+
+            @Override
+            public void onSuccess(String aString, Integer aNumber, GpsLocation aComplexDataType, TestEnum anEnumResult) {
+                Assert.assertEquals(TEST_INTEGER, aNumber);
+                Assert.assertEquals(TEST_STRING, aString);
+                Assert.assertEquals(TEST_COMPLEXTYPE, aComplexDataType);
+                Assert.assertEquals(TEST_ENUM, anEnumResult);
+            }
+        });
+
+        MethodWithMultipleOutputParametersReturned reply = future.getReply();
+        Assert.assertEquals(TEST_INTEGER, reply.aNumber);
+        Assert.assertEquals(TEST_STRING, reply.aString);
+        Assert.assertEquals(TEST_COMPLEXTYPE, reply.aComplexDataType);
+        Assert.assertEquals(TEST_ENUM, reply.anEnumResult);
+
     }
 
     @Ignore

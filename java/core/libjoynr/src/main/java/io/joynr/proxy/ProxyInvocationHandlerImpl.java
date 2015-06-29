@@ -26,9 +26,9 @@ import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -94,11 +94,11 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * called. The ProxyInvocationHandler will check the arbitration status before the call is delegated to the
      * connector. If the arbitration is still in progress the synchronous call will block until the arbitration was
      * successful or the timeout elapsed.
-     * 
+     *
      * @throws Throwable
      * @throws InterruptedException
      * @throws IllegalArgumentException
-     * 
+     *
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     @CheckForNull
@@ -128,7 +128,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * Checks the connector status before a method call is executed. Instantly returns True if the connector already
      * finished successfully , otherwise it will block up to the amount of milliseconds defined by the
      * arbitrationTimeout or until the ProxyInvocationHandler is notified about a successful connection.
-     * 
+     *
      * @return True if the connector was finished successfully in time, False if the connector failed or could not be
      *         finished in time.
      * @throws InterruptedException in case thread is interrupted
@@ -151,7 +151,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     /**
      * Checks if the connector was set successfully. Returns immediately and does not block until the connector is
      * finished.
-     * 
+     *
      * @return true if a connector was successfully set.
      */
     public boolean isConnectorReady() {
@@ -242,7 +242,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     /**
      * Sets the connector for this ProxyInvocationHandler after the DiscoveryAgent got notified about a successful
      * arbitration. Should be called from the DiscoveryAgent
-     * 
+     *
      * @param result
      *            from the previously invoked arbitration
      */
@@ -362,7 +362,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     }
 
     private <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Throwable {
-        Future<T> future = new Future<T>();
+        @SuppressWarnings("unchecked")
+        Future<T> future = (Future<T>) method.getReturnType().getConstructor().newInstance();
+
         connectorStatusLock.lock();
         try {
             if (!isConnectorReady()) {

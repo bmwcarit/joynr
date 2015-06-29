@@ -38,7 +38,7 @@ public class Future<T> {
     private Condition statusLockChangedCondition = statusLock.newCondition();
 
     /**
-     * 
+     *
      * @param timeout_ms
      *            time to wait until throwing a JoynWaitExpiredException
      * @return the result of the method call
@@ -76,7 +76,7 @@ public class Future<T> {
     }
 
     /**
-     * 
+     *
      * @return the result of the method call
      * @throws InterruptedException
      *             - if the current thread is interrupted (and interruption of thread suspension is supported)
@@ -91,7 +91,7 @@ public class Future<T> {
 
     /**
      * Resolves the future using the given result
-     * 
+     *
      * @param result
      *            the result of the asynchronous call
      */
@@ -111,7 +111,7 @@ public class Future<T> {
 
     /**
      * Terminates the future in error
-     * 
+     *
      * @param newException
      *            that caused the failure
      */
@@ -123,6 +123,17 @@ public class Future<T> {
             statusLockChangedCondition.signalAll();
         } finally {
             statusLock.unlock();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void resolve(Object... response) {
+        if (response.length == 0) {
+            onSuccess(null);
+        } else if (response[0] instanceof JoynrRuntimeException) {
+            onFailure((JoynrRuntimeException) response[0]);
+        } else {
+            onSuccess((T) response[0]);
         }
     }
 }

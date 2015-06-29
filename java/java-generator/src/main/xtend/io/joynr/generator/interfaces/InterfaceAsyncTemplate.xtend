@@ -25,13 +25,12 @@ import org.franca.core.franca.FMethod
 import io.joynr.generator.util.InterfaceTemplate
 import java.util.ArrayList
 import java.util.HashMap
-import org.franca.core.franca.FArgument
 
 class InterfaceAsyncTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension TemplateBase
-	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, ArrayList<FMethod> uniqueMultioutMethods) {
-		var uniqueMultioutMethodSignatureToCallbackName = new HashMap<String, String>();
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
+		var uniqueMultioutMethodSignatureToOutputContainerName = new HashMap<String, String>();
 		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
 		var indexForMethod = new HashMap<String, Integer>();
 
@@ -40,40 +39,55 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 				val outputParamterType = getMappedOutputParameter(method).iterator.next;
 				if (outputParamterType == "void") {
 					methodToCallbackName.put(method, "Callback<Void>");
+					methodToFutureName.put(method, "Future<Void>");
+					methodToSyncReturnedName.put(method, "Void");
 				} else {
 					methodToCallbackName.put(method, "Callback<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
+					methodToFutureName.put(method, "Future<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
+					methodToSyncReturnedName.put(method, getObjectDataTypeForPlainType(outputParamterType));
 				}
 			} else {
 				// Multiple Out Parameters
-				var containerName = method.name.toFirstUpper;
+				var callbackName = method.name.toFirstUpper;
+				var futureName = method.name.toFirstUpper;
+				var syncReturnedName = method.name.toFirstUpper;
 				if (methodCounts.get(method.name) == 1) {
 				// method not overloaded, so no index needed
 					uniqueMultioutMethods.add(method);
-					containerName += "Callback";
+					callbackName += "Callback";
+					futureName += "Future";
+					syncReturnedName += "Returned";
 				} else {
 					// initialize index if not existent
 					if (!indexForMethod.containsKey(method.name)) {
 						indexForMethod.put(method.name, 0);
 					}
 					val methodSignature = createMethodSignature(method);
-					if (!uniqueMultioutMethodSignatureToCallbackName.containsKey(methodSignature)) {
+					if (!uniqueMultioutMethodSignatureToOutputContainerName.containsKey(methodSignature)) {
 						var Integer index = indexForMethod.get(method.name);
 						index++;
 						indexForMethod.put(method.name, index);
-						uniqueMultioutMethodSignatureToCallbackName.put(methodSignature, method.name.toFirstUpper + index);
+						uniqueMultioutMethodSignatureToOutputContainerName.put(methodSignature, method.name.toFirstUpper + index);
 						uniqueMultioutMethods.add(method);
 					}
-					containerName += uniqueMultioutMethodSignatureToCallbackName.get(methodSignature) + "Callback";
+					val outputContainerName = uniqueMultioutMethodSignatureToOutputContainerName.get(methodSignature);
+					callbackName +=  outputContainerName+ "Callback";
+					futureName += outputContainerName + "Future";
+					syncReturnedName += outputContainerName + "Returned";
 				}
-				methodToCallbackName.put(method, containerName);
+				methodToCallbackName.put(method, callbackName);
+				methodToFutureName.put(method, futureName);
+				methodToSyncReturnedName.put(method, syncReturnedName);
 			}
 		}
 	}
 
 	override generate(FInterface serviceInterface) {
 		var methodToCallbackName = new HashMap<FMethod, String>();
+		var methodToFutureName = new HashMap<FMethod, String>();
+		var methodToSyncReturnedName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(serviceInterface, methodToCallbackName, uniqueMultioutMethods);
+		init(serviceInterface, methodToCallbackName, methodToFutureName, methodToSyncReturnedName, uniqueMultioutMethods);
 		val interfaceName =  serviceInterface.joynrName
 		val asyncClassName = interfaceName + "Async"
 
@@ -81,7 +95,6 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 		val hasReadAttribute = hasReadAttribute(serviceInterface);
 		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
 		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
-		val hasMethodWithReturnValue = hasMethodWithReturnValue(serviceInterface);
 		'''
 «warning()»
 package «packagePath»;
@@ -93,13 +106,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «ENDIF»
 «IF hasWriteAttribute || hasMethodWithArguments»
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
-«IF hasMethodWithReturnValue || hasReadAttribute || hasWriteAttribute»
-import io.joynr.proxy.Future;
 «ENDIF»
 «IF uniqueMultioutMethods.size > 0»
 import io.joynr.proxy.ICallback;
@@ -111,6 +122,11 @@ import io.joynr.exceptions.JoynrArbitrationException;
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
 	import «datatype»;
+«ENDFOR»
+
+«FOR method: uniqueMultioutMethods»
+«val syncReturnedName = methodToSyncReturnedName.get(method)»
+	import «packagePath».«interfaceName»Sync.«syncReturnedName»;
 «ENDFOR»
 
 public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
@@ -131,6 +147,20 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 
 			Future<Void> «setAttribute»(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
 		«ENDIF»
+	«ENDFOR»
+
+	«FOR method: uniqueMultioutMethods»
+	«val futureName = methodToFutureName.get(method)»
+	«val syncReturnedName = methodToSyncReturnedName.get(method)»
+	public static class «futureName» extends Future<«syncReturnedName»> {
+		public void resolve(Object... outParameters) {
+			if (outParameters[0] instanceof JoynrRuntimeException) {
+				onFailure((JoynrRuntimeException) outParameters[0]);
+			} else {
+				onSuccess(new «syncReturnedName»(outParameters));
+			}
+		}
+	}
 	«ENDFOR»
 
 	«FOR method: uniqueMultioutMethods»
@@ -165,28 +195,13 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		/*
 		* «methodName»
 		*/
-		public «getFutureObject(method)» «methodName»(
+		public «methodToFutureName.get(method)» «methodName»(
 				«callbackParameter»«IF !params.equals("")»,«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF»
 		);
 	«ENDFOR»
 }
-		'''	
-	}
-
-	def getFutureObject(FMethod method) {
-		var outPutParameterType = getMappedOutputParameter(method).iterator.next;
-		var outPutObjectType = getObjectDataTypeForPlainType(outPutParameterType);
-		if (outPutParameterType!="void"){
-			if (outPutObjectType == ""){
-				return "Future<" + outPutParameterType + ">"
-			}
-			else{
-				return "Future<" + outPutObjectType + ">"
-			}
-		} else {
-			return "void"//"Future<Void>"
-		}
+		'''
 	}
 
 	def getCallbackParameter(FMethod method, HashMap<FMethod, String> methodToCallbackName) {

@@ -21,9 +21,9 @@ package io.joynr.channel;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.PromiseKeeper;
@@ -43,9 +43,9 @@ import com.google.inject.name.Names;
 
 /**
  * Overrides the ChannelUrlDirectoryClient Provider to return a NO-OP provider
- * 
+ *
  * @author david.katz
- * 
+ *
  */
 public class ChannelUrlDirectoryModule extends AbstractModule {
 
@@ -70,7 +70,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
     /**
      * passes local queries for channelurls to itself (ie asks global via method call and not via joynr proxy)
-     * 
+     *
      * @param channelUrlDirectory
      * @return
      */
@@ -97,29 +97,37 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam("channelId") String channelId,
-                                            @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                    @JoynrRpcParam("channelId") String channelId,
+                                                    @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
                 channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
+
                 callback.onSuccess(null);
+                Future<Void> future = new Future<Void>();
+                future.onSuccess(null);
+                return future;
             }
 
             @Override
-            public void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
-                                              @JoynrRpcParam("channelId") String channelId) {
+            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
+                                                      @JoynrRpcParam("channelId") String channelId) {
+                final Future<Void> future = new Future<Void>();
                 channelUrlDirectory.unregisterChannelUrls(channelId).then(new PromiseListener() {
 
                     @Override
                     public void onRejection(JoynrRuntimeException error) {
+                        future.onFailure(error);
                         callback.onFailure(error);
                     }
 
                     @Override
                     public void onFulfillment(Object... values) {
+                        future.onSuccess(null);
                         callback.onSuccess(null);
                     }
                 });
                 ;
+                return future;
             }
 
             @Override
