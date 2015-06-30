@@ -170,8 +170,8 @@ public class HttpMessageSender {
             logger.error("SEND error channelId: {}, messageId: {} url: {} error: {}", new Object[]{ channelId,
                     messageId, sendUrl, e.getMessage() });
 
-            failureAction.execute(new JoynrCommunicationException("Exception while communicating error: "
-                    + e.getMessage()));
+            failureAction.execute(new JoynrCommunicationException(e.getClass().getName()
+                    + "Exception while communicating. error: " + e.getMessage()));
         } finally {
             if (response != null) {
                 try {
