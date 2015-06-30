@@ -2,6 +2,9 @@
 
 cd /data/src
 
+# fail on first error
+set -e
+
 mvn install -N
 
 (

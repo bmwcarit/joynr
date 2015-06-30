@@ -42,6 +42,8 @@ cd /data/build/joynr
 
 log "RUN CMAKE"
 
+# fail on first error
+set -e
 cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DENABLE_GCOV=$GCOV \
       -DPYTHON_EXECUTABLE=/usr/bin/python \

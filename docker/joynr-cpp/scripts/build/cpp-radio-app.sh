@@ -7,9 +7,10 @@ source /data/scripts/global.sh
 log "ENVIRONMENT"
 env
 
-SUCCESS=0
+# fail on first error
+set -e
 
-cd /data/src/examples
+cd /data/src/examples/radio-app
 
 # once updated to maven 3.3.1, execute the radio-app generation explicitly without
 # java using @executionId. See http://jira.codehaus.org/browse/MNG-5768
@@ -26,5 +27,3 @@ time make -j 20
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "Radio App build time: $DIFF seconds"
-
-exit $SUCCESS

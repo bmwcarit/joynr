@@ -2,6 +2,9 @@
 
 START=$(date +%s)
 
+# fail on first error
+set -e
+
 source /data/scripts/global.sh
 log "INSTALL BASE MODEL"
 cd /data/src/basemodel
