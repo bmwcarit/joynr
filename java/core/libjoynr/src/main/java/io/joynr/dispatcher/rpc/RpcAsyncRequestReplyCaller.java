@@ -20,7 +20,6 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.ReplyCaller;
-import io.joynr.exceptions.JoynrInvalidInvocationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ICallback;
@@ -61,31 +60,27 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     @Override
     public void messageCallBack(Reply payload) {
 
-        Object[] reply = null;
-        try {
-            reply = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
-        } catch (Throwable e) {
-            error(new JoynrInvalidInvocationException(e));
-            return;
-        }
+        Object[] response = null;
+        response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
 
         try {
-
             // Callback must be called first before releasing the future
             if (callback != null) {
-                callback.resolve(reply);
+                callback.resolve(response);
             }
 
             if (future != null) {
-                if (reply.length > 0) {
-                    future.onSuccess((T) reply[0]);
-                } else {
+                if (response.length == 0) {
                     future.onSuccess(null);
+                } else if (response.length == 1) {
+                    future.onSuccess((T) response[0]);
+                } else {
+                    T returnObject = (T) RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response);
+                    future.onSuccess(returnObject);
                 }
             }
-
         } catch (Exception e) {
-            logger.error("Error handling async rpc call: {}", e.getMessage());
+            logger.error("Error calling async method: {} error: {}", method.getName(), e.getMessage());
         }
     }
 

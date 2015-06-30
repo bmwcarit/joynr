@@ -29,10 +29,14 @@ import javax.annotation.CheckForNull;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 public class RpcUtils {
+    private static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
 
     @Inject
     private static ObjectMapper objectMapper;
@@ -40,30 +44,35 @@ public class RpcUtils {
     @CheckForNull
     public static Object reconstructReturnedObject(Method method,
                                                    MethodMetaInformation methodMetaInformation,
-                                                   Reply response) throws InstantiationException,
-                                                                  IllegalAccessException {
+                                                   Object... response)  {
 
         Object responsePayload = null;
 
-        if (response.getResponse().size() == 1) {
-            JoynrRpcReturn annotation = methodMetaInformation.getReturnAnnotation();
-            if (annotation == null) {
-                responsePayload = objectMapper.convertValue(response.getResponse().get(0), method.getReturnType());
-            } else {
-                responsePayload = objectMapper.convertValue(response.getResponse().get(0), annotation.deserialisationType().newInstance());
+            if (response.length == 1) {
+                JoynrRpcReturn annotation = methodMetaInformation.getReturnAnnotation();
+                if (annotation == null) {
+                    responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
+                } else {
+                    try {
+                        responsePayload = objectMapper.convertValue(response[0], annotation.deserialisationType().newInstance());
+                    } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
+                        logger.error("error calling method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
+
+                    }
+                }
+            } else if (response.length > 1) {
+                    final Class<?>[] constructorParameterTypes = { Object[].class };
+                    try {
+                        responsePayload = method.getReturnType()
+                                                .getConstructor(constructorParameterTypes)
+                                                .newInstance(new Object[]{ response });
+                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                        logger.error("error calling multi-out method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
+
+                    }
             }
-        } else if (response.getResponse().size() > 1) {
-            try {
-                final Class<?>[] constructorParameterTypes = { Object[].class };
-                Object[] parameters = { response.getResponse().toArray() };
-                responsePayload = method.getReturnType()
-                                        .getConstructor(constructorParameterTypes)
-                                        .newInstance(parameters);
-            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-                // multi-out containers always have a constructor accepting an object array
-                System.err.println("multiout constructor is corrupted (no object array accepted as parameter)");
-            }
-        }
+
 
         return responsePayload;
     }
@@ -71,11 +80,11 @@ public class RpcUtils {
     @CheckForNull
     public static Object[] reconstructCallbackReplyObject(Method method,
                                                           MethodMetaInformation methodMetaInformation,
-                                                          Reply response) throws InstantiationException,
-                                                                         IllegalAccessException {
+                                                          Reply response) {
         if (methodMetaInformation.getCallbackAnnotation() == null) {
             throw new IllegalStateException("Received a reply to a rpc method call without callback annotation including deserialisationType");
         }
+
 
         int responseParameterCount = response.getResponse().size();
         Object[] responsePayload = null;
@@ -84,14 +93,17 @@ public class RpcUtils {
             responsePayload = new Object[0];
         } else if (responseParameterCount == 1) {
             responsePayload = new Object[1];
-            responsePayload[0] = objectMapper.convertValue(response.getResponse().get(0),
-                                                           methodMetaInformation.getCallbackAnnotation()
-                                                                                .deserialisationType()
-                                                                                .newInstance());
+            try {
+                responsePayload[0] = objectMapper.convertValue(response.getResponse().get(0),
+                                                               methodMetaInformation.getCallbackAnnotation()
+                                                                                    .deserialisationType()
+                                                                                    .newInstance());
+            } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
+                logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead", method.getName(), e.getMessage());
+            }
         } else if (response.getResponse().size() > 1) {
             responsePayload = response.getResponse().toArray();
         }
-
         return responsePayload;
     }
 }

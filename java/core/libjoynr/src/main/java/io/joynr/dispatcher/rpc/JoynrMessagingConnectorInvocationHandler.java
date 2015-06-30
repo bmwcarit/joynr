@@ -173,7 +173,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (method.getReturnType().equals(void.class)) {
             return null;
         }
-        return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response);
+        return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response.getResponse().toArray());
 
     }
 
