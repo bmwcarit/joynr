@@ -20,10 +20,10 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.ReplyCaller;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrInvalidInvocationException;
-import io.joynr.proxy.Callback;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ICallback;
 
 import java.lang.reflect.Method;
 
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
     @CheckForNull
-    private Callback<T> callback;
+    private ICallback callback;
     private Method method;
     private MethodMetaInformation methodMetaInformation;
     private Future<T> future;
@@ -46,7 +46,7 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     private String requestReplyId;
 
     public RpcAsyncRequestReplyCaller(String requestReplyId,
-                                      @CheckForNull Callback<T> callback,
+                                      @CheckForNull ICallback callback,
                                       Future<T> future,
                                       Method method,
                                       MethodMetaInformation methodMetaInformation) {
@@ -61,7 +61,7 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     @Override
     public void messageCallBack(Reply payload) {
 
-        Object reply = null;
+        Object[] reply = null;
         try {
             reply = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
         } catch (Throwable e) {
@@ -73,11 +73,15 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
             // Callback must be called first before releasing the future
             if (callback != null) {
-                callback.onSuccess((T) reply);
+                callback.resolve(reply);
             }
 
             if (future != null) {
-                future.onSuccess((T) reply);
+                if (reply.length > 0) {
+                    future.onSuccess((T) reply[0]);
+                } else {
+                    future.onSuccess(null);
+                }
             }
 
         } catch (Exception e) {

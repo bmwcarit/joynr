@@ -252,7 +252,7 @@ public class ProxyTest {
             // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
             String reply = future.getReply(1000);
 
-            verify(callback).onSuccess(asyncReplyText);
+            verify(callback).resolve(asyncReplyText);
             Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
             Assert.assertEquals(asyncReplyText, reply);
 

@@ -69,22 +69,29 @@ public class RpcUtils {
     }
 
     @CheckForNull
-    public static Object reconstructCallbackReplyObject(Method method,
-                                                        MethodMetaInformation methodMetaInformation,
-                                                        Reply response) throws InstantiationException,
-                                                                       IllegalAccessException {
+    public static Object[] reconstructCallbackReplyObject(Method method,
+                                                          MethodMetaInformation methodMetaInformation,
+                                                          Reply response) throws InstantiationException,
+                                                                         IllegalAccessException {
         if (methodMetaInformation.getCallbackAnnotation() == null) {
             throw new IllegalStateException("Received a reply to a rpc method call without callback annotation including deserialisationType");
         }
 
-        Object responsePayload = null;
+        int responseParameterCount = response.getResponse().size();
+        Object[] responsePayload = null;
 
-        if (response.getResponse().size() == 1) {
-            responsePayload = response.getResponse().get(0);
+        if (responseParameterCount == 0) {
+            responsePayload = new Object[0];
+        } else if (responseParameterCount == 1) {
+            responsePayload = new Object[1];
+            responsePayload[0] = objectMapper.convertValue(response.getResponse().get(0),
+                                                           methodMetaInformation.getCallbackAnnotation()
+                                                                                .deserialisationType()
+                                                                                .newInstance());
+        } else if (response.getResponse().size() > 1) {
+            responsePayload = response.getResponse().toArray();
         }
 
-        return objectMapper.convertValue(responsePayload, methodMetaInformation.getCallbackAnnotation()
-                                                                               .deserialisationType()
-                                                                               .newInstance());
+        return responsePayload;
     }
 }

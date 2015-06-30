@@ -28,9 +28,9 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.Callback;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ICallback;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
@@ -110,7 +110,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         int callbackIndex = methodMetaInformation.getCallbackIndex();
-        Callback<?> callback = (Callback<?>) params[callbackIndex];
+        ICallback callback = (ICallback) params[callbackIndex];
 
         Object[] paramsWithoutCallback = new Object[params.length - 1];
         copyArrayWithoutElement(params, paramsWithoutCallback, callbackIndex);

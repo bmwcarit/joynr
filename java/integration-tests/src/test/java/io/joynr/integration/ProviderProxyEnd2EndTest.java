@@ -52,7 +52,9 @@ import io.joynr.runtime.PropertyLoader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
@@ -64,6 +66,7 @@ import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.DerivedStruct;
 import joynr.tests.TestEnum;
+import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
@@ -408,7 +411,7 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         String expected = "Hello";
         Assert.assertEquals(expected, answer);
-        verify(callback).onSuccess(expected);
+        verify(callback).resolve(expected);
         verifyNoMoreInteractions(callback);
 
         @SuppressWarnings("unchecked")
@@ -420,7 +423,7 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         String expected2 = "argument";
 
         Assert.assertEquals(expected2, answer2);
-        verify(callback2).onSuccess(expected2);
+        verify(callback2).resolve(expected2);
         verifyNoMoreInteractions(callback2);
 
     }
@@ -436,6 +439,45 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         assertEquals(TEST_COMPLEXTYPE, result.aComplexDataType);
         assertEquals(TEST_ENUM, result.anEnumResult);
 
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void calledMethodReturnsMultipleOutputParametersAsyncCallback() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        final Object untilCallbackFinished = new Object();
+        final Map<String, Object> result = new HashMap<String, Object>();
+
+        proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
+
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
+            }
+
+            @Override
+            public void onSuccess(String aString, Integer aNumber, GpsLocation aComplexDataType, TestEnum anEnumResult) {
+                result.put("receivedString", aString);
+                result.put("receivedNumber", aNumber);
+                result.put("receivedComplexDataType", aComplexDataType);
+                result.put("receivedEnum", anEnumResult);
+                synchronized (untilCallbackFinished) {
+                    untilCallbackFinished.notify();
+                }
+            }
+        });
+
+        synchronized (untilCallbackFinished) {
+            untilCallbackFinished.wait(CONST_DEFAULT_TEST_TIMEOUT);
+        }
+
+        assertEquals(TEST_INTEGER, result.get("receivedNumber"));
+        assertEquals(TEST_STRING, result.get("receivedString"));
+        assertEquals(TEST_COMPLEXTYPE, result.get("receivedComplexDataType"));
+        ;
+        assertEquals(TEST_ENUM, result.get("receivedEnum"));
     }
 
     @Ignore
@@ -621,7 +663,7 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         String expected = "argument";
         Assert.assertEquals(expected, answer);
-        verify(callback).onSuccess(expected);
+        verify(callback).resolve(expected);
         verifyNoMoreInteractions(callback);
 
     }
@@ -639,7 +681,7 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Integer expected = 6;
         Assert.assertEquals(expected, reply);
-        verify(callbackInteger).onSuccess(expected);
+        verify(callbackInteger).resolve(expected);
         verifyNoMoreInteractions(callbackInteger);
 
     }
@@ -657,7 +699,7 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         Integer expected = 2;
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Assert.assertEquals(expected, reply);
-        verify(callbackInteger).onSuccess(expected);
+        verify(callbackInteger).resolve(expected);
         verifyNoMoreInteractions(callbackInteger);
 
     }
