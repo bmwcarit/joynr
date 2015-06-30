@@ -26,9 +26,12 @@ import javax.annotation.CheckForNull;
 public abstract class Callback<T> implements ICallback {
     public abstract void onSuccess(@CheckForNull T result);
 
+    @SuppressWarnings("unchecked")
     @Override
     public void resolve(Object... result) {
-        if (result[0] instanceof JoynrRuntimeException) {
+        if (result.length == 0) {
+            onSuccess(null);
+        } else if (result[0] instanceof JoynrRuntimeException) {
             onFailure((JoynrRuntimeException) result[0]);
         } else {
             onSuccess((T) result[0]);
