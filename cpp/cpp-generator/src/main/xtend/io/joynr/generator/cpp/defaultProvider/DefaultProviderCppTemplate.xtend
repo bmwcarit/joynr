@@ -82,7 +82,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 «ENDFOR»
 «FOR method: getMethods(serviceInterface)»
 	«val methodName = method.joynrName»
-	«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+	«val outputTypedParamList = if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName)»
 	«val outputUntypedParamList = method.getCommaSeperatedUntypedOutputParameterList»
 	«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 	void Default«interfaceName»Provider::«method.joynrName»(
@@ -93,7 +93,8 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		«FOR inputParameter: getInputParameters(method)»
 			Q_UNUSED(«inputParameter.joynrName»);
 		«ENDFOR»
-		«FOR argument : method.outputParameters»
+		«IF !method.outputParameters.empty»
+			«val argument = method.outputParameters.head»
 			«val outputParamType = argument.getMappedDatatypeOrList»
 			«IF outputParamType=="QString"»
 				«outputParamType» «argument.joynrName» = "Hello World";
@@ -106,13 +107,12 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 			«ELSE»
 				«outputParamType» «argument.joynrName»;
 			«ENDIF»
-		«ENDFOR»
+		«ENDIF»
 		LOG_WARN(logger, "**********************************************");
 		LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
 		LOG_WARN(logger, "**********************************************");
 		callbackFct(
-				joynr::RequestStatus(joynr::RequestStatusCode::OK)«IF !method.outputParameters.empty»,«ENDIF»
-				«outputUntypedParamList»
+				joynr::RequestStatus(joynr::RequestStatusCode::OK)«IF !method.outputParameters.empty», «method.outputParameters.head.joynrName»«ENDIF»
 		);
 	}
 

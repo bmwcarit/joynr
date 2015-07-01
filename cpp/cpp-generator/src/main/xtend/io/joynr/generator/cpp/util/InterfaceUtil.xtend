@@ -115,6 +115,8 @@ class InterfaceUtil {
 	def produceSyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
+		«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else (method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
+	
 		«IF getMappedOutputParameter(method).head=="void"»
 
 			/**
@@ -134,7 +136,7 @@ class InterfaceUtil {
 			* @param result The result that will be returned to the caller.
 			*/
 			virtual void «method.joynrName»(
-					joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
+					joynr::RequestStatus& joynrInternalStatus «outputTypedParamList»«prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 			)«IF pure»=0«ENDIF»;
 		«ENDIF»
 	«ENDFOR»
@@ -143,8 +145,8 @@ class InterfaceUtil {
 	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«var returnType = getMappedOutputParameter(method).head»
-		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+		«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
+		«var returnType = if (method.outputParameters.empty) "void" else method.outputParameters.head.mappedDatatypeOrList»
 
 		/**
 		* @brief Asynchronous operation «method.joynrName».

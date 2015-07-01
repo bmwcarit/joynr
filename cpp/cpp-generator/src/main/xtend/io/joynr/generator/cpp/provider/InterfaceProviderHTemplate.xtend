@@ -89,7 +89,7 @@ public:
 		void «attributeName»Changed(const «getMappedDatatypeOrList(attribute)»& «attributeName»);
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+		«val outputTypedParamList = if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName)»
 		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»

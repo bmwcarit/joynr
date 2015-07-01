@@ -107,20 +107,20 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 «ENDFOR»
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.joynrName»
-	«var outputParameter = getMappedOutputParameter(method)»
-	«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+	«var outputParameter = if (method.outputParameters.empty) "void" else method.outputParameters.head.mappedDatatypeOrList»
+	«var outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
 	«var inputParamList = getCommaSeperatedUntypedParameterList(method)»
 	/*
 	 * «methodName»
 	 */
-	QSharedPointer<joynr::Future<«outputParameter.head»> > «asyncClassName»::«methodName»(
+	QSharedPointer<joynr::Future<«outputParameter»> > «asyncClassName»::«methodName»(
 			«IF !method.inputParameters.empty»«getCommaSeperatedTypedInputParameterList(method)»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 	{
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
 			//TODO error reaction for this case?
-			QSharedPointer<joynr::Future<«outputParameter.head»> > future;
+			QSharedPointer<joynr::Future<«outputParameter»> > future;
 			return future;
 		}
 		else{

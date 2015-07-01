@@ -133,14 +133,14 @@ void «interfaceName»RequestInterpreter::execute(
 					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+				«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status«outputTypedParamList»){
 							Q_UNUSED(status);
 							«IF method.outputParameters.empty»
 								QVariant returnValue(QVariant::Invalid);
 							«ELSE»
-								QVariant returnValue(«FOR param : method.outputParameters SEPARATOR ','»«IF isArray(param)»joynr::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)«ELSE»QVariant::fromValue(«param.joynrName»)«ENDIF»«ENDFOR»);
+								QVariant returnValue(«IF isArray(method.outputParameters.head)»joynr::Util::convertListToVariantList<«method.outputParameters.head.mappedDatatype»>(«method.outputParameters.head.joynrName»)«ELSE»QVariant::fromValue(«method.outputParameters.head.joynrName»)«ENDIF»);
 							«ENDIF»
 							callbackFct(returnValue);
 						};

@@ -281,60 +281,60 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 «ENDFOR»
 
 «FOR method: getMethods(serviceInterface)»
-	«var outputTypedConstParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-	«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
+	«val outputTypedConstParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
+	«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else (method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
 	«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 	«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
-	«val outputParameter = getMappedOutputParameter(method)»
+	«val returnType = if (method.outputParameters.empty) "void" else method.outputParameters.head.mappedDatatypeOrList»
 	«val methodName = method.joynrName»
 	void «interfaceName»JoynrMessagingConnector::«methodName»(
 			joynr::RequestStatus& status«outputTypedParamList»«inputTypedParamList»
 	) {
 		«produceParameterSetters(method)»
-		QSharedPointer<joynr::Future<«outputParameter.head»> > future(new joynr::Future<«outputParameter.head»>());
+		QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> replyCallerCallbackFct =
 				[future] (const joynr::RequestStatus& status«outputTypedConstParamList») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
-						future->onSuccess(status«outputUntypedParamList»);
+						future->onSuccess(status«IF method.outputParameters.empty»«ELSE», «method.outputParameters.head.joynrName»«ENDIF»);
 					} else {
 						future->onFailure(status);
 					}
 				};
 
-		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameter.head»>(replyCallerCallbackFct));
+		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(replyCallerCallbackFct));
 		operationRequest(replyCaller, internalRequestObject);
 		status = future->waitForFinished();
-		«IF outputParameter.head != "void"»
+		«IF !method.outputParameters.empty»
 			if (status.successful()) {
 				«getOutputParameters(method).head.joynrName» = future->getValue();
 			}
 		«ENDIF»
 	}
 
-	QSharedPointer<joynr::Future<«outputParameter.head»> > «interfaceName»JoynrMessagingConnector::«methodName»(
+	QSharedPointer<joynr::Future<«returnType»> > «interfaceName»JoynrMessagingConnector::«methodName»(
 			«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> callbackFct)
 	{
 		«produceParameterSetters(method)»
 
-		QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(
-				new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+		QSharedPointer<joynr::Future<«returnType»> > future(
+				new joynr::Future<«returnType»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> replyCallerCallbackFct =
 				[future, callbackFct] (const joynr::RequestStatus& status«outputTypedConstParamList») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
-						future->onSuccess(status«outputUntypedParamList»);
+						future->onSuccess(status«IF method.outputParameters.empty»«ELSE», «method.outputParameters.head.joynrName»«ENDIF»);
 					} else {
 						future->onFailure(status);
 					}
 					if (callbackFct)
 					{
-						callbackFct(status«outputUntypedParamList»);
+						callbackFct(status«IF method.outputParameters.empty»«ELSE», «method.outputParameters.head.joynrName»«ENDIF»);
 					}
 				};
 
-		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameter.head»>(replyCallerCallbackFct));
+		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(replyCallerCallbackFct));
 		operationRequest(replyCaller, internalRequestObject);
 		return future;
 	}

@@ -292,25 +292,26 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 «FOR method: getMethods(serviceInterface)»
 «var methodname = method.joynrName»
 «var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
-«var outputParameter = getMappedOutputParameter(method)»
+«var outputParameter = if (method.outputParameters.empty) "void" else method.outputParameters.head.mappedDatatypeOrList»
 «var inputParamList = getCommaSeperatedUntypedParameterList(method)»
-«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+«val outputTypedConstParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
+«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else (method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
 «var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 
 void «interfaceName»InProcessConnector::«methodname»(
-			joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«parameterList»
+			joynr::RequestStatus& status«outputTypedParamList»«parameterList»
 ) {
 	assert(!address.isNull());
 	QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(!caller.isNull());
 	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 	assert(!«serviceInterface.interfaceCaller».isNull());
-	QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+	QSharedPointer<joynr::Future<«IF method.outputParameters.empty»void«ELSE»«outputParameter»«ENDIF»> > future(new joynr::Future<«IF method.outputParameters.empty»void«ELSE»«outputParameter»«ENDIF»>());
 
-	std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
-			[future] (const joynr::RequestStatus& internalStatus«outputTypedParamList») {
+	std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> requestCallerCallbackFct =
+			[future] (const joynr::RequestStatus& internalStatus«outputTypedConstParamList») {
 				if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
-					future->onSuccess(internalStatus«outputUntypedParamList»);
+					future->onSuccess(internalStatus«IF method.outputParameters.empty»«ELSE», «method.outputParameters.head.joynrName»«ENDIF»);
 				} else {
 					future->onFailure(internalStatus);
 				}
@@ -325,26 +326,26 @@ void «interfaceName»InProcessConnector::«methodname»(
 	«ENDIF»
 }
 
-QSharedPointer<joynr::Future<«outputParameter.head»> > «interfaceName»InProcessConnector::«methodname»(«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
+QSharedPointer<joynr::Future<«outputParameter»> > «interfaceName»InProcessConnector::«methodname»(«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> callbackFct)
 {
 	assert(!address.isNull());
 	QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(!caller.isNull());
 	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 	assert(!«serviceInterface.interfaceCaller».isNull());
-	QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+	QSharedPointer<joynr::Future<«IF method.outputParameters.empty»void«ELSE»«outputParameter»«ENDIF»> > future(new joynr::Future<«IF method.outputParameters.empty»void«ELSE»«outputParameter»«ENDIF»>());
 
-	std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
-			[future, callbackFct] (const joynr::RequestStatus& status«outputTypedParamList») {
+	std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> requestCallerCallbackFct =
+			[future, callbackFct] (const joynr::RequestStatus& status«outputTypedConstParamList») {
 				if (status.getCode() == joynr::RequestStatusCode::OK) {
-					future->onSuccess(status«outputUntypedParamList»);
+					future->onSuccess(status«IF method.outputParameters.empty»«ELSE», «method.outputParameters.head.joynrName»«ENDIF»);
 				} else {
 					future->onFailure(status);
 				}
 				if (callbackFct)
 				{
-					callbackFct(status«outputUntypedParamList»);
+					callbackFct(status«IF method.outputParameters.empty»«ELSE», «method.outputParameters.head.joynrName»«ENDIF»);
 				}
 			};
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»requestCallerCallbackFct);
