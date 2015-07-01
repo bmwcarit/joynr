@@ -199,9 +199,9 @@ abstract class JoynrGeneratorExtensions {
 
 	def String getMappedDatatypeOrList(FBasicTypeId datatype, boolean array)
 
-	def String getMappedOutputParameterTypesCommaSeparated(FBroadcast broadcast) {
+	private def String getMappedOutputParameterTypesCommaSeparated(Iterable<FArgument> arguments) {
 		val commaSeparatedParams = new StringBuilder();
-		for (parameter : mapOutputParameters(getOutputParameters(broadcast))) {
+		for (parameter : mapOutputParameters(arguments)) {
 			commaSeparatedParams.append(parameter);
 			commaSeparatedParams.append(", ");
 		}
@@ -212,6 +212,13 @@ abstract class JoynrGeneratorExtensions {
 		else{
 			return returnString.substring(0, returnString.length() - 2); //remove the last ,
 		}
+	}
+
+	def String getMappedOutputParameterTypesCommaSeparated(FBroadcast broadcast) {
+		getMappedOutputParameterTypesCommaSeparated(broadcast.outputParameters)
+	}
+	def String getMappedOutputParameterTypesCommaSeparated(FMethod method) {
+		getMappedOutputParameterTypesCommaSeparated(method.outputParameters)
 	}
 
 	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast, boolean constRef) {
