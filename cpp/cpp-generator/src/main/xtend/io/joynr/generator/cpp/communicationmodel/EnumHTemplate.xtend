@@ -68,6 +68,11 @@ inline «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedE
 {
   return «joynrGenerationPrefix»::Util::convertVariantToEnum<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant);
 }
+
+template <>
+inline QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::Enum> joynr::Util::valueOf<QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::Enum>>(const QVariant& variant){
+   return «joynrGenerationPrefix»::Util::convertVariantListToEnumList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant.value<QVariantList>());
+}
 }
 // Metatype for the wrapper class
 typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;

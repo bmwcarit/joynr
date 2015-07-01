@@ -45,6 +45,7 @@ class TypeHTemplate implements CompoundTypeTemplate{
 #include <QVariantMap>
 #include <QList>
 #include <QByteArray>
+#include "joynr/Util.h"
 
 //include complex Datatype headers.
 «FOR member: getRequiredIncludesFor(type)»
@@ -132,6 +133,13 @@ private:
 };
 
 «getNamespaceEnder(type)»
+
+namespace joynr {
+template <>
+inline QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»> Util::valueOf<QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>>(const QVariant& variant){
+   return «joynrGenerationPrefix»::Util::convertVariantListToList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant.value<QVariantList>());
+}
+}
 «««		https://bugreports.qt-project.org/browse/QTBUG-2151 for why this typedef is necessary
 typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
 Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)
