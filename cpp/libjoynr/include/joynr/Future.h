@@ -33,35 +33,57 @@
 namespace joynr
 {
 
+/**
+ * @brief IntegerList
+ */
 template <size_t... N>
 struct IntegerList
 {
+    /**
+     * @brief struct PushBack
+     */
     template <size_t M>
     struct PushBack
     {
+        /** @brief the Pushback's Type */
         typedef IntegerList<N..., M> Type;
     };
 };
 
+/** @brief IndexList */
 template <size_t MAX>
 struct IndexList
 {
+    /** @brief The IndexList's Type */
     typedef typename IndexList<MAX - 1>::Type::template PushBack<MAX>::Type Type;
 };
 
+/** @brief IndexList */
 template <>
 struct IndexList<0>
 {
+    /** @brief The IndexList's Type */
     typedef IntegerList<> Type;
 };
 
+/**
+ * @brief Create a tuple subset by indices
+ * @param tuple Input tuple to select from
+ * @param indices The indices
+ * @return the new tuple containing the subset
+ */
 template <size_t... Indices, typename Tuple>
-auto tupleSubset(const Tuple& tuple, IntegerList<Indices...>)
+auto tupleSubset(const Tuple& tuple, IntegerList<Indices...> indices)
         -> decltype(std::make_tuple(std::get<Indices>(tuple)...))
 {
     return std::make_tuple(std::get<Indices>(tuple)...);
 }
 
+/**
+ * @brief Create a tuple subset
+ * @param tuple Input tuple to select from
+ * @return the tuple subset
+ */
 template <typename Head, typename... Tail>
 std::tuple<Tail...> tail(const std::tuple<Head, Tail...>& tuple)
 {
@@ -70,7 +92,8 @@ std::tuple<Tail...> tail(const std::tuple<Head, Tail...>& tuple)
 
 template <class... Ts>
 /**
- * @brief This class is used by applications to monitor the status of a request.
+ * @brief Class for monitoring the status of a request by applications.
+ *
  * Applications can periodically ask this class for its status and retrieve
  * descriptions and codes related to the request.
  * This class also contains a method to block until a response is received.
@@ -81,6 +104,9 @@ class Future
 {
 
 public:
+    /**
+     * @brief Constructor
+     */
     Future<Ts...>() : status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
@@ -88,12 +114,23 @@ public:
                          QString::number(resultReceived.available()));
     }
 
+    // TODO
+    /** @brief ResultCopier */
     template <typename T, typename Head, typename... Tail>
     struct ResultCopier;
 
+    // TODO
+    /** @brief ResultCopier */
     template <typename Head, typename... Tail>
     struct ResultCopier<std::tuple<Head, Tail...>, Head, Tail...>
     {
+        // TODO
+        /**
+         * @brief Copy function
+         * @param results The results to copy from
+         * @param value The value to copy to
+         * @param values The values to copy to
+         */
         static void copy(const std::tuple<Head, Tail...>& results, Head& value, Tail&... values)
         {
             value = std::get<0>(results);
@@ -101,9 +138,18 @@ public:
                     tail<Head, Tail...>(results), values...);
         }
     };
+
+    // TODO
+    /** @brief ResultCopier */
     template <typename Head>
     struct ResultCopier<std::tuple<Head>, Head>
     {
+
+        /**
+         * @brief Copy results value
+         * @param results The results to copy from
+         * @param value destination to copy to
+         */
         static void copy(const std::tuple<Head>& results, Head& value)
         {
             value = std::get<0>(results);
@@ -120,7 +166,7 @@ public:
      *
      * This method returns immediately.
      *
-     * @param Ts&... The typed return values from the request.
+     * @param values The typed return values from the request.
      */
     void getValues(Ts&... values)
     {
@@ -157,7 +203,7 @@ public:
      *
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * if no response is received.
-     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     * @return Returns the RequestStatus for the completed request.
      */
     RequestStatus waitForFinished(uint16_t timeOut)
     {
@@ -169,9 +215,9 @@ public:
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
-     * occurs.  Waits indefinitely.
+     * occurs.
      *
-     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     * @return Returns the RequestStatus for the completed request.
      */
     RequestStatus waitForFinished()
     {
@@ -195,6 +241,7 @@ public:
 
     /**
      * @brief Callback which indicates the operation has finished and is successful.
+     * @param results The result of the operation, type T
      */
     void onSuccess(Ts... results)
     {
@@ -207,6 +254,7 @@ public:
 
     /**
      * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
      */
     void onError(const RequestStatus& status)
     {
@@ -229,8 +277,7 @@ joynr_logging::Logger* Future<Ts...>::logger =
 
 template <>
 /**
- * @brief The void specialisation of this class.
- *
+ * @brief Class specialization of the void Future class.
  */
 class Future<void>
 {
@@ -240,11 +287,24 @@ public:
     {
     }
 
+    /**
+     * @brief Returns the current RequestStatus for the given request.
+     *
+     * @return RequestStatus
+     */
     RequestStatus& getStatus()
     {
         return status;
     }
 
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out.
+     *
+     * @param timeOut The maximum number of milliseconds to wait before this request times out
+     * if no response is received.
+     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     */
     RequestStatus waitForFinished(uint16_t timeOut)
     {
         if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
@@ -253,6 +313,12 @@ public:
         return status;
     }
 
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs.
+     *
+     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     */
     RequestStatus waitForFinished()
     {
         resultReceived.acquire(1);
@@ -260,17 +326,29 @@ public:
         return status;
     }
 
+    /**
+     * @brief Returns whether the status is Ok or not.
+     *
+     * @return Returns whether the status is Ok or not.
+     */
     bool isOk()
     {
         return status.successful();
     }
 
+    /**
+     * @brief Callback which indicates the operation has finished and is successful.
+     */
     void onSuccess()
     {
         status.setCode(RequestStatusCode::OK);
         resultReceived.release(1);
     }
 
+    /**
+     * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
+     */
     void onError(const RequestStatus& status)
     {
         this->status = RequestStatus(status);

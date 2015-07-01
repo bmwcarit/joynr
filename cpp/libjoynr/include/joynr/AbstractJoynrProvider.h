@@ -39,57 +39,85 @@ class IAttributeListener;
 class IBroadcastListener;
 
 /**
- * Abstract class that specifies the interface providers need to implement
+ * @brief Abstract class that specifies the interface providers need to implement
  * and contains functionality to support listening to onChange events
  */
 class JOYNR_EXPORT AbstractJoynrProvider : public virtual IJoynrProvider
 {
 public:
+    /** @brief Default constructor */
     AbstractJoynrProvider();
+
+    /** @brief Destructor */
     virtual ~AbstractJoynrProvider();
 
     // --- Interface to be implemented by Providers ---
+
+    /**
+     * @brief Get the provider quality of service settings
+     * @return the provider quality of service settings
+     */
     virtual types::ProviderQos getProviderQos() const;
 
     // --- Support for listening to onChange events ---
 
     /**
-     * Register an object that will be informed when the value of an attribute changes
+     * @brief Register an object that will be informed when the value of an attribute changes
+     * @param attributeName The name of the attribute for which publications shall be done
+     * @param attributeListener The listener object containing the callbacks for publications and
+     * failures
      */
     virtual void registerAttributeListener(const std::string& attributeName,
                                            IAttributeListener* attributeListener);
 
     /**
-     * Unregister and delete an attribute listener
+     * @brief Unregister and delete an attribute listener
+     * @param attributeName The name of the attribute for which publications shall be stopped
+     * @param attributeListener The listener object to be unregisterd
      */
     virtual void unregisterAttributeListener(const std::string& attributeName,
                                              IAttributeListener* attributeListener);
 
     /**
-     * Register an object that will be informed when an event occurs
+     * @brief Register an object that will be informed when an event occurs
+     * @param broadcastName The name of the broadcast for which publications shall be done
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
      */
     virtual void registerBroadcastListener(const std::string& broadcastName,
                                            IBroadcastListener* broadcastListener);
 
     /**
-     * Unregister and delete a broadcast listener
+     * @brief Unregister and delete a broadcast listener
+     * @param broadcastName The name of the broadcast for which publications shall be done
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
      */
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener);
 
+    /**
+     * @brief Add a broadcast filter
+     * @param filter The broadcast filter to be added
+     */
     virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter);
 
 protected:
     /**
-     * Called by subclasses when the value of an attribute changes
+     * @brief Called by subclasses when the value of an attribute changes
+     * @param attributeName The name of the attribute whose value changes
+     * @param value The new value of the attribute
      */
     void onAttributeValueChanged(const std::string& attributeName, const QVariant& value);
 
     /**
-     * Called by subclasses when a broadcast occurs
+     * @brief Called by subclasses when a broadcast occurs
+     * @param broadcastName The name of the broadcast that occurred
+     * @param values The output values of the broadcast
      */
     void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
 
+    /** @brief The provider quality settings */
     types::ProviderQos providerQos;
 
 private:

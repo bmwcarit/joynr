@@ -30,7 +30,9 @@ namespace joynr
 {
 
 /**
- * @brief This class will house all the status information needed by callers to
+ * @brief Class representing the status and error description information about a request
+ *
+ * This class will house all the status information needed by callers to
  * work out what (if it did) went wrong.  It will contain a status code, which
  * are predefined Joynr middleware constants, and a description string with additional
  * information.
@@ -39,13 +41,17 @@ class JOYNR_EXPORT RequestStatus
 {
 public:
     /**
-     * @brief Creates a request status with an empty description and a default request
+     * @brief Default Constructor
+     *
+     * Creates a request status with an empty description and a default request
      * status signifying that it has not started.
      */
     RequestStatus();
 
     /**
-     * @brief Creates a RequestStatus with the supplied status code.
+     * @brief Constructor with full parameters
+     *
+     * Creates a RequestStatus with the supplied status code.
      *
      * @param requestCode What the RequestStatus will be initialised to.
      */
@@ -83,7 +89,7 @@ public:
     /**
      * @brief Returns a detailed description of the request.
      *
-     * @return std::list<std::string> A list of descriptions detailing the progress of a request.
+     * @return The list of descriptions detailing the progress of a request.
      */
     std::list<std::string> getDescription() const;
 
@@ -97,8 +103,8 @@ public:
     /**
      * @brief A convenience method to print this object to string.
      *
-     * @return std::string The String representation of this object, to be used in error
-     *messages/logging etc.
+     * @return The String representation of this object, to be used in error
+     * messages/logging etc.
      */
     std::string toString() const;
 

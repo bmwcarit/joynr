@@ -32,46 +32,90 @@
 namespace joynr
 {
 
+/**
+ * @brief Class representing the quality of service settings for the provider discovery process
+ */
 class JOYNR_EXPORT DiscoveryQos
 {
 public:
-    /**
-     * Instantiates an DiscoveryQos object with default values.
-     */
+    /** @brief Default Constructor */
     DiscoveryQos();
+
+    /**
+     * @brief Constructor with definition of cache expiry
+     * @param cacheMaxAge The maximum age in milliseconds a cached entry will be considered for
+     * discovery
+     */
     explicit DiscoveryQos(const int64_t& cacheMaxAge);
+
+    /** @brief Destructor */
     virtual ~DiscoveryQos()
     {
     }
 
-    /*
-     *  List of available arbitration strategies.
-     *  The strategy specifies which type of Arbitrator will be
-     *  created by the ProviderArbitratorFactory
+    /**
+     * The strategy specifies which type of Arbitrator will be
+     * created by the ProviderArbitratorFactory
      */
     enum class ArbitrationStrategy {
+        /** the arbitration strategy is not set */
         NOT_SET = 0,
+        /** the participant which matches the provided participantId will be selected, if existing
+           */
         FIXED_PARTICIPANT = 1,
+        /** only local participants will be considered */
         LOCAL_ONLY = 2,
+        /** only participants which match a keyword will be considered */
         KEYWORD = 3,
+        /** the participant with the highest priority will be selected */
         HIGHEST_PRIORITY = 4
     };
 
+    /**
+     * @brief Gets the default timeout value
+     * @return the default timeout value in milliseconds
+     */
     static int64_t& DEFAULT_DISCOVERYTIMEOUT();
 
+    /**
+     * @brief Gets the value signalling that no timeout has been selected
+     * @return the value signalling that no timeout has been selected
+     */
     static int64_t& NO_TIMEOUT();
 
+    /**
+     * @brief Gets the default arbitration strategy value
+     * @return the default arbitration strategy value
+     */
     static ArbitrationStrategy& DEFAULT_ARBITRATIONSTRATEGY();
 
+    /**
+     * @brief Gets the default maximum cache age value in milliseconds
+     * @return the default maximum cache age value in milliseconds
+     */
     static int64_t& DEFAULT_CACHEMAXAGE();
 
+    /**
+     * @brief Gets the value signalling that no cache is to be used
+     * @return the value signalling that no cache is to be used
+     */
     static int64_t& DO_NOT_USE_CACHE();
 
+    /**
+     * @brief Gets the default discovery scope value
+     * @return the default discovery scope value
+     */
     static joynr::types::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
 
+    /**
+     * @brief Gets the default retry interval value
+     * @return the default retry interval value
+     */
     static int64_t& DEFAULT_RETRYINTERVAL();
 
     /**
+     * @brief Sets the arbitration strategy for the discovery process
+     *
      * The discovery process outputs a list of matching providers. The arbitration strategy then
      * chooses one or more of them to be used by the proxy.
      *
@@ -81,26 +125,33 @@ public:
     void setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy);
 
     /**
+     * @brief Gets the currently used arbitration strategy
+     *
      * The discovery process outputs a list of matching providers. The arbitration strategy then
      * chooses one or more of them to be used by the proxy.
      *
      * @return the arbitration strategy used to pick the "best" provider of the list of matching
-     *providers
+     * providers
      */
     ArbitrationStrategy getArbitrationStrategy() const;
 
     /**
+     * @brief Sets the discovery timeout value to be used
+     *
      * As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
      * is triggered. If the discovery process does not find matching providers within the
      * discovery timeout duration it will be terminated and you will get an discovery exception.
      *
      * @param discoveryTimeout
-     *            Sets the amount of time the arbitrator keeps trying to find a suitable provider.
+     *            the amount of time the arbitrator keeps trying to find a suitable provider.
      *The arbitration
      *            lookup might happen multiple times during this time span.
      */
     void setDiscoveryTimeout(int64_t discoveryTimeout);
+
     /**
+     * @brief Gets the currently used discovery timeout value
+     *
      * As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
      * is triggered. If the discovery process does not find matching providers within the
      * discovery timeout duration it will be terminated and you will get an discovery exception.
@@ -110,8 +161,8 @@ public:
     int64_t getDiscoveryTimeout() const;
 
     /**
-     * addCustomParameter allows to add special parameters to the DiscoveryQos which will be used
-     *only by some strategies.
+     * @brief Allows to add special parameters to the DiscoveryQos which will be used
+     * only by selected strategies.
      *
      * @param name
      *            String to identify the arbitration parameter
@@ -121,83 +172,94 @@ public:
     void addCustomParameter(std::string name, std::string value);
 
     /**
-     * getCustomParameter returns the parameters previously specified by addParameter
+     * @brief Gets the parameters previously specified by addParameter
      *
+     * @param name the parameter name for which the value should be returned
      * @return Returns the value to which the specified key is mapped, or null if the map of
-     *additional parameters
-     *         contains no mapping for the key
+     * additional parameters contains no mapping for the key
      */
     types::CustomParameter getCustomParameter(std::string name) const;
 
     /**
-     * get the map of custom parameters
+     * @brief Gets the map of custom parameters
      * @return
      *          The map of the current set custom parameters
      */
     std::map<std::string, types::CustomParameter> getCustomParameters() const;
 
     /**
+     * @brief Gets the current set maximum age value
+     *
      * Provider entries in the global capabilities directory are cached locally. Discovery will
      * consider entries in this cache valid if they are younger as the max age of cached
      * providers as defined in the QoS. All valid entries will be processed by the arbitrator when
-     *searching
+     * searching
      * for and arbitrating the "best" matching provider.
      * <p>NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
      *       directory. Therefore, not all providers registered with the global capabilities
      *       directory might be taken into account during arbitration.
      *
      * @return the maximum age of locally cached provider entries to be used during discovery and
-     *arbitration
+     * arbitration
      */
     int64_t getCacheMaxAge() const;
 
     /**
+     * @brief Sets the maximum age value for cached values
+     *
      * Provider entries in the global capabilities directory are cached locally. Discovery will
      * consider entries in this cache valid if they are younger as the max age of cached
      * providers as defined in the QoS. All valid entries will be processed by the arbitrator when
-     *searching
+     * searching
      * for and arbitrating the "best" matching provider.
      * <p>NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
      *       directory. Therefore, not all providers registered with the global capabilities
      *       directory might be taken into account during arbitration.
      *
-     * @param maxAgeOfCachedProviders
-     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters
-     *out all entries of the
-     *            local capabilities directory a lookup in the global capabilitiesDirectory will
-     *take place.
+     * @param cacheMaxAge
+     *       Maximum age of entries in the localCapabilitiesDirectory. If this value filters
+     *       out all entries of the
+     *       local capabilities directory a lookup in the global capabilitiesDirectory will
+     *       take place.
      */
     void setCacheMaxAge(const int64_t& cacheMaxAge);
 
     /**
-     * Indicates if the arbitration will only consider providers that support onChange subscriptions
-     *
-     * @return true if only providers that support onChange subscriptions are considered
-     */
-    bool getProviderMustSupportOnChange() const;
-    /**
-     * Indicate if the arbitration should only consider providers that support onChange
+     * @brief Find out whether arbitration will only consider providers that support onChange
      *subscriptions
      *
+     * @return true if only providers that support onChange subscriptions are considered, false
+     *otherwise
+     */
+    bool getProviderMustSupportOnChange() const;
+
+    /**
+     * @brief Sets whether arbitration should only consider providers that support onChange
+     * subscriptions
+     *
      * @param providerMustSupportOnChange  true if only providers that support onChange
-     *subscriptions should be considered
+     *subscriptions should be considered, false otherwise
      */
     void setProviderMustSupportOnChange(bool providerMustSupportOnChange);
 
     /**
+     * @brief Return the currently used discovery scope
+     *
      * The scope determines where the discovery process will look for matching providers, if
      *LOCAL_ONLY,
      * only local providers will be considered. LOCAL_THEN_GLOBAL considers both the local providers
      * and the global providers in its search results. GLOBAL_ONLY only considers providers that are
      * flagged as global.
      *
-     * @return the current set discovery scope
+     * @return the currently used discovery scope
      */
     joynr::types::DiscoveryScope::Enum getDiscoveryScope() const;
 
     /**
+     * @brief Sets the currently used discovery scope.
+     *
      * The scope determines where the discovery process will look for matching providers, if
-     *LOCAL_ONLY,
+     * LOCAL_ONLY,
      * only local providers will be considered. LOCAL_THEN_GLOBAL considers both the local providers
      * and the global providers in its search results. GLOBAL_ONLY only considers providers that are
      * flagged as global.
@@ -208,14 +270,18 @@ public:
     void setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope);
 
     /**
-     * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
+     * @brief Gets the time interval value (in milliseconds) between two arbitration retries
+     *
+     * It is NOT ensured that
      * the arbitration will be restarted after the given delay.
      *
-     * @return the retry interval
+     * @return the retry interval in milliseconds
      */
     int64_t getRetryInterval() const;
 
     /**
+     * @brief Determine the retry interval value (in milliseconds)
+     *
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
      * the arbitration will be restarted after the given delay.
      *
@@ -225,6 +291,12 @@ public:
 
     /*
      * Constants
+     */
+
+    /**
+     * @brief Gets the string to be used as name for custom parameters when a keyword based
+     * arbitration strategy is to be used
+     * @return string value to be used as name
      */
     static const std::string KEYWORD_PARAMETER();
 

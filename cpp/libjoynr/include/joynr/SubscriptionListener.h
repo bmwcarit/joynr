@@ -25,7 +25,8 @@ namespace joynr
 {
 
 /**
- * This class provides an emtpy implementation of ISubscriptionListener.
+ * @brief Base class providing an emtpy implementation of ISubscriptionListener
+ *
  * Subscription listeners that are not interested in all callbacks could extend
  * this class.
  */
@@ -33,17 +34,28 @@ template <typename T, typename... Ts>
 class SubscriptionListener : public joynr::ISubscriptionListener<T, Ts...>
 {
 public:
+    /** Default Constructor */
     SubscriptionListener()
     {
     }
+
+    /** Default Destructor */
     virtual ~SubscriptionListener()
     {
     }
 
+    /**
+     * @brief Method to be called on receiving publication
+     * @param value First output parameter of the broadcast | attribute value
+     * @param values Optional 2nd..nth output parameter in case of a broadcast
+     */
     virtual void onReceive(T value, Ts... values)
     {
     }
 
+    /**
+     * @brief Method to be called on missing a publication
+     */
     virtual void onError()
     {
     }

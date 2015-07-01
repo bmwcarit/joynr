@@ -27,57 +27,79 @@
 namespace joynr
 {
 
+/**
+ * @brief Base class representing the subscription quality of service settings
+ *
+ * Class that stores quality of service settings for subscriptions.
+ * The subscription will automatically expire after the expiryDate is reached.
+ */
 class JOYNRCOMMON_EXPORT SubscriptionQos
 {
 
 public:
+    /** @brief Default constructor */
     SubscriptionQos();
+
+    /** @brief Copy constructor */
     SubscriptionQos(const SubscriptionQos& subscriptionQos);
+
+    /**
+     * @brief Constructor SubscriptionQos objects with specified validity
+     * @param validity Time span in milliseconds during which publications will be sent
+     */
     SubscriptionQos(const int64_t& validity);
 
+    /** Destructor */
     virtual ~SubscriptionQos();
 
     /**
-     * The provider will send notifications until the end date is reached. You will not receive any
-     * notifications (neither value notifications nor missed publication notifications) after
-     * this date.
+     * @brief Gets the expiry date
      *
-     * @return endDate_ms
-     * 		The publication will automatically expire at that EndDate.
+     * The provider will send notifications until the expiry date is reached.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this date.
+     *
+     * @return The expiry date in milliseconds.
+     * The publication will automatically expire at that EndDate.
      *
      * @see SubscriptionQos#setValidity_ms
      */
     int64_t getExpiryDate() const;
 
     /**
-     * Clears the current expiry date and disables it, by setting the value to NO_EXPIRY_DATE.
+     * @brief Clears the current expiry date and disables it, by setting
+     * the value to NO_EXPIRY_DATE.
      */
     virtual void clearExpiryDate();
 
     /**
-     * The provider will send notifications until the the end date is reached. You will not receive
-     *any
-     * notifications (neither value notifications nor missed publication notifications) after
+     * @brief Sets the expiry date
+     *
+     * The provider will send notifications until the the expiry date
+     * is reached. You will not receive any notifications (neither
+     * value notifications nor missed publication notifications) after
      * this date.
      *
-     * @param endDate_ms
-     * 		The publication will automatically expire at that date.
+     * @param expiryDate The expiry date in milliseconds
+     * The publication will automatically expire at that date.
      *
      * @see SubscriptionQos#setValidity_ms
      */
     virtual void setExpiryDate(const int64_t& expiryDate);
 
     /**
-     * Notification messages will be sent with this time-to-live. If a notification message can not
-     *be
-     * delivered within its TTL, it will be deleted from the system.
-     * <p>NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
-     *       missed publication notification (depending on the value of the alert interval QoS).
+     * @brief Gets the publication time to live value
      *
-     * @return publicationTtl
-     *            Returns the TTL of the publication Messages -1 means, the message will be valid
-     *until the EndDate of the
-     *            Subscription.
+     * Notification messages will be sent with this time-to-live.
+     * If a notification message can not be delivered within its TTL,
+     * it will be deleted from the system.
+     * <p>NOTE: If a notification message is not delivered due to an
+     * expired TTL, it might raise a missed publication notification
+     * (depending on the value of the alert interval QoS).
+     *
+     * @return Returns the TTL of the publication Messages in milliseconds.
+     * -1 means, the message will be valid until the EndDate of the
+     * Subscription.
      *
      * @see SubscriptionQos#setAlertInterval_ms
      * @see SubscriptionQos#setEndDate_ms
@@ -85,47 +107,63 @@ public:
     virtual int64_t getPublicationTtl() const;
 
     /**
-     * The provider will send notifications for the next validity ms. You will not receive any
-     * notifications (neither value notifications nor missed publication notifications) after
-     * this time span expired.
+     * @brief Sets the validity in milliseconds.
      *
-     * <p>This is equivalent to setting the end date QoS to NOW_ms + validity_ms.
+     * The provider will send notifications for the next validity ms.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this time span expired.
      *
-     * @param validity
-     *            The publication will automatically expire in validty_ms milliseconds
+     * <p>This is equivalent to setting the expiry date QoS to NOW_ms + validity_ms.
+     *
+     * @param validity Time span in milliseconds during which publications will be sent
      *
      * @see SubscriptionQos#setEndDate_ms
      */
     virtual void setValidity(const int64_t& validity);
 
     /**
-     * Notification messages will be sent with this time-to-live. If a notification message can not
-     *be
-     * delivered within its TTL, it will be deleted from the system.
-     * <p>NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
-     *       missed publication notification (depending on the value of the alert interval QoS).
+     * @brief Sets publication time to live in milliseconds
      *
-     * @param publicationTtl
-     *            Sets the TTL of the publication Messages -1 means, the message will be valid until
-     *the EndDate of the
-     *            Subscription.
+     * Notification messages will be sent with this time-to-live. If a
+     * notification message can not be delivered within its TTL, it will
+     * be deleted from the system.
+     * <p>NOTE: If a notification message is not delivered due to an
+     * expired TTL, it might raise a missed publication notification
+     * (depending on the value of the alert interval QoS).
+     *
+     * @param publicationTtl_ms Sets the TTL of the publication Messages
+     * -1 means, the message will be valid until the EndDate of the Subscription.
      *
      * @see SubscriptionQos#setAlertInterval_ms
      */
     virtual void setPublicationTtl(const int64_t& publicationTtl_ms);
 
+    /** @brief Assignment operator */
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
+
+    /** @brief Equality operator */
     virtual bool operator==(const SubscriptionQos& subscriptionQos) const;
 
+    /** @brief Gets the default publication time to live value */
     static const int64_t& DEFAULT_PUBLICATION_TTL();
+
+    /** @brief Gets the minimum publication time to live value */
     static const int64_t& MIN_PUBLICATION_TTL();
+
+    /** @brief Gets the maximum publication time to live value */
     static const int64_t& MAX_PUBLICATION_TTL();
+
+    /** @brief Gets the value for no expiry date time to live; used only internally */
     static const int64_t& NO_EXPIRY_DATE_TTL();
 
+    /** @brief Gets the value for no expiry date */
     static const int64_t& NO_EXPIRY_DATE();
 
 protected:
+    /** @brief The expiry date in milliseconds */
     int64_t expiryDate;
+
+    /** @brief The publication time to live in milliseconds */
     int64_t publicationTtl;
 };
 

@@ -23,15 +23,18 @@ namespace joynr
 {
 
 /**
- * This class must be extended by attribute or broadcast subscription listeners.
+ * @brief Class interface to be extended by attribute or broadcast subscription listeners
  */
 template <typename... Ts>
 class ISubscriptionListener
 {
 public:
+    /** @brief Constructor */
     ISubscriptionListener()
     {
     }
+
+    /** @brief Destructor */
     virtual ~ISubscriptionListener()
     {
     }

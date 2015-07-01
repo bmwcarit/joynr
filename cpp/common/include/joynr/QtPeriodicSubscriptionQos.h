@@ -25,6 +25,15 @@
 namespace joynr
 {
 
+/**
+ * @brief Class representing the quality of service settings for subscriptions based on
+ * time periods
+ *
+ * Class that stores quality of service settings for subscriptions that will only
+ * send a notification if a period has expired. The subscription will automatically
+ * expire after validity ms. If no publications were received for alertAfter
+ * interval, a publicationMissed will be called.
+ */
 class JOYNRCOMMON_EXPORT QtPeriodicSubscriptionQos : public QtSubscriptionQos
 {
 
@@ -34,80 +43,116 @@ class JOYNRCOMMON_EXPORT QtPeriodicSubscriptionQos : public QtSubscriptionQos
     Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval WRITE setAlertAfterInterval)
 
 public:
+    /** @brief Default constructor */
     QtPeriodicSubscriptionQos();
+
+    /**
+     * @brief Copy constructor
+     * @param other The Object to be copied from
+     */
     QtPeriodicSubscriptionQos(const QtPeriodicSubscriptionQos& other);
+
+    /**
+     * @brief Constructor with full parameter set
+     * @param validity Time span in milliseconds during which publications will be sent
+     * @param period interval in milliseconds.
+     * The provider will send notifications every period in milliseconds.
+     * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
+     */
     QtPeriodicSubscriptionQos(const qint64& validity,
                               const qint64& period,
                               const qint64& alertAfterInterval);
 
     /**
-    * The provider will send notifications every maximum interval in milliseconds, even if the value
-    *didn't
-    * change. It will send notifications more often if on-change notifications are enabled,
-    * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
-    *interval
-    * can thus be seen as a sort of heart beat.
-    *
-    * @return qint64 period
-    *            The publisher will send a notification at least every maxInterval_ms.
-    */
+     * @brief Gets the period in milliseconds
+     *
+     * The provider will send notifications every period milliseconds,
+     *
+     * @return period
+     *            The publisher will send a notification every period ms.
+     */
     virtual qint64 getPeriod() const;
 
     /**
-     * The provider will send notifications every maximum interval in milliseconds, even if the
-     *value didn't
-     * change. It will send notifications more often if on-change notifications are enabled,
-     * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
-     *interval
-     * can thus be seen as a sort of heart beat.
+     * @brief Sets maximum interval in milliseconds
+     *
+     * The provider will send notifications every maximum interval in milliseconds.
      *
      * @param period
-     *            The publisher will send a notification at least every maxInterval_ms.
+     *            The publisher will send a notification every period ms.
      */
     virtual void setPeriod(const qint64& period);
 
     /**
-     * If no notification was received within the last alert interval, a missed publication
+     * @brief Gets the alertAfter interval in milliseconds
+     *
+     * If no notification was received within the last alertAfter interval, a missed publication
      * notification will be raised.
      *
-     * @return alertInterval_ms
-     *            If more than alertInterval_ms pass without receiving a message,
-     *subscriptionManager will issue a
-     *            publicationMissed.
+     * @return alertAfterInterval (time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received).
      */
     virtual qint64 getAlertAfterInterval() const;
 
     /**
-     * If no notification was received within the last alert interval, a missed publication
-     * notification will be raised.
+     * @brief Sets the alertAfter interval in milliseconds
      *
-     * @param alertInterval_ms
-     *            If more than alertInterval pass without receiving a message, subscriptionManager
-     *will issue a
-     *            publicationMissed..
+     * If no notification was received within the last alertAfter interval, a missed publication
+     * notification will be raised by the Subscription Manager.
+     *
+     * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
      */
     virtual void setAlertAfterInterval(const qint64& alertAfterInterval);
 
     /**
+     * @brief Resets alert after interval
+     *
      * Resets the alertAfterInterval and disables the alert by setting its value to
      * NO_ALERT_AFTER_INTERVAL.
+
+     * alertAfterInterval defines the time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
      */
     virtual void clearAlertAfterInterval();
 
+    /** @brief Assignment operator */
     QtPeriodicSubscriptionQos& operator=(const QtPeriodicSubscriptionQos& other);
+
+    /** @brief Equality operator */
     virtual bool operator==(const QtPeriodicSubscriptionQos& other) const;
 
+    /** @brief Gets the minimum value for the period */
     static const qint64& MIN_PERIOD();
+
+    /** @brief Gets the maximum value for the period */
     static const qint64& MAX_PERIOD();
 
+    /** @brief Gets the maximum value for the alertAfter interval */
     static const qint64& MAX_ALERT_AFTER_INTERVAL();
+
+    /** @brief Gets the default value for the alertAfter interval */
     static const qint64& DEFAULT_ALERT_AFTER_INTERVAL();
+
+    /** @brief Gets the value for no alertAfter interval */
     static const qint64& NO_ALERT_AFTER_INTERVAL();
 
+    /** @brief equality operator */
     virtual bool equals(const QObject& other) const;
 
 protected:
+    /**
+     * @brief The period in milliseconds.
+     *
+     * The provider will send notifications every period milliseconds,
+     */
     qint64 period;
+
+    /**
+     * @brief Time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
+     */
     qint64 alertAfterInterval;
 };
 

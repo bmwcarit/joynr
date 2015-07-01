@@ -24,6 +24,16 @@
 namespace joynr
 {
 
+/**
+ * @brief Class representing the quality of service settings for subscriptions
+ * based on changes and time periods
+ *
+ * Class that stores quality of service settings for subscriptions that will only
+ * send a notification if the subscribed value has changed or an interval without
+ * notifications has expired. The subscription will automatically expire after validity ms.
+ * If no publications were received for alertAfter Interval, a publicationMissed will be
+ * called. minInterval can be used to prevent too many messages being sent.
+ */
 class JOYNRCOMMON_EXPORT QtOnChangeWithKeepAliveSubscriptionQos : public QtOnChangeSubscriptionQos
 {
 
@@ -33,89 +43,133 @@ class JOYNRCOMMON_EXPORT QtOnChangeWithKeepAliveSubscriptionQos : public QtOnCha
     Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval WRITE setAlertAfterInterval)
 
 public:
+    /** @brief Default constructor */
     QtOnChangeWithKeepAliveSubscriptionQos();
+
+    /**
+     * @brief Copy constructor
+     * @param other Object to copy from
+     */
     QtOnChangeWithKeepAliveSubscriptionQos(const QtOnChangeWithKeepAliveSubscriptionQos& other);
+
+    /**
+     * @brief Constructor with full parameter set
+     *
+     * @param validity Time span in milliseconds during which publications will be sent
+     * @param minInterval Minimum interval in milliseconds.
+     * It is used to prevent flooding. Publications will be sent maintaining
+     * this minimum interval provided, even if the value changes more often.
+     * This prevents the consumer from being flooded by updated values.
+     * The filtering happens on the provider's side, thus also preventing
+     * excessive network traffic.
+     * @param maxInterval Maximum interval in milliseconds.
+     * The provider will send notifications every maximum interval in milliseconds,
+     * even if the value didn't change.
+     * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
+     */
     QtOnChangeWithKeepAliveSubscriptionQos(const qint64& validity,
                                            const qint64& minInterval,
                                            const qint64& maxInterval,
                                            const qint64& alertAfterInterval);
 
     /**
+     * @brief Sets minimum interval in milliseconds
+     *
      * The provider will maintain at least a minimum interval idle time in milliseconds between
      * successive notifications, even if on-change notifications are enabled and the value changes
-     *more
-     * often. This prevents the consumer from being flooded by updated values. The filtering happens
-     *on
-     * the provider's side, thus also preventing excessive network traffic.
+     * more often. This prevents the consumer from being flooded by updated values. The filtering
+     * happens on the provider's side, thus also preventing excessive network traffic.
      *
-     * @param minInterval
-     *            The publisher will keep a minimum idle time of minInterval between two successive
-     *notifications.
+     * @param minInterval Minimum interval in milliseconds
      */
     virtual void setMinInterval(const qint64& minInterval);
 
     /**
-    * The provider will send notifications every maximum interval in milliseconds, even if the value
-    *didn't
-    * change. It will send notifications more often if on-change notifications are enabled,
-    * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
-    *interval
-    * can thus be seen as a sort of heart beat.
-    *
-    * @return qint64 maxInterval
-    *            The publisher will send a notification at least every maxInterval_ms.
-    */
+     * @brief Gets the maximum interval in milliseconds
+     *
+     * The provider will send notifications every maximum interval in milliseconds,
+     * even if the value didn't change. It will send notifications more often if
+     * on-change notifications are enabled, the value changes more often, and the
+     * minimum interval QoS does not prevent it. The maximum interval can thus be
+     * seen as a sort of heart beat.
+     *
+     * @return maxInterval
+     *            The publisher will send a notification at least every maxInterval ms.
+     */
     virtual qint64 getMaxInterval() const;
 
     /**
-     * The provider will send notifications every maximum interval in milliseconds, even if the
-     *value didn't
-     * change. It will send notifications more often if on-change notifications are enabled,
-     * the value changes more often, and the minimum interval QoS does not prevent it. The maximum
-     *interval
-     * can thus be seen as a sort of heart beat.
+     * @brief Sets maximum interval in milliseconds
      *
-     * @param maxInterval
+     * The provider will send notifications every maximum interval in milliseconds,
+     * even if the value didn't change. It will send notifications more often if
+     * on-change notifications are enabled, the value changes more often, and the
+     * minimum interval QoS does not prevent it. The maximum interval can thus be
+     * seen as a sort of heart beat.
+     *
+     * @param period
      *            The publisher will send a notification at least every maxInterval_ms.
      */
     virtual void setMaxInterval(const qint64& period);
 
     /**
-     * If no notification was received within the last alert interval, a missed publication
-     * notification will be raised.
+     * @brief Gets the alertAfter interval in milliseconds
      *
-     * @return alertInterval_ms
-     *            If more than alertInterval_ms pass without receiving a message,
-     *subscriptionManager will issue a
-     *            publicationMissed.
+     * If no notification was received within the last alertAfter interval, a missed publication
+     * notification will be raised by the Subscription Manager.
+     *
+     * @return alertAfterInterval (time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received)
      */
     virtual qint64 getAlertAfterInterval() const;
 
     /**
-     * If no notification was received within the last alert interval, a missed publication
-     * notification will be raised.
+     * @brief Sets the alertAfter interval in milliseconds
      *
-     * @param alertInterval_ms
-     *            If more than alertInterval pass without receiving a message, subscriptionManager
-     *will issue a
-     *            publicationMissed..
+     * If no notification was received within the last alertAfter interval, a missed publication
+     * notification will be raised by the Subscription Manager.
+     *
+     * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
      */
     virtual void setAlertAfterInterval(const qint64& alertAfterInterval);
 
+    /** @brief Assignment operator */
     QtOnChangeWithKeepAliveSubscriptionQos& operator=(
             const QtOnChangeWithKeepAliveSubscriptionQos& other);
+
+    /** @brief Equality operator */
     virtual bool operator==(const QtOnChangeWithKeepAliveSubscriptionQos& other) const;
 
+    /** @brief Gets the maximum value for the maximum interval */
     static const qint64& MAX_MAX_INTERVAL();
 
+    /** @brief Gets the maximum value for the alertAfter interval */
     static const qint64& MAX_ALERT_AFTER_INTERVAL();
+
+    /** @brief Gets the default value for the alertAfter interval */
     static const qint64& DEFAULT_ALERT_AFTER_INTERVAL();
+
+    /** @brief Gets the value for no alertAfter interval */
     static const qint64& NO_ALERT_AFTER_INTERVAL();
 
+    /** @brief equality operator */
     virtual bool equals(const QObject& other) const;
 
 protected:
+    /**
+     * @brief The maximum interval in milliseconds.
+     *
+     * The provider will send notifications every maximum interval in milliseconds,
+     * even if the value didn't change.
+     */
     qint64 maxInterval;
+
+    /**
+     * @brief time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received
+     */
     qint64 alertAfterInterval;
 };
 

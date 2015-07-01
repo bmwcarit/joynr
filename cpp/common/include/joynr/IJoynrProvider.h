@@ -33,40 +33,65 @@ namespace types
 class ProviderQos;
 }
 
+/** @brief Interface for the provider */
 class IJoynrProvider
 {
 public:
+    /** @brief Destructor */
     virtual ~IJoynrProvider()
     {
     }
 
+    /**
+     * @brief Get the provider quality of service settings
+     * @return the provider quality of service settings
+     */
     virtual types::ProviderQos getProviderQos() const = 0;
 
     /**
-     * Register an object that will be informed when the value of an attribute changes
+     * @brief Register an object that will be informed when the value of an attribute changes
+     * @param attributeName The name of the attribute for which publications shall be done
+     * @param attributeListener The listener object containing the callbacks for publications and
+     * failures
      */
     virtual void registerAttributeListener(const std::string& attributeName,
                                            IAttributeListener* attributeListener) = 0;
     /**
-     * Unregister and delete an attribute listener
+     * @brief Unregister and delete an attribute listener
+     * @param attributeName The name of the attribute for which publications shall be stopped
+     * @param attributeListener The listener object to be unregisterd
      */
     virtual void unregisterAttributeListener(const std::string& attributeName,
                                              IAttributeListener* attributeListener) = 0;
 
     /**
-     * Register an object that will be informed when an event occurs
+     * @brief Register an object that will be informed when an event occurs
+     * @param broadcastName The name of the broadcast for which publications shall be done
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
      */
     virtual void registerBroadcastListener(const std::string& broadcastName,
                                            IBroadcastListener* broadcastListener) = 0;
 
     /**
-     * Unregister and delete a broadcast listener
+     * @brief Unregister and delete a broadcast listener
+     * @param broadcastName The name of the broadcast for which publications shall be done
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
      */
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener) = 0;
 
+    /**
+     * @brief Add a broadcast filter
+     * @param filter The broadcast filter to be added
+     */
     virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter) = 0;
 
+    /**
+     * @brief Gets the interface name
+     * @return the interface name
+     */
     virtual std::string getInterfaceName() const = 0;
 };
 

@@ -32,6 +32,9 @@
 namespace joynr
 {
 
+/**
+ * @brief Tool class to provide JSON serialization
+ */
 class JsonSerializer
 {
 public:
@@ -64,11 +67,12 @@ public:
     /**
      * @brief Deserializes a string in JSON list format to a list of the given
      * template type T.
+     *
      * Template type T must inherit from QObject. The JSON String must be a
      * valid JSON list representation of T.
      *
-     * @param json the JSON representation of template type T.
-     * @return QList<T> the deserialized list
+     * @param json The JSON representation of template type T.
+     * @return The deserialized list
      */
     static QList<T*> deserializeList(const QByteArray& json)
     {
@@ -94,11 +98,12 @@ public:
     template <class T>
     /**
      * @brief Deserializes a QByteArray in JSON format to the given template type T.
+     *
      * Template type T must inherit from QObject. The QByteArray must be a
      * valid JSON representation of the template type T.
      *
-     * @param json the JSON representation of template type T.
-     * @return T the deserialized object, or NULL in case of deserialization error
+     * @param json The JSON representation of template type T.
+     * @return The deserialized object, or NULL in case of deserialization error
      */
     static T* deserialize(const QByteArray& json)
     {
