@@ -135,16 +135,21 @@ void «interfaceName»RequestInterpreter::execute(
 					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
+				«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status«outputTypedParamList»){
 							Q_UNUSED(status);
 							QList<QVariant> outParams;
 							«var index = 0»
 							«FOR param : method.outputParameters»
-								«IF index == 0»
-									outParams.insert(«index++»,«IF isArray(param)»joynr::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)«ELSE»QVariant::fromValue(«param.joynrName»)«ENDIF»);
-								«ENDIF»
+								outParams.insert(
+										«index++»,
+										«IF isArray(param)»
+											joynr::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)
+										«ELSE»
+											QVariant::fromValue(«param.joynrName»)
+										«ENDIF»
+								);
 							«ENDFOR»
 							callbackFct(outParams);
 						};

@@ -115,38 +115,26 @@ class InterfaceUtil {
 	def produceSyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else (method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
-	
-		«IF getMappedOutputParameter(method).head=="void"»
+		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
+		«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
 
-			/**
-			* @brief Synchronous operation «method.joynrName».
-			*
-			* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
-			*/
-			virtual void «method.joynrName»(
-					joynr::RequestStatus& joynrInternalStatus «prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
-			)«IF pure»=0«ENDIF»;
-		«ELSE»
-
-			/**
-			* @brief Synchronous operation «method.joynrName».
-			*
-			* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
-			* @param result The result that will be returned to the caller.
-			*/
-			virtual void «method.joynrName»(
-					joynr::RequestStatus& joynrInternalStatus «outputTypedParamList»«prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
-			)«IF pure»=0«ENDIF»;
-		«ENDIF»
+		/**
+		* @brief Synchronous operation «method.joynrName».
+		*
+		* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
+		* @param result The result that will be returned to the caller.
+		*/
+		virtual void «method.joynrName»(
+				joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»«inputTypedParamList»
+		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''
 
 	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
-		«var returnType = if (method.outputParameters.empty) "void" else method.outputParameters.head.mappedDatatypeOrList»
+		«var outputParameter = getMappedOutputParameter(method)»
+		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 
 		/**
 		* @brief Asynchronous operation «method.joynrName».
@@ -155,7 +143,8 @@ class InterfaceUtil {
 		«printFutureReturnDefinition»
 		*/
 
-		virtual QSharedPointer<joynr::Future<«returnType»> > «method.joynrName»(«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+		virtual QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > «method.joynrName»(
+				«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''

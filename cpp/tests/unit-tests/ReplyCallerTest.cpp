@@ -39,9 +39,11 @@ class ReplyCallerTest : public ::testing::Test {
 public:
     ReplyCallerTest()
         : intCallback(new MockCallback<int>()),
-          intFixture([this] (const RequestStatus& status, const int& input) { intCallback->callbackFct(status, input);}),
+          intFixture(std::bind(&MockCallback<int>::callbackFct, intCallback, std::placeholders::_1, std::placeholders::_2),
+                     std::bind(&MockCallback<int>::errorFct, intCallback, std::placeholders::_1)),
           voidCallback(new MockCallback<void>()),
-          voidFixture([this] (const RequestStatus& status) { voidCallback->callbackFct(status);}) {}
+          voidFixture(std::bind(&MockCallback<void>::callbackFct, voidCallback, std::placeholders::_1),
+                      std::bind(&MockCallback<void>::errorFct, voidCallback, std::placeholders::_1)) {}
 
     QSharedPointer<MockCallback<int>> intCallback;
     ReplyCaller<int> intFixture;
@@ -52,7 +54,7 @@ public:
 typedef ReplyCallerTest ReplyCallerDeathTest;
 
 TEST_F(ReplyCallerTest, getType) {
-    ASSERT_EQ(qMetaTypeId<int>(), intFixture.getTypeId());
+    ASSERT_EQ(Util::getTypeId<int>(), intFixture.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeQInt64) {
@@ -60,8 +62,10 @@ TEST_F(ReplyCallerTest, getTypeQInt64) {
     ReplyCaller<qint64> qint64ReplyCaller(
                 [callback](const RequestStatus& status, const qint64& value) {
                     callback->callbackFct(status, value);
+                },
+                [](const RequestStatus& status){
                 });
-    ASSERT_EQ(qMetaTypeId<qint64>(), qint64ReplyCaller.getTypeId());
+    ASSERT_EQ(Util::getTypeId<qint64>(), qint64ReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeQInt8) {
@@ -69,24 +73,26 @@ TEST_F(ReplyCallerTest, getTypeQInt8) {
     ReplyCaller<qint8> qint8ReplyCaller(
                 [callback](const RequestStatus& status, const qint8& value) {
                     callback->callbackFct(status, value);
+                },
+                [](const RequestStatus& status){
                 });
-    ASSERT_EQ(qMetaTypeId<qint8>(), qint8ReplyCaller.getTypeId());
+    ASSERT_EQ(Util::getTypeId<qint8>(), qint8ReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeForVoid) {
-    QString type = voidFixture.getTypeName();
-    ASSERT_EQ("void", type);
+    int typeId = voidFixture.getTypeId();
+    ASSERT_EQ(Util::getTypeId<void>(), typeId);
 }
 
 
 TEST_F(ReplyCallerTest, timeOut) {
-    EXPECT_CALL(*intCallback, callbackFct(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE), _));
+    EXPECT_CALL(*intCallback, errorFct(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
-    EXPECT_CALL(*voidCallback, callbackFct(
+    EXPECT_CALL(*voidCallback, errorFct(
                     Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
     voidFixture.timeOut();
 }

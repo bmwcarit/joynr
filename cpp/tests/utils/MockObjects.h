@@ -272,7 +272,8 @@ public:
 template <typename T>
 class MockReplyCaller : public joynr::ReplyCaller<T> {
 public:
-    MockReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct) : joynr::ReplyCaller<T>(callbackFct) {}
+    MockReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct,
+                    std::function<void(const joynr::RequestStatus& status)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
     MOCK_CONST_METHOD0_T(getType, QString());
@@ -443,10 +444,11 @@ public:
 /*
  * Typed Callbacks
  */
-template <typename T>
+template <typename ... Ts>
 class MockCallback{
 public:
-    MOCK_METHOD2_T(callbackFct, void(const joynr::RequestStatus& status, const T& result));
+    MOCK_METHOD2_T(callbackFct, void(const joynr::RequestStatus& status, const Ts&... result));
+    MOCK_METHOD1_T(errorFct, void(const joynr::RequestStatus& status));
 };
 
 template<>
@@ -454,6 +456,7 @@ class MockCallback<void> {
 
 public:
     MOCK_METHOD1(callbackFct, void(const joynr::RequestStatus& status));
+    MOCK_METHOD1(errorFct, void(const joynr::RequestStatus& status));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {

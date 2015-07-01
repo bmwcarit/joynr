@@ -29,7 +29,7 @@
 namespace joynr
 {
 
-template <class T>
+template <class... Ts>
 class ReplyInterpreter : public IReplyInterpreter
 {
 public:
@@ -41,45 +41,21 @@ public:
     {
         assert(!caller.isNull());
 
-        T value = reply.getResponse().at(0).value<T>();
-        QSharedPointer<ReplyCaller<T>> typedCallerQsp = caller.dynamicCast<ReplyCaller<T>>();
+        QSharedPointer<ReplyCaller<Ts...>> typedCallerQsp =
+                caller.dynamicCast<ReplyCaller<Ts...>>();
 
-        // value is copied in onSuccess
-        LOG_TRACE(logger, "Reply received: notifying return value received");
-        typedCallerQsp->returnValue(value);
+        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(reply.getResponse());
+        auto func = std::mem_fn(&ReplyCaller<Ts...>::returnValue);
+
+        Util::expandTupleIntoFunctionArguments(func, typedCallerQsp, values);
     }
 
 private:
     static joynr_logging::Logger* logger;
 };
 
-// specialisation for Lists.. if the value is of Type QList<T> it has to be converted from
-// QList<QVariant> to QList<T> before being passed to the ReplyCaller.
-template <class T>
-class ReplyInterpreter<QList<T>> : public IReplyInterpreter
-{
-public:
-    ReplyInterpreter()
-    {
-    }
-
-    void execute(QSharedPointer<IReplyCaller> caller, const Reply& reply)
-    {
-        assert(!caller.isNull());
-
-        QList<QVariant> qvList = reply.getResponse().at(0).value<QList<QVariant>>();
-        QSharedPointer<ReplyCaller<QList<T>>> typedCallerQsp =
-                caller.dynamicCast<ReplyCaller<QList<T>>>();
-        QList<T> intList = Util::convertVariantListToList<T>(qvList);
-        // value is copied in onSuccess
-        typedCallerQsp->returnValue(intList);
-    }
-
-private:
-};
-
-template <class T>
-joynr_logging::Logger* ReplyInterpreter<T>::logger =
+template <class... Ts>
+joynr_logging::Logger* ReplyInterpreter<Ts...>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "ReplyInterpreter");
 
 template <>
@@ -98,52 +74,6 @@ public:
                          // interface
         QSharedPointer<ReplyCaller<void>> typedCallerQsp = caller.dynamicCast<ReplyCaller<void>>();
         typedCallerQsp->returnValue();
-    }
-};
-
-/**
-  * Class that handles conversion of enum return values
-  * Template parameter T is the Enum wrapper class
-  */
-template <class T>
-class EnumReplyInterpreter : public IReplyInterpreter
-{
-public:
-    EnumReplyInterpreter()
-    {
-    }
-
-    void execute(QSharedPointer<IReplyCaller> caller, const Reply& reply)
-    {
-        assert(!caller.isNull());
-
-        typename T::Enum value = Util::convertVariantToEnum<T>(reply.getResponse());
-        QSharedPointer<ReplyCaller<typename T::Enum>> typedCallerQsp =
-                caller.dynamicCast<ReplyCaller<typename T::Enum>>();
-
-        // value is copied in onSuccess
-        typedCallerQsp->returnValue(value);
-    }
-};
-
-template <class T>
-class EnumReplyInterpreter<QList<T>> : public IReplyInterpreter
-{
-public:
-    EnumReplyInterpreter()
-    {
-    }
-
-    void execute(QSharedPointer<IReplyCaller> caller, const Reply& reply)
-    {
-        assert(!caller.isNull());
-
-        QList<QVariant> qvList = reply.getResponse().at(0).value<QList<QVariant>>();
-        QSharedPointer<ReplyCaller<QList<typename T::Enum>>> typedCallerQsp =
-                caller.dynamicCast<ReplyCaller<QList<typename T::Enum>>>();
-        QList<typename T::Enum> enumList = Util::convertVariantListToEnumList<T>(qvList);
-        // value is copied in onSuccess
-        typedCallerQsp->returnValue(enumList);
     }
 };
 

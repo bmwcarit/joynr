@@ -46,7 +46,7 @@ public:
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
             QSharedPointer<IReplyCaller> // reply caller to notify when reply is received
-    )>& setExpectationsForSendRequestCall(QString expectedType, QString methodName) {
+    )>& setExpectationsForSendRequestCall(int expectedTypeId, QString methodName) {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
                     sendRequest(
@@ -56,7 +56,7 @@ public:
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
                         Property(
                             &QSharedPointer<IReplyCaller>::data,
-                            AllOf(NotNull(), Property(&IReplyCaller::getTypeName, Eq(expectedType)))
+                            AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(expectedTypeId)))
                         ) // reply caller to notify when reply is received
                     )
         );

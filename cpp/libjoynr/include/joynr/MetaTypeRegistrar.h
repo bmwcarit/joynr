@@ -69,6 +69,12 @@ public:
     void registerBroadcastMetaType();
 
     /**
+     * Register a composite reply metatype
+     */
+    template <class... Ts>
+    void registerReplyMetaType();
+
+    /**
      * Get the publication interpreter with the given type id.
      * Returns a reference to enforce that the caller does not have ownership.
      * Publication interpreters are created and registered with the metatype registrar
@@ -102,11 +108,9 @@ private:
     template <class T>
     void addEnumPublicationInterpreter(int typeId);
     template <class T>
-    void addEnumReplyInterpreter(int typeId);
-    template <class T>
     void addPublicationInterpreter();
-    template <class T>
-    void addReplyInterpreter();
+    template <class... Ts>
+    void addReplyInterpreterForReplyType();
     template <class... Ts>
     void addPublicationInterpreterForBroadcastType();
 
@@ -127,14 +131,6 @@ void MetaTypeRegistrar::addEnumPublicationInterpreter(int typeId)
     }
 }
 
-template <class T>
-void MetaTypeRegistrar::addEnumReplyInterpreter(int typeId)
-{
-    if (!replyInterpreters.contains(typeId)) {
-        replyInterpreters.insert(typeId, new EnumReplyInterpreter<T>());
-    }
-}
-
 // For enums, the metatype Id is T::Enum or QList<T::Enum>
 // However, the publication and reply interpreters must be created as type T or QList<T>
 template <class T>
@@ -144,11 +140,6 @@ void MetaTypeRegistrar::registerEnumMetaType()
         QMutexLocker locker(&publicationInterpretersMutex);
         addEnumPublicationInterpreter<T>(qMetaTypeId<typename T::Enum>());
         addEnumPublicationInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
-    }
-    {
-        QMutexLocker locker(&replyInterpretersMutex);
-        addEnumReplyInterpreter<T>(qMetaTypeId<typename T::Enum>());
-        addEnumReplyInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
     }
 }
 
@@ -163,27 +154,12 @@ void MetaTypeRegistrar::addPublicationInterpreter()
 }
 
 template <class T>
-void MetaTypeRegistrar::addReplyInterpreter()
-{
-    int typeId = qMetaTypeId<T>();
-
-    if (!replyInterpreters.contains(typeId)) {
-        replyInterpreters.insert(typeId, new ReplyInterpreter<T>());
-    }
-}
-
-template <class T>
 void MetaTypeRegistrar::registerMetaType()
 {
     {
         QMutexLocker locker(&publicationInterpretersMutex);
         addPublicationInterpreter<T>();
         addPublicationInterpreter<QList<T>>();
-    }
-    {
-        QMutexLocker locker(&replyInterpretersMutex);
-        addReplyInterpreter<T>();
-        addReplyInterpreter<QList<T>>();
     }
 }
 
@@ -192,17 +168,24 @@ void MetaTypeRegistrar::registerBroadcastMetaType()
 {
     {
         QMutexLocker locker(&publicationInterpretersMutex);
-        addPublicationInterpreterForBroadcastType<Ts...>();
+        int typeId = Util::getTypeId<Ts...>();
+
+        if (!publicationInterpreters.contains(typeId)) {
+            publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
+        }
     }
 }
 
 template <class... Ts>
-void MetaTypeRegistrar::addPublicationInterpreterForBroadcastType()
+void MetaTypeRegistrar::registerReplyMetaType()
 {
-    int typeId = Util::getTypeId<Ts...>();
+    {
+        QMutexLocker locker(&replyInterpretersMutex);
+        int typeId = Util::getTypeId<Ts...>();
 
-    if (!publicationInterpreters.contains(typeId)) {
-        publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
+        if (!replyInterpreters.contains(typeId)) {
+            replyInterpreters.insert(typeId, new ReplyInterpreter<Ts...>());
+        }
     }
 }
 

@@ -37,6 +37,7 @@
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/GpsLocation.h"
+#include "joynr/MetaTypeRegistrar.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -52,6 +53,8 @@ public:
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(
                 [this] (const joynr::RequestStatus& status, const joynr::types::GpsLocation& location) {
                     mockCallback->callbackFct(status, location);
+                },
+                [] (const joynr::RequestStatus& status) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -169,7 +172,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
     qRegisterMetaType<Reply>("Reply");
-
+    joynr::MetaTypeRegistrar::instance().registerReplyMetaType<types::GpsLocation>();
     // Expect the mock callback's onSuccess method to be called with the reply (a gps location)
     EXPECT_CALL(*mockCallback, callbackFct(_, Eq(gpsLocation1)));
 

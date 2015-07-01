@@ -95,6 +95,8 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.name»
 	«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
+	«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
+	«val outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
 	«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
 	/*
 	 * «methodName»
@@ -110,13 +112,13 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 			}
 		}
 	«ELSE»
-		void «syncClassName»::«methodName»(joynr::RequestStatus& status, «method.outputParameters.head.mappedDatatypeOrList» &result«paramsSignature»)
+		void «syncClassName»::«methodName»(joynr::RequestStatus& status«outputTypedParamList»«paramsSignature»)
 		{
 			if (connector==NULL){
 				LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
 			}
 			else{
-				connector->«methodName»(status, result «params»);
+				connector->«methodName»(status«outputUntypedParamList»«params»);
 			}
 		}
 	«ENDIF»

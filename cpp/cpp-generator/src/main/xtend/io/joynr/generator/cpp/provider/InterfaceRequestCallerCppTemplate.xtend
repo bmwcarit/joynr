@@ -69,7 +69,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
 «ENDFOR»
 «FOR method: getMethods(serviceInterface)»
-	«val outputTypedParamList = if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName)»
+	«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
 	«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 	«val inputUntypedParamList = getCommaSeperatedUntypedParameterList(method)»
 	«val methodName = method.joynrName»

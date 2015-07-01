@@ -56,7 +56,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     qRegisterMetaType<Reply>();
     qRegisterMetaType<types::GpsLocation>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
-    registrar.registerMetaType<types::GpsLocation>();
+    registrar.registerReplyMetaType<types::GpsLocation>();
 
     // Create a mock callback
     QSharedPointer<MockCallback<joynr::types::GpsLocation>> callback(new MockCallback<joynr::types::GpsLocation>());
@@ -68,6 +68,8 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     QSharedPointer<IReplyCaller> icaller(new ReplyCaller<types::GpsLocation>(
             [callback](const RequestStatus& status, const types::GpsLocation& location) {
                 callback->callbackFct(status, location);
+            },
+            [](const RequestStatus& status){
             }));
 
     // Create a reply
@@ -79,7 +81,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     reply.setResponse(response);
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(qMetaTypeId<types::GpsLocation>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::GpsLocation>());
     interpreter.execute(icaller, reply);
 }
 
@@ -90,12 +92,12 @@ TEST_F(ReplyInterpreterTest, create_createsGpsInterpreterOnlyOnce) {
     qRegisterMetaType<types::Trip>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
 
-    registrar.registerMetaType<types::GpsLocation>();
-    registrar.registerMetaType<types::Trip>();
+    registrar.registerReplyMetaType<types::GpsLocation>();
+    registrar.registerReplyMetaType<types::Trip>();
 
-    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(qMetaTypeId<types::GpsLocation>());
-    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(qMetaTypeId<types::GpsLocation>());
-    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(qMetaTypeId<types::Trip>());
+    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(Util::getTypeId<types::GpsLocation>());
+    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(Util::getTypeId<types::GpsLocation>());
+    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(Util::getTypeId<types::Trip>());
 
     EXPECT_TRUE(&interpreter1 == &interpreter2);
     EXPECT_TRUE(&interpreter2 != &interpreter3);

@@ -26,11 +26,12 @@
 #include <QSharedPointer>
 #include "joynr/RequestStatus.h"
 #include <functional>
+#include "joynr/Util.h"
 
 namespace joynr
 {
 
-template <class T>
+template <class... Ts>
 /**
  * @brief This template class is the implementation for IReplyCaller for all types.
  * T is the desired type that the response should be converted to.
@@ -39,9 +40,9 @@ template <class T>
 class ReplyCaller : public IReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)>
-                        callbackFct)
-            : callbackFct(callbackFct), hasTimeOutOccurred(false)
+    ReplyCaller(std::function<void(const joynr::RequestStatus& status, const Ts&...)> callbackFct,
+                std::function<void(const joynr::RequestStatus& status)> errorFct)
+            : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
     }
 
@@ -49,40 +50,31 @@ public:
     {
     }
 
-    void returnValue(const T& payload)
+    void returnValue(const Ts&... payload)
     {
         if (!hasTimeOutOccurred && callbackFct) {
             RequestStatus status(RequestStatusCode::OK);
-            callbackFct(status, payload);
+            callbackFct(status, payload...);
         }
     }
 
     void timeOut()
     {
         hasTimeOutOccurred = true;
-        callbackFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE),
-                    defaultValue);
-    }
 
-    QString getTypeName() const
-    {
-        QString name = QMetaType::typeName(getTypeId());
-        return name;
+        errorFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
     }
 
     int getTypeId() const
     {
-        return qMetaTypeId<T>();
+        return Util::getTypeId<Ts...>();
     }
 
 private:
-    std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct;
+    std::function<void(const joynr::RequestStatus& status, const Ts&... returnValue)> callbackFct;
+    std::function<void(const joynr::RequestStatus& status)> errorFct;
     bool hasTimeOutOccurred;
-    static T defaultValue;
 };
-
-template <class T>
-T ReplyCaller<T>::defaultValue;
 
 template <>
 /**
@@ -92,8 +84,9 @@ template <>
 class ReplyCaller<void> : public IReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const joynr::RequestStatus& status)> callbackFct)
-            : callbackFct(callbackFct), hasTimeOutOccurred(false)
+    ReplyCaller(std::function<void(const joynr::RequestStatus& status)> callbackFct,
+                std::function<void(const joynr::RequestStatus& status)> errorFct)
+            : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
     }
 
@@ -111,22 +104,17 @@ public:
     void timeOut()
     {
         hasTimeOutOccurred = true;
-        callbackFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
-    }
-
-    QString getTypeName() const
-    {
-        QString name = QMetaType::typeName(getTypeId());
-        return name;
+        errorFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
     }
 
     int getTypeId() const
     {
-        return qMetaTypeId<void>();
+        return Util::getTypeId<void>();
     }
 
 private:
     std::function<void(const joynr::RequestStatus& status)> callbackFct;
+    std::function<void(const joynr::RequestStatus& status)> errorFct;
     bool hasTimeOutOccurred;
 };
 

@@ -61,6 +61,8 @@ public:
         mockReplyCaller(new MockReplyCaller<types::GpsLocation>(
                 [this](const RequestStatus& status, const types::GpsLocation& location) {
                     mockCallback->callbackFct(status, location);
+                },
+                [] (const RequestStatus status){
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),

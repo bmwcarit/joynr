@@ -40,7 +40,7 @@ MetaTypeRegistrar::MetaTypeRegistrar()
 
     // Register a reply interpreter for void type
     QMutexLocker locker(&replyInterpretersMutex);
-    replyInterpreters.insert(QMetaType::Void, new ReplyInterpreter<void>());
+    replyInterpreters.insert(Util::getTypeId<void>(), new ReplyInterpreter<void>());
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()

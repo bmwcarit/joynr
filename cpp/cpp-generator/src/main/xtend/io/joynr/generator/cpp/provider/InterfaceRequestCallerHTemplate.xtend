@@ -71,7 +71,7 @@ public:
 
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(if (method.outputParameters.empty) "" else ("const " + method.outputParameters.head.mappedDatatypeOrList + "& " + method.outputParameters.head.joynrName))»
+		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
 		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
 		virtual void «method.joynrName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»

@@ -144,7 +144,7 @@ public:
             const MessagingQos&,
             const Request&,
             QSharedPointer<IReplyCaller>
-    )>& setExpectationsForSendRequestCall(QString expectedType, QString methodName) = 0;
+    )>& setExpectationsForSendRequestCall(int expectedTypeId, QString methodName) = 0;
 
     virtual tests::Itest* createFixture(bool cacheEnabled)=0;
 
@@ -153,7 +153,7 @@ public:
 
         MockCallback<joynr::types::GpsLocation>* callback = new MockCallback<joynr::types::GpsLocation>();
 
-        setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation");
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation");
         asyncTestFixture->getLocation(
                 [callback] (const joynr::RequestStatus& status, const joynr::types::GpsLocation& location) {
                     callback->callbackFct(status, location);
@@ -175,7 +175,7 @@ public:
                         ), // request object to send
                         Property(
                             &QSharedPointer<IReplyCaller>::data,
-                            AllOf(NotNull(), Property(&IReplyCaller::getTypeName, Eq("void")))
+                            AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(Util::getTypeId<void>())))
                         ) // reply caller to notify when reply is received
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
@@ -188,7 +188,7 @@ public:
 
     void testSync_getAttributeNotCached() {
         tests::Itest* testFixture = createFixture(false);
-        setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation")
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         RequestStatus status;
@@ -204,7 +204,7 @@ public:
 
         MockCallback<joynr::types::GpsLocation>* callback = new MockCallback<joynr::types::GpsLocation>();
 
-        setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation").Times(0);
 
         QVariant qvariant;
         qvariant.setValue(expectedGpsLocation);
@@ -220,7 +220,7 @@ public:
     void testSync_getAttributeCached() {
         tests::Itest* testFixture = createFixture(true);
 
-        setExpectationsForSendRequestCall("joynr__types__GpsLocation", "getLocation").Times(0);
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation").Times(0);
 
         QVariant qvariant;
         qvariant.setValue(expectedGpsLocation);
@@ -239,7 +239,7 @@ public:
 
         MockCallback<int>* callback = new MockCallback<int>();
 
-        setExpectationsForSendRequestCall("int", "methodWithNoInputParameters");
+        setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters");
 
         asyncTestFixture->methodWithNoInputParameters(
                 [callback] (const RequestStatus& status, const int& value) {
@@ -249,7 +249,7 @@ public:
 
     void testSync_OperationWithNoArguments() {
         tests::Itest* testFixture = createFixture(false);
-        setExpectationsForSendRequestCall("int", "methodWithNoInputParameters")
+        setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
         RequestStatus requestStatus;

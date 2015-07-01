@@ -23,6 +23,7 @@ import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import java.util.HashSet
 
 class InterfaceCppTemplate implements InterfaceTemplate{
 
@@ -52,7 +53,10 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 I«interfaceName»Base::I«interfaceName»Base()
 {
 	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface)»
-	«IF !typeObjs.isEmpty()»
+	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
+	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
+	
+	«IF !typeObjs.isEmpty() || !replyMetatypes.empty»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
 	«FOR typeobj : typeObjs»
@@ -81,8 +85,12 @@ I«interfaceName»Base::I«interfaceName»Base()
 		 * the type id for the composite type.
 		*/
 	«ENDIF»
-	«FOR broadcast: serviceInterface.broadcasts»
-		registrar.registerBroadcastMetaType<«getMappedOutputParameterTypesCommaSeparated(broadcast)»>();
+
+	«FOR metatype : replyMetatypes»
+		registrar.registerReplyMetaType<«metatype»>();
+	«ENDFOR»
+	«FOR broadcast: broadcastMetatypes»
+		registrar.registerBroadcastMetaType<«broadcast»>();
 	«ENDFOR»
 }
 
@@ -95,4 +103,27 @@ const QString I«interfaceName»Base::getInterfaceName()
 
 «getNamespaceEnder(serviceInterface)»
 '''
+def getReplyMetatypes(FInterface serviceInterface) {
+	var replyMetatypes = new HashSet();
+	for (method: serviceInterface.methods) {
+		if (!method.outputParameters.empty) {
+			replyMetatypes.add(method.mappedOutputParameterTypesCommaSeparated)
+		}
+	}
+	for (attribute: serviceInterface.attributes) {
+		if (attribute.readable) {
+			replyMetatypes.add(attribute.getMappedDatatypeOrList);
+		}
+	}
+	return replyMetatypes;
+}
+def getBroadcastMetatypes(FInterface serviceInterface) {
+	var broadcastMetatypes = new HashSet();
+	for (broadcast: serviceInterface.broadcasts) {
+		if (!broadcast.outputParameters.empty) {
+			broadcastMetatypes.add(broadcast.mappedOutputParameterTypesCommaSeparated)
+		}
+	}
+	return broadcastMetatypes;
+}
 }
