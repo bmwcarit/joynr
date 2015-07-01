@@ -36,7 +36,7 @@ public:
     OnChangeWithKeepAliveSubscriptionQos();
     OnChangeWithKeepAliveSubscriptionQos(const OnChangeWithKeepAliveSubscriptionQos& other);
     OnChangeWithKeepAliveSubscriptionQos(const qint64& validity,
-                                         const qint64& minIntervals,
+                                         const qint64& minInterval,
                                          const qint64& maxInterval,
                                          const qint64& alertAfterInterval);
 
