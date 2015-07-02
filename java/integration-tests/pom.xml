@@ -40,8 +40,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery</artifactId>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -50,12 +50,19 @@
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

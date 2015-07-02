@@ -82,7 +82,6 @@ This project has dependencies to:
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:channel-url-directory under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
