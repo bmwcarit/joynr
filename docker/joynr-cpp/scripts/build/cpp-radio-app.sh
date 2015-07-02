@@ -19,7 +19,7 @@ rm -rf /data/build/radio
 mkdir /data/build/radio
 cd /data/build/radio
 
-cmake -DJOYNR_SERVER=localhost:8080 /data/src/examples/radio-app
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/examples/radio-app
 
 time make -j 20
 
