@@ -112,7 +112,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def Iterable<String> getMappedOutputParameter(FMethod method) {
-		val result = new HashSet<String>();
+		val result = new ArrayList<String>();
 		val types = getOutputParameters(method);
 		if (types.empty) {
 			result.add("void");
