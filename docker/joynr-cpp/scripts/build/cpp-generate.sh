@@ -7,6 +7,10 @@ log "INSTALL BASE MODEL"
 cd /data/src/basemodel
 mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 
+log "INSTALL FRANCA"
+cd /data/src/tools/generator/dependency-libs
+mvn validate -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+
 log "GENERATE CPP SOURCES"
 cd /data/src/cpp
 mvn clean process-test-sources -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
