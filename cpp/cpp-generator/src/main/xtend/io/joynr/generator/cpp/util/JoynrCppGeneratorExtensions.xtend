@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import com.google.common.collect.Iterators
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import java.io.File
@@ -56,11 +57,27 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	}
 
 	def String getNamespaceStarter(FType datatype) {
-		getNamespaceStarter(getPackageNames(datatype));
+		return getNamespaceStarter(datatype, false);
+	}
+
+	def String[] getNamespaces(FType datatype, boolean includeTypeCollection) {
+				var String packagePath = datatype.getPackagePathWithoutJoynrPrefix(".");
+		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+			packagePath += "." + datatype.typeCollectionName;
+		}
+		return packagePath.split("\\.");
+	}
+
+	def String getNamespaceStarter(FType datatype, boolean includeTypeCollection) {
+		return getNamespaceStarter(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
 	}
 
 	def String getNamespaceEnder(FInterface interfaceType) {
 		getNamespaceEnder(getPackageNames(interfaceType));
+	}
+
+	def String getNamespaceEnder(FType datatype, boolean includeTypeCollection) {
+		return getNamespaceEnder(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
 	}
 
 	def String getNamespaceEnder(FType datatype) {
