@@ -84,10 +84,7 @@ int main(int argc, char* argv[])
         joynr::RequestStatus status;
         switch (key) {
         case 's':
-            provider->shuffleStations(
-                        [](const joynr::RequestStatus& status){
-                            Q_UNUSED(status);
-                        });
+            provider->shuffleStations([](const joynr::RequestStatus& status) { Q_UNUSED(status); });
             break;
         case 'w':
             provider->fireWeakSignalBroadcast();

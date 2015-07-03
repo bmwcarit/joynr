@@ -252,8 +252,7 @@ int main(int argc, char* argv[])
     weakSignalBroadcastSubscriptionQos->setValidity(60 * 1000);
     QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
-    QString weakSignalBroadcastSubscriptionId =
-        proxy->subscribeToWeakSignalBroadcast(
+    QString weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
             weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
@@ -272,9 +271,10 @@ int main(int argc, char* argv[])
     newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
     QString newStationDiscoveredBroadcastSubscriptionId =
-        proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFilterParams,
-                                                    newStationDiscoveredBroadcastListener,
-                                                    newStationDiscoveredBroadcastSubscriptionQos);
+            proxy->subscribeToNewStationDiscoveredBroadcast(
+                    newStationDiscoveredBroadcastFilterParams,
+                    newStationDiscoveredBroadcastListener,
+                    newStationDiscoveredBroadcastSubscriptionQos);
     // add favorite radio station
     vehicle::RadioStation favouriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
@@ -307,7 +307,8 @@ int main(int argc, char* argv[])
     // unsubscribe
     proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
     proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
-    proxy->unsubscribeFromNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastSubscriptionId);
+    proxy->unsubscribeFromNewStationDiscoveredBroadcast(
+            newStationDiscoveredBroadcastSubscriptionId);
 
     delete proxy;
     delete proxyBuilder;
