@@ -24,14 +24,14 @@ import types.TestTypes.* from "TestTypes.fidl"
 typeCollection testTypes {
 
 	enumeration TestEnum {
-		ZERO = "0"
-		ONE = "1"
-		TWO = "2"
+		ZERO = 0
+		ONE = 1
+		TWO = 2
 	}
 
 	enumeration TestEnumExtended extends TestEnum {
-		THREE = "3"
-		FOUR = "4"
+		THREE = 3
+		FOUR = 4
 	}
 
 	struct ComplexTestType {
@@ -44,7 +44,7 @@ typeCollection testTypes {
 		Int32 d
 	}
 
-	struct BaseStruct {
+	struct BaseStruct polymorphic {
 		ComplexTestType c
 		String a
 		GpsLocation l
@@ -69,9 +69,9 @@ typeCollection testTypes {
 
 
 //this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
-interface test{
+interface test {
 
-	version {major 0 minor 1}
+	version { major 0 minor 1 }
 
 	attribute testTypes.TestEnum enumAttribute
 
@@ -146,6 +146,12 @@ interface test{
 		} 
 		out {
 			Int32 result
+		}
+	}
+
+	method methodFireAndForget fireAndForget {
+		in {
+			Int32 inputParam
 		}
 	}
 
@@ -258,7 +264,7 @@ interface test{
 		}
 	}
 
-	method overloadedOperation{
+	method overloadedOperation {
 		in {
 			testTypes.AnotherDerivedStruct input
 		}
