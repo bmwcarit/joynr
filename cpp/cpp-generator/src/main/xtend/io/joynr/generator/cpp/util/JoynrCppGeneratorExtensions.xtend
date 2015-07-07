@@ -391,7 +391,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	// from DLLs when compiling with VC++
 	def String getDllExportMacro() {
 		if (!dllExportName.isEmpty()) {
-			return dllExportName.toUpperCase() + "_EXPORT";
+			return dllExportName.toUpperCase() + "_EXPORT ";
 		}
 		return "";
 	}
