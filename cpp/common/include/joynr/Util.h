@@ -246,6 +246,49 @@ inline T Util::valueOf(const QVariant& variant)
     return variant.value<T>();
 }
 
+// concrete specilization for lists of primitive datatypes
+template <>
+inline QList<int> Util::valueOf<QList<int>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<int>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<bool> Util::valueOf<QList<bool>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<bool>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<qint8> Util::valueOf<QList<qint8>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<qint8>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<qint64> Util::valueOf<QList<qint64>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<qint64>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<double> Util::valueOf<QList<double>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<double>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<QString> Util::valueOf<QList<QString>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<QString>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<QByteArray> Util::valueOf<QList<QByteArray>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<QByteArray>(variant.value<QVariantList>());
+}
+
 template <typename... Ts>
 inline int Util::getBroadcastTypeId()
 {
