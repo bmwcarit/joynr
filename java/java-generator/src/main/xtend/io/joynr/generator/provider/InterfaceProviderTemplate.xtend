@@ -25,7 +25,6 @@ import org.franca.core.franca.FMethod
 import io.joynr.generator.util.InterfaceTemplate
 import java.util.HashMap
 import java.util.ArrayList
-import org.franca.core.franca.FArgument
 
 class InterfaceProviderTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
