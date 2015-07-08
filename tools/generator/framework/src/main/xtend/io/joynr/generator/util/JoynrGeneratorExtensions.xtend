@@ -53,6 +53,7 @@ import com.google.inject.name.Named
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.emf.ecore.util.EcoreUtil
+import org.franca.core.franca.FTypeCollection
 
 abstract class JoynrGeneratorExtensions {
 
@@ -159,6 +160,19 @@ abstract class JoynrGeneratorExtensions {
 
 	def getPackagePathWithoutJoynrPrefix(FModelElement fModelElement, String separator) {
 		return getPackageName(fModelElement).replace('.', separator)
+	}
+
+	def boolean isPartOfTypeCollection(FType datatype) {
+		return datatype.eContainer instanceof FTypeCollection;
+	}
+	def String getTypeCollectionName(FType datatype) {
+		if(!datatype.isPartOfTypeCollection) {
+			throw new IllegalStateException(
+					"Datatype " + datatype.joynrName + " is not part of a type collection."
+					+ " Please call isPartOfTypeCollection before calling this method."
+			);
+		}
+		return (datatype.eContainer as FTypeCollection).joynrName;
 	}
 
 	def String getMappedDatatype(FTypedElement typedElement){
