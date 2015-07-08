@@ -27,6 +27,7 @@
 #include "joynr/IReplyCaller.h"
 
 #include <QString>
+#include <string>
 #include <QMutex>
 #include <QMap>
 #include <QSharedPointer>
@@ -73,7 +74,7 @@ class Directory : public IDirectory<Key, T>
 
 public:
     virtual ~Directory();
-    Directory(const QString& directoryName);
+    Directory(const std::string& directoryName);
     QSharedPointer<T> lookup(const Key& keyId);
     bool contains(const Key& keyId);
     /*
@@ -105,7 +106,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
-    QString keyId;
+    Key keyId;
     Directory<Key, T>* directory;
     static joynr_logging::Logger* logger;
 };
@@ -126,10 +127,11 @@ Directory<Key, T>::~Directory()
 }
 
 template <typename Key, typename T>
-Directory<Key, T>::Directory(const QString& directoryName)
+Directory<Key, T>::Directory(const std::string& directoryName)
         : callbackMap(),
           mutex(),
-          callBackRemoverScheduler(directoryName + QString("-CleanUpScheduler"))
+          callBackRemoverScheduler(QString::fromStdString(directoryName) +
+                                   QString("-CleanUpScheduler"))
 {
 }
 
@@ -223,7 +225,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
-    QString keyId;
+    std::string keyId;
     Directory<Key, IReplyCaller>* directory;
     static joynr_logging::Logger* logger;
 };

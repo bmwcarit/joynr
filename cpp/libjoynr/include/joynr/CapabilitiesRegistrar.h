@@ -33,6 +33,7 @@
 #include "joynr/Future.h"
 
 #include <QString>
+#include <string>
 #include <QList>
 #include <QSharedPointer>
 #include <cassert>
@@ -55,15 +56,15 @@ public:
                           QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
-    QString add(const QString& domain, std::shared_ptr<T> provider)
+    std::string add(const std::string& domain, std::shared_ptr<T> provider)
     {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
-        QString interfaceName = T::getInterfaceName();
+        std::string interfaceName = T::getInterfaceName();
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId =
+        std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
@@ -76,17 +77,20 @@ public:
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
         connections.append(joynr::system::CommunicationMiddleware::JOYNR);
         joynr::RequestStatus status;
-        joynr::system::DiscoveryEntry entry(
-                domain, interfaceName, participantId, provider->getProviderQos(), connections);
+        joynr::system::DiscoveryEntry entry(QString::fromStdString(domain),
+                                            QString::fromStdString(interfaceName),
+                                            QString::fromStdString(participantId),
+                                            provider->getProviderQos(),
+                                            connections);
         discoveryProxy.add(status, entry);
         if (!status.successful()) {
             LOG_ERROR(logger,
                       QString("Unable to add provider (participant ID: %1, domain: %2, interface: "
                               "%3) "
                               "to discovery. Status code: %4.")
-                              .arg(participantId)
-                              .arg(domain)
-                              .arg(interfaceName)
+                              .arg(QString::fromStdString(participantId))
+                              .arg(QString::fromStdString(domain))
+                              .arg(QString::fromStdString(interfaceName))
                               .arg(status.getCode().toString()));
         }
 
@@ -105,17 +109,18 @@ public:
         return participantId;
     }
 
-    void remove(const QString& participantId);
+    void remove(const std::string& participantId);
 
     template <class T>
-    QString remove(const QString& domain, std::shared_ptr<T> provider)
+    std::string remove(const std::string& domain, std::shared_ptr<T> provider)
+
     {
         Q_UNUSED(provider)
 
-        QString interfaceName = T::getInterfaceName();
+        std::string interfaceName = T::getInterfaceName();
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId =
+        std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
@@ -132,9 +137,9 @@ public:
                       QString("Unable to remove provider (participant ID: %1, domain: %2, "
                               "interface: %3) "
                               "to discovery. Status code: %4.")
-                              .arg(participantId)
-                              .arg(domain)
-                              .arg(interfaceName)
+                              .arg(QString::fromStdString(participantId))
+                              .arg(QString::fromStdString(domain))
+                              .arg(QString::fromStdString(interfaceName))
                               .arg(status.getCode().toString()));
         }
 
@@ -152,7 +157,7 @@ public:
         if (!future->getStatus().successful()) {
             LOG_ERROR(logger,
                       QString("Unable to remove next hop (participant ID: %1) from message router.")
-                              .arg(participantId));
+                              .arg(QString::fromStdString(participantId)));
         }
 
         return participantId;

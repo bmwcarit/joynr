@@ -35,11 +35,10 @@
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 #include <cassert>
 #include <memory>
-#include <string>
 
 namespace joynr
 {
@@ -72,8 +71,7 @@ public:
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->add<TIntfProvider>(
-                TypeUtil::convertStdStringtoQString(domain), provider));
+        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider);
     }
 
     /*!
@@ -104,8 +102,7 @@ public:
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->remove<TIntfProvider>(
-                TypeUtil::convertStdStringtoQString(domain), provider));
+        return capabilitiesRegistrar->remove<TIntfProvider>(domain, provider);
     }
 
     /*!
@@ -128,17 +125,13 @@ public:
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
                                  "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<TIntfProxy>* builder =
-                new ProxyBuilder<TIntfProxy>(proxyFactory,
-                                             *discoveryProxy,
-                                             TypeUtil::convertStdStringtoQString(domain),
-                                             dispatcherAddress,
-                                             messageRouter);
+        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
+                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
         return builder;
     }
 
-    static JoynrRuntime* createRuntime(const QString& pathToLibjoynrSettings,
-                                       const QString& pathToMessagingSettings = "");
+    static JoynrRuntime* createRuntime(const std::string& pathToLibjoynrSettings,
+                                       const std::string& pathToMessagingSettings = "");
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this

@@ -23,6 +23,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
+#include <string>
 
 namespace joynr
 {
@@ -65,43 +66,43 @@ public:
       */
     void registerDispatcher(IDispatcher* dispatcher);
 
-    virtual void sendRequest(const QString& senderParticipantId,
-                             const QString& receiverParticipantId,
+    virtual void sendRequest(const std::string& senderParticipantId,
+                             const std::string& receiverParticipantId,
                              const MessagingQos& qos,
                              const Request& request,
                              QSharedPointer<IReplyCaller> callback);
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
-    virtual void sendReply(const QString& senderParticipantId,
-                           const QString& receiverParticipantId,
+    virtual void sendReply(const std::string& senderParticipantId,
+                           const std::string& receiverParticipantId,
                            const MessagingQos& qos,
                            const Reply& reply);
 
-    virtual void sendSubscriptionRequest(const QString& senderParticipantId,
-                                         const QString& receiverParticipantId,
+    virtual void sendSubscriptionRequest(const std::string& senderParticipantId,
+                                         const std::string& receiverParticipantId,
                                          const MessagingQos& qos,
                                          const SubscriptionRequest& subscriptionRequest);
 
     virtual void sendBroadcastSubscriptionRequest(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
+            const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const BroadcastSubscriptionRequest& subscriptionRequest);
 
-    virtual void sendSubscriptionReply(const QString& senderParticipantId,
-                                       const QString& receiverParticipantId,
+    virtual void sendSubscriptionReply(const std::string& senderParticipantId,
+                                       const std::string& receiverParticipantId,
                                        const MessagingQos& qos,
                                        const SubscriptionReply& subscriptionReply);
 
-    virtual void sendSubscriptionStop(const QString& senderParticipantId,
-                                      const QString& receiverParticipantId,
+    virtual void sendSubscriptionStop(const std::string& senderParticipantId,
+                                      const std::string& receiverParticipantId,
                                       const MessagingQos& qos,
                                       const SubscriptionStop& subscriptionStop);
 
     virtual void sendSubscriptionPublication(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
+            const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const SubscriptionPublication& subscriptionPublication);
 

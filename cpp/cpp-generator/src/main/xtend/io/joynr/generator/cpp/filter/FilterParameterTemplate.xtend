@@ -39,6 +39,7 @@ class FilterParameterTemplate implements BroadcastTemplate {
 #define «headerGuard»
 
 #include "joynr/BroadcastFilterParameters.h"
+#include <string>
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»

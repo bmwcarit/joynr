@@ -33,12 +33,14 @@ joynr_logging::Logger* FixedParticipantArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("Arb", "FixedParticipantArbitrator");
 
 FixedParticipantArbitrator::FixedParticipantArbitrator(
-        const QString& domain,
-        const QString& interfaceName,
+        const std::string& domain,
+        const std::string& interfaceName,
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
+          participantId(discoveryQos.getCustomParameter("fixedParticipantId")
+                                .getValue()
+                                .toStdString()),
           reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
 {
 }
@@ -57,8 +59,8 @@ void FixedParticipantArbitrator::attemptArbitration()
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
                           .arg(status.getCode().toString()));
     }
 }

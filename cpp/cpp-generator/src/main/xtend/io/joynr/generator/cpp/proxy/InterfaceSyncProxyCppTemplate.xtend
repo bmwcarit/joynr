@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -27,7 +27,7 @@ import org.franca.core.franca.FInterface
 class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension QtTypeUtil
+	@Inject extension CppMigrateToStdTypeUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -56,7 +56,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 		QSharedPointer<joynr::system::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
-		const QString &domain,
+		const std::string &domain,
 		const joynr::MessagingQos &qosSettings,
 		bool cached
 ) :
@@ -98,8 +98,8 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	«var methodName = method.name»
 	«var paramsSignature = prependCommaIfNotEmpty(method.commaSeperatedTypedConstInputParameterList)»
 	«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedOutputParameterList)»
-	«val outputUntypedParamList = prependCommaIfNotEmpty(method.commaSeperatedUntypedOutputParameterList)»
-	«var params = prependCommaIfNotEmpty(method.commaSeperatedUntypedInputParameterList)»
+	«val outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
+	«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedInputParameterList(method))»
 	/*
 	 * «methodName»
 	 */

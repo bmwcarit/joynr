@@ -22,6 +22,7 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <QString>
+#include <string>
 #include <QList>
 
 namespace joynr

@@ -118,8 +118,8 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 
     RequestStatus status;
     QList<joynr::system::DiscoveryEntry> result;
-    QString domain("SystemServicesDiscoveryTest.Domain.A");
-    QString interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
+    std::string domain("SystemServicesDiscoveryTest.Domain.A");
+    std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     joynr::system::DiscoveryQos discoveryQos(
                 5000,                                      // max cache age
                 joynr::system::DiscoveryScope::LOCAL_ONLY, // discovery scope
@@ -128,7 +128,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 
     discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    EXPECT_TRUE(result.isEmpty());
+    EXPECT_TRUE(result.empty());
 }
 
 
@@ -142,9 +142,9 @@ TEST_F(SystemServicesDiscoveryTest, add)
 
     RequestStatus status;
     QList<joynr::system::DiscoveryEntry> result;
-    QString domain("SystemServicesDiscoveryTest.Domain.A");
-    QString interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    QString participantId("SystemServicesDiscoveryTest.ParticipantID.A");
+    std::string domain("SystemServicesDiscoveryTest.Domain.A");
+    std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
+    std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
     joynr::system::DiscoveryQos discoveryQos(
                 5000,                                      // max cache age
                 joynr::system::DiscoveryScope::LOCAL_ONLY, // discovery scope
@@ -161,9 +161,9 @@ TEST_F(SystemServicesDiscoveryTest, add)
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     QList<joynr::system::DiscoveryEntry> expectedResult;
     joynr::system::DiscoveryEntry discoveryEntry(
-                domain,
-                interfaceName,
-                participantId,
+                QString::fromStdString(domain),
+                QString::fromStdString(interfaceName),
+                QString::fromStdString(participantId),
                 providerQos,
                 connections
     );
@@ -191,9 +191,9 @@ TEST_F(SystemServicesDiscoveryTest, remove)
             ->build();
 
     RequestStatus status;
-    QString domain("SystemServicesDiscoveryTest.Domain.A");
-    QString interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    QString participantId("SystemServicesDiscoveryTest.ParticipantID.A");
+    std::string domain("SystemServicesDiscoveryTest.Domain.A");
+    std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
+    std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
     joynr::system::DiscoveryQos discoveryQos(
                 5000,                                      // max cache age
                 joynr::system::DiscoveryScope::LOCAL_ONLY, // discovery scope
@@ -210,9 +210,9 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     QList<joynr::system::DiscoveryEntry> expectedResult;
     joynr::system::DiscoveryEntry discoveryEntry(
-                domain,
-                interfaceName,
-                participantId,
+                QString::fromStdString(domain),
+                QString::fromStdString(interfaceName),
+                QString::fromStdString(participantId),
                 providerQos,
                 connections
     );

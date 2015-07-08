@@ -18,12 +18,13 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 
 class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
@@ -32,7 +33,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -60,8 +61,11 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include "joynr/TypeUtil.h"
+
+#include <string>
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
 
 namespace joynr {
 	class RequestStatus;
@@ -75,8 +79,8 @@ namespace joynr {
 class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
 private:
 «FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-«val returnType = attribute.typeName»
-	QString subscribeTo«attribute.joynrName.toFirstUpper»(
+	«val returnType = attribute.typeName»
+	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
@@ -84,7 +88,7 @@ private:
 «FOR broadcast: serviceInterface.broadcasts»
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 «val broadcastName = broadcast.joynrName»
-	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 			QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			BroadcastSubscriptionRequest& subscriptionRequest);
@@ -95,8 +99,8 @@ public:
 				joynr::SubscriptionManager* subscriptionManager,
 				joynr::PublicationManager* publicationManager,
 				joynr::InProcessPublicationSender* inProcessPublicationSender,
-				const QString& proxyParticipantId,
-				const QString& providerParticipantId,
+				const std::string& proxyParticipantId,
+				const std::string& providerParticipantId,
 				QSharedPointer<joynr::InProcessAddress> address
 	);
 
@@ -115,8 +119,8 @@ private:
 	static joynr::joynr_logging::Logger* logger;
 
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
-	QString proxyParticipantId;
-	QString providerParticipantId;
+	std::string proxyParticipantId;
+	std::string providerParticipantId;
 	QSharedPointer<joynr::InProcessAddress> address;
 	joynr::SubscriptionManager* subscriptionManager;
 	joynr::PublicationManager* publicationManager;
@@ -137,8 +141,8 @@ public:
 			SubscriptionManager* subscriptionManager,
 			PublicationManager* publicationManager,
 			InProcessPublicationSender* inProcessPublicationSender,
-			const QString& proxyParticipantId,
-			const QString& providerParticipantId,
+			const std::string& proxyParticipantId,
+			const std::string& providerParticipantId,
 			QSharedPointer<InProcessAddress> address
 		) {
 		return new «packagePrefix»::«interfaceName»InProcessConnector(
@@ -155,4 +159,5 @@ public:
 
 #endif // «headerGuard»
 '''
+
 }

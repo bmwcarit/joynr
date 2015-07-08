@@ -18,16 +18,17 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import io.joynr.generator.cpp.util.QtTypeUtil
+import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FInterface
 
 class InterfaceProxyHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension QtTypeUtil
+	@Inject extension CppMigrateToStdTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -46,6 +47,10 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 	#include "«parameterType»"
 «ENDFOR»
+
+#include <string>
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
+
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
@@ -65,7 +70,7 @@ public:
 			QSharedPointer<joynr::system::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
-			const QString& domain,
+			const std::string& domain,
 			const joynr::MessagingQos& qosSettings,
 			bool cached
 	);
@@ -73,11 +78,11 @@ public:
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«var attributeName = attribute.joynrName»
 		«val returnType = attribute.typeName»
-		void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
+		void unsubscribeFrom«attributeName.toFirstUpper»(std::string &subscriptionId) {
 			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 		}
 
-		QString subscribeTo«attributeName.toFirstUpper»(
+		std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
@@ -85,10 +90,10 @@ public:
 						subscriptionQos);
 		}
 
-		QString subscribeTo«attributeName.toFirstUpper»(
+		std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-					QString& subscriptionId){
+					std::string& subscriptionId){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos,
@@ -99,12 +104,12 @@ public:
 	«FOR broadcast: serviceInterface.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
-		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString &subscriptionId) {
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string &subscriptionId) {
 			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 		}
 
 		«IF isSelective(broadcast)»
-			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
@@ -114,11 +119,11 @@ public:
 							subscriptionQos);
 			}
 
-			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-						QString& subscriptionId){
+						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
 							subscriptionListener,
@@ -126,7 +131,7 @@ public:
 							subscriptionId);
 			}
 		«ELSE»
-			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
@@ -134,10 +139,10 @@ public:
 							subscriptionQos);
 			}
 
-			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-						QString& subscriptionId){
+						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,
 							subscriptionQos,

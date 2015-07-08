@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-MessageQueue::MessageQueue() : queue(new QMap<QString, MessageQueueItem*>()), queueMutex()
+MessageQueue::MessageQueue() : queue(new QMap<std::string, MessageQueueItem*>()), queueMutex()
 {
 }
 
@@ -43,12 +43,12 @@ qint64 MessageQueue::queueMessage(const JoynrMessage& message)
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
         QMutexLocker locker(&queueMutex);
-        queue->insertMulti(message.getHeaderTo(), item);
+        queue->insertMulti(message.getHeaderTo().toStdString(), item);
     }
     return queue->size();
 }
 
-MessageQueueItem* MessageQueue::getNextMessageForParticipant(const QString destinationPartId)
+MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string destinationPartId)
 {
     QMutexLocker locker(&queueMutex);
     if (queue->contains(destinationPartId)) {
@@ -64,7 +64,7 @@ qint64 MessageQueue::removeOutdatedMessages()
         return counter;
     }
 
-    QMap<QString, MessageQueueItem*>::iterator i;
+    QMap<std::string, MessageQueueItem*>::iterator i;
     QDateTime now = QDateTime::currentDateTime();
     {
         QMutexLocker locker(&queueMutex);

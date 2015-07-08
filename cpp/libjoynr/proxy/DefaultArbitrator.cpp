@@ -29,8 +29,8 @@ namespace joynr
 joynr_logging::Logger* DefaultArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("DIS", "DefaultArbitrator");
 
-DefaultArbitrator::DefaultArbitrator(const QString& domain,
-                                     const QString& interfaceName,
+DefaultArbitrator::DefaultArbitrator(const std::string& domain,
+                                     const std::string& interfaceName,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
@@ -48,8 +48,8 @@ void DefaultArbitrator::attemptArbitration()
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
                           .arg(status.getCode().toString()));
     }
 }
@@ -65,9 +65,10 @@ void DefaultArbitrator::receiveCapabilitiesLookupResults(
     joynr::system::DiscoveryEntry discoveredProvider = discoveryEntries.first();
     joynr::system::CommunicationMiddleware::Enum preferredConnection(
             selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
-                                                   discoveredProvider.getParticipantId(),
-                                                   preferredConnection);
+    updateArbitrationStatusParticipantIdAndAddress(
+            ArbitrationStatus::ArbitrationSuccessful,
+            discoveredProvider.getParticipantId().toStdString(),
+            preferredConnection);
 }
 
 } // namespace joynr

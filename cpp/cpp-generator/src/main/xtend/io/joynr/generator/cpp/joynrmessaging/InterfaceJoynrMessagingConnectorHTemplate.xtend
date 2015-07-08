@@ -18,12 +18,13 @@ package io.joynr.generator.cpp.joynrmessaging
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FBasicTypeId
 
 class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
@@ -31,7 +32,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
 
 	@Inject
 	private extension InterfaceUtil
@@ -65,6 +66,9 @@ namespace joynr {
 	class SubscriptionManager;
 }
 
+#include <string>
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
+
 «getNamespaceStarter(serviceInterface)»
 
 
@@ -74,7 +78,7 @@ private:
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
-			QString subscribeTo«attributeName.toFirstUpper»(
+			std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest);
@@ -83,7 +87,7 @@ private:
 	«FOR broadcast: serviceInterface.broadcasts»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
-		QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
@@ -92,9 +96,9 @@ public:
 	«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* messageSender,
 		joynr::SubscriptionManager* subscriptionManager,
-		const QString &domain,
-		const QString proxyParticipantId,
-		const QString& providerParticipantId,
+		const std::string &domain,
+		const std::string proxyParticipantId,
+		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		joynr::IClientCache *cache,
 		bool cached);
@@ -111,14 +115,14 @@ public:
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
-			virtual QString subscribeTo«attributeName.toFirstUpper»(
+			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 						QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
-			virtual QString subscribeTo«attributeName.toFirstUpper»(
+			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 						QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-						QString& subscriptionId);
-			virtual void unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId);
+						std::string& subscriptionId);
+			virtual void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 		«ENDIF»
 	«ENDFOR»
 
@@ -130,25 +134,25 @@ public:
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
-			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
-			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-						QString& subscriptionId);
+						std::string& subscriptionId);
 		«ELSE»
-			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
-			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-						QString& subscriptionId);
+						std::string& subscriptionId);
 		«ENDIF»
-		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId);
+		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);
 	«ENDFOR»
 };
 «getNamespaceEnder(serviceInterface)»
@@ -163,9 +167,9 @@ public:
 	«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector* create(
 			joynr::IJoynrMessageSender* messageSender,
 			joynr::SubscriptionManager* subscriptionManager,
-			const QString &domain,
-			const QString proxyParticipantId,
-			const QString& providerParticipantId,
+			const std::string &domain,
+			const std::string proxyParticipantId,
+			const std::string& providerParticipantId,
 			const joynr::MessagingQos &qosSettings,
 			joynr::IClientCache *cache,
 			bool cached

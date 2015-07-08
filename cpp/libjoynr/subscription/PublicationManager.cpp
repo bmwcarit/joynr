@@ -299,7 +299,8 @@ void PublicationManager::addOnChangePublication(
 
         // Register the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
+        requestCaller->registerAttributeListener(
+                request->getSubscribeToName().toStdString(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
@@ -321,7 +322,8 @@ void PublicationManager::addBroadcastPublication(
 
     // Register the broadcast listener
     QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-    requestCaller->registerBroadcastListener(request->getSubscribeToName(), broadcastListener);
+    requestCaller->registerBroadcastListener(
+            request->getSubscribeToName().toStdString(), broadcastListener);
 
     // Make note of the attribute listener so that it can be unregistered
     publication->broadcastListener = broadcastListener;
@@ -734,7 +736,7 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         // Remove listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
-                request->getSubscribeToName(), publication->broadcastListener);
+                request->getSubscribeToName().toStdString(), publication->broadcastListener);
         publication->broadcastListener = NULL;
 
         removePublicationEndRunnable(publication);
@@ -755,7 +757,7 @@ void PublicationManager::removeOnChangePublication(
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(
-                request->getSubscribeToName(), publication->attributeListener);
+                request->getSubscribeToName().toStdString(), publication->attributeListener);
         publication->attributeListener = NULL;
     }
     removePublicationEndRunnable(publication);
@@ -823,10 +825,11 @@ void PublicationManager::sendPublication(
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     subscriptionPublication.setResponse(value);
-    publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
-                                                   subscriptionInformation->getProxyId(),
-                                                   mQos,
-                                                   subscriptionPublication);
+    publicationSender->sendSubscriptionPublication(
+            subscriptionInformation->getProviderId().toStdString(),
+            subscriptionInformation->getProxyId().toStdString(),
+            mQos,
+            subscriptionPublication);
 
     // Make note of when this publication was sent
     qint64 now = QDateTime::currentMSecsSinceEpoch();

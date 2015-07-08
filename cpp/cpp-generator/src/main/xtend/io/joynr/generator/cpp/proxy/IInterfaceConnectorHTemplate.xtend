@@ -18,15 +18,21 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 
 class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject private CppMigrateToStdTypeUtil cppStdTypeUtil;
+	@Inject private extension QtTypeUtil qtTypeUtil
 
 	@Inject extension InterfaceSubscriptionUtil
 	override generate(FInterface serviceInterface)
@@ -43,9 +49,13 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 	#include "«parameterType»"
 «ENDFOR»
+
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
+
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/IConnector.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr {
 	template <class ... Ts> class ISubscriptionListener;
@@ -71,6 +81,54 @@ class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«int
 
 public:
 	virtual ~I«interfaceName»Connector() {}
+protected:
+	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+		«val returnType = cppStdTypeUtil.getTypeName(attribute)»
+		«val returnTypeQT = qtTypeUtil.getTypeName(attribute)»
+		«IF needsDatatypeConversion(attribute)»
+			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypeQT»> {
+				public:
+					«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener) {
+						this->wrappedListener = wrappedListener;
+					}
+					void onReceive(const «returnTypeQT»& receivedValue) {
+						wrappedListener->onReceive(«fromQTTypeToStdType(attribute, "receivedValue")»);
+					}
+					void onError() {
+						wrappedListener->onError();
+					}
+
+				private:
+					QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener;
+			};
+
+		«ENDIF»
+	«ENDFOR»
+	«FOR broadcast: serviceInterface.broadcasts»
+		«IF needsDatatypeConversion(broadcast)»
+			«val returnTypesQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
+			«val returnTypesStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
+			«val outputParametersSignature = qtTypeUtil.getCommaSeperatedTypedConstOutputParameterList(broadcast)»
+			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypesQT»> {
+				public:
+					«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener) {
+						this->wrappedListener = wrappedListener;
+					}
+					void onReceive(
+							«outputParametersSignature»
+					) {
+						wrappedListener->onReceive(«qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(broadcast, DatatypeSystemTransformation.FROM_QT_TO_STANDARD)»);
+					}
+					void onError() {
+						wrappedListener->onError();
+					}
+
+				private:
+					QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener;
+			};
+
+		«ENDIF»
+	«ENDFOR»
 };
 
 «getNamespaceEnder(serviceInterface)»

@@ -21,10 +21,10 @@
 
 #include "joynr/types/CapabilityInformation.h"
 
-#include <QString>
 #include <QList>
 #include <QSharedPointer>
 #include <functional>
+#include <string>
 
 namespace joynr
 {
@@ -38,22 +38,22 @@ public:
     {
     }
     virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList) = 0;
-    virtual void remove(const QString& participantId) = 0;
-    virtual void remove(QList<QString> capabilitiesInformationList) = 0;
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
-                                                       const QString& interfaceName) = 0;
+    virtual void remove(const std::string& participantId) = 0;
+    virtual void remove(QList<std::string> capabilitiesInformationList) = 0;
+    virtual QList<types::CapabilityInformation> lookup(const std::string& domain,
+                                                       const std::string& interfaceName) = 0;
     virtual void lookup(
-            const QString& domain,
-            const QString& interfaceName,
+            const std::string& domain,
+            const std::string& interfaceName,
             std::function<void(const joynr::RequestStatus& status,
                                const QList<joynr::types::CapabilityInformation>& capabilities)>
                     callbackFct) = 0;
     virtual void lookup(
-            const QString& participantId,
+            const std::string& participantId,
             std::function<void(const joynr::RequestStatus& status,
                                const QList<joynr::types::CapabilityInformation>& capabilities)>
                     callbackFct) = 0;
-    virtual QString getLocalChannelId() = 0;
+    virtual std::string getLocalChannelId() = 0;
 };
 
 } // namespace joynr

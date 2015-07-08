@@ -119,7 +119,7 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
             ->build();
 
     RequestStatus status;
-    QString participantId("SystemServicesRoutingTest.ParticipantId.A");
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     bool isResolvable = false;
     routingProxy->resolveNextHop(status, isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
@@ -136,7 +136,7 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
             ->build();
 
     RequestStatus status;
-    QString participantId("SystemServicesRoutingTest.ParticipantId.A");
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
@@ -160,7 +160,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHop)
             ->build();
 
     RequestStatus status;
-    QString participantId("SystemServicesRoutingTest.ParticipantId.A");
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 

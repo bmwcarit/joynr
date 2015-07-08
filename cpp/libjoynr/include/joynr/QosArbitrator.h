@@ -23,6 +23,7 @@
 
 #include "joynr/ProviderArbitrator.h"
 #include <QString>
+#include <string>
 #include <QSharedPointer>
 
 namespace joynr
@@ -45,8 +46,8 @@ public:
     virtual ~QosArbitrator()
     {
     }
-    QosArbitrator(const QString& domain,
-                  const QString& interfaceName,
+    QosArbitrator(const std::string& domain,
+                  const std::string& interfaceName,
                   joynr::system::IDiscoverySync& discoveryProxy,
                   const DiscoveryQos& discoveryQos);
 

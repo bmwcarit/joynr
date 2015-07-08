@@ -25,7 +25,7 @@
 #include "joynr/system/DiscoveryQos.h"
 
 #include <QSharedPointer>
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -38,7 +38,7 @@ class LocalCapabilitiesCallbackWrapper : public IGlobalCapabilitiesCallback
 public:
     LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
                                      QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-                                     const QString& participantId,
+                                     const std::string& participantId,
                                      const joynr::system::DiscoveryQos& discoveryQos);
     LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
                                      QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
@@ -50,7 +50,7 @@ public:
 private:
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback;
-    QString participantId;
+    std::string participantId;
     InterfaceAddress interfaceAddress;
     joynr::system::DiscoveryQos discoveryQos;
 

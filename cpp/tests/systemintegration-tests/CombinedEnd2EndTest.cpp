@@ -68,7 +68,7 @@ public:
     types::CapabilityInformation qRegisterMetaTypeCi; //this is necessary to force a qRegisterMetaType<types::ProviderQos>(); during setup
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    QString registeredSubscriptionId;
+    std::string registeredSubscriptionId;
     QSettings settings1;
     QSettings settings2;
     MessagingSettings messagingSettings1;
@@ -286,8 +286,8 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         EXPECT_EQ(primeResult, 15);
 
         // List of strings,
-        QList<QString> localStrList;
-        QList<QString> remoteStrList;
+        QList<std::string> localStrList;
+        QList<std::string> remoteStrList;
         localStrList.append("one ü");
         localStrList.append("two 漢語");
         localStrList.append("three ـتـ");
@@ -374,8 +374,8 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->build());
 
         RequestStatus status;
-        QString derivedStructResult;
-        QString anotherDerivedStructResult;
+        std::string derivedStructResult;
+        std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
         testProxy->overloadedOperation(status, derivedStructResult, tests::DerivedStruct());
@@ -440,7 +440,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                                     minInterval_ms,
                                     maxInterval_ms,
                                     3000));  // alertInterval_ms
-    QString subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
@@ -499,7 +499,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
-    QString subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     //This wait is necessary, because subcriptions are async, and an attribute could be changed before
     // before the subscription has started.
@@ -578,7 +578,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
                                     1000,   // minInterval_ms
                                     2000,    // maxInterval_ms
                                     3000));   // alertInterval_ms
-    QString subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
@@ -629,7 +629,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
                                         2000,    //  maxInterval_ms
                                         3000));   // alertInterval_ms
 
-        QString subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+        std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
 	} catch (JoynrArbitrationFailedException e) {
         haveArbitrationException = true;
@@ -683,7 +683,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
                                     10000));  // alertInterval_ms
-    QString subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
@@ -752,7 +752,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 
     RequestStatus status;
     types::ChannelUrlInformation result;
-    QString channelId("test");
+    std::string channelId("test");
     channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
     EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
 }
@@ -779,7 +779,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 
     // Register new channel URLs
     RequestStatus status1;
-    QString channelId = "bogus_1";
+    std::string channelId = "bogus_1";
     types::ChannelUrlInformation channelUrlInformation;
     QList<QString> urls;
     urls << "bogusTestUrl_1" << "bogusTestUrl_2" ;
@@ -816,7 +816,7 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
                 ->build();
 
     RequestStatus status1;
-    QString channelId = "bogus_3";
+    std::string channelId = "bogus_3";
     types::ChannelUrlInformation channelUrlInformation;
     QList<QString> urls;
     urls << "bogusTestUrl_1" << "bogusTestUrl_2" ;
@@ -875,7 +875,7 @@ void subscribeToLocation(QSharedPointer<ISubscriptionListener<types::GpsLocation
 
 // A function that subscribes to a GpsPosition - to be run in a background thread
 void unsubscribeFromLocation(tests::testProxy* testProxy,
-                            QString subscriptionId) {
+                            std::string subscriptionId) {
     testProxy->unsubscribeFromLocation(subscriptionId);
 }
 

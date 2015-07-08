@@ -24,6 +24,7 @@
 #include "joynr/ProviderArbitrator.h"
 #include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -48,8 +49,8 @@ public:
     {
     }
 
-    KeywordArbitrator(const QString& domain,
-                      const QString& interfaceName,
+    KeywordArbitrator(const std::string& domain,
+                      const std::string& interfaceName,
                       joynr::system::IDiscoverySync& discoveryProxy,
                       const DiscoveryQos& discoveryQos);
 

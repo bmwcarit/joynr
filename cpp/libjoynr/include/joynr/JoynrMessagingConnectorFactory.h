@@ -22,8 +22,8 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/system/CommunicationMiddleware.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -45,10 +45,10 @@ class JoynrMessagingConnectorFactoryHelper
 public:
     T* create(IJoynrMessageSender* messageSender,
               SubscriptionManager* subscriptionManager,
-              const QString& domain,
-              const QString& interfaceName,
-              const QString proxyParticipantId,
-              const QString& providerParticipantId,
+              const std::string& domain,
+              const std::string& interfaceName,
+              const std::string proxyParticipantId,
+              const std::string& providerParticipantId,
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached)
@@ -78,9 +78,9 @@ public:
     bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
 
     template <class T>
-    T* create(const QString& domain,
-              const QString proxyParticipantId,
-              const QString& providerParticipantId,
+    T* create(const std::string& domain,
+              const std::string proxyParticipantId,
+              const std::string& providerParticipantId,
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached)

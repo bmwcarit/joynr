@@ -23,6 +23,7 @@
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/system/DiscoveryEntry.h"
+#include <string>
 
 using namespace ::testing;
 using namespace joynr;
@@ -92,7 +93,7 @@ public:
     ~AccessControllerTest() {
     }
 
-    void invokeCallbackFct (QString participantId,
+    void invokeCallbackFct (std::string participantId,
                             std::function<void(const joynr::RequestStatus&,
                                                const joynr::system::DiscoveryEntry&)> callbackFct) {
         Q_UNUSED(participantId);
@@ -129,7 +130,7 @@ public:
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
-                lookup(toParticipantId, A<std::function<void(
+                lookup(toParticipantId.toStdString(), A<std::function<void(
                            const joynr::RequestStatus&, const joynr::system::DiscoveryEntry&)>>())
         )
                 .Times(1)

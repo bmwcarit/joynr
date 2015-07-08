@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "joynr/ProxyBuilder.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -84,7 +85,7 @@ protected:
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
     MockClientCache* mockClientCache;
     MockJoynrMessageSender* mockJoynrMessageSender;
-    QString domain;
+    std::string domain;
     MessagingQos messagingQos;
     QSharedPointer<system::ChannelAddress> endPointAddress;
 

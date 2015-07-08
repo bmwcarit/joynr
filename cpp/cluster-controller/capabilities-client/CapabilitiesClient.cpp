@@ -30,6 +30,7 @@
 #include "joynr/Future.h"
 
 #include <QString>
+#include <string>
 #include <cassert>
 
 namespace joynr
@@ -38,7 +39,7 @@ namespace joynr
 joynr_logging::Logger* CapabilitiesClient::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "CapabilitiesClient");
 
-CapabilitiesClient::CapabilitiesClient(const QString& localChannelId)
+CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
         : defaultRequestTTL(30000),
           defaultRequestRoundtripTTL(40000),
           capabilitiesClientParticipantId(),
@@ -54,7 +55,7 @@ CapabilitiesClient::~CapabilitiesClient()
 {
 }
 
-QString CapabilitiesClient::getLocalChannelId()
+std::string CapabilitiesClient::getLocalChannelId()
 {
     return localChannelId;
 }
@@ -63,13 +64,13 @@ void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInf
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
-    if (localChannelId.isEmpty()) {
+    if (localChannelId.empty()) {
         assert(false); // "Assertion in CapabilitiesClient: Local channelId is empty. Tried to
                        // register capabilities before messaging was started(no queueing implemented
                        // yet;
     } else {
         for (int i = 0; i < capabilitiesInformationList.size(); i++) {
-            capabilitiesInformationList[i].setChannelId(localChannelId);
+            capabilitiesInformationList[i].setChannelId(QString::fromStdString(localChannelId));
         }
         RequestStatus rs;
         // TM switching from sync to async
@@ -87,7 +88,7 @@ void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInf
     }
 }
 
-void CapabilitiesClient::remove(const QString& participantId)
+void CapabilitiesClient::remove(const std::string& participantId)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -95,7 +96,7 @@ void CapabilitiesClient::remove(const QString& participantId)
     capabilitiesProxy->remove(status, participantId);
 }
 
-void CapabilitiesClient::remove(QList<QString> participantIdList)
+void CapabilitiesClient::remove(QList<std::string> participantIdList)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -103,8 +104,8 @@ void CapabilitiesClient::remove(QList<QString> participantIdList)
     capabilitiesProxy->remove(status, participantIdList);
 }
 
-QList<types::CapabilityInformation> CapabilitiesClient::lookup(const QString& domain,
-                                                               const QString& interfaceName)
+QList<types::CapabilityInformation> CapabilitiesClient::lookup(const std::string& domain,
+                                                               const std::string& interfaceName)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -116,8 +117,8 @@ QList<types::CapabilityInformation> CapabilitiesClient::lookup(const QString& do
 }
 
 void CapabilitiesClient::lookup(
-        const QString& domain,
-        const QString& interfaceName,
+        const std::string& domain,
+        const std::string& interfaceName,
         std::function<void(const RequestStatus& status,
                            const QList<joynr::types::CapabilityInformation>& result)> callbackFct)
 {
@@ -128,7 +129,7 @@ void CapabilitiesClient::lookup(
 }
 
 void CapabilitiesClient::lookup(
-        const QString& participantId,
+        const std::string& participantId,
         std::function<void(const RequestStatus& status,
                            const QList<joynr::types::CapabilityInformation>& result)> callbackFct)
 {

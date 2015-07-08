@@ -60,8 +60,9 @@ int main(int argc, char* argv[])
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));
     QString pathToLibJoynrSettings(dir +
                                    QString("/resources/radio-app-provider.libjoynr.settings"));
-    JoynrRuntime* runtime =
-            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(
+            TypeUtil::convertQStringtoStdString(pathToLibJoynrSettings),
+            TypeUtil::convertQStringtoStdString(pathToMessagingSettings));
 
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently

@@ -1,7 +1,9 @@
+package io.joynr.generator.cpp.util;
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +18,7 @@
  * limitations under the License.
  * #L%
  */
-#include "tests/utils/MockObjects.h"
 
-
-using namespace joynr;
-
-static const std::string INTERFACE_NAME("test/interface");
-
-const std::string IMockProviderInterface::getInterfaceName()
-{
-	return INTERFACE_NAME;
+public enum DatatypeSystemTransformation {
+    FROM_QT_TO_STANDARD, FROM_STANDARD_TO_QT
 }

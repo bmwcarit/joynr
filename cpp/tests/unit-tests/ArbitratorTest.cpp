@@ -18,6 +18,7 @@
  */
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include <string>
 #include "utils/TestQString.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/QosArbitrator.h"
@@ -29,8 +30,8 @@
 
 using namespace joynr;
 
-static const QString domain("unittest-domain");
-static const QString interfaceName("unittest-interface");
+static const std::string domain("unittest-domain");
+static const std::string interfaceName("unittest-interface");
 
 class ArbitratorTest : public ::testing::Test {
 public:
@@ -54,7 +55,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
 
     // Create a list of provider Qos and participant ids
     QList<types::ProviderQos> qosEntries;
-    QList<QString> participantId;
+    QList<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
         qosEntries << types::ProviderQos(
                           QList<types::CustomParameter>(),     // custom provider parameters
@@ -63,7 +64,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
                           joynr::types::ProviderScope::GLOBAL, // discovery scope
                           false                                // supports on change notifications
         );
-        participantId << QString::number(priority);
+        participantId << std::to_string(priority);
     }
 
     // Create a list of fake connections
@@ -74,9 +75,9 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
         discoveryEntries << joynr::system::DiscoveryEntry(
-                                 domain,
-                                 interfaceName,
-                                 participantId[i],
+                                 QString::fromStdString(domain),
+                                 QString::fromStdString(interfaceName),
+                                 QString::fromStdString(participantId[i]),
                                  qosEntries[i],
                                  connections
         );
@@ -97,14 +98,14 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
 
     // Create a list of provider Qos and participant ids
     QList<types::ProviderQos> qosEntries;
-    QList<QString> participantId;
+    QList<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
         qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, false);
-        participantId << QString::number(priority);
+        participantId << std::to_string(priority);
     }
     for (int priority = 0; priority < 2; priority++) {
         qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, true);
-        participantId << QString("onChange_%1").arg(priority);
+        participantId << ("onChange_%1" + std::to_string(priority));
     }
 
     // Create a list of fake connections
@@ -115,9 +116,9 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
         discoveryEntries << joynr::system::DiscoveryEntry(
-                                 domain,
-                                 interfaceName,
-                                 participantId[i],
+                                 QString::fromStdString(domain),
+                                 QString::fromStdString(interfaceName),
+                                 QString::fromStdString(participantId[i]),
                                  qosEntries[i],
                                  connections
         );
@@ -140,28 +141,28 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 
     // Create a list of provider Qos and participant ids
     QList<types::ProviderQos> qosEntries;
-    QList<QString> participantId;
+    QList<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
         // Entries with no parameters
         qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, false);
-        participantId << QString::number(priority);
+        participantId << std::to_string(priority);
     }
 
     // An entry with no keyword parameters
     QList<types::CustomParameter> parameterList;
     parameterList << types::CustomParameter("xxx", "yyy");
     qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
-    participantId << QString("no_keyword");
+    participantId << "no_keyword";
 
     // An entry with an incorrect keyword parameter
     parameterList << types::CustomParameter("keyword", "unwanted");
     qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
-    participantId << QString("incorrect_keyword");
+    participantId << "incorrect_keyword";
 
     // An entry with the correct keyword parameter
     parameterList << types::CustomParameter("keyword", keywordValue);
     qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
-    participantId << QString("correct_keyword");
+    participantId << "correct_keyword";
 
     // Create a list of fake connections
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
@@ -171,9 +172,9 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     QList<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
         discoveryEntries << joynr::system::DiscoveryEntry(
-                                 domain,
-                                 interfaceName,
-                                 participantId[i],
+                                 QString::fromStdString(domain),
+                                 QString::fromStdString(interfaceName),
+                                 QString::fromStdString(participantId[i]),
                                  qosEntries[i],
                                  connections
         );
@@ -192,8 +193,8 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
                 lookup(
                     A<joynr::RequestStatus&>(),
                     A<QList<joynr::system::DiscoveryEntry>&>(),
-                    A<const QString&>(),
-                    A<const QString&>(),
+                    A<const std::string&>(),
+                    A<const std::string&>(),
                     A<const joynr::system::DiscoveryQos&>()
                 )
     )

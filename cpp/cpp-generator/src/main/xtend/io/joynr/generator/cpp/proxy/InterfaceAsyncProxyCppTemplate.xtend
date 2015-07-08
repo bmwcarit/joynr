@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -27,7 +27,7 @@ import org.franca.core.franca.FInterface
 class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension QtTypeUtil
+	@Inject extension CppMigrateToStdTypeUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -51,7 +51,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		QSharedPointer<joynr::system::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
-		const QString &domain,
+		const std::string &domain,
 		const joynr::MessagingQos &qosSettings,
 		bool cached
 ) :
@@ -111,12 +111,12 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	«var methodName = method.joynrName»
 	«var outputParameters = method.commaSeparatedOutputParameterTypes»
 	«var outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
-	«var inputParamList = method.commaSeperatedUntypedInputParameterList»
+	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
 	QSharedPointer<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»(
-			«IF !method.inputParameters.empty»«getCommaSeperatedTypedConstInputParameterList(method)»,«ENDIF»
+			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 	{
 		if (connector==NULL){

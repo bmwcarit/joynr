@@ -22,6 +22,7 @@
 #include "PrettyPrint.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include <string>
 #include "utils/TestQString.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
@@ -74,8 +75,8 @@ protected:
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     std::shared_ptr<MockProvider> mockProvider;
-    QString domain;
-    QString expectedParticipantId;
+    std::string domain;
+    std::string expectedParticipantId;
     QSharedPointer<MockMessageRouter> mockMessageRouter;
 };
 
@@ -103,16 +104,16 @@ TEST_F(CapabilitiesRegistrarTest, add){
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::getInterfaceName())),
-                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::getInterfaceName()))),
+                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
                         Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).WillOnce(SetArgReferee<0>(status));
 
-    QString participantId = capabilitiesRegistrar->add(domain, mockProvider);
-    EXPECT_QSTREQ(expectedParticipantId, participantId);
+    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
+    EXPECT_EQ(expectedParticipantId, participantId);
 }
 
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
@@ -134,8 +135,8 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
             .Times(1)
             .WillOnce(SetArgReferee<0>(status))
     ;
-    QString participantId = capabilitiesRegistrar->remove(domain, mockProvider);
-    EXPECT_QSTREQ(expectedParticipantId, participantId);
+    std::string participantId = capabilitiesRegistrar->remove(domain, mockProvider);
+    EXPECT_EQ(expectedParticipantId, participantId);
 }
 
 TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
@@ -177,9 +178,9 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::getInterfaceName())),
-                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::getInterfaceName()))),
+                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
                         Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
@@ -196,8 +197,8 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
     capabilitiesRegistrar->addDispatcher(mockDispatcher2);
 
-    QString participantId = capabilitiesRegistrar->add(domain, mockProvider);
-    EXPECT_QSTREQ(expectedParticipantId, participantId);
+    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
+    EXPECT_EQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
     delete mockDispatcher2;
@@ -232,9 +233,9 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::getInterfaceName())),
-                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::getInterfaceName()))),
+                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
                         Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
@@ -249,8 +250,8 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
             .Times(1);
 
-    QString participantId = capabilitiesRegistrar->add(domain, mockProvider);
-    EXPECT_QSTREQ(expectedParticipantId, participantId);
+    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
+    EXPECT_EQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
     delete mockDispatcher2;

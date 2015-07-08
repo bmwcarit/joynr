@@ -36,6 +36,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
+#include <string>
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/types/GpsLocation.h"
@@ -103,8 +104,8 @@ protected:
 
     // create test data
     MessagingQos qos;
-    QString providerParticipantId;
-    QString proxyParticipantId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
     QString requestReplyId;
 
     JoynrMessageFactory messageFactory;
@@ -148,8 +149,8 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
 
@@ -208,8 +209,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                providerParticipantId,
-                proxyParticipantId,
+                QString::fromStdString(providerParticipantId),
+                QString::fromStdString(proxyParticipantId),
                 qos,
                 subscriptionPublication);
 
@@ -255,8 +256,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -301,8 +302,8 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -348,8 +349,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -362,8 +363,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     // receive a subscription stop message
     msg = messageFactory.createSubscriptionStop(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionStop);
     dispatcher.receive(msg);

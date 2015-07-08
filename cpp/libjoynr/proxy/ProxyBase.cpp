@@ -29,8 +29,8 @@ Logger* ProxyBase::logger = Logging::getInstance()->getLogger("ProxyBase", "Prox
 
 ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
                      IClientCache* cache,
-                     const QString& domain,
-                     const QString& interfaceName,
+                     const std::string& domain,
+                     const std::string& interfaceName,
                      const MessagingQos& qosSettings,
                      bool cached)
         : connectorFactory(connectorFactory),
@@ -43,8 +43,8 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
           proxyParticipantId(""),
           connection(NULL)
 {
-    proxyParticipantId = QUuid::createUuid().toString();
-    proxyParticipantId = proxyParticipantId.mid(1, proxyParticipantId.length() - 2);
+    QString internalId = QUuid::createUuid().toString();
+    proxyParticipantId = internalId.mid(1, internalId.length() - 2).toStdString();
 }
 
 ProxyBase::~ProxyBase()
@@ -53,14 +53,14 @@ ProxyBase::~ProxyBase()
 }
 
 void ProxyBase::handleArbitrationFinished(
-        const QString& participantId,
+        const std::string& participantId,
         const joynr::system::CommunicationMiddleware::Enum& connection)
 {
     providerParticipantId = participantId;
     this->connection = new joynr::system::CommunicationMiddleware::Enum(connection);
 }
 
-QString ProxyBase::getProxyParticipantId()
+std::string ProxyBase::getProxyParticipantId()
 {
     return this->proxyParticipantId;
 }

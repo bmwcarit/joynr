@@ -19,6 +19,7 @@
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
+#include <string>
 
 using ::testing::A;
 using ::testing::_;
@@ -41,19 +42,19 @@ public:
     TestJoynrMessagingConnectorTest() {}
     // sets the expectations on the call expected on the MessageSender from the connector
     testing::internal::TypedExpectation<void(
-            const QString&, // sender participant ID
-            const QString&, // receiver participant ID
+            const std::string&, // sender participant ID
+            const std::string&, // receiver participant ID
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
             QSharedPointer<IReplyCaller> // reply caller to notify when reply is received
-    )>& setExpectationsForSendRequestCall(int expectedTypeId, QString methodName) {
+    )>& setExpectationsForSendRequestCall(int expectedTypeId, std::string methodName) {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
                     sendRequest(
                         Eq(proxyParticipantId), // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
-                        Property(&Request::getMethodName, Eq(methodName)), // request object to send
+                        Property(&Request::getMethodName, Eq(QString::fromStdString(methodName))), // request object to send
                         Property(
                             &QSharedPointer<IReplyCaller>::data,
                             AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(expectedTypeId)))

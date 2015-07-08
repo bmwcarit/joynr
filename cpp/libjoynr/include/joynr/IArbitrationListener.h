@@ -22,8 +22,8 @@
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/system/CommunicationMiddleware.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -41,7 +41,7 @@ public:
     }
     virtual void setArbitrationStatus(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus) = 0;
-    virtual void setParticipantId(const QString& participantId) = 0;
+    virtual void setParticipantId(const std::string& participantId) = 0;
     virtual void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection) = 0;
 };
 

@@ -42,14 +42,14 @@ Provider::~Provider()
     }
 }
 
-void Provider::registerAttributeListener(const QString& attributeName,
+void Provider::registerAttributeListener(const std::string& attributeName,
                                          IAttributeListener* attributeListener)
 {
     QWriteLocker locker(&lock);
     attributeListeners[attributeName].append(attributeListener);
 }
 
-void Provider::unregisterAttributeListener(const QString& attributeName,
+void Provider::unregisterAttributeListener(const std::string& attributeName,
                                            IAttributeListener* attributeListener)
 {
     QWriteLocker locker(&lock);
@@ -65,7 +65,7 @@ void Provider::unregisterAttributeListener(const QString& attributeName,
     }
 }
 
-void Provider::onAttributeValueChanged(const QString& attributeName, const QVariant& value)
+void Provider::onAttributeValueChanged(const std::string& attributeName, const QVariant& value)
 {
     QReadLocker locker(&lock);
 
@@ -77,14 +77,14 @@ void Provider::onAttributeValueChanged(const QString& attributeName, const QVari
     }
 }
 
-void Provider::registerBroadcastListener(const QString& broadcastName,
+void Provider::registerBroadcastListener(const std::string& broadcastName,
                                          IBroadcastListener* broadcastListener)
 {
     QWriteLocker locker(&lock);
     broadcastListeners[broadcastName].append(broadcastListener);
 }
 
-void Provider::unregisterBroadcastListener(const QString& broadcastName,
+void Provider::unregisterBroadcastListener(const std::string& broadcastName,
                                            IBroadcastListener* broadcastListener)
 {
     QWriteLocker locker(&lock);
@@ -94,7 +94,7 @@ void Provider::unregisterBroadcastListener(const QString& broadcastName,
     delete listeners.takeAt(listenerIndex);
 }
 
-void Provider::fireBroadcast(const QString& broadcastName, const QList<QVariant>& values)
+void Provider::fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values)
 {
     QReadLocker locker(&lock);
 
@@ -108,7 +108,7 @@ void Provider::fireBroadcast(const QString& broadcastName, const QList<QVariant>
 
 void Provider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
 {
-    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
+    QMap<std::string, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
             broadcastFilters.find(filter->getName());
 
     if (it != broadcastFilters.end()) {
@@ -119,12 +119,12 @@ void Provider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
     }
 }
 
-bool Provider::hasAttributeListeners(const QString& attributeName)
+bool Provider::hasAttributeListeners(const std::string& attributeName)
 {
     return !attributeListeners.value(attributeName).isEmpty();
 }
 
-bool Provider::hasBroadcastListeners(const QString& broadcastName)
+bool Provider::hasBroadcastListeners(const std::string& broadcastName)
 {
     return !broadcastListeners.value(broadcastName).isEmpty();
 }

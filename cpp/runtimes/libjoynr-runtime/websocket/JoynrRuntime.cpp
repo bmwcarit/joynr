@@ -25,12 +25,12 @@
 namespace joynr
 {
 
-JoynrRuntime* JoynrRuntime::createRuntime(const QString& pathToLibjoynrSettings,
-                                          const QString& pathToMessagingSettings)
+JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSettings,
+                                          const std::string& pathToMessagingSettings)
 {
-    Q_UNUSED(pathToMessagingSettings);
-    QSettings* settings = SettingsMerger::mergeSettings(pathToLibjoynrSettings);
-    SettingsMerger::mergeSettings(pathToMessagingSettings, settings);
+    QSettings* settings =
+            SettingsMerger::mergeSettings(QString::fromStdString(pathToLibjoynrSettings));
+    SettingsMerger::mergeSettings(QString::fromStdString(pathToMessagingSettings), settings);
 
     return LibJoynrRuntime::create(new JoynrWebSocketRuntimeExecutor(settings));
 }

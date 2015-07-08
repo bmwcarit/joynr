@@ -287,7 +287,7 @@ void AccessController::hasConsumerPermission(
         localDomainAccessController.getConsumerPermission(
                 msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
-    localCapabilitiesDirectory.lookup(participantId, lookupCallback);
+    localCapabilitiesDirectory.lookup(participantId.toStdString(), lookupCallback);
 }
 
 bool AccessController::hasProviderPermission(const QString& userId,

@@ -18,11 +18,11 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.CompoundTypeTemplate
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
-import io.joynr.generator.util.CompoundTypeTemplate
-import io.joynr.generator.cpp.util.QtTypeUtil
 
 class TypeHTemplate implements CompoundTypeTemplate{
 
@@ -72,6 +72,7 @@ class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(t
 				Q_PROPERTY(QString «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
 			«ELSE»
 				// https://bugreports.qt-project.org/browse/QTBUG-2151 for why this replace is necessary
+				Q_PROPERTY(«member.typeName.replace("::","__")» «membername» READ get«membername.toFirstUpper» WRITE set«membername.toFirstUpper»)
 				Q_PROPERTY(«member.typeName.replace("::","__")» «membername» READ get«membername.toFirstUpper» WRITE set«membername.toFirstUpper»)
 			«ENDIF»
 		«ENDIF»

@@ -20,7 +20,7 @@
 #define IPUBLICATIONSENDER_H
 
 #include "joynr/JoynrExport.h"
-#include <QString>
+#include "string"
 
 namespace joynr
 {
@@ -40,8 +40,8 @@ public:
     }
 
     virtual void sendSubscriptionPublication(
-            const QString& senderParticipantId,
-            const QString& receiverParticipantId,
+            const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const SubscriptionPublication& subscriptionPublication) = 0;
 };

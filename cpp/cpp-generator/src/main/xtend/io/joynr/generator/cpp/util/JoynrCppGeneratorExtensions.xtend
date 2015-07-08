@@ -31,6 +31,7 @@ import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FBasicTypeId
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -239,9 +240,20 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "Std" + type.name
 	}
 
-	def String getIncludeOf(FType dataType) {
+	def getIncludeOf(FType dataType) {
 		val path = getPackagePathWithJoynrPrefix(dataType, "/")
 		return path + "/" + dataType.joynrName + ".h";
+	}
+
+	def getAllPrimitiveTypes(FInterface serviceInterface) {
+		serviceInterface.allRequiredTypes.filter[type | type instanceof FBasicTypeId].map[type | type as FBasicTypeId]
+	}
+
+	def getIncludesFor(Iterable<FBasicTypeId> datatypes) {'''
+		«IF datatypes.exists[type | type == FBasicTypeId.STRING]»
+			#include <string>
+		«ENDIF»
+	'''
 	}
 
 	def String getIncludeOfStd(FType dataType) {

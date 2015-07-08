@@ -155,8 +155,9 @@ int main(int argc, char* argv[])
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));
     QString pathToLibJoynrSettings(dir +
                                    QString("/resources/radio-app-consumer.libjoynr.settings"));
-    JoynrRuntime* runtime =
-            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(
+            TypeUtil::convertQStringtoStdString(pathToLibJoynrSettings),
+            TypeUtil::convertQStringtoStdString(pathToMessagingSettings));
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
@@ -233,7 +234,7 @@ int main(int argc, char* argv[])
             new RadioStationListener());
 
     // Subscribe to the radio station.
-    QString currentStationSubscriptionId =
+    std::string currentStationSubscriptionId =
             proxy->subscribeToCurrentStation(listener, subscriptionQos);
 
     // broadcast subscription
@@ -257,7 +258,7 @@ int main(int argc, char* argv[])
     weakSignalBroadcastSubscriptionQos->setValidity(60 * 1000);
     QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
-    QString weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
+    std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
             weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
@@ -275,7 +276,7 @@ int main(int argc, char* argv[])
     QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
     newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-    QString newStationDiscoveredBroadcastSubscriptionId =
+    std::string newStationDiscoveredBroadcastSubscriptionId =
             proxy->subscribeToNewStationDiscoveredBroadcast(
                     newStationDiscoveredBroadcastFilterParams,
                     newStationDiscoveredBroadcastListener,

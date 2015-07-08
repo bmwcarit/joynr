@@ -21,7 +21,8 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-#include <QString>
+#include "QString"
+#include <string>
 
 namespace joynr
 {
@@ -37,7 +38,7 @@ public:
     /**
      * Persist participant ids using the given file
      */
-    ParticipantIdStorage(const QString& filename);
+    ParticipantIdStorage(const std::string& filename);
     virtual ~ParticipantIdStorage()
     {
     }
@@ -53,34 +54,34 @@ public:
      * @param participantId the participantId to set.
      */
     virtual void setProviderParticipantId(
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& participantId,
-            const QString& authenticationToken = QString("defaultAuthenticationToken"));
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& participantId,
+            const std::string& authenticationToken = "defaultAuthenticationToken");
 
     /**
      * Get a provider participant id
      */
-    virtual QString getProviderParticipantId(
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& authenticationToken = QString("defaultAuthenticationToken"));
+    virtual std::string getProviderParticipantId(
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& authenticationToken = "defaultAuthenticationToken");
 
     /**
      * Get a provider participant id or use a default
      */
-    virtual QString getProviderParticipantId(
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& defaultValue,
-            const QString& authenticationToken = QString("defaultAuthenticationToken"));
+    virtual std::string getProviderParticipantId(
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& defaultValue,
+            const std::string& authenticationToken = "defaultAuthenticationToken");
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
-    QString createProviderKey(const QString& domain,
-                              const QString& interfaceName,
-                              const QString& authenticationToken);
-    QString filename;
+    std::string createProviderKey(const std::string& domain,
+                                  const std::string& interfaceName,
+                                  const std::string& authenticationToken);
+    std::string filename;
 };
 
 } // namespace joynr

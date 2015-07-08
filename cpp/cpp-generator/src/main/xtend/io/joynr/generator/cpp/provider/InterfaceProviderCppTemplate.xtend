@@ -18,8 +18,9 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
@@ -30,7 +31,10 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
+
+	@Inject
+	private QtTypeUtil qtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -42,6 +46,7 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 #include "joynr/InterfaceRegistrar.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/RequestStatus.h"
+#include "joynr/TypeUtil.h"
 
 «getNamespaceStarter(serviceInterface)»
 «interfaceName»Provider::«interfaceName»Provider(const joynr::types::ProviderQos &providerQos) :
@@ -100,7 +105,7 @@ joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
 			return;
 		}
 		this->«attributeName» = «attributeName»;
-		onAttributeValueChanged("«attributeName»", QVariant::fromValue(«attributeName»));
+		onAttributeValueChanged("«attributeName»", QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»));
 	}
 «ENDFOR»
 
@@ -109,7 +114,7 @@ joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
 	void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList») {
 		QList<QVariant> broadcastValues;
 		«FOR parameter: getOutputParameters(broadcast)»
-			broadcastValues.append(QVariant::fromValue(«parameter.name»));
+			broadcastValues.append(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(parameter, parameter.name)»));
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}

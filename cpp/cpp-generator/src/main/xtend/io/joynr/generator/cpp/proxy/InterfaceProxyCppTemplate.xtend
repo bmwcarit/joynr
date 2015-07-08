@@ -42,7 +42,7 @@ class InterfaceProxyCppTemplate implements InterfaceTemplate{
 		QSharedPointer<joynr::system::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
-		const QString &domain,
+		const std::string &domain,
 		const joynr::MessagingQos &qosSettings,
 		bool cached
 ) :

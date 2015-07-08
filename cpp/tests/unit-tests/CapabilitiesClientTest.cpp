@@ -27,7 +27,7 @@ using namespace joynr;
 class CapabilitiesClientTest : public ::testing::Test {
 public:
     CapabilitiesClientTest()
-        : capClient(new CapabilitiesClient(QString("localChannel")))
+        : capClient(new CapabilitiesClient("localChannel"))
     {
     }
 

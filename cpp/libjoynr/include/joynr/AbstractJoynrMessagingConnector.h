@@ -35,7 +35,7 @@
 #include "joynr/IReplyCaller.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
-
+#include <string>
 namespace joynr
 {
 
@@ -47,10 +47,10 @@ class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
 public:
     AbstractJoynrMessagingConnector(IJoynrMessageSender* joynrMessageSender,
                                     SubscriptionManager* subscriptionManager,
-                                    const QString& domain,
-                                    const QString& interfaceName,
-                                    const QString proxyParticipantId,
-                                    const QString& providerParticipantId,
+                                    const std::string& domain,
+                                    const std::string& interfaceName,
+                                    const std::string proxyParticipantId,
+                                    const std::string& providerParticipantId,
                                     const MessagingQos& qosSettings,
                                     IClientCache* cache,
                                     bool cached);
@@ -69,7 +69,8 @@ public:
     template <typename T>
     void attributeRequest(QString methodName, QSharedPointer<IReplyCaller> replyCaller)
     {
-        QString attributeID = domain + ":" + interfaceName + ":" + methodName;
+        QString attributeID = QString::fromStdString(domain) + ":" +
+                              QString::fromStdString(interfaceName) + ":" + methodName;
 
         if (cached) {
             QVariant entry = cache->lookUp(attributeID);
@@ -104,10 +105,10 @@ public:
 protected:
     IJoynrMessageSender* joynrMessageSender;
     SubscriptionManager* subscriptionManager;
-    QString domain;
-    QString interfaceName;
-    QString proxyParticipantId;
-    QString providerParticipantId;
+    std::string domain;
+    std::string interfaceName;
+    std::string proxyParticipantId;
+    std::string providerParticipantId;
     MessagingQos qosSettings;
     IClientCache* cache;
     bool cached;

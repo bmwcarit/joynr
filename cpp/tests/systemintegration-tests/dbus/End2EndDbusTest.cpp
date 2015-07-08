@@ -153,10 +153,10 @@ TEST_F(End2EndDbusTest, call_sync_method)
 
     // call method
     RequestStatus status;
-    QString result;
-    testProxy->sayHello(status, result);
+    std::string actualValue;
+    testProxy->sayHello(status, actualValue);
     ASSERT_TRUE(status.successful());
-    ASSERT_TRUE(result == "Hello World");
+    ASSERT_EQ("Hello World", actualValue);
 }
 
 TEST_F(End2EndDbusTest, call_async_method)
@@ -167,10 +167,10 @@ TEST_F(End2EndDbusTest, call_async_method)
     // connect the proxy
     connectProxy();
 
-    QSharedPointer<Future<QString>> sayHelloFuture(testProxy->sayHello());
+    QSharedPointer<Future<std::string>> sayHelloFuture(testProxy->sayHello());
     sayHelloFuture->waitForFinished();
     ASSERT_TRUE(sayHelloFuture->isOk());
-    QString actualValue;
+    std::string actualValue;
     sayHelloFuture->getValues(actualValue);
     ASSERT_EQ("Hello World", actualValue);
 }

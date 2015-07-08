@@ -31,7 +31,7 @@ import org.franca.core.franca.FTypedElement
 
 abstract class CppTypeUtil extends TypeUtil {
 	@Inject
-	private extension JoynrCppGeneratorExtensions
+	protected extension JoynrCppGeneratorExtensions
 
 	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
 
@@ -212,5 +212,4 @@ abstract class CppTypeUtil extends TypeUtil {
 			return primitiveDataTypeDefaultMap.get(element.type.predefined);
 		}
 	}
-
 }

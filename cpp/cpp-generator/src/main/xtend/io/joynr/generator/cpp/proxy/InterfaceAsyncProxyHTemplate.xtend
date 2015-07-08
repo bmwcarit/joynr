@@ -18,11 +18,12 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FInterface
 
 class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
@@ -46,6 +47,9 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
 
+#include <string>
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
+
 «getNamespaceStarter(serviceInterface)»
 class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 public:
@@ -53,7 +57,7 @@ public:
 			QSharedPointer<joynr::system::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
-			const QString& domain,
+			const std::string& domain,
 			const joynr::MessagingQos& qosSettings,
 			bool cached
 	);

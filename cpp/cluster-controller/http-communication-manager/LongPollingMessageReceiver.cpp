@@ -113,7 +113,7 @@ void LongPollingMessageReceiver::run()
     LOG_INFO(logger,
              "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
                      urls.first());
-    channelUrlDirectory->registerChannelUrls(channelId, urlInformation);
+    channelUrlDirectory->registerChannelUrls(channelId.toStdString(), urlInformation);
 
     while (!isInterrupted()) {
 
@@ -194,7 +194,7 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
         // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
         QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress(replyChannelId));
-        messageRouter->addNextHop(msg->getHeaderFrom(), address);
+        messageRouter->addNextHop(msg->getHeaderFrom().toStdString(), address);
     }
 
     // messageRouter.route passes the message reference to the MessageRunnable, which copies it.

@@ -39,6 +39,7 @@
 #include <QMap>
 #include <QSet>
 #include <QMutex>
+#include <string>
 
 namespace joynr
 {
@@ -95,42 +96,42 @@ public:
     virtual void route(const JoynrMessage& message);
 
     virtual void addNextHop(
-            const QString& participantId,
+            const std::string& participantId,
             const joynr::system::ChannelAddress& channelAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            const QString& participantId,
+            const std::string& participantId,
             const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            const QString& participantId,
+            const std::string& participantId,
             const joynr::system::BrowserAddress& browserAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            const QString& participantId,
+            const std::string& participantId,
             const joynr::system::WebSocketAddress& webSocketAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
     virtual void addNextHop(
-            const QString& participantId,
+            const std::string& participantId,
             const joynr::system::WebSocketClientAddress& webSocketClientAddress,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
-    virtual void removeNextHop(const QString& participantId,
+    virtual void removeNextHop(const std::string& participantId,
                                std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
                                        callbackFct = nullptr);
-    virtual void resolveNextHop(const QString& participantId,
+    virtual void resolveNextHop(const std::string& participantId,
                                 std::function<void(const joynr::RequestStatus& joynrInternalStatus,
                                                    const bool& resolved)> callbackFct);
 
-    void addProvisionedNextHop(QString participantId,
+    void addProvisionedNextHop(std::string participantId,
                                QSharedPointer<joynr::system::Address> address);
 
     void setAccessController(QSharedPointer<IAccessController> accessController);
 
     void setParentRouter(joynr::system::RoutingProxy* parentRouter,
                          QSharedPointer<joynr::system::Address> parentAddress,
-                         QString parentParticipantId);
+                         std::string parentParticipantId);
 
-    virtual void addNextHop(const QString& participantId,
+    virtual void addNextHop(const std::string& participantId,
                             const QSharedPointer<joynr::system::Address>& inprocessAddress,
                             std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
                                     callbackFct = nullptr);
@@ -141,7 +142,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
-    Directory<QString, joynr::system::Address> routingTable;
+    Directory<std::string, joynr::system::Address> routingTable;
     QReadWriteLock routingTableLock;
     QThreadPool threadPool;
     joynr::system::RoutingProxy* parentRouter;
@@ -158,18 +159,19 @@ private:
 
     void init(int maxThreads);
     void addNextHopToParent(
-            QString participantId,
+            std::string participantId,
             std::function<void(const joynr::RequestStatus& status)> callbackFct = nullptr);
 
     void sendMessage(const JoynrMessage& message,
                      QSharedPointer<joynr::system::Address> destAddress);
 
-    void sendMessages(const QString& destinationPartId,
+    void sendMessages(const std::string& destinationPartId,
                       QSharedPointer<joynr::system::Address> address);
 
     bool isChildMessageRouter();
 
-    void addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address);
+    void addToRoutingTable(std::string participantId,
+                           QSharedPointer<joynr::system::Address> address);
 
     void removeRunningParentResolvers(const QString& destinationPartId);
 };

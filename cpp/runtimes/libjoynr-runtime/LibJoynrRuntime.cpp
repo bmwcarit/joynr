@@ -122,8 +122,8 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage =
-            QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = QSharedPointer<ParticipantIdStorage>(
+            new ParticipantIdStorage(persistenceFilename.toStdString()));
 
     // initialize the dispatchers
     QList<IDispatcher*> dispatcherList;
@@ -154,7 +154,8 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(routingProxy, ccMessagingAddress, routingProviderParticipantId);
+    messageRouter->setParentRouter(
+            routingProxy, ccMessagingAddress, routingProviderParticipantId.toStdString());
     delete routingProxyBuilder;
 
     // setup discovery
@@ -185,7 +186,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(TypeUtil::convertStdStringtoQString(participantId));
+    capabilitiesRegistrar->remove(participantId);
 }
 
 void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)

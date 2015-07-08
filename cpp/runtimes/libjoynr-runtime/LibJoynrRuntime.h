@@ -21,7 +21,6 @@
 #define LIBJOYNRRUNTIME_H
 
 #include <QtCore/QSemaphore>
-#include <QtCore/QString>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QSettings>
 #include <string>

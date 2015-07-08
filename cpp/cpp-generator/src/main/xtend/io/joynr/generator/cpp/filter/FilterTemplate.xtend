@@ -66,6 +66,8 @@ class FilterTemplate implements BroadcastTemplate {
 #include "«parameterType»"
 «ENDFOR»
 
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
+
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
 #include "joynr/IBroadcastFilter.h"

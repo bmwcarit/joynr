@@ -29,8 +29,8 @@
 #include "joynr/system/DiscoveryQos.h"
 
 #include <QSharedPointer>
-#include <QString>
 #include <QSemaphore>
+#include <string>
 
 namespace joynr
 {
@@ -64,7 +64,7 @@ public:
     /*
      *  Returns the result of the arbitration.
      */
-    QString getParticipantId();
+    std::string getParticipantId();
 
     joynr::system::CommunicationMiddleware::Enum getConnection();
 
@@ -82,8 +82,8 @@ protected:
      *  This blocking is need for example for the fixed channel arbitrator which
      *  sets the channelId instantly.
      */
-    ProviderArbitrator(const QString& domain,
-                       const QString& interfaceName,
+    ProviderArbitrator(const std::string& domain,
+                       const std::string& interfaceName,
                        joynr::system::IDiscoverySync& discoveryProxy,
                        const DiscoveryQos& discoveryQos);
     /*
@@ -92,7 +92,7 @@ protected:
      */
     void updateArbitrationStatusParticipantIdAndAddress(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
-            QString participantId,
+            std::string participantId,
             const joynr::system::CommunicationMiddleware::Enum& connection);
     /**
      * @brief selectPreferredCommunicationMiddleware Selects the preferred communication middleware
@@ -106,15 +106,15 @@ protected:
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::system::DiscoveryQos systemDiscoveryQos;
-    QString domain;
-    QString interfaceName;
+    std::string domain;
+    std::string interfaceName;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
-    void setParticipantId(QString participantId);
+    void setParticipantId(std::string participantId);
     void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection);
-    QString participantId;
+    std::string participantId;
     joynr::system::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;

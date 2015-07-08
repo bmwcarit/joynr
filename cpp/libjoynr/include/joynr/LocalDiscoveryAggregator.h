@@ -25,6 +25,7 @@
 #include "joynr/ProxyBuilder.h"
 
 #include "joynr/system/IDiscovery.h"
+#include <string>
 
 namespace joynr
 {
@@ -68,17 +69,18 @@ public:
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
                         QList<joynr::system::DiscoveryEntry>& result,
-                        const QString& domain,
-                        const QString& interfaceName,
+                        const std::string& domain,
+                        const std::string& interfaceName,
                         const joynr::system::DiscoveryQos& discoveryQos);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
                         joynr::system::DiscoveryEntry& result,
-                        const QString& participantId);
+                        const std::string& participantId);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void remove(joynr::RequestStatus& joynrInternalStatus, const QString& participantId);
+    virtual void remove(joynr::RequestStatus& joynrInternalStatus,
+                        const std::string& participantId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
@@ -97,7 +99,7 @@ private:
     joynr::system::IDiscoverySync* discoveryProxy;
     bool hasOwnershipOfDiscoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
-    QMap<QString, joynr::system::DiscoveryEntry> provisionedDiscoveryEntries;
+    QMap<std::string, joynr::system::DiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr

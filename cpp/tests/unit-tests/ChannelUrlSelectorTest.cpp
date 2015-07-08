@@ -23,6 +23,7 @@
 #include "utils/QThreadSleep.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
+#include <string>
 
 using ::testing::A;
 using ::testing::_;
@@ -37,7 +38,7 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const QString&  channelId, const qint64& timeout) {
+QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
     types::ChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
@@ -84,7 +85,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                 *settings);
 
     EXPECT_CALL(*mockDir, getUrlsForChannel(
-                    A<const QString&>(),
+                    A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(
                         const RequestStatus& status,
@@ -126,7 +127,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                 *settings);
 
     EXPECT_CALL(*mockDir, getUrlsForChannel(
-                    A<const QString&>(),
+                    A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(
                         const RequestStatus& status,
@@ -182,7 +183,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                 *settings);
 
     EXPECT_CALL(*mockDir, getUrlsForChannel(
-                    A<const QString&>(),
+                    A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(
                         const RequestStatus& status,

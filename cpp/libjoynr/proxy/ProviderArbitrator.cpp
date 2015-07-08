@@ -31,8 +31,8 @@ namespace joynr
 joynr_logging::Logger* ProviderArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("Arb", "ProviderArbitrator");
 
-ProviderArbitrator::ProviderArbitrator(const QString& domain,
-                                       const QString& interfaceName,
+ProviderArbitrator::ProviderArbitrator(const std::string& domain,
+                                       const std::string& interfaceName,
                                        joynr::system::IDiscoverySync& discoveryProxy,
                                        const DiscoveryQos& discoveryQos)
         : discoveryProxy(discoveryProxy),
@@ -113,9 +113,9 @@ joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::
     return joynr::system::CommunicationMiddleware::NONE;
 }
 
-QString ProviderArbitrator::getParticipantId()
+std::string ProviderArbitrator::getParticipantId()
 {
-    if (participantId.isEmpty()) {
+    if (participantId.empty()) {
         throw JoynrArbitrationException("ParticipantId is empty: Called getParticipantId() before "
                                         "arbitration has finished / Arbitrator did not set "
                                         "participantId.");
@@ -123,7 +123,7 @@ QString ProviderArbitrator::getParticipantId()
     return participantId;
 }
 
-void ProviderArbitrator::setParticipantId(QString participantId)
+void ProviderArbitrator::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
     if (listenerSemaphore.tryAcquire(1)) {
@@ -156,7 +156,7 @@ void ProviderArbitrator::setConnection(
 
 void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(
         ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
-        QString participantId,
+        std::string participantId,
         const joynr::system::CommunicationMiddleware::Enum& connection)
 {
     setParticipantId(participantId);

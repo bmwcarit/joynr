@@ -133,7 +133,7 @@ public:
      */
     void waitForBroadcastSubscriptionArrivedAtProvider(
             std::shared_ptr<tests::testProvider> testProvider,
-            const QString& broadcastName)
+            const std::string& broadcastName)
     {
         unsigned long delay = 0;
 
@@ -261,7 +261,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
-    QString subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
@@ -419,7 +419,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
-    QString subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.

@@ -41,8 +41,8 @@ InProcessPublicationSender::InProcessPublicationSender(SubscriptionManager* subs
 }
 
 void InProcessPublicationSender::sendSubscriptionPublication(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
         const MessagingQos& qos,
         const SubscriptionPublication& subscriptionPublication)
 {

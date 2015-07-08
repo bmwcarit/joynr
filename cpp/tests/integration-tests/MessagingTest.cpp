@@ -27,6 +27,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include <QString>
+#include <string>
 #include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/system/ChannelAddress.h"
@@ -51,9 +52,9 @@ public:
     QSettings settings;
     MessagingSettings messagingSettings;
     joynr_logging::Logger* logger;
-    QString senderId;
+    std::string senderId;
     QString senderChannelId;
-    QString receiverId;
+    std::string receiverId;
     QString receiverChannelId;
     Request request;
     QString requestId;
@@ -88,12 +89,12 @@ public:
         QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
             new system::ChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
         // provision channel url directory
         QSharedPointer<joynr::system::Address> addressChannelUrlDirectory(
             new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
         messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
@@ -147,10 +148,10 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
 
 TEST_F(MessagingTest, routeMsgWithInvalidParticipantId)
 {
-    QString invalidReceiverId("invalidReceiverId");
+    std::string invalidReceiverId("invalidReceiverId");
     JoynrMessage message = messageFactory.createRequest(
-                senderId,
-                invalidReceiverId,
+                QString::fromStdString(senderId),
+                QString::fromStdString(invalidReceiverId),
                 qos,
                 request);
 
@@ -162,8 +163,8 @@ TEST_F(MessagingTest, routeMsgWithInvalidParticipantId)
 TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
 {
     JoynrMessage message = messageFactory.createRequest(
-                senderId,
-                receiverId,
+                QString::fromStdString(senderId),
+                QString::fromStdString(receiverId),
                 qos,
                 request);
 
@@ -195,8 +196,8 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //                new MockLipciMessagingSkeleton());
 
     JoynrMessage message = messageFactory.createRequest(
-                senderId,
-                receiverId,
+                QString::fromStdString(senderId),
+                QString::fromStdString(receiverId),
                 qos,
                 request);
 
@@ -225,8 +226,8 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
 {
     JoynrMessage message = messageFactory.createRequest(
-                senderId,
-                receiverId,
+                QString::fromStdString(senderId),
+                QString::fromStdString(receiverId),
                 qos,
                 request);
     message.setHeaderReplyChannelId(senderChannelId);
@@ -252,16 +253,16 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
 TEST_F(MessagingTest, routeMultipleMessages)
 {
     JoynrMessage message = messageFactory.createRequest(
-                senderId,
-                receiverId,
+                QString::fromStdString(senderId),
+                QString::fromStdString(receiverId),
                 qos,
                 request);
     message.setHeaderReplyChannelId(senderChannelId);
 
-    QString receiverId2("receiverId2");
+    std::string receiverId2("receiverId2");
     JoynrMessage message2 = messageFactory.createRequest(
-                senderId,
-                receiverId2,
+                QString::fromStdString(senderId),
+                QString::fromStdString(receiverId2),
                 qos,
                 request);
     message2.setHeaderReplyChannelId(senderChannelId);

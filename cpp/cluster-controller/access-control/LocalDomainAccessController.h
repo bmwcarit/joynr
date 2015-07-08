@@ -34,6 +34,7 @@
 
 #include <QList>
 #include <QString>
+#include <string>
 #include <QSharedPointer>
 #include <QMutex>
 
@@ -440,9 +441,9 @@ private:
 
     struct AceSubscription
     {
-        QString masterAceSubscriptionId;
-        QString mediatorAceSubscriptionId;
-        QString ownerAceSubscriptionId;
+        std::string masterAceSubscriptionId;
+        std::string mediatorAceSubscriptionId;
+        std::string ownerAceSubscriptionId;
 
         AceSubscription()
                 : masterAceSubscriptionId(), mediatorAceSubscriptionId(), ownerAceSubscriptionId()

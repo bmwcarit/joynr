@@ -46,29 +46,31 @@ InterfaceRegistrar& InterfaceRegistrar::instance()
     return *registrarInstance;
 }
 
-void InterfaceRegistrar::unregisterRequestInterpreter(const QString& interfaceName)
+void InterfaceRegistrar::unregisterRequestInterpreter(const std::string& interfaceName)
 {
     QMutexLocker locker(&requestInterpretersMutex);
 
+    QString qInterfaceName(QString::fromStdString(interfaceName));
     // It is a programming error if the request interpreter does not exist
-    assert(requestInterpreters.contains(interfaceName));
+    assert(requestInterpreters.contains(qInterfaceName));
 
-    int count = --requestInterpreterCounts[interfaceName];
+    int count = --requestInterpreterCounts[qInterfaceName];
 
     // Remove the requestInterpreter if it is no longer needed
     if (count == 0) {
-        requestInterpreters.remove(interfaceName);
-        requestInterpreterCounts.remove(interfaceName);
+        requestInterpreters.remove(qInterfaceName);
+        requestInterpreterCounts.remove(qInterfaceName);
     }
 }
 
 QSharedPointer<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
-        const QString& interfaceName)
+        const std::string& interfaceName)
 {
     QMutexLocker locker(&requestInterpretersMutex);
+    QString qInterfaceName(QString::fromStdString(interfaceName));
 
-    assert(requestInterpreters.contains(interfaceName));
-    return requestInterpreters[interfaceName];
+    assert(requestInterpreters.contains(qInterfaceName));
+    return requestInterpreters[qInterfaceName];
 }
 
 void InterfaceRegistrar::reset()

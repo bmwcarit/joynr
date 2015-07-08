@@ -18,11 +18,11 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import io.joynr.generator.cpp.util.QtTypeUtil
+import org.franca.core.franca.FInterface
 
 class DefaultProviderCppTemplate implements InterfaceTemplate{
 
@@ -30,7 +30,7 @@ class DefaultProviderCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -69,7 +69,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	// LOG_WARN(logger, "**********************************************");
 	// LOG_WARN(logger, "* Default«interfaceName»Provider::get«attributename.toFirstUpper» called");
 	// LOG_WARN(logger, "**********************************************");
-	«IF attributeType=="QString"»
+	«IF attributeType=="std::string"»
 		//		«attribute.typeName» result = "Hello World";
 	«ELSEIF attributeType=="bool"»
 		//		«attribute.typeName» result = false;
@@ -85,10 +85,10 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 
 «ENDFOR»
 «FOR method: getMethods(serviceInterface)»
-	«val methodName = method.joynrName»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-	«val outputUntypedParamList = method.getCommaSeperatedUntypedOutputParameterList»
+	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+	«val methodName = method.joynrName»
 	void Default«interfaceName»Provider::«method.joynrName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			std::function<void(
@@ -99,7 +99,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
 			«val outputParamType = argument.typeName»
-			«IF outputParamType=="QString"»
+			«IF outputParamType=="std::string"»
 				«outputParamType» «argument.joynrName» = "Hello World";
 			«ELSEIF outputParamType=="bool"»
 				«outputParamType» «argument.joynrName» = false;

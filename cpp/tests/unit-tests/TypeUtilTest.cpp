@@ -20,6 +20,7 @@
 #include "gmock/gmock.h"
 #include "joynr/TypeUtil.h"
 #include <QString>
+#include <string>
 
 using namespace joynr;
 

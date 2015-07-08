@@ -37,6 +37,7 @@
 #include "joynr/Dispatcher.h"
 #include "tests/utils/MockObjects.h"
 #include <QVariant>
+#include <string>
 
 using ::testing::A;
 using ::testing::_;
@@ -139,12 +140,12 @@ public:
 
     // sets the expectations on the call expected on the MessageSender from the connector
     virtual testing::internal::TypedExpectation<void(
-            const QString&,
-            const QString&,
+            const std::string&,
+            const std::string&,
             const MessagingQos&,
             const Request&,
             QSharedPointer<IReplyCaller>
-    )>& setExpectationsForSendRequestCall(int expectedTypeId, QString methodName) = 0;
+    )>& setExpectationsForSendRequestCall(int expectedTypeId, std::string methodName) = 0;
 
     virtual tests::Itest* createFixture(bool cacheEnabled)=0;
 
@@ -282,8 +283,8 @@ protected:
     MockMessaging mockMessagingStub;
     QSharedPointer<IReplyCaller> callBack;
     MockJoynrMessageSender* mockJoynrMessageSender;
-    QString proxyParticipantId;
-    QString providerParticipantId;
+    std::string proxyParticipantId;
+    std::string providerParticipantId;
     MockClientCache mockClientCache;
     QSharedPointer<system::Address> endPointAddress;
     tests::Itest* asyncTestFixture;

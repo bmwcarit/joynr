@@ -22,7 +22,7 @@ import org.franca.core.franca.FInterface
 
 class InterfaceUtil {
 	@Inject extension JoynrCppGeneratorExtensions
-	@Inject extension QtTypeUtil
+	@Inject extension CppMigrateToStdTypeUtil
 
 	def printFutureReturnDefinition()
 '''
@@ -116,8 +116,8 @@ class InterfaceUtil {
 	def produceSyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
-		«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedConstInputParameterList(method))»
+		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedOutputParameterList)»
+		«val inputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstInputParameterList)»
 
 		/**
 		* @brief Synchronous operation «method.joynrName».
@@ -137,7 +137,7 @@ class InterfaceUtil {
 	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«var outputParameter = method.typeNamesForOutputParameter»
+		«var outputParameters = method.commaSeparatedOutputParameterTypes»
 		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
 
 		/**
@@ -147,8 +147,8 @@ class InterfaceUtil {
 		«printFutureReturnDefinition»
 		*/
 
-		virtual QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > «method.joynrName»(
-				«getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+		virtual QSharedPointer<joynr::Future<«outputParameters»> > «method.joynrName»(
+				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''

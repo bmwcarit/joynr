@@ -34,8 +34,8 @@ using namespace joynr_logging;
 Logger* QosArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("Arbi", "QosArbitrator");
 
-QosArbitrator::QosArbitrator(const QString& domain,
-                             const QString& interfaceName,
+QosArbitrator::QosArbitrator(const std::string& domain,
+                             const std::string& interfaceName,
                              joynr::system::IDiscoverySync& discoveryProxy,
                              const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
@@ -54,8 +54,8 @@ void QosArbitrator::attemptArbitration()
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
                           .arg(status.getCode().toString()));
     }
 }
@@ -98,7 +98,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     }
 
     updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
+            ArbitrationStatus::ArbitrationSuccessful, res.toStdString(), preferredConnection);
 }
 
 } // namespace joynr

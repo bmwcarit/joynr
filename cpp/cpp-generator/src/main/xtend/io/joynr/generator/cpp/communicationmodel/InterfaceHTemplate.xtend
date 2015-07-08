@@ -18,12 +18,13 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.InterfaceUtil
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
 
 class InterfaceHTemplate implements InterfaceTemplate{
 
@@ -49,15 +50,17 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	«IF datatype instanceof FType»
 		«IF isComplex(datatype)»
 			«getNamespaceStarter(datatype)» class «(datatype).joynrName»; «getNamespaceEnder(datatype)»
-		«ELSE»
+		«ELSE »
 			#include "«getIncludeOf(datatype)»"
 		«ENDIF»
 	«ENDIF»
 «ENDFOR»
 
+#include <string>
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
+
 «getDllExportIncludeStatement()»
 
-#include <QString>
 #include <QSharedPointer>
 #include <functional>
 
@@ -78,7 +81,7 @@ public:
 
 	// Visual C++ does not export static const variables from DLLs
 	// This getter is used instead
-	static const QString getInterfaceName();
+	static const std::string getInterfaceName();
 };
 
 /**

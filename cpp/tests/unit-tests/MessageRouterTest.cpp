@@ -44,12 +44,12 @@ public:
         QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
             new system::ChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
         // provision channel url directory
         QSharedPointer<joynr::system::Address> addressChannelUrlDirectory(
             new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
         joynrMessage.setHeaderExpiryDate(QDateTime::currentDateTimeUtc().addMSecs(100));
     }
 

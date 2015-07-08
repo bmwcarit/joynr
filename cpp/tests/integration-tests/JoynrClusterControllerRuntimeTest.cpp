@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 #include "PrettyPrint.h"
+
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
@@ -173,8 +174,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
 {
-    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
 
     QList<int> ints;
     ints << 4 << 6 << 12;
@@ -262,7 +263,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                     100  // alert after interval
                 )
     );
-    QString subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(250);
     testProxy->unsubscribeFromLocation(subscriptionId);
     delete testProxy;
@@ -313,7 +314,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
                     10000  // alert after interval
                 )
     );
-    QString subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+    std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(500);
     testProxy->unsubscribeFromLocation(subscriptionId);
     QThreadSleep::msleep(600);

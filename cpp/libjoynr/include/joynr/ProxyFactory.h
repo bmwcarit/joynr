@@ -25,8 +25,8 @@
 
 #include "joynr/ConnectorFactory.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -46,7 +46,7 @@ public:
 
     // Create a proxy of type T
     template <class T>
-    T* createProxy(const QString& domain, const MessagingQos& qosSettings, bool cached)
+    T* createProxy(const std::string& domain, const MessagingQos& qosSettings, bool cached)
     {
         return new T(
                 messagingEndpointAddress, connectorFactory, cache, domain, qosSettings, cached);

@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
@@ -55,7 +56,7 @@ public:
     JoynrClusterControllerRuntime* runtime;
     QSettings settings;
     MessagingSettings messagingSettings;
-    QString channelId;
+    std::string channelId;
 
     CapabilitiesClientTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
@@ -65,7 +66,7 @@ public:
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
-        channelId = storage.getChannelId();
+        channelId = storage.getChannelId().toStdString();
         QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
         SettingsMerger::mergeSettings(libJoynrSettingsFilename, settings);
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
@@ -132,7 +133,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
             };
 
     LOG_DEBUG(logger,"get capabilities");
-    capabilitiesClient->lookup(capDomain, capInterface, callbackFct);
+    capabilitiesClient->lookup(capDomain.toStdString(), capInterface.toStdString(), callbackFct);
     semaphore.tryAcquire(1,10000);
     LOG_DEBUG(logger,"finished get capabilities");
 

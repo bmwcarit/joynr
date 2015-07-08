@@ -33,6 +33,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <QSharedPointer>
+#include <string>
 
 using ::testing::A;
 using ::testing::_;
@@ -48,7 +49,7 @@ public:
     }
 
 protected:
-    QString gpsInterfaceName;
+    std::string gpsInterfaceName;
 };
 
 

@@ -18,12 +18,12 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import java.util.HashSet
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceCppTemplate implements InterfaceTemplate{
@@ -98,9 +98,9 @@ I«interfaceName»Base::I«interfaceName»Base()
 	«ENDFOR»
 }
 
-static const QString INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
+static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
 
-const QString I«interfaceName»Base::getInterfaceName()
+const std::string I«interfaceName»Base::getInterfaceName()
 {
 	return INTERFACE_NAME;
 }

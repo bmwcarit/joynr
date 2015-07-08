@@ -27,8 +27,8 @@
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/joynrlogging.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -41,16 +41,16 @@ public:
     InProcessDispatcher();
     virtual ~InProcessDispatcher();
 
-    virtual void addReplyCaller(const QString& requestReplyId,
+    virtual void addReplyCaller(const std::string& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings);
 
-    virtual void removeReplyCaller(const QString& requestReplyId);
+    virtual void removeReplyCaller(const std::string& requestReplyId);
 
-    virtual void addRequestCaller(const QString& participantId,
+    virtual void addRequestCaller(const std::string& participantId,
                                   QSharedPointer<RequestCaller> requestCaller);
 
-    virtual void removeRequestCaller(const QString& participantId);
+    virtual void removeRequestCaller(const std::string& participantId);
 
     virtual void receive(const JoynrMessage& message);
 
@@ -58,9 +58,9 @@ public:
 
     virtual void registerPublicationManager(PublicationManager* publicationManager);
 
-    QSharedPointer<RequestCaller> lookupRequestCaller(const QString& participantId);
+    QSharedPointer<RequestCaller> lookupRequestCaller(const std::string& participantId);
 
-    bool containsRequestCaller(const QString& participantId);
+    bool containsRequestCaller(const std::string& participantId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessDispatcher);

@@ -19,8 +19,8 @@
 #ifndef DISPATCHER_H
 #define DISPATCHER_H
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -38,13 +38,13 @@ public:
     virtual ~IDispatcher()
     {
     }
-    virtual void addReplyCaller(const QString& requestReplyId,
+    virtual void addReplyCaller(const std::string& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings) = 0;
-    virtual void removeReplyCaller(const QString& requestReplyId) = 0;
-    virtual void addRequestCaller(const QString& participantId,
+    virtual void removeReplyCaller(const std::string& requestReplyId) = 0;
+    virtual void addRequestCaller(const std::string& participantId,
                                   QSharedPointer<RequestCaller> requestCaller) = 0;
-    virtual void removeRequestCaller(const QString& participantId) = 0;
+    virtual void removeRequestCaller(const std::string& participantId) = 0;
     virtual void receive(const JoynrMessage& message) = 0;
 
     virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager) = 0;

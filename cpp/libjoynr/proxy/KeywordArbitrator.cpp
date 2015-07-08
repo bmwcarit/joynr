@@ -28,8 +28,8 @@
 namespace joynr
 {
 
-KeywordArbitrator::KeywordArbitrator(const QString& domain,
-                                     const QString& interfaceName,
+KeywordArbitrator::KeywordArbitrator(const std::string& domain,
+                                     const std::string& interfaceName,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
@@ -49,8 +49,8 @@ void KeywordArbitrator::attemptArbitration()
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
                           .arg(status.getCode().toString()));
     }
 }
@@ -88,7 +88,9 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
                 joynr::system::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(
-                        ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
+                        ArbitrationStatus::ArbitrationSuccessful,
+                        res.toStdString(),
+                        preferredConnection);
                 return;
             }
         }

@@ -24,8 +24,8 @@ namespace joynr
 {
 
 ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
-        const QString& domain,
-        const QString& interfaceName,
+        const std::string& domain,
+        const std::string& interfaceName,
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
 {

@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include <QSettings>
 #include <QFile>
+#include <string>
 #include "joynr/MessagingSettings.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "utils/QThreadSleep.h"
@@ -40,7 +41,7 @@ using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
 QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
-        const QString& channelId,
+        const std::string& channelId,
         std::function<void(
             RequestStatus& status,
             types::ChannelUrlInformation& urls)> callbackFct) {
@@ -87,7 +88,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannel(
-                    A<const QString&>(),
+                    A<const std::string&>(),
                     A<std::function<void(const RequestStatus& status, const types::ChannelUrlInformation& urls)>>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
@@ -115,7 +116,7 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrls(
-                    A<const QString&>(),
+                    A<const std::string&>(),
                     _,
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
@@ -132,7 +133,7 @@ TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrls(
-                    A<const QString&>(),
+                    A<const std::string&>(),
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
             .WillOnce(Return(QSharedPointer<joynr::Future<void>>(new joynr::Future<void>())));

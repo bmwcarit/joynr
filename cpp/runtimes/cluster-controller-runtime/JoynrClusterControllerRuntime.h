@@ -41,9 +41,9 @@
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
+#include <string>
 
 class QCoreApplication;
-class QString;
 class JoynrClusterControllerRuntimeTest;
 
 namespace joynr

@@ -31,6 +31,7 @@
 */
 
 #include <QString>
+#include <string>
 #include <QSharedPointer>
 #include <QList>
 #include <QSettings>
@@ -54,7 +55,7 @@ public:
        Default constructor for the capabilities client.
        dispatcherPrt - pointer to a dispatcher instance created by the dispatcherFactory
       */
-    FakeCapabilitiesClient(const QString& localChannelId, const QString& settingsFileName);
+    FakeCapabilitiesClient(const std::string& localChannelId, const QString& settingsFileName);
 
     virtual ~FakeCapabilitiesClient();
     /*
@@ -66,25 +67,25 @@ public:
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(QList<QString> participantIds);
+    virtual void remove(QList<std::string> participantIds);
 
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
-                                                       const QString& interfaceName);
+    virtual QList<types::CapabilityInformation> lookup(const std::string& domain,
+                                                       const std::string& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
       */
-    virtual void lookup(const QString& domain,
-                        const QString& interfaceName,
+    virtual void lookup(const std::string& domain,
+                        const std::string& interfaceName,
                         QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual void lookup(const QString& participantId,
+    virtual void lookup(const std::string& participantId,
                         QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual QString getLocalChannelId();
+    virtual std::string getLocalChannelId();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FakeCapabilitiesClient);
@@ -107,8 +108,8 @@ private:
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
 
-    QString capabilitiesClientParticipantId;
-    QString localChannelId;
+    std::string capabilitiesClientParticipantId;
+    std::string localChannelId;
 
     QSettings configuration;
 

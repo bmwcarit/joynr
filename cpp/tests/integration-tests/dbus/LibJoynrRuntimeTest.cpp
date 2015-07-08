@@ -180,7 +180,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
     );
     RequestStatus status;
     bool resolved = false;
-    routingProxy->resolveNextHop(status, resolved, TypeUtil::convertStdStringtoQString(participantId));
+    routingProxy->resolveNextHop(status, resolved, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 }
@@ -195,12 +195,12 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
 
     RequestStatus status;
     bool resolved = false;
-    routingProxy->resolveNextHop(status, resolved, TypeUtil::convertStdStringtoQString(participantId));
+    routingProxy->resolveNextHop(status, resolved, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 
     runtime->unregisterProvider(participantId);
-    routingProxy->resolveNextHop(status, resolved, TypeUtil::convertStdStringtoQString(participantId));
+    routingProxy->resolveNextHop(status, resolved, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_FALSE(resolved);
 }
@@ -217,14 +217,14 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     joynr::system::DiscoveryEntry expectedDiscoveryEntry(
                 TypeUtil::convertStdStringtoQString(domain),
-                tests::testProvider::getInterfaceName(),
+                TypeUtil::convertStdStringtoQString(tests::testProvider::getInterfaceName()),
                 TypeUtil::convertStdStringtoQString(participantId),
                 mockTestProviderQos,
                 connections
     );
     RequestStatus status;
     joynr::system::DiscoveryEntry discoveryEntry;
-    discoveryProxy->lookup(status, discoveryEntry, TypeUtil::convertStdStringtoQString(participantId));
+    discoveryProxy->lookup(status, discoveryEntry, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);
 }

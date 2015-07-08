@@ -25,6 +25,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/system/Address.h"
 #include "joynr/system/CommunicationMiddleware.h"
+#include <string>
 
 namespace joynr
 {
@@ -38,8 +39,8 @@ class JOYNR_EXPORT ProxyBase
 public:
     ProxyBase(ConnectorFactory* connectorFactory,
               IClientCache* cache,
-              const QString& domain,
-              const QString& interfaceName,
+              const std::string& domain,
+              const std::string& interfaceName,
               const MessagingQos& qosSettings,
               bool cached);
     virtual ~ProxyBase();
@@ -49,7 +50,7 @@ public:
      * Not shure if this should be part of the public api, but is needed in proxy builder to
      * register the next hop on message router.
      */
-    QString getProxyParticipantId();
+    std::string getProxyParticipantId();
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(ProxyBase);
@@ -59,17 +60,17 @@ protected:
      *  It is called as soon as the arbitration result is available.
      */
     virtual void handleArbitrationFinished(
-            const QString& participantId,
+            const std::string& participantId,
             const joynr::system::CommunicationMiddleware::Enum& connection);
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
-    QString domain;
-    QString interfaceName;
+    std::string domain;
+    std::string interfaceName;
     MessagingQos qosSettings;
     bool cached;
-    QString providerParticipantId;
-    QString proxyParticipantId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
     joynr::system::CommunicationMiddleware::Enum* connection;
     static joynr_logging::Logger* logger;
 };

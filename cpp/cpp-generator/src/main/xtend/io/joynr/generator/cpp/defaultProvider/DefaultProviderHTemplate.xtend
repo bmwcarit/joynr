@@ -18,11 +18,11 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.QtTypeUtil
 
 class DefaultProviderHTemplate implements InterfaceTemplate{
 
@@ -30,7 +30,7 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -52,6 +52,8 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 	#include "«parameterType»"
 «ENDFOR»
+
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 

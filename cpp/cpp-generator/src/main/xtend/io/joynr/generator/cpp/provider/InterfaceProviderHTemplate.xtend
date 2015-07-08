@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -32,7 +32,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 	private extension JoynrCppGeneratorExtensions
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -57,6 +57,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 «ENDFOR»
 
 #include <memory>
+«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
 
 «getDllExportIncludeStatement()»
 

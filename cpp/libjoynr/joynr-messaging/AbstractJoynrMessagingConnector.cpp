@@ -32,10 +32,10 @@ Logger* AbstractJoynrMessagingConnector::logger =
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         IJoynrMessageSender* joynrMessageSender,
         SubscriptionManager* subscriptionManager,
-        const QString& domain,
-        const QString& interfaceName,
-        const QString proxyParticipantId,
-        const QString& providerParticipantId,
+        const std::string& domain,
+        const std::string& interfaceName,
+        const std::string proxyParticipantId,
+        const std::string& providerParticipantId,
         const MessagingQos& qosSettings,
         IClientCache* cache,
         bool cached)

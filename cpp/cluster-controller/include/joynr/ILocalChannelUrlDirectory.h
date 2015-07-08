@@ -18,9 +18,9 @@
  */
 #ifndef ILOCALCHANNELURLDIRECTORY_H_
 #define ILOCALCHANNELURLDIRECTORY_H_
-#include <QString>
 #include <QSharedPointer>
 #include <functional>
+#include <string>
 
 namespace joynr
 {
@@ -53,7 +53,7 @@ public:
      * @param callbackFct
      */
     virtual QSharedPointer<joynr::Future<void>> registerChannelUrls(
-            const QString& channelId,
+            const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
 
@@ -64,7 +64,7 @@ public:
      * @param callbackFct
      */
     virtual QSharedPointer<joynr::Future<void>> unregisterChannelUrls(
-            const QString& channelId,
+            const std::string& channelId,
             std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
 
     /**
@@ -76,7 +76,7 @@ public:
      * @param callbackFct
      */
     virtual QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannel(
-            const QString& channelId,
+            const std::string& channelId,
             const qint64& timeout_ms,
             std::function<void(const joynr::RequestStatus&, const types::ChannelUrlInformation&)>
                     callbackFct = nullptr) = 0;

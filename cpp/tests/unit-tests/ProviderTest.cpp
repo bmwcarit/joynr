@@ -38,7 +38,7 @@ public:
 
 TEST(ProviderTest, register_attributeListener) {
     MockPublicationManager publicationManager;
-    QString attributeName("testAttribute");
+    std::string attributeName("testAttribute");
     QString subscriptionId("test-subscription-id");
     QVariant attributeValue(42);
 
@@ -56,7 +56,7 @@ TEST(ProviderTest, register_attributeListener) {
 
 TEST(ProviderTest, unregister_attributeListener) {
     MockPublicationManager publicationManager;
-    QString attributeName("testAttribute");
+    std::string attributeName("testAttribute");
     QString subscriptionId("test-subscription-id");
     QVariant attributeValue(42);
 

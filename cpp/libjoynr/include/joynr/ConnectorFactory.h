@@ -28,7 +28,7 @@
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/system/CommunicationMiddleware.h"
 
-#include <QString>
+#include <string>
 #include <QSharedPointer>
 
 namespace joynr
@@ -47,9 +47,9 @@ public:
                      JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
     ~ConnectorFactory();
     template <class T>
-    T* create(const QString& domain,
-              const QString proxyParticipantId,
-              const QString& providerParticipantId,
+    T* create(const std::string& domain,
+              const std::string proxyParticipantId,
+              const std::string& providerParticipantId,
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached,

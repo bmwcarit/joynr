@@ -22,8 +22,8 @@
 
 #include "joynr/joynrlogging.h"
 #include "joynr/ProviderArbitrator.h"
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -37,8 +37,8 @@ class DiscoveryEntry;
 class DefaultArbitrator : public ProviderArbitrator
 {
 public:
-    DefaultArbitrator(const QString& domain,
-                      const QString& interfaceName,
+    DefaultArbitrator(const std::string& domain,
+                      const std::string& interfaceName,
                       joynr::system::IDiscoverySync& discoveryProxy,
                       const DiscoveryQos& discoveryQos);
     virtual void attemptArbitration();

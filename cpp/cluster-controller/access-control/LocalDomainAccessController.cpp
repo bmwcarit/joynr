@@ -270,7 +270,8 @@ QList<MasterAccessControlEntry> LocalDomainAccessController::getMasterAccessCont
 {
     RequestStatus rs;
     QList<MasterAccessControlEntry> resultMasterAces;
-    globalDomainAccessControllerProxy->getMasterAccessControlEntries(rs, resultMasterAces, uid);
+    globalDomainAccessControllerProxy->getMasterAccessControlEntries(
+            rs, resultMasterAces, uid.toStdString());
 
     return resultMasterAces;
 }
@@ -281,7 +282,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessController::getEditableMasterAc
     RequestStatus rs;
     QList<MasterAccessControlEntry> resultMasterAces;
     globalDomainAccessControllerProxy->getEditableMasterAccessControlEntries(
-            rs, resultMasterAces, uid);
+            rs, resultMasterAces, uid.toStdString());
 
     return resultMasterAces;
 }
@@ -304,8 +305,12 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const QString& 
 {
     RequestStatus rs;
     bool success;
-    globalDomainAccessControllerProxy->removeMasterAccessControlEntry(
-            rs, success, uid, domain, interfaceName, operation);
+    globalDomainAccessControllerProxy->removeMasterAccessControlEntry(rs,
+                                                                      success,
+                                                                      uid.toStdString(),
+                                                                      domain.toStdString(),
+                                                                      interfaceName.toStdString(),
+                                                                      operation.toStdString());
 
     return success;
 }
@@ -315,7 +320,8 @@ QList<MasterAccessControlEntry> LocalDomainAccessController::getMediatorAccessCo
 {
     RequestStatus rs;
     QList<MasterAccessControlEntry> resultMediatorAces;
-    globalDomainAccessControllerProxy->getMediatorAccessControlEntries(rs, resultMediatorAces, uid);
+    globalDomainAccessControllerProxy->getMediatorAccessControlEntries(
+            rs, resultMediatorAces, uid.toStdString());
 
     return resultMediatorAces;
 }
@@ -326,7 +332,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessController::
     RequestStatus rs;
     QList<MasterAccessControlEntry> resultMediatorAces;
     globalDomainAccessControllerProxy->getEditableMediatorAccessControlEntries(
-            rs, resultMediatorAces, uid);
+            rs, resultMediatorAces, uid.toStdString());
 
     return resultMediatorAces;
 }
@@ -349,8 +355,12 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const QString
 {
     RequestStatus rs;
     bool success;
-    globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(
-            rs, success, uid, domain, interfaceName, operation);
+    globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(rs,
+                                                                        success,
+                                                                        uid.toStdString(),
+                                                                        domain.toStdString(),
+                                                                        interfaceName.toStdString(),
+                                                                        operation.toStdString());
 
     return success;
 }
@@ -360,7 +370,8 @@ QList<OwnerAccessControlEntry> LocalDomainAccessController::getOwnerAccessContro
 {
     RequestStatus rs;
     QList<OwnerAccessControlEntry> resultOwnerAces;
-    globalDomainAccessControllerProxy->getOwnerAccessControlEntries(rs, resultOwnerAces, uid);
+    globalDomainAccessControllerProxy->getOwnerAccessControlEntries(
+            rs, resultOwnerAces, uid.toStdString());
 
     return resultOwnerAces;
 }
@@ -371,7 +382,7 @@ QList<OwnerAccessControlEntry> LocalDomainAccessController::getEditableOwnerAcce
     RequestStatus rs;
     QList<OwnerAccessControlEntry> resultOwnerAces;
     globalDomainAccessControllerProxy->getEditableOwnerAccessControlEntries(
-            rs, resultOwnerAces, uid);
+            rs, resultOwnerAces, uid.toStdString());
 
     return resultOwnerAces;
 }
@@ -393,8 +404,12 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const QString& u
 {
     RequestStatus rs;
     bool success;
-    globalDomainAccessControllerProxy->removeOwnerAccessControlEntry(
-            rs, success, uid, domain, interfaceName, operation);
+    globalDomainAccessControllerProxy->removeOwnerAccessControlEntry(rs,
+                                                                     success,
+                                                                     uid.toStdString(),
+                                                                     domain.toStdString(),
+                                                                     interfaceName.toStdString(),
+                                                                     operation.toStdString());
 
     return success;
 }
@@ -594,7 +609,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
             initialiser->abort();
         }
     };
-    globalDomainAccessControllerProxy->getDomainRoles(userId, domainRoleCallbackFct);
+    globalDomainAccessControllerProxy->getDomainRoles(userId.toStdString(), domainRoleCallbackFct);
 
     std::function<void(const RequestStatus& status,
                        const QList<MasterAccessControlEntry>& masterAces)> masterAceCallbackFct =
@@ -617,7 +632,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
         }
     };
     globalDomainAccessControllerProxy->getMasterAccessControlEntries(
-            domain, interfaceName, masterAceCallbackFct);
+            domain.toStdString(), interfaceName.toStdString(), masterAceCallbackFct);
 
     // Initialise mediator access control entries from global data
     std::function<
@@ -642,7 +657,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
         }
     };
     globalDomainAccessControllerProxy->getMediatorAccessControlEntries(
-            domain, interfaceName, mediatorAceCallbackFct);
+            domain.toStdString(), interfaceName.toStdString(), mediatorAceCallbackFct);
 
     // Initialise owner access control entries from global data
     std::function<void(const RequestStatus& status,
@@ -666,7 +681,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
         }
     };
     globalDomainAccessControllerProxy->getOwnerAccessControlEntries(
-            domain, interfaceName, ownerAceCallbackFct);
+            domain.toStdString(), interfaceName.toStdString(), ownerAceCallbackFct);
 }
 
 // Called when the data for the given domain/interface has been obtained from the GDAC
@@ -753,14 +768,14 @@ QString LocalDomainAccessController::subscribeForDreChange(const QString& userId
             domainRoleFilterParameters;
     domainRoleFilterParameters.setUserIdOfInterest(userId);
 
-    QString subscriptionId =
+    std::string subscriptionId =
             globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
                     domainRoleFilterParameters,
                     domainRoleEntryChangedBroadcastListener
                             .staticCast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(),
                     broadcastSubscriptionQos);
 
-    return subscriptionId;
+    return QString::fromStdString(subscriptionId);
 }
 
 LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscribeForAceChange(

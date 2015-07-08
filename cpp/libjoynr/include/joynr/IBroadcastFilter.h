@@ -27,6 +27,7 @@ class QMap;
 
 class QVariant;
 class QString;
+#include <string>
 
 typedef QMap<QString, QVariant> QVariantMap;
 
@@ -40,7 +41,7 @@ namespace joynr
 class JOYNR_EXPORT IBroadcastFilter
 {
 public:
-    IBroadcastFilter(QString name) : name(name)
+    IBroadcastFilter(std::string name) : name(name)
     {
     }
     virtual ~IBroadcastFilter()
@@ -50,13 +51,13 @@ public:
     virtual bool filter(const QList<QVariant>& eventValues,
                         const BroadcastFilterParameters& filterParameters) = 0;
 
-    const QString& getName()
+    const std::string& getName()
     {
         return name;
     }
 
 private:
-    QString name;
+    std::string name;
 };
 
 } // namespace joynr

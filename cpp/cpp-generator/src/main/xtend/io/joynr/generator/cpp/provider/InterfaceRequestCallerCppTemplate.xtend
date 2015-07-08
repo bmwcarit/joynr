@@ -18,11 +18,11 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import io.joynr.generator.cpp.util.QtTypeUtil
+import org.franca.core.franca.FInterface
 
 class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
@@ -30,7 +30,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension QtTypeUtil
+	private extension CppMigrateToStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -48,6 +48,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 «IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
 	#include "joynr/RequestStatus.h"
+	#include "joynr/TypeUtil.h"
 «ENDIF»
 
 «getNamespaceStarter(serviceInterface)»
@@ -75,7 +76,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 «FOR method: getMethods(serviceInterface)»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
-	«val inputUntypedParamList = method.commaSeperatedUntypedInputParameterList»
+	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	«val methodName = method.joynrName»
 	void «interfaceName»RequestCaller::«methodName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
@@ -88,22 +89,22 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	}
 «ENDFOR»
 
-void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
+void «interfaceName»RequestCaller::registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener)
 {
 	provider->registerAttributeListener(attributeName, attributeListener);
 }
 
-void «interfaceName»RequestCaller::unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
+void «interfaceName»RequestCaller::unregisterAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener)
 {
 	provider->unregisterAttributeListener(attributeName, attributeListener);
 }
 
-void «interfaceName»RequestCaller::registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
+void «interfaceName»RequestCaller::registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener)
 {
 	provider->registerBroadcastListener(broadcastName, broadcastListener);
 }
 
-void «interfaceName»RequestCaller::unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
+void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener)
 {
 	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
 }

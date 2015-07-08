@@ -23,6 +23,7 @@
 #include "gmock/gmock.h"
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
+#include <string>
 
 
 #include "joynr/IDispatcher.h"
@@ -63,10 +64,10 @@ public:
 
 
     void SetUp(){
-        postFix = QString("_" + QUuid::createUuid().toString());
-        senderID = QString("senderId" + postFix);
-        receiverID = QString("receiverID" + postFix);
-        requestID = QString("requestId" + postFix);
+        postFix = "_" + QUuid::createUuid().toString().toStdString();
+        senderID = "senderId" + postFix;
+        receiverID = "receiverID" + postFix;
+        requestID = "requestId" + postFix;
         qosSettings = MessagingQos(456000);
     }
     void TearDown(){
@@ -75,10 +76,10 @@ public:
 
 protected:
     JoynrMessageFactory messageFactory;
-    QString postFix;
-    QString senderID;
-    QString receiverID;
-    QString requestID;
+    std::string postFix;
+    std::string senderID;
+    std::string receiverID;
+    std::string requestID;
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
     MockMessaging mockMessagingStub;
@@ -106,8 +107,8 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     request.setParamDatatypes(paramDatatypes);
 
     JoynrMessage message = messageFactory.createRequest(
-                senderID,
-                receiverID,
+                QString::fromStdString(senderID),
+                QString::fromStdString(receiverID),
                 qosSettings,
                 request
     );
@@ -147,7 +148,11 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     response.append(QVariant("response"));
     reply.setResponse(response);
 
-    JoynrMessage message = messageFactory.createReply(senderID,receiverID, qosSettings, reply);
+    JoynrMessage message = messageFactory.createReply(
+                QString::fromStdString(senderID),
+                QString::fromStdString(receiverID),
+                qosSettings,
+                reply);
 
 
     EXPECT_CALL(*(messagingStubQsp.data()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
@@ -171,7 +176,11 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     subscriptionRequest.setSubscribeToName(QString("attributeName"));
     subscriptionRequest.setQos(qos);
 
-    JoynrMessage message = messageFactory.createSubscriptionRequest(senderID,receiverID, qosSettings, subscriptionRequest);
+    JoynrMessage message = messageFactory.createSubscriptionRequest(
+                QString::fromStdString(senderID),
+                QString::fromStdString(receiverID),
+                qosSettings,
+                subscriptionRequest);
 
 
     EXPECT_CALL(*messagingStubQsp, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
@@ -200,7 +209,11 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     subscriptionRequest.setSubscribeToName(QString("broadcastName"));
     subscriptionRequest.setQos(qos);
 
-    JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(senderID,receiverID, qosSettings, subscriptionRequest);
+    JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
+                QString::fromStdString(senderID),
+                QString::fromStdString(receiverID),
+                qosSettings,
+                subscriptionRequest);
 
 
     EXPECT_CALL(*messagingStubQsp, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
@@ -240,7 +253,11 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
     publication.setResponse("publication");
-    JoynrMessage message = messageFactory.createSubscriptionPublication(senderID,receiverID, qosSettings, publication);
+    JoynrMessage message = messageFactory.createSubscriptionPublication(
+                QString::fromStdString(senderID),
+                QString::fromStdString(receiverID),
+                qosSettings,
+                publication);
 
     EXPECT_CALL(*(messagingStubQsp.data()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
                                                       Property(&JoynrMessage::getPayload, Eq(message.getPayload())))));

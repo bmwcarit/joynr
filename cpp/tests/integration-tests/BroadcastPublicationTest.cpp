@@ -21,7 +21,6 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include "tests/utils/MockObjects.h"
-#include <QString>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
@@ -82,8 +81,8 @@ public:
                     subscriptionBroadcastListener);
 
         publicationManager->add(
-                    proxyParticipantId,
-                    providerParticipantId,
+                    QString::fromStdString(proxyParticipantId),
+                    QString::fromStdString(providerParticipantId),
                     requestCaller,
                     request,
                     publicationSender);
@@ -104,8 +103,8 @@ protected:
     types::GpsLocation gpsLocation1;
     double speed1;
 
-    QString providerParticipantId;
-    QString proxyParticipantId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
     QString subscriptionId;
     PublicationManager* publicationManager;
     MockPublicationSender* publicationSender;

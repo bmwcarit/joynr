@@ -20,6 +20,7 @@
 
 #include "PrettyPrint.h"
 #include "joynr/joynrlogging.h"
+#include <string>
 
 #include "joynr/types/Word.h"
 #include "joynr/types/Vowel.h"

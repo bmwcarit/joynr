@@ -42,7 +42,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 {
 }
 
-void CapabilitiesRegistrar::remove(const QString& participantId)
+void CapabilitiesRegistrar::remove(const std::string& participantId)
 {
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
@@ -53,7 +53,7 @@ void CapabilitiesRegistrar::remove(const QString& participantId)
         LOG_ERROR(logger,
                   QString("Unable to remove provider (participant ID: %1) "
                           "to discovery. Status code: %2.")
-                          .arg(participantId)
+                          .arg(QString::fromStdString(participantId))
                           .arg(status.getCode().toString()));
     }
 
@@ -71,7 +71,7 @@ void CapabilitiesRegistrar::remove(const QString& participantId)
     if (!future->getStatus().successful()) {
         LOG_ERROR(logger,
                   QString("Unable to remove next hop (participant ID: %1) from message router.")
-                          .arg(participantId));
+                          .arg(QString::fromStdString(participantId)));
     }
 }
 

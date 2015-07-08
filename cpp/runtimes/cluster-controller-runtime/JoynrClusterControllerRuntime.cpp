@@ -154,13 +154,15 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // provision global capabilities directory
     QSharedPointer<joynr::system::Address> globalCapabilitiesDirectoryAddress(
             new system::ChannelAddress(messagingSettings->getCapabilitiesDirectoryChannelId()));
-    messageRouter->addProvisionedNextHop(messagingSettings->getCapabilitiesDirectoryParticipantId(),
-                                         globalCapabilitiesDirectoryAddress);
+    messageRouter->addProvisionedNextHop(
+            messagingSettings->getCapabilitiesDirectoryParticipantId().toStdString(),
+            globalCapabilitiesDirectoryAddress);
     // provision channel url directory
     QSharedPointer<joynr::system::Address> globalChannelUrlDirectoryAddress(
             new system::ChannelAddress(messagingSettings->getChannelUrlDirectoryChannelId()));
-    messageRouter->addProvisionedNextHop(messagingSettings->getChannelUrlDirectoryParticipantId(),
-                                         globalChannelUrlDirectoryAddress);
+    messageRouter->addProvisionedNextHop(
+            messagingSettings->getChannelUrlDirectoryParticipantId().toStdString(),
+            globalChannelUrlDirectoryAddress);
 
     // setup CC WebSocket interface
     WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
@@ -215,7 +217,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // CapabilitiesServer.
     bool usingRealCapabilitiesClient =
             /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
-    capabilitiesClient = new CapabilitiesClient(channelId); // ownership of this is not transferred
+    capabilitiesClient =
+            new CapabilitiesClient(channelId.toStdString()); // ownership of this is not transferred
     // try using the real capabilitiesClient again:
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
     // transferred
@@ -258,15 +261,15 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage =
-            QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = QSharedPointer<ParticipantIdStorage>(
+            new ParticipantIdStorage(persistenceFilename.toStdString()));
 
     dispatcherAddress = libjoynrMessagingAddress;
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
 
-    QString discoveryProviderParticipantId(
-            systemServicesSettings.getCcDiscoveryProviderParticipantId());
+    std::string discoveryProviderParticipantId(
+            systemServicesSettings.getCcDiscoveryProviderParticipantId().toStdString());
     QSharedPointer<RequestCaller> discoveryRequestCaller(
             new joynr::system::DiscoveryRequestCaller(localCapabilitiesDirectory));
     QSharedPointer<InProcessAddress> discoveryProviderAddress(
@@ -276,7 +279,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     subscriptionManager,
                     publicationManager,
                     inProcessPublicationSender,
-                    QString(), // can be ignored
+                    std::string(), // can be ignored
                     discoveryProviderParticipantId,
                     discoveryProviderAddress);
 
@@ -344,30 +347,30 @@ ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()
 {
-    QString domain(systemServicesSettings.getDomain());
+    std::string domain(systemServicesSettings.getDomain().toStdString());
     std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter.data());
-    QString interfaceName(routingProvider->getInterfaceName());
-    QString participantId(systemServicesSettings.getCcRoutingProviderParticipantId());
+    std::string interfaceName(routingProvider->getInterfaceName());
+    std::string participantId(
+            systemServicesSettings.getCcRoutingProviderParticipantId().toStdString());
 
     // provision the participant ID for the routing provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerProvider<joynr::system::RoutingProvider>(
-            TypeUtil::convertQStringtoStdString(domain), routingProvider);
+    registerProvider<joynr::system::RoutingProvider>(domain, routingProvider);
 }
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 {
-    QString domain(systemServicesSettings.getDomain());
+    std::string domain(systemServicesSettings.getDomain().toStdString());
     std::shared_ptr<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
-    QString interfaceName(discoveryProvider->getInterfaceName());
-    QString participantId(systemServicesSettings.getCcDiscoveryProviderParticipantId());
+    std::string interfaceName(discoveryProvider->getInterfaceName());
+    std::string participantId(
+            systemServicesSettings.getCcDiscoveryProviderParticipantId().toStdString());
 
     // provision the participant ID for the discovery provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerProvider<joynr::system::DiscoveryProvider>(
-            TypeUtil::convertQStringtoStdString(domain), discoveryProvider);
+    registerProvider<joynr::system::DiscoveryProvider>(domain, discoveryProvider);
 }
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
@@ -436,7 +439,7 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* 
 void JoynrClusterControllerRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(TypeUtil::convertStdStringtoQString(participantId));
+    capabilitiesRegistrar->remove(participantId);
 }
 
 void JoynrClusterControllerRuntime::start()

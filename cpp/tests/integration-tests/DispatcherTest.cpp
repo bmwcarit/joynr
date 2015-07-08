@@ -27,6 +27,7 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
 #include "QString"
+#include <string>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -94,9 +95,9 @@ protected:
 
     // create test data
     MessagingQos qos;
-    QString providerParticipantId;
-    QString proxyParticipantId;
-    QString requestReplyId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
+    std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
     JoynrMessageSender messageSender;
@@ -121,15 +122,15 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     qos.setTtl(1000);
     // build request for location from mock Gps Provider
     Request request;
-    request.setRequestReplyId(requestReplyId);
+    request.setRequestReplyId(QString::fromStdString(requestReplyId));
     request.setMethodName("getLocation");
     request.setParams(QList<QVariant>());
     request.setParamDatatypes(QList<QVariant>());
 
 
     JoynrMessage msg = messageFactory.createRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 request
     );
@@ -141,10 +142,10 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     value.append(QVariant::fromValue(gpsLocation1));
     Reply reply;
     reply.setResponse(value);
-    reply.setRequestReplyId(requestReplyId);
+    reply.setRequestReplyId(QString::fromStdString(requestReplyId));
     JoynrMessage expectedReply = messageFactory.createReply(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 reply
     );
@@ -182,14 +183,14 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
     //construct a reply containing a GpsLocation
     Reply reply;
-    reply.setRequestReplyId(requestReplyId);
+    reply.setRequestReplyId(QString::fromStdString(requestReplyId));
     QList<QVariant> response;
     response.append(QVariant::fromValue(gpsLocation1));
     reply.setResponse(response);
 
     JoynrMessage msg = messageFactory.createReply(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 reply
     );

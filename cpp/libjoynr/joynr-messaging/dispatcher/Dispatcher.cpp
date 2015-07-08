@@ -56,8 +56,8 @@ Logger* Dispatcher::logger = Logging::getInstance()->getLogger("MSG", "Dispatche
 
 Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
         : messageSender(messageSender),
-          requestCallerDirectory(QString("Dispatcher-RequestCallerDirectory")),
-          replyCallerDirectory(QString("Dispatcher-ReplyCallerDirectory")),
+          requestCallerDirectory("Dispatcher-RequestCallerDirectory"),
+          replyCallerDirectory("Dispatcher-ReplyCallerDirectory"),
           publicationManager(NULL),
           subscriptionManager(NULL),
           handleReceivedMessageThreadPool(),
@@ -83,45 +83,46 @@ Dispatcher::~Dispatcher()
     LOG_DEBUG(logger, "Destructing finished");
 }
 
-void Dispatcher::addRequestCaller(const QString& participantId,
+void Dispatcher::addRequestCaller(const std::string& participantId,
                                   QSharedPointer<RequestCaller> requestCaller)
 {
     QMutexLocker locker(&subscriptionHandlingMutex);
-    LOG_DEBUG(logger, "addRequestCaller id= " + participantId);
+    LOG_DEBUG(logger, "addRequestCaller id= " + QString::fromStdString(participantId));
     requestCallerDirectory.add(participantId, requestCaller);
 
     if (publicationManager != NULL) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(participantId, requestCaller, messageSender);
+        publicationManager->restore(
+                QString::fromStdString(participantId), requestCaller, messageSender);
     } else {
         LOG_DEBUG(logger, "No publication manager available!");
     }
 }
 
-void Dispatcher::removeRequestCaller(const QString& participantId)
+void Dispatcher::removeRequestCaller(const std::string& participantId)
 {
     QMutexLocker locker(&subscriptionHandlingMutex);
-    LOG_DEBUG(logger, "removeRequestCaller id= " + participantId);
+    LOG_DEBUG(logger, "removeRequestCaller id= " + QString::fromStdString(participantId));
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
-    publicationManager->removeAllSubscriptions(participantId);
+    publicationManager->removeAllSubscriptions(QString::fromStdString(participantId));
     requestCallerDirectory.remove(participantId);
 }
 
-void Dispatcher::addReplyCaller(const QString& requestReplyId,
+void Dispatcher::addReplyCaller(const std::string& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
-    LOG_DEBUG(logger, "addReplyCaller id= " + requestReplyId);
+    LOG_DEBUG(logger, "addReplyCaller id= " + QString::fromStdString(requestReplyId));
     // add the callback to the registry that is responsible for reply messages
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
 
-void Dispatcher::removeReplyCaller(const QString& requestReplyId)
+void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
 {
-    LOG_DEBUG(logger, "removeReplyCaller id= " + requestReplyId);
+    LOG_DEBUG(logger, "removeReplyCaller id= " + QString::fromStdString(requestReplyId));
     replyCallerDirectory.remove(requestReplyId);
 }
 
@@ -136,8 +137,8 @@ void Dispatcher::receive(const JoynrMessage& message)
 void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 {
 
-    QString senderId = message.getHeaderFrom();
-    QString receiverId = message.getHeaderTo();
+    std::string senderId = message.getHeaderFrom().toStdString();
+    std::string receiverId = message.getHeaderTo().toStdString();
 
     // json request
     // lookup necessary data
@@ -145,11 +146,11 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
     if (caller == NULL) {
         LOG_ERROR(logger,
-                  "caller not found in the RequestCallerDirectory for receiverId " + receiverId +
-                          ", ignoring");
+                  "caller not found in the RequestCallerDirectory for receiverId " +
+                          QString::fromStdString(receiverId) + ", ignoring");
         return;
     }
-    QString interfaceName = caller->getInterfaceName();
+    std::string interfaceName = caller->getInterfaceName();
 
     // Get the request interpreter that has been registered with this interface name
     QSharedPointer<IRequestInterpreter> requestInterpreter =
@@ -211,7 +212,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     }
     QString requestReplyId = reply->getRequestReplyId();
 
-    QSharedPointer<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
+    QSharedPointer<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId.toStdString());
     if (caller == NULL) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory removed
         // the caller
@@ -232,7 +233,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 
     // Clean up
     delete reply;
-    removeReplyCaller(requestReplyId);
+    removeReplyCaller(requestReplyId.toStdString());
 }
 
 void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
@@ -244,7 +245,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     assert(publicationManager != NULL);
 
     QString receiverId = message.getHeaderTo();
-    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
     QByteArray jsonSubscriptionRequest = message.getPayload();
 
@@ -283,7 +284,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     assert(publicationManager != NULL);
 
     QString receiverId = message.getHeaderTo();
-    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
     QByteArray jsonSubscriptionRequest = message.getPayload();
 

@@ -27,7 +27,7 @@ namespace joynr
 LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-        const QString& participantId,
+        const std::string& participantId,
         const joynr::system::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           wrappedCallback(wrappedCallback),
@@ -53,7 +53,7 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
 void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
         QList<types::CapabilityInformation> results)
 {
-    QMap<QString, CapabilityEntry> capabilitiesMap;
+    QMap<std::string, CapabilityEntry> capabilitiesMap;
     QList<CapabilityEntry> mergedEntries;
 
     foreach (types::CapabilityInformation capInfo, results) {
@@ -65,7 +65,7 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
                                  capInfo.getParticipantId(),
                                  connections,
                                  true);
-        capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
+        capabilitiesMap.insertMulti(capInfo.getChannelId().toStdString(), capEntry);
         mergedEntries.append(capEntry);
     }
     localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
@@ -75,7 +75,7 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
-        if (participantId.isEmpty()) {
+        if (participantId.empty()) {
             mergedEntries +=
                     localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress);
         } else {

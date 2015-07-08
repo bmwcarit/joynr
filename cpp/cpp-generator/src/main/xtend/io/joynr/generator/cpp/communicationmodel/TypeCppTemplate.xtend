@@ -19,10 +19,10 @@ package io.joynr.generator.cpp.communicationmodel
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.TemplateBase
-import org.franca.core.franca.FCompoundType
-import io.joynr.generator.util.CompoundTypeTemplate
 import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.CompoundTypeTemplate
+import org.franca.core.franca.FCompoundType
 
 class TypeCppTemplate implements CompoundTypeTemplate{
 
