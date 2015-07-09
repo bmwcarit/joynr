@@ -24,10 +24,12 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FArgument
 import io.joynr.generator.util.BroadcastTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class FilterTemplate implements BroadcastTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension QtTypeUtil
 
 	def getCommaSeperatedEventArgumentListFromQList(Iterable<FArgument> arguments) {
 		val returnStringBuilder = new StringBuilder();
@@ -36,7 +38,7 @@ class FilterTemplate implements BroadcastTemplate {
 			returnStringBuilder.append("eventValues[");
 			returnStringBuilder.append(i++);
 			returnStringBuilder.append("].value<");
-			returnStringBuilder.append(getMappedDatatypeOrList(argument));
+			returnStringBuilder.append(argument.typeName);
 			returnStringBuilder.append(">(),\n");
 		}
 		val returnString = returnStringBuilder.toString();
@@ -81,7 +83,7 @@ public:
 	* Override this method to provide a filter logic implementation.
 	*/
 	virtual bool filter(
-			«getCommaSeperatedTypedOutputParameterListConstLinebreak(broadcast)»,
+			«broadcast.commaSeperatedTypedConstOutputParameterList»,
 			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters) {
 				return true;
 	}

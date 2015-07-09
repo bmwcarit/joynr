@@ -22,11 +22,12 @@ import org.franca.core.franca.FInterface
 
 class InterfaceSubscriptionUtil {
 	@Inject	extension JoynrCppGeneratorExtensions
+	@Inject	extension QtTypeUtil
 
 	def produceSubscribeUnsubscribeMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		virtual QString subscribeTo«attribute.joynrName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					QSharedPointer<joynr::SubscriptionQos> subscriptionQos)«IF pure» = 0«ENDIF»;
@@ -38,7 +39,7 @@ class InterfaceSubscriptionUtil {
 
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
-		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«IF isSelective(broadcast)»
 			virtual QString subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						«serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters filterParameters,

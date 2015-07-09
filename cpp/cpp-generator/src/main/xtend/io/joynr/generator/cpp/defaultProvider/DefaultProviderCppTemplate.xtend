@@ -22,11 +22,15 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class DefaultProviderCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -56,25 +60,25 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 
 «FOR attribute: getAttributes(serviceInterface)»
 	«val attributename = attribute.joynrName»
-	«var attributeType = getMappedDatatypeOrList(attribute)»
+	«var attributeType = attribute.typeName»
 	// Only use this for pulling providers, not for pushing providers
 	//	void Default«interfaceName»Provider::get«attributename.toFirstUpper»(
 	//		std::function<void(
 	//				const joynr::RequestStatus&,
-	//				const «getMappedDatatypeOrList(attribute)»&)> callbackFct) {
+	//				const «attribute.typeName»&)> callbackFct) {
 	// LOG_WARN(logger, "**********************************************");
 	// LOG_WARN(logger, "* Default«interfaceName»Provider::get«attributename.toFirstUpper» called");
 	// LOG_WARN(logger, "**********************************************");
 	«IF attributeType=="QString"»
-		//		«getMappedDatatypeOrList(attribute)» result = "Hello World";
+		//		«attribute.typeName» result = "Hello World";
 	«ELSEIF attributeType=="bool"»
-		//		«getMappedDatatypeOrList(attribute)» result = false;
+		//		«attribute.typeName» result = false;
 	«ELSEIF attributeType=="int"»
-		//		«getMappedDatatypeOrList(attribute)» result = 42;
+		//		«attribute.typeName» result = 42;
 	«ELSEIF attributeType=="double"»
-		//		«getMappedDatatypeOrList(attribute)» result = 3.1415;
+		//		«attribute.typeName» result = 3.1415;
 	«ELSE»
-		//		«getMappedDatatypeOrList(attribute)» result = «attributeType»();
+		//		«attribute.typeName» result = «attributeType»();
 	«ENDIF»
 	//	callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
 	//}
@@ -82,9 +86,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 «ENDFOR»
 «FOR method: getMethods(serviceInterface)»
 	«val methodName = method.joynrName»
-	«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
+	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val outputUntypedParamList = method.getCommaSeperatedUntypedOutputParameterList»
-	«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
+	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 	void Default«interfaceName»Provider::«method.joynrName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			std::function<void(
@@ -94,7 +98,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 			Q_UNUSED(«inputParameter.joynrName»);
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
-			«val outputParamType = argument.getMappedDatatypeOrList»
+			«val outputParamType = argument.typeName»
 			«IF outputParamType=="QString"»
 				«outputParamType» «argument.joynrName» = "Hello World";
 			«ELSEIF outputParamType=="bool"»

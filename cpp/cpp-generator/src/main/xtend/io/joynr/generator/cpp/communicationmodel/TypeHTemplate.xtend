@@ -22,11 +22,15 @@ import io.joynr.generator.cpp.util.TemplateBase
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
 import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class TypeHTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension TemplateBase
@@ -68,7 +72,7 @@ class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(t
 				Q_PROPERTY(QString «membername» READ get«membername.toFirstUpper»Internal WRITE set«membername.toFirstUpper»Internal)
 			«ELSE»
 				// https://bugreports.qt-project.org/browse/QTBUG-2151 for why this replace is necessary
-				Q_PROPERTY(«getMappedDatatypeOrList(member).replace("::","__")» «membername» READ get«membername.toFirstUpper» WRITE set«membername.toFirstUpper»)
+				Q_PROPERTY(«member.typeName.replace("::","__")» «membername» READ get«membername.toFirstUpper» WRITE set«membername.toFirstUpper»)
 			«ENDIF»
 		«ENDIF»
 	«ENDFOR»
@@ -79,7 +83,7 @@ public:
 	«IF !getMembersRecursive(type).empty»
 	«typeName»(
 		«FOR member: getMembersRecursive(type) SEPARATOR","»
-			«getMappedDatatypeOrList(member)» «member.joynrName»
+			«member.typeName» «member.joynrName»
 		«ENDFOR»
 	);
 	«ENDIF»
@@ -105,7 +109,7 @@ public:
 				QString get«joynrName.toFirstUpper»Internal() const;
 			 «ENDIF»
 		«ENDIF»
-		«getMappedDatatypeOrList(member)» get«joynrName.toFirstUpper»() const;
+		«member.typeName» get«joynrName.toFirstUpper»() const;
 	«ENDFOR»
 
 	//setters
@@ -120,13 +124,13 @@ public:
 				void set«joynrName.toFirstUpper»Internal(const QString& «joynrName»);
 			 «ENDIF»
 		«ENDIF»
-		void set«joynrName.toFirstUpper»(const «getMappedDatatypeOrList(member)»& «joynrName»);
+		void set«joynrName.toFirstUpper»(const «member.typeName»& «joynrName»);
 	«ENDFOR»
 
 private:
 	//members
 	«FOR member: getMembers(type)»
-		 «getMappedDatatypeOrList(member)» m_«member.joynrName»;
+		 «member.typeName» m_«member.joynrName»;
 	«ENDFOR»
 	void registerMetatypes();
 

@@ -18,17 +18,21 @@ package io.joynr.generator.cpp.joynrmessaging
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
 
 class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -98,7 +102,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 }
 
 «FOR attribute: getAttributes(serviceInterface)»
-	«val returnType = getMappedDatatypeOrList(attribute)»
+	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
 	«IF attribute.readable»
 		void «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
@@ -289,18 +293,18 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 «ENDFOR»
 
 «FOR method: getMethods(serviceInterface)»
-	«var outputTypedConstParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-	«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
-	«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
-	«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
-	«val outputParameter = getMappedOutputParameter(method)»
+	«var outputTypedConstParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
+	«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedOutputParameterList)»
+	«var outputUntypedParamList = prependCommaIfNotEmpty(method.commaSeperatedUntypedOutputParameterList)»
+	«val inputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstInputParameterList)»
+	«val outputParameters = method.commaSeparatedOutputParameterTypes»
 	«val methodName = method.joynrName»
 	void «interfaceName»JoynrMessagingConnector::«methodName»(
 			joynr::RequestStatus& status«outputTypedParamList»«inputTypedParamList»
 	) {
 		«produceParameterSetters(method)»
-		QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(
-				new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+		QSharedPointer<joynr::Future<«outputParameters»> > future(
+				new joynr::Future<«outputParameters»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> replyCallerCallbackFct =
 				[future] (const joynr::RequestStatus& status«outputTypedConstParamList») {
@@ -311,26 +315,26 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>(
+		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
 				replyCallerCallbackFct,
-				std::bind(&joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>::onFailure, future, std::placeholders::_1)));
+				std::bind(&joynr::Future<«outputParameters»>::onFailure, future, std::placeholders::_1)));
 		operationRequest(replyCaller, internalRequestObject);
 		status = future->waitForFinished();
-		«IF outputParameter.head != "void"»
+		«IF !method.outputParameters.empty»
 			if (status.successful()) {
-				future->getValues(«getCommaSeperatedUntypedOutputParameterList(method)»);
+				future->getValues(«method.commaSeperatedUntypedOutputParameterList»);
 			}
 		«ENDIF»
 	}
 
-	QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > «interfaceName»JoynrMessagingConnector::«methodName»(
-			«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+	QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»JoynrMessagingConnector::«methodName»(
+			«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> callbackFct)
 	{
 		«produceParameterSetters(method)»
 
-		QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(
-				new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+		QSharedPointer<joynr::Future<«outputParameters»> > future(
+				new joynr::Future<«outputParameters»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList»)> replyCallerCallbackFct =
 				[future, callbackFct] (const joynr::RequestStatus& status«outputTypedConstParamList») {
@@ -345,9 +349,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>(
+		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
 				replyCallerCallbackFct,
-				std::bind(&joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>::onFailure, future, std::placeholders::_1)));
+				std::bind(&joynr::Future<«outputParameters»>::onFailure, future, std::placeholders::_1)));
 		operationRequest(replyCaller, internalRequestObject);
 		return future;
 	}
@@ -355,7 +359,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 «ENDFOR»
 
 «FOR broadcast: serviceInterface.broadcasts»
-	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	«val broadcastName = broadcast.joynrName»
 	«IF isSelective(broadcast)»
 		QString «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(

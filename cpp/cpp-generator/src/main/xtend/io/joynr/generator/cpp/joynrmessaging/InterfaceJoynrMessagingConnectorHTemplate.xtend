@@ -23,11 +23,15 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
 import io.joynr.generator.cpp.util.InterfaceUtil
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension InterfaceUtil
@@ -67,7 +71,7 @@ namespace joynr {
 class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 private:
 	«FOR attribute: getAttributes(serviceInterface)»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
 			QString subscribeTo«attributeName.toFirstUpper»(
@@ -77,7 +81,7 @@ private:
 		«ENDIF»
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
-		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
 		QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
@@ -104,7 +108,7 @@ public:
 	«produceSyncSetters(serviceInterface, false)»
 	«produceAsyncSetters(serviceInterface, false)»
 	«FOR attribute: getAttributes(serviceInterface)»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
 			virtual QString subscribeTo«attributeName.toFirstUpper»(
@@ -123,7 +127,7 @@ public:
 
 	«FOR broadcast: serviceInterface.broadcasts»
 
-		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
 			virtual QString subscribeTo«broadcastName.toFirstUpper»Broadcast(

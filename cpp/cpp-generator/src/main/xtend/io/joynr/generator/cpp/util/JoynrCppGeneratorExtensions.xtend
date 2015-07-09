@@ -203,10 +203,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 	}
 
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, true, false)
-	}
-
 	def getCommaSeperatedConstTypedOutputParameterList(FMethod method) {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), true, true, false)
 	}
@@ -217,21 +213,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 
 	def getCommaSeperatedTypedOutputParameterListConstLinebreak(FBroadcast broadcast) {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true, true, true)
-	}
-
-	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
 	}
 
 	def getCommaSeperatedTypedInputParameterList(FMethod method) {

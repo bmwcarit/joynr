@@ -18,14 +18,16 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension QtTypeUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -60,7 +62,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 
 «FOR attribute: getAttributes(fInterface)»
 	«var attributeName = attribute.joynrName»
-	«var attributeType = getMappedDatatypeOrList(attribute)»
+	«var attributeType = attribute.typeName»
 	«IF attribute.readable»
 		«var getAttribute = "get" + attributeName.toFirstUpper»
 		/*
@@ -107,20 +109,20 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 «ENDFOR»
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.joynrName»
-	«var outputParameter = getMappedOutputParameter(method)»
-	«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-	«var inputParamList = getCommaSeperatedUntypedParameterList(method)»
+	«var outputParameters = method.commaSeparatedOutputParameterTypes»
+	«var outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
+	«var inputParamList = method.commaSeperatedUntypedInputParameterList»
 	/*
 	 * «methodName»
 	 */
-	QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > «asyncClassName»::«methodName»(
-			«IF !method.inputParameters.empty»«getCommaSeperatedTypedInputParameterList(method)»,«ENDIF»
+	QSharedPointer<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»(
+			«IF !method.inputParameters.empty»«getCommaSeperatedTypedConstInputParameterList(method)»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 	{
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
 			//TODO error reaction for this case?
-			QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future;
+			QSharedPointer<joynr::Future<«outputParameters»> > future;
 			return future;
 		}
 		else{

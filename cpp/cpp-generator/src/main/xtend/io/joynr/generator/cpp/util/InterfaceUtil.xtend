@@ -22,6 +22,7 @@ import org.franca.core.franca.FInterface
 
 class InterfaceUtil {
 	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension QtTypeUtil
 
 	def printFutureReturnDefinition()
 '''
@@ -38,7 +39,7 @@ class InterfaceUtil {
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -58,7 +59,7 @@ class InterfaceUtil {
 	def produceAsyncGetters(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -76,7 +77,7 @@ class InterfaceUtil {
 	def produceSyncSetters(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -95,7 +96,7 @@ class InterfaceUtil {
 	def produceAsyncSetters(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -116,14 +117,14 @@ class InterfaceUtil {
 '''
 	«FOR method: getMethods(serviceInterface)»
 		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»
-		«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
+		«val inputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedTypedConstInputParameterList(method))»
 
 		/**
 		* @brief Synchronous operation «method.joynrName».
 		*
 		* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 		«FOR outputParam: method.outputParameters»
-		* @param «outputParam.getMappedDatatypeOrList» «outputParam.joynrName» this is an output parameter
+		* @param «outputParam.typeName» «outputParam.joynrName» this is an output parameter
 		*        and will be set within function «method.joynrName»
 		«ENDFOR»
 		*/
@@ -136,8 +137,8 @@ class InterfaceUtil {
 	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«var outputParameter = getMappedOutputParameter(method)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+		«var outputParameter = method.typeNamesForOutputParameter»
+		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
 
 		/**
 		* @brief Asynchronous operation «method.joynrName».
@@ -147,7 +148,7 @@ class InterfaceUtil {
 		*/
 
 		virtual QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > «method.joynrName»(
-				«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+				«getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''

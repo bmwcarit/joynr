@@ -24,11 +24,15 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
 import java.util.HashSet
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension TemplateBase
@@ -55,24 +59,24 @@ I«interfaceName»Base::I«interfaceName»Base()
 	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface)»
 	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
 	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
-	
+
 	«IF !typeObjs.isEmpty() || !replyMetatypes.empty»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
 	«FOR typeobj : typeObjs»
 		«val datatype = typeobj as FType»
 
-		// Register metatype «getMappedDatatype(datatype)»
+		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
 		{
 			qRegisterMetaType<«getEnumContainer(datatype)»>();
-			int id = qRegisterMetaType<«getMappedDatatype(datatype)»>();
+			int id = qRegisterMetaType<«datatype.typeName»>();
 			registrar.registerEnumMetaType<«getEnumContainer(datatype)»>();
 			QJson::Serializer::registerEnum(id, «getEnumContainer(datatype)»::staticMetaObject.enumerator(0));
 		}
 		«ELSE»
-			qRegisterMetaType<«getMappedDatatype(datatype)»>("«getMappedDatatype(datatype)»");
-			registrar.registerMetaType<«getMappedDatatype(datatype)»>();
+			qRegisterMetaType<«datatype.typeName»>("«datatype.typeName»");
+			registrar.registerMetaType<«datatype.typeName»>();
 		«ENDIF»
 	«ENDFOR»
 
@@ -107,12 +111,12 @@ def getReplyMetatypes(FInterface serviceInterface) {
 	var replyMetatypes = new HashSet();
 	for (method: serviceInterface.methods) {
 		if (!method.outputParameters.empty) {
-			replyMetatypes.add(method.mappedOutputParameterTypesCommaSeparated)
+			replyMetatypes.add(method.commaSeparatedOutputParameterTypes)
 		}
 	}
 	for (attribute: serviceInterface.attributes) {
 		if (attribute.readable) {
-			replyMetatypes.add(attribute.getMappedDatatypeOrList);
+			replyMetatypes.add(attribute.typeName);
 		}
 	}
 	return replyMetatypes;
@@ -121,7 +125,7 @@ def getBroadcastMetatypes(FInterface serviceInterface) {
 	var broadcastMetatypes = new HashSet();
 	for (broadcast: serviceInterface.broadcasts) {
 		if (!broadcast.outputParameters.empty) {
-			broadcastMetatypes.add(broadcast.mappedOutputParameterTypesCommaSeparated)
+			broadcastMetatypes.add(broadcast.commaSeparatedOutputParameterTypes)
 		}
 	}
 	return broadcastMetatypes;

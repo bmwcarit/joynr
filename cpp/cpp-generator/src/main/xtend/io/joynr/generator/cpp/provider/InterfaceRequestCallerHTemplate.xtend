@@ -22,11 +22,15 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -60,7 +64,7 @@ public:
 
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val attributeName = attribute.joynrName»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		virtual void get«attributeName.toFirstUpper»(
 				std::function<void(
 						const joynr::RequestStatus& status,
@@ -71,8 +75,8 @@ public:
 
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
+		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		virtual void «method.joynrName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct);

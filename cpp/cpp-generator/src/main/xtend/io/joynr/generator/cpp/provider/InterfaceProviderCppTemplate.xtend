@@ -18,15 +18,19 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -74,17 +78,17 @@ joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
 }
 
 «FOR attribute: getAttributes(serviceInterface)»
-	«var attributeType = getMappedDatatypeOrList(attribute)»
+	«var attributeType = attribute.typeName»
 	«var attributeName = attribute.joynrName»
 	void «interfaceName»Provider::get«attributeName.toFirstUpper»(
 			std::function<void(
 					const joynr::RequestStatus&,
-					const «getMappedDatatypeOrList(attribute)»&)> callbackFct) {
+					const «attribute.typeName»&)> callbackFct) {
 		callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), «attributeName»);
 	}
 
 	void «interfaceName»Provider::set«attributeName.toFirstUpper»(
-			const «getMappedDatatypeOrList(attribute)»& «attributeName»,
+			const «attribute.typeName»& «attributeName»,
 			std::function<void(const joynr::RequestStatus&)> callbackFct) {
 		«attributeName»Changed(«attributeName»);
 		callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK));
@@ -102,7 +106,7 @@ joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
 
 «FOR broadcast: serviceInterface.broadcasts»
 	«var broadcastName = broadcast.joynrName»
-	void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
+	void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList») {
 		QList<QVariant> broadcastValues;
 		«FOR parameter: getOutputParameters(broadcast)»
 			broadcastValues.append(QVariant::fromValue(«parameter.name»));

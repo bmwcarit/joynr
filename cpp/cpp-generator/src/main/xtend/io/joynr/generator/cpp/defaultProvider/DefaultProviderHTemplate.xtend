@@ -22,11 +22,15 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class DefaultProviderHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -65,12 +69,12 @@ public:
 		//	void get«attribute.joynrName.toFirstUpper»(
 		//			std::future<void(
 		//					const joynr::RequestStatus&,
-		//					const «getMappedDatatypeOrList(attribute)»)> callbackFct);
+		//					const «attribute.typeName»)> callbackFct);
 	«ENDFOR»
 
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
-		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
+		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		void «method.joynrName»(
 				«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 				std::function<void(

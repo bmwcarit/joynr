@@ -23,11 +23,15 @@ import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -84,7 +88,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 }
 
 «FOR attribute : getAttributes(serviceInterface)»
-	«val returnType = getMappedDatatypeOrList(attribute)»
+	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
@@ -291,11 +295,11 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 «var methodname = method.joynrName»
-«var parameterList = prependCommaIfNotEmpty(getCommaSeperatedTypedInputParameterList(method))»
-«var outputParameter = getMappedOutputParameter(method)»
-«var inputParamList = getCommaSeperatedUntypedParameterList(method)»
-«var outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
-«var outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
+«var parameterList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstInputParameterList)»
+«var outputParameters = method.commaSeparatedOutputParameterTypes»
+«var inputParamList = method.commaSeperatedUntypedInputParameterList»
+«var outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
+«var outputUntypedParamList = prependCommaIfNotEmpty(method.commaSeperatedUntypedOutputParameterList)»
 
 void «interfaceName»InProcessConnector::«methodname»(
 			joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«parameterList»
@@ -305,8 +309,8 @@ void «interfaceName»InProcessConnector::«methodname»(
 	assert(!caller.isNull());
 	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 	assert(!«serviceInterface.interfaceCaller».isNull());
-	QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(
-			new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+	QSharedPointer<joynr::Future<«outputParameters»> > future(
+			new joynr::Future<«outputParameters»>());
 
 	std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
 			[future] (const joynr::RequestStatus& internalStatus«outputTypedParamList») {
@@ -326,8 +330,8 @@ void «interfaceName»InProcessConnector::«methodname»(
 	«ENDIF»
 }
 
-QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > «interfaceName»InProcessConnector::«methodname»(
-			«getCommaSeperatedTypedInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»(
+			«getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 {
 	assert(!address.isNull());
@@ -335,8 +339,8 @@ QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param
 	assert(!caller.isNull());
 	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 	assert(!«serviceInterface.interfaceCaller».isNull());
-	QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»> > future(
-			new joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param»«ENDFOR»>());
+	QSharedPointer<joynr::Future<«outputParameters»> > future(
+			new joynr::Future<«outputParameters»>());
 
 	std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
 			[future, callbackFct] (const joynr::RequestStatus& status«outputTypedParamList») {
@@ -357,7 +361,7 @@ QSharedPointer<joynr::Future<«FOR param: outputParameter SEPARATOR ','»«param
 «ENDFOR»
 
 «FOR broadcast: serviceInterface.broadcasts»
-	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»

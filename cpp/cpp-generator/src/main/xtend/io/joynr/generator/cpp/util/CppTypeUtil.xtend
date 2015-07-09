@@ -79,8 +79,7 @@ abstract class CppTypeUtil extends TypeUtil {
 	) {
 		val returnStringBuilder = new StringBuilder();
 		for(FArgument argument : arguments){
-			returnStringBuilder.append("\n		")
-
+			returnStringBuilder.append("\n")
 			if (constParameters) {
 				returnStringBuilder.append("const ");
 			}
@@ -99,16 +98,12 @@ abstract class CppTypeUtil extends TypeUtil {
 		if (returnString.length() == 0) {
 			return "";
 		} else {
-			return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
+			return returnString.substring(0, returnString.length() - 1); //remove the last " ," or "\n,"
 		}
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
 		getCommaSeperatedTypedParameterList(method.outputParameters, false, true)
-	}
-
-	def getCommaSeperatedTypedInputParameterList(FMethod method) {
-		getCommaSeperatedTypedParameterList(method.inputParameters, false, true)
 	}
 
 	def getCommaSeperatedTypedConstOutputParameterList(FMethod method) {

@@ -18,17 +18,21 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -71,14 +75,14 @@ namespace joynr {
 class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
 private:
 «FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-«val returnType = getMappedDatatypeOrList(attribute)»
+«val returnType = attribute.typeName»
 	QString subscribeTo«attribute.joynrName.toFirstUpper»(
 				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 «FOR broadcast: serviceInterface.broadcasts»
-«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 «val broadcastName = broadcast.joynrName»
 	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,

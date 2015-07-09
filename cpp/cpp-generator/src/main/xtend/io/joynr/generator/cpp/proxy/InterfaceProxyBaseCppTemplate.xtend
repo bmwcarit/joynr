@@ -18,14 +18,16 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension QtTypeUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -78,7 +80,7 @@ void «className»::handleArbitrationFinished(
 
 «FOR attribute: getAttributes(fInterface).filter[attribute | attribute.notifiable]»
 	«var attributeName = attribute.joynrName»
-	«val returnType = getMappedDatatypeOrList(attribute)»
+	«val returnType = attribute.typeName»
 	void «className»::unsubscribeFrom«attributeName.toFirstUpper»(QString& subscriptionId)
 	{
 		if (connector==NULL){
@@ -126,7 +128,7 @@ void «className»::handleArbitrationFinished(
 
 «FOR broadcast: fInterface.broadcasts»
 	«var broadcastName = broadcast.joynrName»
-	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString& subscriptionId)
 	{
 		if (connector==NULL){

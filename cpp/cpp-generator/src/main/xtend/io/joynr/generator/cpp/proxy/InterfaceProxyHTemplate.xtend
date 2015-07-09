@@ -22,10 +22,12 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceProxyHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension QtTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -70,7 +72,7 @@ public:
 
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«var attributeName = attribute.joynrName»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
 			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 		}
@@ -96,7 +98,7 @@ public:
 
 	«FOR broadcast: serviceInterface.broadcasts»
 		«var broadcastName = broadcast.joynrName»
-		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString &subscriptionId) {
 			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 		}

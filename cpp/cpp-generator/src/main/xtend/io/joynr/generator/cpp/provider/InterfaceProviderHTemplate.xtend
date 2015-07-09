@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -29,6 +30,9 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension QtTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -77,20 +81,20 @@ public:
 		virtual void get«attributeName.toFirstUpper»(
 				std::function<void(
 						const joynr::RequestStatus&,
-						const «getMappedDatatypeOrList(attribute)»&)> callbackFct);
+						const «attribute.typeName»&)> callbackFct);
 		virtual void set«attributeName.toFirstUpper»(
-				const «getMappedDatatypeOrList(attribute)»& «attributeName»,
+				const «attribute.typeName»& «attributeName»,
 				std::function<void(const joynr::RequestStatus&)> callbackFct);
 		/**
 		* @brief «attributeName»Changed must be called by a concrete provider to signal attribute
 		* modifications. It is used to implement onchange subscriptions.
 		* @param «attributeName» the new attribute value
 		*/
-		void «attributeName»Changed(const «getMappedDatatypeOrList(attribute)»& «attributeName»);
+		void «attributeName»Changed(const «attribute.typeName»& «attributeName»);
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = getCommaSeperatedConstTypedOutputParameterList(method)»
-		«val inputTypedParamList = getCommaSeperatedTypedInputParameterList(method)»
+		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 				std::function<void(
@@ -105,7 +109,7 @@ public:
 		* event. It is used to implement broadcast publications.
 		* @param «broadcastName» the new broadcast value
 		*/
-		void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
+		void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList»);
 	«ENDFOR»
 
 	void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
@@ -115,7 +119,7 @@ public:
 
 protected:
 	«FOR attribute: getAttributes(serviceInterface)»
-		«getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
+		«attribute.typeName» «attribute.joynrName»;
 	«ENDFOR»
 
 private:

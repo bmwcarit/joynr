@@ -23,11 +23,15 @@ import org.franca.core.franca.FType
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -59,7 +63,7 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 {
 	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
-			qRegisterMetaType<«getMappedDatatype(datatype)»>("«getMappedDatatype(datatype)»");
+			qRegisterMetaType<«datatype.typeName»>("«datatype.typeName»");
 		«ENDIF»
 	«ENDFOR»
 }
@@ -87,12 +91,12 @@ void «interfaceName»RequestInterpreter::execute(
 		joynr::RequestStatus status;
 		«FOR attribute: attributes SEPARATOR "\n} else"»
 			«val attributeName = attribute.joynrName»
-			«val returnType = getMappedDatatypeOrList(attribute)»
+			«val returnType = attribute.typeName»
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(const joynr::RequestStatus& status, «returnType» «attributeName»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status, «returnType» «attributeName»){
 							Q_UNUSED(status);
-							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«getMappedDatatype(attribute)»>(«attributeName»)«ELSE»QVariant::fromValue(«attributeName»)«ENDIF»);
+							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«attribute.type.typeName»>(«attributeName»)«ELSE»QVariant::fromValue(«attributeName»)«ENDIF»);
 							QList<QVariant> outParams;
 							outParams.insert(0, singleOutParam);
 							callbackFct(outParams);
@@ -101,17 +105,17 @@ void «interfaceName»RequestInterpreter::execute(
 			} else if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 				QVariant «attributeName»QVar(paramValues.at(0));
 				«IF isEnum(attribute.type)»
-					«getMappedDatatypeOrList(attribute)» typedInput«attributeName.toFirstUpper» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(attribute.type)»>(«attributeName»QVar);
+					«attribute.typeName» typedInput«attributeName.toFirstUpper» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(attribute.type)»>(«attributeName»QVar);
 				«ELSEIF isEnum(attribute.type) && isArray(attribute)»
-					«getMappedDatatypeOrList(attribute)» typedInput«attributeName.toFirstUpper» =
+					«attribute.typeName» typedInput«attributeName.toFirstUpper» =
 						«joynrGenerationPrefix»::Util::convertVariantListToEnumList<«getEnumContainer(attribute.type)»>(«attributeName»QVar.toList());
 				«ELSEIF isArray(attribute)»
 					assert(«attributeName»QVar.canConvert<QList<QVariant> >());
 					QList<QVariant> paramQList = «attributeName»QVar.value<QList<QVariant> >();
-					«getMappedDatatypeOrList(attribute)» typedInput«attributeName.toFirstUpper» = «joynrGenerationPrefix»::Util::convertVariantListToList<«getMappedDatatype(attribute)»>(paramQList);
+					«attribute.typeName» typedInput«attributeName.toFirstUpper» = «joynrGenerationPrefix»::Util::convertVariantListToList<«attribute.type.typeName»>(paramQList);
 				«ELSE»
-					assert(«attributeName»QVar.canConvert<«getMappedDatatypeOrList(attribute)»>());
-					«getMappedDatatypeOrList(attribute)» typedInput«attributeName.toFirstUpper» = «attributeName»QVar.value<«getMappedDatatypeOrList(attribute)»>();
+					assert(«attributeName»QVar.canConvert<«attribute.typeName»>());
+					«attribute.typeName» typedInput«attributeName.toFirstUpper» = «attributeName»QVar.value<«attribute.typeName»>();
 				«ENDIF»
 				std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status){
@@ -126,7 +130,7 @@ void «interfaceName»RequestInterpreter::execute(
 	«ENDIF»
 	«IF methods.size>0»
 		«FOR method: getMethods(serviceInterface) SEPARATOR "\n} else"»
-			«val inputUntypedParamList = method.getCommaSeperatedUntypedParameterList»
+			«val inputUntypedParamList = method.commaSeperatedUntypedInputParameterList»
 			«val methodName = method.joynrName»
 			«val inputParams = getInputParameters(method)»
 			«var iterator = -1»
@@ -135,7 +139,7 @@ void «interfaceName»RequestInterpreter::execute(
 					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = prependCommaIfNotEmpty(getCommaSeperatedConstTypedOutputParameterList(method))»
+				«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status«outputTypedParamList»){
 							Q_UNUSED(status);
@@ -145,7 +149,7 @@ void «interfaceName»RequestInterpreter::execute(
 								outParams.insert(
 										«index++»,
 										«IF isArray(param)»
-											joynr::Util::convertListToVariantList<«param.mappedDatatype»>(«param.joynrName»)
+											joynr::Util::convertListToVariantList<«param.type.typeName»>(«param.joynrName»)
 										«ELSE»
 											QVariant::fromValue(«param.joynrName»)
 										«ENDIF»
@@ -160,20 +164,20 @@ void «interfaceName»RequestInterpreter::execute(
 					QVariant «inputName»QVar(paramValues.at(«iterator2=iterator2+1»));
 					«IF isEnum(input.type) && isArray(input)»
 						//isEnumArray
-						«getMappedDatatypeOrList(input)» «inputName» =
+						«input.typeName» «inputName» =
 							«joynrGenerationPrefix»::Util::convertVariantListToEnumList<«getEnumContainer(input.type)»> («inputName»QVar.toList());
 					«ELSEIF isEnum(input.type)»
 						//isEnum
-						«getMappedDatatypeOrList(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(input.type)»>(«inputName»QVar);
+						«input.typeName» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(input.type)»>(«inputName»QVar);
 					«ELSEIF isArray(input)»
 						//isArray
 						assert(«inputName»QVar.canConvert<QList<QVariant> >());
 						QList<QVariant> «inputName»QVarList = «inputName»QVar.value<QList<QVariant> >();
-						QList<«getMappedDatatype(input)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantListToList<«getMappedDatatype(input)»>(«inputName»QVarList);
+						QList<«input.type.typeName»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantListToList<«input.type.typeName»>(«inputName»QVarList);
 					«ELSE»
-						//«getMappedDatatypeOrList(input)»
-						assert(«inputName»QVar.canConvert<«getMappedDatatypeOrList(input)»>());
-						«getMappedDatatypeOrList(input)» «inputName» = «inputName»QVar.value<«getMappedDatatypeOrList(input)»>();
+						//«input.typeName»
+						assert(«inputName»QVar.canConvert<«input.typeName»>());
+						«input.typeName» «inputName» = «inputName»QVar.value<«input.typeName»>();
 					«ENDIF»
 				«ENDFOR»
 

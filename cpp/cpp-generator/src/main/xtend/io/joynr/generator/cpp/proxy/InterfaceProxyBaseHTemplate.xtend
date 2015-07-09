@@ -22,10 +22,12 @@ import org.franca.core.franca.FInterface
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension QtTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -65,7 +67,7 @@ public:
 			const joynr::system::CommunicationMiddleware::Enum& connection
 	);
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
+		«val returnType = attribute.typeName»
 		«var attributeName = attribute.joynrName»
 		QString subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
@@ -78,7 +80,7 @@ public:
 	«ENDFOR»
 
 	«FOR broadcast: serviceInterface.broadcasts»
-		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
+		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«var broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
 			QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
