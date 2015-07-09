@@ -275,7 +275,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	override getMappedDatatype(FType datatype) {
-		return datatype.typeName
+		return datatype.joynrName
 	}
 
 	override getMappedDatatypeOrList(FType datatype, boolean array) {
