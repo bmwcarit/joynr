@@ -55,10 +55,16 @@ RUN wget https://dl.bmw-carit.de/joynr/qt5.tar.gz \
 ###################################################
 # install common api
 ###################################################
-WORKDIR /opt
-RUN git clone http://git.projects.genivi.org/ipc/common-api-runtime.git \
+RUN cd /opt \
+	###### clone common-api-dbus-runtime and
+	###### make sure common-api-dbus-runtimechecked out at
+	###### correct version, so that patch is applied correctly
 	&& git clone http://git.projects.genivi.org/ipc/common-api-dbus-runtime.git \
-	&& wget http://dbus.freedesktop.org/releases/dbus/dbus-1.4.16.tar.gz \
+	&& cd /opt/common-api-dbus-runtime \
+	&& git checkout -b v2.1.4 2.1.4 \
+	###### installing CommonAPI base
+	&& cd /opt \
+	&& git clone http://git.projects.genivi.org/ipc/common-api-runtime.git \
 	&& cd /opt/common-api-runtime \
 	&& git checkout -b v2.1.4 2.1.4 \
 	&& autoreconf -i \
@@ -68,6 +74,8 @@ RUN git clone http://git.projects.genivi.org/ipc/common-api-runtime.git \
 	&& cd /opt \
 	&& rm -rf /opt/common-api-runtime \
 	###### installing dbus for CommonAPI
+	&& cd /opt \
+	&& wget http://dbus.freedesktop.org/releases/dbus/dbus-1.4.16.tar.gz \
 	&& tar -xzf dbus-1.4.16.tar.gz \
 	&& rm dbus-1.4.16.tar.gz \
 	&& cd /opt/dbus-1.4.16 \
@@ -80,7 +88,6 @@ RUN git clone http://git.projects.genivi.org/ipc/common-api-runtime.git \
 	&& rm -rf /opt/dbus-1.4.16 \
 	###### installing CommonAPI dbus
 	&& cd /opt/common-api-dbus-runtime \
-	&& git checkout -b v2.1.4 2.1.4 \
 	&& autoreconf -i \
 	&& export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH" && ./configure \
 	&& make -j4 \
