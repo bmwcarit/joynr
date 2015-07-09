@@ -405,9 +405,21 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		return "";
 	}
 
+	def joynrNameStd(FType type){
+		return "Std" + type.name
+	}
+
 	def String getIncludeOf(FType dataType) {
 		val path = getPackagePathWithJoynrPrefix(dataType, "/")
 		return path + "/" + dataType.joynrName + ".h";
+	}
+
+	def String getIncludeOfStd(FType dataType) {
+		var path = getPackagePathWithJoynrPrefix(dataType, "/")
+		if (dataType.isPartOfTypeCollection) {
+			path += "/" + dataType.typeCollectionName
+		}
+		return path + "/" + dataType.joynrNameStd + ".h";
 	}
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {

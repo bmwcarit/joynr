@@ -40,6 +40,12 @@ class CommunicationModelGenerator {
 	EnumHTemplate enumh;
 
 	@Inject
+	StdEnumHTemplate stdEnumH;
+
+	@Inject
+	StdEnumCppTemplate stdEnumCpp;
+
+	@Inject
 	TypeHTemplate typeH;
 
 	@Inject
@@ -79,13 +85,31 @@ class CommunicationModelGenerator {
 			}
 		}
 
-		for( type: getEnumDataTypes(fModel)){
-			val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			
+		for (type : getEnumDataTypes(fModel)) {
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			generateFile(
 				headerFileSystem,
 				headerpath + type.joynrName + ".h",
 				enumh,
+				type as FEnumerationType
+			)
+
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+				sourcepath += type.typeCollectionName + File::separator
+			}
+
+			generateFile(
+				headerFileSystem,
+				headerpath +"Std"+ type.joynrName + ".h",
+				stdEnumH,
+				type as FEnumerationType
+			)
+			generateFile(
+				sourceFileSystem,
+				sourcepath +"Std"+ type.joynrName + ".cpp",
+				stdEnumCpp,
 				type as FEnumerationType
 			)
 		}
