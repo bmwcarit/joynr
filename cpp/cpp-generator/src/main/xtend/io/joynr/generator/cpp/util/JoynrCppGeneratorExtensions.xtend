@@ -231,7 +231,12 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 	}
 
+
 	def buildPackagePath(FType datatype, String separator) {
+		return buildPackagePath(datatype, separator, false);
+	}
+
+	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
 		if (datatype == null) {
 			return "";
 		}
@@ -244,6 +249,9 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		if (packagepath!="") { 
 			packagepath = packagepath + separator;
 		};
+		if (includeTypeCollection && datatype.partOfTypeCollection) {
+			packagepath += datatype.typeCollectionName + separator;
+		}
 		return packagepath;
 	}
 

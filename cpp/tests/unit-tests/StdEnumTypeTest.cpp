@@ -32,7 +32,8 @@ public:
             testEnumZero(StdTestEnum::ZERO),
             testEnumZeroOther(StdTestEnum::ZERO),
             testEnumOne(StdTestEnum::ONE),
-            testEnumOneOther(StdTestEnum::ONE)
+            testEnumOneOther(StdTestEnum::ONE),
+            testEnumTwo(StdTestEnum::TWO)
     {}
 
     virtual ~StdEnumTypeTest() {
@@ -45,6 +46,7 @@ protected:
     StdTestEnum::Enum testEnumZeroOther;
     StdTestEnum::Enum testEnumOne;
     StdTestEnum::Enum testEnumOneOther;
+    StdTestEnum::Enum testEnumTwo;
 };
 
 joynr::joynr_logging::Logger* StdEnumTypeTest::logger(
@@ -111,4 +113,13 @@ TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual) {
     EXPECT_TRUE(testEnumZero == exZero);
 // restore previous state of GCC diagnostics
 #pragma GCC diagnostic pop
+}
+
+TEST_F(StdEnumTypeTest, hash) {
+    std::hash<StdTestEnum::Enum> hashFunctionObj;
+    EXPECT_EQ(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumZeroOther));
+    EXPECT_NE(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumOne));
+    EXPECT_NE(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumTwo));
+    EXPECT_EQ(hashFunctionObj(testEnumOne), hashFunctionObj(testEnumOneOther));
+    EXPECT_NE(hashFunctionObj(testEnumOne), hashFunctionObj(testEnumTwo));
 }
