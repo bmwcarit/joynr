@@ -19,15 +19,54 @@ package io.joynr.generator.cpp.util
 
 import com.google.inject.Inject
 import io.joynr.generator.util.TypeUtil
+import java.util.Collections
+import java.util.HashMap
+import java.util.Map
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypedElement
 
 abstract class CppTypeUtil extends TypeUtil {
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
+
+	new () {
+/*
+		val Map<FBasicTypeId,String> aMap = new HashMap<FBasicTypeId,String>();
+		aMap.put(FBasicTypeId::BOOLEAN, "bool");
+		aMap.put(FBasicTypeId::STRING, "QString");
+		aMap.put(FBasicTypeId::DOUBLE,"double");
+		aMap.put(FBasicTypeId::INT16,"int");
+		aMap.put(FBasicTypeId::INT32,"int");
+		aMap.put(FBasicTypeId::INT64,"qint64");
+		aMap.put(FBasicTypeId::INT8,"qint8");
+		aMap.put(FBasicTypeId::UNDEFINED,"void");
+		primitiveDataTypeNameMap = Collections::unmodifiableMap(aMap);
+*/
+
+	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();
+		bMap.put(FBasicTypeId::BOOLEAN, "false");
+		bMap.put(FBasicTypeId::INT8, "-1");
+		bMap.put(FBasicTypeId::UINT8, "-1");
+		bMap.put(FBasicTypeId::INT16, "-1");
+		bMap.put(FBasicTypeId::UINT16, "-1");
+		bMap.put(FBasicTypeId::INT32, "-1");
+		bMap.put(FBasicTypeId::UINT32, "-1");
+		bMap.put(FBasicTypeId::INT64, "-1");
+		bMap.put(FBasicTypeId::UINT64, "-1");
+		bMap.put(FBasicTypeId::FLOAT, "-1");
+		bMap.put(FBasicTypeId::DOUBLE, "-1");
+		bMap.put(FBasicTypeId::STRING, "\"\"");
+		bMap.put(FBasicTypeId::BYTE_BUFFER, "\"\"");
+		bMap.put(FBasicTypeId::UNDEFINED,"");
+
+		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
+	}
 
 	def getCommaSeperatedUntypedInputParameterList(FMethod method) {
 		getCommaSeperatedUntypedParameterList(method.inputParameters);
@@ -138,6 +177,40 @@ abstract class CppTypeUtil extends TypeUtil {
 
 	override getTypeNameForList(FBasicTypeId datatype) {
 		"QList<" + datatype.typeName + "> ";
+	}
+
+	def getDefaultValue(FTypedElement element) {
+		//default values are not supported (currently) by the Franca IDL 
+		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
+			if (isEnum(member)){
+				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
+				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
+					if (element.VALUE == member.DEFAULTVALUE){
+						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
+					}
+				}
+				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
+			}
+			else if (isLong(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "L"
+			}
+			else if (isDouble(member.getDATATYPEREF().getIDREF())){
+				return member.getDEFAULTVALUE() + "d"
+			}
+			else{
+				return member.getDEFAULTVALUE();
+			}
+		} else */if (isComplex(element.type)) {
+			return "";
+		} else if (isArray(element)){
+			return "";
+		} else if (isEnum(element.type)){
+			return " /* should have enum default value here */";
+		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
+ 			return "NaN";
+ 		} else {
+			return primitiveDataTypeDefaultMap.get(element.type.predefined);
+		}
 	}
 
 }

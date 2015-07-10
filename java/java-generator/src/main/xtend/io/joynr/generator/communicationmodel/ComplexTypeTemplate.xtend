@@ -18,16 +18,16 @@ package io.joynr.generator.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FCompoundType
-import io.joynr.generator.util.CompoundTypeTemplate
-import io.joynr.generator.util.JavaTypeUtil
 
 class ComplexTypeTemplate implements CompoundTypeTemplate{
 
 	@Inject	extension JoynrJavaGeneratorExtensions
-	@Inject extension JavaTypeUtil typeUtil
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FCompoundType complexType) {
@@ -69,7 +69,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
-		this.«member.joynrName» = «typeUtil.getDefaultValue(member)»;
+		this.«member.joynrName» = «member.defaultValue»;
 		«ENDFOR»
 	}
 
@@ -82,14 +82,14 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 		«IF isArray(member)»
 			«IF isComplex(member.type)»
 			«val memberType = member.type.typeName»
-			this.«member.joynrName» = «typeUtil.getDefaultValue(member)»;
+			this.«member.joynrName» = «member.defaultValue»;
 			if («copyObjName».«member.joynrName» != null){
 				for («memberType» element : «copyObjName».«member.joynrName») {
 					this.«member.joynrName».add(new «memberType»(element));
 				}
 			}
 			«ELSE»
-			this.«member.joynrName» = «typeUtil.getDefaultValue(member, copyObjName + "." + member.joynrName)»;
+			this.«member.joynrName» = «getDefaultValue(member, copyObjName + "." + member.joynrName)»;
 			«ENDIF»
 		«ELSE»
 			«IF isComplex(member.type)»

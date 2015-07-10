@@ -28,7 +28,7 @@ import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
-	@Inject extension JavaTypeUtil typeUtil
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {
@@ -61,7 +61,7 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 
 		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.getMappedDatatypeOrList()]))»
+		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.typeName]))»
 
 			«FOR attributeType: attrTypeset»
 			public static class «attributeType.tokenTypeForArrayType»Reference extends TypeReference<«attributeType»> {}
@@ -69,7 +69,7 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 
 		«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
-		«var attributeType = typeUtil.getObjectDataTypeForPlainType(attribute.typeName)»
+		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 			«IF isNotifiable(attribute)»
 
 				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType.tokenTypeForArrayType»Reference.class)

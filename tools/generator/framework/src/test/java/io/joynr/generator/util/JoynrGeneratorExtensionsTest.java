@@ -22,29 +22,22 @@ package io.joynr.generator.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import io.joynr.generator.loading.ModelLoader;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
-
-import io.joynr.generator.loading.ModelLoader;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.franca.core.franca.FBasicTypeId;
 import org.franca.core.franca.FBroadcast;
 import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FField;
-import org.franca.core.franca.FMethod;
 import org.franca.core.franca.FModel;
 import org.franca.core.franca.FStructType;
-import org.franca.core.franca.FType;
 import org.franca.core.franca.FTypeRef;
 import org.franca.core.franca.FrancaFactory;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.CallsRealMethods;
-import org.mockito.invocation.InvocationOnMock;
 
 public class JoynrGeneratorExtensionsTest {
 
@@ -80,42 +73,4 @@ public class JoynrGeneratorExtensionsTest {
         assertTrue(result.contains("language"));
     }
 
-    @Test
-    public void testMultipleOutParameters() throws Exception {
-        URL fixtureURL = JoynrGeneratorExtensionsTest.class.getResource("MultipleOutParameters.fidl");
-        ModelLoader loader = new ModelLoader(fixtureURL.getPath());
-        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
-        class MyCallsRealMethods extends CallsRealMethods {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                if (invocation.getMethod().getName().equals("getMappedDatatypeOrList")) {
-                    Class<?> parameterType0 = invocation.getMethod().getParameterTypes()[0];
-                    if (parameterType0.equals(FBasicTypeId.class)) {
-                        return ((FBasicTypeId) invocation.getArguments()[0]).getName();
-                    } else if (parameterType0.equals(FType.class)) {
-                        return ((FType) invocation.getArguments()[0]).getName();
-                    } else {
-                        return super.answer(invocation);
-                    }
-                } else {
-                    return super.answer(invocation);
-                }
-            }
-        }
-        JoynrGeneratorExtensions extension = mock(JoynrGeneratorExtensions.class, new MyCallsRealMethods());
-
-        FModel model = (FModel) fixtureResource.getContents().get(0);
-        String stringDatatype = FBasicTypeId.STRING.getName();
-        String numberDatatype = FBasicTypeId.INT16.getName();
-        String complexDatatype = model.getTypeCollections().get(0).getTypes().get(0).getName();
-        FMethod fixture = model.getInterfaces().get(0).getMethods().get(0);
-
-        Iterator<String> result = extension.getMappedOutputParameter(fixture).iterator();
-        assertEquals(result.next(), stringDatatype);
-        assertEquals(result.next(), numberDatatype);
-        assertEquals(result.next(), complexDatatype);
-        assertFalse(result.hasNext());
-    }
 }

@@ -29,7 +29,7 @@ import io.joynr.generator.util.JavaTypeUtil
 
 class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
-	@Inject extension JavaTypeUtil typeUtil
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 	@Inject extension InterfaceProviderTemplate
 
@@ -126,7 +126,7 @@ public class «className» extends «abstractProviderName» {
 			logger.warn("**********************************************");
 			«deferredName» deferred = new «deferredName»();
 			«FOR outputParameter : outputParameters»
-				«outputParameter.typeName» «outputParameter.name» = «typeUtil.getDefaultValue(outputParameter)»;
+				«outputParameter.typeName» «outputParameter.name» = «outputParameter.defaultValue»;
 			«ENDFOR»
 			deferred.resolve(«method.commaSeperatedUntypedOutputParameterList»);
 			return new Promise<«deferredName»>(deferred);

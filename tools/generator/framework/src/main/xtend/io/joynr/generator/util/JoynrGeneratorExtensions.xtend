@@ -99,31 +99,6 @@ abstract class JoynrGeneratorExtensions {
 		}
 	}
 
-	// Convert an collection of output parameters to their typenames
-	def Iterable<String> mapOutputParameters(Iterable<FArgument> parameters) {
-		val result = new ArrayList<String>();
-		if (parameters.empty) {
-			result.add("void");
-		} else {
-			for (FArgument parameter : parameters) {
-				result.add(getMappedDatatypeOrList(parameter))
-			}
-		}
-		return result;
-	}
-
-	def Iterable<String> getMappedOutputParameter(FMethod method) {
-		val result = new ArrayList<String>();
-		val types = getOutputParameters(method);
-		if (types.empty) {
-			result.add("void");
-		}
-		for (FArgument argument : types) {
-			result.add(getMappedDatatypeOrList(argument));
-		}
-		return result;
-	}
-
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
 		if (fModelElement == null){
 			throw new IllegalStateException("Generator could not proceed with code generation, since JoynGeneratorExtensions.getPackageNameInternal has been invoked with an empty model element");
@@ -173,138 +148,6 @@ abstract class JoynrGeneratorExtensions {
 			);
 		}
 		return (datatype.eContainer as FTypeCollection).joynrName;
-	}
-
-	def String getMappedDatatype(FTypedElement typedElement){
-		getMappedDatatype(typedElement.type)
-	}
-
-	def String getMappedDatatype(FTypeRef type){
-		if (type.derived != null){
-			getMappedDatatype(type.derived)
-		}
-		else{
-			getPrimitiveTypeName(type.predefined)
-		}
-	}
-
-	def String getPrimitiveTypeName(FBasicTypeId basicType)
-
-	def String getMappedDatatypeOrList(FTypedElement typedElement){
-		if (typedElement.type.derived != null){
-			var result = getMappedDatatypeOrList(typedElement.type.derived, typedElement.array == '[]')
-			if (result == null){
-				throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
-			}
-			return result;
-		}
-		else{
-			var result = getMappedDatatypeOrList(typedElement.type.predefined, typedElement.array == '[]')
-			if (result == null){
-				throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
-			}
-			return result;
-		}
-	}
-
-	def String getMappedDatatype(FType datatype)
-
-	def String getMappedDatatypeOrList(FType datatype, boolean array)
-
-	def String getMappedDatatypeOrList(FBasicTypeId datatype, boolean array)
-
-	private def String getMappedOutputParameterTypesCommaSeparated(Iterable<FArgument> arguments) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : mapOutputParameters(arguments)) {
-			commaSeparatedParams.append(parameter);
-			commaSeparatedParams.append(", ");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def String getMappedOutputParameterTypesCommaSeparated(FBroadcast broadcast) {
-		getMappedOutputParameterTypesCommaSeparated(broadcast.outputParameters)
-	}
-	def String getMappedOutputParameterTypesCommaSeparated(FMethod method) {
-		getMappedOutputParameterTypesCommaSeparated(method.outputParameters)
-	}
-
-	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast, boolean constRef) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : getOutputParameters(broadcast)) {
-			commaSeparatedParams.append("\n		")
-			if (constRef) {
-				commaSeparatedParams.append("const ")
-			}
-			commaSeparatedParams.append(getMappedDatatypeOrList(parameter));
-			if (constRef) {
-				commaSeparatedParams.append("& ")
-			} else {
-				commaSeparatedParams.append(" ")
-			}
-			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(",");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 1); //remove the last ","
-		}
-	}
-
-	def String getOutputParametersCommaSeparated(FMethod method) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : getOutputParameters(method)) {
-			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(", ");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ","
-		}
-	}
-
-	def String getTypedOutputParametersCommaSeparated(FMethod method) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : getOutputParameters(method)) {
-			commaSeparatedParams.append(getMappedDatatype(parameter));
-			commaSeparatedParams.append(" ");
-			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(", ");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def String getOutputParametersCommaSeparated(FBroadcast broadcast) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : getOutputParameters(broadcast)) {
-			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(", ");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ","
-		}
 	}
 
 	def getMethods(FInterface fInterface) {
@@ -727,26 +570,11 @@ abstract class JoynrGeneratorExtensions {
 		return typeList.values;
 	}
 
-	def String getDefaultValue(FTypedElement element)
-
 	def prependCommaIfNotEmpty(String input) {
 		if (input.equals("")) {
 			return input;
 		}
 		return ", " + input;
-	}
-
-	def getCommaSeperatedUntypedParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for (param : getInputParameters(method)) {
-			returnStringBuilder.append(param.joynrName)
-			returnStringBuilder.append(", ")
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		return returnString.substring(0, returnString.length() - 2); //remove the last ,
 	}
 
 	def String getOneLineWarning()
@@ -780,9 +608,13 @@ abstract class JoynrGeneratorExtensions {
 		return field.observable
 	}
 
-	def boolean isReadonly(FAttribute field)
+	def boolean isReadonly(FAttribute fAttribute) {
+		fAttribute.readonly
+	}
 
-	def boolean isObservable(FAttribute field)
+	def boolean isObservable(FAttribute fAttribute) {
+		!fAttribute.noSubscriptions
+	}
 
 	def boolean needsListImport (FInterface serviceInterface) {
 		needsListImport(serviceInterface, true, true);
@@ -1075,4 +907,5 @@ abstract class JoynrGeneratorExtensions {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
 		}
 	}
+
 }

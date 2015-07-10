@@ -29,7 +29,7 @@ import org.franca.core.franca.FMethod
 
 class InterfaceProviderTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
-	@Inject private JavaTypeUtil typeUtil
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
@@ -54,7 +54,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 				if (!methodNameToIndex.containsKey(method.name)) {
 					methodNameToIndex.put(method.name, 0);
 				}
-				val methodSignature = typeUtil.createMethodSignature(method);
+				val methodSignature = createMethodSignature(method);
 				if (!uniqueMethodSignatureToPromiseName.containsKey(methodSignature)) {
 					var Integer index = methodNameToIndex.get(method.name);
 					index++;
@@ -110,7 +110,7 @@ public interface «className» extends JoynrProvider {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 	«FOR attribute : getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
-		«var attributeType = typeUtil.getObjectDataTypeForPlainType(typeUtil.getTypeName(attribute))»
+		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 
 		«IF isReadable(attribute)»
 			Promise<Deferred<«attributeType»>> get«attributeName.toFirstUpper»();
@@ -124,8 +124,8 @@ public interface «className» extends JoynrProvider {
 	«ENDFOR»
 	«FOR method : getMethods(serviceInterface)»
 		«var methodName = method.joynrName»
-		«var params = typeUtil.getTypedParameterListJavaRpc(method)»
-		«var comments = typeUtil.getJavadocCommentsParameterListJavaRpc(method)»
+		«var params = method.typedParameterListJavaRpc»
+		«var comments = method.javadocCommentsParameterListJavaRpc»
 
 		/**
 		 * «methodName»
@@ -145,8 +145,8 @@ public interface «className» extends JoynrProvider {
 				return super.resolve();
 			}
 		«ELSE»
-			public synchronized boolean resolve(«typeUtil.getCommaSeperatedTypedOutputParameterList(method)») {
-				return super.resolve(«typeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
+			public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
+				return super.resolve(«method.commaSeperatedUntypedOutputParameterList»);
 			}
 		«ENDIF»
 		}
@@ -154,7 +154,7 @@ public interface «className» extends JoynrProvider {
 	«FOR broadcast : serviceInterface.broadcasts»
 		«val broadcastName = broadcast.joynrName»
 
-		public void fire«broadcastName.toFirstUpper»(«typeUtil.getCommaSeperatedTypedOutputParameterList(broadcast)»);
+		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»);
 	«ENDFOR»
 }
 		'''

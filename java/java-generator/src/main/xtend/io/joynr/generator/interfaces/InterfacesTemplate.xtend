@@ -31,7 +31,7 @@ import io.joynr.generator.util.JavaTypeUtil
 
 class InterfacesTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
-	@Inject extension JavaTypeUtil typeUtil
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToErrorEnumName) {
@@ -68,7 +68,7 @@ class InterfacesTemplate implements InterfaceTemplate{
 		val nameStringBuilder = new StringBuilder(method.name);
 		for (FArgument inParam : method.inputParameters) {
 			nameStringBuilder.append(inParam.name.toFirstUpper);
-			val typeName = new StringBuilder(typeUtil.getObjectDataTypeForPlainType(inParam.mappedDatatypeOrList));
+			val typeName = new StringBuilder(inParam.typeName.objectDataTypeForPlainType);
 			nameStringBuilder.append(typeName.toString());
 		}
 		return nameStringBuilder.toString;

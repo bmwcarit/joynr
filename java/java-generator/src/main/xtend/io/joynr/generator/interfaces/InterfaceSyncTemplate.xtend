@@ -29,7 +29,7 @@ import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceSyncTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
-	@Inject extension JavaTypeUtil typeUtil
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();
@@ -42,7 +42,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 				if (outputParamterType == "void") {
 					methodToReturnTypeName.put(method, "void");
 				} else {
-					methodToReturnTypeName.put(method, typeUtil.getObjectDataTypeForPlainType(outputParamterType));
+					methodToReturnTypeName.put(method, outputParamterType.objectDataTypeForPlainType);
 				}
 			} else {
 				// Multiple Out Parameters
@@ -108,7 +108,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeName = attribute.joynrName»
-			«var attributeType = typeUtil.getObjectDataTypeForPlainType(attribute.typeName)» 
+			«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 			«var getAttribute = "get" + attributeName.toFirstUpper»
 			«var setAttribute = "set" + attributeName.toFirstUpper»
 				«IF isReadable(attribute)»
