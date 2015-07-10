@@ -100,14 +100,18 @@ interface test {
 	attribute Int32 notifyReadWrite
 
 	attribute Int32 notify
-	//this attributes starts with capital letter (in contrary to our modelling guidelines) for testing purposes
+	<**
+		@description: this attributes starts with capital letter (in contrary
+			to our modelling guidelines) for testing purposes
+	**>
 	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
 	method addNumbers {
 		in {
 			Int32 first
 			Int32 second
-			Int32 third // defaultValue 0
+			<** @description: defaultValue 0 **>
+			Int32 third
 		}
 
 		out {
@@ -245,7 +249,10 @@ interface test {
 		}
 	}
 
-	// used to test sending of Datatypes that contain lists as in/output parameters with lists.
+	<**
+		@description: used to test sending of Datatypes that contain lists as
+			in/output parameters with lists.
+	**>
 	method optimizeTrip {
 		in {
 			Trip input
@@ -392,7 +399,10 @@ interface test {
 		}
 	}
 
-	// Broadcast which has the same name as an attribute for testing possible conflicts.
+	<**
+		@description: Broadcast which has the same name as an attribute for
+			testing possible conflicts.
+	**>
 	broadcast location {
 		out {
 			GpsLocation location

@@ -35,14 +35,23 @@ typeCollection Localisation {
 		Double altitude
 		GpsFixEnum gpsFix
 		Double heading
-		Double quality //defaultValue 0.0
+		<** @description: defaultValue 0.0 **>
+		Double quality
 	}
 	struct GpsLocation extends GpsPositionExtended {
-		Double elevation //defaultValue 0.0
-		Double bearing // defaultValue 0.0
-		Int64 gpsTime // defaultValue 0
-		Int64 deviceTime // defaultValue 0
-		Int32 time /* might be temporary, as we use timestamps on gpslocatios for debuggin purpose */
+		<** @description: defaultValue 0.0 **>
+		Double elevation
+		<** @description: defaultValue 0.0 **>
+		Double bearing
+		<** @description: defaultValue 0 **>
+		Int64 gpsTime
+		<** @description: defaultValue 0 **>
+		Int64 deviceTime
+		<**
+			@description: might be temporary, as we use timestamps on
+				gpslocations for debugging purpose
+		**>
+		Int32 time
 	}
 
 	struct PositionDetailedInfo {

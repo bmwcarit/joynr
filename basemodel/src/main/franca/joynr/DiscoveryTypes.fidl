@@ -31,15 +31,24 @@ typeCollection {
 	}
 
 	struct ProviderQos {
-		//the list of Provider-Specific and InterfaceSpecific QoS Parameters:
+		<**
+			@description: the list of Provider-Specific and InterfaceSpecific
+				QoS Parameters
+		**>
 		CustomParameter[] customParameters
-		//the following QosParameters are joyn-internal, and need to be implemented by every provider
+		<**
+			@description: the following QosParameters are joyn-internal, and
+				need to be implemented by every provider
+		**>
 		Int32 providerVersion
-		//maybe priority will be later moved to the list of
+		<** @description: maybe priority will be later moved to the list of **>
 		Int64 priority
-		// indicate that the provider is only for use with the local cluster controller
+		<**
+			@description: indicate that the provider is only for use with the
+				local cluster controller
+		**>
 		ProviderScope scope
-		// indicates if onChangeSubscriptions supported
+		<** @description: indicates if onChangeSubscriptions supported **>
 		Boolean supportsOnChangeSubscriptions
 	}
 
@@ -67,10 +76,18 @@ typeCollection {
 	}
 
 	struct DiscoveryEntry {
+		<** @description: the domain to register the provider with **>
 		String domain
+		<** @description: the name of the provider interface **>
 		String interfaceName
+		<** @description: the participant ID of the provider **>
 		String participantId
+		<** @description: the qos of the provider **>
 		ProviderQos qos
+		<**
+			@description: a list of communications middlewares that can be used
+				to access the provider
+		**>
 		CommunicationMiddleware[] connections
 	}
 

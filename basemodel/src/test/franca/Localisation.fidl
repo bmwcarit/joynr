@@ -42,7 +42,10 @@ interface Gps{
 interface Localisation {
 	version {major 0 minor 1}
 
-	attribute GpsPosition gPSPosition readonly // NOTIFYREADONLY
-	attribute GpsPositionExtended gPSExtendedInfo readonly // NOTIFYREADONLY
-	attribute PositionDetailedInfo currentPositionDetailedInfo readonly // NOTIFYREADONLY
+	<** @description: NOTIFYREADONLY **>
+	attribute GpsPosition gPSPosition readonly
+	<** @description: NOTIFYREADONLY **>
+	attribute GpsPositionExtended gPSExtendedInfo readonly
+	<** @description: NOTIFYREADONLY **>
+	attribute PositionDetailedInfo currentPositionDetailedInfo readonly
 }

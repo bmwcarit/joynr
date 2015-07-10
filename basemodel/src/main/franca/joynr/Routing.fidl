@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,119 +52,126 @@ typeCollection RoutingTypes {
 	}
 }
 
-/**
- * The <code>Routing</code> interface is a joynr internal interface. joynr uses
- * a hierarchy of <code>MessageRouter</code>s to route messages from source to
- * destination. The <code>Routing</code> interface is used to update routing
- * information between parent and child <code>MessageRouter</code>s.
- */
+<**
+	@description: The <code>Routing</code> interface is a joynr internal
+		interface. joynr uses a hierarchy of <code>MessageRouter</code>s to
+		route messages from source to destination. The <code>Routing</code>
+		interface is used to update routing information between parent and
+		child <code>MessageRouter</code>s.
+**>
 interface Routing {
 
 	version {major 0 minor 1}
 
-	/**
-	 * Adds a hop to the parent routing table.
-	 *
-	 * The overloaded methods (one for each concrete Address type) is needed
-	 * since polymorphism is currently not supported by joynr.
-	 *
-	 * @param participantId the ID of the target participant
-	 * @param messagingAddress the messaging address of the next hop towards the corresponding participant ID
-	 */
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
 	method addNextHop {
 		in {
+			<** @description: the ID of the target participant **>
 			String participantId
+			<**
+				@description: the messaging address of the next hop towards
+					the corresponding participant ID
+			**>
 			RoutingTypes.ChannelAddress channelAddress
 		}
 	}
 
-	/**
-	 * Adds a hop to the parent routing table.
-	 *
-	 * The overloaded methods (one for each concrete Address type) is needed
-	 * since polymorphism is currently not supported by joynr.
-	 *
-	 * @param participantId the ID of the target participant
-	 * @param messagingAddress the messaging address of the next hop towards the corresponding participant ID
-	 */
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
 	method addNextHop {
 		in {
+			<** @description: the ID of the target participant **>
 			String participantId
+			<**
+				@description: the messaging address of the next hop towards
+					the corresponding participant ID
+			**>
 			RoutingTypes.CommonApiDbusAddress commonApiDbusAddress
 		}
 	}
 
-	/**
-	 * Adds a hop to the parent routing table.
-	 *
-	 * The overloaded methods (one for each concrete Address type) is needed
-	 * since polymorphism is currently not supported by joynr.
-	 *
-	 * @param participantId the ID of the target participant
-	 * @param messagingAddress the messaging address of the next hop towards the corresponding participant ID
-	 */
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
 	method addNextHop {
 		in {
+			<** @description: the ID of the target participant **>
 			String participantId
+			<**
+				@description: the messaging address of the next hop towards
+					the corresponding participant ID
+			**>
 			RoutingTypes.BrowserAddress browserAddress
 		}
 	}
 
-	/**
-	 * Adds a hop to the parent routing table.
-	 *
-	 * The overloaded methods (one for each concrete Address type) is needed
-	 * since polymorphism is currently not supported by joynr.
-	 *
-	 * @param participantId the ID of the target participant
-	 * @param messagingAddress the messaging address of the next hop towards the corresponding participant ID
-	 */
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
 	method addNextHop {
 		in {
+			<** @description: the ID of the target participant **>
 			String participantId
+			<**
+				@description: the messaging address of the next hop towards
+					the corresponding participant ID
+			**>
 			RoutingTypes.WebSocketAddress webSocketAddress
 		}
 	}
 
-	/**
-	 * Adds a hop to the parent routing table.
-	 *
-	 * The overloaded methods (one for each concrete Address type) is needed
-	 * since polymorphism is currently not supported by joynr.
-	 *
-	 * @param participantId the ID of the target participant
-	 * @param messagingAddress the messaging address of the next hop towards the corresponding participant ID
-	 */
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
 	method addNextHop {
 		in {
+			<** @description: the ID of the target participant **>
 			String participantId
+			<**
+				@description: the messaging address of the next hop towards
+					the corresponding participant ID
+			**>
 			RoutingTypes.WebSocketClientAddress webSocketClientAddress
 		}
 	}
 
-	/**
-	 * Removes a hop from the parent routing table.
-	 *
-	 * @param participantId the ID of the target participant
-	 */
+	<** @description: Removes a hop from the parent routing table. **>
 	method removeNextHop {
 		in {
+			<** @description: the ID of the target participant **>
 			String participantId
 		}
 	}
 
-	/**
-	 * Asks the parent routing table whether it is able to resolve the
-	 * destination participant ID.
-	 *
-	 * @param participantId the ID of the target participant to resolve
-	 * @return true, if the participant ID could be resolved
-	 */
+	<**
+		@description: Asks the parent routing table whether it is able to
+			resolve the destination participant ID.
+	**>
 	method resolveNextHop {
 		in {
+			<** @description: the ID of the target participant to resolve **>
 			String participantId
 		}
 		out {
+			<** @description: true, if the participant ID could be resolved **>
 			Boolean resolved
 		}
 	}

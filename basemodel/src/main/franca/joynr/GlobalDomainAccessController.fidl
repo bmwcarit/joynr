@@ -91,7 +91,7 @@ typeCollection DacTypes {
 	struct MasterControlEntry extends ControlEntry {
 		<**
 			@description: The default required trusted level (TL).
-			TL depends on used device and Authentication mechanism.
+				TL depends on used device and Authentication mechanism.
 		**>
 		TrustLevel defaultRequiredTrustLevel
 		<**
@@ -243,20 +243,20 @@ typeCollection DacTypes {
 	enumeration Role {
 		<**
 			@description: Allows for changing Master Access Control List (Master ACLs),
-			or Master Registration Control List (Master RCL).
+				or Master Registration Control List (Master RCL).
 		**>
 		MASTER
 		<**
 			@description: Allows for changing Owner Access Control Lists (Owner ACLs),
-			or Owner Registration Control List (Owner RCL).
+				or Owner Registration Control List (Owner RCL).
 		**>
 		OWNER
 	}
 
 	<**
 		@description: The Domain Role Entry (DRE) stores domains for users/role combination.
-		User may become specified role when accessing given domains ACEs/RCEs in ACL/RCL.
-		DREs are stored in the Domain Roles Table (DRT).
+			User may become specified role when accessing given domains ACEs/RCEs in ACL/RCL.
+			DREs are stored in the Domain Roles Table (DRT).
 	**>
 	struct DomainRoleEntry {
 		<**
@@ -281,12 +281,12 @@ typeCollection DacTypes {
 	enumeration ChangeType {
 		<**
 			@description: Entry was added. There was no entry with the same
-			key before.
+				key before.
 		**>
 		ADD
 		<**
 			@description: Entry was updated. An entry with the key already
-			existed and was updated.
+				existed and was updated.
 		**>
 		UPDATE
 		<**
@@ -754,7 +754,7 @@ interface GlobalDomainAccessController {
 			Used by the LocalDomainAccessController to subscribe to updates for
 			the current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 	**>
 	broadcast domainRoleEntryChanged selective {
 		out {
@@ -780,7 +780,7 @@ interface GlobalDomainAccessController {
 			these parameters are not set. It is used by the
 			LocalDomainAccessController.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 		@param: domainOfInterest (String) filter parameter that is used by the
 			broadcast filter and defines the domain of interest
 		@param: interfaceOfInterest (String) filter parameter that is used by the
@@ -810,7 +810,7 @@ interface GlobalDomainAccessController {
 			these parameters are not set. It is used by the
 			LocalDomainAccessController.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 		@param: domainOfInterest (String) filter parameter that is used by the
 			broadcast filter and defines the domain of interest
 		@param: interfaceOfInterest (String) filter parameter that is used by the
@@ -826,7 +826,7 @@ interface GlobalDomainAccessController {
 	<**
 		@description: Event that is fired when new owner access
 			control entry is added or an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
+			he event includes new domain role entry as well as the type of
 			the change.
 			The event includes new access control entry.
 			The interface provider offers two filters for this selective
@@ -840,7 +840,7 @@ interface GlobalDomainAccessController {
 			these parameters are not set. It is used by the
 			LocalDomainAccessController.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 		@param: domainOfInterest (String) filter parameter that is used by the
 			broadcast filter and defines the domain of interest
 		@param: interfaceOfInterest (String) filter parameter that is used by the
@@ -866,7 +866,7 @@ interface GlobalDomainAccessController {
 			by the LocalDomainAccessController to subscribe to updates for the
 			current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 	**>
 	broadcast masterRegistrationControlEntryChanged selective {
 		out {
@@ -884,11 +884,11 @@ interface GlobalDomainAccessController {
 			The interface provider offers a filter for this selective
 			broadcast.
 			The user ID filter filters events based on the userIdOfInterest,
-			or does no filtering if these parameters are not set. It is used
+			r does no filtering if these parameters are not set. It is used
 			by the LocalDomainAccessController to subscribe to updates for the
 			current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 	**>
 	broadcast mediatorRegistrationControlEntryChanged selective {
 		out {
@@ -910,7 +910,7 @@ interface GlobalDomainAccessController {
 			by the LocalDomainAccessController to subscribe to updates for the
 			current user.
 		@param: userIdOfInterest (String) filter parameter that is used by the
-		 	broadcast filter and defines the userId of interest
+			broadcast filter and defines the userId of interest
 	**>
 	broadcast ownerRegistrationControlEntryChanged selective {
 		out {
