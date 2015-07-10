@@ -22,10 +22,12 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FCompoundType
 import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.util.JavaTypeUtil
 
 class ComplexTypeTemplate implements CompoundTypeTemplate{
 
 	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TemplateBase
 
 	override generate(FCompoundType complexType) {
@@ -33,7 +35,7 @@ class ComplexTypeTemplate implements CompoundTypeTemplate{
 		val complexTypePackageName = getPackagePathWithJoynrPrefix(complexType, ".")
 		'''
 		«warning()»
-		
+
 package «complexTypePackageName»;
 import java.io.Serializable;
 
@@ -55,9 +57,9 @@ import com.google.common.collect.Lists;
 //       The compiler will generate a serialVersionUID based on the class and its members
 //       (cf. http://docs.oracle.com/javase/6/docs/platform/serialization/spec/class.html#4100),
 //       which is probably more restrictive than what we want.
-public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «getMappedDatatype(complexType.extendedType)»«ENDIF» implements Serializable, JoynrType {
+public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «complexType.extendedType.typeName»«ENDIF» implements Serializable, JoynrType {
 	«FOR member : getMembers(complexType)»
-	«val memberType = getMappedDatatypeOrList(member).replace("::","__")»
+	«val memberType = member.typeName.replace("::","__")»
 	«IF isArray(member)»
 	private «memberType» «member.joynrName» = Lists.newArrayList();
 	«ELSE»
@@ -67,7 +69,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
-		this.«member.joynrName» = «getDefaultValue(member)»;
+		this.«member.joynrName» = «typeUtil.getDefaultValue(member)»;
 		«ENDFOR»
 	}
 
@@ -79,19 +81,19 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 		«FOR member : getMembers(complexType)»
 		«IF isArray(member)»
 			«IF isComplex(member.type)»
-			«val memberType = getMappedDatatype(member.type)»
-			this.«member.joynrName» = «getDefaultValue(member)»;
+			«val memberType = member.type.typeName»
+			this.«member.joynrName» = «typeUtil.getDefaultValue(member)»;
 			if («copyObjName».«member.joynrName» != null){
 				for («memberType» element : «copyObjName».«member.joynrName») {
 					this.«member.joynrName».add(new «memberType»(element));
 				}
 			}
 			«ELSE»
-			this.«member.joynrName» = «getDefaultValue(member, copyObjName + "." + member.joynrName)»;
+			this.«member.joynrName» = «typeUtil.getDefaultValue(member, copyObjName + "." + member.joynrName)»;
 			«ENDIF»
 		«ELSE»
 			«IF isComplex(member.type)»
-			«val memberType = getMappedDatatype(member.type)»
+			«val memberType = member.type.typeName»
 			this.«member.joynrName» = new «memberType»(«copyObjName».«member.joynrName»);
 			«ELSE»
 			this.«member.joynrName» = «copyObjName».«member.joynrName»;
@@ -103,7 +105,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	«IF !getMembersRecursive(complexType).empty»
 	public «typeName»(
 		«FOR member : getMembersRecursive(complexType) SEPARATOR ','»
-		«getMappedDatatypeOrList(member).replace("::","__")» «member.joynrName»
+		«member.typeName.replace("::","__")» «member.joynrName»
 		«ENDFOR»
 		) {
 		«IF hasExtendsDeclaration(complexType)»
@@ -120,7 +122,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «get
 	«ENDIF»
 
 	«FOR member : getMembers(complexType)»
-	«val memberType = getMappedDatatypeOrList(member).replace("::","__")»
+	«val memberType = member.typeName.replace("::","__")»
 	«val memberName = member.joynrName»
 	public «memberType» get«memberName.toFirstUpper»() {
 		return this.«member.joynrName»;

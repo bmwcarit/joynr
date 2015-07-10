@@ -22,16 +22,14 @@ import java.util.HashMap
 import java.util.Iterator
 import java.util.Map
 import java.util.TreeSet
-import org.franca.core.franca.FArgument
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
-import org.franca.core.franca.FBroadcast
-import org.franca.core.franca.FEnumerationType
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -110,24 +108,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return false
 	}
 
-	/**
-	 * @return a method signature that is unique in terms of method name, out
-	 *      parameter names and out parameter types.
-	 */
-	def createMethodSignature(FMethod method) {
-		val nameStringBuilder = new StringBuilder(method.name);
-		for (FArgument outParam : method.outputParameters) {
-			nameStringBuilder.append(outParam.name.toFirstUpper);
-			val typeName = new StringBuilder(outParam.mappedDatatypeOrList.objectDataTypeForPlainType);
-			if (typeName.toString().contains("List")) {
-				typeName.deleteCharAt(4);
-				typeName.deleteCharAt(typeName.length-1);
-			}
-			nameStringBuilder.append(typeName.toString());
-		}
-		return nameStringBuilder.toString;
-	}
-
 	def private String getNamespaceStarter(Iterator<String> packageList){
 		return getNamespaceStarterFromPackageList(packageList);
 	}
@@ -185,95 +165,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
 	}
-
-	def getCommaSeperatedTypedOutputParameterList(
-		Iterable<FArgument> arguments,
-		boolean linebreak
-	) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : arguments){
-
-			returnStringBuilder.append(getMappedDatatypeOrList(argument));
-			returnStringBuilder.append(" ");
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(",");
-
-			if (linebreak) {
-				returnStringBuilder.append("\n");
-			}
-			else {
-				returnStringBuilder.append(" ");
-			}
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
-		}
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false)
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false)
-	}
-
-	def getCommaSeperatedTypedOutputParameterListLinebreak(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true)
-	}
-
-	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def getCommaSeperatedTypedParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for (param : getInputParameters(method)) {
-			returnStringBuilder.append(getMappedDatatypeOrList(param));
-			returnStringBuilder.append(" ");
-			returnStringBuilder.append(param.joynrName);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def getCommaSeperatedTypedFilterParameterList(FBroadcast broadcast) {
-		val returnStringBuilder = new StringBuilder();
-		for (filterParameter : getFilterParameters(broadcast)) {
-			returnStringBuilder.append("String ");
-			returnStringBuilder.append(filterParameter);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
 	override getMappedDatatype(FType datatype) {
 		return datatype.joynrName
 	}
@@ -415,49 +306,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "/* Generated Code */  "
 	}
 
-	def String getTypedParameterListJavaRpc(FMethod method){
-		var sb = new StringBuilder();
-		val params = getInputParameters(method)
-		var i = 0;
-		while (i < params.size) {
-			val param = params.get(i);
-			sb.append("@JoynrRpcParam")
-			sb.append("(\"" + param.joynrName + "\")")
-			sb.append(" "+ getMappedDatatypeOrList(param))
-			sb.append(" "+ param.joynrName)
-			if (i != params.size-1){
-				sb.append(",\n")
-			}
-			i = i+1;
-		}
-		return sb.toString
-	}
-
-	def String getJavadocCommentsParameterListJavaRpc(FMethod method){
-		var sb = new StringBuilder();
-		val params = getInputParameters(method)
-		var i = 0;
-		while (i < params.size) {
-			val param = params.get(i);
-			sb.append(" * @param " + param.joynrName + " the parameter " + param.joynrName + "\n");
-			i = i+1;
-		}
-		return sb.toString
-	}
-
-	def String getTypedParameterListJavaTypeReference(FMethod method){
-		val sb = new StringBuilder()
-		val params = getInputParameters(method)
-		for (param : params) {
-			sb.append("public static class "+getMappedDatatypeOrList(param)+ "Token extends TypeReference<"+getMappedDatatypeOrList(param)+" > {}\n")
-		}
-		sb.append("public static class "+ getMappedOutputParameter(method)+ "Token extends TypeReference<"+getMappedOutputParameter(method)+" > {}\n")
-		if (sb.length()==0){
-			return ""
-		}
-		return sb.toString
-	}
-
 	override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
 
 	override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
@@ -503,16 +351,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 		return type
 	}
-
-	def String getTokenTypeForArrayType(String plainType) {
-		if(plainType.contains("List<")) {
-			return "List" + getObjectDataTypeForPlainType(plainType.substring(5, plainType.length-1));
-		}
-		else{
-			return getObjectDataTypeForPlainType(plainType);
-		}
-	}
-
 	// Returns true if a class or superclass has array members
 	def boolean hasArrayMembers(FCompoundType datatype){
 		for (member : datatype.members) {
@@ -527,7 +365,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return false
 	}
 
-	// Returns true if a class has to create lists in its constructor	
+	// Returns true if a class has to create lists in its constructor
 	def boolean hasListsInConstructor(FCompoundType datatype){
 		for (member : datatype.members) {
 			if (isArray(member)){
@@ -535,22 +373,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 		}
 		return false
-	}
-
-	def String getJoynFullyQualifiedTypeName(FTypedElement typedElement){
-		if (typedElement.array == '[]'){
-			return "List"
-		}
-		if (typedElement.type.derived != null){
-			getJoynFullyQualifiedTypeName(typedElement.type.derived)
-		}
-		else{
-			getPrimitiveTypeName(typedElement.type.predefined)
-		}
-	}
-
-	def getJoynFullyQualifiedTypeName(FType type) {
-		joynTypePackagePrefix + "." + type.mappedDatatype
 	}
 
 	def getJoynTypePackagePrefix(){

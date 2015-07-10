@@ -22,9 +22,11 @@ import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceBroadcastTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {
@@ -55,12 +57,12 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 	«val listenerInterface = broadcastName.toFirstUpper + "BroadcastListener"»
 
 	public interface «listenerInterface» extends BroadcastSubscriptionListener {
-		public void onReceive(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
+		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList»);
 		public void onError();
 	}
 
 	public class «broadcastName.toFirstUpper»BroadcastAdapter implements «listenerInterface» {
-		public void onReceive(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
+		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList») {
 			// empty implementation
 		}
 		public void onError() {
@@ -73,7 +75,7 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 			public «filterParameterType»() {};
 
 			«IF filterParameters.size > 0»
-				public «filterParameterType»(«getCommaSeperatedTypedFilterParameterList(broadcast)») {
+				public «filterParameterType»(«broadcast.commaSeperatedTypedFilterParameterList») {
 					«FOR filterParameter : filterParameters»
 						super.setFilterParameter("«filterParameter»", «filterParameter»);
 					«ENDFOR»

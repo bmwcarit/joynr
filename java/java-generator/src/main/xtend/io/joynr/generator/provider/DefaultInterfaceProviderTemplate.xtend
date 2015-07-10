@@ -25,9 +25,11 @@ import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FMethod
 import java.util.HashMap
 import java.util.ArrayList
+import io.joynr.generator.util.JavaTypeUtil
 
 class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TemplateBase
 	@Inject extension InterfaceProviderTemplate
 
@@ -71,7 +73,7 @@ public class «className» extends «abstractProviderName» {
 
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val attributeName = attribute.joynrName»
-		«val attributeType = getMappedDatatypeOrList(attribute)»
+		«val attributeType = attribute.typeName»
 		protected «attributeType» «attributeName»;
 	«ENDFOR»
 
@@ -83,7 +85,7 @@ public class «className» extends «abstractProviderName» {
 
 	«FOR attribute : getAttributes(serviceInterface)»
 		«val attributeName = attribute.joynrName»
-		«val attributeType = getMappedDatatypeOrList(attribute)»
+		«val attributeType = attribute.typeName»
 
 		«IF isReadable(attribute)»
 			@Override
@@ -110,7 +112,7 @@ public class «className» extends «abstractProviderName» {
 	«FOR method : getMethods(serviceInterface)»
 		«var methodName = method.joynrName»
 		«var deferredName = methodToDeferredName.get(method)»
-		«var params = getTypedParameterListJavaRpc(method)»
+		«var params = method.typedParameterListJavaRpc»
 		«val outputParameters = getOutputParameters(method)»
 
 		/*
@@ -124,9 +126,9 @@ public class «className» extends «abstractProviderName» {
 			logger.warn("**********************************************");
 			«deferredName» deferred = new «deferredName»();
 			«FOR outputParameter : outputParameters»
-				«getMappedDatatypeOrList(outputParameter)» «outputParameter.name» = «getDefaultValue(outputParameter)»;
+				«outputParameter.typeName» «outputParameter.name» = «typeUtil.getDefaultValue(outputParameter)»;
 			«ENDFOR»
-			deferred.resolve(«getOutputParametersCommaSeparated(method)»);
+			deferred.resolve(«method.commaSeperatedUntypedOutputParameterList»);
 			return new Promise<«deferredName»>(deferred);
 		}
 	«ENDFOR»

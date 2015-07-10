@@ -94,18 +94,29 @@ class JavaTypeUtil extends TypeUtil {
 		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true)
 	}
 
+	def getCommaSeperatedUntypedInputParameterList(FMethod method) {
+		getCommaSeperatedUntypedParameterList(method.inputParameters);
+	}
+
 	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
+		getCommaSeperatedUntypedParameterList(method.outputParameters);
+	}
+
+	def getCommaSeperatedUntypedOutputParameterList(FBroadcast broadcast) {
+		getCommaSeperatedUntypedParameterList(broadcast.outputParameters);
+	}
+
+	def getCommaSeperatedUntypedParameterList(Iterable<FArgument> arguments) {
 		val returnStringBuilder = new StringBuilder();
-		for (FArgument argument : getOutputParameters(method)) {
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
+		for (argument : arguments) {
+			returnStringBuilder.append(argument.joynrName)
+			returnStringBuilder.append(", ")
 		}
 		val returnString = returnStringBuilder.toString();
 		if (returnString.length() == 0) {
 			return "";
-		} else {
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
 		}
+		return returnString.substring(0, returnString.length() - 2); //remove the last ,
 	}
 
 	def getCommaSeperatedTypedParameterList(FMethod method) {
@@ -228,7 +239,7 @@ class JavaTypeUtil extends TypeUtil {
 		for (param : params) {
 			sb.append("public static class "+param.typeName+ "Token extends TypeReference<"+param.typeName+" > {}\n")
 		}
-		sb.append("public static class "+ getMappedOutputParameter(method)+ "Token extends TypeReference<"+getMappedOutputParameter(method)+" > {}\n")
+		sb.append("public static class "+ method.typeNamesForOutputParameter+ "Token extends TypeReference<"+ method.typeNamesForOutputParameter +" > {}\n")
 		if (sb.length()==0) {
 			return ""
 		}

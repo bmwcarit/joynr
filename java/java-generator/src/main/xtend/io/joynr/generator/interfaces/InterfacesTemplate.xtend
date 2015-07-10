@@ -27,9 +27,11 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FArgument
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.util.JavaTypeUtil
 
 class InterfacesTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TemplateBase
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToErrorEnumName) {
@@ -66,7 +68,7 @@ class InterfacesTemplate implements InterfaceTemplate{
 		val nameStringBuilder = new StringBuilder(method.name);
 		for (FArgument inParam : method.inputParameters) {
 			nameStringBuilder.append(inParam.name.toFirstUpper);
-			val typeName = new StringBuilder(inParam.mappedDatatypeOrList.objectDataTypeForPlainType);
+			val typeName = new StringBuilder(typeUtil.getObjectDataTypeForPlainType(inParam.mappedDatatypeOrList));
 			nameStringBuilder.append(typeName.toString());
 		}
 		return nameStringBuilder.toString;

@@ -25,9 +25,11 @@ import org.franca.core.franca.FMethod
 import io.joynr.generator.util.InterfaceTemplate
 import java.util.ArrayList
 import java.util.HashMap
+import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceAsyncTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TemplateBase
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToOutputContainerName = new HashMap<String, String>();
@@ -36,15 +38,15 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 
 		for (FMethod method : getMethods(serviceInterface)) {
 			if (method.outputParameters.size < 2) {
-				val outputParamterType = getMappedOutputParameter(method).iterator.next;
+				val outputParamterType = method.getTypeNamesForOutputParameter.iterator.next;
 				if (outputParamterType == "void") {
 					methodToCallbackName.put(method, "Callback<Void>");
 					methodToFutureName.put(method, "Future<Void>");
 					methodToSyncReturnedName.put(method, "Void");
 				} else {
-					methodToCallbackName.put(method, "Callback<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
-					methodToFutureName.put(method, "Future<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
-					methodToSyncReturnedName.put(method, getObjectDataTypeForPlainType(outputParamterType));
+					methodToCallbackName.put(method, "Callback<" + typeUtil.getObjectDataTypeForPlainType(outputParamterType) + ">");
+					methodToFutureName.put(method, "Future<" + typeUtil.getObjectDataTypeForPlainType(outputParamterType) + ">");
+					methodToSyncReturnedName.put(method, typeUtil.getObjectDataTypeForPlainType(outputParamterType));
 				}
 			} else {
 				// Multiple Out Parameters
@@ -62,7 +64,7 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 					if (!indexForMethod.containsKey(method.name)) {
 						indexForMethod.put(method.name, 0);
 					}
-					val methodSignature = createMethodSignature(method);
+					val methodSignature = method.createMethodSignature;
 					if (!uniqueMultioutMethodSignatureToOutputContainerName.containsKey(methodSignature)) {
 						var Integer index = indexForMethod.get(method.name);
 						index++;
@@ -136,7 +138,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	}
 	«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
-		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))»
+		«var attributeType = typeUtil.getObjectDataTypeForPlainType(attribute.typeName)»
 		«var getAttribute = "get" + attributeName.toFirstUpper»
 		«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
@@ -176,9 +178,9 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 					onSuccess(
 						«FOR outParameter : method.outputParameters»
 							«IF isEnum(outParameter.type)»
-								«getMappedDatatypeOrList(outParameter)».valueOf((String) outParameters[«index++»])«IF index < method.outputParameters.length»,«ENDIF»
+								«outParameter.typeName».valueOf((String) outParameters[«index++»])«IF index < method.outputParameters.length»,«ENDIF»
 							«ELSE»
-								(«getMappedDatatypeOrList(outParameter)») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
+								(«outParameter.typeName») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
 							«ENDIF»
 						«ENDFOR»
 				);
@@ -205,9 +207,9 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	}
 
 	def getCallbackParameter(FMethod method, HashMap<FMethod, String> methodToCallbackName) {
-		var outPutParameterType = getMappedOutputParameter(method).iterator.next;
+		var outPutParameterType = method.typeNamesForOutputParameter.iterator.next;
 		var callbackType = methodToCallbackName.get(method);
-		var outPutObjectType = getObjectDataTypeForPlainType(outPutParameterType);
+		var outPutObjectType = typeUtil.getObjectDataTypeForPlainType(outPutParameterType);
 		if (method.outputParameters.size < 2) {
 			if (outPutParameterType!="void"){
 				if (outPutObjectType == ""){

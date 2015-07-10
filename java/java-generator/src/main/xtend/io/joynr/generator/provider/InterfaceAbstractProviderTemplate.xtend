@@ -18,13 +18,15 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
 
 class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {
@@ -61,7 +63,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 
 	«FOR attribute : getAttributes(serviceInterface)»
 		«val attributeName = attribute.joynrName»
-		«val attributeType = getMappedDatatypeOrList(attribute)»
+		«val attributeType = attribute.typeName»
 		«IF isNotifiable(attribute)»
 			@Override
 			public final void «attributeName»Changed(«attributeType» «attributeName») {
@@ -73,8 +75,8 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 	«FOR broadcast : serviceInterface.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		@Override
-		public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
-			fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «getOutputParametersCommaSeparated(broadcast)»);
+		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
+			fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «broadcast.commaSeperatedUntypedOutputParameterList»);
 		}
 
 	«ENDFOR»

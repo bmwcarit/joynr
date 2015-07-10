@@ -25,9 +25,11 @@ import io.joynr.generator.util.InterfaceTemplate
 import java.util.HashMap
 import org.franca.core.franca.FMethod
 import java.util.ArrayList
+import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceSyncTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TemplateBase
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();
@@ -36,11 +38,11 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 
 		for (FMethod method : getMethods(serviceInterface)) {
 			if (method.outputParameters.size < 2) {
-				val outputParamterType = getMappedOutputParameter(method).iterator.next;
+				val outputParamterType = method.typeNamesForOutputParameter.iterator.next;
 				if (outputParamterType == "void") {
 					methodToReturnTypeName.put(method, "void");
 				} else {
-					methodToReturnTypeName.put(method, getObjectDataTypeForPlainType(outputParamterType));
+					methodToReturnTypeName.put(method, typeUtil.getObjectDataTypeForPlainType(outputParamterType));
 				}
 			} else {
 				// Multiple Out Parameters
@@ -54,7 +56,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 					if (!indexForMethod.containsKey(method.name)) {
 						indexForMethod.put(method.name, 0);
 					}
-					val methodSignature = createMethodSignature(method);
+					val methodSignature = method.createMethodSignature;
 					if (!uniqueMultioutMethodSignatureToContainerNames.containsKey(methodSignature)) {
 						var Integer index = indexForMethod.get(method.name);
 						index++;
@@ -106,7 +108,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 
 		«FOR attribute: getAttributes(serviceInterface)»
 			«var attributeName = attribute.joynrName»
-			«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
+			«var attributeType = typeUtil.getObjectDataTypeForPlainType(attribute.typeName)» 
 			«var getAttribute = "get" + attributeName.toFirstUpper»
 			«var setAttribute = "set" + attributeName.toFirstUpper»
 				«IF isReadable(attribute)»
@@ -124,15 +126,15 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 		«val containerName = methodToReturnTypeName.get(method)»
 			public class «containerName» {
 			«FOR outParameter : method.outputParameters»
-					public final «getMappedDatatypeOrList(outParameter)» «outParameter.name»;
+					public final «outParameter.typeName» «outParameter.name»;
 			«ENDFOR»
 				public «containerName»(Object... outParameters) {
 					«var index = 0»
 				«FOR outParameter : method.outputParameters»
 					«IF isEnum(outParameter.type)»
-							this.«outParameter.name» = «getMappedDatatypeOrList(outParameter)».valueOf((String) outParameters[«index++»]);
+							this.«outParameter.name» = «outParameter.typeName».valueOf((String) outParameters[«index++»]);
 					«ELSE»
-							this.«outParameter.name» = («getMappedDatatypeOrList(outParameter)») outParameters[«index++»];
+							this.«outParameter.name» = («outParameter.typeName») outParameters[«index++»];
 					«ENDIF»
 				«ENDFOR»
 				}
@@ -141,25 +143,25 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 
 		«FOR method: getMethods(serviceInterface)»
 			«var methodName = method.joynrName»
-			«var outputParameters = getMappedOutputParameter(method)»
+			«var outputParameters = method.typeNamesForOutputParameter»
 
 			«IF outputParameters.size > 1»
 				/*
 				* «methodName»
 				*/
 				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
+						«method.typedParameterListJavaRpc»
 				) throws JoynrArbitrationException;
 			«ELSE»
 				/*
 				* «methodName»
 				*/
-				«IF getMappedOutputParameter(method).iterator.next=="void"»
+				«IF method.typeNamesForOutputParameter.iterator.next=="void"»
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
 				) throws JoynrArbitrationException;
 				«ELSE»
-				@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(getMappedOutputParameter(method).iterator.next)»Token.class)
+				@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(method.typeNamesForOutputParameter.iterator.next)»Token.class)
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
 				) throws JoynrArbitrationException;
