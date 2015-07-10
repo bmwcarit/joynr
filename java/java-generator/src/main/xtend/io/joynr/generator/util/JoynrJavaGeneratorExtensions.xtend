@@ -76,7 +76,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def boolean hasMethodWithReturnValue(FInterface interfaceType){
 		for(method: interfaceType.methods){
-			if (getMappedOutputParameter(method).iterator.next!="void"){
+			if (!method.outputParameters.empty){
 				return true
 			}
 		}
@@ -85,7 +85,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def boolean hasMethodWithoutReturnValue(FInterface interfaceType) {
 		for (method: interfaceType.methods) {
-			if (getMappedOutputParameter(method).iterator.next == "void") {
+			if (method.outputParameters.empty) {
 				return true
 			}
 		}
