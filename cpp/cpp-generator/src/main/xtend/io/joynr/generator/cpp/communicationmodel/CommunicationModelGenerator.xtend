@@ -51,6 +51,12 @@ class CommunicationModelGenerator {
 	@Inject
 	TypeCppTemplate typeCpp;
 
+	@Inject
+	StdTypeHTemplate stdTypeH;
+
+	@Inject
+	StdTypeCppTemplate stdTypeCpp;
+
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
 		IFileSystemAccess headerFileSystem,
@@ -66,8 +72,8 @@ class CommunicationModelGenerator {
 
 		for( type: getComplexDataTypes(fModel)){
 			if(type instanceof FCompoundType) {
-				val sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-				val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 
 				generateFile(
 					headerFileSystem,
@@ -75,11 +81,30 @@ class CommunicationModelGenerator {
 					typeH,
 					type
 				)
-
+				
 				generateFile(
 					sourceFileSystem,
 					sourcepath + type.joynrName + ".cpp",
 					typeCpp,
+					type
+				)
+
+				if (type.isPartOfTypeCollection) {
+					headerpath += type.typeCollectionName + File::separator
+					sourcepath += type.typeCollectionName + File::separator
+				}
+
+				generateFile(
+					headerFileSystem,
+					headerpath + "Std" + type.joynrName + ".h",
+					stdTypeH,
+					type
+				)
+
+				generateFile(
+					sourceFileSystem,
+					sourcepath + "Std" + type.joynrName + ".cpp",
+					stdTypeCpp,
 					type
 				)
 			}
