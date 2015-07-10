@@ -43,6 +43,7 @@ class EnumHTemplate implements EnumTemplate{
 #include <QObject>
 #include <QMetaType>
 #include "joynr/Util.h"
+#include "«getIncludeOfStd(type)»"
 
 «getNamespaceStarter(type)»
 
@@ -58,6 +59,34 @@ public:
 	// Constructors required by QT metatype system
 	«typeName»() : QObject() {}
 	«typeName»(const «typeName»& o) : QObject() { Q_UNUSED(o); }
+
+	static «typeName»::«getNestedEnumName()» createQt(
+			const «type.typeCollectionName»::«type.joynrNameStd»::«getNestedEnumName()»& «type.joynrNameStd.toFirstLower»
+	) {
+		«typeName»::«getNestedEnumName()» qt«typeName»;
+		switch («type.joynrNameStd.toFirstLower») {
+		«FOR enumtype : getEnumElementsAndBaseEnumElements(type)»
+			case «type.typeCollectionName»::«type.joynrNameStd»::«enumtype.joynrName»:
+				qt«typeName» = «enumtype.joynrName»;
+				break;
+		«ENDFOR»
+		}
+		return qt«typeName»;
+	}
+
+	static «type.typeCollectionName»::«type.joynrNameStd»::«getNestedEnumName()» createStd(
+			const «typeName»::«getNestedEnumName()»& qt«typeName»
+	) {
+		«type.typeCollectionName»::«type.joynrNameStd»::«getNestedEnumName()» «type.joynrNameStd.toFirstLower»;
+		switch (qt«typeName») {
+		«FOR enumtype : getEnumElementsAndBaseEnumElements(type)»
+			case «enumtype.joynrName»:
+				«type.joynrNameStd.toFirstLower» = «type.typeCollectionName»::«type.joynrNameStd»::«enumtype.joynrName»;
+				break;
+		«ENDFOR»
+		}
+		return «type.joynrNameStd.toFirstLower»;
+	}
 };
 
 «getNamespaceEnder(type)»
