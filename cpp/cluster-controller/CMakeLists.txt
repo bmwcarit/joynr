@@ -25,6 +25,7 @@ set(
     Joynr
     JoynrCommon
     ${CURL_LIBRARIES}
+    Qt5::Sql
 )
 
 set(
@@ -102,7 +103,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
-        Qt5::Sql
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)

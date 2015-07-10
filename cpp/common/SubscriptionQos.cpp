@@ -19,6 +19,7 @@
 #include "joynr/SubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
 #include <limits>
+#include <QDate>
 
 namespace joynr
 {

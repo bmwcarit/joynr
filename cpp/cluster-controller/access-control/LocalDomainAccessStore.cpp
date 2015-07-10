@@ -24,7 +24,8 @@
 
 #include <QIODevice>
 #include <QtSql/QSqlQuery>
-#include <QSqlRecord>
+#include <QtSql/QSqlRecord>
+#include <QDataStream>
 
 #include <cassert>
 

@@ -20,7 +20,6 @@
 #define SUBSCRIPTIONQOS_H
 
 #include <stdint.h>
-#include <QDate>
 
 #include "joynr/JoynrCommonExport.h"
 

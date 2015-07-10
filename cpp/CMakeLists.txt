@@ -169,6 +169,8 @@ include_directories(
 find_package(Qt5Sql REQUIRED)
 message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
 message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
+get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
+message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
 message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
 message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
 

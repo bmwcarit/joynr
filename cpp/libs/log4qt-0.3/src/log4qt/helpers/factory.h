@@ -7,6 +7,7 @@
  *
  * 
  * Copyright 2007 Martin Heinrich
+ * Copyright (C) 2015, BMW Car IT GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +30,7 @@
 /******************************************************************************
  * Dependencies
  ******************************************************************************/
-
+#include <QtCore/QObject>
 #include <QtCore/QHash>
 #include <QtCore/QMutex>
 #include <QtCore/QStringList>
