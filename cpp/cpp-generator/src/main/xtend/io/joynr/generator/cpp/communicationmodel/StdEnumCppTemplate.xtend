@@ -47,6 +47,7 @@ std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typ
 	«FOR literal : getEnumElementsAndBaseEnumElements(type)»
 		case «literal.joynrName»:
 			literal = std::string("«literal.joynrName»");
+			break;
 	«ENDFOR»
 	}
 	return literal;

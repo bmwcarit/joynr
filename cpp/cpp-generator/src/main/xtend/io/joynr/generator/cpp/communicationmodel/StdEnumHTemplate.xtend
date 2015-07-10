@@ -51,6 +51,9 @@ class StdEnumHTemplate implements EnumTemplate {
 «getNamespaceStarter(type, true)»
 
 struct «getDllExportMacro()»«typeName» {
+	«IF type.hasExtendsDeclaration»
+		// This enum inherits enumeration values from «type.extendedType.buildPackagePath("::", true)»«type.extendedType.joynrNameStd».
+	«ENDIF»
 	enum «getNestedEnumName()» : uint32_t {
 		«var ordinal = 0»
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
