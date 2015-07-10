@@ -174,7 +174,7 @@ public:
                                      const QString& message);
 
     template <typename... Ts>
-    static int getBroadcastTypeId();
+    static int getTypeId();
 
     template <typename T>
     static T valueOf(const QVariant& variant);
@@ -227,7 +227,7 @@ private:
     static int getTypeId_split()
     {
         int prime = 31;
-        return prime * qMetaTypeId<T>() + prime * getBroadcastTypeId<Ts...>();
+        return prime * qMetaTypeId<T>() + prime * getTypeId<Ts...>();
     }
 
     template <typename T, typename... Ts>
@@ -290,13 +290,13 @@ inline QList<QByteArray> Util::valueOf<QList<QByteArray>>(const QVariant& varian
 }
 
 template <typename... Ts>
-inline int Util::getBroadcastTypeId()
+inline int Util::getTypeId()
 {
     return getTypeId_split<Ts...>();
 }
 
 template <>
-inline int Util::getBroadcastTypeId<>()
+inline int Util::getTypeId<>()
 {
     return 0;
 }

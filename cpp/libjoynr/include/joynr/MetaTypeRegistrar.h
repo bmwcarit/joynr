@@ -199,7 +199,7 @@ void MetaTypeRegistrar::registerBroadcastMetaType()
 template <class... Ts>
 void MetaTypeRegistrar::addPublicationInterpreterForBroadcastType()
 {
-    int typeId = Util::getBroadcastTypeId<Ts...>();
+    int typeId = Util::getTypeId<Ts...>();
 
     if (!publicationInterpreters.contains(typeId)) {
         publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
