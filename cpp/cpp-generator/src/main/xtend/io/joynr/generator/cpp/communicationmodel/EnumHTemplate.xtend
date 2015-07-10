@@ -51,7 +51,7 @@ class «getDllExportMacro()» «typeName» : public QObject {
 	Q_ENUMS(«getNestedEnumName()»)
 public:
 	enum «getNestedEnumName()» {
-		«FOR enumtype : getEnumElements(type) SEPARATOR ','»
+		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
 			«enumtype.joynrName»
 		«ENDFOR»
 	};
