@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import com.google.inject.Inject
 import java.util.HashSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
@@ -26,6 +27,9 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
 
 class QtTypeUtil extends CppTypeUtil {
+
+	@Inject
+	private CppStdTypeUtil stdTypeUtil
 
 	override getTypeName(FBasicTypeId datatype) {
 		switch datatype {
@@ -47,6 +51,10 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName) {
+		fromStdTypeToQTType(typedElement, objectName, false)
+	}
+
+	def fromStdTypeToQTType(FTypedElement typedElement, String objectName, boolean convertComplexTypes) {
 		if (typedElement.type.predefined != null && typedElement.type.predefined != FBasicTypeId.UNDEFINED) {
 			if (typedElement.isArray) {
 				return '''TypeUtil::toQt(«objectName»)'''
@@ -71,39 +79,70 @@ class QtTypeUtil extends CppTypeUtil {
 			}
 		}
 		else if (typedElement.isArray) {
-			return '''TypeUtil::toQt<«typedElement.type.typeName»>(«objectName»)'''
+			if (!convertComplexTypes || typedElement.type.isEnum) {
+				return '''TypeUtil::toQt<«typedElement.type.typeName»>(«objectName»)'''
+			}
+			else {
+				return '''TypeUtil::toQt<«stdTypeUtil.getTypeNameStd(typedElement.type.derived)», «typedElement.type.typeName»>(«objectName»)'''
+			}
+		}
+		else if (typedElement.type.isEnum) {
+			//fix as long as enums are not correctly integrated in the Qt/Std type conversion
+			return objectName
+		}
+		else if (convertComplexTypes) {
+			return typedElement.type.typeName + "::createQt(" + objectName + ")";
 		}
 		return objectName
 	}
 
 	def fromQTTypeToStdType(FTypedElement typedElement, String objectName) {
+		fromQTTypeToStdType(typedElement, objectName, false)
+	}
+
+	def fromQTTypeToStdType(FTypedElement typedElement, String objectName, boolean convertComplexTypes) {
 		if (typedElement.type.predefined != null &&
 			typedElement.type.predefined != FBasicTypeId.UNDEFINED
 		) {
-			if (typedElement.isArray) {
-				return '''TypeUtil::toStd(«objectName»)'''
-			}
-			else {
-				switch (typedElement.type.predefined) {
-					case FBasicTypeId.BOOLEAN: return objectName
-					case FBasicTypeId.INT8: return '''TypeUtil::toStdInt8(«objectName»)'''
-					case FBasicTypeId.UINT8: return '''TypeUtil::toStdUInt8(«objectName»)'''
-					case FBasicTypeId.INT16: return '''TypeUtil::toStdInt16(«objectName»)'''
-					case FBasicTypeId.UINT16: return '''TypeUtil::toStdUInt16(«objectName»)'''
-					case FBasicTypeId.INT32: return '''TypeUtil::toStdInt32(«objectName»)'''
-					case FBasicTypeId.UINT32: return '''TypeUtil::toStdUInt32(«objectName»)'''
-					case FBasicTypeId.INT64: return '''TypeUtil::toStdInt64(«objectName»)'''
-					case FBasicTypeId.UINT64: return '''TypeUtil::toStdUInt64(«objectName»)'''
-					case FBasicTypeId.FLOAT: return '''TypeUtil::toStdFloat(«objectName»)'''
-					case FBasicTypeId.DOUBLE: return objectName
-					case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
-					case FBasicTypeId.BYTE_BUFFER: return '''TypeUtil::toStd(«objectName»)'''
-					default: return objectName
-				}
+			switch (typedElement.type.predefined) {
+				case FBasicTypeId.BOOLEAN: 	if (typedElement.isArray)
+												return '''TypeUtil::toStd(«objectName»)'''
+											else
+												return objectName
+				case FBasicTypeId.INT8: return '''TypeUtil::toStdInt8(«objectName»)'''
+				case FBasicTypeId.UINT8: return '''TypeUtil::toStdUInt8(«objectName»)'''
+				case FBasicTypeId.INT16: return '''TypeUtil::toStdInt16(«objectName»)'''
+				case FBasicTypeId.UINT16: return '''TypeUtil::toStdUInt16(«objectName»)'''
+				case FBasicTypeId.INT32: return '''TypeUtil::toStdInt32(«objectName»)'''
+				case FBasicTypeId.UINT32: return '''TypeUtil::toStdUInt32(«objectName»)'''
+				case FBasicTypeId.INT64: return '''TypeUtil::toStdInt64(«objectName»)'''
+				case FBasicTypeId.UINT64: return '''TypeUtil::toStdUInt64(«objectName»)'''
+				case FBasicTypeId.FLOAT: return '''TypeUtil::toStdFloat(«objectName»)'''
+				case FBasicTypeId.DOUBLE: 	if (typedElement.isArray)
+												return '''TypeUtil::toStd(«objectName»)'''
+											else
+												return objectName
+				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
+				case FBasicTypeId.BYTE_BUFFER: return '''TypeUtil::toStd(«objectName»)'''
+				default: 	if (typedElement.isArray)
+								return '''TypeUtil::toStd(«objectName»)'''
+							else
+								return objectName
 			}
 		}
 		else if (typedElement.isArray) {
-			return '''TypeUtil::toStd<«typedElement.type.typeName»>(«objectName»)'''
+			if (!convertComplexTypes || typedElement.type.isEnum) {
+				return '''TypeUtil::toStd<«typedElement.type.typeName»>(«objectName»)'''
+			}
+			else {
+				return '''TypeUtil::toStd<«typedElement.type.typeName», «stdTypeUtil.getTypeNameStd(typedElement.type.derived)»>(«objectName»)'''
+			}
+		}
+		else if (typedElement.type.isEnum){
+			return objectName
+		}
+		else if (convertComplexTypes) {
+			return typedElement.type.typeName + "::createStd(" + objectName + ")";
 		}
 		//by default, return objectName
 		return objectName;

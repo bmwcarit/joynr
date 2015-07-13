@@ -21,6 +21,7 @@ import com.google.inject.Inject
 import java.util.HashSet
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypedElement
 
 class CppStdTypeUtil extends CppTypeUtil {
 
@@ -114,6 +115,14 @@ class CppStdTypeUtil extends CppTypeUtil {
 		} 
 	}
 
+	override getDefaultValue(FTypedElement element) {
+		if (element.type.predefined == FBasicTypeId.BYTE_BUFFER) {
+			return "";
+		}
+		else {
+			super.getDefaultValue(element)
+		}
+	}
 	def getIncludeOfStd(FType dataType) {
 		var path = getPackagePathWithJoynrPrefix(dataType, "/")
 		if (dataType.isPartOfTypeCollection) {

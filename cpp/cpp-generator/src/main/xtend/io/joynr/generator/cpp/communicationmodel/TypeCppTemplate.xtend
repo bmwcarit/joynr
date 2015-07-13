@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
@@ -33,6 +34,9 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 	private extension QtTypeUtil
 
 	@Inject
+	private CppStdTypeUtil stdTypeUtil
+
+	@Inject
 	private extension JoynrCppGeneratorExtensions
 
 	override generate(FCompoundType type) '''
@@ -43,9 +47,13 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/Reply.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
+#include "joynr/TypeUtil.h"
 #include "qjson/serializer.h"
 #include <QMetaEnum>
 #include <QDateTime>
+
+#include "«getPackagePathWithJoynrPrefix(type, "/")»«IF type.isPartOfTypeCollection»/«type.typeCollectionName»«ENDIF»/Std«typeName».h"
+
 
 «getNamespaceStarter(type)»
 
@@ -260,6 +268,50 @@ QString «typeName»::toString() const {
 	«ENDFOR»
 	result += "}";
 	return result;
+}
+
+// copy methods for Qt extraction
+«IF !type.members.empty»
+void «typeName»::createStd(const «typeName»& from, «stdTypeUtil.getTypeName(type)»& to) {
+	«IF hasExtendsDeclaration(type) && !(type.extendedType.members.empty)»
+		«type.extendedType.joynrName»::createStd(from, to);
+	«ENDIF»
+	«FOR member: getMembers(type)»
+		«var from = "from.get" + member.joynrName.toFirstUpper + "()"»
+		to.set«member.joynrName.toFirstUpper»(«fromQTTypeToStdType(member, from, true)»);
+	«ENDFOR»
+}
+
+void «typeName»::createQt(const «stdTypeUtil.getTypeName(type)»& from, «typeName»& to) {
+	«IF hasExtendsDeclaration(type) && !(type.extendedType.members.empty)»
+		«type.extendedType.joynrName»::createQt(from, to);
+	«ENDIF»
+	«FOR member: getMembers(type)»
+		«var from = "from.get" + member.joynrName.toFirstUpper + "()"»
+		to.set«member.joynrName.toFirstUpper»(«fromStdTypeToQTType(member, from, true)»);
+	«ENDFOR»
+}
+«ENDIF»
+
+«stdTypeUtil.getTypeName(type)» «typeName»::createStd(const «typeName»& from) {
+	«stdTypeUtil.getTypeName(type)» to;
+	«IF !type.members.empty»
+		createStd(from, to);
+	«ELSE»
+		//get rid of compiler warnings for this special case
+		std::ignore = from;
+	«ENDIF»
+	return to;
+}
+
+«typeName» «typeName»::createQt(const «stdTypeUtil.getTypeName(type)»& from) {
+	«typeName» to;
+	«IF !type.members.empty»
+		createQt(from, to);
+	«ELSE»
+		std::ignore = from;
+	«ENDIF»
+	return to;
 }
 «getNamespaceEnder(type)»
 '''

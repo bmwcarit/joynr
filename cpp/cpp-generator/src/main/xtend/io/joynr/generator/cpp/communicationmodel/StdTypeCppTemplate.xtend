@@ -54,6 +54,16 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 «getNamespaceStarter(type)»
 
+«typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
+	«IF hasExtendsDeclaration(type)»
+		«getExtendedType(type).joynrNameStd»()«IF !getMembers(type).empty»,«ENDIF»
+	«ENDIF»
+	«FOR member: getMembers(type) SEPARATOR ','»
+		«member.joynrName»()
+	«ENDFOR»
+{
+}
+
 «IF !getMembersRecursive(type).empty»
 «typeName»::«typeName»(
 		«FOR member: getMembersRecursive(type) SEPARATOR ','»
@@ -62,7 +72,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 	):
 		«IF hasExtendsDeclaration(type)»
 			«val extendedType = getExtendedType(type)»
-			Std«extendedType.joynrName»(
+			«extendedType.joynrNameStd»(
 			«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 				«member.joynrName»
 			«ENDFOR»
@@ -73,8 +83,8 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 		«ENDFOR»
 {
 }
-«ENDIF»
 
+«ENDIF»
 «IF !getMembers(type).isEmpty»
 // Copy Constructor
 «typeName»::«typeName»(const «typeName»& other) :
@@ -86,8 +96,8 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 		«ENDFOR»
 {
 }
-«ENDIF»
 
+«ENDIF»
 bool «typeName»::operator!=(const «typeName»& other) const {
 	return !(*this==other);
 }
@@ -118,7 +128,6 @@ bool «typeName»::operator==(const «typeName»& other) const {
 
 	«ENDIF»
 «ENDFOR»
-
 std::string «typeName»::toString() const {
 	std::ostringstream typeAsString;
 	typeAsString << "«typeName»{";

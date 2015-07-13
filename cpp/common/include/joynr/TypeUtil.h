@@ -42,12 +42,27 @@ public:
     /**
       * Converts a vector of std objects into a list of qt objects
       */
-    template <class T>
-    static QList<T> toQt(const std::vector<T>& stdValues)
+    template <class STDTYPE, class QTTYPE>
+    static QList<QTTYPE> toQt(const std::vector<STDTYPE>& stdValues)
     {
-        QList<T> qtValues;
+        QList<QTTYPE> qtValues;
 
-        for (T stdValue : stdValues) {
+        for (STDTYPE stdValue : stdValues) {
+            qtValues.append(QTTYPE::createQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a vector of qt objects into a list of qt objects
+      */
+    template <class QTTYPE>
+    static QList<QTTYPE> toQt(const std::vector<QTTYPE>& stdValues)
+    {
+        QList<QTTYPE> qtValues;
+
+        for (QTTYPE stdValue : stdValues) {
             qtValues.append(stdValue);
         }
 
@@ -55,18 +70,33 @@ public:
     }
 
     /**
-      * Converts a list of qt objects into a vector of std objects
+      * Converts a list of qt objects into a vector of qt objects
       */
-    template <class T>
-    static std::vector<T> toStd(const QList<T>& stdValues)
+    template <class QTTYPE, class STDTYPE>
+    static std::vector<STDTYPE> toStd(const QList<QTTYPE>& qtValues)
     {
-        std::vector<T> qtValues;
+        std::vector<STDTYPE> stdValues;
 
-        for (T stdValue : stdValues) {
-            qtValues.push_back(stdValue);
+        for (QTTYPE qtValue : qtValues) {
+            stdValues.push_back(QTTYPE::createStd(qtValue));
         }
 
-        return qtValues;
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of qt objects into a vector of qt objects
+      */
+    template <class QTTYPE>
+    static std::vector<QTTYPE> toStd(const QList<QTTYPE>& qtValues)
+    {
+        std::vector<QTTYPE> stdValues;
+
+        for (QTTYPE qtValue : qtValues) {
+            stdValues.push_back(qtValue);
+        }
+
+        return stdValues;
     }
 
     /**

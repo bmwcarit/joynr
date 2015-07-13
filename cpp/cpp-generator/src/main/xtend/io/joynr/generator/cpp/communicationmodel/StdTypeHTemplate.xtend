@@ -61,7 +61,7 @@ public:
 	// general methods
 
 	// default constructor
-	«typeName»() = default;
+	«typeName»();
 
 	// constructor setting all fields
 	«IF !getMembersRecursive(type).empty»

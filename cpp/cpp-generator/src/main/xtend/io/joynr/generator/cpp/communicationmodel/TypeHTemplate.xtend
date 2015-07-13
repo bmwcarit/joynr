@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.communicationmodel
  * limitations under the License.
  */
 
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
@@ -31,6 +32,9 @@ class TypeHTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension QtTypeUtil
+
+	@Inject
+	private CppStdTypeUtil stdTypeUtil
 
 	@Inject
 	private extension TemplateBase
@@ -51,10 +55,24 @@ class TypeHTemplate implements CompoundTypeTemplate{
 #include <QByteArray>
 #include "joynr/Util.h"
 
+«IF type.members.empty»
+#include <tuple>
+«ENDIF»
+
 //include complex Datatype headers.
 «FOR member: getRequiredIncludesFor(type)»
 	#include "«member»"
 «ENDFOR»
+
+#include "«stdTypeUtil.getIncludeOf(type)»"
+
+#ifdef _MSC_VER
+    #pragma warning( push )
+    #pragma warning( disable : 4373 )
+#endif
+
+// Disable compiler warnings.
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 «getNamespaceStarter(type)»
 
@@ -127,6 +145,14 @@ public:
 		«ENDIF»
 		void set«joynrName.toFirstUpper»(const «member.typeName»& «joynrName»);
 	«ENDFOR»
+	
+	//copy methods for Qt extraction
+	«IF !type.members.empty»
+		static void createStd(const «typeName»& from, «stdTypeUtil.getTypeName(type)»& to);
+		static void createQt(const «stdTypeUtil.getTypeName(type)»& from, «typeName»& to);
+	«ENDIF»
+	static «stdTypeUtil.getTypeName(type)» createStd(const «typeName»& from);
+	static «typeName» createQt(const «stdTypeUtil.getTypeName(type)»& from);
 
 private:
 	//members
@@ -134,7 +160,6 @@ private:
 		 «member.typeName» m_«member.joynrName»;
 	«ENDFOR»
 	void registerMetatypes();
-
 };
 
 «getNamespaceEnder(type)»
@@ -153,6 +178,14 @@ Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeNa
 inline uint qHash(const «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»& key) {
 	return key.hashCode();
 }
+
+
+#ifdef _MSC_VER
+    #pragma warning( push )
+#endif
+
+// restore GCC diagnostic state
+#pragma GCC diagnostic pop
 
 #endif // «headerGuard»
 '''
