@@ -56,19 +56,34 @@ public final class ArbitratorFactory {
 
         switch (discoveryQos.getArbitrationStrategy()) {
         case FixedChannel:
-            return new FixedParticipantArbitrator(discoveryQos, capabilitiesSource, minimumArbitrationRetryDelay);
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  new FixedParticipantArbitrator());
         case Keyword:
-            return new KeywordArbitrator(domain,
-                                         interfaceName,
-                                         discoveryQos,
-                                         capabilitiesSource,
-                                         minimumArbitrationRetryDelay);
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  new KeywordArbitrator());
         case HighestPriority:
-            return new HighestPriorityArbitrator(domain,
-                                                 interfaceName,
-                                                 discoveryQos,
-                                                 capabilitiesSource,
-                                                 minimumArbitrationRetryDelay);
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  new HighestPriorityArbitrator());
+        case Custom:
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  discoveryQos.getArbitrationStrategyFunction());
+
         default:
             throw new JoynrArbitrationException("Arbitration failed: domain: " + domain + " interface: "
                     + interfaceName + " qos: " + discoveryQos + ": unknown arbitration strategy or strategy not set!");

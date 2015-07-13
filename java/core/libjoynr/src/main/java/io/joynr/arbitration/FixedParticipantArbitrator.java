@@ -19,62 +19,30 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.endpoints.EndpointAddressBase;
 
-import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.Collection;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FixedParticipantArbitrator extends Arbitrator {
+public class FixedParticipantArbitrator extends ArbitrationStrategyFunction {
     private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrator.class);
 
-    private String participantId;
-
-    public FixedParticipantArbitrator(final DiscoveryQos discoveryQos,
-                                      LocalCapabilitiesDirectory capabilitiesSource,
-                                      long minimumArbitrationRetryDelay) {
-        super(discoveryQos, capabilitiesSource, minimumArbitrationRetryDelay);
-    }
-
     @Override
-    public void startArbitration() {
-        participantId = discoveryQos.getCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD).toString();
-        arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
-        localCapabilitiesDirectory.lookup(participantId, discoveryQos, new CapabilityCallback() {
-
-            @Override
-            public void processCapabilityReceived(@CheckForNull CapabilityEntry capability) {
-                selectProvider(capability);
+    public CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities) {
+        String participantId = parameters.get(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
+        logger.trace("starting select Provider by participant Id: {}", participantId);
+        CapabilityEntry capabilityWithParticipantId = null;
+        for (CapabilityEntry capEntry : capabilities) {
+            if (capEntry.getParticipantId().equals(participantId)) {
+                capabilityWithParticipantId = capEntry;
+                break;
             }
-
-            @Override
-            public void onError(Throwable exception) {
-                FixedParticipantArbitrator.this.onError(exception);
-            }
-        });
-    }
-
-    protected void selectProvider(@CheckForNull final CapabilityEntry capability) {
-
-        if (capability != null) {
-            List<EndpointAddressBase> endpointAddress = capability.getEndpointAddresses();
-            ;
-            arbitrationResult.setEndpointAddress(endpointAddress);
-            arbitrationResult.setParticipantId(participantId);
-            arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
-            updateArbitrationResultAtListener();
-        } else {
-            logger.debug("FixedParticipantArbitrator received empty list of capabilities or multiple entries for fixed participantId. Arbitration canceled.");
-            arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-            notifyArbitrationStatusChanged();
-
         }
-    }
+        logger.trace("capability with participantId: {}: {}" + participantId, capabilityWithParticipantId);
 
+        return capabilityWithParticipantId;
+    }
 }

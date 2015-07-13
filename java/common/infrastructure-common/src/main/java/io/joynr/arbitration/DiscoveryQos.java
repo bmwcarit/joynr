@@ -20,6 +20,7 @@ package io.joynr.arbitration;
  */
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.google.common.collect.Maps;
 
@@ -35,6 +36,7 @@ public class DiscoveryQos {
     private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private ArbitrationStrategy arbitrationStrategy;
+    private ArbitrationStrategyFunction arbitrationStategyFunction;
     private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.HighestPriority;
 
     long cacheMaxAge;
@@ -50,7 +52,7 @@ public class DiscoveryQos {
     private DiscoveryScope discoveryScope;
     private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
 
-    private HashMap<String, Object> customParameters = Maps.newHashMap();
+    private HashMap<String, String> customParameters = Maps.newHashMap();
 
     /**
      * DiscoveryQos object with default values.
@@ -85,6 +87,19 @@ public class DiscoveryQos {
     /**
      * @param discoveryTimeout
      *            Timeout for rpc calls to wait for arbitration to finish.
+     * @param arbitrationStrategyFunction
+     *            function that chooses the appropriate provider from the list returned by the capabilities directory
+     * @param cacheMaxAge
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     */
+    public DiscoveryQos(long discoveryTimeout, ArbitrationStrategyFunction arbitrationStrategyFunction, long cacheMaxAge) {
+        this(discoveryTimeout, arbitrationStrategyFunction, cacheMaxAge, DEFAULT_DISCOVERYSCOPE);
+    }
+
+    /**
+     * @param discoveryTimeout
+     *            Timeout for rpc calls to wait for arbitration to finish.
      * @param arbitrationStrategy
      *            Strategy for choosing the appropriate provider from the list returned by the capabilities directory
      * @param cacheMaxAge
@@ -105,15 +120,34 @@ public class DiscoveryQos {
                         ArbitrationStrategy arbitrationStrategy,
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
-        this(discoveryScope, cacheMaxAge);
+        if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+        }
+
+        this.cacheMaxAge = cacheMaxAge;
+        this.discoveryScope = discoveryScope;
         this.discoveryTimeout = discoveryTimeout;
         this.arbitrationStrategy = arbitrationStrategy;
     }
 
+    @Deprecated
     public DiscoveryQos(DiscoveryScope discoveryScope, long cacheMaxAge) {
         this();
         setCacheMaxAge(cacheMaxAge);
         this.discoveryScope = discoveryScope;
+    }
+
+    public DiscoveryQos(long discoveryTimeout,
+                        ArbitrationStrategyFunction arbitrationStrategyFunction,
+                        long cacheMaxAge,
+                        DiscoveryScope discoveryscope) {
+
+        this.arbitrationStrategy = ArbitrationStrategy.Custom;
+        this.discoveryTimeout = discoveryTimeout;
+        arbitrationStategyFunction = arbitrationStrategyFunction;
+        this.cacheMaxAge = cacheMaxAge;
+        discoveryScope = discoveryscope;
+
     }
 
     /**
@@ -124,6 +158,9 @@ public class DiscoveryQos {
      *            Defines the strategy used to choose the "best" provider.
      */
     public void setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy) {
+        if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+        }
         this.arbitrationStrategy = arbitrationStrategy;
     }
 
@@ -170,7 +207,7 @@ public class DiscoveryQos {
      * @param value
      *            Any object used by the arbitrator to choose a provider.
      */
-    public void addCustomParameter(String key, Object value) {
+    public void addCustomParameter(String key, String value) {
         customParameters.put(key, value);
     }
 
@@ -272,4 +309,11 @@ public class DiscoveryQos {
         return discoveryScope;
     }
 
+    ArbitrationStrategyFunction getArbitrationStrategyFunction() {
+        return arbitrationStategyFunction;
+    }
+
+    public Map<String, String> getCustomParametes() {
+        return customParameters;
+    }
 }

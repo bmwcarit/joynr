@@ -19,87 +19,32 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 
 import java.util.Collection;
-
-import javax.annotation.CheckForNull;
+import java.util.Map;
 
 import joynr.types.CustomParameter;
-import joynr.types.ProviderQos;
 
-public class KeywordArbitrator extends Arbitrator {
-
-    private String domain;
-    private String interfaceName;
-    private String requestedKeyword;
-
-    public KeywordArbitrator(final String domain,
-                             String interfaceName,
-                             final DiscoveryQos discoveryQos,
-                             LocalCapabilitiesDirectory capabilitiesSource,
-                             long minimumArbitrationRetryDelay) {
-        super(discoveryQos, capabilitiesSource, minimumArbitrationRetryDelay);
-        this.domain = domain;
-        this.interfaceName = interfaceName;
-    }
+public class KeywordArbitrator extends ArbitrationStrategyFunction {
 
     @Override
-    public void startArbitration() {
-        arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
-        notifyArbitrationStatusChanged();
-        requestedKeyword = discoveryQos.getCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER).toString();
+    public CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities) {
+        String requestedKeyword = parameters.get(ArbitrationConstants.KEYWORD_PARAMETER);
+        CapabilityEntry capabilityWithKeyword = null;
 
-        localCapabilitiesDirectory.lookup(domain, interfaceName, discoveryQos, new CapabilitiesCallback() {
-
-            @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<CapabilityEntry> capabilities) {
-                // when using javax.annotations.NonNull annotation on capablities parameter it will
-                // cause a NoSuchMethodError
-                assert (capabilities != null);
-                selectProvider(capabilities);
-            }
-
-            @Override
-            public void onError(Throwable exception) {
-                KeywordArbitrator.this.onError(exception);
-
-            }
-        });
-    }
-
-    protected void selectProvider(@CheckForNull final Collection<CapabilityEntry> capabilities) {
-        if (capabilities == null || capabilities.size() < 1) {
-            arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-            notifyArbitrationStatusChanged();
-        } else {
-            CapabilityEntry result;
-            for (CapabilityEntry capEntry : capabilities) {
-                ProviderQos providerQos = capEntry.getProviderQos();
-
-                // If onChange subscriptions are required ignore providers that do not support them
-                if (discoveryQos.getProviderMustSupportOnChange() && !providerQos.getSupportsOnChangeSubscriptions()) {
-                    continue;
-                }
-
-                // Search for a matching keyword parameter
-                CustomParameter keywordParameter = findQosParameter(capEntry, ArbitrationConstants.KEYWORD_PARAMETER);
-                if (keywordParameter != null) {
-                    String currentKeyword = keywordParameter.getValue();
-                    if (currentKeyword.equals(requestedKeyword)) {
-                        result = capEntry;
-                        arbitrationResult.setEndpointAddress(result.getEndpointAddresses());
-                        arbitrationResult.setParticipantId(result.getParticipantId());
-                        arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
-                        updateArbitrationResultAtListener();
-                        return;
-                    }
+        for (CapabilityEntry capEntry : capabilities) {
+            // Search for a matching keyword parameter
+            CustomParameter keywordParameter = findQosParameter(capEntry, ArbitrationConstants.KEYWORD_PARAMETER);
+            if (keywordParameter != null) {
+                String currentKeyword = keywordParameter.getValue();
+                if (currentKeyword.equals(requestedKeyword)) {
+                    capabilityWithKeyword = capEntry;
+                    break;
                 }
             }
-            arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-            notifyArbitrationStatusChanged();
         }
+
+        return capabilityWithKeyword;
     }
 }
