@@ -69,6 +69,13 @@ option(
 message(STATUS "option ENABLE_GCOV=" ${ENABLE_GCOV})
 
 option(
+    ENABLE_DOXYGEN
+    "Use DOXYGEN to build documentation?"
+    ON
+)
+message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
+
+option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
     ON
@@ -88,6 +95,8 @@ message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
 message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
 message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
+message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
+message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
@@ -116,6 +125,19 @@ message(STATUS "############ Import: Qt5 ############")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Tell CMake to run moc when necessary:
 set(CMAKE_AUTOMOC ON)
+
+# Doxygen documentation build
+if(ENABLE_DOXYGEN)
+    find_package(Doxygen REQUIRED)
+    message(STATUS "doxygen DOXYGEN_FOUND=${DOXYGEN_FOUND}")
+    add_custom_target(doxygen
+        COMMAND ${CMAKE_SOURCE_DIR}/run_doxygen.sh ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Creating doxygen documentation"
+        VERBATIM
+    )
+endif(ENABLE_DOXYGEN)
+
 find_package(Qt5Core REQUIRED)
 
 message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
