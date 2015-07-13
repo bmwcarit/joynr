@@ -10,13 +10,13 @@ log "INSTALL BASE MODEL"
 cd /data/src/basemodel
 mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 
-log "INSTALL FRANCA"
-cd /data/src/tools/generator/dependency-libs
-mvn validate -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+log "INSTALL FRANCA AND BASE GENERATOR"
+cd /data/src/tools/generator
+mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 
-log "GENERATE CPP SOURCES"
+log "INSTALL GENERATOR AND GENERATE CPP SOURCES, ALSO FOR USE OF LATER BUILD STEPS"
 cd /data/src/cpp
-mvn clean process-test-sources -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
