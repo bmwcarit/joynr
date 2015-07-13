@@ -257,17 +257,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		return packagepath;
 	}
 	
-	//TODO QT: remove
-	def getMappedDatatypeStd(FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::");
-		if (isEnum(datatype)){
-			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
-		}
-		else{
-			return  packagepath + "Std" + datatype.joynrName  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
-		}
-	}
-	
 	override getMappedDatatype(FType datatype) {
 		val packagepath = buildPackagePath(datatype, "::");
 		if (isEnum(datatype)){
@@ -278,17 +267,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 	}
 
-	//TODO QT: rename getMappedDatatypeOrList
-	override getMappedDatatypeOrListStd(FType datatype, boolean array) {
-		val mappedDatatype = getMappedDatatypeStd(datatype);
-		if (array) {
-			return "std::vector<" + mappedDatatype + ">";
-		} else {
-			return mappedDatatype;
-		}
-	}
-
-	//TODO QT: remove
 	override getMappedDatatypeOrList(FType datatype, boolean array) {
 		val mappedDatatype = getMappedDatatype(datatype);
 		if (array) {
@@ -298,17 +276,6 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		}
 	}
 
-	//TODO QT: rename getMappedDatatypeOrList
-	override getMappedDatatypeOrListStd(FBasicTypeId datatype, boolean array) {
-		val mappedDatatype = getPrimitiveTypeNameStd(datatype);
-		if (array) {
-			return "std::vector<" + mappedDatatype + ">";
-		} else {
-			return mappedDatatype;
-		}
-	}
-
-	//TODO QT: remove
 	override getMappedDatatypeOrList(FBasicTypeId datatype, boolean array) {
 		val mappedDatatype = getPrimitiveTypeName(datatype);
 		if (array) {

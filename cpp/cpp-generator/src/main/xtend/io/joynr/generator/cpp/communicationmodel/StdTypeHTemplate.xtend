@@ -22,11 +22,15 @@ import io.joynr.generator.cpp.util.TemplateBase
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
 import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 
 class StdTypeHTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension CppStdTypeUtil
 
 	@Inject
 	private extension TemplateBase
@@ -63,7 +67,7 @@ public:
 	«IF !getMembersRecursive(type).empty»
 	explicit «typeName»(
 			«FOR member: getMembersRecursive(type) SEPARATOR","»
-				const «getMappedDatatypeOrListStd(member)» &«member.joynrName»
+				const «member.typeName» &«member.joynrName»
 			«ENDFOR»
 	);
 	«ENDIF»
@@ -80,13 +84,13 @@ public:
 	// getters
 	«FOR member: getMembers(type)»
 		«val joynrName = member.joynrName»
-		inline const «getMappedDatatypeOrListStd(member)»& get«joynrName.toFirstUpper»() const { return «joynrName»; }
+		inline const «member.typeName»& get«joynrName.toFirstUpper»() const { return «joynrName»; }
 	«ENDFOR»
 
 	// setters
 	«FOR member: getMembers(type)»
 		«val joynrName = member.joynrName»
-		inline void set«joynrName.toFirstUpper»(const «getMappedDatatypeOrListStd(member)»& «joynrName») { this->«joynrName» = «joynrName»; }
+		inline void set«joynrName.toFirstUpper»(const «member.typeName»& «joynrName») { this->«joynrName» = «joynrName»; }
 	«ENDFOR»
 
 protected:
@@ -96,7 +100,7 @@ protected:
 private:
 	// members
 	«FOR member: getMembers(type)»
-		«getMappedDatatypeOrListStd(member)» «member.joynrName»;
+		«member.typeName» «member.joynrName»;
 		«IF isEnum(member.type)»
 			std::string get«member.joynrName.toFirstUpper»Internal() const;
 		«ENDIF»

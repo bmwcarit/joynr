@@ -190,24 +190,6 @@ abstract class JoynrGeneratorExtensions {
 
 	def String getPrimitiveTypeName(FBasicTypeId basicType)
 
-	//TODO QT-CR: remove
-	def String getMappedDatatypeOrListStd(FTypedElement typedElement){
-		if (typedElement.type.derived != null){
-			var result = getMappedDatatypeOrListStd(typedElement.type.derived, typedElement.array == '[]')
-			if (result == null){
-				throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
-			}
-			return result;
-		}
-		else{
-			var result = getMappedDatatypeOrListStd(typedElement.type.predefined, typedElement.array == '[]')
-			if (result == null){
-				throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
-			}
-			return result;
-		}
-	}
-
 	def String getMappedDatatypeOrList(FTypedElement typedElement){
 		if (typedElement.type.derived != null){
 			var result = getMappedDatatypeOrList(typedElement.type.derived, typedElement.array == '[]')
@@ -229,19 +211,7 @@ abstract class JoynrGeneratorExtensions {
 
 	def String getMappedDatatypeOrList(FType datatype, boolean array)
 
-	//TODO QT-CR: remove
-	def String getMappedDatatypeOrListStd(FType datatype, boolean array) {
-		// standard implementation for the non-cpp generators, overriden by the cpp generator
-		return getMappedDatatypeOrList(datatype, array)
-	}
-
 	def String getMappedDatatypeOrList(FBasicTypeId datatype, boolean array)
-
-	//TODO QT-CR: remove
-	def String getMappedDatatypeOrListStd(FBasicTypeId datatype, boolean array) {
-		// standard implementation for the non-cpp generators, overriden by the cpp generator
-		return getMappedDatatypeOrList(datatype, array)
-	}
 
 	private def String getMappedOutputParameterTypesCommaSeparated(Iterable<FArgument> arguments) {
 		val commaSeparatedParams = new StringBuilder();

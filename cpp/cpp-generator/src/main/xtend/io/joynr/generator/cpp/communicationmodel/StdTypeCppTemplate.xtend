@@ -22,6 +22,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import org.franca.core.franca.FCompoundType
 import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 
 class StdTypeCppTemplate implements CompoundTypeTemplate{
 
@@ -30,6 +31,9 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension CppStdTypeUtil
 
 	override generate(FCompoundType type) '''
 «val typeName = "Std" + type.joynrName»
@@ -56,7 +60,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 «IF !getMembersRecursive(type).empty»
 «typeName»::«typeName»(
 		«FOR member: getMembersRecursive(type) SEPARATOR ','»
-			const «getMappedDatatypeOrListStd(member)» &«member.joynrName»
+			const «member.typeName» &«member.joynrName»
 		«ENDFOR»
 	):
 		«IF hasExtendsDeclaration(type)»
@@ -101,7 +105,7 @@ bool «typeName»::operator==(const «typeName»& other) const {
 			this->«member.joynrName» == other.«member.joynrName» &&
 		«ENDFOR»
 		«IF hasExtendsDeclaration(type)»
-			«getMappedDatatypeStd(getExtendedType(type))»::operator==(other);
+			«getExtendedType(type).typeName»::operator==(other);
 		«ELSE»
 			true;
 		«ENDIF»
@@ -111,7 +115,7 @@ bool «typeName»::operator==(const «typeName»& other) const {
 	«val joynrName = member.joynrName»
 	«IF isEnum(member.type) && ! isArray(member)»
 		std::string «typeName»::get«joynrName.toFirstUpper»Internal() const {
-			QMetaEnum metaEnum = «getMappedDatatypeOrList(member).substring(0, getMappedDatatypeOrList(member).length-6)»::staticMetaObject.enumerator(0);
+			QMetaEnum metaEnum = «member.typeName.substring(0, member.typeName.length-6)»::staticMetaObject.enumerator(0);
 			return metaEnum.valueToKey(this->«joynrName»);
 		}
 
@@ -122,7 +126,7 @@ std::string «typeName»::toString() const {
 	std::ostringstream typeAsString;
 	typeAsString << "«typeName»{";
 	«IF hasExtendsDeclaration(type)»
-		typeAsString << «getMappedDatatypeStd(getExtendedType(type))»::toString();
+		typeAsString << «getExtendedType(type).typeName»::toString();
 		«IF !getMembers(type).empty»
 		typeAsString << ", ";
 		«ENDIF»
