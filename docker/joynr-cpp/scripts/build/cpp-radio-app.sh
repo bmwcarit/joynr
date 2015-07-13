@@ -9,6 +9,12 @@ env
 
 # fail on first error
 set -e
+(
+     # radio currently also generating for Java, so install the java-generator too
+     # until we can exclude the Java build of radio using @executionId (see below)
+    cd /data/src/java/java-generator
+    mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+)
 
 cd /data/src/examples/radio-app
 
