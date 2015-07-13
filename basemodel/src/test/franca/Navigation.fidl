@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ interface Navigation{
 	 * The status of the active trip currently used for guidance.
 	 */
 	attribute Trip[] trips // NOTIFYREADWRITE
-	
+
 	/**
 	 * Adds a new trip to the CIC.
 	 * @param trip the trip to add.
@@ -65,7 +65,7 @@ interface Navigation{
 			Trip trip
 		}
 	}
-	
+
 	/**
 	 * Updates a trip in the CIC. Note: the local trip ID might change.
 	 * @param trip the trip to add.
@@ -76,7 +76,7 @@ interface Navigation{
 			Trip trip
 		}
 	}
-	
+
 	/**
 	 * Deletes the trip with the specified trip ID.
 	 * @param tripID the trip to delete.
@@ -86,22 +86,22 @@ interface Navigation{
 			String tripId
 		}
 	}
-	
-		
+
+
 	/**
 	 * Deletes all trips at the server.
 	 */
 	method deleteAll {}
-	
+
 	/**
-	 * Get the current list of saved Trips 
+	 * Get the current list of saved Trips
 	 */
 	method getSavedTrips {
 		out {
 			Trip[] result
 		}
 	}
-	
+
 	/**
 	 * Request the guidance for the submitted trip
 	 * @param the trip which shall be guided
@@ -111,12 +111,12 @@ interface Navigation{
 		in {
 			Trip trip
 		}
-		
+
 		out {
 			Boolean result
 		}
 	}
-		
+
 	/**
 	 * Stops the current guidance (if exists)
 	 * @return true if the request has been performed successfully
@@ -164,5 +164,5 @@ interface Navigation{
 			Float currentSpeed
 		}
 	}
-	
+
 }

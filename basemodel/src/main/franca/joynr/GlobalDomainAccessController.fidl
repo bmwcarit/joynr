@@ -169,7 +169,7 @@ typeCollection DacTypes {
 		@description: The Master Registration Control Entry (Master RCE) stores
 			default provider permissions of users for a domain/interface combination.
 			Additionally, it contains possible provider permissions to be used to
-			override default provider permissions in Owner Registration Control 
+			override default provider permissions in Owner Registration Control
 			Entries (Owner RCEs). Master RCEs are stored by the Master Registration
 			Control List (Master RCL) and the optional Mediator Registration Control
 			List (Mediator RCL).
@@ -189,7 +189,7 @@ typeCollection DacTypes {
 	}
 
 	<**
-		@description: The Owner Access Control Entry (Owner ACE) stores consumer 
+		@description: The Owner Access Control Entry (Owner ACE) stores consumer
 			permissions of users for a domain/interface/operation combination. Owner
 			ACEs are stored by the Owner Access Control List (Owner ACL). If UID,
 			domain, interface and operation values of an Owner ACE match the values

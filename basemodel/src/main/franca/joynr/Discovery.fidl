@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ interface Discovery {
 
 	/**
 	 * Looks up a providers in the joynr discovery that match the requested QoS.
-	 * 
+	 *
 	 * @param domain the domain to search for provider
 	 * @param interfaceName the interface the provider must implement
 	 * @param qos [not implemented yet] the minimum QoS the provider must offer
 	 * @param discoveryQos the QoS used for the lookup
-	 * 
+	 *
 	 * @return a list of matching providers
 	 */
     method lookup {
@@ -69,9 +69,9 @@ interface Discovery {
 
 	/**
 	 * Looks up a specific provider in the joynr discovery.
-	 * 
+	 *
 	 * @param participantId the participant ID of the provider to look up
-	 * 
+	 *
 	 * @return the provider matching the participant ID
 	 */
     method lookup {
@@ -88,9 +88,9 @@ interface Discovery {
 	 *
 	 * @param participantId the participant ID of the provider to remove
 	 */
-    method remove {
-        in {
-            String participantId
-        }
-    }
+	method remove {
+		in {
+			String participantId
+		}
+	}
 }

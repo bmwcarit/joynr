@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ interface GlobalCapabilitiesDirectory{
 	method add {
 		in {
 			CapabilityInformation capability
-		} 
+		}
 	}
-	
+
 	/**
 	 * Looks up a list of capabilities for a given domain, interface name and provider QoS.
 	 * @param domain the name of the domain
@@ -63,7 +63,7 @@ interface GlobalCapabilitiesDirectory{
 			String domain
 			String interfaceName
 		}
-		
+
 		out {
 			CapabilityInformation[] result
 		}
@@ -78,7 +78,6 @@ interface GlobalCapabilitiesDirectory{
 		in {
 			String participantId
 		}
-		
 		out{
 			CapabilityInformation result
 		}
@@ -95,11 +94,11 @@ interface GlobalCapabilitiesDirectory{
 
 	/**
 	 * Unregisters a capability from the directory.
-	 * @param participantId the participant ID for which the capability has to be removed 
+	 * @param participantId the participant ID for which the capability has to be removed
 	 */
 	method remove {
 		in {
 			String participantId
 		}
-	}	
+	}
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import types.* from "DiscoveryTypes.fidl"
 
 /**
  * The <code>ChannelUrlDirectory</code> interface defines the interface of the joynr internal
- * channel URL directory. The channel URL directory is a joynr infrastructure 
+ * channel URL directory. The channel URL directory is a joynr infrastructure
  * backend component that resolves channel IDs to channel URLs. A joynr Cluster
  * Controller is addressed using a unique channel ID. However, the channel ID
- * can be mapped on multiple channel URLs depending on network topology and 
+ * can be mapped on multiple channel URLs depending on network topology and
  * reachability.
  */
 interface ChannelUrlDirectory{
@@ -34,17 +34,17 @@ interface ChannelUrlDirectory{
 
 	/**
 	 * Registers <code>{@link ChannelUrlInformation}</code> for a channel ID. The channel URL information
-	 * is used to send messages to a Cluster Controller identified by the unique channel ID. 
+	 * is used to send messages to a Cluster Controller identified by the unique channel ID.
 	 * @param channelId the channel ID to register channel URL information with
 	 * @param channelUrlInformation the channel URL information used to send messages to a Cluster Controller
 	 */
 	method registerChannelUrls {
-		in { 
+		in {
 			String channelId
 			ChannelUrlInformation channelUrlInformation
 		}
 	}
-	
+
 	/**
 	 * Deletes all <code>{@link ChannelUrlInformation}</code> that is registered with the channel URL directory
 	 * for the given channel ID.
@@ -55,7 +55,7 @@ interface ChannelUrlDirectory{
 			String channelId
 		}
 	}
-	
+
 	/**
 	 * Gets <code>{@link ChannelUrlInformation}</code> from the channel URL directory for a given
 	 * channel ID.
@@ -66,7 +66,7 @@ interface ChannelUrlDirectory{
 		in {
 			String channelId
 		}
-		
+
 		out {
 			ChannelUrlInformation result
 		}

@@ -28,17 +28,17 @@ typeCollection LoggingTypes {
 		DEBUG
 		TRACE
 	}
-	
+
 	struct JoynrLoggedError {
 		String exceptionClass
 		String exceptionMessage
 	}
-	
+
 	struct JoynrLoggingContextTag {
 		String key
 		String value
 	}
-	
+
 	struct JoynrLogEvent {
 		Int64 timestamp
 		String eventVersion
@@ -48,7 +48,7 @@ typeCollection LoggingTypes {
 		JoynrLogLevel priority
 		JoynrLoggedError errorEvent
 		JoynrLoggingContextTag[] tags
-	}	
+	}
 }
 
 <** @description : "The logging interface is implemented by log4j and log4javascript appenders. Do not use directly" **>
