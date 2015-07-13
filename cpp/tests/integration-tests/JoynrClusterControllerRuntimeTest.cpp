@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "PrettyPrint.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -128,7 +129,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 {
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     EXPECT_CALL(*mockTestProvider,
                 getLocation(A<std::function<void(const joynr::RequestStatus&,
@@ -174,7 +175,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 {
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QList<int> ints;
     ints << 4 << 6 << 12;
@@ -220,7 +221,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     EXPECT_CALL(*mockTestProvider,
                 getLocation(A<std::function<void(const joynr::RequestStatus&,
@@ -277,7 +278,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
     QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
     QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     EXPECT_CALL(*mockTestProvider, getLocation(A<std::function<void(const joynr::RequestStatus&, const types::GpsLocation&)>>()))
             .Times(Between(3, 4))

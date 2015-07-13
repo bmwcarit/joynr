@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
@@ -101,7 +102,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     runtime1->registerCapability<tests::testProvider>(domain,testProvider, QString());
 

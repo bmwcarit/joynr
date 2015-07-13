@@ -35,6 +35,7 @@
 #include <QList>
 #include <QSharedPointer>
 #include <cassert>
+#include <memory>
 
 namespace joynr
 {
@@ -54,7 +55,7 @@ public:
 
     template <class T>
     QString add(const QString& domain,
-                QSharedPointer<T> provider,
+                std::shared_ptr<T> provider,
                 QString authenticationToken,
                 std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
                         nullptr)
@@ -104,7 +105,7 @@ public:
 
     template <class T>
     QString remove(const QString& domain,
-                   QSharedPointer<T> provider,
+                   std::shared_ptr<T> provider,
                    QString authenticationToken,
                    std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
                            callbackFct = nullptr)

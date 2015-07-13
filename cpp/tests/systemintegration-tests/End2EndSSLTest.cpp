@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -78,7 +79,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
 {
 
     // Create a provider
-    QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
+    std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
     QThreadSleep::msleep(550);
 

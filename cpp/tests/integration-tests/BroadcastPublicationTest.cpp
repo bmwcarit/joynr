@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
 #include <QString>
 #include "joynr/LibjoynrSettings.h"
@@ -111,7 +112,7 @@ protected:
     BroadcastSubscriptionRequest request;
     SubscriptionBroadcastListener* subscriptionBroadcastListener;
 
-    QSharedPointer<MockTestProvider> provider;
+    std::shared_ptr<MockTestProvider> provider;
     QSharedPointer<RequestCaller> requestCaller;
     TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     QSharedPointer<MockLocationUpdatedSelectiveFilter> filter1;

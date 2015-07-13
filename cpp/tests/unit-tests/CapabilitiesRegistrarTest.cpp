@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "PrettyPrint.h"
 #include "gtest/gtest.h"
@@ -72,7 +74,7 @@ protected:
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;
-    QSharedPointer<MockProvider> mockProvider;
+    std::shared_ptr<MockProvider> mockProvider;
     QString domain;
     QString expectedParticipantId;
     QSharedPointer<MockMessageRouter> mockMessageRouter;

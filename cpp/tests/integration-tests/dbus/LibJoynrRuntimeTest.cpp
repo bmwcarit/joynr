@@ -17,6 +17,7 @@
  * #L%
  */
 #include <gtest/gtest.h>
+#include <memory>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "PrettyPrint.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -56,7 +57,7 @@ public:
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
     joynr::types::ProviderQos mockTestProviderQos;
-    QSharedPointer<MockTestProvider> mockTestProvider;
+    std::shared_ptr<MockTestProvider> mockTestProvider;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
 
@@ -148,9 +149,7 @@ public:
                 ->build();
         EXPECT_TRUE(discoveryProxy != NULL);
 
-        mockTestProvider = QSharedPointer<MockTestProvider>(
-                    new MockTestProvider(mockTestProviderQos)
-        );
+        mockTestProvider = std::make_shared<MockTestProvider>(mockTestProviderQos);
     }
 
     void TearDown() {
@@ -258,7 +257,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     QString domain("LibJoynrRuntimeTest.Domain.C");
     QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.C");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
@@ -287,7 +286,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
 TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     QString domain("LibJoynrRuntimeTest.Domain.D");
     QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.D");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
@@ -327,7 +326,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
 TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     QString domain("LibJoynrRuntimeTest.Domain.E");
     QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.E");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,

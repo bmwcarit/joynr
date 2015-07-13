@@ -26,6 +26,7 @@
 #include <QString>
 #include <QSettings>
 #include <QFileInfo>
+#include <memory>
 
 using namespace joynr;
 using joynr_logging::Logger;
@@ -65,7 +66,7 @@ int main(int argc, char* argv[])
     providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
     // create provider instance
-    QSharedPointer<MyRadioProvider> provider(new MyRadioProvider(providerQos));
+    std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider(providerQos));
     // add broadcast filters
     QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
             new TrafficServiceBroadcastFilter());

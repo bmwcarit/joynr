@@ -20,6 +20,7 @@
 #define REQUESTCALLERFACTORY_H
 
 #include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -32,7 +33,7 @@ template <class T>
 class RequestCallerFactoryHelper
 {
 public:
-    QSharedPointer<RequestCaller> create(QSharedPointer<T> provider)
+    QSharedPointer<RequestCaller> create(std::shared_ptr<T> provider)
     {
         notImplemented();
         return QSharedPointer<RequestCaller>();
@@ -46,7 +47,7 @@ class RequestCallerFactory
 {
 public:
     template <class T>
-    static QSharedPointer<RequestCaller> create(QSharedPointer<T> provider)
+    static QSharedPointer<RequestCaller> create(std::shared_ptr<T> provider)
     {
         return RequestCallerFactoryHelper<T>().create(provider);
     }

@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -100,7 +101,7 @@ public:
         types::ProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-        QSharedPointer<tests::testProvider> provider(new MockTestProvider(providerQos));
+        std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
         QString participantId = runtime1->registerCapability(domain, provider, authenticationToken);

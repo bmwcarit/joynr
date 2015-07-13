@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include <QtConcurrent/QtConcurrent>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -151,7 +152,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     QThreadSleep::msleep(1000);
 
@@ -407,7 +408,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
@@ -468,7 +469,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -547,7 +548,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
     QString providerParticipantId = runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -652,7 +653,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
@@ -698,7 +699,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
@@ -894,7 +895,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     QString providerParticipantId = runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -916,7 +917,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     QThreadSleep::msleep(100);
 
@@ -956,7 +957,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
     QThreadSleep::msleep(2550);
 

@@ -19,6 +19,9 @@
 
 #ifndef JOYNRCLUSTERCONTROLLERRUNTIME_H
 #define JOYNRCLUSTERCONTROLLERRUNTIME_H
+
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrConfig.h"
@@ -114,7 +117,7 @@ protected:
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
-    QSharedPointer<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
+    std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     // Reason why CapabilitiesAggregator (CA) has to be a QSP:
     // CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()

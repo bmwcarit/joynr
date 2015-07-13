@@ -51,6 +51,7 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 #include "joynr/RequestCaller.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include <QSharedPointer>
+#include <memory>
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -58,7 +59,7 @@ class «interfaceName»Provider;
 
 class «getDllExportMacro()» «interfaceName»RequestCaller : public joynr::RequestCaller {
 public:
-	explicit «interfaceName»RequestCaller(QSharedPointer<«interfaceName»Provider> provider);
+	explicit «interfaceName»RequestCaller(std::shared_ptr<«interfaceName»Provider> provider);
 
 	virtual ~«interfaceName»RequestCaller(){}
 
@@ -90,7 +91,7 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
-	QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider;
+	std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider;
 };
 
 «getNamespaceEnder(serviceInterface)»

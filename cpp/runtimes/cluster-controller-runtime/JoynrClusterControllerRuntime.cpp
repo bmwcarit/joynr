@@ -219,8 +219,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
     // transferred
 
-    localCapabilitiesDirectory = QSharedPointer<LocalCapabilitiesDirectory>(
-            new LocalCapabilitiesDirectory(*messagingSettings, capabilitiesClient, *messageRouter));
+    localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
+            *messagingSettings, capabilitiesClient, *messageRouter);
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
@@ -342,7 +342,7 @@ ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
 void JoynrClusterControllerRuntime::registerRoutingProvider()
 {
     QString domain(systemServicesSettings.getDomain());
-    QSharedPointer<joynr::system::RoutingProvider> routingProvider(messageRouter);
+    std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter.data());
     QString interfaceName(routingProvider->getInterfaceName());
     QString authToken(systemServicesSettings.getCcRoutingProviderAuthenticationToken());
     QString participantId(systemServicesSettings.getCcRoutingProviderParticipantId());
@@ -356,7 +356,7 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 {
     QString domain(systemServicesSettings.getDomain());
-    QSharedPointer<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
+    std::shared_ptr<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
     QString interfaceName(discoveryProvider->getInterfaceName());
     QString authToken(systemServicesSettings.getCcDiscoveryProviderAuthenticationToken());
     QString participantId(systemServicesSettings.getCcDiscoveryProviderParticipantId());

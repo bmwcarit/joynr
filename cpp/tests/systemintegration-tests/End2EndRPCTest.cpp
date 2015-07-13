@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -89,7 +90,7 @@ private:
 TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
-    QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
+    std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
     runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
@@ -121,7 +122,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 TEST_F(End2EndRPCTest, call_void_operation)
 {
 
-    QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
+    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
 
     runtime->registerCapability<tests::testProvider>(domain, mockProvider, QString());
     QThreadSleep::msleep(550);
@@ -150,7 +151,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 // tests in process subscription
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
-    QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
     runtime->registerCapability<tests::testProvider>(domain, mockProvider, QString());
 

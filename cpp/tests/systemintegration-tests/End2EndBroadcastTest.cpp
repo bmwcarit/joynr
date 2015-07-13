@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -129,7 +130,7 @@ public:
      * before the subscription has started.
      */
     void waitForBroadcastSubscriptionArrivedAtProvider(
-            QSharedPointer<tests::testProvider> testProvider,
+            std::shared_ptr<tests::testProvider> testProvider,
             const QString& broadcastName)
     {
         unsigned long delay = 0;
@@ -166,7 +167,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -231,7 +232,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -389,7 +390,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -516,7 +517,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -660,7 +661,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur
@@ -808,7 +809,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     testProvider->addBroadcastFilter(filter);
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
@@ -923,7 +924,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     testProvider->addBroadcastFilter(filter);
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
@@ -1070,7 +1071,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    QSharedPointer<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     runtime1->registerCapability<tests::testProvider>(domainName,testProvider, QString());
 
     //This wait is necessary, because registerCapability is async, and a lookup could occur

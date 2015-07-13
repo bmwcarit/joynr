@@ -37,6 +37,7 @@
 #include <QString>
 #include <QSharedPointer>
 #include <cassert>
+#include <memory>
 
 namespace joynr
 {
@@ -68,7 +69,7 @@ public:
 
     template <class T>
     QString registerCapability(const QString& domain,
-                               QSharedPointer<T> provider,
+                               std::shared_ptr<T> provider,
                                const QString& authenticationToken,
                                std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
                                        callbackFct = nullptr)
@@ -86,7 +87,7 @@ public:
     template <class T>
     QString unregisterCapability(
             const QString& domain,
-            QSharedPointer<T> provider,
+            std::shared_ptr<T> provider,
             const QString& authenticationToken,
             std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
                     nullptr)

@@ -21,6 +21,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "PrettyPrint.h"
 
 #include "cluster-controller/access-control/IAccessController.h"
@@ -415,7 +416,7 @@ namespace joynr {
 template<>
 class RequestCallerFactoryHelper<MockProvider> {
 public:
-    QSharedPointer<RequestCaller> create(QSharedPointer<MockProvider> provider) {
+    QSharedPointer<RequestCaller> create(std::shared_ptr<MockProvider> provider) {
         return QSharedPointer<RequestCaller>(NULL);
     }
 };
@@ -613,12 +614,12 @@ public:
         callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), location);
     }
 
-    MockTestRequestCaller() : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {
+    MockTestRequestCaller() : joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>() ) {
         EXPECT_CALL(*this,
                     getLocation(_)).
                 WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeCallbackFct));
     }
-    MockTestRequestCaller(testing::Cardinality getLocationCardinality) : joynr::tests::testRequestCaller(QSharedPointer<joynr::tests::testProvider>(new MockTestProvider()) ) {
+    MockTestRequestCaller(testing::Cardinality getLocationCardinality) : joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>() ) {
         EXPECT_CALL(*this,
                     getLocation(_))
                 .Times(getLocationCardinality)
@@ -634,7 +635,7 @@ public:
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
 public:
-    MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(QSharedPointer<joynr::vehicle::GpsProvider>(new MockGpsProvider()) ) {}
+    MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
     MOCK_METHOD1(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::GpsLocation& location)>));
     MOCK_METHOD2(registerAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const QString& attributeName, joynr::IAttributeListener* attributeListener));
