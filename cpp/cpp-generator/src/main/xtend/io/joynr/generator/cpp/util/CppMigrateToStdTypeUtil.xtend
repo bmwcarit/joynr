@@ -25,7 +25,7 @@ class CppMigrateToStdTypeUtil extends CppTypeUtil {
 	override getTypeName(FBasicTypeId datatype) {
 		switch datatype {
 			case FBasicTypeId::BOOLEAN: "bool"
-			case FBasicTypeId::INT8: "qint8"// TODO: must be migrated to std::types
+			case FBasicTypeId::INT8: "int8_t"
 			case FBasicTypeId::UINT8: "uint8_t"
 			case FBasicTypeId::INT16: "int"
 			case FBasicTypeId::UINT16: "int"

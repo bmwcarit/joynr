@@ -79,6 +79,51 @@ public:
     {
         return QString::fromStdString(stdString);
     }
+
+    /**
+      * Converts a qint8 into a int8_t
+      */
+    static int8_t toStdInt8(const qint8& qtValue)
+    {
+        return static_cast<int8_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of qint8 values into a list of int8_t objects
+      */
+    static QList<int8_t> toStdInt8(const QList<qint8>& qtValues)
+    {
+        QList<int8_t> stdValues;
+
+        for (qint8 qtValue : qtValues) {
+            stdValues.append(toStdInt8(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of int8_t objects into a list of qint8 objects
+      */
+    static QList<qint8> toQt(const QList<int8_t>& stdValues)
+    {
+        QList<qint8> qtValues;
+
+        for (int8_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a int8_t object into a qint8 object
+      */
+    static qint8 toQt(const int8_t& stdValue)
+    {
+        return static_cast<qint8>(stdValue);
+    }
+
     /**
       * Converts a qint8 into a uint8_t
       */

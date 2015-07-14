@@ -142,3 +142,37 @@ TEST_F(TypeUtilTest, testQInt8ToUInt8Conversion)
 
     EXPECT_EQ(expectedValue, result);
 }
+
+TEST_F(TypeUtilTest, testInt8ToQInt8Conversion)
+{
+
+    int8_t expectedValue(-1);
+    qint8 testData = -1;
+
+    int8_t result = TypeUtil::toStdInt8(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 10;
+    testData = 10;
+    result = TypeUtil::toStdInt8(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testQInt8ToInt8Conversion)
+{
+
+    qint8 expectedValue(-1);
+    int8_t testData = -1;
+
+    qint8 result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 10;
+    testData = 10;
+    result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
