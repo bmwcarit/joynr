@@ -80,7 +80,7 @@ side.*
 ## Providers
 A provider is a class that is responsible for being the data source, and supplies data to any
 consumers who are interested. Have a look into the provider classes and see how they implement the
-`addFavouriteStation` method defined in the `<RADIO_HOME>/src/main/model/radio.fidl` file. They
+`addFavoriteStation` method defined in the `<RADIO_HOME>/src/main/model/radio.fidl` file. They
 inherit from the generated classes `joynr.vehicle.RadioAbsctractProvider` (located in
 `<RADIO_HOME>/src/main/generated-java/joynr/vehicle/RadioAbstractProvider.java`) and
 `joyn::vehicle::RadioProvider` (located in
@@ -95,12 +95,12 @@ inherit from the generated classes `joynr.vehicle.RadioAbsctractProvider` (locat
 public class MyRadioProvider extends RadioAbstractProvider {
     ...
     @Override
-    public Promise<AddFavouriteStationDeferred> addFavouriteStation(RadioStation radioStation) {
-        AddFavouriteStationDeferred deferred = new AddFavouriteStationDeferred();
-        LOG.info(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
+    public Promise<AddFavoriteStationDeferred> addFavoriteStation(RadioStation radioStation) {
+        AddFavoriteStationDeferred deferred = new AddFavoriteStationDeferred();
+        LOG.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
         stationsList.add(radioStation);
         deferred.resolve(true);
-        return new Promise<AddFavouriteStationDeferred>(deferred);
+        return new Promise<AddFavoriteStationDeferred>(deferred);
     }
     ...
 }
@@ -114,7 +114,7 @@ public class MyRadioProvider extends RadioAbstractProvider {
 class MyRadioProvider : public joyn::vehicle::RadioProvider {
 public:
     ...
-    void addFavouriteStation(joynr::RequestStatus& status,
+    void addFavoriteStation(joynr::RequestStatus& status,
                              bool& returnValue,
                              joynr::vehicle::RadioStation radioStation);
     ...
@@ -126,14 +126,14 @@ public:
 
 ```c++
 ...
-void MyRadioProvider::addFavouriteStation(RequestStatus& status,
+void MyRadioProvider::addFavoriteStation(RequestStatus& status,
                                           bool& returnValue,
                                           vehicle::RadioStation radioStation)
 {
     QMutexLocker locker(&mutex);
 
     MyRadioHelper::prettyLog(
-            logger, QString("addFavouriteStation(%1)").arg(radioStation.toString()));
+            logger, QString("addFavoriteStation(%1)").arg(radioStation.toString()));
     stationsList.append(radioStation);
     returnValue = true;
     status.setCode(RequestStatusCode::OK);
@@ -275,12 +275,12 @@ int main(int argc, char* argv[])
     MyRadioHelper::prettyLog(logger, QString("ATTRIBUTE GET: %1").arg(currentStation.toString()));
 
     // add favorite radio station
-    vehicle::RadioStation favouriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
+    vehicle::RadioStation favoriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
-    proxy->addFavouriteStation(status, success, favouriteStation);
+    proxy->addFavoriteStation(status, success, favoriteStation);
     MyRadioHelper::prettyLog(
             logger,
-            QString("METHOD: added favourite station: %1").arg(favouriteStation.toString()));
+            QString("METHOD: added favorite station: %1").arg(favoriteStation.toString()));
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
@@ -378,9 +378,9 @@ int main(int argc, char* argv[])
                                                                                 subscriptionQos);
             ...
             // add favorite radio station
-            RadioStation favouriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
-            success = radioProxy.addFavouriteStation(favouriteStation);
-            LOG.info(PRINT_BORDER + "METHOD: added favourite station: " + favouriteStation + ": " + success
+            RadioStation favoriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
+            success = radioProxy.addFavoriteStation(favoriteStation);
+            LOG.info(PRINT_BORDER + "METHOD: added favorite station: " + favoriteStation + ": " + success
                     + PRINT_BORDER);
 
             // shuffle the stations

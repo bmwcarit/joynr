@@ -282,12 +282,12 @@ int main(int argc, char* argv[])
                     newStationDiscoveredBroadcastListener,
                     newStationDiscoveredBroadcastSubscriptionQos);
     // add favorite radio station
-    vehicle::RadioStation favouriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
+    vehicle::RadioStation favoriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
-    proxy->addFavouriteStation(success, favouriteStation);
+    proxy->addFavoriteStation(success, favoriteStation);
     MyRadioHelper::prettyLog(logger,
-                             QString("METHOD: added favourite station: %1")
-                                     .arg(QString::fromStdString(favouriteStation.toString())));
+                             QString("METHOD: added favorite station: %1")
+                                     .arg(QString::fromStdString(favoriteStation.toString())));
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));

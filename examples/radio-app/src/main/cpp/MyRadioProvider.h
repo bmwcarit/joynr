@@ -48,10 +48,10 @@ public:
     void shuffleStations(std::function<void()> onSuccess);
 
     /**
-      * Add a favourite radio station
+      * Add a favorite radio station
       */
-    void addFavouriteStation(const joynr::vehicle::RadioStation& radioStation,
-                             std::function<void(const bool& returnValue)> onSuccess);
+    void addFavoriteStation(const joynr::vehicle::RadioStation& radioStation,
+                            std::function<void(const bool& returnValue)> onSuccess);
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();
