@@ -86,14 +86,14 @@ void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
     onSuccess();
 }
 
-void MyRadioProvider::addFavouriteStation(const vehicle::RadioStation& radioStation,
-                                          std::function<void(const bool& returnValue)> onSuccess)
+void MyRadioProvider::addFavoriteStation(const vehicle::RadioStation& radioStation,
+                                         std::function<void(const bool& returnValue)> onSuccess)
 {
     QMutexLocker locker(&mutex);
 
-    MyRadioHelper::prettyLog(logger,
-                             QString("addFavouriteStation(%1)")
-                                     .arg(QString::fromStdString(radioStation.toString())));
+    MyRadioHelper::prettyLog(
+            logger,
+            QString("addFavoriteStation(%1)").arg(QString::fromStdString(radioStation.toString())));
     stationsList.append(radioStation);
     onSuccess(true);
 }

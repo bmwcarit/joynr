@@ -309,9 +309,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             boolean success;
 
             // add favorite radio station
-            RadioStation favouriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
-            success = radioProxy.addFavouriteStation(favouriteStation);
-            LOG.info(PRINT_BORDER + "METHOD: added favourite station: " + favouriteStation + ": " + success
+            RadioStation favoriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
+            success = radioProxy.addFavoriteStation(favoriteStation);
+            LOG.info(PRINT_BORDER + "METHOD: added favorite station: " + favoriteStation + ": " + success
                     + PRINT_BORDER);
 
             // shuffle the stations
@@ -319,27 +319,27 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
 
-            // add favourite radio station async
+            // add favorite radio station async
             RadioStation radioStation = new RadioStation("99.4 AFN", false, Country.GERMANY);
             Callback<Boolean> callback = new Callback<Boolean>() {
                 @Override
                 public void onSuccess(Boolean result) {
-                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: callback onSuccess" + PRINT_BORDER);
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onSuccess" + PRINT_BORDER);
                 }
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
-                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: callback onFailure" + PRINT_BORDER);
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure" + PRINT_BORDER);
                 }
             };
-            Future<Boolean> future = radioProxy.addFavouriteStation(callback, radioStation);
+            Future<Boolean> future = radioProxy.addFavoriteStation(callback, radioStation);
             try {
                 long timeoutInMilliseconds = 8000;
                 Boolean reply = future.getReply(timeoutInMilliseconds);
-                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: " + radioStation + ": " + reply
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
             } catch (InterruptedException|JoynrRuntimeException e) {
-                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: " + radioStation
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation
                         + ": " + e.getClass().getSimpleName() + "!");
             }
 
