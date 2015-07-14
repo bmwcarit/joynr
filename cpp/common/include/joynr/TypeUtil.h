@@ -24,6 +24,7 @@
 #include <QString>
 #include <string>
 #include <QList>
+#include <qglobal.h>
 
 namespace joynr
 {
@@ -77,6 +78,49 @@ public:
     static QString toQt(const std::string& stdString)
     {
         return QString::fromStdString(stdString);
+    }
+    /**
+      * Converts a qint8 into a uint8_t
+      */
+    static uint8_t toStdUInt8(const qint8& qtValue)
+    {
+        return static_cast<uint8_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of qint8 values into a list of uint8_t objects
+      */
+    static QList<uint8_t> toStdUInt8(const QList<qint8>& qtValues)
+    {
+        QList<uint8_t> stdValues;
+
+        for (qint8 qtValue : qtValues) {
+            stdValues.append(toStdUInt8(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of uint8_t objects into a list of qint8 objects
+      */
+    static QList<qint8> toQt(const QList<uint8_t>& stdValues)
+    {
+        QList<qint8> qtValues;
+
+        for (uint8_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a uint8_t object into a qint8 object
+      */
+    static qint8 toQt(const uint8_t& stdValue)
+    {
+        return static_cast<qint8>(stdValue);
     }
 };
 } // namespace joynr

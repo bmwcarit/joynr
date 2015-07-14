@@ -48,6 +48,7 @@ class QtTypeUtil extends CppTypeUtil {
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName) {
 		if (typedElement.type.predefined != null) {
 			switch (typedElement.type.predefined) {
+				case FBasicTypeId.UINT8: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.STRING: return '''TypeUtil::toQt(«objectName»)'''
 				default: return objectName
 			}
@@ -58,6 +59,7 @@ class QtTypeUtil extends CppTypeUtil {
 	def fromQTTypeToStdType(FTypedElement typedElement, String objectName) {
 		if (typedElement.type.predefined != null) {
 			switch (typedElement.type.predefined) {
+				case FBasicTypeId.UINT8: return '''TypeUtil::toStdUInt8(«objectName»)'''
 				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
 				default: return objectName
 			}
@@ -100,7 +102,8 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	def needsDatatypeConversion(FBasicTypeId basicType) {
-		basicType === FBasicTypeId.STRING
+		basicType === FBasicTypeId.STRING ||
+		basicType === FBasicTypeId.UINT8
 	}
 
 	def needsDatatypeConversion(FTypedElement typedElement) {
