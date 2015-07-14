@@ -53,7 +53,7 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        discoveryDomain = TypeUtil::convertQStringtoStdString(systemSettings.getDomain());
+        discoveryDomain = TypeUtil::toStd(systemSettings.getDomain());
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
         discoveryQos.setCacheMaxAge(1000);

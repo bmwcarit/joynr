@@ -149,7 +149,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
@@ -193,7 +193,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
@@ -238,7 +238,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
@@ -290,7 +290,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 

@@ -30,7 +30,7 @@ namespace joynr
 
 /**
   * \class TypeUtil
-  * \brief Container class for helper methods related with the used datatyps
+  * \brief Container class for helper methods related with the used datatypes
   */
 class JOYNRCOMMON_EXPORT TypeUtil
 {
@@ -38,7 +38,7 @@ public:
     /**
       * Converts a QString object into a std::string object
       */
-    static std::string convertQStringtoStdString(const QString& qtString)
+    static std::string toStd(const QString& qtString)
     {
         return qtString.toStdString();
     }
@@ -46,12 +46,12 @@ public:
     /**
       * Converts a list of QString objects into a list of std::string objects
       */
-    static QList<std::string> convertQStringstoStdStrings(const QList<QString>& qtStrings)
+    static QList<std::string> toStd(const QList<QString>& qtStrings)
     {
         QList<std::string> stdStrings;
 
         for (QString qtString : qtStrings) {
-            stdStrings.append(convertQStringtoStdString(qtString));
+            stdStrings.append(toStd(qtString));
         }
 
         return stdStrings;
@@ -60,12 +60,12 @@ public:
     /**
       * Converts a list of std::string objects into a list of QString objects
       */
-    static QList<QString> convertStdStringstoQStrings(const QList<std::string>& stdStrings)
+    static QList<QString> toQt(const QList<std::string>& stdStrings)
     {
         QList<QString> qtStrings;
 
         for (std::string stdString : stdStrings) {
-            qtStrings.append(QString::fromStdString(stdString));
+            qtStrings.append(toQt(stdString));
         }
 
         return qtStrings;
@@ -74,7 +74,7 @@ public:
     /**
       * Converts a std::string object into a QString object
       */
-    static QString convertStdStringtoQString(const std::string& stdString)
+    static QString toQt(const std::string& stdString)
     {
         return QString::fromStdString(stdString);
     }

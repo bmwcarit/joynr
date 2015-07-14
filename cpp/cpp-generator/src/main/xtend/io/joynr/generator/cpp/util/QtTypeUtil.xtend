@@ -47,28 +47,19 @@ class QtTypeUtil extends CppTypeUtil {
 
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName) {
 		if (typedElement.type.predefined != null) {
-			if (typedElement.type.predefined === FBasicTypeId.STRING) {
-				if (typedElement.isArray) {
-					return '''TypeUtil::convertStdStringstoQStrings(«objectName»)'''
-				}
-				else {
-					return '''TypeUtil::convertStdStringtoQString(«objectName»)'''
-				}
+			switch (typedElement.type.predefined) {
+				case FBasicTypeId.STRING: return '''TypeUtil::toQt(«objectName»)'''
+				default: return objectName
 			}
 		}
-		//by default, return objectName
 		return objectName
 	}
 
 	def fromQTTypeToStdType(FTypedElement typedElement, String objectName) {
 		if (typedElement.type.predefined != null) {
-			if (typedElement.type.predefined === FBasicTypeId.STRING) {
-				if (typedElement.isArray) {
-					return '''TypeUtil::convertQStringstoStdStrings(«objectName»)'''
-				}
-				else {
-					return '''TypeUtil::convertQStringtoStdString(«objectName»)'''
-				}
+			switch (typedElement.type.predefined) {
+				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
+				default: return objectName
 			}
 		}
 		//by default, return objectName

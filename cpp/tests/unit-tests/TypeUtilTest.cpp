@@ -33,7 +33,7 @@ TEST_F(TypeUtilTest, testQStringToStdStringConversion)
     std::string expectedValue("testData");
     QString testData(QString::fromStdString(expectedValue));
 
-    std::string result = TypeUtil::convertQStringtoStdString(testData);
+    std::string result = TypeUtil::toStd(testData);
 
     EXPECT_EQ(expectedValue, result);
 }
@@ -49,7 +49,7 @@ TEST_F(TypeUtilTest, testQStringsToStdStringsConversion)
     testData.append(QString::fromStdString(elem1));
     testData.append(QString::fromStdString(elem2));
 
-    QList<std::string> result = TypeUtil::convertQStringstoStdStrings(testData);
+    QList<std::string> result = TypeUtil::toStd(testData);
 
     EXPECT_TRUE(result.size() == 2);
     EXPECT_EQ(result.at(0), elem1);
@@ -62,7 +62,7 @@ TEST_F(TypeUtilTest, testStringToQStringConversion)
     QString expectedValue("testData");
     std::string testData(expectedValue.toStdString());
 
-    QString result = TypeUtil::convertStdStringtoQString(testData);
+    QString result = TypeUtil::toQt(testData);
 
     EXPECT_EQ(expectedValue, result);
 }
@@ -78,7 +78,7 @@ TEST_F(TypeUtilTest, testStdStringsToQStringsConversion)
     testData.append(elem1.toStdString());
     testData.append(elem2.toStdString());
 
-    QList<QString> result = TypeUtil::convertStdStringstoQStrings(testData);
+    QList<QString> result = TypeUtil::toQt(testData);
 
     EXPECT_TRUE(result.size() == 2);
     EXPECT_EQ(result.at(0), elem1);
@@ -96,15 +96,15 @@ TEST_F(TypeUtilTest, testStringEnd2EndConversion)
     testData.append(elem1);
     testData.append(elem2);
 
-    QList<QString> results = TypeUtil::convertStdStringstoQStrings(
-                TypeUtil::convertQStringstoStdStrings(testData));
+    QList<QString> results = TypeUtil::toQt(
+                TypeUtil::toStd(testData));
 
     EXPECT_TRUE(results.size() == 2);
     EXPECT_EQ(results.at(0), elem1);
     EXPECT_EQ(results.at(1), elem2);
 
-    QString result = TypeUtil::convertStdStringtoQString(
-                TypeUtil::convertQStringtoStdString(elem1));
+    QString result = TypeUtil::toQt(
+                TypeUtil::toStd(elem1));
 
     EXPECT_EQ(result, elem1);
 }

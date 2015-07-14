@@ -61,7 +61,7 @@ public:
         qRegisterMetaType<joynr::types::ProviderQos>("joynr::types::ProviderQos");
         qRegisterMetaType<joynr__types__ProviderQos>("joynr__types__ProviderQos");
 
-        std::string uuid = TypeUtil::convertQStringtoStdString(QUuid::createUuid().toString());
+        std::string uuid = TypeUtil::toStd(QUuid::createUuid().toString());
         uuid = uuid.substr(1, uuid.length()-2);
         domain = "cppEnd2EndRPCTest_Domain_" + uuid;
     }

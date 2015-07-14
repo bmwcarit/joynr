@@ -135,8 +135,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
-    std::string systemServicesDomain =
-            TypeUtil::convertQStringtoStdString(systemServicesSettings.getDomain());
+    std::string systemServicesDomain = TypeUtil::toStd(systemServicesSettings.getDomain());
     QString routingProviderParticipantId =
             systemServicesSettings.getCcRoutingProviderParticipantId();
 

@@ -87,7 +87,7 @@ public:
         settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(TypeUtil::convertQStringtoStdString(QUuid::createUuid().toString())),
+        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppCombinedEnd2EndTest_Domain" + uuid),
         semaphore(0)
@@ -738,7 +738,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
+                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
     DiscoveryQos discoveryQos;
@@ -760,7 +760,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
+                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
     DiscoveryQos discoveryQos;
@@ -803,7 +803,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
+                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
     DiscoveryQos discoveryQos;

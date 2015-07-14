@@ -94,7 +94,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                TypeUtil::convertQStringtoStdString(messagingSettings.getDiscoveryDirectoriesDomain())
+                TypeUtil::toStd(messagingSettings.getDiscoveryDirectoriesDomain())
             );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available

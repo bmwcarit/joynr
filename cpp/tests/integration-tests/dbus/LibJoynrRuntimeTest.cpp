@@ -117,7 +117,7 @@ public:
 
         SystemServicesSettings systemSettings(settings);
         systemSettings.printSettings();
-        std::string systemServicesDomain(TypeUtil::convertQStringtoStdString(systemSettings.getDomain()));
+        std::string systemServicesDomain(TypeUtil::toStd(systemSettings.getDomain()));
 
         // setup routing proxy
         QString routingProviderParticipantId(systemSettings.getCcRoutingProviderParticipantId());
@@ -216,9 +216,9 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     joynr::system::DiscoveryEntry expectedDiscoveryEntry(
-                TypeUtil::convertStdStringtoQString(domain),
-                TypeUtil::convertStdStringtoQString(tests::testProvider::getInterfaceName()),
-                TypeUtil::convertStdStringtoQString(participantId),
+                TypeUtil::toQt(domain),
+                TypeUtil::toQt(tests::testProvider::getInterfaceName()),
+                TypeUtil::toQt(participantId),
                 mockTestProviderQos,
                 connections
     );
@@ -242,7 +242,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     tests::testProxy* testProxy = testProxyBuilder
@@ -269,7 +269,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     tests::testProxy* testProxy = testProxyBuilder
@@ -307,7 +307,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toQt(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     tests::testProxy* testProxy = testProxyBuilder

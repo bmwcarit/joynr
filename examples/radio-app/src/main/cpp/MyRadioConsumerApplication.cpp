@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
     std::string providerDomain(argv[1]);
     LOG_INFO(logger,
              QString("Creating proxy for provider on domain \"%1\"")
-                     .arg(TypeUtil::convertStdStringtoQString(providerDomain)));
+                     .arg(TypeUtil::toQt(providerDomain)));
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());
@@ -156,8 +156,7 @@ int main(int argc, char* argv[])
     QString pathToLibJoynrSettings(dir +
                                    QString("/resources/radio-app-consumer.libjoynr.settings"));
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(
-            TypeUtil::convertQStringtoStdString(pathToLibJoynrSettings),
-            TypeUtil::convertQStringtoStdString(pathToMessagingSettings));
+            TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =

@@ -55,7 +55,7 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        routingDomain = TypeUtil::convertQStringtoStdString(systemSettings.getDomain());
+        routingDomain = TypeUtil::toStd(systemSettings.getDomain());
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
         
         discoveryQos.setCacheMaxAge(1000);

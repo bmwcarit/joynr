@@ -50,8 +50,7 @@ int main(int argc, char* argv[])
     // Get the provider domain
     std::string providerDomain(argv[1]);
     LOG_INFO(logger,
-             QString("Registering provider on domain \"%1\"")
-                     .arg(TypeUtil::convertStdStringtoQString(providerDomain)));
+             QString("Registering provider on domain \"%1\"").arg(TypeUtil::toQt(providerDomain)));
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());
@@ -61,8 +60,7 @@ int main(int argc, char* argv[])
     QString pathToLibJoynrSettings(dir +
                                    QString("/resources/radio-app-provider.libjoynr.settings"));
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(
-            TypeUtil::convertQStringtoStdString(pathToLibJoynrSettings),
-            TypeUtil::convertQStringtoStdString(pathToMessagingSettings));
+            TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
 
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently
