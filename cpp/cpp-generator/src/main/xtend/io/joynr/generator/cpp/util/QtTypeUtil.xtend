@@ -48,6 +48,7 @@ class QtTypeUtil extends CppTypeUtil {
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName) {
 		if (typedElement.type.predefined != null) {
 			switch (typedElement.type.predefined) {
+				case FBasicTypeId.BOOLEAN: return objectName
 				case FBasicTypeId.INT8: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.UINT8: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.INT16: return '''TypeUtil::toQt(«objectName»)'''
@@ -57,6 +58,7 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.INT64: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.UINT64: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.FLOAT: return '''TypeUtil::toQt(«objectName»)'''
+				case FBasicTypeId.DOUBLE: return objectName
 				case FBasicTypeId.STRING: return '''TypeUtil::toQt(«objectName»)'''
 				default: return objectName
 			}
@@ -67,6 +69,7 @@ class QtTypeUtil extends CppTypeUtil {
 	def fromQTTypeToStdType(FTypedElement typedElement, String objectName) {
 		if (typedElement.type.predefined != null) {
 			switch (typedElement.type.predefined) {
+				case FBasicTypeId.BOOLEAN: return objectName
 				case FBasicTypeId.INT8: return '''TypeUtil::toStdInt8(«objectName»)'''
 				case FBasicTypeId.UINT8: return '''TypeUtil::toStdUInt8(«objectName»)'''
 				case FBasicTypeId.INT16: return '''TypeUtil::toStdInt16(«objectName»)'''
@@ -76,6 +79,7 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.INT64: return '''TypeUtil::toStdInt64(«objectName»)'''
 				case FBasicTypeId.UINT64: return '''TypeUtil::toStdUInt64(«objectName»)'''
 				case FBasicTypeId.FLOAT: return '''TypeUtil::toStdFloat(«objectName»)'''
+				case FBasicTypeId.DOUBLE: return objectName
 				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
 				default: return objectName
 			}
