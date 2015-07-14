@@ -30,6 +30,7 @@
 #include "joynr/system/IDiscovery.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/system/DiscoveryEntry.h"
+#include "joynr/Future.h"
 
 #include <QString>
 #include <QList>
@@ -54,11 +55,7 @@ public:
                           QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
-    QString add(const QString& domain,
-                std::shared_ptr<T> provider,
-                QString authenticationToken,
-                std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
-                        nullptr)
+    QString add(const QString& domain, std::shared_ptr<T> provider, QString authenticationToken)
     {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -94,21 +91,24 @@ public:
         }
 
         // add next hop to dispatcher
+        QSharedPointer<joynr::Future<void>> future(new Future<void>());
+        auto callbackFct = [future](const joynr::RequestStatus& status) {
+            if (status.successful()) {
+                future->onSuccess(status);
+            } else {
+                future->onFailure(status);
+            }
+        };
         messageRouter->addNextHop(participantId, dispatcherAddress, callbackFct);
+        future->waitForFinished();
 
         return participantId;
     }
 
-    void remove(const QString& participantId,
-                std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct =
-                        nullptr);
+    void remove(const QString& participantId);
 
     template <class T>
-    QString remove(const QString& domain,
-                   std::shared_ptr<T> provider,
-                   QString authenticationToken,
-                   std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
-                           callbackFct = nullptr)
+    QString remove(const QString& domain, std::shared_ptr<T> provider, QString authenticationToken)
     {
         Q_UNUSED(provider)
 
@@ -138,9 +138,18 @@ public:
                               .arg(status.getCode().toString()));
         }
 
+        QSharedPointer<joynr::Future<void>> future(new Future<void>());
+        auto callbackFct = [future](const joynr::RequestStatus& status) {
+            if (status.successful()) {
+                future->onSuccess(status);
+            } else {
+                future->onFailure(status);
+            }
+        };
         messageRouter->removeNextHop(participantId, callbackFct);
+        future->waitForFinished();
 
-        if (!status.successful()) {
+        if (!future->getStatus().successful()) {
             LOG_ERROR(logger,
                       QString("Unable to remove next hop (participant ID: %1) from message router.")
                               .arg(participantId));

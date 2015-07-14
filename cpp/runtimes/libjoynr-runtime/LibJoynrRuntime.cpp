@@ -179,12 +179,10 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
                                                       messageRouter);
 }
 
-void LibJoynrRuntime::unregisterCapability(
-        QString participantId,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void LibJoynrRuntime::unregisterCapability(QString participantId)
 {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId, callbackFct);
+    capabilitiesRegistrar->remove(participantId);
 }
 
 void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)

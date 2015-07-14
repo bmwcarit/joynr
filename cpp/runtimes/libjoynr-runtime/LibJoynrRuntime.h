@@ -54,9 +54,7 @@ public:
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
-    void unregisterCapability(QString participantId,
-                              std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
-                                      callbackFct = nullptr);
+    void unregisterCapability(QString participantId);
 
 protected:
     ConnectorFactory* connectorFactory;

@@ -42,9 +42,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 {
 }
 
-void CapabilitiesRegistrar::remove(
-        const QString& participantId,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void CapabilitiesRegistrar::remove(const QString& participantId)
 {
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
@@ -59,9 +57,18 @@ void CapabilitiesRegistrar::remove(
                           .arg(status.getCode().toString()));
     }
 
+    QSharedPointer<joynr::Future<void>> future(new Future<void>());
+    auto callbackFct = [future](const joynr::RequestStatus& status) {
+        if (status.successful()) {
+            future->onSuccess(status);
+        } else {
+            future->onFailure(status);
+        }
+    };
     messageRouter->removeNextHop(participantId, callbackFct);
+    future->waitForFinished();
 
-    if (!status.successful()) {
+    if (!future->getStatus().successful()) {
         LOG_ERROR(logger,
                   QString("Unable to remove next hop (participant ID: %1) from message router.")
                           .arg(participantId));
