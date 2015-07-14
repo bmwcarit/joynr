@@ -255,6 +255,94 @@ public:
     {
         return static_cast<int>(stdValue);
     }
+
+    /**
+      * Converts a int into a int32_t
+      */
+    static int32_t toStdInt32(const int& qtValue)
+    {
+        return static_cast<int32_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of int values into a list of int32_t objects
+      */
+    static QList<int32_t> toStdInt32(const QList<int>& qtValues)
+    {
+        QList<int32_t> stdValues;
+
+        for (int qtValue : qtValues) {
+            stdValues.append(toStdInt32(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of int32_t objects into a list of int objects
+      */
+    static QList<int> toQt(const QList<int32_t>& stdValues)
+    {
+        QList<int> qtValues;
+
+        for (int32_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a int32_t object into a int object
+      */
+    static int toQt(const int32_t& stdValue)
+    {
+        return static_cast<int>(stdValue);
+    }
+
+    /**
+      * Converts a int into a uint32_t
+      */
+    static uint32_t toStdUInt32(const int& qtValue)
+    {
+        return static_cast<uint32_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of int values into a list of uint32_t objects
+      */
+    static QList<uint32_t> toStdUInt32(const QList<int>& qtValues)
+    {
+        QList<uint32_t> stdValues;
+
+        for (int qtValue : qtValues) {
+            stdValues.append(toStdUInt32(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of uint32_t objects into a list of int objects
+      */
+    static QList<int> toQt(const QList<uint32_t>& stdValues)
+    {
+        QList<int> qtValues;
+
+        for (uint32_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a uint32_t object into a int object
+      */
+    static int toQt(const uint32_t& stdValue)
+    {
+        return static_cast<int>(stdValue);
+    }
 };
 } // namespace joynr
 #endif /* TYPE_UTIL_H_ */

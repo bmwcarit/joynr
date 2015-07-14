@@ -52,6 +52,8 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.UINT8: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.INT16: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.UINT16: return '''TypeUtil::toQt(«objectName»)'''
+				case FBasicTypeId.INT32: return '''TypeUtil::toQt(«objectName»)'''
+				case FBasicTypeId.UINT32: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.STRING: return '''TypeUtil::toQt(«objectName»)'''
 				default: return objectName
 			}
@@ -66,6 +68,8 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.UINT8: return '''TypeUtil::toStdUInt8(«objectName»)'''
 				case FBasicTypeId.INT16: return '''TypeUtil::toStdInt16(«objectName»)'''
 				case FBasicTypeId.UINT16: return '''TypeUtil::toStdUInt16(«objectName»)'''
+				case FBasicTypeId.INT32: return '''TypeUtil::toStdInt32(«objectName»)'''
+				case FBasicTypeId.UINT32: return '''TypeUtil::toStdUInt32(«objectName»)'''
 				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
 				default: return objectName
 			}
@@ -112,7 +116,9 @@ class QtTypeUtil extends CppTypeUtil {
 		basicType === FBasicTypeId.INT8 ||
 		basicType === FBasicTypeId.UINT8 ||
 		basicType === FBasicTypeId.UINT16 ||
-		basicType === FBasicTypeId.INT16
+		basicType === FBasicTypeId.INT16 ||
+		basicType === FBasicTypeId.UINT32 ||
+		basicType === FBasicTypeId.INT32
 	}
 
 	def needsDatatypeConversion(FTypedElement typedElement) {
