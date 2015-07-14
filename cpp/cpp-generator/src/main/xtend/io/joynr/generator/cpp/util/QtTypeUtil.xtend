@@ -21,6 +21,7 @@ import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
 
 class QtTypeUtil extends CppTypeUtil {
@@ -120,4 +121,11 @@ class QtTypeUtil extends CppTypeUtil {
 		return false;
 	}
 
+	override getTypeNameForList(FType datatype) {
+		"QList<" + datatype.typeName + "> ";
+	}
+
+	override getTypeNameForList(FBasicTypeId datatype) {
+		"QList<" + datatype.typeName + "> ";
+	}
  }

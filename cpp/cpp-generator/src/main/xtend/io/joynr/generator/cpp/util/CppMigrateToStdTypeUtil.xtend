@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.util
  */
 
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FType
 
 class CppMigrateToStdTypeUtil extends CppTypeUtil {
 
@@ -38,5 +39,13 @@ class CppMigrateToStdTypeUtil extends CppTypeUtil {
 			case FBasicTypeId::BYTE_BUFFER: "QByteArray"// TODO: must be migrated to std::types
 			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
+	}
+
+	override getTypeNameForList(FType datatype) {
+		"QList<" + datatype.typeName + "> ";
+	}
+
+	override getTypeNameForList(FBasicTypeId datatype) {
+		"QList<" + datatype.typeName + "> ";
 	}
 }

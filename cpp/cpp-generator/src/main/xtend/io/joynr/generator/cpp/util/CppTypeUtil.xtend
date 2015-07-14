@@ -171,14 +171,6 @@ abstract class CppTypeUtil extends TypeUtil {
 		}
 	}
 
-	override getTypeNameForList(FType datatype) {
-		"QList<" + datatype.typeName + "> ";
-	}
-
-	override getTypeNameForList(FBasicTypeId datatype) {
-		"QList<" + datatype.typeName + "> ";
-	}
-
 	def getDefaultValue(FTypedElement element) {
 		//default values are not supported (currently) by the Franca IDL 
 		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
