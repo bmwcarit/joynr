@@ -313,3 +313,71 @@ TEST_F(TypeUtilTest, testIntToInt32Conversion)
 
     EXPECT_EQ(expectedValue, result);
 }
+
+TEST_F(TypeUtilTest, testUInt64ToQInt64Conversion)
+{
+
+    uint64_t expectedValue(1);
+    qint64 testData = 1;
+
+    uint64_t result = TypeUtil::toStdUInt64(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 255;
+    testData = 255;
+    result = TypeUtil::toStdUInt64(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testQInt64ToUInt64Conversion)
+{
+
+    qint64 expectedValue(1);
+    uint64_t testData = 1;
+
+    qint64 result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 255;
+    testData = 255;
+    result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testInt64ToQInt64Conversion)
+{
+
+    int64_t expectedValue(-1);
+    qint64 testData = -1;
+
+    int64_t result = TypeUtil::toStdInt64(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 10;
+    testData = 10;
+    result = TypeUtil::toStdInt64(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testQInt64ToInt64Conversion)
+{
+
+    qint64 expectedValue(-1);
+    int64_t testData = -1;
+
+    qint64 result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 10;
+    testData = 10;
+    result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}

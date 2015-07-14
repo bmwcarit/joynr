@@ -343,6 +343,94 @@ public:
     {
         return static_cast<int>(stdValue);
     }
+
+    /**
+      * Converts a qint64 into a int64_t
+      */
+    static int64_t toStdInt64(const qint64& qtValue)
+    {
+        return static_cast<int64_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of qint64 values into a list of int64_t objects
+      */
+    static QList<int64_t> toStdInt64(const QList<qint64>& qtValues)
+    {
+        QList<int64_t> stdValues;
+
+        for (qint64 qtValue : qtValues) {
+            stdValues.append(toStdInt64(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of int64_t objects into a list of qint64 objects
+      */
+    static QList<qint64> toQt(const QList<int64_t>& stdValues)
+    {
+        QList<qint64> qtValues;
+
+        for (int64_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a int64_t object into a qint64 object
+      */
+    static qint64 toQt(const int64_t& stdValue)
+    {
+        return static_cast<qint64>(stdValue);
+    }
+
+    /**
+      * Converts a qint64 into a uint64_t
+      */
+    static uint64_t toStdUInt64(const qint64& qtValue)
+    {
+        return static_cast<uint64_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of qint64 values into a list of uint64_t objects
+      */
+    static QList<uint64_t> toStdUInt64(const QList<qint64>& qtValues)
+    {
+        QList<uint64_t> stdValues;
+
+        for (qint64 qtValue : qtValues) {
+            stdValues.append(toStdUInt64(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of uint64_t objects into a list of qint64 objects
+      */
+    static QList<qint64> toQt(const QList<uint64_t>& stdValues)
+    {
+        QList<qint64> qtValues;
+
+        for (uint64_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a uint64_t object into a qint64 object
+      */
+    static qint64 toQt(const uint64_t& stdValue)
+    {
+        return static_cast<qint64>(stdValue);
+    }
 };
 } // namespace joynr
 #endif /* TYPE_UTIL_H_ */
