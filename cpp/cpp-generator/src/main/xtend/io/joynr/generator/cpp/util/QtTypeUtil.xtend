@@ -99,13 +99,17 @@ class QtTypeUtil extends CppTypeUtil {
 		}
 	}
 
+	def needsDatatypeConversion(FBasicTypeId basicType) {
+		basicType === FBasicTypeId.STRING
+	}
+
 	def needsDatatypeConversion(FTypedElement typedElement) {
-		typedElement.type.predefined === FBasicTypeId.STRING
+		needsDatatypeConversion(typedElement.type.predefined)
 	}
 
 	def needsDatatypeConversion(FBroadcast broadcast) {
 		for (outParam : broadcast.outputParameters) {
-			if (outParam.type.predefined === FBasicTypeId.STRING) {
+			if (needsDatatypeConversion(outParam)) {
 				return true;
 			}
 		}
