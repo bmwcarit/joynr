@@ -385,13 +385,13 @@ abstract class JoynrGeneratorExtensions {
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getComplexType((type as FArrayType).elementType)
+			return getComplexType(type.elementType)
 		}
 		else if (type instanceof FCompoundType){
-			return type as FCompoundType;
+			return type;
 		}
 		else if (type instanceof FTypeDef){
-			return getComplexType((type as FTypeDef).actualType)
+			return getComplexType(type.actualType)
 		}
 	}
 
@@ -418,13 +418,13 @@ abstract class JoynrGeneratorExtensions {
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getEnumType((type as FArrayType).elementType)
+			return getEnumType(type.elementType)
 		}
 		else if (type instanceof FEnumerationType){
-			return type as FEnumerationType;
+			return type;
 		}
 		else if (type instanceof FTypeDef){
-			return getEnumType((type as FTypeDef).actualType)
+			return getEnumType(type.actualType)
 		}
 	}
 
@@ -433,13 +433,13 @@ abstract class JoynrGeneratorExtensions {
 			return false
 		}
 		if (type instanceof FArrayType){
-			return isComplex((type as FArrayType).elementType)
+			return isComplex(type.elementType)
 		}
 		if (type instanceof FCompoundType){
 			return true
 		}
 		if (type instanceof FTypeDef){
-			return isComplex((type as FTypeDef).actualType)
+			return isComplex(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return false
@@ -467,13 +467,13 @@ abstract class JoynrGeneratorExtensions {
 			return false
 		}
 		if (type instanceof FArrayType){
-			isEnum((type as FArrayType).elementType)
+			isEnum(type.elementType)
 		}
 		if (type instanceof FStructType || type instanceof FUnionType){
 			return false
 		}
 		if (type instanceof FTypeDef){
-			isEnum((type as FTypeDef).actualType)
+			isEnum(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return true
@@ -515,10 +515,10 @@ abstract class JoynrGeneratorExtensions {
 		}
 		else {
 			if (type instanceof FArrayType){
-				return isPrimitive((type as FArrayType).elementType)
+				return isPrimitive(type.elementType)
 			}
 			if (type instanceof FTypeDef){
-				return isPrimitive((type as FTypeDef).actualType)
+				return isPrimitive(type.actualType)
 			}
 		}
 		return false;
@@ -529,10 +529,10 @@ abstract class JoynrGeneratorExtensions {
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getPrimitive((type as FArrayType).elementType)
+			return getPrimitive(type.elementType)
 		}
 		if (type instanceof FTypeDef){
-			return getPrimitive((type as FTypeDef).actualType)
+			return getPrimitive(type.actualType)
 		}
 	}
 
@@ -547,10 +547,10 @@ abstract class JoynrGeneratorExtensions {
 
 	def String joynrName(Object type) {
 		if (type instanceof FType){
-			(type as FType).joynrName
+			type.joynrName
 		}
 		else if (type instanceof FBasicTypeId){
-			(type as FBasicTypeId).joynrName
+			type.joynrName
 		}
 		else{
 			return null;
@@ -716,13 +716,13 @@ abstract class JoynrGeneratorExtensions {
 
 	def getDatatype(FType type){
 		if (type instanceof FArrayType){
-			return getDatatype((type as FArrayType).elementType)
+			return getDatatype(type.elementType)
 		}
 		if (type instanceof FCompoundType){
 			return type
 		}
 		if (type instanceof FTypeDef){
-			return getDatatype((type as FTypeDef).actualType)
+			return getDatatype(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return type
