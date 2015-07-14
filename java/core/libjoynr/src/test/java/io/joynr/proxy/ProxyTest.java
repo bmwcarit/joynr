@@ -116,7 +116,7 @@ public class ProxyTest {
     }
 
     public interface AsyncTestInterface extends JoynrAsyncInterface {
-        Future<String> asyncMethod(@JoynrRpcCallback(deserialisationType = StringTypeRef.class) Callback<String> callback);
+        Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
     }
 
     public interface TestInterface extends SyncTestInterface, AsyncTestInterface {

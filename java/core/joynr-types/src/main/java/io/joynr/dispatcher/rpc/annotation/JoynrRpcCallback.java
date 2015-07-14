@@ -33,7 +33,7 @@ public @interface JoynrRpcCallback {
      * A type token. This is needed to correctly deserialize collection types because their type information is erased
      * after compilation in Java
      *
-     * @return the deserialisation class
+     * @return the deserialization class
      */
-    Class<? extends TypeReference<?>> deserialisationType() default DefaultTypeReference.class;
+    Class<? extends TypeReference<?>> deserializationType() default DefaultTypeReference.class;
 }
