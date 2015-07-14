@@ -381,3 +381,37 @@ TEST_F(TypeUtilTest, testQInt64ToInt64Conversion)
 
     EXPECT_EQ(expectedValue, result);
 }
+
+TEST_F(TypeUtilTest, testFloatToDoubleConversion)
+{
+
+    float expectedValue(-1.03040);
+    double testData = -1.03040;
+
+    float result = TypeUtil::toStdFloat(testData);
+
+    EXPECT_FLOAT_EQ(expectedValue, result);
+
+    expectedValue = 10000000.1234;
+    testData = 10000000.1234;
+    result = TypeUtil::toStdFloat(testData);
+
+    EXPECT_FLOAT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testDoubleToFloatConversion)
+{
+
+    double expectedValue(-1.03040);
+    float testData = -1.03040;
+
+    double result = TypeUtil::toQt(testData);
+
+    EXPECT_NEAR(expectedValue, result, 0.01);
+
+    expectedValue = 1000000.1234;
+    testData = 1000000.1234;
+    result = TypeUtil::toQt(testData);
+
+    EXPECT_NEAR(expectedValue, result, 0.01);
+}

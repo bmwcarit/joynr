@@ -431,6 +431,50 @@ public:
     {
         return static_cast<qint64>(stdValue);
     }
+
+    /**
+      * Converts a double into a float
+      */
+    static float toStdFloat(const double& qtValue)
+    {
+        return static_cast<float>(qtValue);
+    }
+
+    /**
+      * Converts a list of double values into a list of float objects
+      */
+    static QList<float> toStdFloat(const QList<double>& qtValues)
+    {
+        QList<float> stdValues;
+
+        for (double qtValue : qtValues) {
+            stdValues.append(toStdFloat(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of float objects into a list of double objects
+      */
+    static QList<double> toQt(const QList<float>& stdValues)
+    {
+        QList<double> qtValues;
+
+        for (float stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a float object into a double object
+      */
+    static double toQt(const float& stdValue)
+    {
+        return static_cast<double>(stdValue);
+    }
 };
 } // namespace joynr
 #endif /* TYPE_UTIL_H_ */

@@ -303,10 +303,10 @@ public:
     MOCK_METHOD0(onError, void());
 };
 
-class MockGpsDoubleSubscriptionListener
-        : public joynr::ISubscriptionListener<joynr::types::GpsLocation, double> {
+class MockGpsFloatSubscriptionListener
+        : public joynr::ISubscriptionListener<joynr::types::GpsLocation, float> {
 public:
-    MOCK_METHOD2(onReceive, void(const joynr::types::GpsLocation& value, const double&));
+    MOCK_METHOD2(onReceive, void(const joynr::types::GpsLocation& value, const float&));
     MOCK_METHOD0(onError, void());
 };
 

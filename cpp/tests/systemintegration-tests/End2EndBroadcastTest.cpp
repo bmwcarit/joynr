@@ -612,7 +612,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
-    MockGpsDoubleSubscriptionListener* mockListener = new MockGpsDoubleSubscriptionListener();
+    MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
@@ -657,7 +657,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                            4)), Eq(300)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation, double> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::GpsLocation, float> > subscriptionListener(
                     mockListener);
 
     types::ProviderQos providerQos;
