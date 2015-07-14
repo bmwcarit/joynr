@@ -26,7 +26,7 @@ import java.util.Map;
 
 import joynr.types.CustomParameter;
 
-public class KeywordArbitrator extends ArbitrationStrategyFunction {
+public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunction {
 
     @Override
     public CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities) {

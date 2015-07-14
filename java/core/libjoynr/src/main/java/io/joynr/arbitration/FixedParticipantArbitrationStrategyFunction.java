@@ -27,8 +27,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FixedParticipantArbitrator extends ArbitrationStrategyFunction {
-    private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrator.class);
+public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStrategyFunction {
+    private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrationStrategyFunction.class);
 
     @Override
     public CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities) {

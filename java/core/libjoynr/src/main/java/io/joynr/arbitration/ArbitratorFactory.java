@@ -61,21 +61,21 @@ public final class ArbitratorFactory {
                                   discoveryQos,
                                   capabilitiesSource,
                                   minimumArbitrationRetryDelay,
-                                  new FixedParticipantArbitrator());
+                                  new FixedParticipantArbitrationStrategyFunction());
         case Keyword:
             return new Arbitrator(domain,
                                   interfaceName,
                                   discoveryQos,
                                   capabilitiesSource,
                                   minimumArbitrationRetryDelay,
-                                  new KeywordArbitrator());
+                                  new KeywordArbitrationStrategyFunction());
         case HighestPriority:
             return new Arbitrator(domain,
                                   interfaceName,
                                   discoveryQos,
                                   capabilitiesSource,
                                   minimumArbitrationRetryDelay,
-                                  new HighestPriorityArbitrator());
+                                  new HighestPriorityArbitrationStrategyFunction());
         case Custom:
             return new Arbitrator(domain,
                                   interfaceName,

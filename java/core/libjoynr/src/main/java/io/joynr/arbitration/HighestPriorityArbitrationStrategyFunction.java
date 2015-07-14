@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
  * chosen.
  *
  */
-public class HighestPriorityArbitrator extends ArbitrationStrategyFunction {
-    private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrator.class);
+public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrategyFunction {
+    private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrationStrategyFunction.class);
 
     @Override
     public final CapabilityEntry select(Map<String, String> parameters, final Collection<CapabilityEntry> capabilities) {
