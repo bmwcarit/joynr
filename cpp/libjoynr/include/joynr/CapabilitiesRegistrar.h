@@ -55,7 +55,7 @@ public:
                           QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
-    QString add(const QString& domain, std::shared_ptr<T> provider, QString authenticationToken)
+    QString add(const QString& domain, std::shared_ptr<T> provider)
     {
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -63,8 +63,8 @@ public:
         QString interfaceName = T::getInterfaceName();
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId = participantIdStorage->getProviderParticipantId(
-                domain, interfaceName, authenticationToken);
+        QString participantId =
+                participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
@@ -108,15 +108,15 @@ public:
     void remove(const QString& participantId);
 
     template <class T>
-    QString remove(const QString& domain, std::shared_ptr<T> provider, QString authenticationToken)
+    QString remove(const QString& domain, std::shared_ptr<T> provider)
     {
         Q_UNUSED(provider)
 
         QString interfaceName = T::getInterfaceName();
 
         // Get the provider participant Id - the persisted provider Id has priority
-        QString participantId = participantIdStorage->getProviderParticipantId(
-                domain, interfaceName, authenticationToken);
+        QString participantId =
+                participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
         foreach (IDispatcher* currentDispatcher, dispatcherList) {
             // TODO will the provider be registered at all dispatchers or

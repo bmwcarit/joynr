@@ -68,25 +68,21 @@ public:
     }
 
     template <class T>
-    QString registerCapability(const QString& domain,
-                               std::shared_ptr<T> provider,
-                               const QString& authenticationToken)
+    QString registerCapability(const QString& domain, std::shared_ptr<T> provider)
     {
         assert(capabilitiesRegistrar);
         assert(domain != "");
-        return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->add<T>(domain, provider);
     }
 
     virtual void unregisterCapability(QString participantId) = 0;
 
     template <class T>
-    QString unregisterCapability(const QString& domain,
-                                 std::shared_ptr<T> provider,
-                                 const QString& authenticationToken)
+    QString unregisterCapability(const QString& domain, std::shared_ptr<T> provider)
     {
         assert(capabilitiesRegistrar);
         assert(domain != "");
-        return capabilitiesRegistrar->remove<T>(domain, provider, authenticationToken);
+        return capabilitiesRegistrar->remove<T>(domain, provider);
     }
 
     template <class T>

@@ -96,15 +96,13 @@ public:
 
     void registerTestProvider() {
         // create provider
-        QString authenticationToken("authToken");
-
         types::ProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
-        QString participantId = runtime1->registerCapability(domain, provider, authenticationToken);
+        QString participantId = runtime1->registerCapability(domain, provider);
         ASSERT_TRUE(participantId != NULL);
     }
 

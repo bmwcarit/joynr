@@ -36,8 +36,8 @@ const QString& ParticipantIdStorage::STORAGE_FORMAT_STRING()
 
 void ParticipantIdStorage::setProviderParticipantId(const QString& domain,
                                                     const QString& interfaceName,
-                                                    const QString& authenticationToken,
-                                                    const QString& participantId)
+                                                    const QString& participantId,
+                                                    const QString& authenticationToken)
 {
     // Access the persistence file through a threadsafe QSettings object
     QSettings settings(filename, QSettings::IniFormat);
@@ -51,13 +51,13 @@ QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
                                                        const QString& interfaceName,
                                                        const QString& authenticationToken)
 {
-    return getProviderParticipantId(domain, interfaceName, authenticationToken, QString());
+    return getProviderParticipantId(domain, interfaceName, QString(), authenticationToken);
 }
 
 QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
                                                        const QString& interfaceName,
-                                                       const QString& authenticationToken,
-                                                       const QString& defaultValue)
+                                                       const QString& defaultValue,
+                                                       const QString& authenticationToken)
 {
     // Access the persistence file through a threadsafe QSettings object
     QSettings settings(filename, QSettings::IniFormat);

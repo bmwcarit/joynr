@@ -44,8 +44,8 @@ TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
 
     QString participantId = store.getProviderParticipantId("domain.myDomain",
                                                            "interface.mytest",
-                                                           "myauthtoken",
-                                                           "defaultParticipantId");
+                                                           "defaultParticipantId",
+                                                           "myauthtoken");
     ASSERT_EQ(QString("defaultParticipantId"), participantId);
 }
 
@@ -56,8 +56,8 @@ TEST_F(ParticipantIdStorageTest, newProviderParticipantId)
     ParticipantIdStorage store(storageFile);
     QString participantId = store.getProviderParticipantId("domain.myDomain",
                                                            "interface.mytest",
-                                                           "myauthtoken",
-                                                           QString());
+                                                           QString(),
+                                                           "myauthtoken");
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 }
@@ -69,8 +69,8 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
 
     QString participantId = store->getProviderParticipantId("domain.myDomain",
                                                             "interface.mytest",
-                                                            "myauthtoken",
-                                                            "persistMe");
+                                                            "persistMe",
+                                                            "myauthtoken");
     ASSERT_EQ(QString("persistMe"), participantId);
 
     // Delete the current store and create a new one
@@ -80,8 +80,8 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
     // Check that the setting was persisted
     participantId = store->getProviderParticipantId("domain.myDomain",
                                                     "interface.mytest",
-                                                    "myauthtoken",
-                                                    QString());
+                                                    QString(),
+                                                    "myauthtoken");
 
     ASSERT_EQ(QString("persistMe"), participantId);
     delete store;

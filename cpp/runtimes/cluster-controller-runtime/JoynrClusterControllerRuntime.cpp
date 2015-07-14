@@ -344,13 +344,12 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
     QString domain(systemServicesSettings.getDomain());
     std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter.data());
     QString interfaceName(routingProvider->getInterfaceName());
-    QString authToken(systemServicesSettings.getCcRoutingProviderAuthenticationToken());
     QString participantId(systemServicesSettings.getCcRoutingProviderParticipantId());
 
     // provision the participant ID for the routing provider
-    participantIdStorage->setProviderParticipantId(domain, interfaceName, authToken, participantId);
+    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerCapability<joynr::system::RoutingProvider>(domain, routingProvider, authToken);
+    registerCapability<joynr::system::RoutingProvider>(domain, routingProvider);
 }
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
@@ -358,13 +357,12 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
     QString domain(systemServicesSettings.getDomain());
     std::shared_ptr<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
     QString interfaceName(discoveryProvider->getInterfaceName());
-    QString authToken(systemServicesSettings.getCcDiscoveryProviderAuthenticationToken());
     QString participantId(systemServicesSettings.getCcDiscoveryProviderParticipantId());
 
     // provision the participant ID for the discovery provider
-    participantIdStorage->setProviderParticipantId(domain, interfaceName, authToken, participantId);
+    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerCapability<joynr::system::DiscoveryProvider>(domain, discoveryProvider, authToken);
+    registerCapability<joynr::system::DiscoveryProvider>(domain, discoveryProvider);
 }
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()

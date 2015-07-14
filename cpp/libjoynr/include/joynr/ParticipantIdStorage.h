@@ -52,25 +52,28 @@ public:
      * @param authenticationToken the authentication token of the provider.
      * @param participantId the participantId to set.
      */
-    virtual void setProviderParticipantId(const QString& domain,
-                                          const QString& interfaceName,
-                                          const QString& authenticationToken,
-                                          const QString& participantId);
+    virtual void setProviderParticipantId(
+            const QString& domain,
+            const QString& interfaceName,
+            const QString& participantId,
+            const QString& authenticationToken = QString("defaultAuthenticationToken"));
 
     /**
      * Get a provider participant id
      */
-    virtual QString getProviderParticipantId(const QString& domain,
-                                             const QString& interfaceName,
-                                             const QString& authenticationToken);
+    virtual QString getProviderParticipantId(
+            const QString& domain,
+            const QString& interfaceName,
+            const QString& authenticationToken = QString("defaultAuthenticationToken"));
 
     /**
      * Get a provider participant id or use a default
      */
-    virtual QString getProviderParticipantId(const QString& domain,
-                                             const QString& interfaceName,
-                                             const QString& authenticationToken,
-                                             const QString& defaultValue);
+    virtual QString getProviderParticipantId(
+            const QString& domain,
+            const QString& interfaceName,
+            const QString& defaultValue,
+            const QString& authenticationToken = QString("defaultAuthenticationToken"));
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);

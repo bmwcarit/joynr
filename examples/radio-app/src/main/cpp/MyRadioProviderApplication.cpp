@@ -75,9 +75,7 @@ int main(int argc, char* argv[])
     provider->addBroadcastFilter(geocastBroadcastFilter);
 
     // Register the provider
-    QString authenticationToken("MyRadioProvider_authToken");
-    runtime->registerCapability<vehicle::RadioProvider>(
-            providerDomain, provider, authenticationToken);
+    runtime->registerCapability<vehicle::RadioProvider>(providerDomain, provider);
 
     // Run until the user hits q
     int key;
@@ -105,8 +103,7 @@ int main(int argc, char* argv[])
     }
 
     // Unregister the provider
-    runtime->unregisterCapability<vehicle::RadioProvider>(
-            providerDomain, provider, authenticationToken);
+    runtime->unregisterCapability<vehicle::RadioProvider>(providerDomain, provider);
 
     delete runtime;
     delete logger;

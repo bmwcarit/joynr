@@ -171,12 +171,10 @@ TEST_F(LibJoynrRuntimeTest, instantiateRuntime)
 
 TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
     QString domain("LibJoynrRuntimeTest.Domain.A");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.A");
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
     RequestStatus status;
     bool resolved = false;
@@ -187,12 +185,10 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
 
 TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     QString domain("LibJoynrRuntimeTest.Domain.B");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.B");
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     RequestStatus status;
@@ -209,12 +205,10 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
 
 TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     QString domain("LibJoynrRuntimeTest.Domain.F");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.F");
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     QList<joynr::system::CommunicationMiddleware::Enum> connections;
@@ -235,13 +229,11 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
 
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     QString domain("LibJoynrRuntimeTest.Domain.C");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.C");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
@@ -264,13 +256,11 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
 
 TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     QString domain("LibJoynrRuntimeTest.Domain.D");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.D");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
@@ -304,13 +294,11 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
 
 TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     QString domain("LibJoynrRuntimeTest.Domain.E");
-    QString authenticationToken("LibJoynrRuntimeTest.AuthenticationToken.E");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QString participantId = runtime->registerCapability<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =

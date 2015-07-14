@@ -31,7 +31,6 @@ using namespace ::testing;
 using namespace joynr;
 
 const QString participantIdFile("test_participantids.settings");
-const QString authToken("test_authtoken");
 
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
@@ -87,7 +86,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
                     IMockProviderInterface::getInterfaceName(),
-                    authToken
+                    _
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -112,7 +111,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                 )
     ).WillOnce(SetArgReferee<0>(status));
 
-    QString participantId = capabilitiesRegistrar->add(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->add(domain, mockProvider);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 }
 
@@ -120,7 +119,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
                     IMockProviderInterface::getInterfaceName(),
-                    authToken
+                    _
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -135,7 +134,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
             .Times(1)
             .WillOnce(SetArgReferee<0>(status))
     ;
-    QString participantId = capabilitiesRegistrar->remove(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->remove(domain, mockProvider);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 }
 
@@ -163,7 +162,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
                     IMockProviderInterface::getInterfaceName(),
-                    authToken
+                    _
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -197,7 +196,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
     capabilitiesRegistrar->addDispatcher(mockDispatcher2);
 
-    QString participantId = capabilitiesRegistrar->add(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->add(domain, mockProvider);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
@@ -218,7 +217,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
                     IMockProviderInterface::getInterfaceName(),
-                    authToken
+                    _
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -250,7 +249,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
             .Times(1);
 
-    QString participantId = capabilitiesRegistrar->add(domain, mockProvider, authToken);
+    QString participantId = capabilitiesRegistrar->add(domain, mockProvider);
     EXPECT_QSTREQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
