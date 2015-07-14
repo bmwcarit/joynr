@@ -19,14 +19,13 @@ package io.joynr.generator.cpp.proxy
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 
 class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions

@@ -60,6 +60,7 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.FLOAT: return '''TypeUtil::toQt(«objectName»)'''
 				case FBasicTypeId.DOUBLE: return objectName
 				case FBasicTypeId.STRING: return '''TypeUtil::toQt(«objectName»)'''
+				case FBasicTypeId.BYTE_BUFFER: return '''TypeUtil::toQt(«objectName»)'''
 				default: return objectName
 			}
 		}
@@ -81,6 +82,7 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.FLOAT: return '''TypeUtil::toStdFloat(«objectName»)'''
 				case FBasicTypeId.DOUBLE: return objectName
 				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
+				case FBasicTypeId.BYTE_BUFFER: return '''TypeUtil::toStd(«objectName»)'''
 				default: return objectName
 			}
 		}
@@ -131,6 +133,7 @@ class QtTypeUtil extends CppTypeUtil {
 		basicType === FBasicTypeId.INT32 ||
 		basicType === FBasicTypeId.INT64 ||
 		basicType === FBasicTypeId.UINT64 ||
+		basicType === FBasicTypeId.BYTE_BUFFER ||
 		basicType === FBasicTypeId.FLOAT
 	}
 

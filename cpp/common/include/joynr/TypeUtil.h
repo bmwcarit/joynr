@@ -25,6 +25,8 @@
 #include <string>
 #include <QList>
 #include <qglobal.h>
+#include <vector>
+#include <QByteArray>
 
 namespace joynr
 {
@@ -474,6 +476,56 @@ public:
     static double toQt(const float& stdValue)
     {
         return static_cast<double>(stdValue);
+    }
+
+    /**
+      * Converts a QByteArray into a std::vector<uint8_t>
+      */
+    static std::vector<uint8_t> toStd(const QByteArray& qtValue)
+    {
+        std::vector<uint8_t> stdValue(qtValue.begin(), qtValue.end());
+
+        return stdValue;
+    }
+
+    /**
+      * Converts a list of QByteArray values into a list of std::vector<uint8_t> objects
+      */
+    static QList<std::vector<uint8_t>> toStd(const QList<QByteArray>& qtValues)
+    {
+        QList<std::vector<uint8_t>> stdValues;
+
+        for (QByteArray qtValue : qtValues) {
+            stdValues.append(toStd(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of std::vector<uint8_t> objects into a list of QByteArray objects
+      */
+    static QList<QByteArray> toQt(const QList<std::vector<uint8_t>>& stdValues)
+    {
+        QList<QByteArray> qtValues;
+
+        for (std::vector<uint8_t> stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a std::vector<uint8_t> object into a QByteArray object
+      */
+    static QByteArray toQt(const std::vector<uint8_t>& stdValue)
+    {
+        QByteArray qtValue;
+        for (const uint8_t entry : stdValue) {
+            qtValue.append(entry);
+        }
+        return qtValue;
     }
 };
 } // namespace joynr

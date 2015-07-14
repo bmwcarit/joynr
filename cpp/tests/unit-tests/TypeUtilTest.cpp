@@ -21,6 +21,8 @@
 #include "joynr/TypeUtil.h"
 #include <QString>
 #include <string>
+#include <QByteArray>
+#include <vector>
 
 using namespace joynr;
 
@@ -414,4 +416,41 @@ TEST_F(TypeUtilTest, testDoubleToFloatConversion)
     result = TypeUtil::toQt(testData);
 
     EXPECT_NEAR(expectedValue, result, 0.01);
+}
+
+TEST_F(TypeUtilTest, testUInt8VectorToQByteArrayConversion)
+{
+
+    std::vector<uint8_t> expectedValue;
+
+    expectedValue.push_back(3);
+    expectedValue.push_back(2);
+    expectedValue.push_back(1);
+
+    QByteArray testData;
+
+    testData.append(3);
+    testData.append(2);
+    testData.append(1);
+
+    std::vector<uint8_t> result = TypeUtil::toStd(testData);
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testQByteArrayToUInt8VectorConversion)
+{
+    QByteArray expectedValue;
+
+    expectedValue.append(3);
+    expectedValue.append(2);
+    expectedValue.append(1);
+
+    std::vector<uint8_t> testData;
+
+    testData.push_back(3);
+    testData.push_back(2);
+    testData.push_back(1);
+
+    QByteArray result = TypeUtil::toQt(testData);
+    EXPECT_EQ(expectedValue, result);
 }

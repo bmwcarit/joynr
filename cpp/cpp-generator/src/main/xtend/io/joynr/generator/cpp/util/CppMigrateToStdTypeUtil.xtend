@@ -36,7 +36,7 @@ class CppMigrateToStdTypeUtil extends CppTypeUtil {
 			case FBasicTypeId::FLOAT: "float"
 			case FBasicTypeId::DOUBLE: "double"
 			case FBasicTypeId::STRING: "std::string"
-			case FBasicTypeId::BYTE_BUFFER: "QByteArray"// TODO: must be migrated to std::types
+			case FBasicTypeId::BYTE_BUFFER: "std::vector<uint8_t>"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
 	}
