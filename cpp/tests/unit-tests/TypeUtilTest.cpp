@@ -172,6 +172,75 @@ TEST_F(TypeUtilTest, testQInt8ToInt8Conversion)
 
     expectedValue = 10;
     testData = 10;
+
+    result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testUInt16ToIntConversion)
+{
+
+    uint16_t expectedValue(1);
+    int testData = 1;
+
+    uint16_t result = TypeUtil::toStdUInt16(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 2550;
+    testData = 2550;
+    result = TypeUtil::toStdUInt16(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testIntToUInt16Conversion)
+{
+
+    int expectedValue(1);
+    uint16_t testData = 1;
+
+    int result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 2550;
+    testData = 2550;
+    result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testInt16ToIntConversion)
+{
+
+    int16_t expectedValue(-255);
+    int testData = -255;
+
+    int16_t result = TypeUtil::toStdInt16(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 3000;
+    testData = 3000;
+    result = TypeUtil::toStdInt16(testData);
+
+    EXPECT_EQ(expectedValue, result);
+}
+
+TEST_F(TypeUtilTest, testIntToInt16Conversion)
+{
+
+    int expectedValue(-11);
+    int16_t testData = -11;
+
+    int result = TypeUtil::toQt(testData);
+
+    EXPECT_EQ(expectedValue, result);
+
+    expectedValue = 3000;
+    testData = 3000;
     result = TypeUtil::toQt(testData);
 
     EXPECT_EQ(expectedValue, result);

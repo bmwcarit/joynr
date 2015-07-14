@@ -167,6 +167,94 @@ public:
     {
         return static_cast<qint8>(stdValue);
     }
+
+    /**
+      * Converts a int into a int16_t
+      */
+    static int16_t toStdInt16(const int& qtValue)
+    {
+        return static_cast<int16_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of int values into a list of int16_t objects
+      */
+    static QList<int16_t> toStdInt16(const QList<int>& qtValues)
+    {
+        QList<int16_t> stdValues;
+
+        for (int qtValue : qtValues) {
+            stdValues.append(toStdInt16(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of int16_t objects into a list of int objects
+      */
+    static QList<int> toQt(const QList<int16_t>& stdValues)
+    {
+        QList<int> qtValues;
+
+        for (int16_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a int16_t object into a int object
+      */
+    static int toQt(const int16_t& stdValue)
+    {
+        return static_cast<int>(stdValue);
+    }
+
+    /**
+      * Converts a int into a uint16_t
+      */
+    static uint16_t toStdUInt16(const int& qtValue)
+    {
+        return static_cast<uint16_t>(qtValue);
+    }
+
+    /**
+      * Converts a list of int values into a list of uint16_t objects
+      */
+    static QList<uint16_t> toStdUInt16(const QList<int>& qtValues)
+    {
+        QList<uint16_t> stdValues;
+
+        for (int qtValue : qtValues) {
+            stdValues.append(toStdUInt16(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of uint16_t objects into a list of int objects
+      */
+    static QList<int> toQt(const QList<uint16_t>& stdValues)
+    {
+        QList<int> qtValues;
+
+        for (uint16_t stdValue : stdValues) {
+            qtValues.append(toQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a uint16_t object into a int object
+      */
+    static int toQt(const uint16_t& stdValue)
+    {
+        return static_cast<int>(stdValue);
+    }
 };
 } // namespace joynr
 #endif /* TYPE_UTIL_H_ */
