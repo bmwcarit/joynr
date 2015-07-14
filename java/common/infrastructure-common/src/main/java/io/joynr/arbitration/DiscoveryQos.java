@@ -313,7 +313,7 @@ public class DiscoveryQos {
         return arbitrationStategyFunction;
     }
 
-    public Map<String, String> getCustomParametes() {
+    public Map<String, String> getCustomParameters() {
         return customParameters;
     }
 }

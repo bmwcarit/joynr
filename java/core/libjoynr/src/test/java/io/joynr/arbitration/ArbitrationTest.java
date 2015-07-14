@@ -440,7 +440,7 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
-        verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParametes()),
+        verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(capabilitiesList));
         verify(arbitrationCallback, times(1)).notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationRunning);
         verify(arbitrationCallback, times(1)).setArbitrationResult(eq(ArbitrationStatus.ArbitrationSuccesful),

@@ -118,7 +118,7 @@ public class Arbitrator {
                     }
                 }
 
-                CapabilityEntry selectedCapability = arbitrationStrategyFunction.select(discoveryQos.getCustomParametes(),
+                CapabilityEntry selectedCapability = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
                                                                                         capabilities);
 
                 if (selectedCapability != null) {
