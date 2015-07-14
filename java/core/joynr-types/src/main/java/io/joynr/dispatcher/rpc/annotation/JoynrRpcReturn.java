@@ -27,17 +27,17 @@ import java.lang.annotation.Target;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
- * This annotation should be used on methods that will be invoked using JSON RPC, to specify there deserialisationType.
+ * This annotation should be used on methods that will be invoked using JSON RPC, to specify there deserializationType.
  * This is necessary because of Java type erasure on methods that return Lists or Maps.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface JoynrRpcReturn {
     /**
-     * Returns the derserialisation type token.
+     * Returns the deserialization type token.
      * This is needed to correctly deserialize collection types because their type information is erased
      * after compilation in Java
      * @return The deserialization type.
      */
-    Class<? extends TypeReference<?>> deserialisationType();
+    Class<? extends TypeReference<?>> deserializationType();
 }

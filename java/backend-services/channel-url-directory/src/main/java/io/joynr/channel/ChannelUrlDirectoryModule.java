@@ -97,7 +97,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback,
                                                     @JoynrRpcParam("channelId") String channelId,
                                                     @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
                 channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
@@ -109,7 +109,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
+            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserializationType = VoidToken.class) final Callback<Void> callback,
                                                       @JoynrRpcParam("channelId") String channelId) {
                 final Future<Void> future = new Future<Void>();
                 channelUrlDirectory.unregisterChannelUrls(channelId).then(new PromiseListener() {
@@ -131,7 +131,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserialisationType = joynr.infrastructure.ChannelUrlDirectorySync.ChannelUrlInformationToken.class) final Callback<ChannelUrlInformation> callback,
+            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserializationType = joynr.infrastructure.ChannelUrlDirectorySync.ChannelUrlInformationToken.class) final Callback<ChannelUrlInformation> callback,
                                                                    @JoynrRpcParam("channelId") String channelId) {
                 final Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
                 channelUrlDirectory.getUrlsForChannel(channelId).then(new PromiseListener() {

@@ -54,7 +54,7 @@ public class RpcUtils {
                     responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
                 } else {
                     try {
-                        responsePayload = objectMapper.convertValue(response[0], annotation.deserialisationType().newInstance());
+                        responsePayload = objectMapper.convertValue(response[0], annotation.deserializationType().newInstance());
                     } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
                         logger.error("error calling method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
 
@@ -82,7 +82,7 @@ public class RpcUtils {
                                                           MethodMetaInformation methodMetaInformation,
                                                           Reply response) {
         if (methodMetaInformation.getCallbackAnnotation() == null) {
-            throw new IllegalStateException("Received a reply to a rpc method call without callback annotation including deserialisationType");
+            throw new IllegalStateException("Received a reply to a rpc method call without callback annotation including deserializationType");
         }
 
 
@@ -96,7 +96,7 @@ public class RpcUtils {
             try {
                 responsePayload[0] = objectMapper.convertValue(response.getResponse().get(0),
                                                                methodMetaInformation.getCallbackAnnotation()
-                                                                                    .deserialisationType()
+                                                                                    .deserializationType()
                                                                                     .newInstance());
             } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
                 logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead", method.getName(), e.getMessage());

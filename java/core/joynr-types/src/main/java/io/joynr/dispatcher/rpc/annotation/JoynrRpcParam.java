@@ -42,9 +42,9 @@ public @interface JoynrRpcParam {
 
     /** Returns the deserialization type token.
      * This is needed to correctly deserialize collection types because their type information is erased after compilation in Java
-     * @return The deserialisation type
+     * @return The deserialization type
      */
-    Class<? extends TypeReference<?>> deserialisationType() default DefaultTypeReference.class;
+    Class<? extends TypeReference<?>> deserializationType() default DefaultTypeReference.class;
 
     /** Returns the default value for the parameter.
      * It is used if a parameter is missing in the function call. This one can only be used for simple types.

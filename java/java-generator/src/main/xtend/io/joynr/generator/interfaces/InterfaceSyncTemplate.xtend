@@ -113,12 +113,12 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 			«var setAttribute = "set" + attributeName.toFirstUpper»
 				«IF isReadable(attribute)»
 
-				@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class)
+				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class)
 				public «attributeType» «getAttribute»() throws JoynrArbitrationException;
 				«ENDIF»
 				«IF isWritable(attribute)»
 
-					void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
+					void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
 				«ENDIF»
 		«ENDFOR»
 
@@ -161,7 +161,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 						«getTypedParameterListJavaRpc(method)»
 				) throws JoynrArbitrationException;
 				«ELSE»
-				@JoynrRpcReturn(deserialisationType = «getTokenTypeForArrayType(method.typeNamesForOutputParameter.iterator.next)»Token.class)
+				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(method.typeNamesForOutputParameter.iterator.next)»Token.class)
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
 				) throws JoynrArbitrationException;

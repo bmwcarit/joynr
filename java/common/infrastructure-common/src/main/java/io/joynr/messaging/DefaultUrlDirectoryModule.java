@@ -67,7 +67,7 @@ public class DefaultUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            @JoynrRpcReturn(deserialisationType = ChannelUrlInformationToken.class)
+            @JoynrRpcReturn(deserializationType = ChannelUrlInformationToken.class)
             public ChannelUrlInformation getUrlsForChannel(@JoynrRpcParam("channelId") String channelId)
                                                                                                         throws JoynrArbitrationException {
                 List<String> urls = new ArrayList<String>();
@@ -76,7 +76,7 @@ public class DefaultUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback,
                                                       @JoynrRpcParam("channelId") String channelId) {
                 Future<Void> future = new Future<Void>();
                 future.onSuccess(null);
@@ -84,7 +84,7 @@ public class DefaultUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback,
                                                     @JoynrRpcParam("channelId") String channelId,
                                                     @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
 
@@ -95,7 +95,7 @@ public class DefaultUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserialisationType = ChannelUrlInformationToken.class) Callback<ChannelUrlInformation> callback,
+            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserializationType = ChannelUrlInformationToken.class) Callback<ChannelUrlInformation> callback,
                                                                    @JoynrRpcParam("channelId") String channelId) {
                 ChannelUrlInformation urlsForChannel = getUrlsForChannel(channelId);
                 Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
