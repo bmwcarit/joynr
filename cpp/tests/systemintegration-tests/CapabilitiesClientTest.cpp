@@ -35,6 +35,7 @@
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/SettingsMerger.h"
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -92,7 +93,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                messagingSettings.getDiscoveryDirectoriesDomain()
+                TypeUtil::convertQStringtoStdString(messagingSettings.getDiscoveryDirectoriesDomain())
             );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available

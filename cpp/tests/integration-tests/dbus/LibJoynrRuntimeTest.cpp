@@ -117,7 +117,7 @@ public:
 
         SystemServicesSettings systemSettings(settings);
         systemSettings.printSettings();
-        QString systemServicesDomain(systemSettings.getDomain());
+        std::string systemServicesDomain(TypeUtil::convertQStringtoStdString(systemSettings.getDomain()));
 
         // setup routing proxy
         QString routingProviderParticipantId(systemSettings.getCcRoutingProviderParticipantId());
@@ -239,7 +239,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(TypeUtil::convertStdStringtoQString(domain));
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -266,7 +266,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(TypeUtil::convertStdStringtoQString(domain));
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -304,7 +304,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(TypeUtil::convertStdStringtoQString(domain));
+            runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));

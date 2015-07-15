@@ -129,7 +129,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingDoesNotThrow)
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 {
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     EXPECT_CALL(*mockTestProvider,
@@ -140,7 +140,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
-                TypeUtil::convertQStringtoStdString(domain),
+                domain,
                 mockTestProvider
     );
 
@@ -173,7 +173,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
 {
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     QList<int> ints;
@@ -184,7 +184,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
-                TypeUtil::convertQStringtoStdString(domain),
+                domain,
                 mockTestProvider
     );
 
@@ -217,7 +217,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     EXPECT_CALL(*mockTestProvider,
@@ -229,7 +229,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
-                TypeUtil::convertQStringtoStdString(domain),
+                domain,
                 mockTestProvider
     );
 
@@ -272,7 +272,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
     EXPECT_CALL(*mockTestProvider, getLocation(A<std::function<void(const joynr::RequestStatus&, const types::GpsLocation&)>>()))
@@ -281,7 +281,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
-                TypeUtil::convertQStringtoStdString(domain),
+                domain,
                 mockTestProvider
     );
 

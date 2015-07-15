@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -41,7 +42,7 @@ using namespace joynr;
 
 class End2EndRPCTest : public Test{
 public:
-    QString domain;
+    std::string domain;
     JoynrClusterControllerRuntime* runtime;
     QSharedPointer<vehicle::GpsProvider> gpsProvider;
 
@@ -60,8 +61,8 @@ public:
         qRegisterMetaType<joynr::types::ProviderQos>("joynr::types::ProviderQos");
         qRegisterMetaType<joynr__types__ProviderQos>("joynr__types__ProviderQos");
 
-        QString uuid = QUuid::createUuid().toString();
-        uuid = uuid.mid(1,uuid.length()-2);
+        std::string uuid = TypeUtil::convertQStringtoStdString(QUuid::createUuid().toString());
+        uuid = uuid.substr(1, uuid.length()-2);
         domain = "cppEnd2EndRPCTest_Domain_" + uuid;
     }
     // Sets up the test fixture.
@@ -94,7 +95,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
-    runtime->registerProvider<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
@@ -125,7 +126,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
 
-    runtime->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::testProxy>(domain);
@@ -154,7 +155,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
-    runtime->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
     QThreadSleep::msleep(550);
 

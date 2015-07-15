@@ -90,14 +90,17 @@ public:
     }
 
     template <class T>
-    ProxyBuilder<T>* getProxyBuilder(const QString& domain)
+    ProxyBuilder<T>* getProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
                                  "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<T>* builder = new ProxyBuilder<T>(
-                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
+        ProxyBuilder<T>* builder = new ProxyBuilder<T>(proxyFactory,
+                                                       *discoveryProxy,
+                                                       TypeUtil::convertStdStringtoQString(domain),
+                                                       dispatcherAddress,
+                                                       messageRouter);
         return builder;
     }
 

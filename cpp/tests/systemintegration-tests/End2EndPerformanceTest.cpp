@@ -51,19 +51,18 @@ public:
     JoynrClusterControllerRuntime* runtime2;
     QSettings settings1;
     QSettings settings2;
-    QString baseUuid;
-    QString uuid;
-    QString domain;
+    std::string baseUuid;
+    std::string uuid;
+    std::string domain;
 
     End2EndPerformanceTest() :
         runtime1(NULL),
         runtime2(NULL),
         settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
         settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
-        baseUuid(QUuid::createUuid().toString()),
-        uuid( "_" + baseUuid.mid(1,baseUuid.length()-2 )),
-        domain(QString("cppEnd2EndPerformancesTestDomain") + "_" + uuid)
-
+        baseUuid(TypeUtil::convertQStringtoStdString(QUuid::createUuid().toString())),
+        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
+        domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
         QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
@@ -104,7 +103,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
     QThreadSleep::msleep(2000);
 

@@ -51,7 +51,7 @@ public:
 
     tests::testProxy* testProxy;
 
-    QString domain;
+    std::string domain;
     QSemaphore semaphore;
 
     End2EndDbusTest() :
@@ -104,7 +104,7 @@ public:
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
-        std::string participantId = runtime1->registerProvider(TypeUtil::convertQStringtoStdString(domain), provider);
+        std::string participantId = runtime1->registerProvider(domain, provider);
         ASSERT_TRUE(!participantId.empty());
     }
 

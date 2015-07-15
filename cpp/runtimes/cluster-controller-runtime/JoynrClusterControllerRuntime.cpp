@@ -300,7 +300,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (usingRealCapabilitiesClient) {
         ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
                 getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                        messagingSettings->getDiscoveryDirectoriesDomain());
+                        TypeUtil::convertQStringtoStdString(
+                                messagingSettings->getDiscoveryDirectoriesDomain()));
         DiscoveryQos discoveryQos(10000);
         discoveryQos.setArbitrationStrategy(
                 DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
@@ -315,7 +316,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                    messagingSettings->getDiscoveryDirectoriesDomain());
+                    TypeUtil::convertQStringtoStdString(
+                            messagingSettings->getDiscoveryDirectoriesDomain()));
 
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(

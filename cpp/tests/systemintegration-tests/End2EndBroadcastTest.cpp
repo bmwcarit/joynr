@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -61,9 +62,9 @@ public:
     QSettings settings2;
     MessagingSettings messagingSettings1;
     MessagingSettings messagingSettings2;
-    QString baseUuid;
-    QString uuid;
-    QString domainName;
+    std::string baseUuid;
+    std::string uuid;
+    std::string domainName;
     QSemaphore semaphore;
     QSemaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
@@ -80,9 +81,9 @@ public:
         settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(QUuid::createUuid().toString()),
-        uuid( "_" + baseUuid.mid(1,baseUuid.length()-2 )),
-        domainName(QString("cppCombinedEnd2EndTest_Domain") + uuid),
+        baseUuid(TypeUtil::convertQStringtoStdString(QUuid::createUuid().toString())),
+        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
+        domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
         semaphore(0),
         altSemaphore(0),
         filter(new MockLocationUpdatedSelectiveFilter),
@@ -169,7 +170,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -234,7 +235,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -392,7 +393,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -519,7 +520,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -663,7 +664,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -812,7 +813,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     testProvider->addBroadcastFilter(filter);
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -927,7 +928,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     testProvider->addBroadcastFilter(filter);
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -1073,7 +1074,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.

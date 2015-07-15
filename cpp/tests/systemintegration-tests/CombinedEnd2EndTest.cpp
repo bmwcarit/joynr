@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include <QtConcurrent/QtConcurrent>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -72,9 +73,9 @@ public:
     QSettings settings2;
     MessagingSettings messagingSettings1;
     MessagingSettings messagingSettings2;
-    QString baseUuid;
-    QString uuid;
-    QString domainName;
+    std::string baseUuid;
+    std::string uuid;
+    std::string domainName;
     QSemaphore semaphore;
 
     CombinedEnd2EndTest() :
@@ -86,10 +87,9 @@ public:
         settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(QUuid::createUuid().toString()),
-        uuid( "_" + baseUuid.mid(1,baseUuid.length()-2 )),
-        //uuid(""), //use the empty uuid as long as we need to use the fake capabilitiesDirectory
-        domainName(QString("cppCombinedEnd2EndTest_Domain") + uuid),
+        baseUuid(TypeUtil::convertQStringtoStdString(QUuid::createUuid().toString())),
+        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
+        domainName("cppCombinedEnd2EndTest_Domain" + uuid),
         semaphore(0)
     {
         messagingSettings1.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName1);
@@ -156,7 +156,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     QThreadSleep::msleep(1000);
 
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     QThreadSleep::msleep(1000);
 
@@ -411,7 +411,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -470,7 +470,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -549,7 +549,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
-    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
+            domainName,
+            testProvider
+    );
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -592,7 +595,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 	QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(mockListener);
 
-	QString nonexistentDomain(QString("non-existent-") + uuid);
+    std::string nonexistentDomain(std::string("non-existent-").append(uuid));
 
 	// Create a proxy to a non-existent domain
     ProxyBuilder<tests::testProxy>* testProxyBuilder
@@ -656,7 +659,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
@@ -701,7 +704,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     QThreadSleep::msleep(1000); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
@@ -735,7 +738,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                messagingSettings1.getDiscoveryDirectoriesDomain()
+                TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
     DiscoveryQos discoveryQos;
@@ -757,7 +760,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                messagingSettings1.getDiscoveryDirectoriesDomain()
+                TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
     DiscoveryQos discoveryQos;
@@ -800,7 +803,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                messagingSettings1.getDiscoveryDirectoriesDomain()
+                TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
     DiscoveryQos discoveryQos;
@@ -838,7 +841,7 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     EXPECT_FALSE(status4.successful());
 }
 
-tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, QString domainName){
+tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, const std::string& domainName){
     ProxyBuilder<tests::testProxy>* testProxyBuilder
            = runtime->getProxyBuilder<tests::testProxy>(domainName);
    DiscoveryQos discoveryQos;
@@ -896,7 +899,10 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
+            domainName,
+            testProvider
+    );
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -921,7 +927,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 
     QThreadSleep::msleep(100);
 
-    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     QThreadSleep::msleep(100);
 
@@ -961,7 +967,10 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
 
     QThreadSleep::msleep(2550);
 
-    std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(
+            domainName,
+            testProvider
+    );
 
     QThreadSleep::msleep(2550);
 

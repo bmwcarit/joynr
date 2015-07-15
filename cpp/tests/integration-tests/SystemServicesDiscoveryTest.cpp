@@ -19,8 +19,10 @@
 #include "PrettyPrint.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/system/DiscoveryProxy.h"
 
@@ -30,7 +32,7 @@ class SystemServicesDiscoveryTest : public ::testing::Test {
 public:
     QString settingsFilename;
     QSettings* settings;
-    QString discoveryDomain;
+    std::string discoveryDomain;
     QString discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
@@ -51,7 +53,7 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        discoveryDomain = systemSettings.getDomain();
+        discoveryDomain = TypeUtil::convertQStringtoStdString(systemSettings.getDomain());
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
         discoveryQos.setCacheMaxAge(1000);

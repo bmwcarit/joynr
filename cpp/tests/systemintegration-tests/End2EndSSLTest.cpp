@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -38,7 +39,7 @@ using namespace joynr;
 
 class End2EndSSLTest : public Test{
 public:
-    QString domain;
+    std::string domain;
     JoynrClusterControllerRuntime* runtime;
 
     End2EndSSLTest() :
@@ -49,7 +50,7 @@ public:
         SettingsMerger::mergeSettings(QString("test-resources/sslintegrationtest.settings"), settings);
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrintegrationtest.settings"), settings);
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
-        QString uuid = Util::createUuid();
+        std::string uuid = TypeUtil::convertQStringtoStdString(Util::createUuid());
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }
 
@@ -81,7 +82,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
 
     // Create a provider
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
-    runtime->registerProvider<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
     // Build a proxy
