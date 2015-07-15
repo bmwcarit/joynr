@@ -14,7 +14,7 @@ RUN yum  install -y \
 
 ENV ANDROID_SDK_FILENAME android-sdk_r24.1.2-linux.tgz
 ENV ANDROID_SDK_URL http://dl.google.com/android/${ANDROID_SDK_FILENAME}
-ENV ANDROID_API_LEVELS android-19
+ENV ANDROID_API_LEVELS android-19,android-21
 ENV ANDROID_BUILD_TOOLS_VERSION 22.0.1
 ENV ANDROID_HOME /opt/android-sdk-linux
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
