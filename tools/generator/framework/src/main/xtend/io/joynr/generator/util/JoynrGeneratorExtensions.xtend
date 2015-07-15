@@ -183,6 +183,14 @@ abstract class JoynrGeneratorExtensions {
 		return paramList
 	}
 
+	def getAllRequiredTypes(FInterface fInterface) {
+		getAllRequiredTypes(fInterface, false)
+	}
+
+	def getAllRequiredTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
+		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true);
+	}
+
 	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
 		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
 	}
@@ -196,20 +204,27 @@ abstract class JoynrGeneratorExtensions {
 			boolean notifyAttributes,
 			boolean broadcasts
 	) {
+		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts).
+			filterComplexAndEnum
+	}
+
+	def filterComplexAndEnum(Iterable<Object> iterable) {
+		iterable.filter[type | type instanceof FType && ((type as FType).complex || (type as FType).enum) ]
+	}
+
+	def getAllRequiredTypes(
+			FInterface fInterface,
+			Boolean includingTransitiveTypes,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
 		val typeList = new HashSet<Object>();
 		if (methods){
 			for (method : fInterface.methods) {
-				for(returnParameter : getOutputParameters(method)){
-				if (returnParameter != null && (isComplex(returnParameter.type) || isEnum(returnParameter.type))) {
-					typeList.add(getDatatype(returnParameter.type));
-				}
-
-				}
-				for (inputParameter : getInputParameters(method)) {
-					if (inputParameter != null && (isComplex(inputParameter.type) || isEnum(inputParameter.type))) {
-						typeList.add(getDatatype(inputParameter.type));
-					}
-				}
+				typeList.addAll(getAllRequiredTypes(method))
 			}
 		}
 
@@ -218,15 +233,13 @@ abstract class JoynrGeneratorExtensions {
 					|| (writeAttributes && attribute.writable)
 					|| (notifyAttributes && attribute.notifiable)
 			) {
-				if (isComplex(attribute.type) || isEnum(attribute.type)) {
-					typeList.add(getDatatype(attribute.type));
-				}
+				typeList.add(getDatatype(attribute.type));
 			}
 		}
 
 		if (broadcasts) {
 			for (broadcast : fInterface.broadcasts) {
-				typeList.addAll(getAllComplexAndEnumTypes(broadcast));
+				typeList.addAll(getAllRequiredTypes(broadcast))
 			}
 		}
 
@@ -240,14 +253,27 @@ abstract class JoynrGeneratorExtensions {
 		}
 	}
 
-	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
-		val typeList = new HashSet<Object>();
-		for (outParameter : getOutputParameters(broadcast)) {
-			if (outParameter != null && (isComplex(outParameter.type) || isEnum(outParameter.type))) {
-				typeList.add(getDatatype(outParameter.type));
-			}
+	def getAllRequiredTypes(FMethod method) {
+		var typeList = new HashSet<Object>();
+		for(returnParameter : getOutputParameters(method).filterNull){
+			typeList.add(getDatatype(returnParameter.type));
 		}
-		return typeList;
+		for (inputParameter : getInputParameters(method).filterNull) {
+			typeList.add(getDatatype(inputParameter.type));
+		}
+		return typeList
+	}
+
+	def getAllRequiredTypes(FBroadcast broadcast) {
+		var typeList = new HashSet<Object>();
+		for (outParameter : broadcast.outputParameters.filterNull) {
+			typeList.add(getDatatype(outParameter.type));
+		}
+		return typeList
+	}
+
+	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
+		broadcast.allRequiredTypes.filterComplexAndEnum
 	}
 
 	def private getAllReferredDatatypes(HashSet<Object> list, HashSet<Object> cache) {
