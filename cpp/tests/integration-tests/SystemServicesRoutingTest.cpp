@@ -103,7 +103,7 @@ TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 {
     EXPECT_NO_THROW(
         routingProxy = routingProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
+                ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -113,7 +113,7 @@ TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 {
     routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -130,7 +130,7 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 TEST_F(SystemServicesRoutingTest, addNextHop)
 {
     routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -154,7 +154,7 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
 TEST_F(SystemServicesRoutingTest, removeNextHop)
 {
     routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();

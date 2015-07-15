@@ -105,7 +105,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 
     qlonglong qosRoundTripTTL = 40000;
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
@@ -136,7 +136,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 
     qlonglong qosRoundTripTTL = 40000;
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -167,7 +167,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 
     qlonglong qosRoundTripTTL = 40000;
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());

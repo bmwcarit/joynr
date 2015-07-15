@@ -186,7 +186,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
 
     // Send a message and expect to get a result
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -251,7 +251,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -409,7 +409,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -536,7 +536,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -680,7 +680,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -829,7 +829,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -944,7 +944,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
@@ -1090,7 +1090,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());

@@ -129,7 +129,7 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
         routingProxy = routingProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
+                ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -145,7 +145,7 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
         discoveryProxy = discoveryProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
+                ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -246,7 +246,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -273,7 +273,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -311,7 +311,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();

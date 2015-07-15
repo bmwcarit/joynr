@@ -307,7 +307,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
                                                                       // should be available
         QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
-                capabilitiesProxyBuilder->setRuntimeQos(MessagingQos(discoveryMessagesTtl))
+                capabilitiesProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
                         ->setCached(true)
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
@@ -324,7 +324,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
                                                                   // should be available
     channelUrlDirectoryProxy = QSharedPointer<infrastructure::ChannelUrlDirectoryProxy>(
-            channelUrlDirectoryProxyBuilder->setRuntimeQos(MessagingQos(discoveryMessagesTtl))
+            channelUrlDirectoryProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
                     ->setCached(true)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());

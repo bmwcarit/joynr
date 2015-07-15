@@ -150,7 +150,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 
     auto routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
-    auto routingProxy = routingProxyBuilder->setRuntimeQos(MessagingQos(10000))
+    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
@@ -170,7 +170,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
-    discoveryProxy->setDiscoveryProxy(discoveryProxyBuilder->setRuntimeQos(MessagingQos(10000))
+    discoveryProxy->setDiscoveryProxy(discoveryProxyBuilder->setMessagingQos(MessagingQos(10000))
                                               ->setCached(false)
                                               ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                                               ->build());

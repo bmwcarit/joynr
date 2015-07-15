@@ -59,7 +59,7 @@ public:
     T* build();
 
     ProxyBuilder* setCached(const bool cached);
-    ProxyBuilder* setRuntimeQos(const MessagingQos& runtimeQos);
+    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos);
     ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos);
 
 private:
@@ -117,7 +117,7 @@ private:
     QString domain;
     bool cached;
     bool hasArbitrationStarted;
-    MessagingQos runtimeQos;
+    MessagingQos messagingQos;
     ProxyFactory* proxyFactory;
     joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
@@ -140,7 +140,7 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),
-          runtimeQos(),
+          messagingQos(),
           proxyFactory(proxyFactory),
           discoveryProxy(discoveryProxy),
           arbitrator(NULL),
@@ -173,7 +173,7 @@ ProxyBuilder<T>::~ProxyBuilder()
 template <class T>
 T* ProxyBuilder<T>::build()
 {
-    T* proxy = proxyFactory->createProxy<T>(domain, runtimeQos, cached);
+    T* proxy = proxyFactory->createProxy<T>(domain, messagingQos, cached);
     waitForArbitration(discoveryTimeout);
     proxy->handleArbitrationFinished(participantId, connection);
     // add next hop to dispatcher
@@ -198,9 +198,9 @@ ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached)
 }
 
 template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setRuntimeQos(const MessagingQos& runtimeQos)
+ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos)
 {
-    this->runtimeQos = runtimeQos;
+    this->messagingQos = messagingQos;
     return this;
 }
 

@@ -117,7 +117,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());

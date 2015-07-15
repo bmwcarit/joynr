@@ -101,7 +101,7 @@ TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 {
     EXPECT_NO_THROW(
         discoveryProxy = discoveryProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
+                ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -111,7 +111,7 @@ TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 {
     discoveryProxy = discoveryProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -135,7 +135,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 TEST_F(SystemServicesDiscoveryTest, add)
 {
     discoveryProxy = discoveryProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -185,7 +185,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
 TEST_F(SystemServicesDiscoveryTest, remove)
 {
     discoveryProxy = discoveryProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();

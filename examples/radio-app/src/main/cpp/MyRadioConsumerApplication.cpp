@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setRuntimeQos(MessagingQos(qosMsgTtl))
+    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
                                          ->setCached(false)
                                          ->setDiscoveryQos(discoveryQos)
                                          ->build();

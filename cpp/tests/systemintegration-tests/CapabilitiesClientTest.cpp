@@ -99,7 +99,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
-            ->setRuntimeQos(MessagingQos(10000)) //TODO magic values.
+            ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
             ->setCached(true)
             ->setDiscoveryQos(discoveryQos)
             ->build()

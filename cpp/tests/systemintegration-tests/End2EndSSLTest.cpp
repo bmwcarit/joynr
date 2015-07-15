@@ -93,7 +93,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
 
     qlonglong qosRoundTripTTL = 40000;
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
