@@ -176,7 +176,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side

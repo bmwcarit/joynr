@@ -176,7 +176,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                 mockListener);
 
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
             .Times(AtLeast(2));
 
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(

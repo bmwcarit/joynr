@@ -112,7 +112,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -169,7 +169,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<types::GpsLocation>(), A<double>()))
+    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::GpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side

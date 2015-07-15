@@ -48,7 +48,7 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/IConnector.h"
 
 namespace joynr {
-	template <class T, class... Ts> class ISubscriptionListener;
+	template <class ... Ts> class ISubscriptionListener;
 	class ISubscriptionCallback;
 	class SubscriptionQos;
 	class OnChangeSubscriptionQos;

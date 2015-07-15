@@ -78,8 +78,8 @@ class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
 {
 public:
     DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(infrastructure::ChangeType::Enum changeType,
-                   infrastructure::DomainRoleEntry changedDre);
+    void onReceive(const infrastructure::ChangeType::Enum& changeType,
+                   const infrastructure::DomainRoleEntry& changedDre);
     void onError();
 
 private:
@@ -92,8 +92,8 @@ class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListe
 {
 public:
     MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(infrastructure::ChangeType::Enum changeType,
-                   infrastructure::MasterAccessControlEntry changedMasterAce);
+    void onReceive(const infrastructure::ChangeType::Enum& changeType,
+                   const infrastructure::MasterAccessControlEntry& changedMasterAce);
     void onError();
 
 private:
@@ -106,8 +106,8 @@ class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastLis
 {
 public:
     MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(infrastructure::ChangeType::Enum changeType,
-                   infrastructure::MasterAccessControlEntry changedMediatorAce);
+    void onReceive(const infrastructure::ChangeType::Enum& changeType,
+                   const infrastructure::MasterAccessControlEntry& changedMediatorAce);
     void onError();
 
 private:
@@ -120,8 +120,8 @@ class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListen
 {
 public:
     OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(infrastructure::ChangeType::Enum changeType,
-                   infrastructure::OwnerAccessControlEntry changedOwnerAce);
+    void onReceive(const infrastructure::ChangeType::Enum& changeType,
+                   const infrastructure::OwnerAccessControlEntry& changedOwnerAce);
     void onError();
 
 private:
@@ -859,8 +859,8 @@ LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::
 }
 
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onReceive(
-        ChangeType::Enum changeType,
-        DomainRoleEntry changedDre)
+        const ChangeType::Enum& changeType,
+        const DomainRoleEntry& changedDre)
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateDomainRole(changedDre);
@@ -882,8 +882,8 @@ LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::
 }
 
 void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onReceive(
-        ChangeType::Enum changeType,
-        MasterAccessControlEntry changedMasterAce)
+        const ChangeType::Enum& changeType,
+        const MasterAccessControlEntry& changedMasterAce)
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
@@ -910,8 +910,8 @@ LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener:
 }
 
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onReceive(
-        ChangeType::Enum changeType,
-        MasterAccessControlEntry changedMediatorAce)
+        const ChangeType::Enum& changeType,
+        const MasterAccessControlEntry& changedMediatorAce)
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMediatorAccessControlEntry(changedMediatorAce);
@@ -937,8 +937,8 @@ LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onReceive(
-        ChangeType::Enum changeType,
-        OwnerAccessControlEntry changedOwnerAce)
+        const ChangeType::Enum& changeType,
+        const OwnerAccessControlEntry& changedOwnerAce)
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateOwnerAccessControlEntry(changedOwnerAce);

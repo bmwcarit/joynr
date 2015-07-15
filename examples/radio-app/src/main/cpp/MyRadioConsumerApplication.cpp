@@ -54,7 +54,7 @@ public:
             delete logger;
     }
 
-    void onReceive(vehicle::RadioStation value)
+    void onReceive(const vehicle::RadioStation& value)
     {
         MyRadioHelper::prettyLog(
                 logger,
@@ -87,7 +87,7 @@ public:
             delete logger;
     }
 
-    void onReceive(vehicle::RadioStation value)
+    void onReceive(const vehicle::RadioStation& value)
     {
         MyRadioHelper::prettyLog(
                 logger, QString("BROADCAST SUBSCRIPTION weak signal: %1").arg(value.toString()));
@@ -115,7 +115,8 @@ public:
             delete logger;
     }
 
-    void onReceive(vehicle::RadioStation discoveredStation, vehicle::GeoPosition geoPosition)
+    void onReceive(const vehicle::RadioStation& discoveredStation,
+                   const vehicle::GeoPosition& geoPosition)
     {
         MyRadioHelper::prettyLog(logger,
                                  QString("BROADCAST SUBSCRIPTION new station discovered: %1 at %2")

@@ -915,7 +915,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>())).
+    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>())).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(

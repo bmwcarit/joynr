@@ -399,7 +399,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -459,7 +459,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -540,7 +540,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     MockSubscriptionListenerOneType<QList<int> > *mockListener = new MockSubscriptionListenerOneType<QList<int> >();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<QList<int> >()))
+    EXPECT_CALL(*mockListener, onReceive(A<const QList<int>& >()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<QList<int> > > subscriptionListener(mockListener);
@@ -647,7 +647,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
@@ -890,7 +890,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     // Use a semaphore to count and wait on calls to the mock listener
     // QSemaphore semaphore(0);
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
