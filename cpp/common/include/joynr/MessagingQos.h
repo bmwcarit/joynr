@@ -20,12 +20,10 @@
 #ifndef MESSAGINGQOS_H
 #define MESSAGINGQOS_H
 
-#include "joynr/JoynrCommonExport.h"
+#include <cstdint>
+#include <string>
 
-#include <QtGlobal>
-#include <QObject>
-#include <QVariantMap>
-#include <QDateTime>
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {
@@ -33,31 +31,30 @@ namespace joynr
 /**
   * Data Class that stores QoS Settings like Ttl
   */
-class JOYNRCOMMON_EXPORT MessagingQos : public QObject
+class JOYNRCOMMON_EXPORT MessagingQos
 {
-    Q_OBJECT
-
-    Q_PROPERTY(qint64 ttl READ getTtl WRITE setTtl)
-
 public:
+    MessagingQos(uint64_t ttl = 60000);
     MessagingQos(const MessagingQos& other);
-    MessagingQos(qint64 ttl = 60000);
+    virtual ~MessagingQos() = default;
 
-    qint64 getTtl() const;
-    void setTtl(const qint64& ttl);
+    virtual std::string toString() const;
 
-    MessagingQos& operator=(const MessagingQos& other);
+    uint64_t getTtl() const;
+    void setTtl(const uint64_t& ttl);
+
+    MessagingQos& operator=(const MessagingQos& other) = default;
     bool operator==(const MessagingQos& other) const;
 
 private:
-    qint64 ttl;
+    uint64_t ttl;
+
+    // printing MessagingQos with google-test and google-mock
+    friend void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os);
 };
 
 // printing MessagingQos with google-test and google-mock
 void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::MessagingQos)
-
 #endif // MESSAGINGQOS_H
