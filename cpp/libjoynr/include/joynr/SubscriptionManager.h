@@ -32,6 +32,7 @@
 #include <QThreadPool>
 #include <QString>
 #include <QSharedPointer>
+#include <QMap>
 
 namespace joynr
 {
