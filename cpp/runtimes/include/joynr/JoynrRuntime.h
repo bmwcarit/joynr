@@ -50,24 +50,7 @@ namespace joynr
  */
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
 {
-
 public:
-    // NOTE: The implementation of the constructor and destructor must be inside this
-    // header file because there are multiple implementations (cpp files) in folder
-    // cluster-controller-runtime and libjoynr-runtime.
-    JoynrRuntime(QSettings& settings)
-            : proxyFactory(NULL),
-              participantIdStorage(NULL),
-              capabilitiesRegistrar(NULL),
-              systemServicesSettings(settings),
-              dispatcherAddress(NULL),
-              messageRouter(NULL),
-              discoveryProxy(NULL),
-              publicationManager(NULL)
-    {
-        systemServicesSettings.printSettings();
-    }
-
     virtual ~JoynrRuntime()
     {
         delete discoveryProxy;
@@ -158,6 +141,22 @@ public:
                                        const QString& pathToMessagingSettings = "");
 
 protected:
+    // NOTE: The implementation of the constructor and destructor must be inside this
+    // header file because there are multiple implementations (cpp files) in folder
+    // cluster-controller-runtime and libjoynr-runtime.
+    JoynrRuntime(QSettings& settings)
+            : proxyFactory(NULL),
+              participantIdStorage(NULL),
+              capabilitiesRegistrar(NULL),
+              systemServicesSettings(settings),
+              dispatcherAddress(NULL),
+              messageRouter(NULL),
+              discoveryProxy(NULL),
+              publicationManager(NULL)
+    {
+        systemServicesSettings.printSettings();
+    }
+
     ProxyFactory* proxyFactory;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
