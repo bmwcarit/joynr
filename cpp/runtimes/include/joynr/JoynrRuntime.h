@@ -44,6 +44,10 @@
 namespace joynr
 {
 
+/*!
+ * \brief The JoynrRuntime class is the entry point to the joynr communication framework. It offers
+ *        functionality to register providers and create corresponding proxy objects.
+ */
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
 {
 
@@ -69,23 +73,55 @@ public:
         delete discoveryProxy;
     }
 
-    template <class T>
-    std::string registerProvider(const std::string& domain, std::shared_ptr<T> provider)
+    /*!
+     * \brief Registers a provider with the joynr communication framework.
+     *
+     * \tparam TIntfProvider The interface class of the provider to register. The corresponding
+     *                       template parameter of a Franca interface called "MyDemoIntf" is
+     *                       "MyDemoIntfProvider".
+     * \param domain The domain to register the provider on.
+     * \param provider The provider instance to register.
+     * \return The globaly unique participant ID of the provider. It is assigned by the joynr
+     *         communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->add<T>(
+        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->add<TIntfProvider>(
                 TypeUtil::convertStdStringtoQString(domain), provider));
     }
 
+    /*!
+     * \brief Unregister a provider from the joynr communication framework.
+     *
+     * Unregister a provider identified by its globaly unique participant ID. The participant ID is
+     * returned during the provider registration process.
+     *
+     * \param participantId The participant ID of the provider to unregister.
+     */
     virtual void unregisterProvider(const std::string& participantId) = 0;
 
-    template <class T>
-    std::string unregisterProvider(const std::string& domain, std::shared_ptr<T> provider)
+    /*!
+     * \brief Unregister a provider from the joynr communication framework.
+     *
+     * \tparam TIntfProvider The interface class of the provider to unregister. The corresponding
+     *                       template parameter of a Franca interface called "MyDemoIntf" is
+     *                       "MyDemoIntfProvider".
+     * \param domain The domain to unregister the provider from. It must match the domain used
+     *               during provider registration.
+     * \param provider The provider instance to unregister the provider from.
+     * \return The globaly unique participant ID of the provider. It is assigned by the joynr
+     *         communication framework.
+     */
+    template <class TIntfProvider>
+    std::string unregisterProvider(const std::string& domain,
+                                   std::shared_ptr<TIntfProvider> provider)
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->remove<T>(
+        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->remove<TIntfProvider>(
                 TypeUtil::convertStdStringtoQString(domain), provider));
     }
 
