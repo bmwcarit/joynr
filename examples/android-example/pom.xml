@@ -30,22 +30,13 @@
 		<version>0.9.0-SNAPSHOT</version>
 	</parent>
 
-	<properties>
-		<!-- NOTE: platform version and level must match -->
-		<platform.version>4.1.1.4</platform.version>
-		<!--
-			ATTENTION:
-			If the platform level is changed here, the target property
-			inside ${basedir}/project.properties must be changed accordingly.
-		-->
-		<platform.level>19</platform.level>
-	</properties>
-
 	<dependencies>
+		<!-- The Android SDK must be deployed to the local repository using
+		     https://github.com/simpligility/maven-android-sdk-deployer
+		-->
 		<dependency>
-			<groupId>com.google.android</groupId>
+			<groupId>android</groupId>
 			<artifactId>android</artifactId>
-			<version>${platform.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -167,7 +158,7 @@
 					<resourceDirectory>${project.basedir}/res</resourceDirectory>
 					<nativeLibrariesDirectory>${project.basedir}/src/main/native</nativeLibrariesDirectory>
 					<sdk>
-						<platform>${platform.level}</platform>
+						<platform>${android.platform.level}</platform>
 					</sdk>
 					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 					<extractDuplicates>true</extractDuplicates>

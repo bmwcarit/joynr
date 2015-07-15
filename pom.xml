@@ -372,6 +372,8 @@
 		<jetty.version>9.2.2.v20140723</jetty.version>
 		<tycho.version>0.15.0</tycho.version>
 		<hibernate.version>4.3.8.Final</hibernate.version>
+		<android.platform.version>5.0.1_r2</android.platform.version>
+		<android.platform.level>21</android.platform.level>
 	</properties>
 
 	<!--
@@ -380,6 +382,21 @@
 	-->
 	<dependencyManagement>
 		<dependencies>
+			<!-- The Android SDK must be deployed to the local repository using
+			     https://github.com/simpligility/maven-android-sdk-deployer
+			-->
+			<dependency>
+				<groupId>android</groupId>
+				<artifactId>android</artifactId>
+				<version>${android.platform.version}</version>
+				<scope>provided</scope>
+				<exclusions>
+					<exclusion>
+						<artifactId>xmlParserAPIs</artifactId>
+						<groupId>xerces</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
