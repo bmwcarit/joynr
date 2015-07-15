@@ -84,7 +84,7 @@ public:
 
     void SetUp(){
         routingProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
+                ->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
     void TearDown(){

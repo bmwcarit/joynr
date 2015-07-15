@@ -122,7 +122,7 @@ public:
         // setup routing proxy
         QString routingProviderParticipantId(systemSettings.getCcRoutingProviderParticipantId());
         routingProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
+                ->createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
         DiscoveryQos discoveryQos;
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
@@ -138,7 +138,7 @@ public:
         // setup discovery proxy
         QString discoveryProviderParticipantId(systemSettings.getCcDiscoveryProviderParticipantId());
         discoveryProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+                ->createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
         discoveryQos = DiscoveryQos();
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
@@ -239,7 +239,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -266,7 +266,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -304,7 +304,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));

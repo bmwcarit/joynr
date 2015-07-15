@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
-            runtime->getProxyBuilder<vehicle::RadioProxy>(providerDomain);
+            runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
     qlonglong qosMsgTtl = 30000;                // Time to live is 30 secs in one direction

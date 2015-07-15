@@ -109,7 +109,7 @@ public:
     }
 
     void connectProxy() {
-        auto proxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
+        auto proxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
         ASSERT_TRUE(proxyBuilder != NULL);
 
         // start arbitration

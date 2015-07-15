@@ -177,7 +177,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -242,7 +242,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -400,7 +400,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -527,7 +527,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -671,7 +671,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -820,7 +820,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -935,7 +935,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -1081,7 +1081,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     QThreadSleep::msleep(registerProviderWait);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);

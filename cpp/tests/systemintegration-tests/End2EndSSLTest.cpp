@@ -86,7 +86,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     QThreadSleep::msleep(550);
 
     // Build a proxy
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);

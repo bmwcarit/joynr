@@ -145,7 +145,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -189,7 +189,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -234,7 +234,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
@@ -286,7 +286,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));

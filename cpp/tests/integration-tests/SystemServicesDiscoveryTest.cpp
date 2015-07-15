@@ -82,7 +82,7 @@ public:
 
     void SetUp(){
         discoveryProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
+                ->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
     }
 
     void TearDown(){

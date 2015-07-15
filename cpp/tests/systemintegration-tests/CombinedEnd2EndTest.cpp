@@ -163,7 +163,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     //consumer for testinterface
     // Testing Lists
     {
-        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
@@ -336,7 +336,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     // Testing TTL
     {
        //create a proxy with very short TTL and expect no returning replies.
-        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
@@ -358,7 +358,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 #if 0
     // Testing operation overloading
     {
-        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+        ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
         discoveryQos.setDiscoveryTimeout(1000);
@@ -418,7 +418,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     QThreadSleep::msleep(5000);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -477,7 +477,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     QThreadSleep::msleep(5000);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -559,7 +559,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     QThreadSleep::msleep(5000);
 
     ProxyBuilder<tests::testProxy>* proxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -599,7 +599,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
 	// Create a proxy to a non-existent domain
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->getProxyBuilder<tests::testProxy>(nonexistentDomain);
+            = runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -665,7 +665,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     // before the register has finished. See Joynr 805 for details
     QThreadSleep::msleep(5000);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -708,7 +708,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     QThreadSleep::msleep(1000); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -737,7 +737,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+            runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
@@ -759,7 +759,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+            runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
@@ -802,7 +802,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 // This test is disabled, because the feature is not yet implemented on the server.
 TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            runtime1->getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+            runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 TypeUtil::convertQStringtoStdString(messagingSettings1.getDiscoveryDirectoriesDomain())
             );
 
@@ -843,7 +843,7 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
 
 tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, const std::string& domainName){
     ProxyBuilder<tests::testProxy>* testProxyBuilder
-           = runtime->getProxyBuilder<tests::testProxy>(domainName);
+           = runtime->createProxyBuilder<tests::testProxy>(domainName);
    DiscoveryQos discoveryQos;
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
    discoveryQos.setDiscoveryTimeout(1000);
@@ -931,7 +931,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 
     QThreadSleep::msleep(100);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -974,7 +974,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
 
     QThreadSleep::msleep(2550);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);

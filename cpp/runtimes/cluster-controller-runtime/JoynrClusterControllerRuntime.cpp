@@ -299,7 +299,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     if (usingRealCapabilitiesClient) {
         ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
-                getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                         TypeUtil::convertQStringtoStdString(
                                 messagingSettings->getDiscoveryDirectoriesDomain()));
         DiscoveryQos discoveryQos(10000);
@@ -315,7 +315,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
 
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            getProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
+            createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                     TypeUtil::convertQStringtoStdString(
                             messagingSettings->getDiscoveryDirectoriesDomain()));
 

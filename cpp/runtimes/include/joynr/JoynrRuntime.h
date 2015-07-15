@@ -89,18 +89,32 @@ public:
                 TypeUtil::convertStdStringtoQString(domain), provider));
     }
 
-    template <class T>
-    ProxyBuilder<T>* getProxyBuilder(const std::string& domain)
+    /*!
+     * \brief Creates a new proxy builder for the given domain and interface.
+     *
+     * The proxy builder is used to create a proxy object for a remote provider. It is already
+     * bound to a domain and communication interface as defined in Franca. After configuration is
+     * finished, ProxyBuilder::build() is called to create the proxy object.
+     *
+     * \tparam TIntfProxy The interface class of the proxy to create. The corresponding template
+     *                    parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProxy".
+     * \param domain The domain to connect this proxy to.
+     * \return A proxy builder object that can be used to create proxies. The caller takes
+     *         ownership of the returned object and must take care to clean up resources properly.
+     */
+    template <class TIntfProxy>
+    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
                                  "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<T>* builder = new ProxyBuilder<T>(proxyFactory,
-                                                       *discoveryProxy,
-                                                       TypeUtil::convertStdStringtoQString(domain),
-                                                       dispatcherAddress,
-                                                       messageRouter);
+        ProxyBuilder<TIntfProxy>* builder =
+                new ProxyBuilder<TIntfProxy>(proxyFactory,
+                                             *discoveryProxy,
+                                             TypeUtil::convertStdStringtoQString(domain),
+                                             dispatcherAddress,
+                                             messageRouter);
         return builder;
     }
 

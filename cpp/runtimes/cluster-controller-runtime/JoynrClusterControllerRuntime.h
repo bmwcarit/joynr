@@ -119,7 +119,7 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
     // Reason why CapabilitiesAggregator (CA) has to be a QSP:
-    // CA has to be a member variable, because it is passed to ProxyBuilder in getProxyBuilder()
+    // CA has to be a member variable, because it is passed to ProxyBuilder in createProxyBuilder()
     // CA has to be a pointer instead of a reference, because it has to be initialised to NULL
     // (because other members are needed for its constructor)
     // CA is passed into different other classes, so ownership cannot be transferred.

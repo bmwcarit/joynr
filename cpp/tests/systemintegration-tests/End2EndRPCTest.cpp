@@ -98,7 +98,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -129,7 +129,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::testProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
@@ -160,7 +160,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     QThreadSleep::msleep(550);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);

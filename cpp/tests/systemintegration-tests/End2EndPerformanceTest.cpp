@@ -108,7 +108,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     QThreadSleep::msleep(2000);
 
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);

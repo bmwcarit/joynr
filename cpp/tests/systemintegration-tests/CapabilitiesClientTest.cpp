@@ -92,7 +92,7 @@ private:
 TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
-            runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+            runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 TypeUtil::convertQStringtoStdString(messagingSettings.getDiscoveryDirectoriesDomain())
             );
     DiscoveryQos discoveryQos;
