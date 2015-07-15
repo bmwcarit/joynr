@@ -24,3 +24,8 @@ mvn install -N
 mvn install checkstyle:checkstyle \
 -P findbugs,no-license-and-notice,no-java-formatter \
 -DskipTests
+
+(
+  cd java
+  mvn javadoc:aggregate-jar
+)
