@@ -20,6 +20,7 @@
 #ifndef JOYNRCLUSTERCONTROLLERRUNTIME_H
 #define JOYNRCLUSTERCONTROLLERRUNTIME_H
 
+#include <string>
 #include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
@@ -87,7 +88,7 @@ public:
 
     virtual ~JoynrClusterControllerRuntime();
 
-    void unregisterCapability(QString participantId);
+    void unregisterCapability(const std::string& participantId);
     void start();
     void stop(bool deleteChannel = false);
 

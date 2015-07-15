@@ -33,6 +33,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/Util.h"
 
@@ -179,10 +180,10 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
                                                       messageRouter);
 }
 
-void LibJoynrRuntime::unregisterCapability(QString participantId)
+void LibJoynrRuntime::unregisterCapability(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId);
+    capabilitiesRegistrar->remove(TypeUtil::convertStdStringtoQString(participantId));
 }
 
 void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)

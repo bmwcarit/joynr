@@ -33,11 +33,13 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/IBroadcastFilter.h"
+#include "joynr/TypeUtil.h"
 
 #include <QString>
 #include <QSharedPointer>
 #include <cassert>
 #include <memory>
+#include <string>
 
 namespace joynr
 {
@@ -68,21 +70,23 @@ public:
     }
 
     template <class T>
-    QString registerCapability(const QString& domain, std::shared_ptr<T> provider)
+    std::string registerCapability(const std::string& domain, std::shared_ptr<T> provider)
     {
         assert(capabilitiesRegistrar);
-        assert(domain != "");
-        return capabilitiesRegistrar->add<T>(domain, provider);
+        assert(!domain.empty());
+        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->add<T>(
+                TypeUtil::convertStdStringtoQString(domain), provider));
     }
 
-    virtual void unregisterCapability(QString participantId) = 0;
+    virtual void unregisterCapability(const std::string& participantId) = 0;
 
     template <class T>
-    QString unregisterCapability(const QString& domain, std::shared_ptr<T> provider)
+    std::string unregisterCapability(const std::string& domain, std::shared_ptr<T> provider)
     {
         assert(capabilitiesRegistrar);
-        assert(domain != "");
-        return capabilitiesRegistrar->remove<T>(domain, provider);
+        assert(!domain.empty());
+        return TypeUtil::convertQStringtoStdString(capabilitiesRegistrar->remove<T>(
+                TypeUtil::convertStdStringtoQString(domain), provider));
     }
 
     template <class T>

@@ -32,6 +32,7 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 
@@ -93,7 +94,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
-    runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider);
+    runtime->registerCapability<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
     QThreadSleep::msleep(550);
 
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
@@ -124,7 +125,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
 
-    runtime->registerCapability<tests::testProvider>(domain, mockProvider);
+    runtime->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
     QThreadSleep::msleep(550);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::testProxy>(domain);
@@ -153,7 +154,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
-    runtime->registerCapability<tests::testProvider>(domain, mockProvider);
+    runtime->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
 
     QThreadSleep::msleep(550);
 

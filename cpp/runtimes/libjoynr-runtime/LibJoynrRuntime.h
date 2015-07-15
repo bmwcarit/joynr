@@ -24,6 +24,7 @@
 #include <QtCore/QString>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QSettings>
+#include <string>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -54,7 +55,7 @@ public:
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
-    void unregisterCapability(QString participantId);
+    void unregisterCapability(const std::string& participantId);
 
 protected:
     ConnectorFactory* connectorFactory;

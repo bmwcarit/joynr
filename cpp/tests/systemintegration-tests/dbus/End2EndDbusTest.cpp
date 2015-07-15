@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -33,6 +34,7 @@
 #include "tests/utils/MockObjects.h"
 
 #include "joynr/Future.h"
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 
@@ -102,8 +104,8 @@ public:
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
-        QString participantId = runtime1->registerCapability(domain, provider);
-        ASSERT_TRUE(participantId != NULL);
+        std::string participantId = runtime1->registerCapability(TypeUtil::convertQStringtoStdString(domain), provider);
+        ASSERT_TRUE(!participantId.empty());
     }
 
     void connectProxy() {

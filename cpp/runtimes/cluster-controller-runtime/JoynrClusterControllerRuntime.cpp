@@ -52,6 +52,7 @@
 #include "joynr/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/system/DiscoveryRequestCaller.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
@@ -349,7 +350,8 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
     // provision the participant ID for the routing provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerCapability<joynr::system::RoutingProvider>(domain, routingProvider);
+    registerCapability<joynr::system::RoutingProvider>(
+            TypeUtil::convertQStringtoStdString(domain), routingProvider);
 }
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
@@ -362,7 +364,8 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
     // provision the participant ID for the discovery provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerCapability<joynr::system::DiscoveryProvider>(domain, discoveryProvider);
+    registerCapability<joynr::system::DiscoveryProvider>(
+            TypeUtil::convertQStringtoStdString(domain), discoveryProvider);
 }
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
@@ -428,10 +431,10 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* 
     return runtime;
 }
 
-void JoynrClusterControllerRuntime::unregisterCapability(QString participantId)
+void JoynrClusterControllerRuntime::unregisterCapability(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
-    capabilitiesRegistrar->remove(participantId);
+    capabilitiesRegistrar->remove(TypeUtil::convertStdStringtoQString(participantId));
 }
 
 void JoynrClusterControllerRuntime::start()

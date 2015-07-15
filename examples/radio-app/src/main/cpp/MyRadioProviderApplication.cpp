@@ -22,11 +22,13 @@
 #include "TrafficServiceBroadcastFilter.h"
 #include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
+#include "joynr/TypeUtil.h"
 
 #include <QString>
 #include <QSettings>
 #include <QFileInfo>
 #include <memory>
+#include <string>
 
 using namespace joynr;
 using joynr_logging::Logger;
@@ -46,8 +48,10 @@ int main(int argc, char* argv[])
     }
 
     // Get the provider domain
-    QString providerDomain(argv[1]);
-    LOG_INFO(logger, QString("Registering provider on domain \"%1\"").arg(providerDomain));
+    std::string providerDomain(argv[1]);
+    LOG_INFO(logger,
+             QString("Registering provider on domain \"%1\"")
+                     .arg(TypeUtil::convertStdStringtoQString(providerDomain)));
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());

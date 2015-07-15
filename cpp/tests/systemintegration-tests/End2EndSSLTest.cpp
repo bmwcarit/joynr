@@ -31,6 +31,7 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -80,7 +81,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
 
     // Create a provider
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
-    runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider);
+    runtime->registerCapability<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
     QThreadSleep::msleep(550);
 
     // Build a proxy

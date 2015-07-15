@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include "PrettyPrint.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -26,6 +27,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
@@ -137,8 +139,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
                              &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
-                domain,
+    std::string participantId = runtime->registerCapability<tests::testProvider>(
+                TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
 
@@ -146,7 +148,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
@@ -181,8 +183,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     requestStatus.setCode(RequestStatusCode::OK);
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
-                domain,
+    std::string participantId = runtime->registerCapability<tests::testProvider>(
+                TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
 
@@ -190,7 +192,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
             runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
@@ -226,8 +228,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                                    &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
-                domain,
+    std::string participantId = runtime->registerCapability<tests::testProvider>(
+                TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
 
@@ -235,7 +237,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
@@ -278,8 +280,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             .WillRepeatedly(Invoke(this, &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
-                domain,
+    std::string participantId = runtime->registerCapability<tests::testProvider>(
+                TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
 
@@ -287,7 +289,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             runtime->getProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
-    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+    discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::convertStdStringtoQString(participantId));
     discoveryQos.setDiscoveryTimeout(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
