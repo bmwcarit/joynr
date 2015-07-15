@@ -50,18 +50,27 @@
 		<!--
 			ATTENTION: Order of modules matters!
 			Tools must be build first in order to have build-resources available right
-			at the begining of the build.
+			at the beginning of the build.
 		-->
 		<module>tools</module>
 		<module>basemodel</module>
 		<module>java</module>
 		<module>cpp</module>
-		<!--TODO: move android build into a profile -->
-		<module>android</module>
 		<module>examples</module>
 	</modules>
 
 	<profiles>
+		<profile>
+			<!-- Build and test Android distribution -->
+			<id>android</id>
+			<modules>
+				<module>tools</module>
+				<module>basemodel</module>
+				<module>java</module>
+				<module>android</module>
+				<module>examples</module>
+			</modules>
+		</profile>
 		<profile>
 			<!--
 				This profile is extended in several submodules with packaging type WAR

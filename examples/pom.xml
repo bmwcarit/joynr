@@ -30,10 +30,17 @@
 
 	<modules>
 		<module>radio-app</module>
-		<module>android-example</module>
-		<module>android-location-provider</module>
 	</modules>
 	<profiles>
+		<!-- Only include Android examples when Android is available -->
+		<profile>
+			<id>android</id>
+			<modules>
+				<module>radio-app</module>
+				<module>android-example</module>
+				<module>android-location-provider</module>
+			</modules>
+		</profile>
 		<profile>
 			<id>findbugs</id>
 			<build>
