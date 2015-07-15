@@ -104,7 +104,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), testProvider);
 
     QThreadSleep::msleep(2000);
 

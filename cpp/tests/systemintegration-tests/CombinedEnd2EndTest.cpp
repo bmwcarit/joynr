@@ -156,7 +156,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     QThreadSleep::msleep(1000);
 
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
 
     QThreadSleep::msleep(1000);
 
@@ -411,9 +411,9 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
 
-    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
@@ -470,9 +470,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     providerQos.setPriority(2);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
 
-    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
@@ -549,9 +549,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
-    std::string providerParticipantId = runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
 
-    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
@@ -581,7 +581,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
-    runtime1->unregisterCapability(providerParticipantId);
+    runtime1->unregisterProvider(providerParticipantId);
     delete proxyBuilder;
 }
 
@@ -656,9 +656,9 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
 
-    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
     QThreadSleep::msleep(5000);
 
@@ -701,9 +701,9 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
 
-    QThreadSleep::msleep(1000); //This wait is necessary, because registerCapability is async, and a lookup could occour before the register has finished.
+    QThreadSleep::msleep(1000); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -896,9 +896,9 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
-    std::string providerParticipantId = runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
+    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName),testProvider);
 
-    //This wait is necessary, because registerCapability is async, and a lookup could occur
+    //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
     QThreadSleep::msleep(5000);
 
@@ -911,7 +911,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     unsubscribeFromLocation(testProxy, registeredSubscriptionId);
 
-    runtime1->unregisterCapability(providerParticipantId);
+    runtime1->unregisterProvider(providerParticipantId);
 }
 
 TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
@@ -921,7 +921,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 
     QThreadSleep::msleep(100);
 
-    runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
 
     QThreadSleep::msleep(100);
 
@@ -961,7 +961,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
 
     QThreadSleep::msleep(2550);
 
-    std::string testProviderParticipantId = runtime1->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
+    std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domainName), testProvider);
 
     QThreadSleep::msleep(2550);
 
@@ -995,7 +995,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     future->waitForFinished();
     ASSERT_FALSE(future->getStatus().successful());
 
-    runtime1->unregisterCapability(testProviderParticipantId);
+    runtime1->unregisterProvider(testProviderParticipantId);
 
     delete testProxyBuilder;
 }

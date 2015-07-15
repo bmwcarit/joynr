@@ -81,7 +81,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
 
     // Create a provider
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
-    runtime->registerCapability<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
     QThreadSleep::msleep(550);
 
     // Build a proxy

@@ -94,7 +94,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
-    runtime->registerCapability<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<vehicle::GpsProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
     QThreadSleep::msleep(550);
 
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
@@ -117,7 +117,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     //TODO CA: shared pointer for proxy builder?
     delete gpsProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
-    // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
 
 TEST_F(End2EndRPCTest, call_void_operation)
@@ -125,7 +125,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
 
-    runtime->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
     QThreadSleep::msleep(550);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::testProxy>(domain);
@@ -146,7 +146,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
     delete testProxy;
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
-    // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
 
 // tests in process subscription
@@ -154,7 +154,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
     types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
-    runtime->registerCapability<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
+    runtime->registerProvider<tests::testProvider>(TypeUtil::convertQStringtoStdString(domain), mockProvider);
 
     QThreadSleep::msleep(550);
 
@@ -189,5 +189,5 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     //TODO CA: shared pointer for proxy builder?
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
-    // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }

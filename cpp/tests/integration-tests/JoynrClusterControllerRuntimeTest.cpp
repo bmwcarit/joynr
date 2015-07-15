@@ -139,7 +139,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
                              &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
@@ -183,7 +183,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     requestStatus.setCode(RequestStatusCode::OK);
 
     runtime->startMessaging();
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
@@ -228,7 +228,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                                    &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );
@@ -280,7 +280,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             .WillRepeatedly(Invoke(this, &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
 
     runtime->startMessaging();
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 TypeUtil::convertQStringtoStdString(domain),
                 mockTestProvider
     );

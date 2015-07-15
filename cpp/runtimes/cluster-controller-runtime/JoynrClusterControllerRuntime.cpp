@@ -350,7 +350,7 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
     // provision the participant ID for the routing provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerCapability<joynr::system::RoutingProvider>(
+    registerProvider<joynr::system::RoutingProvider>(
             TypeUtil::convertQStringtoStdString(domain), routingProvider);
 }
 
@@ -364,7 +364,7 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
     // provision the participant ID for the discovery provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerCapability<joynr::system::DiscoveryProvider>(
+    registerProvider<joynr::system::DiscoveryProvider>(
             TypeUtil::convertQStringtoStdString(domain), discoveryProvider);
 }
 
@@ -431,7 +431,7 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* 
     return runtime;
 }
 
-void JoynrClusterControllerRuntime::unregisterCapability(const std::string& participantId)
+void JoynrClusterControllerRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(TypeUtil::convertStdStringtoQString(participantId));

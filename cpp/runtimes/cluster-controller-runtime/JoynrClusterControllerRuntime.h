@@ -88,7 +88,7 @@ public:
 
     virtual ~JoynrClusterControllerRuntime();
 
-    void unregisterCapability(const std::string& participantId);
+    void unregisterProvider(const std::string& participantId);
     void start();
     void stop(bool deleteChannel = false);
 

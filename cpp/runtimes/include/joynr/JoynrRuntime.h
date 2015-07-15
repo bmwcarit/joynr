@@ -70,7 +70,7 @@ public:
     }
 
     template <class T>
-    std::string registerCapability(const std::string& domain, std::shared_ptr<T> provider)
+    std::string registerProvider(const std::string& domain, std::shared_ptr<T> provider)
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
@@ -78,10 +78,10 @@ public:
                 TypeUtil::convertStdStringtoQString(domain), provider));
     }
 
-    virtual void unregisterCapability(const std::string& participantId) = 0;
+    virtual void unregisterProvider(const std::string& participantId) = 0;
 
     template <class T>
-    std::string unregisterCapability(const std::string& domain, std::shared_ptr<T> provider)
+    std::string unregisterProvider(const std::string& domain, std::shared_ptr<T> provider)
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());

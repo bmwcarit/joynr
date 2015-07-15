@@ -174,7 +174,7 @@ TEST_F(LibJoynrRuntimeTest, instantiateRuntime)
 TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
     std::string domain("LibJoynrRuntimeTest.Domain.A");
 
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider
     );
@@ -188,7 +188,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
 TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     std::string domain("LibJoynrRuntimeTest.Domain.B");
 
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider
     );
@@ -199,7 +199,7 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 
-    runtime->unregisterCapability(participantId);
+    runtime->unregisterProvider(participantId);
     routingProxy->resolveNextHop(status, resolved, TypeUtil::convertStdStringtoQString(participantId));
     ASSERT_TRUE(status.successful());
     EXPECT_FALSE(resolved);
@@ -208,7 +208,7 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
 TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     std::string domain("LibJoynrRuntimeTest.Domain.F");
 
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider
     );
@@ -233,7 +233,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.C");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider
     );
@@ -260,7 +260,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.D");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider
     );
@@ -298,7 +298,7 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.E");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    std::string participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider
     );

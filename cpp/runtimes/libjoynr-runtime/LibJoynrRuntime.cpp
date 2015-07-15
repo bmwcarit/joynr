@@ -180,7 +180,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
                                                       messageRouter);
 }
 
-void LibJoynrRuntime::unregisterCapability(const std::string& participantId)
+void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(TypeUtil::convertStdStringtoQString(participantId));

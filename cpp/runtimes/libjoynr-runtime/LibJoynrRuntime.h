@@ -55,7 +55,7 @@ public:
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
-    void unregisterCapability(const std::string& participantId);
+    void unregisterProvider(const std::string& participantId);
 
 protected:
     ConnectorFactory* connectorFactory;

@@ -104,7 +104,7 @@ public:
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
-        std::string participantId = runtime1->registerCapability(TypeUtil::convertQStringtoStdString(domain), provider);
+        std::string participantId = runtime1->registerProvider(TypeUtil::convertQStringtoStdString(domain), provider);
         ASSERT_TRUE(!participantId.empty());
     }
 
