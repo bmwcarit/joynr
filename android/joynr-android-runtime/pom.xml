@@ -24,7 +24,7 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
-		<groupId>io.joynr.java</groupId>
+		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
 		<version>0.9.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>

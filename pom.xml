@@ -56,6 +56,8 @@
 		<module>basemodel</module>
 		<module>java</module>
 		<module>cpp</module>
+		<!--TODO: move android build into a profile -->
+		<module>android</module>
 		<module>examples</module>
 	</modules>
 

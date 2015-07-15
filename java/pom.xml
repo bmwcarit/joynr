@@ -35,7 +35,6 @@
 		<module>core</module>
 		<module>javaapi</module>
 		<module>messaging</module>
-		<module>android</module>
 		<module>java-generator</module>
 		<module>integration-tests</module>
 	</modules>
