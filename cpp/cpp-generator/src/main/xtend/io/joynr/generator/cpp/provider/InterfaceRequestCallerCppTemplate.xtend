@@ -53,7 +53,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(serviceInterface)»
 «interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
-	: joynr::RequestCaller(I«interfaceName»::INTERFACE_NAME()),
+	: joynr::RequestCaller(provider->getInterfaceName()),
 	  provider(provider)
 {
 }

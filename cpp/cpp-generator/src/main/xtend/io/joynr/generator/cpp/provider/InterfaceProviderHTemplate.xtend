@@ -43,6 +43,8 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Provider.h"
@@ -117,6 +119,7 @@ public:
 
 	void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
 	void setDomainAndInterface(const QString& domain, const QString& interfaceName);
+	virtual std::string getInterfaceName() const;
 
 	joynr::types::ProviderQos getProviderQos() const;
 

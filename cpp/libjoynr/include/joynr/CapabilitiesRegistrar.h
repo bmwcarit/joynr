@@ -61,7 +61,7 @@ public:
 
         QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
-        std::string interfaceName = T::INTERFACE_NAME();
+        std::string interfaceName = provider->getInterfaceName();
 
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
@@ -117,7 +117,7 @@ public:
     {
         Q_UNUSED(provider)
 
-        std::string interfaceName = T::INTERFACE_NAME();
+        std::string interfaceName = provider->getInterfaceName();
 
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
