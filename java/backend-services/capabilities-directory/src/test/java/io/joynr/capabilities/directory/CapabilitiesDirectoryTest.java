@@ -103,7 +103,7 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void registerCapabilityAndRequestChannels() throws Exception {
+    public void registerProviderAndRequestChannels() throws Exception {
 
         List<CapabilityInformation> expectedCapInfo1 = Arrays.asList(capInfo1);
 

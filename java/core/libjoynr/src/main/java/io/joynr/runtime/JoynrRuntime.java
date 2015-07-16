@@ -42,7 +42,7 @@ public interface JoynrRuntime {
      *            Token to authenticate the provider. Should be persistent between application startups.
      * @return Returns a RegistrationFuture which can be used to check the local and global registration status.
      */
-    RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken);
+    RegistrationFuture registerProvider(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
@@ -54,7 +54,7 @@ public interface JoynrRuntime {
      * @param authenticationToken
      *            Token to authenticate the provider. Should be persistent between application startups.
      */
-    void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken);
+    void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Returns a proxy builder instance to build a proxy object.

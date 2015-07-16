@@ -60,13 +60,15 @@ public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
         channelUrlDirectoryLauncher.run();
     }
 
+    @Override
     public void run() {
-        runtime.registerCapability(discoveryDirectoriesDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
+        runtime.registerProvider(discoveryDirectoriesDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
     }
 
+    @Override
     public void shutdown() {
         logger.error("SHUTDOWN!");
-        // runtime.unregisterCapability(channelUrlDirectoryDomain,
+        // runtime.unregisterProvider(channelUrlDirectoryDomain,
         // channelUrlDirectoryProvider,
         // ChannelUrlDirectoryProvider.class);
     }

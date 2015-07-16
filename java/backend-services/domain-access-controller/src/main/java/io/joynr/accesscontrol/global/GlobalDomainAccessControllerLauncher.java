@@ -59,7 +59,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     @Override
     public void run() {
 
-        runtime.registerCapability(localDomain, globalDomainAccessSyncProvider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, globalDomainAccessSyncProvider, AUTH_TOKEN);
     }
 
     @Override

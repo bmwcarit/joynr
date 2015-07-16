@@ -53,11 +53,11 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     /*
      * (non-Javadoc)
      *
-     * @see io.joynr.capabilities.CapabilitiesRegistrar# registerCapability(java.lang.String,
+     * @see io.joynr.capabilities.CapabilitiesRegistrar# registerProvider(java.lang.String,
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public RegistrationFuture registerCapability(final String domain, JoynrProvider provider, String authenticationToken) {
+    public RegistrationFuture registerProvider(final String domain, JoynrProvider provider, String authenticationToken) {
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),
                                                                              authenticationToken);
@@ -75,7 +75,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken) {
+    public void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken) {
 
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              provider.getProvidedInterface(),

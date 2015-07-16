@@ -200,13 +200,13 @@ public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domain, provider, "authToken")
+                                .registerProvider(domain, provider, "authToken")
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domainAsync, providerAsync, "authToken")
+                                .registerProvider(domainAsync, providerAsync, "authToken")
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
 
         messagingQos = new MessagingQos(5000);

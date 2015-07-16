@@ -151,7 +151,7 @@ public class SubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         provider = new PubSubTestProviderImpl();
         providingApplication.getRuntime()
-                            .registerCapability(domain, provider, "SubscriptionEnd2End")
+                            .registerProvider(domain, provider, "SubscriptionEnd2End")
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 

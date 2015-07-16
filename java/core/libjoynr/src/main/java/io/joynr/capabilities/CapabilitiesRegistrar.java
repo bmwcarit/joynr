@@ -35,9 +35,9 @@ public interface CapabilitiesRegistrar {
      *            Token for authentication
      * @return registration future
      */
-    RegistrationFuture registerCapability(String domain, JoynrProvider provider, String authenticationToken);
+    RegistrationFuture registerProvider(String domain, JoynrProvider provider, String authenticationToken);
 
-    void unregisterCapability(String domain, JoynrProvider provider, String authenticationToken);
+    void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

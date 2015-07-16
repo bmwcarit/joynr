@@ -145,7 +145,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provider = new MyRadioProvider();
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
-        runtime.registerCapability(localDomain, provider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, provider, AUTH_TOKEN);
 
         ConsoleReader console;
         try {
@@ -179,7 +179,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         LOG.info("shutting down");
         if (provider != null) {
             try {
-                runtime.unregisterCapability(localDomain, provider, AUTH_TOKEN);
+                runtime.unregisterProvider(localDomain, provider, AUTH_TOKEN);
             } catch (JoynrRuntimeException e) {
                 LOG.error("unable to unregister capabilities {}", e.getMessage());
             }

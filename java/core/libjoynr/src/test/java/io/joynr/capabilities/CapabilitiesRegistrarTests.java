@@ -21,9 +21,9 @@ package io.joynr.capabilities;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doReturn;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.rpc.JoynrInterface;
@@ -94,7 +94,7 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
-        registrar.registerCapability(domain, provider, "registerWithCapRegistrar");
+        registrar.registerProvider(domain, provider, "registerWithCapRegistrar");
         verify(localCapabilitiesDirectory).add(eq(new CapabilityEntryImpl(domain,
                                                                           TestInterface.INTERFACE_NAME,
                                                                           providerQos,
@@ -106,10 +106,10 @@ public class CapabilitiesRegistrarTests {
     }
 
     @Test
-    public void unregisterCapability() {
+    public void unregisterProvider() {
         when(provider.getProviderQos()).thenReturn(providerQos);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
-        registrar.unregisterCapability(domain, provider, "unregisterWithRegistrar");
+        registrar.unregisterProvider(domain, provider, "unregisterWithRegistrar");
 
         verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntryImpl(domain,
                                                                              TestInterface.INTERFACE_NAME,

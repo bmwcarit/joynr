@@ -152,7 +152,7 @@ public class BroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         provider = new DefaulttestProvider();
         providingApplication.getRuntime()
-                            .registerCapability(domain, provider, "BroadcastEnd2End")
+                            .registerProvider(domain, provider, "BroadcastEnd2End")
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 

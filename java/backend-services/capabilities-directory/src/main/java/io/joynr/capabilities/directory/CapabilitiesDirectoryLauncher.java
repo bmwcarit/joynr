@@ -75,7 +75,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     @Override
     public void run() {
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
-        runtime.registerCapability(localDomain, capabilitiesDirectoryProvider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, AUTH_TOKEN);
     }
 
     @Override
