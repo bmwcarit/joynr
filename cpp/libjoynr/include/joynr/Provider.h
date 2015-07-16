@@ -21,7 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/IParticipant.h"
+#include "joynr/IJoynrProvider.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/IBroadcastFilter.h"
 
@@ -41,7 +41,7 @@ class IBroadcastListener;
  * Abstract class that specifies the interface providers need to implement
  * and contains functionality to support listening to onChange events
  */
-class JOYNR_EXPORT Provider : public IParticipant
+class JOYNR_EXPORT Provider : public IJoynrProvider
 {
 public:
     Provider();

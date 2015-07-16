@@ -16,19 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IPARTICIPANT_H
-#define IPARTICIPANT_H
+#ifndef IJOYNRPROVIDER_H
+#define IJOYNRPROVIDER_H
 
 namespace joynr
 {
 
-class IParticipant
+class IJoynrProvider
 {
 public:
-    virtual ~IParticipant()
+    virtual ~IJoynrProvider()
     {
     }
 };
 
 } // namespace joynr
-#endif // IPARTICIPANT_H
+#endif // IJOYNRPROVIDER_H
