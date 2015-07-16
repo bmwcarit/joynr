@@ -89,12 +89,6 @@ public:
     virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
     /**
-     * @brief hasAttributeListeners returns true, if there is at least one listener registered
-     *        for the submitted attributeName
-     */
-    bool hasAttributeListeners(const std::string& attributeName);
-
-    /**
      * @brief hasBroadcastListeners returns true, if there is at least one listener registered
      *        for the submitted broadcastName
      */

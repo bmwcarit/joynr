@@ -119,11 +119,6 @@ void Provider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
     }
 }
 
-bool Provider::hasAttributeListeners(const std::string& attributeName)
-{
-    return !attributeListeners.value(attributeName).isEmpty();
-}
-
 bool Provider::hasBroadcastListeners(const std::string& broadcastName)
 {
     return !broadcastListeners.value(broadcastName).isEmpty();
