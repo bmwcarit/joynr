@@ -51,19 +51,36 @@ class EnumHTemplate implements EnumTemplate{
 
 «getNamespaceStarter(type)»
 
+/** @brief Enumeration wrapper class «typeName» */
 class «getDllExportMacro()» «typeName» : public QObject {
 	Q_OBJECT
 	Q_ENUMS(«getNestedEnumName()»)
 public:
+	/**
+	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
+    */
 	enum «getNestedEnumName()» {
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
+			/**
+			 * @brief «appendDoxygenComment(enumtype, "* ")»
+			 */
 			«enumtype.joynrName»
 		«ENDFOR»
 	};
 	// Constructors required by QT metatype system
+	/** @brief Constructor */
 	«typeName»() : QObject() {}
+	/**
+	 * @brief Copy constructor
+	 * @param o the object to copy from
+	 */
 	«typeName»(const «typeName»& o) : QObject() { Q_UNUSED(o); }
 
+	/**
+	 * @brief convert standard C++ enum value to QT specific enum value
+	 * @param «type.joynrNameStd.toFirstLower» the standard enum value to be converted
+	 * @return the converted QT specific enum value
+	 */
 	static «typeName»::«getNestedEnumName()» createQt(
 			const «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()»& «type.joynrNameStd.toFirstLower»
 	) {
@@ -78,6 +95,11 @@ public:
 		return qt«typeName»;
 	}
 
+	/**
+	 * @brief convert QT specific enum value to standard C++ enum value
+	 * @param qt«typeName» the QT specific enum value to be converted
+	 * @return the converted standard enum value
+	 */
 	static «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()» createStd(
 			const «typeName»::«getNestedEnumName()»& qt«typeName»
 	) {
