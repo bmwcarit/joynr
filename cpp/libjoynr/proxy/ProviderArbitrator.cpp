@@ -23,6 +23,9 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/system/IDiscovery.h"
 
+#include "joynr/TypeUtil.h"
+#include "joynr/types/DiscoveryScope.h"
+
 #include <cassert>
 
 namespace joynr
@@ -37,8 +40,8 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
                                        const DiscoveryQos& discoveryQos)
         : discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
-          systemDiscoveryQos(discoveryQos.getCacheMaxAge(),
-                             discoveryQos.getDiscoveryScope(),
+          systemDiscoveryQos(TypeUtil::toQt(discoveryQos.getCacheMaxAge()),
+                             types::DiscoveryScope::createQt(discoveryQos.getDiscoveryScope()),
                              discoveryQos.getProviderMustSupportOnChange()),
           domain(domain),
           interfaceName(interfaceName),

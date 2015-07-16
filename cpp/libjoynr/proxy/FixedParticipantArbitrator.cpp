@@ -24,6 +24,8 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
 
+#include "joynr/TypeUtil.h"
+
 #include <cassert>
 
 namespace joynr
@@ -38,9 +40,7 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          participantId(discoveryQos.getCustomParameter("fixedParticipantId")
-                                .getValue()
-                                .toStdString()),
+          participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
           reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
 {
 }

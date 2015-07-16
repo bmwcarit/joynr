@@ -20,14 +20,14 @@
 #ifndef DISCOVERYQOS_H
 #define DISCOVERYQOS_H
 
+#include <cstdint>
+#include <string>
+#include <map>
+
 #include "joynr/JoynrExport.h"
 
-#include <QtGlobal>
-#include <QVariant>
-#include <QVariantMap>
-
-#include "joynr/types/CustomParameter.h"
-#include "joynr/types/DiscoveryScope.h"
+#include "joynr/types/StdCustomParameter.h"
+#include "joynr/types/StdDiscoveryScope.h"
 
 namespace joynr
 {
@@ -39,7 +39,7 @@ public:
      * Instantiates an DiscoveryQos object with default values.
      */
     DiscoveryQos();
-    explicit DiscoveryQos(const qint64& cacheMaxAge);
+    explicit DiscoveryQos(const int64_t& cacheMaxAge);
     virtual ~DiscoveryQos()
     {
     }
@@ -57,19 +57,19 @@ public:
         HIGHEST_PRIORITY = 4
     };
 
-    static qint64& DEFAULT_DISCOVERYTIMEOUT();
+    static int64_t& DEFAULT_DISCOVERYTIMEOUT();
 
-    static qint64& NO_TIMEOUT();
+    static int64_t& NO_TIMEOUT();
 
     static ArbitrationStrategy& DEFAULT_ARBITRATIONSTRATEGY();
 
-    static qint64& DEFAULT_CACHEMAXAGE();
+    static int64_t& DEFAULT_CACHEMAXAGE();
 
-    static qint64& DO_NOT_USE_CACHE();
+    static int64_t& DO_NOT_USE_CACHE();
 
-    static joynr::types::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
+    static joynr::types::StdDiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
 
-    static qint64& DEFAULT_RETRYINTERVAL();
+    static int64_t& DEFAULT_RETRYINTERVAL();
 
     /**
      * The discovery process outputs a list of matching providers. The arbitration strategy then
@@ -99,7 +99,7 @@ public:
      *The arbitration
      *            lookup might happen multiple times during this time span.
      */
-    void setDiscoveryTimeout(qint64 discoveryTimeout);
+    void setDiscoveryTimeout(int64_t discoveryTimeout);
     /**
      * As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
      * is triggered. If the discovery process does not find matching providers within the
@@ -107,7 +107,7 @@ public:
      *
      * @return the duration used to discover matching providers
      */
-    qint64 getDiscoveryTimeout() const;
+    int64_t getDiscoveryTimeout() const;
 
     /**
      * addCustomParameter allows to add special parameters to the DiscoveryQos which will be used
@@ -118,7 +118,7 @@ public:
      * @param value
      *            Any String used by the arbitrator to choose a provider.
      */
-    void addCustomParameter(QString name, QString value);
+    void addCustomParameter(std::string name, std::string value);
 
     /**
      * getCustomParameter returns the parameters previously specified by addParameter
@@ -127,14 +127,14 @@ public:
      *additional parameters
      *         contains no mapping for the key
      */
-    types::CustomParameter getCustomParameter(QString name) const;
+    types::StdCustomParameter getCustomParameter(std::string name) const;
 
     /**
      * get the map of custom parameters
      * @return
      *          The map of the current set custom parameters
      */
-    QMap<QString, types::CustomParameter> getCustomParameters() const;
+    std::map<std::string, types::StdCustomParameter> getCustomParameters() const;
 
     /**
      * Provider entries in the global capabilities directory are cached locally. Discovery will
@@ -149,7 +149,7 @@ public:
      * @return the maximum age of locally cached provider entries to be used during discovery and
      *arbitration
      */
-    qint64 getCacheMaxAge() const;
+    int64_t getCacheMaxAge() const;
 
     /**
      * Provider entries in the global capabilities directory are cached locally. Discovery will
@@ -167,7 +167,7 @@ public:
      *            local capabilities directory a lookup in the global capabilitiesDirectory will
      *take place.
      */
-    void setCacheMaxAge(const qint64& cacheMaxAge);
+    void setCacheMaxAge(const int64_t& cacheMaxAge);
 
     /**
      * Indicates if the arbitration will only consider providers that support onChange subscriptions
@@ -193,7 +193,7 @@ public:
      *
      * @return the current set discovery scope
      */
-    joynr::types::DiscoveryScope::Enum getDiscoveryScope() const;
+    joynr::types::StdDiscoveryScope::Enum getDiscoveryScope() const;
 
     /**
      * The scope determines where the discovery process will look for matching providers, if
@@ -205,7 +205,7 @@ public:
      * @param discoveryScope
      *                  discovery scope to be set
      */
-    void setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope);
+    void setDiscoveryScope(joynr::types::StdDiscoveryScope::Enum discoveryScope);
 
     /**
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
@@ -213,7 +213,7 @@ public:
      *
      * @return the retry interval
      */
-    qint64 getRetryInterval() const;
+    int64_t getRetryInterval() const;
 
     /**
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
@@ -221,21 +221,21 @@ public:
      *
      * @param retryInterval the minimum interval between to arbitration retries
      */
-    void setRetryInterval(qint64 retryInterval);
+    void setRetryInterval(int64_t retryInterval);
 
     /*
      * Constants
      */
-    static const QString KEYWORD_PARAMETER();
+    static const std::string KEYWORD_PARAMETER();
 
 private:
-    QMap<QString, types::CustomParameter> customParameters;
+    std::map<std::string, types::StdCustomParameter> customParameters;
     ArbitrationStrategy arbitrationStrategy;
-    qint64 discoveryTimeout;
-    qint64 cacheMaxAge;
-    joynr::types::DiscoveryScope::Enum discoveryScope;
+    int64_t discoveryTimeout;
+    int64_t cacheMaxAge;
+    joynr::types::StdDiscoveryScope::Enum discoveryScope;
     bool providerMustSupportOnChange;
-    qint64 retryInterval;
+    int64_t retryInterval;
 };
 
 } // namespace joynr

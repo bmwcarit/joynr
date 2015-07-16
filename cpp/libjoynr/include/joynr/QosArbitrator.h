@@ -68,7 +68,6 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrator);
-    QString keyword;
     static int ARBITRATION_RETRY_INTERVAL;
     static joynr_logging::Logger* logger;
 };

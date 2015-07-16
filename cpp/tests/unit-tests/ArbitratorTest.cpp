@@ -136,7 +136,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
-    discoveryQos.addCustomParameter("keyword", keywordValue);
+    discoveryQos.addCustomParameter("keyword", TypeUtil::toStd(keywordValue));
     KeywordArbitrator keywordArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids

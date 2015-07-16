@@ -58,7 +58,7 @@ public:
 
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
+        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesDiscoveryTest.ChannelId");

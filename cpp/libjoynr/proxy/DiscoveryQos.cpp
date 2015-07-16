@@ -23,9 +23,9 @@
 namespace joynr
 {
 
-qint64& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
+int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
 {
-    static qint64 default_timeout = 30000;
+    static int64_t default_timeout = 30000;
     return default_timeout;
 }
 
@@ -36,27 +36,27 @@ DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
     return default_strategy;
 }
 
-qint64& DiscoveryQos::DO_NOT_USE_CACHE()
+int64_t& DiscoveryQos::DO_NOT_USE_CACHE()
 {
-    static qint64 do_not_use_cache = 0;
+    static int64_t do_not_use_cache = 0;
     return do_not_use_cache;
 }
 
-qint64& DiscoveryQos::DEFAULT_CACHEMAXAGE()
+int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE()
 {
     return DO_NOT_USE_CACHE();
 }
 
-joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
+joynr::types::StdDiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
 {
-    static joynr::types::DiscoveryScope::Enum default_scope =
-            joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL;
+    static joynr::types::StdDiscoveryScope::Enum default_scope =
+            joynr::types::StdDiscoveryScope::LOCAL_THEN_GLOBAL;
     return default_scope;
 }
 
-qint64& DiscoveryQos::DEFAULT_RETRYINTERVAL()
+int64_t& DiscoveryQos::DEFAULT_RETRYINTERVAL()
 {
-    static qint64 default_retryInterval = 1000;
+    static int64_t default_retryInterval = 1000;
     return default_retryInterval;
 }
 
@@ -71,7 +71,7 @@ DiscoveryQos::DiscoveryQos()
 {
 }
 
-DiscoveryQos::DiscoveryQos(const qint64& cacheMaxAge)
+DiscoveryQos::DiscoveryQos(const int64_t& cacheMaxAge)
         : customParameters(),
           arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
           discoveryTimeout(DEFAULT_DISCOVERYTIMEOUT()),
@@ -87,7 +87,7 @@ void DiscoveryQos::setArbitrationStrategy(ArbitrationStrategy arbitrationStrateg
     this->arbitrationStrategy = arbitrationStrategy;
 }
 
-void DiscoveryQos::setDiscoveryTimeout(qint64 discoveryTimeout)
+void DiscoveryQos::setDiscoveryTimeout(int64_t discoveryTimeout)
 {
     this->discoveryTimeout = discoveryTimeout;
     if (this->discoveryTimeout < 0) {
@@ -95,7 +95,7 @@ void DiscoveryQos::setDiscoveryTimeout(qint64 discoveryTimeout)
     }
 }
 
-qint64 DiscoveryQos::getDiscoveryTimeout() const
+int64_t DiscoveryQos::getDiscoveryTimeout() const
 {
     return discoveryTimeout;
 }
@@ -105,33 +105,30 @@ DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const
     return arbitrationStrategy;
 }
 
-void DiscoveryQos::addCustomParameter(QString name, QString value)
+void DiscoveryQos::addCustomParameter(std::string name, std::string value)
 {
-    types::CustomParameter param(name, value);
-    customParameters.insert(name, param);
+    types::StdCustomParameter param(name, value);
+    customParameters[name] = param;
 }
 
-types::CustomParameter DiscoveryQos::getCustomParameter(QString name) const
+types::StdCustomParameter DiscoveryQos::getCustomParameter(std::string name) const
 {
-    return customParameters.value(name);
+    return customParameters.at(name);
 }
 
-QMap<QString, types::CustomParameter> DiscoveryQos::getCustomParameters() const
+std::map<std::string, types::StdCustomParameter> DiscoveryQos::getCustomParameters() const
 {
     return customParameters;
 }
 
-qint64 DiscoveryQos::getCacheMaxAge() const
+int64_t DiscoveryQos::getCacheMaxAge() const
 {
     return cacheMaxAge;
 }
 
-void DiscoveryQos::setCacheMaxAge(const qint64& cacheMaxAge)
+void DiscoveryQos::setCacheMaxAge(const int64_t& cacheMaxAge)
 {
     this->cacheMaxAge = cacheMaxAge;
-    if (this->cacheMaxAge < 0) {
-        this->cacheMaxAge = 0;
-    }
 }
 
 bool DiscoveryQos::getProviderMustSupportOnChange() const
@@ -144,33 +141,30 @@ void DiscoveryQos::setProviderMustSupportOnChange(bool providerMustSupportOnChan
     this->providerMustSupportOnChange = providerMustSupportOnChange;
 }
 
-const QString DiscoveryQos::KEYWORD_PARAMETER()
+const std::string DiscoveryQos::KEYWORD_PARAMETER()
 {
-    static const QString keyword("keyword");
+    static const std::string keyword("keyword");
     return keyword;
 }
 
-joynr::types::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
+joynr::types::StdDiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
 {
     return discoveryScope;
 }
 
-void DiscoveryQos::setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope)
+void DiscoveryQos::setDiscoveryScope(joynr::types::StdDiscoveryScope::Enum discoveryScope)
 {
     this->discoveryScope = discoveryScope;
 }
 
-qint64 DiscoveryQos::getRetryInterval() const
+int64_t DiscoveryQos::getRetryInterval() const
 {
     return this->retryInterval;
 }
 
-void DiscoveryQos::setRetryInterval(qint64 retryInterval)
+void DiscoveryQos::setRetryInterval(int64_t retryInterval)
 {
     this->retryInterval = retryInterval;
-    if (this->retryInterval < 0) {
-        this->retryInterval = 0;
-    }
 }
 
 } // namespace joynr

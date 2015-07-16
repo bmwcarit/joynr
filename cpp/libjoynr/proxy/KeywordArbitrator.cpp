@@ -23,6 +23,8 @@
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 
+#include "joynr/TypeUtil.h"
+
 #include <cassert>
 
 namespace joynr
@@ -33,7 +35,8 @@ KeywordArbitrator::KeywordArbitrator(const std::string& domain,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue()),
+          keyword(TypeUtil::toQt(
+                  discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue())),
           logger(joynr_logging::Logging::getInstance()->getLogger("KArb", "KeywordArbitrator"))
 {
 }
@@ -80,7 +83,8 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
         while (parameterIterator.hasNext()) {
             types::CustomParameter parameter = parameterIterator.next();
             QString name = parameter.getName();
-            if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
+            if (name == TypeUtil::toQt(DiscoveryQos::KEYWORD_PARAMETER()) &&
+                keyword == parameter.getValue()) {
                 QString res = discoveryEntry.getParticipantId();
                 LOG_TRACE(logger, "setting res to " + res);
                 joynr::types::CommunicationMiddleware::Enum preferredConnection(

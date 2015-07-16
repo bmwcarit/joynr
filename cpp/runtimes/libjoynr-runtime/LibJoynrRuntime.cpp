@@ -144,7 +144,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
     routingProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", routingProviderParticipantId);
+            "fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
     routingProviderDiscoveryQos.setDiscoveryTimeout(50);
 
     auto routingProxyBuilder =
@@ -165,7 +165,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
     discoveryProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", discoveryProviderParticipantId);
+            "fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
     discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =

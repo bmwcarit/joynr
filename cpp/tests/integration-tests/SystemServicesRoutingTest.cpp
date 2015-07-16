@@ -60,7 +60,7 @@ public:
         
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
+        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesRoutingTest.ChannelId");

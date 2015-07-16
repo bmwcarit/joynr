@@ -24,6 +24,8 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/types/ProviderQos.h"
 
+#include "joynr/TypeUtil.h"
+
 #include <cassert>
 
 namespace joynr
@@ -38,8 +40,7 @@ QosArbitrator::QosArbitrator(const std::string& domain,
                              const std::string& interfaceName,
                              joynr::system::IDiscoverySync& discoveryProxy,
                              const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          keyword(discoveryQos.getCustomParameter("keyword").getValue())
+        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
 {
 }
 

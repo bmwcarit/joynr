@@ -41,7 +41,7 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
         return new QosArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
-        if (!discoveryQos.getCustomParameters().contains("keyword")) {
+        if (discoveryQos.getCustomParameters().count("keyword") == 0) {
             throw JoynrArbitrationException("KeywordArbitrator creation failed: keyword not set");
         }
         return new KeywordArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
