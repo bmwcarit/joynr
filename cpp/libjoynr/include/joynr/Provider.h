@@ -88,12 +88,6 @@ public:
 
     virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
-    /**
-     * @brief hasBroadcastListeners returns true, if there is at least one listener registered
-     *        for the submitted broadcastName
-     */
-    bool hasBroadcastListeners(const std::string& broadcastName);
-
 private:
     DISALLOW_COPY_AND_ASSIGN(Provider);
 
@@ -101,6 +95,8 @@ private:
     QMap<std::string, QList<IAttributeListener*>> attributeListeners;
     QMap<std::string, QList<IBroadcastListener*>> broadcastListeners;
     QMap<std::string, QList<QSharedPointer<IBroadcastFilter>>> broadcastFilters;
+
+    friend class End2EndBroadcastTest;
 };
 
 } // namespace joynr

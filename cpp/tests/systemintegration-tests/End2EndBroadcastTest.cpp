@@ -52,6 +52,8 @@ static const QString messagingPropertiesPersistenceFileName1(
 static const QString messagingPropertiesPersistenceFileName2(
         "End2EndBroadcastTest-runtime2-joynr.settings");
 
+namespace joynr {
+
 class End2EndBroadcastTest : public Test {
 public:
     types::ProviderQos qRegisterMetaTypeQos;
@@ -137,11 +139,11 @@ public:
     {
         unsigned long delay = 0;
 
-        while (!(testProvider->hasBroadcastListeners(broadcastName)) && delay <= subscribeToBroadcastWait) {
+        while (testProvider->broadcastListeners.value(broadcastName).isEmpty() && delay <= subscribeToBroadcastWait) {
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        assert(testProvider->hasBroadcastListeners(broadcastName));
+        assert(!testProvider->broadcastListeners.value(broadcastName).isEmpty());
     }
 
     ~End2EndBroadcastTest(){
@@ -153,6 +155,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTest);
 
 };
+
+} // namespace joynr
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     tests::TestEnum::Enum expectedTestEnum = tests::TestEnum::TWO;
