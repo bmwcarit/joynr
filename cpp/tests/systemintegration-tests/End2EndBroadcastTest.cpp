@@ -213,6 +213,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -275,6 +276,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -430,6 +432,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -554,6 +557,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -695,6 +699,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -841,6 +846,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -953,6 +959,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
@@ -1096,6 +1103,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setRetryInterval(250);
 
     qlonglong qosRoundTripTTL = 500;
 
