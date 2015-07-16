@@ -22,6 +22,7 @@
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"
+#include <vector>
 
 namespace joynr
 {
@@ -40,7 +41,7 @@ DefaultArbitrator::DefaultArbitrator(const std::string& domain,
 void DefaultArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    QList<joynr::system::DiscoveryEntry> result;
+    std::vector<joynr::system::DiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -55,14 +56,14 @@ void DefaultArbitrator::attemptArbitration()
 }
 
 void DefaultArbitrator::receiveCapabilitiesLookupResults(
-        const QList<joynr::system::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries)
 {
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     // default arbitrator picks first entry
-    joynr::system::DiscoveryEntry discoveredProvider = discoveryEntries.first();
+    joynr::system::DiscoveryEntry discoveredProvider = discoveryEntries.front();
     joynr::system::CommunicationMiddleware::Enum preferredConnection(
             selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
     updateArbitrationStatusParticipantIdAndAddress(

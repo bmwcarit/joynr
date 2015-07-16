@@ -21,10 +21,10 @@
 
 #include "joynr/types/CapabilityInformation.h"
 
-#include <QList>
 #include <QSharedPointer>
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -37,22 +37,20 @@ public:
     virtual ~ICapabilitiesClient()
     {
     }
-    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList) = 0;
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) = 0;
     virtual void remove(const std::string& participantId) = 0;
-    virtual void remove(QList<std::string> capabilitiesInformationList) = 0;
-    virtual QList<types::CapabilityInformation> lookup(const std::string& domain,
-                                                       const std::string& interfaceName) = 0;
-    virtual void lookup(
-            const std::string& domain,
-            const std::string& interfaceName,
-            std::function<void(const joynr::RequestStatus& status,
-                               const QList<joynr::types::CapabilityInformation>& capabilities)>
-                    callbackFct) = 0;
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const joynr::RequestStatus& status,
-                               const QList<joynr::types::CapabilityInformation>& capabilities)>
-                    callbackFct) = 0;
+    virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName) = 0;
+    virtual void lookup(const std::string& domain,
+                        const std::string& interfaceName,
+                        std::function<void(const joynr::RequestStatus& status,
+                                           const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> callbackFct) = 0;
+    virtual void lookup(const std::string& participantId,
+                        std::function<void(const joynr::RequestStatus& status,
+                                           const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> callbackFct) = 0;
     virtual std::string getLocalChannelId() = 0;
 };
 

@@ -107,28 +107,28 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
         );
     capabilitiesClient->init(cabilitiesProxy);
 
-    QList<types::CapabilityInformation> capabilitiesInformationList;
+    std::vector<types::CapabilityInformation> capabilitiesInformationList;
     QString capDomain("testDomain");
     QString capInterface("testInterface");
     types::ProviderQos capProviderQos;
     QString capChannelId("testChannelId");
     QString capParticipantId("testParticipantId");
 
-    capabilitiesInformationList.append(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
+    capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
     LOG_DEBUG(logger,"Registering capabilities");
     capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
     //sync methods are not yet implemented
-//    QList<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
+//    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
     QSharedPointer<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
     QSemaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<const joynr::RequestStatus&>(), A<const QList<types::CapabilityInformation>&>()))
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const joynr::RequestStatus&>(), A<const std::vector<types::CapabilityInformation>&>()))
            .WillRepeatedly(ReleaseSemaphore(&semaphore));
-    std::function<void(const joynr::RequestStatus&, const QList<types::CapabilityInformation>&)> callbackFct =
-            [&](const joynr::RequestStatus& status, const QList<types::CapabilityInformation>& capabilities) {
+    std::function<void(const joynr::RequestStatus&, const std::vector<types::CapabilityInformation>&)> callbackFct =
+            [&](const joynr::RequestStatus& status, const std::vector<types::CapabilityInformation>& capabilities) {
                 callback->capabilitiesReceived(status, capabilities);
             };
 

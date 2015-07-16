@@ -21,6 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
+#include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <QString>
 #include <string>
@@ -60,7 +61,7 @@ public:
      * Made public for testing purposes
      */
     void receiveCapabilitiesLookupResults(
-            const QList<joynr::system::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrator);

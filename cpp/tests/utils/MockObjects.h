@@ -34,6 +34,7 @@
 #include "QtCore"
 #include "utils/TestQString.h"
 #include <string>
+#include <vector>
 #include "utils/QThreadSleep.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
@@ -115,17 +116,17 @@ using ::testing::Property;
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
-    MOCK_METHOD1(add, void(QList<joynr::types::CapabilityInformation> capabilitiesInformationList));
-    MOCK_METHOD1(remove, void(QList<std::string> participantIdList));
+    MOCK_METHOD1(add, void(std::vector<joynr::types::CapabilityInformation> capabilitiesInformationList));
+    MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
-    MOCK_METHOD2(lookup, QList<joynr::types::CapabilityInformation>(const std::string& domain, const std::string& interfaceName));
+    MOCK_METHOD2(lookup, std::vector<joynr::types::CapabilityInformation>(const std::string& domain, const std::string& interfaceName));
     MOCK_METHOD3(lookup, void(
                      const std::string& domain,
                      const std::string& interfaceName,
-                     std::function<void(const joynr::RequestStatus& status, const QList<joynr::types::CapabilityInformation>& capabilities)> callbackFct));
+                     std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct));
     MOCK_METHOD2(lookup, void(
                      const std::string& participantId,
-                     std::function<void(const joynr::RequestStatus& status, const QList<joynr::types::CapabilityInformation>& capabilities)> callbackFct));
+                     std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct));
     MOCK_METHOD0(getLocalChannelId, std::string());
 
 };
@@ -343,7 +344,7 @@ public:
             lookup,
             void(
                 joynr::RequestStatus& joynrInternalStatus,
-                QList<joynr::system::DiscoveryEntry> & result,
+                std::vector<joynr::system::DiscoveryEntry> & result,
                 const std::string& domain,
                 const std::string& interfaceName,
                 const joynr::system::DiscoveryQos& discoveryQos
@@ -381,11 +382,11 @@ public:
     );
     MOCK_METHOD4(
             lookup,
-            QSharedPointer<joynr::Future<QList<joynr::system::DiscoveryEntry>>>(
+            QSharedPointer<joynr::Future<std::vector<joynr::system::DiscoveryEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
                 const joynr::system::DiscoveryQos& discoveryQos,
-                std::function<void(const joynr::RequestStatus& status, const QList<joynr::system::DiscoveryEntry>& result)>
+                std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::system::DiscoveryEntry>& result)>
                         callbackFct
             )
     );
@@ -471,7 +472,7 @@ public:
 
 class GlobalCapabilitiesMock {
 public:
-    MOCK_METHOD2(capabilitiesReceived, void(const joynr::RequestStatus& status, const QList<joynr::types::CapabilityInformation>& results));
+    MOCK_METHOD2(capabilitiesReceived, void(const joynr::RequestStatus& status, const std::vector<joynr::types::CapabilityInformation>& results));
 };
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
@@ -554,7 +555,7 @@ public:
                     std::function<void(const joynr::RequestStatus& status)> callbackFct));
 
     void sumInts(
-            const QList<int32_t>& ints,
+            const std::vector<int32_t>& ints,
             std::function<void(const int32_t& result)> onSuccess)
     {
         int32_t result = 0;
@@ -567,12 +568,14 @@ public:
     void returnPrimeNumbers(
             const int32_t &upperBound,
             std::function<void(
-                const QList<int32_t>& result)> onSuccess)
+                const std::vector<int32_t>& result)> onSuccess)
     {
-        QList<int32_t> result;
+        std::vector<int32_t> result;
         assert(upperBound<7);
         result.clear();
-        result << 2 << 3 << 5;
+        result.push_back(2);
+        result.push_back(3);
+        result.push_back(5);
         onSuccess(result);
     }
     void optimizeTrip(
@@ -583,9 +586,10 @@ public:
          onSuccess(input);
     }
     void optimizeLocationList(
-            const QList<joynr::types::GpsLocation>& inputList,
+            const std::vector<joynr::types::GpsLocation>& inputList,
             std::function<void(
-                const QList<joynr::types::GpsLocation>& result)> onSuccess)
+                const std::vector<joynr::types::GpsLocation>& result)> onSuccess)
+
     {
          onSuccess(inputList);
     }
@@ -793,47 +797,47 @@ public:
 
     MOCK_METHOD2(
             getDomainRoles,
-            QSharedPointer<joynr::Future<QList<joynr::infrastructure::DomainRoleEntry>>>(
+            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::DomainRoleEntry>>>(
                     const std::string& uid,
                     std::function<void(
                         const joynr::RequestStatus& status,
-                        const QList<joynr::infrastructure::DomainRoleEntry>& domainRoleEntries
+                        const std::vector<joynr::infrastructure::DomainRoleEntry>& domainRoleEntries
                     )> callbackFct
             )
     );
 
     MOCK_METHOD3(
             getMasterAccessControlEntries,
-            QSharedPointer<joynr::Future<QList<joynr::infrastructure::MasterAccessControlEntry>>>(
+            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::MasterAccessControlEntry>>>(
                     const std::string& domain,
                     const std::string& interfaceName,
                     std::function<void(
                         const joynr::RequestStatus& status,
-                        const QList<joynr::infrastructure::MasterAccessControlEntry>& masterAces
+                        const std::vector<joynr::infrastructure::MasterAccessControlEntry>& masterAces
                     )> callbackFct
             )
     );
 
     MOCK_METHOD3(
             getMediatorAccessControlEntries,
-            QSharedPointer<joynr::Future<QList<joynr::infrastructure::MasterAccessControlEntry>>>(
+            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::MasterAccessControlEntry>>>(
                     const std::string& domain,
                     const std::string& interfaceName,
                     std::function<void(
                         const joynr::RequestStatus& status,
-                        const QList<joynr::infrastructure::MasterAccessControlEntry>& mediatorAces
+                        const std::vector<joynr::infrastructure::MasterAccessControlEntry>& mediatorAces
                     )> callbackFct
             )
     );
 
     MOCK_METHOD3(
             getOwnerAccessControlEntries,
-            QSharedPointer<joynr::Future<QList<joynr::infrastructure::OwnerAccessControlEntry>>>(
+            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::OwnerAccessControlEntry>>>(
                     const std::string& domain,
                     const std::string& interfaceName,
                     std::function<void(
                         const joynr::RequestStatus& status,
-                        const QList<joynr::infrastructure::OwnerAccessControlEntry>& ownerAces
+                        const std::vector<joynr::infrastructure::OwnerAccessControlEntry>& ownerAces
                     )> callbackFct
             )
     );

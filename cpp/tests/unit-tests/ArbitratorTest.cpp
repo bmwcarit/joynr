@@ -72,15 +72,15 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
     // Create a list of discovery entries
-    QList<joynr::system::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries << joynr::system::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::system::DiscoveryEntry(
                                  QString::fromStdString(domain),
                                  QString::fromStdString(interfaceName),
                                  QString::fromStdString(participantId[i]),
                                  qosEntries[i],
                                  connections
-        );
+        ));
     }
 
     // Check that the correct participant was selected
@@ -113,15 +113,15 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
     // Create a list of discovery entries
-    QList<joynr::system::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries << joynr::system::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::system::DiscoveryEntry(
                                  QString::fromStdString(domain),
                                  QString::fromStdString(interfaceName),
                                  QString::fromStdString(participantId[i]),
                                  qosEntries[i],
                                  connections
-        );
+        ));
     }
 
     // Check that the correct participant was selected
@@ -169,15 +169,15 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     connections << joynr::system::CommunicationMiddleware::JOYNR;
 
     // Create a list of discovery entries
-    QList<joynr::system::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::system::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries << joynr::system::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::system::DiscoveryEntry(
                                  QString::fromStdString(domain),
                                  QString::fromStdString(interfaceName),
                                  QString::fromStdString(participantId[i]),
                                  qosEntries[i],
                                  connections
-        );
+        ));
     }
 
     // Check that the correct participant was selected
@@ -186,13 +186,13 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
-    QList<joynr::system::DiscoveryEntry> result;
+    std::vector<joynr::system::DiscoveryEntry> result;
     joynr::RequestStatus status(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 lookup(
                     A<joynr::RequestStatus&>(),
-                    A<QList<joynr::system::DiscoveryEntry>&>(),
+                    A<std::vector<joynr::system::DiscoveryEntry>&>(),
                     A<const std::string&>(),
                     A<const std::string&>(),
                     A<const joynr::system::DiscoveryQos&>()

@@ -51,7 +51,7 @@ TEST_F(TypeUtilTest, testQStringsToStdStringsConversion)
     testData.append(QString::fromStdString(elem1));
     testData.append(QString::fromStdString(elem2));
 
-    QList<std::string> result = TypeUtil::toStd(testData);
+    std::vector<std::string> result = TypeUtil::toStd(testData);
 
     EXPECT_TRUE(result.size() == 2);
     EXPECT_EQ(result.at(0), elem1);
@@ -75,10 +75,10 @@ TEST_F(TypeUtilTest, testStdStringsToQStringsConversion)
     QString elem1("testData1");
     QString elem2("testData2");
 
-    QList<std::string> testData;
+    std::vector<std::string> testData;
 
-    testData.append(elem1.toStdString());
-    testData.append(elem2.toStdString());
+    testData.push_back(elem1.toStdString());
+    testData.push_back(elem2.toStdString());
 
     QList<QString> result = TypeUtil::toQt(testData);
 
@@ -451,6 +451,6 @@ TEST_F(TypeUtilTest, testQByteArrayToUInt8VectorConversion)
     testData.push_back(2);
     testData.push_back(1);
 
-    QByteArray result = TypeUtil::toQt(testData);
+    QByteArray result = TypeUtil::toQByteArray(testData);
     EXPECT_EQ(expectedValue, result);
 }

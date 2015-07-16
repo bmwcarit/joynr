@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 #include "PrettyPrint.h"
 
 #include "joynr/PrivateCopyAssign.h"
@@ -177,8 +178,10 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
 
-    QList<int> ints;
-    ints << 4 << 6 << 12;
+    std::vector<int> ints;
+    ints.push_back(4);
+    ints.push_back(6);
+    ints.push_back(12);
     int sum = 22;
     RequestStatus requestStatus;
     requestStatus.setCode(RequestStatusCode::OK);

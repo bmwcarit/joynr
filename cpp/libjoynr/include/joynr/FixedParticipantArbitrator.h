@@ -21,6 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 
+#include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <QSharedPointer>
 #include <string>

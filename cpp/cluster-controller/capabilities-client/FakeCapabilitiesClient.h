@@ -33,8 +33,8 @@
 #include <QString>
 #include <string>
 #include <QSharedPointer>
-#include <QList>
 #include <QSettings>
+#include <vector>
 
 namespace joynr
 {
@@ -62,18 +62,18 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(QList<std::string> participantIds);
+    virtual void remove(std::vector<std::string> participantIds);
 
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual QList<types::CapabilityInformation> lookup(const std::string& domain,
-                                                       const std::string& interfaceName);
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
@@ -97,13 +97,13 @@ private:
                      MessagingQos qosSettings,
                      QSharedPointer<IReplyCaller> callBack);
 
-    QList<types::CapabilityInformation> createFakedCapInfoList(const QString& domain,
-                                                               const QString& interfaceName);
-    QList<types::CapabilityInformation> createFakedCapInfoListForChannelId(
+    std::vector<types::CapabilityInformation> createFakedCapInfoList(const QString& domain,
+                                                                     const QString& interfaceName);
+    std::vector<types::CapabilityInformation> createFakedCapInfoListForChannelId(
             const QString& channelId);
-    QList<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
+    std::vector<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
             const QString& participantId);
-    QList<types::CapabilityInformation> createFakedCapInfoList();
+    std::vector<types::CapabilityInformation> createFakedCapInfoList();
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;

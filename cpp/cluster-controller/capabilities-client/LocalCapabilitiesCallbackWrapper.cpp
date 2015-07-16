@@ -51,10 +51,10 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
 }
 
 void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
-        QList<types::CapabilityInformation> results)
+        std::vector<types::CapabilityInformation> results)
 {
     QMap<std::string, CapabilityEntry> capabilitiesMap;
-    QList<CapabilityEntry> mergedEntries;
+    std::vector<CapabilityEntry> mergedEntries;
 
     foreach (types::CapabilityInformation capInfo, results) {
         QList<joynr::system::CommunicationMiddleware::Enum> connections;
@@ -66,7 +66,7 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
                                  connections,
                                  true);
         capabilitiesMap.insertMulti(capInfo.getChannelId().toStdString(), capEntry);
-        mergedEntries.append(capEntry);
+        mergedEntries.push_back(capEntry);
     }
     localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
 
@@ -76,10 +76,15 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
         if (participantId.empty()) {
-            mergedEntries +=
-                    localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress);
+            std::vector<CapabilityEntry> cachedCaps(
+                    localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress));
+            mergedEntries.insert(mergedEntries.end(), cachedCaps.begin(), cachedCaps.end());
+            ;
         } else {
-            mergedEntries += localCapabilitiesDirectory->getCachedLocalCapabilities(participantId);
+            std::vector<CapabilityEntry> cachedCaps(
+                    localCapabilitiesDirectory->getCachedLocalCapabilities(participantId));
+            mergedEntries.insert(mergedEntries.end(), cachedCaps.begin(), cachedCaps.end());
+            ;
         }
     }
     wrappedCallback->capabilitiesReceived(mergedEntries);

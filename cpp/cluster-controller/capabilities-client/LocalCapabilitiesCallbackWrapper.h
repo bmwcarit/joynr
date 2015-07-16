@@ -45,7 +45,7 @@ public:
                                      const InterfaceAddress& interfaceAddress,
                                      const joynr::system::DiscoveryQos& discoveryQos);
 
-    void capabilitiesReceived(QList<types::CapabilityInformation> results);
+    void capabilitiesReceived(std::vector<types::CapabilityInformation> results);
 
 private:
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;

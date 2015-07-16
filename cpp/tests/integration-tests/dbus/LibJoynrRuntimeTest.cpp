@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include <stdint.h> 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "PrettyPrint.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -279,14 +280,16 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
             ->build();
     ASSERT_TRUE(testProxy != NULL);
 
-    QList<int> ints;
-    ints << 4 << 6 << 12;
-    int expectedSum = 22;
-    QSharedPointer<Future<int> > future(testProxy->sumInts(ints));
+    std::vector<int32_t> ints;
+    ints.push_back(4);
+    ints.push_back(6);
+    ints.push_back(12);
+    int32_t expectedSum = 22;
+    QSharedPointer<Future<int32_t> > future(testProxy->sumInts(ints));
     future->waitForFinished(500);
 
     ASSERT_TRUE(future->getStatus().successful());
-    int actualValue;
+    int32_t actualValue;
     future->getValues(actualValue);
     EXPECT_EQ(expectedSum, actualValue);
 
@@ -317,11 +320,13 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
             ->build();
     ASSERT_TRUE(testProxy != NULL);
 
-    QList<int> ints;
-    ints << 4 << 6 << 12;
-    int expectedSum = 22;
+    std::vector<int32_t> ints;
+    ints.push_back(4);
+    ints.push_back(6);
+    ints.push_back(12);
+    int32_t expectedSum = 22;
     RequestStatus status;
-    int sum = 0;
+    int32_t sum = 0;
     testProxy->sumInts(status, sum, ints);
     ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedSum, sum);

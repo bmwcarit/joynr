@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <stdint.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -248,21 +249,21 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     connectProxy();
 
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    QList<QSharedPointer<Future<int> > >testFutureList;
+    QList<QSharedPointer<Future<int32_t> > >testFutureList;
     int numberOfMessages = 500;
     int successFullMessages = 0;
-    for (int i=0; i<numberOfMessages; i++){
-        QList<int> list;
-        list.append(2);
-        list.append(4);
-        list.append(8);
-        list.append(i);
+    for (int32_t i=0; i<numberOfMessages; i++){
+        std::vector<int32_t> list;
+        list.push_back(2);
+        list.push_back(4);
+        list.push_back(8);
+        list.push_back(i);
         testFutureList.append(testProxy->sumInts(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){
         testFutureList.at(i)->waitForFinished(25 * numberOfMessages);
-        int expectedValue = 2+4+8+i;
+        int32_t expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
             int actualValue;

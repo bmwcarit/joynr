@@ -258,36 +258,36 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    QList<MasterAccessControlEntry> masterAcesFromGlobalDac;
-    masterAcesFromGlobalDac << masterAce;
+    std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
+    masterAcesFromGlobalDac.push_back(masterAce);
 
-    QList<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
-    ownerAcesFromGlobalDac << ownerAce;
+    std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
+    ownerAcesFromGlobalDac.push_back(ownerAce);
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdacProxy, getDomainRoles(_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), QList<DomainRoleEntry>()),
-                    Return(QSharedPointer<Future<QList<DomainRoleEntry>>>()) // null pointer
+                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
+                    Return(QSharedPointer<Future<std::vector<DomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<QList<MasterAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), QList<MasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<QList<MasterAccessControlEntry>>>()) // null pointer
+                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<MasterAccessControlEntry>()),
+                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<QList<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -329,11 +329,11 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    QList<MasterAccessControlEntry> masterAcesFromGlobalDac;
-    masterAcesFromGlobalDac << masterAce;
+    std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
+    masterAcesFromGlobalDac.push_back(masterAce);
 
-    QList<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
-    ownerAcesFromGlobalDac << ownerAce;
+    std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
+    ownerAcesFromGlobalDac.push_back(ownerAce);
 
     RequestStatus getMediatorAceCommunicationError(RequestStatusCode::ERROR);
     getMediatorAceCommunicationError.addDescription("Simulated communication failure");
@@ -342,26 +342,26 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     EXPECT_CALL(*mockGdacProxy, getDomainRoles(_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), QList<DomainRoleEntry>()),
-                    Return(QSharedPointer<Future<QList<DomainRoleEntry>>>()) // null pointer
+                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
+                    Return(QSharedPointer<Future<std::vector<DomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<QList<MasterAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(getMediatorAceCommunicationError, QList<MasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<QList<MasterAccessControlEntry>>>()) // null pointer
+                    InvokeArgument<2>(getMediatorAceCommunicationError, std::vector<MasterAccessControlEntry>()),
+                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<QList<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -389,41 +389,41 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    QList<MasterAccessControlEntry> masterAcesFromGlobalDac;
-    masterAcesFromGlobalDac << masterAce;
+    std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
+    masterAcesFromGlobalDac.push_back(masterAce);
 
     ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    QList<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
-    ownerAcesFromGlobalDac << ownerAce;
+    std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
+    ownerAcesFromGlobalDac.push_back(ownerAce);
 
     std::function<void(const joynr::RequestStatus& status,
-                       const QList<joynr::infrastructure::MasterAccessControlEntry>&
+                       const std::vector<joynr::infrastructure::MasterAccessControlEntry>&
                                masterAces)> getMasterAcesCallbackFct;
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdacProxy, getDomainRoles(_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), QList<DomainRoleEntry>()),
-                    Return(QSharedPointer<Future<QList<DomainRoleEntry>>>()) // null pointer
+                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
+                    Return(QSharedPointer<Future<std::vector<DomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     SaveArg<2>(&getMasterAcesCallbackFct),
-                    Return(QSharedPointer<Future<QList<MasterAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), QList<MasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<QList<MasterAccessControlEntry>>>()) // null pointer
+                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<MasterAccessControlEntry>()),
+                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<QList<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock

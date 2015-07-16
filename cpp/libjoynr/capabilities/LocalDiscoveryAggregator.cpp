@@ -105,7 +105,7 @@ void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnectio
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                      QList<joynr::system::DiscoveryEntry>& result,
+                                      std::vector<joynr::system::DiscoveryEntry>& result,
                                       const std::string& domain,
                                       const std::string& interfaceName,
                                       const joynr::system::DiscoveryQos& discoveryQos)
@@ -119,9 +119,8 @@ void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
     }
     discoveryProxy->lookup(joynrInternalStatus, result, domain, interfaceName, discoveryQos);
 
-    QMutableListIterator<joynr::system::DiscoveryEntry> i(result);
-    while (i.hasNext()) {
-        checkForLocalAvailabilityAndAddInProcessConnection(i.next());
+    for (joynr::system::DiscoveryEntry& discoveryEntry : result) {
+        checkForLocalAvailabilityAndAddInProcessConnection(discoveryEntry);
     }
 }
 

@@ -32,8 +32,8 @@
 */
 
 #include <QSharedPointer>
-#include <QList>
 #include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -71,12 +71,12 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(QList<std::string> participantIds);
+    virtual void remove(std::vector<std::string> participantIds);
 
     /*
       Remove previously created capability directroy entry
@@ -86,8 +86,8 @@ public:
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    virtual QList<types::CapabilityInformation> lookup(const std::string& domain,
-                                                       const std::string& interfaceName);
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName);
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
@@ -96,13 +96,13 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const RequestStatus& status,
-                               const QList<joynr::types::CapabilityInformation>& result)>
+                               const std::vector<joynr::types::CapabilityInformation>& result)>
                     callbackFct);
 
     virtual void lookup(
             const std::string& participantId,
             std::function<void(const RequestStatus& status,
-                               const QList<joynr::types::CapabilityInformation>& result)>
+                               const std::vector<joynr::types::CapabilityInformation>& result)>
                     callbackFct);
 
     virtual ~CapabilitiesClient();

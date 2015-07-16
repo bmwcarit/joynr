@@ -27,6 +27,7 @@
 #include <qglobal.h>
 #include <vector>
 #include <QByteArray>
+#include <stdint.h>
 
 namespace joynr
 {
@@ -39,6 +40,36 @@ class JOYNRCOMMON_EXPORT TypeUtil
 {
 public:
     /**
+      * Converts a vector of std objects into a list of qt objects
+      */
+    template <class T>
+    static QList<T> toQt(const std::vector<T>& stdValues)
+    {
+        QList<T> qtValues;
+
+        for (T stdValue : stdValues) {
+            qtValues.append(stdValue);
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a list of qt objects into a vector of std objects
+      */
+    template <class T>
+    static std::vector<T> toStd(const QList<T>& stdValues)
+    {
+        std::vector<T> qtValues;
+
+        for (T stdValue : stdValues) {
+            qtValues.push_back(stdValue);
+        }
+
+        return qtValues;
+    }
+
+    /**
       * Converts a QString object into a std::string object
       */
     static std::string toStd(const QString& qtString)
@@ -47,23 +78,23 @@ public:
     }
 
     /**
-      * Converts a list of QString objects into a list of std::string objects
+      * Converts a list of QString objects into a vector of std::string objects
       */
-    static QList<std::string> toStd(const QList<QString>& qtStrings)
+    static std::vector<std::string> toStd(const QList<QString>& qtStrings)
     {
-        QList<std::string> stdStrings;
+        std::vector<std::string> stdStrings;
 
         for (QString qtString : qtStrings) {
-            stdStrings.append(toStd(qtString));
+            stdStrings.push_back(toStd(qtString));
         }
 
         return stdStrings;
     }
 
     /**
-      * Converts a list of std::string objects into a list of QString objects
+      * Converts a vector of std::string objects into a list of QString objects
       */
-    static QList<QString> toQt(const QList<std::string>& stdStrings)
+    static QList<QString> toQt(const std::vector<std::string>& stdStrings)
     {
         QList<QString> qtStrings;
 
@@ -91,23 +122,23 @@ public:
     }
 
     /**
-      * Converts a list of qint8 values into a list of int8_t objects
+      * Converts a list of qint8 values into a vector of int8_t objects
       */
-    static QList<int8_t> toStdInt8(const QList<qint8>& qtValues)
+    static std::vector<int8_t> toStdInt8(const QList<qint8>& qtValues)
     {
-        QList<int8_t> stdValues;
+        std::vector<int8_t> stdValues;
 
         for (qint8 qtValue : qtValues) {
-            stdValues.append(toStdInt8(qtValue));
+            stdValues.push_back(toStdInt8(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of int8_t objects into a list of qint8 objects
+      * Converts a vector of int8_t objects into a list of qint8 objects
       */
-    static QList<qint8> toQt(const QList<int8_t>& stdValues)
+    static QList<qint8> toQt(const std::vector<int8_t>& stdValues)
     {
         QList<qint8> qtValues;
 
@@ -135,23 +166,23 @@ public:
     }
 
     /**
-      * Converts a list of qint8 values into a list of uint8_t objects
+      * Converts a list of qint8 values into a vector of uint8_t objects
       */
-    static QList<uint8_t> toStdUInt8(const QList<qint8>& qtValues)
+    static std::vector<uint8_t> toStdUInt8(const QList<qint8>& qtValues)
     {
-        QList<uint8_t> stdValues;
+        std::vector<uint8_t> stdValues;
 
         for (qint8 qtValue : qtValues) {
-            stdValues.append(toStdUInt8(qtValue));
+            stdValues.push_back(toStdUInt8(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of uint8_t objects into a list of qint8 objects
+      * Converts a vector of uint8_t objects into a list of qint8 objects
       */
-    static QList<qint8> toQt(const QList<uint8_t>& stdValues)
+    static QList<qint8> toQt(const std::vector<uint8_t>& stdValues)
     {
         QList<qint8> qtValues;
 
@@ -179,23 +210,23 @@ public:
     }
 
     /**
-      * Converts a list of int values into a list of int16_t objects
+      * Converts a list of int values into a vector of int16_t objects
       */
-    static QList<int16_t> toStdInt16(const QList<int>& qtValues)
+    static std::vector<int16_t> toStdInt16(const QList<int>& qtValues)
     {
-        QList<int16_t> stdValues;
+        std::vector<int16_t> stdValues;
 
         for (int qtValue : qtValues) {
-            stdValues.append(toStdInt16(qtValue));
+            stdValues.push_back(toStdInt16(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of int16_t objects into a list of int objects
+      * Converts a vector of int16_t objects into a list of int objects
       */
-    static QList<int> toQt(const QList<int16_t>& stdValues)
+    static QList<int> toQt(const std::vector<int16_t>& stdValues)
     {
         QList<int> qtValues;
 
@@ -223,23 +254,23 @@ public:
     }
 
     /**
-      * Converts a list of int values into a list of uint16_t objects
+      * Converts a list of int values into a vector of uint16_t objects
       */
-    static QList<uint16_t> toStdUInt16(const QList<int>& qtValues)
+    static std::vector<uint16_t> toStdUInt16(const QList<int>& qtValues)
     {
-        QList<uint16_t> stdValues;
+        std::vector<uint16_t> stdValues;
 
         for (int qtValue : qtValues) {
-            stdValues.append(toStdUInt16(qtValue));
+            stdValues.push_back(toStdUInt16(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of uint16_t objects into a list of int objects
+      * Converts a vector of uint16_t objects into a list of int objects
       */
-    static QList<int> toQt(const QList<uint16_t>& stdValues)
+    static QList<int> toQt(const std::vector<uint16_t>& stdValues)
     {
         QList<int> qtValues;
 
@@ -267,23 +298,23 @@ public:
     }
 
     /**
-      * Converts a list of int values into a list of int32_t objects
+      * Converts a list of int values into a vector of int32_t objects
       */
-    static QList<int32_t> toStdInt32(const QList<int>& qtValues)
+    static std::vector<int32_t> toStdInt32(const QList<int>& qtValues)
     {
-        QList<int32_t> stdValues;
+        std::vector<int32_t> stdValues;
 
         for (int qtValue : qtValues) {
-            stdValues.append(toStdInt32(qtValue));
+            stdValues.push_back(toStdInt32(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of int32_t objects into a list of int objects
+      * Converts a vector of int32_t objects into a list of int objects
       */
-    static QList<int> toQt(const QList<int32_t>& stdValues)
+    static QList<int> toQt(const std::vector<int32_t>& stdValues)
     {
         QList<int> qtValues;
 
@@ -311,23 +342,23 @@ public:
     }
 
     /**
-      * Converts a list of int values into a list of uint32_t objects
+      * Converts a list of int values into a vector of uint32_t objects
       */
-    static QList<uint32_t> toStdUInt32(const QList<int>& qtValues)
+    static std::vector<uint32_t> toStdUInt32(const QList<int>& qtValues)
     {
-        QList<uint32_t> stdValues;
+        std::vector<uint32_t> stdValues;
 
         for (int qtValue : qtValues) {
-            stdValues.append(toStdUInt32(qtValue));
+            stdValues.push_back(toStdUInt32(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of uint32_t objects into a list of int objects
+      * Converts a vector of uint32_t objects into a list of int objects
       */
-    static QList<int> toQt(const QList<uint32_t>& stdValues)
+    static QList<int> toQt(const std::vector<uint32_t>& stdValues)
     {
         QList<int> qtValues;
 
@@ -355,23 +386,23 @@ public:
     }
 
     /**
-      * Converts a list of qint64 values into a list of int64_t objects
+      * Converts a list of qint64 values into a vector of int64_t objects
       */
-    static QList<int64_t> toStdInt64(const QList<qint64>& qtValues)
+    static std::vector<int64_t> toStdInt64(const QList<qint64>& qtValues)
     {
-        QList<int64_t> stdValues;
+        std::vector<int64_t> stdValues;
 
         for (qint64 qtValue : qtValues) {
-            stdValues.append(toStdInt64(qtValue));
+            stdValues.push_back(toStdInt64(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of int64_t objects into a list of qint64 objects
+      * Converts a vector of int64_t objects into a list of qint64 objects
       */
-    static QList<qint64> toQt(const QList<int64_t>& stdValues)
+    static QList<qint64> toQt(const std::vector<int64_t>& stdValues)
     {
         QList<qint64> qtValues;
 
@@ -399,23 +430,23 @@ public:
     }
 
     /**
-      * Converts a list of qint64 values into a list of uint64_t objects
+      * Converts a list of qint64 values into a vector of uint64_t objects
       */
-    static QList<uint64_t> toStdUInt64(const QList<qint64>& qtValues)
+    static std::vector<uint64_t> toStdUInt64(const QList<qint64>& qtValues)
     {
-        QList<uint64_t> stdValues;
+        std::vector<uint64_t> stdValues;
 
         for (qint64 qtValue : qtValues) {
-            stdValues.append(toStdUInt64(qtValue));
+            stdValues.push_back(toStdUInt64(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of uint64_t objects into a list of qint64 objects
+      * Converts a vector of uint64_t objects into a list of qint64 objects
       */
-    static QList<qint64> toQt(const QList<uint64_t>& stdValues)
+    static QList<qint64> toQt(const std::vector<uint64_t>& stdValues)
     {
         QList<qint64> qtValues;
 
@@ -443,23 +474,23 @@ public:
     }
 
     /**
-      * Converts a list of double values into a list of float objects
+      * Converts a list of double values into a vector of float objects
       */
-    static QList<float> toStdFloat(const QList<double>& qtValues)
+    static std::vector<float> toStdFloat(const QList<double>& qtValues)
     {
-        QList<float> stdValues;
+        std::vector<float> stdValues;
 
         for (double qtValue : qtValues) {
-            stdValues.append(toStdFloat(qtValue));
+            stdValues.push_back(toStdFloat(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of float objects into a list of double objects
+      * Converts a vector of float objects into a list of double objects
       */
-    static QList<double> toQt(const QList<float>& stdValues)
+    static QList<double> toQt(const std::vector<float>& stdValues)
     {
         QList<double> qtValues;
 
@@ -489,28 +520,28 @@ public:
     }
 
     /**
-      * Converts a list of QByteArray values into a list of std::vector<uint8_t> objects
+      * Converts a list of QByteArray values into a vector of std::vector<uint8_t> objects
       */
-    static QList<std::vector<uint8_t>> toStd(const QList<QByteArray>& qtValues)
+    static std::vector<std::vector<uint8_t>> toStd(const QList<QByteArray>& qtValues)
     {
-        QList<std::vector<uint8_t>> stdValues;
+        std::vector<std::vector<uint8_t>> stdValues;
 
         for (QByteArray qtValue : qtValues) {
-            stdValues.append(toStd(qtValue));
+            stdValues.push_back(toStd(qtValue));
         }
 
         return stdValues;
     }
 
     /**
-      * Converts a list of std::vector<uint8_t> objects into a list of QByteArray objects
+      * Converts a vector of std::vector<uint8_t> objects into a list of QByteArray objects
       */
-    static QList<QByteArray> toQt(const QList<std::vector<uint8_t>>& stdValues)
+    static QList<QByteArray> toQt(const std::vector<std::vector<uint8_t>>& stdValues)
     {
         QList<QByteArray> qtValues;
 
         for (std::vector<uint8_t> stdValue : stdValues) {
-            qtValues.append(toQt(stdValue));
+            qtValues.append(toQByteArray(stdValue));
         }
 
         return qtValues;
@@ -519,7 +550,7 @@ public:
     /**
       * Converts a std::vector<uint8_t> object into a QByteArray object
       */
-    static QByteArray toQt(const std::vector<uint8_t>& stdValue)
+    static QByteArray toQByteArray(const std::vector<uint8_t>& stdValue)
     {
         QByteArray qtValue;
         for (const uint8_t entry : stdValue) {

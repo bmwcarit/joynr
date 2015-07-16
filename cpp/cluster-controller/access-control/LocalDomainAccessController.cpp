@@ -29,7 +29,7 @@
 #include "joynr/SubscriptionListener.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-
+#include <vector>
 #include "joynr/joynrlogging.h"
 
 #include <cassert>
@@ -269,22 +269,22 @@ QList<MasterAccessControlEntry> LocalDomainAccessController::getMasterAccessCont
         const QString& uid)
 {
     RequestStatus rs;
-    QList<MasterAccessControlEntry> resultMasterAces;
+    std::vector<MasterAccessControlEntry> resultMasterAces;
     globalDomainAccessControllerProxy->getMasterAccessControlEntries(
             rs, resultMasterAces, uid.toStdString());
 
-    return resultMasterAces;
+    return TypeUtil::toQt(resultMasterAces);
 }
 
 QList<MasterAccessControlEntry> LocalDomainAccessController::getEditableMasterAccessControlEntries(
         const QString& uid)
 {
     RequestStatus rs;
-    QList<MasterAccessControlEntry> resultMasterAces;
+    std::vector<MasterAccessControlEntry> resultMasterAces;
     globalDomainAccessControllerProxy->getEditableMasterAccessControlEntries(
             rs, resultMasterAces, uid.toStdString());
 
-    return resultMasterAces;
+    return TypeUtil::toQt(resultMasterAces);
 }
 
 bool LocalDomainAccessController::updateMasterAccessControlEntry(
@@ -319,22 +319,22 @@ QList<MasterAccessControlEntry> LocalDomainAccessController::getMediatorAccessCo
         const QString& uid)
 {
     RequestStatus rs;
-    QList<MasterAccessControlEntry> resultMediatorAces;
+    std::vector<MasterAccessControlEntry> resultMediatorAces;
     globalDomainAccessControllerProxy->getMediatorAccessControlEntries(
             rs, resultMediatorAces, uid.toStdString());
 
-    return resultMediatorAces;
+    return TypeUtil::toQt(resultMediatorAces);
 }
 
 QList<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMediatorAccessControlEntries(const QString& uid)
 {
     RequestStatus rs;
-    QList<MasterAccessControlEntry> resultMediatorAces;
+    std::vector<MasterAccessControlEntry> resultMediatorAces;
     globalDomainAccessControllerProxy->getEditableMediatorAccessControlEntries(
             rs, resultMediatorAces, uid.toStdString());
 
-    return resultMediatorAces;
+    return TypeUtil::toQt(resultMediatorAces);
 }
 
 bool LocalDomainAccessController::updateMediatorAccessControlEntry(
@@ -369,22 +369,22 @@ QList<OwnerAccessControlEntry> LocalDomainAccessController::getOwnerAccessContro
         const QString& uid)
 {
     RequestStatus rs;
-    QList<OwnerAccessControlEntry> resultOwnerAces;
+    std::vector<OwnerAccessControlEntry> resultOwnerAces;
     globalDomainAccessControllerProxy->getOwnerAccessControlEntries(
             rs, resultOwnerAces, uid.toStdString());
 
-    return resultOwnerAces;
+    return TypeUtil::toQt(resultOwnerAces);
 }
 
 QList<OwnerAccessControlEntry> LocalDomainAccessController::getEditableOwnerAccessControlEntries(
         const QString& uid)
 {
     RequestStatus rs;
-    QList<OwnerAccessControlEntry> resultOwnerAces;
+    std::vector<OwnerAccessControlEntry> resultOwnerAces;
     globalDomainAccessControllerProxy->getEditableOwnerAccessControlEntries(
             rs, resultOwnerAces, uid.toStdString());
 
-    return resultOwnerAces;
+    return TypeUtil::toQt(resultOwnerAces);
 }
 
 bool LocalDomainAccessController::updateOwnerAccessControlEntry(
@@ -589,10 +589,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
 
     // Initialise domain roles from global data
     // TODO: confirm that this is needed
-    std::function<void(const RequestStatus& status,
-                       const QList<DomainRoleEntry>& domainRoleEntries)> domainRoleCallbackFct =
-            [this, initialiser](
-                    const RequestStatus& status, const QList<DomainRoleEntry>& domainRoleEntries) {
+    std::function<void(
+            const RequestStatus& status, const std::vector<DomainRoleEntry>& domainRoleEntries)>
+            domainRoleCallbackFct =
+                    [this, initialiser](const RequestStatus& status,
+                                        const std::vector<DomainRoleEntry>& domainRoleEntries) {
         if (status.successful()) {
             // Add the results
             foreach (const DomainRoleEntry& dre, domainRoleEntries) {
@@ -611,10 +612,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
     };
     globalDomainAccessControllerProxy->getDomainRoles(userId.toStdString(), domainRoleCallbackFct);
 
-    std::function<void(const RequestStatus& status,
-                       const QList<MasterAccessControlEntry>& masterAces)> masterAceCallbackFct =
-            [this, initialiser](const RequestStatus& status,
-                                const QList<MasterAccessControlEntry>& masterAces) {
+    std::function<void(
+            const RequestStatus& status, const std::vector<MasterAccessControlEntry>& masterAces)>
+            masterAceCallbackFct =
+                    [this, initialiser](const RequestStatus& status,
+                                        const std::vector<MasterAccessControlEntry>& masterAces) {
         if (status.successful()) {
             // Add the results
             foreach (const MasterAccessControlEntry& masterAce, masterAces) {
@@ -635,11 +637,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
             domain.toStdString(), interfaceName.toStdString(), masterAceCallbackFct);
 
     // Initialise mediator access control entries from global data
-    std::function<
-            void(const RequestStatus& status, const QList<MasterAccessControlEntry>& mediatorAces)>
+    std::function<void(
+            const RequestStatus& status, const std::vector<MasterAccessControlEntry>& mediatorAces)>
             mediatorAceCallbackFct =
                     [this, initialiser](const RequestStatus& status,
-                                        const QList<MasterAccessControlEntry>& mediatorAces) {
+                                        const std::vector<MasterAccessControlEntry>& mediatorAces) {
         if (status.successful()) {
             // Add the results
             foreach (const MasterAccessControlEntry& mediatorAce, mediatorAces) {
@@ -661,9 +663,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const QString
 
     // Initialise owner access control entries from global data
     std::function<void(const RequestStatus& status,
-                       const QList<OwnerAccessControlEntry>& ownerAces)> ownerAceCallbackFct =
-            [this, initialiser](
-                    const RequestStatus& status, const QList<OwnerAccessControlEntry>& ownerAces) {
+                       const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceCallbackFct =
+            [this, initialiser](const RequestStatus& status,
+                                const std::vector<OwnerAccessControlEntry>& ownerAces) {
         if (status.successful()) {
             // Add the results
             foreach (const OwnerAccessControlEntry& ownerAce, ownerAces) {

@@ -21,6 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/joynrlogging.h"
+#include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <QSharedPointer>
 #include <string>
@@ -46,7 +47,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
     virtual void receiveCapabilitiesLookupResults(
-            const QList<joynr::system::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries);
     static joynr_logging::Logger* logger;
 };
 

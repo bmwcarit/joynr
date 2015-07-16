@@ -43,11 +43,11 @@ class CppMigrateToStdTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeNameForList(FType datatype) {
-		"QList<" + datatype.typeName + "> ";
+		"std::vector<" + datatype.typeName + "> ";
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		"QList<" + datatype.typeName + "> ";
+		"std::vector<" + datatype.typeName + "> ";
 	}
 
 	override getIncludeForArray() {

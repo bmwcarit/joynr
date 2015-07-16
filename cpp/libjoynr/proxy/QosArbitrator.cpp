@@ -46,7 +46,7 @@ QosArbitrator::QosArbitrator(const std::string& domain,
 void QosArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    QList<joynr::system::DiscoveryEntry> result;
+    std::vector<joynr::system::DiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -62,7 +62,7 @@ void QosArbitrator::attemptArbitration()
 
 // Returns true if arbitration was successful, false otherwise
 void QosArbitrator::receiveCapabilitiesLookupResults(
-        const QList<joynr::system::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries)
 {
     QString res = "";
     joynr::system::CommunicationMiddleware::Enum preferredConnection(
@@ -73,9 +73,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         return;
 
     qint64 highestPriority = -1;
-    QListIterator<joynr::system::DiscoveryEntry> discoveryEntriesIterator(discoveryEntries);
-    while (discoveryEntriesIterator.hasNext()) {
-        joynr::system::DiscoveryEntry discoveryEntry = discoveryEntriesIterator.next();
+    for (const joynr::system::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
         if (discoveryQos.getProviderMustSupportOnChange() &&

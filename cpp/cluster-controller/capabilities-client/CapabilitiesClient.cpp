@@ -31,6 +31,7 @@
 
 #include <QString>
 #include <string>
+#include <stdint.h>
 #include <cassert>
 
 namespace joynr
@@ -60,7 +61,7 @@ std::string CapabilitiesClient::getLocalChannelId()
     return localChannelId;
 }
 
-void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInformationList)
+void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilitiesInformationList)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -69,7 +70,7 @@ void CapabilitiesClient::add(QList<types::CapabilityInformation> capabilitiesInf
                        // register capabilities before messaging was started(no queueing implemented
                        // yet;
     } else {
-        for (int i = 0; i < capabilitiesInformationList.size(); i++) {
+        for (uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
             capabilitiesInformationList[i].setChannelId(QString::fromStdString(localChannelId));
         }
         RequestStatus rs;
@@ -96,7 +97,7 @@ void CapabilitiesClient::remove(const std::string& participantId)
     capabilitiesProxy->remove(status, participantId);
 }
 
-void CapabilitiesClient::remove(QList<std::string> participantIdList)
+void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -104,14 +105,15 @@ void CapabilitiesClient::remove(QList<std::string> participantIdList)
     capabilitiesProxy->remove(status, participantIdList);
 }
 
-QList<types::CapabilityInformation> CapabilitiesClient::lookup(const std::string& domain,
-                                                               const std::string& interfaceName)
+std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
 
     RequestStatus status;
-    QList<types::CapabilityInformation> result;
+    std::vector<types::CapabilityInformation> result;
     capabilitiesProxy->lookup(status, result, domain, interfaceName);
     return result;
 }
@@ -120,7 +122,8 @@ void CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName,
         std::function<void(const RequestStatus& status,
-                           const QList<joynr::types::CapabilityInformation>& result)> callbackFct)
+                           const std::vector<joynr::types::CapabilityInformation>& result)>
+                callbackFct)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -131,14 +134,15 @@ void CapabilitiesClient::lookup(
 void CapabilitiesClient::lookup(
         const std::string& participantId,
         std::function<void(const RequestStatus& status,
-                           const QList<joynr::types::CapabilityInformation>& result)> callbackFct)
+                           const std::vector<joynr::types::CapabilityInformation>& result)>
+                callbackFct)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
     capabilitiesProxy->lookup(participantId,
                               [callbackFct](const RequestStatus& status,
                                             const joynr::types::CapabilityInformation& capability) {
-        QList<joynr::types::CapabilityInformation> result;
+        std::vector<joynr::types::CapabilityInformation> result;
         result.push_back(capability);
         callbackFct(status, result);
     });

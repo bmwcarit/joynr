@@ -127,11 +127,11 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     int numberOfMessages = 150;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){
-        QList<int> list;
-        list.append(2);
-        list.append(4);
-        list.append(8);
-        list.append(i);
+        std::vector<int> list;
+        list.push_back(2);
+        list.push_back(4);
+        list.push_back(8);
+        list.push_back(i);
         testFutureList.append(testProxy->sumInts(list));
     }
 

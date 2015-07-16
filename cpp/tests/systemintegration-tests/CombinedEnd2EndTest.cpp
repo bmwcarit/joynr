@@ -177,10 +177,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        QList<int> list;
-        list.append(2);
-        list.append(4);
-        list.append(8);
+        std::vector<int> list;
+        list.push_back(2);
+        list.push_back(4);
+        list.push_back(8);
         QSharedPointer<Future<int> >gpsFuture (testProxy->sumInts(list));
         gpsFuture->waitForFinished();
         int expectedValue = 2+4+8;
@@ -213,12 +213,12 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
       * Now try to send call a method that has a list as return parameter
       */
 
-        QList<int> primesBelow6;
-        primesBelow6.append(2);
-        primesBelow6.append(3);
-        primesBelow6.append(5);
+        std::vector<int> primesBelow6;
+        primesBelow6.push_back(2);
+        primesBelow6.push_back(3);
+        primesBelow6.push_back(5);
         RequestStatus rs;
-        QList<int> result;
+        std::vector<int> result;
         testProxy->returnPrimeNumbers(rs, result, 6);
         if (rs.successful()) {
             EXPECT_EQ(primesBelow6, result);
@@ -233,17 +233,17 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
      * Now try to send a List of Vowels and see if it is returned correctly.
      */
 // does not compile, see 654
-//       QList<Vowel> inputWord;
-//       inputWord.append("h");
-//       inputWord.append("e");
-//       inputWord.append("l");
-//       inputWord.append("l");
-//       inputWord.append("o");
-//       QSharedPointer<Future<QList<Vowel> > > wordFuture (new QSharedPointer<Future<QList<Vowel> > >());
+//       std::vector<Vowel> inputWord;
+//       inputWord.push_back("h");
+//       inputWord.push_back("e");
+//       inputWord.push_back("l");
+//       inputWord.push_back("l");
+//       inputWord.push_back("o");
+//       QSharedPointer<Future<std::vector<Vowel> > > wordFuture (new QSharedPointer<Future<std::vector<Vowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->waitForFinished();
 //       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
-//       inputTrip.append("a"); //thats what optimize word does.. appending an a.
+//       inputTrip.push_back("a"); //thats what optimize word does.. appending an a.
 //       EXPECT_EQ(inputTrip, tripFuture->getValue());
 
     /*
@@ -251,14 +251,14 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
      * Now try to send a List of GpsLocations and see if it is returned correctly.
      */
         // is currently deactivated, because it throws an assertion.
-        QList<types::GpsLocation> inputGpsLocationList;
-        inputGpsLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
-        inputGpsLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
-        inputGpsLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
-        QSharedPointer<Future<QList<types::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
+        std::vector<types::GpsLocation> inputGpsLocationList;
+        inputGpsLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
+        inputGpsLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
+        inputGpsLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
+        QSharedPointer<Future<std::vector<types::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
         listLocationFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
-        QList<joynr::types::GpsLocation> actualLocation;
+        std::vector<joynr::types::GpsLocation> actualLocation;
         listLocationFuture->getValues(actualLocation);
         EXPECT_EQ(inputGpsLocationList, actualLocation);
 
@@ -286,12 +286,12 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         EXPECT_EQ(primeResult, 15);
 
         // List of strings,
-        QList<std::string> localStrList;
-        QList<std::string> remoteStrList;
-        localStrList.append("one ü");
-        localStrList.append("two 漢語");
-        localStrList.append("three ـتـ");
-        localStrList.append("four {");
+        std::vector<std::string> localStrList;
+        std::vector<std::string> remoteStrList;
+        localStrList.push_back("one ü");
+        localStrList.push_back("two 漢語");
+        localStrList.push_back("three ـتـ");
+        localStrList.push_back("four {");
         testProvider->setListOfStrings(localStrList, callbackFct);
 
         testProxy->getListOfStrings(status, remoteStrList);
@@ -315,17 +315,21 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         * Testing local/remote getters and setters with lists.
         */
 
-        QList<int> inputIntList;
-        inputIntList<<2<<3<<5;
+        std::vector<int> inputIntList;
+        inputIntList.push_back(2);
+        inputIntList.push_back(3);
+        inputIntList.push_back(5);
         testProvider->setListOfInts(inputIntList, callbackFct);
-        QList<int> outputIntLIst;
+        std::vector<int> outputIntLIst;
         testProxy->getListOfInts(status, outputIntLIst);
         ASSERT_TRUE(status.successful());
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 3);
         //test remote setter
         inputIntList.clear();
-        inputIntList<<7<<11<<13;
+        inputIntList.push_back(7);
+        inputIntList.push_back(11);
+        inputIntList.push_back(13);
         testProxy->setListOfInts(statusOfSet, inputIntList);
         testProxy->getListOfInts(status, outputIntLIst);
         ASSERT_TRUE(status.successful());
@@ -532,13 +536,13 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     //so the datatype is not registered, and cannot be deserialized.
     qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
 
-    MockSubscriptionListenerOneType<QList<int> > *mockListener = new MockSubscriptionListenerOneType<QList<int> >();
+    MockSubscriptionListenerOneType<std::vector<int> > *mockListener = new MockSubscriptionListenerOneType<std::vector<int> >();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const QList<int>& >()))
+    EXPECT_CALL(*mockListener, onReceive(A<const std::vector<int>& >()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<QList<int> > > subscriptionListener(mockListener);
+    QSharedPointer<ISubscriptionListener<std::vector<int> > > subscriptionListener(mockListener);
     // Provider: (runtime1)
 
     types::ProviderQos providerQos;

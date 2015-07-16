@@ -26,6 +26,7 @@
 
 #include "joynr/system/IDiscovery.h"
 #include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -68,7 +69,7 @@ public:
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        QList<joynr::system::DiscoveryEntry>& result,
+                        std::vector<joynr::system::DiscoveryEntry>& result,
                         const std::string& domain,
                         const std::string& interfaceName,
                         const joynr::system::DiscoveryQos& discoveryQos);

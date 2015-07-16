@@ -21,6 +21,7 @@
 
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/joynrlogging.h"
+#include <vector>
 
 namespace joynr
 {
@@ -43,7 +44,7 @@ public:
     virtual ~IGlobalCapabilitiesCallback()
     {
     }
-    virtual void capabilitiesReceived(QList<types::CapabilityInformation> results) = 0;
+    virtual void capabilitiesReceived(std::vector<types::CapabilityInformation> results) = 0;
 
 private:
     static joynr_logging::Logger* logger;
