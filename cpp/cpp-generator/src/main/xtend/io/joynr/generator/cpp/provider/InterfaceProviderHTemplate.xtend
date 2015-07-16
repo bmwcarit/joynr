@@ -47,7 +47,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/Provider.h"
+#include "joynr/AbstractJoynrProvider.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/types/ProviderQos.h"
@@ -67,7 +67,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 class «getDllExportMacro()» «interfaceName»Provider :
 		public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Base,
-		public joynr::Provider
+		public joynr::AbstractJoynrProvider
 {
 
 public:

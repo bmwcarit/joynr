@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include <string>
 
-#include "joynr/Provider.h"
+#include "joynr/AbstractJoynrProvider.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/IAttributeListener.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
@@ -29,7 +29,7 @@
 
 using namespace joynr;
 
-class DummyProvider : public Provider {
+class DummyProvider : public AbstractJoynrProvider {
 public:
     types::ProviderQos getProviderQos() const {
         types::ProviderQos ret;

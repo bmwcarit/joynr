@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRPROVIDER_H
-#define JOYNRPROVIDER_H
+#ifndef ABSTRACTJOYNRPROVIDER_H
+#define ABSTRACTJOYNRPROVIDER_H
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
@@ -41,11 +41,11 @@ class IBroadcastListener;
  * Abstract class that specifies the interface providers need to implement
  * and contains functionality to support listening to onChange events
  */
-class JOYNR_EXPORT Provider : public IJoynrProvider
+class JOYNR_EXPORT AbstractJoynrProvider : public IJoynrProvider
 {
 public:
-    Provider();
-    virtual ~Provider();
+    AbstractJoynrProvider();
+    virtual ~AbstractJoynrProvider();
 
     // --- Interface to be implemented by Providers ---
     virtual types::ProviderQos getProviderQos() const = 0;
@@ -89,7 +89,7 @@ public:
     virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(Provider);
+    DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
     QReadWriteLock lock;
     QMap<std::string, QList<IAttributeListener*>> attributeListeners;
@@ -100,4 +100,4 @@ private:
 };
 
 } // namespace joynr
-#endif // JOYNRPROVIDER_H
+#endif // ABSTRACTJOYNRPROVIDER_H

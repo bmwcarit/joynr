@@ -405,7 +405,7 @@ public:
 };
 
 
-class MockProvider : public joynr::Provider, public IMockProviderInterface {
+class MockProvider : public joynr::AbstractJoynrProvider, public IMockProviderInterface {
 public:
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
