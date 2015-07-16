@@ -347,7 +347,7 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
 {
     std::string domain(systemServicesSettings.getDomain().toStdString());
     std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter.data());
-    std::string interfaceName(routingProvider->getInterfaceName());
+    std::string interfaceName(joynr::system::RoutingProvider::INTERFACE_NAME());
     std::string participantId(
             systemServicesSettings.getCcRoutingProviderParticipantId().toStdString());
 
@@ -361,7 +361,7 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 {
     std::string domain(systemServicesSettings.getDomain().toStdString());
     std::shared_ptr<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
-    std::string interfaceName(discoveryProvider->getInterfaceName());
+    std::string interfaceName(joynr::system::DiscoveryProvider::INTERFACE_NAME());
     std::string participantId(
             systemServicesSettings.getCcDiscoveryProviderParticipantId().toStdString());
 

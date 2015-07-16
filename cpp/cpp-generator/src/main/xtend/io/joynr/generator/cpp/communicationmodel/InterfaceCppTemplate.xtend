@@ -98,10 +98,9 @@ I«interfaceName»Base::I«interfaceName»Base()
 	«ENDFOR»
 }
 
-static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
-
-const std::string I«interfaceName»Base::getInterfaceName()
+const std::string& I«interfaceName»Base::INTERFACE_NAME()
 {
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
 	return INTERFACE_NAME;
 }
 

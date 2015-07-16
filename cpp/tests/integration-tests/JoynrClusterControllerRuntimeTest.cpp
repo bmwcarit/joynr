@@ -163,7 +163,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     QSharedPointer<Future<types::GpsLocation> > future(testProxy->getLocation());
     future->waitForFinished(500);
 
-    EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
+    EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
     joynr::types::GpsLocation actualValue;
     future->getValues(actualValue);
@@ -207,7 +207,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     QSharedPointer<Future<int> > future(testProxy->sumInts(ints));
     future->waitForFinished(500);
 
-    EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
+    EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
     int actualValue;
     future->getValues(actualValue);

@@ -21,9 +21,8 @@
 
 using namespace joynr;
 
-static const std::string INTERFACE_NAME("test/interface");
-
-const std::string IMockProviderInterface::getInterfaceName()
+const std::string& IMockProviderInterface::INTERFACE_NAME()
 {
-	return INTERFACE_NAME;
+    static const std::string INTERFACE_NAME("test/interface");
+    return INTERFACE_NAME;
 }

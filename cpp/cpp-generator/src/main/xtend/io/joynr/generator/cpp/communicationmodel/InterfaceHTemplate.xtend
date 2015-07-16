@@ -79,9 +79,7 @@ public:
 	I«interfaceName»Base();
 	virtual ~I«interfaceName»Base() { }
 
-	// Visual C++ does not export static const variables from DLLs
-	// This getter is used instead
-	static const std::string getInterfaceName();
+	static const std::string& INTERFACE_NAME();
 };
 
 /**

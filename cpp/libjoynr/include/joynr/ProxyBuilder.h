@@ -217,7 +217,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     assert(!hasArbitrationStarted);
     discoveryTimeout = discoveryQos.getDiscoveryTimeout();
     arbitrator = ProviderArbitratorFactory::createArbitrator(
-            domain, T::getInterfaceName(), discoveryProxy, discoveryQos);
+            domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
     arbitrationSemaphore.acquire();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();

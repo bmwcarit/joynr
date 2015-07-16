@@ -45,7 +45,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     joynr::system::DiscoveryEntry routingProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
-            TypeUtil::toQt(joynr::system::IRouting::getInterfaceName()),
+            TypeUtil::toQt(joynr::system::IRouting::INTERFACE_NAME()),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
             joynr::types::ProviderQos(),
             connections);
@@ -54,7 +54,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             routingProviderDiscoveryEntry);
     joynr::system::DiscoveryEntry discoveryProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
-            TypeUtil::toQt(joynr::system::IDiscovery::getInterfaceName()),
+            TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
             joynr::types::ProviderQos(),
             connections);

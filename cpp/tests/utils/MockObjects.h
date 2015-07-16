@@ -401,7 +401,7 @@ public:
 class IMockProviderInterface {
 public:
     virtual ~IMockProviderInterface(){}
-    static const std::string getInterfaceName();
+    static const std::string& INTERFACE_NAME();
 };
 
 

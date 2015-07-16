@@ -83,7 +83,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
             joynr::system::DiscoveryEntry(
                     messagingSettings.getDiscoveryDirectoriesDomain(),
                     QString::fromStdString(
-                            infrastructure::IGlobalCapabilitiesDirectory::getInterfaceName()),
+                            infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME()),
                     messagingSettings.getCapabilitiesDirectoryParticipantId(),
                     providerQos,
                     middlewareConnections),
@@ -96,16 +96,16 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
     // The ChannelUrlDirectory is also provisioned in MessageRouter  (participantId -> channelId)
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
-    this->insertInCache(joynr::system::DiscoveryEntry(
-                                messagingSettings.getDiscoveryDirectoriesDomain(),
-                                QString::fromStdString(
-                                        infrastructure::IChannelUrlDirectory::getInterfaceName()),
-                                messagingSettings.getChannelUrlDirectoryParticipantId(),
-                                channelUrlDirProviderQos,
-                                middlewareConnections),
-                        false,
-                        true,
-                        false);
+    this->insertInCache(
+            joynr::system::DiscoveryEntry(
+                    messagingSettings.getDiscoveryDirectoriesDomain(),
+                    QString::fromStdString(infrastructure::IChannelUrlDirectory::INTERFACE_NAME()),
+                    messagingSettings.getChannelUrlDirectoryParticipantId(),
+                    channelUrlDirProviderQos,
+                    middlewareConnections),
+            false,
+            true,
+            false);
 }
 
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()

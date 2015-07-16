@@ -86,7 +86,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
     testQos.setPriority(100);
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::getInterfaceName(),
+                    IMockProviderInterface::INTERFACE_NAME(),
                     _
     ))
             .Times(1)
@@ -105,7 +105,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                     A<joynr::RequestStatus&>(),
                     AllOf(
                         Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::getInterfaceName()))),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
                         Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
                         Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
                     )
@@ -119,7 +119,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::getInterfaceName(),
+                    IMockProviderInterface::INTERFACE_NAME(),
                     _
     ))
             .Times(1)
@@ -162,7 +162,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::getInterfaceName(),
+                    IMockProviderInterface::INTERFACE_NAME(),
                     _
     ))
             .Times(1)
@@ -179,7 +179,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                     A<joynr::RequestStatus&>(),
                     AllOf(
                         Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::getInterfaceName()))),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
                         Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
                         Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
                     )
@@ -217,7 +217,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::getInterfaceName(),
+                    IMockProviderInterface::INTERFACE_NAME(),
                     _
     ))
             .Times(1)
@@ -234,7 +234,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                     A<joynr::RequestStatus&>(),
                     AllOf(
                         Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::getInterfaceName()))),
+                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
                         Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
                         Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
                     )

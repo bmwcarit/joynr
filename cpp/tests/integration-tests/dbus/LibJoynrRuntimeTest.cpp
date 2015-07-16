@@ -217,7 +217,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     connections << joynr::system::CommunicationMiddleware::JOYNR;
     joynr::system::DiscoveryEntry expectedDiscoveryEntry(
                 TypeUtil::toQt(domain),
-                TypeUtil::toQt(tests::testProvider::getInterfaceName()),
+                TypeUtil::toQt(tests::testProvider::INTERFACE_NAME()),
                 TypeUtil::toQt(participantId),
                 mockTestProviderQos,
                 connections

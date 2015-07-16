@@ -60,13 +60,13 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	providerQos(providerQos)
 {
 	// Register a request interpreter to interpret requests to this interface
-	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
+	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 }
 
 «interfaceName»Provider::~«interfaceName»Provider()
 {
 	// Unregister the request interpreter
-	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
+	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(INTERFACE_NAME());
 }
 
 void «interfaceName»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {

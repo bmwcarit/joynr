@@ -43,7 +43,7 @@ using namespace joynr;
 class RequestInterpreterTest : public ::testing::Test {
 public:
     RequestInterpreterTest()
-        : gpsInterfaceName(vehicle::IGpsBase::getInterfaceName())
+        : gpsInterfaceName(vehicle::IGpsBase::INTERFACE_NAME())
     {
 
     }
