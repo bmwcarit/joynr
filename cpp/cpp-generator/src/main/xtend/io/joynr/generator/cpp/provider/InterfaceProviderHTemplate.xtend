@@ -118,7 +118,6 @@ public:
 	«ENDFOR»
 
 	void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
-	void setDomainAndInterface(const QString& domain, const QString& interfaceName);
 	virtual std::string getInterfaceName() const;
 
 	joynr::types::ProviderQos getProviderQos() const;
@@ -131,8 +130,6 @@ protected:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
 	joynr::SubscriptionManager* subscriptionManager;
-	QString domain;
-	QString interfaceName;
 	joynr::types::ProviderQos providerQos;
 };
 «getNamespaceEnder(serviceInterface)»

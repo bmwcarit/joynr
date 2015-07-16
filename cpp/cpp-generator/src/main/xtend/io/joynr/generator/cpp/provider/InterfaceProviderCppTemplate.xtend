@@ -55,8 +55,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 		«attribute.joynrName»(),
 	«ENDFOR»
 	subscriptionManager(NULL),
-	domain(),
-	interfaceName(),
 	providerQos(providerQos)
 {
 	// Register a request interpreter to interpret requests to this interface
@@ -71,11 +69,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 void «interfaceName»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {
 	this->subscriptionManager = subscriptionManager;
-}
-
-void «interfaceName»Provider::setDomainAndInterface(const QString &domain, const QString &interfaceName) {
-	this->domain = domain;
-	this->interfaceName = interfaceName;
 }
 
 std::string «interfaceName»Provider::getInterfaceName() const {
