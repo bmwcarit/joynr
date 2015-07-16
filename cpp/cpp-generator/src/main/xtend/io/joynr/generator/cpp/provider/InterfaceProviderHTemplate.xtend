@@ -63,8 +63,6 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 
-namespace joynr { class SubscriptionManager; }
-
 «getNamespaceStarter(serviceInterface)»
 
 class «getDllExportMacro()» «interfaceName»Provider :
@@ -117,7 +115,6 @@ public:
 		void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList»);
 	«ENDFOR»
 
-	void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
 	virtual std::string getInterfaceName() const;
 
 	joynr::types::ProviderQos getProviderQos() const;
@@ -129,7 +126,6 @@ protected:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
-	joynr::SubscriptionManager* subscriptionManager;
 	joynr::types::ProviderQos providerQos;
 };
 «getNamespaceEnder(serviceInterface)»

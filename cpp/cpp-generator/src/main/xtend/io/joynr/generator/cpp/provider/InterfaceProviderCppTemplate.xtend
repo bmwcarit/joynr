@@ -54,7 +54,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	«FOR attribute: getAttributes(serviceInterface)»
 		«attribute.joynrName»(),
 	«ENDFOR»
-	subscriptionManager(NULL),
 	providerQos(providerQos)
 {
 	// Register a request interpreter to interpret requests to this interface
@@ -65,10 +64,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 {
 	// Unregister the request interpreter
 	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
-}
-
-void «interfaceName»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {
-	this->subscriptionManager = subscriptionManager;
 }
 
 std::string «interfaceName»Provider::getInterfaceName() const {
