@@ -24,6 +24,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -376,7 +377,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Override
     public Set<CapabilityEntry> getAllCapabilities() {
         synchronized (capsLock) {
-            Set<String> keySet = registeredCapabilitiesTime.keySet();
+            List<String> keySet = Collections.list(registeredCapabilitiesTime.keys());
             Collection<CapabilityEntry> transform = Collections2.transform(keySet,
                                                                            new Function<String, CapabilityEntry>() {
                                                                                @Override
