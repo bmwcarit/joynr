@@ -23,6 +23,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FBasicTypeId
 
 class DefaultProviderCppTemplate implements InterfaceTemplate{
 
@@ -69,16 +70,29 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	// LOG_WARN(logger, "**********************************************");
 	// LOG_WARN(logger, "* Default«interfaceName»Provider::get«attributename.toFirstUpper» called");
 	// LOG_WARN(logger, "**********************************************");
-	«IF attributeType=="std::string"»
-		//		«attribute.typeName» result = "Hello World";
-	«ELSEIF attributeType=="bool"»
-		//		«attribute.typeName» result = false;
-	«ELSEIF attributeType=="int"»
-		//		«attribute.typeName» result = 42;
-	«ELSEIF attributeType=="double"»
-		//		«attribute.typeName» result = 3.1415;
+	«IF !attribute.isArray && attribute.type.predefined != null»
+		«val type = attribute.type.predefined»
+		«IF type==FBasicTypeId.STRING»
+		//	«attributeType» result = "Hello World";
+		«ELSEIF type==FBasicTypeId.BOOLEAN»
+		//	«attributeType» result = false;
+		«ELSEIF type==FBasicTypeId.INT8   ||
+				type==FBasicTypeId.UINT8  ||
+				type==FBasicTypeId.INT16  ||
+				type==FBasicTypeId.UINT16 ||
+				type==FBasicTypeId.INT32  ||
+				type==FBasicTypeId.UINT32 ||
+				type==FBasicTypeId.INT64  ||
+				type==FBasicTypeId.UINT64»
+		//	«attributeType» result = 42;
+		«ELSEIF type==FBasicTypeId.DOUBLE   ||
+				type==FBasicTypeId.FLOAT»
+		//	«attributeType» result = 3.1415;
+		«ELSE»
+		//	«attributeType» result;
+		«ENDIF»
 	«ELSE»
-		//		«attribute.typeName» result = «attributeType»();
+	//	«attributeType» result;
 	«ENDIF»
 	//	callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
 	//}
@@ -99,14 +113,27 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
 			«val outputParamType = argument.typeName»
-			«IF outputParamType=="std::string"»
-				«outputParamType» «argument.joynrName» = "Hello World";
-			«ELSEIF outputParamType=="bool"»
-				«outputParamType» «argument.joynrName» = false;
-			«ELSEIF outputParamType=="int"»
-				«outputParamType» «argument.joynrName» = 42;
-			«ELSEIF outputParamType=="double"»
-				«outputParamType» «argument.joynrName» = 3.1415;
+			«IF !argument.isArray && argument.type.predefined != null»
+				«val type = argument.type.predefined»
+				«IF type==FBasicTypeId.STRING»
+					«outputParamType» «argument.joynrName» = "Hello World";
+				«ELSEIF type==FBasicTypeId.BOOLEAN»
+					«outputParamType» «argument.joynrName» = false;
+				«ELSEIF type==FBasicTypeId.INT8   ||
+						type==FBasicTypeId.UINT8  ||
+						type==FBasicTypeId.INT16  ||
+						type==FBasicTypeId.UINT16 ||
+						type==FBasicTypeId.INT32  ||
+						type==FBasicTypeId.UINT32 ||
+						type==FBasicTypeId.INT64  ||
+						type==FBasicTypeId.UINT64»
+					«outputParamType» «argument.joynrName» = 42;
+				«ELSEIF type==FBasicTypeId.DOUBLE   ||
+						type==FBasicTypeId.FLOAT»
+					«outputParamType» «argument.joynrName» = 3.1415;
+				«ELSE»
+					«outputParamType» «argument.joynrName»;
+				«ENDIF»
 			«ELSE»
 				«outputParamType» «argument.joynrName»;
 			«ENDIF»
