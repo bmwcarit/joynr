@@ -55,14 +55,14 @@ public:
     /**
      * Register an object that will be informed when the value of an attribute changes
      */
-    void registerAttributeListener(const std::string& attributeName,
-                                   IAttributeListener* attributeListener);
+    virtual void registerAttributeListener(const std::string& attributeName,
+                                           IAttributeListener* attributeListener);
 
     /**
      * Unregister and delete an attribute listener
      */
-    void unregisterAttributeListener(const std::string& attributeName,
-                                     IAttributeListener* attributeListener);
+    virtual void unregisterAttributeListener(const std::string& attributeName,
+                                             IAttributeListener* attributeListener);
 
     /**
      * Called by subclasses when the value of an attribute changes
@@ -72,21 +72,21 @@ public:
     /**
      * Register an object that will be informed when an event occurs
      */
-    void registerBroadcastListener(const std::string& broadcastName,
-                                   IBroadcastListener* broadcastListener);
+    virtual void registerBroadcastListener(const std::string& broadcastName,
+                                           IBroadcastListener* broadcastListener);
 
     /**
      * Unregister and delete a broadcast listener
      */
-    void unregisterBroadcastListener(const std::string& broadcastName,
-                                     IBroadcastListener* broadcastListener);
+    virtual void unregisterBroadcastListener(const std::string& broadcastName,
+                                             IBroadcastListener* broadcastListener);
 
     /**
      * Called by subclasses when a broadcast occurs
      */
     void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
 
-    void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
+    virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
 
     /**
      * @brief hasAttributeListeners returns true, if there is at least one listener registered

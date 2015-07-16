@@ -402,7 +402,6 @@ class IMockProviderInterface {
 public:
     virtual ~IMockProviderInterface(){}
     static const std::string& INTERFACE_NAME();
-    std::string getInterfaceName() const;
 };
 
 
@@ -411,6 +410,7 @@ public:
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
     virtual ~MockProvider(){}
+    virtual std::string getInterfaceName() const;
 };
 
 namespace joynr {

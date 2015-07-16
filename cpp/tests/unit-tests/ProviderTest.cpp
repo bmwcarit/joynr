@@ -19,6 +19,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 
 #include "joynr/Provider.h"
 #include "joynr/types/ProviderQos.h"
@@ -33,6 +34,9 @@ public:
     types::ProviderQos getProviderQos() const {
         types::ProviderQos ret;
         return ret;
+    }
+    std::string getInterfaceName() const {
+        return "DummyProviderInterface";
     }
 };
 

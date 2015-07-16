@@ -19,8 +19,19 @@
 #ifndef IJOYNRPROVIDER_H
 #define IJOYNRPROVIDER_H
 
+#include <string>
+#include <QSharedPointer>
+
 namespace joynr
 {
+class IAttributeListener;
+class IBroadcastListener;
+class IBroadcastFilter;
+
+namespace types
+{
+class ProviderQos;
+}
 
 class IJoynrProvider
 {
@@ -28,6 +39,35 @@ public:
     virtual ~IJoynrProvider()
     {
     }
+
+    virtual types::ProviderQos getProviderQos() const = 0;
+
+    /**
+     * Register an object that will be informed when the value of an attribute changes
+     */
+    virtual void registerAttributeListener(const std::string& attributeName,
+                                           IAttributeListener* attributeListener) = 0;
+    /**
+     * Unregister and delete an attribute listener
+     */
+    virtual void unregisterAttributeListener(const std::string& attributeName,
+                                             IAttributeListener* attributeListener) = 0;
+
+    /**
+     * Register an object that will be informed when an event occurs
+     */
+    virtual void registerBroadcastListener(const std::string& broadcastName,
+                                           IBroadcastListener* broadcastListener) = 0;
+
+    /**
+     * Unregister and delete a broadcast listener
+     */
+    virtual void unregisterBroadcastListener(const std::string& broadcastName,
+                                             IBroadcastListener* broadcastListener) = 0;
+
+    virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter) = 0;
+
+    virtual std::string getInterfaceName() const = 0;
 };
 
 } // namespace joynr

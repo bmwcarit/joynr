@@ -27,7 +27,7 @@ const std::string& IMockProviderInterface::INTERFACE_NAME()
     return INTERFACE_NAME;
 }
 
-std::string IMockProviderInterface::getInterfaceName() const
+std::string MockProvider::getInterfaceName() const
 {
     return INTERFACE_NAME();
 }
