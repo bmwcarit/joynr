@@ -26,7 +26,7 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 
 class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
-	@Inject	extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
 	@Inject extension InterfaceUtil

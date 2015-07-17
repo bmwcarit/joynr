@@ -46,7 +46,7 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 «getIncludesFor(getAllPrimitiveTypes(serviceInterface))»

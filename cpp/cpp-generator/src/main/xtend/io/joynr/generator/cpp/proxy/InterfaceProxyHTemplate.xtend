@@ -45,7 +45,7 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 
 #include "joynr/PrivateCopyAssign.h"
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 #include <string>

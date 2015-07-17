@@ -54,7 +54,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 #include <memory>

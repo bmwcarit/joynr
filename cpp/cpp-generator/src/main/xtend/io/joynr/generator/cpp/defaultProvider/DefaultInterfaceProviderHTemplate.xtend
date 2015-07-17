@@ -52,7 +52,7 @@ class DefaultInterfaceProviderHTemplate implements InterfaceTemplate{
 #include "joynr/joynrlogging.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 «getIncludesFor(getAllPrimitiveTypes(serviceInterface))»

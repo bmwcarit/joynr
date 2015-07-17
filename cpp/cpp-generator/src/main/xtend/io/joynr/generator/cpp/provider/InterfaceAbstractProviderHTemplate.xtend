@@ -50,7 +50,7 @@ class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 «getIncludesFor(getAllPrimitiveTypes(serviceInterface))»

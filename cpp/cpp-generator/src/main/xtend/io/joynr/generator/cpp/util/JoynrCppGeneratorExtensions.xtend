@@ -162,13 +162,13 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		val includeSet = new TreeSet<String>();
 		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
 			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype));
+				includeSet.add("\"" + getIncludeOf(datatype) + "\"");
 			}
 		}
 
 		for (broadcast: serviceInterface.broadcasts) {
 			if (isSelective(broadcast)) {
-				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
+				includeSet.add("\"" + getIncludeOfFilterParametersContainer(serviceInterface, broadcast) + "\"");
 			}
 		}
 		return includeSet;

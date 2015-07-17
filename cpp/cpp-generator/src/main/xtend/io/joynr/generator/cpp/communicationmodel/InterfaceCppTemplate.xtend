@@ -47,7 +47,7 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 #include "joynr/MetaTypeRegistrar.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 #include "joynr/Future.h"

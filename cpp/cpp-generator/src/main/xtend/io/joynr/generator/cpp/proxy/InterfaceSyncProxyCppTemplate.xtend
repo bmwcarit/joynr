@@ -45,7 +45,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 #include "joynr/RequestStatus.h"
 
 «FOR datatype: getRequiredIncludesFor(fInterface)»
-	#include "«datatype»"
+	#include «datatype»
 «ENDFOR»
 
 «getNamespaceStarter(fInterface)»

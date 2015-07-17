@@ -43,7 +43,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 «FOR datatype: getRequiredIncludesFor(serviceInterface)»
-	#include "«datatype»"
+	#include «datatype»
 «ENDFOR»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 «IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»

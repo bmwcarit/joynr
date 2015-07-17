@@ -52,7 +52,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 #include "joynr/AbstractJoynrMessagingConnector.h"

@@ -37,8 +37,8 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«asyncClassName».h"
-«FOR datatype: getRequiredIncludesFor(fInterface)»
-	#include "«datatype»"
+«FOR parameterType: getRequiredIncludesFor(fInterface)»
+	#include «parameterType»
 «ENDFOR»
 
 #include "joynr/exceptions.h"

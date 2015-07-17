@@ -58,7 +58,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 #include <cassert>
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-	#include "«parameterType»"
+	#include «parameterType»
 «ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»
