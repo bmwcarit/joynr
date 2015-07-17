@@ -34,6 +34,8 @@
 #include <QSemaphore>
 #include <QList>
 #include <string>
+#include <stdint.h>
+#include <joynr/TypeUtil.h>
 #include <cassert>
 
 namespace joynr
@@ -67,14 +69,14 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     /*
-     * Throws an JoynrArbitrationException if the arbitration is cancled
+     * Throws an JoynrArbitrationException if the arbitration is canceled
      * or waits for the time specified in timeout (in milliseconds) for the
      * arbitration to complete.
      */
-    void waitForArbitrationAndCheckStatus(int timeout);
+    void waitForArbitrationAndCheckStatus(uint16_t timeout);
 
     /*
-     *  Calls waitForArbitrationAndCheckStatus(int timeout) using the
+     *  Calls waitForArbitrationAndCheckStatus(uint16_t timeout) using the
      *  one-way time-to-live value predefined in the MessagingQos.
      */
     void waitForArbitrationAndCheckStatus();
@@ -103,14 +105,15 @@ private:
       */
 
     /*
-     *  waitForArbitration(int timeout) is used internally before a remote action is executed to
+     *  waitForArbitration(uint16_t timeout) is used internally before a remote action is executed
+     * to
      * check
      *  whether arbitration is already completed.
      *  timeout specifies the maximal time to wait in milliseconds.
      */
-    void waitForArbitration(int timeout);
+    void waitForArbitration(uint16_t timeout);
     /*
-     *  waitForArbitration() has the same functionality as waitForArbitration(int timeout), but
+     *  waitForArbitration() has the same functionality as waitForArbitration(uint16_t timeout), but
      *  uses the one-way time-to-live value predefined in the MessagingQos.
      */
     void waitForArbitration();
@@ -262,7 +265,7 @@ void ProxyBuilder<T>::waitForArbitrationAndCheckStatus()
 }
 
 template <class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(int timeout)
+void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(uint16_t timeout)
 {
     switch (arbitrationStatus) {
     case ArbitrationStatus::ArbitrationSuccessful:
@@ -285,9 +288,9 @@ void ProxyBuilder<T>::waitForArbitration()
 }
 
 template <class T>
-void ProxyBuilder<T>::waitForArbitration(int timeout)
+void ProxyBuilder<T>::waitForArbitration(uint16_t timeout)
 {
-    if (!arbitrationSemaphore.tryAcquire(1, timeout)) {
+    if (!arbitrationSemaphore.tryAcquire(1, TypeUtil::toQt(timeout))) {
         throw JoynrArbitrationTimeOutException("Arbitration could not be finished in time.");
     }
     arbitrationSemaphore.release();

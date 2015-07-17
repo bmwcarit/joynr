@@ -27,6 +27,8 @@
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
+#include <stdint.h>
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -157,9 +159,9 @@ public:
      * if no response is received.
      * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
      */
-    RequestStatus waitForFinished(int timeOut)
+    RequestStatus waitForFinished(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, timeOut)) {
+        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
             resultReceived.release(1);
         }
         return status;
@@ -243,9 +245,9 @@ public:
         return status;
     }
 
-    RequestStatus waitForFinished(int timeOut)
+    RequestStatus waitForFinished(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, timeOut)) {
+        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
             resultReceived.release(1);
         }
         return status;

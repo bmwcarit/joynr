@@ -491,15 +491,15 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     */
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation& result) );
     MOCK_METHOD2(setLocation, void(joynr::RequestStatus& status, joynr::types::GpsLocation gpsLocation));
-    //MOCK_METHOD2(calculateAvailableSatellites,void (RequestStatus& status, int& result));
-    //MOCK_METHOD2(restartWithRetries, void (RequestStatus& status, int gpsFix));
+    //MOCK_METHOD2(calculateAvailableSatellites,void (RequestStatus& status, int32_t& result));
+    //MOCK_METHOD2(restartWithRetries, void (RequestStatus& status, int32_t gpsFix));
 
-    void  restartWithRetries(joynr::RequestStatus& status, int gpsfix ) {
+    void  restartWithRetries(joynr::RequestStatus& status, int32_t gpsfix ) {
 
         status.setCode(joynr::RequestStatusCode::OK);
     }
 
-    void  calculateAvailableSatellites(joynr::RequestStatus& status, int& result) {
+    void  calculateAvailableSatellites(joynr::RequestStatus& status, int32_t& result) {
         result = 42;
         status.setCode(joynr::RequestStatusCode::OK);
     }
@@ -554,22 +554,22 @@ public:
                     std::function<void(const joynr::RequestStatus& status)> callbackFct));
 
     void sumInts(
-            const QList<int>& ints,
-            std::function<void(const int& result)> onSuccess)
+            const QList<int32_t>& ints,
+            std::function<void(const int32_t& result)> onSuccess)
     {
-        int result = 0;
-        int j;
+        int32_t result = 0;
+        int32_t j;
         foreach ( j, ints) {
             result += j;
         }
         onSuccess(result);
     }
     void returnPrimeNumbers(
-            const int &upperBound,
+            const int32_t &upperBound,
             std::function<void(
-                const QList<int>& result)> onSuccess)
+                const QList<int32_t>& result)> onSuccess)
     {
-        QList<int> result;
+        QList<int32_t> result;
         assert(upperBound<7);
         result.clear();
         result << 2 << 3 << 5;
