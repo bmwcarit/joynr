@@ -18,6 +18,7 @@ package io.joynr.generator.util
  */
 
 import java.util.ArrayList
+import java.util.Set
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FMethod
@@ -90,5 +91,12 @@ abstract class TypeUtil {
 			result.add(argument.typeName);
 		}
 		return result;
+	}
+
+	def <T> Set<T> addElements (Set<T> originalSet, T... elements){
+		for (element : elements) {
+			originalSet.add(element);
+		}
+		return originalSet;
 	}
 }
