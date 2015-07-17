@@ -934,4 +934,28 @@ abstract class JoynrGeneratorExtensions {
 		}
 	}
 
+	def hasArray (FInterface fInterface) {
+		for (method : fInterface.methods) {
+			for (args : Iterables::concat(method.inputParameters, method.outputParameters)) {
+				if (args.isArray) {
+					return true
+				}
+			}
+		}
+
+		for (broadcast : fInterface.broadcasts) {
+			for (args : broadcast.outputParameters) {
+				if (args.isArray) {
+					return true
+				}
+			}
+		}
+
+		for (attribute : getAttributes(fInterface)) {
+			if (attribute.isArray) {
+				return true
+			}
+		}
+		return false
+	}
 }
