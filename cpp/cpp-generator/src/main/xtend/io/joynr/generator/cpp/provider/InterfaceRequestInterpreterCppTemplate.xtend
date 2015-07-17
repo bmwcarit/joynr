@@ -57,7 +57,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 #include "joynr/RequestStatus.h"
 #include <cassert>
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
 «ENDFOR»
 

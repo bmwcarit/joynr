@@ -23,15 +23,13 @@ import com.google.inject.name.Named
 import io.joynr.generator.util.JoynrGeneratorExtensions
 import java.io.File
 import java.util.Iterator
-import java.util.TreeSet
+import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
-import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
-import org.franca.core.franca.FBasicTypeId
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -117,61 +115,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 			packagepath += datatype.typeCollectionName + separator;
 		}
 		return packagepath;
-	}
-
-	def Iterable<String> getRequiredIncludesForStd(FCompoundType datatype){
-		val members = getComplexAndEnumMembers(datatype);
-
-		val typeList = new TreeSet<String>();
-		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOfStd(getExtendedType(datatype)))
-		}
-
-		for (member : members) {
-			val type = getDatatype(member.type);
-			if (type instanceof FType){
-				//TODO QT: remove this if statement once merged with std enums
-				if (isEnum(type)) {
-					typeList.add(getIncludeOf(type));
-				} else {
-					typeList.add(getIncludeOfStd(type));
-				}
-			}
-		}
-		return typeList;
-	}
-
-	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		val members = getComplexAndEnumMembers(datatype);
-
-		val typeList = new TreeSet<String>();
-		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOf(getExtendedType(datatype)))
-		}
-
-		for (member : members) {
-			val type = getDatatype(member.type);
-			if (type instanceof FType){
-				typeList.add(getIncludeOf(type));
-			}
-		}
-		return typeList;
-	}
-
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface){
-		val includeSet = new TreeSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
-			if (datatype instanceof FType){
-				includeSet.add("\"" + getIncludeOf(datatype) + "\"");
-			}
-		}
-
-		for (broadcast: serviceInterface.broadcasts) {
-			if (isSelective(broadcast)) {
-				includeSet.add("\"" + getIncludeOfFilterParametersContainer(serviceInterface, broadcast) + "\"");
-			}
-		}
-		return includeSet;
 	}
 
 	override String getOneLineWarning() {

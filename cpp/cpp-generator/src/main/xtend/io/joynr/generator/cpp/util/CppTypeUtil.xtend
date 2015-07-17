@@ -21,10 +21,15 @@ import com.google.inject.Inject
 import io.joynr.generator.util.TypeUtil
 import java.util.Collections
 import java.util.HashMap
+import java.util.HashSet
 import java.util.Map
+import java.util.Set
+import java.util.TreeSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
@@ -203,5 +208,59 @@ abstract class CppTypeUtil extends TypeUtil {
  		} else {
 			return primitiveDataTypeDefaultMap.get(element.type.predefined);
 		}
+	}
+
+	def Iterable<String> getRequiredIncludesForStd(FCompoundType datatype){
+		val members = getComplexAndEnumMembers(datatype);
+
+		val typeList = new TreeSet<String>();
+		if (hasExtendsDeclaration(datatype)){
+			typeList.add(getIncludeOfStd(getExtendedType(datatype)))
+		}
+
+		for (member : members) {
+			val type = getDatatype(member.type);
+			if (type instanceof FType){
+				//TODO QT: remove this if statement once merged with std enums
+				if (isEnum(type)) {
+					typeList.add(getIncludeOf(type));
+				} else {
+					typeList.add(getIncludeOfStd(type));
+				}
+			}
+		}
+		return typeList;
+	}
+
+	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
+		val members = getComplexAndEnumMembers(datatype);
+
+		val typeList = new TreeSet<String>();
+		if (hasExtendsDeclaration(datatype)){
+			typeList.add(getIncludeOf(getExtendedType(datatype)))
+		}
+
+		for (member : members) {
+			val type = getDatatype(member.type);
+			if (type instanceof FType){
+				typeList.add(getIncludeOf(type));
+			}
+		}
+		return typeList;
+	}
+	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
+		val includeSet = new HashSet<String>();
+		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
+			if (datatype instanceof FType){
+				includeSet.add("\"" + getIncludeOf(datatype) + "\"");
+			}
+		}
+
+		for (broadcast: serviceInterface.broadcasts) {
+			if (isSelective(broadcast)) {
+				includeSet.add("\"" + getIncludeOfFilterParametersContainer(serviceInterface, broadcast) + "\"");
+			}
+		}
+		return includeSet;
 	}
 }

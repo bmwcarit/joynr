@@ -45,7 +45,7 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
 «ENDFOR»
 
