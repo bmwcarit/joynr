@@ -55,7 +55,7 @@ const qint64& LocalCapabilitiesDirectory::DONT_USE_CACHE()
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                                        ICapabilitiesClient* capabilitiesClientPtr,
                                                        MessageRouter& messageRouter)
-        : joynr::system::DiscoveryProvider(),
+        : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
           capabilitiesClient(capabilitiesClientPtr),
           cacheLock(new QMutex),

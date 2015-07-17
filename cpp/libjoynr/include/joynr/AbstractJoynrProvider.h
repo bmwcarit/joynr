@@ -41,7 +41,7 @@ class IBroadcastListener;
  * Abstract class that specifies the interface providers need to implement
  * and contains functionality to support listening to onChange events
  */
-class JOYNR_EXPORT AbstractJoynrProvider : public IJoynrProvider
+class JOYNR_EXPORT AbstractJoynrProvider : public virtual IJoynrProvider
 {
 public:
     AbstractJoynrProvider();

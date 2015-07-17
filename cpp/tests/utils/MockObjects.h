@@ -538,6 +538,10 @@ public:
         callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), location);
     }
 
+    void fireLocationUpdateSelective(const joynr::types::GpsLocation& location) {
+        joynr::tests::testAbstractProvider::fireLocationUpdateSelective(location);
+    }
+
     MOCK_METHOD1(
             getLocation,
             void(std::function<void(

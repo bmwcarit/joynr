@@ -47,7 +47,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/AbstractJoynrProvider.h"
+#include "joynr/IJoynrProvider.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/RequestCallerFactory.h"
@@ -64,8 +64,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(serviceInterface)»
 
-class «getDllExportMacro()» «interfaceName»Provider :
-		public joynr::AbstractJoynrProvider
+class «getDllExportMacro()» «interfaceName»Provider : public virtual IJoynrProvider
 {
 
 public:
@@ -92,7 +91,7 @@ public:
 		* modifications. It is used to implement onchange subscriptions.
 		* @param «attributeName» the new attribute value
 		*/
-		void «attributeName»Changed(const «attribute.typeName»& «attributeName»);
+		virtual void «attributeName»Changed(const «attribute.typeName»& «attributeName») = 0;
 	«ENDFOR»
 	«FOR method: getMethods(serviceInterface)»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
@@ -111,7 +110,7 @@ public:
 		* event. It is used to implement broadcast publications.
 		* @param «broadcastName» the new broadcast value
 		*/
-		void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList»);
+		virtual void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList») = 0;
 	«ENDFOR»
 
 	virtual std::string getInterfaceName() const;

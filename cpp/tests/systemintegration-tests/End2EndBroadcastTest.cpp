@@ -37,6 +37,7 @@
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/tests/testAbstractProvider.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -53,6 +54,36 @@ static const QString messagingPropertiesPersistenceFileName2(
         "End2EndBroadcastTest-runtime2-joynr.settings");
 
 namespace joynr {
+
+class MyTestProvider : public tests::DefaulttestProvider {
+public:
+    virtual void locationChanged(const joynr::types::GpsLocation& location) {
+        tests::testAbstractProvider::locationChanged(location);
+    }
+
+    virtual void fireLocation(const joynr::types::GpsLocation& location) {
+        tests::testAbstractProvider::fireLocation(location);
+    }
+
+    virtual void fireBroadcastWithEnumOutput(const joynr::tests::TestEnum::Enum& testEnum) {
+        tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
+    }
+
+    virtual void fireLocationUpdate(const joynr::types::GpsLocation& location) {
+        tests::testAbstractProvider::fireLocationUpdate(location);
+    }
+
+    virtual void fireLocationUpdateWithSpeed(
+            const joynr::types::GpsLocation& location,
+            const double& currentSpeed
+    ) {
+        tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
+    }
+
+    virtual void fireLocationUpdateSelective(const joynr::types::GpsLocation& location) {
+        tests::testAbstractProvider::fireLocationUpdateSelective(location);
+    }
+};
 
 class End2EndBroadcastTest : public Test {
 public:
@@ -134,7 +165,7 @@ public:
      * before the subscription has started.
      */
     void waitForBroadcastSubscriptionArrivedAtProvider(
-            std::shared_ptr<tests::testProvider> testProvider,
+            std::shared_ptr<tests::testAbstractProvider> testProvider,
             const std::string& broadcastName)
     {
         unsigned long delay = 0;
@@ -170,7 +201,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     QSharedPointer<ISubscriptionListener<tests::TestEnum::Enum>> subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -232,7 +263,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener2(
                     mockListener2);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -387,7 +418,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -511,7 +542,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -652,7 +683,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation, float> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -797,7 +828,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     testProvider->addBroadcastFilter(filter);
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -909,7 +940,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     testProvider->addBroadcastFilter(filter);
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -1053,7 +1084,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur

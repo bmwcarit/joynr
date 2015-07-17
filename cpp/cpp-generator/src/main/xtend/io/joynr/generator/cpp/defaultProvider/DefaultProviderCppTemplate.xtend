@@ -55,7 +55,7 @@ using namespace joynr::joynr_logging;
 Logger* Default«interfaceName»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«interfaceName»Provider");
 
 Default«interfaceName»Provider::Default«interfaceName»Provider() :
-	«interfaceName»Provider()
+	«interfaceName»AbstractProvider()
 {
 	// default uses a priority that is the current time,
 	// causing arbitration to the last started instance if highest priority arbitrator is used

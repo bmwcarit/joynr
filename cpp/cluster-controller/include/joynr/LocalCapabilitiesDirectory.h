@@ -51,7 +51,7 @@
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/system/DiscoveryProvider.h"
+#include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/MessageRouter.h"
 
 #include <QCache>
@@ -77,7 +77,7 @@ class CapabilitiesInformation;
 }
 
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
-        : public joynr::system::DiscoveryProvider
+        : public joynr::system::DiscoveryAbstractProvider
 {
 public:
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,

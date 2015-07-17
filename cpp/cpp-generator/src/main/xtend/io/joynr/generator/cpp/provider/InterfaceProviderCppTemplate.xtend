@@ -100,7 +100,6 @@ std::string «interfaceName»Provider::getInterfaceName() const {
 }
 
 «FOR attribute: getAttributes(serviceInterface)»
-	«var attributeType = attribute.typeName»
 	«var attributeName = attribute.joynrName»
 	void «interfaceName»Provider::get«attributeName.toFirstUpper»(
 			std::function<void(
@@ -115,27 +114,8 @@ std::string «interfaceName»Provider::getInterfaceName() const {
 		«attributeName»Changed(«attributeName»);
 		callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK));
 	}
-
-	void «interfaceName»Provider::«attributeName»Changed(const «attributeType»& «attributeName») {
-		if(this->«attributeName» == «attributeName») {
-			// the value didn't change, no need for notification
-			return;
-		}
-		this->«attributeName» = «attributeName»;
-		onAttributeValueChanged("«attributeName»", QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»));
-	}
 «ENDFOR»
 
-«FOR broadcast: serviceInterface.broadcasts»
-	«var broadcastName = broadcast.joynrName»
-	void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList») {
-		QList<QVariant> broadcastValues;
-		«FOR parameter: getOutputParameters(broadcast)»
-			broadcastValues.append(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(parameter, parameter.name)»));
-		«ENDFOR»
-		fireBroadcast("«broadcastName»", broadcastValues);
-	}
-«ENDFOR»
 «getNamespaceEnder(serviceInterface)»
 '''
 }

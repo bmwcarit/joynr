@@ -30,7 +30,11 @@ joynr_logging::Logger* MyRadioProvider::logger =
         joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
 
 MyRadioProvider::MyRadioProvider()
-        : RadioProvider(), currentStationIndex(0), stationsList(), countryGeoPositionMap(), mutex()
+        : RadioAbstractProvider(),
+          currentStationIndex(0),
+          stationsList(),
+          countryGeoPositionMap(),
+          mutex()
 {
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently

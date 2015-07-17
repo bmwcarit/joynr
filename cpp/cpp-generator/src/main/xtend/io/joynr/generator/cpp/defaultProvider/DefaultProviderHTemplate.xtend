@@ -55,11 +55,11 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 
 «getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»AbstractProvider.h"
 
 «getNamespaceStarter(serviceInterface)»
 
-class «getDllExportMacro()» Default«interfaceName»Provider: public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider {
+class «getDllExportMacro()» Default«interfaceName»Provider: public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»AbstractProvider {
 
 public:
 	Default«interfaceName»Provider();

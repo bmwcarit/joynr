@@ -19,7 +19,7 @@
 #ifndef MY_RADIO_PROVIDER_H
 #define MY_RADIO_PROVIDER_H
 
-#include "joynr/vehicle/RadioProvider.h"
+#include "joynr/vehicle/RadioAbstractProvider.h"
 #include "joynr/vehicle/RadioStation.h"
 #include "joynr/vehicle/Country.h"
 #include "joynr/joynrlogging.h"
@@ -30,7 +30,7 @@
 /**
   * A Radio Provider with a circular list of radio stations
   */
-class MyRadioProvider : public joynr::vehicle::RadioProvider
+class MyRadioProvider : public joynr::vehicle::RadioAbstractProvider
 {
 public:
     MyRadioProvider();

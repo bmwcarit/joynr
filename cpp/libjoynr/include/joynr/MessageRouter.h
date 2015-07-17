@@ -26,7 +26,7 @@
 #include "joynr/IMessaging.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
-#include "joynr/system/RoutingProvider.h"
+#include "joynr/system/RoutingAbstractProvider.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
@@ -72,7 +72,7 @@ class Address;
   *  In sending, a ThreadPool of default size 6 is used with a 500ms default retry interval.
   */
 
-class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider
+class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingAbstractProvider
 {
 public:
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
