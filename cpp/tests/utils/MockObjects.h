@@ -477,7 +477,7 @@ public:
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 {
     public:
-    MockGpsProvider() : joynr::vehicle::DefaultGpsProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
+    MockGpsProvider() : joynr::vehicle::DefaultGpsProvider()
     {
     };
     ~MockGpsProvider()
@@ -514,15 +514,16 @@ class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
     MockTestProvider() :
-        joynr::tests::DefaulttestProvider(joynr::types::ProviderQos(QList<joynr::types::CustomParameter>(),1,1,joynr::types::ProviderScope::GLOBAL,false))
+        joynr::tests::DefaulttestProvider()
     {
         EXPECT_CALL(*this,
                     getLocation(_)).
                 WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeCallbackFct));
     }
     MockTestProvider(joynr::types::ProviderQos qos) :
-        DefaulttestProvider(qos)
+        DefaulttestProvider()
     {
+        providerQos = qos;
         EXPECT_CALL(*this,
                     getLocation(_)).
                 WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeCallbackFct));

@@ -29,7 +29,7 @@ namespace joynr
 {
 
 AbstractJoynrProvider::AbstractJoynrProvider()
-        : lock(), attributeListeners(), broadcastListeners(), broadcastFilters()
+        : providerQos(), lock(), attributeListeners(), broadcastListeners(), broadcastFilters()
 {
 }
 
@@ -41,6 +41,11 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
             delete listener;
         }
     }
+}
+
+types::ProviderQos AbstractJoynrProvider::getProviderQos() const
+{
+    return providerQos;
 }
 
 void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,

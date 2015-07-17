@@ -48,7 +48,7 @@ public:
     virtual ~AbstractJoynrProvider();
 
     // --- Interface to be implemented by Providers ---
-    virtual types::ProviderQos getProviderQos() const = 0;
+    virtual types::ProviderQos getProviderQos() const;
 
     // --- Support for listening to onChange events ---
 
@@ -87,6 +87,9 @@ public:
     void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
 
     virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
+
+protected:
+    types::ProviderQos providerQos;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);

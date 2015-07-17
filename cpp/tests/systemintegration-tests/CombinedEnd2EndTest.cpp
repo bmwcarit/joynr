@@ -406,9 +406,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                     mockListener);
     // Provider: (runtime1)
 
-    types::ProviderQos providerQos;
-    providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
@@ -466,10 +464,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
                     mockListener);
     // Provider: (runtime1)
 
-    types::ProviderQos providerQos;
-    providerQos.setPriority(2);
-    providerQos.setSupportsOnChangeSubscriptions(true);
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -654,9 +649,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                     mockListener);
     // Provider: (runtime1)
 
-    types::ProviderQos providerQos;
-    providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::GpsLocation gpsLocation1;
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
@@ -700,9 +693,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     // Provider: (runtime1)
 
-    types::ProviderQos providerQos;
-    providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -896,9 +887,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    types::ProviderQos providerQos;
-    providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
             testProvider

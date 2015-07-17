@@ -18,6 +18,9 @@
  */
 
 #include "MyRadioProvider.h"
+
+#include <QDateTime>
+
 #include "MyRadioHelper.h"
 #include "joynr/RequestStatus.h"
 
@@ -26,13 +29,14 @@ using namespace joynr;
 joynr_logging::Logger* MyRadioProvider::logger =
         joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
 
-MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos)
-        : RadioProvider(providerQos),
-          currentStationIndex(0),
-          stationsList(),
-          countryGeoPositionMap(),
-          mutex()
+MyRadioProvider::MyRadioProvider()
+        : RadioProvider(), currentStationIndex(0), stationsList(), countryGeoPositionMap(), mutex()
 {
+    // Initialise the quality of service settings
+    // Set the priority so that the consumer application always uses the most recently
+    // started provider
+    providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
+
     stationsList << vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA)
                  << vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY)
                  << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)

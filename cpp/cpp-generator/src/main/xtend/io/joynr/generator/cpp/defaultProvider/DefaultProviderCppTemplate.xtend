@@ -41,6 +41,10 @@ class DefaultProviderCppTemplate implements InterfaceTemplate{
 «val interfaceName = serviceInterface.joynrName»
 «warning()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/Default«interfaceName»Provider.h"
+
+#include <chrono>
+#include <cstdint>
+
 #include "joynr/RequestStatus.h"
 #include "joynr/joynrlogging.h"
 
@@ -50,9 +54,17 @@ using namespace joynr::joynr_logging;
 
 Logger* Default«interfaceName»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«interfaceName»Provider");
 
-Default«interfaceName»Provider::Default«interfaceName»Provider(const joynr::types::ProviderQos& providerQos) :
-	«interfaceName»Provider(providerQos)
+Default«interfaceName»Provider::Default«interfaceName»Provider() :
+	«interfaceName»Provider()
 {
+	// default uses a priority that is the current time,
+	// causing arbitration to the last started instance if highest priority arbitrator is used
+	std::chrono::milliseconds millisSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now().time_since_epoch()
+	);
+	providerQos.setPriority(millisSinceEpoch.count());
+	providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+	providerQos.setSupportsOnChangeSubscriptions(true);
 }
 
 Default«interfaceName»Provider::~Default«interfaceName»Provider()

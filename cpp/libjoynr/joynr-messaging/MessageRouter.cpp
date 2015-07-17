@@ -74,13 +74,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
                              IPlatformSecurityManager* securityManager,
                              int maxThreads,
                              MessageQueue* messageQueue)
-        : joynr::system::RoutingProvider(joynr::types::ProviderQos(
-                  QList<joynr::types::CustomParameter>(), // custom provider parameters
-                  1,                                      // provider version
-                  1,                                      // provider priority
-                  joynr::types::ProviderScope::LOCAL,     // provider discovery scope
-                  false                                   // supports on change subscriptions
-                  )),
+        : joynr::system::RoutingProvider(),
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
@@ -95,6 +89,11 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           securityManager(securityManager),
           parentResolveMutex()
 {
+    providerQos.setCustomParameters(QList<joynr::types::CustomParameter>());
+    providerQos.setProviderVersion(1);
+    providerQos.setPriority(1);
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    providerQos.setSupportsOnChangeSubscriptions(false);
     init(maxThreads);
 }
 
@@ -102,13 +101,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
                              QSharedPointer<joynr::system::Address> incomingAddress,
                              int maxThreads,
                              MessageQueue* messageQueue)
-        : joynr::system::RoutingProvider(joynr::types::ProviderQos(
-                  QList<joynr::types::CustomParameter>(), // custom provider parameters
-                  1,                                      // provider version
-                  1,                                      // provider priority
-                  joynr::types::ProviderScope::LOCAL,     // provider discovery scope
-                  false                                   // supports on change subscriptions
-                  )),
+        : joynr::system::RoutingProvider(),
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
@@ -123,6 +116,11 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           securityManager(NULL),
           parentResolveMutex()
 {
+    providerQos.setCustomParameters(QList<joynr::types::CustomParameter>());
+    providerQos.setProviderVersion(1);
+    providerQos.setPriority(1);
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    providerQos.setSupportsOnChangeSubscriptions(false);
     init(maxThreads);
 }
 

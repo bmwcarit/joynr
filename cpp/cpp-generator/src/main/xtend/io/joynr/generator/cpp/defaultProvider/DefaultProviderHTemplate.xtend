@@ -62,7 +62,7 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 class «getDllExportMacro()» Default«interfaceName»Provider: public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider {
 
 public:
-	Default«interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
+	Default«interfaceName»Provider();
 
 	virtual ~Default«interfaceName»Provider();
 

@@ -22,7 +22,6 @@
 #include "joynr/vehicle/RadioProvider.h"
 #include "joynr/vehicle/RadioStation.h"
 #include "joynr/vehicle/Country.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/joynrlogging.h"
 #include <QList>
 #include <QMap>
@@ -34,7 +33,7 @@
 class MyRadioProvider : public joynr::vehicle::RadioProvider
 {
 public:
-    MyRadioProvider(const joynr::types::ProviderQos& providerQos);
+    MyRadioProvider();
     ~MyRadioProvider();
 
     /**

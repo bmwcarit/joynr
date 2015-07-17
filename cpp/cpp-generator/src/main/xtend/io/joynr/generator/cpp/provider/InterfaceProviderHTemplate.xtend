@@ -50,7 +50,6 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 #include "joynr/AbstractJoynrProvider.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/RequestCallerFactory.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 
@@ -71,8 +70,7 @@ class «getDllExportMacro()» «interfaceName»Provider :
 {
 
 public:
-	//TODO remove default value for ProviderQos and pass in real qos parameters
-	«interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
+	«interfaceName»Provider();
 	//for each Attribute the provider needs setters, sync and async getters.
 	//They have default implementation for pushing Providers and can be overwritten by pulling Providers.
 	virtual ~«interfaceName»Provider();
@@ -117,8 +115,6 @@ public:
 
 	virtual std::string getInterfaceName() const;
 
-	joynr::types::ProviderQos getProviderQos() const;
-
 protected:
 	«FOR attribute: getAttributes(serviceInterface)»
 		«attribute.typeName» «attribute.joynrName»;
@@ -126,7 +122,6 @@ protected:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
-	joynr::types::ProviderQos providerQos;
 };
 «getNamespaceEnder(serviceInterface)»
 

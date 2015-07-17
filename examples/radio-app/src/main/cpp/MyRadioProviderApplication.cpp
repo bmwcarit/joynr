@@ -62,14 +62,8 @@ int main(int argc, char* argv[])
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(
             TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
 
-    // Initialise the quality of service settings
-    // Set the priority so that the consumer application always uses the most recently
-    // started provider
-    types::ProviderQos providerQos;
-    providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
-
     // create provider instance
-    std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider(providerQos));
+    std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
     // add broadcast filters
     QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
             new TrafficServiceBroadcastFilter());

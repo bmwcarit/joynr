@@ -55,13 +55,7 @@ const qint64& LocalCapabilitiesDirectory::DONT_USE_CACHE()
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                                        ICapabilitiesClient* capabilitiesClientPtr,
                                                        MessageRouter& messageRouter)
-        : joynr::system::DiscoveryProvider(joynr::types::ProviderQos(
-                  QList<joynr::types::CustomParameter>(), // custom provider parameters
-                  1,                                      // provider version
-                  1,                                      // provider priority
-                  joynr::types::ProviderScope::LOCAL,     // provider discovery scope
-                  false                                   // supports on change subscriptions
-                  )),
+        : joynr::system::DiscoveryProvider(),
           messagingSettings(messagingSettings),
           capabilitiesClient(capabilitiesClientPtr),
           cacheLock(new QMutex),
@@ -73,6 +67,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           messageRouter(messageRouter),
           observers()
 {
+    providerQos.setCustomParameters(QList<joynr::types::CustomParameter>());
+    providerQos.setProviderVersion(1);
+    providerQos.setPriority(1);
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    providerQos.setSupportsOnChangeSubscriptions(false);
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
     QList<joynr::system::CommunicationMiddleware::Enum> middlewareConnections;

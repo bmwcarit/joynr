@@ -49,12 +49,11 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 #include "joynr/TypeUtil.h"
 
 «getNamespaceStarter(serviceInterface)»
-«interfaceName»Provider::«interfaceName»Provider(const joynr::types::ProviderQos &providerQos) :
-	I«interfaceName»Base(),
-	«FOR attribute: getAttributes(serviceInterface)»
-		«attribute.joynrName»(),
+«interfaceName»Provider::«interfaceName»Provider() :
+	I«interfaceName»Base()«IF !serviceInterface.attributes.empty»,«ENDIF»
+	«FOR attribute: getAttributes(serviceInterface) SEPARATOR ","»
+		«attribute.joynrName»()
 	«ENDFOR»
-	providerQos(providerQos)
 {
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
@@ -68,10 +67,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 std::string «interfaceName»Provider::getInterfaceName() const {
 	return I«interfaceName»Base::INTERFACE_NAME();
-}
-
-joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
-	return providerQos;
 }
 
 «FOR attribute: getAttributes(serviceInterface)»
