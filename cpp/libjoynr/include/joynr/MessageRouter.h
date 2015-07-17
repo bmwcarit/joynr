@@ -40,6 +40,7 @@
 #include <QSet>
 #include <QMutex>
 #include <string>
+#include <QReadWriteLock>
 
 namespace joynr
 {
