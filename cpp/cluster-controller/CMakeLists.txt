@@ -129,14 +129,14 @@ if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterController_HEADERS}")
     set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterController_SOURCES}")
 
-    add_custom_command(
-        TARGET JoynrClusterController
-        PRE_BUILD
+    add_custom_target(
+        format-JoynrClusterController
         COMMAND clang-format -i ${JoynrClusterController_HEADERS} ${JoynrClusterController_SOURCES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "${COMMENT}"
         VERBATIM
     )
+    add_dependencies(JoynrClusterController format-JoynrClusterController)
 endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(

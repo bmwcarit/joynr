@@ -130,22 +130,6 @@ add_library(
     ${JoynrCommon_SOURCES}
 )
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommon_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommon_SOURCES}")
-
-    add_custom_command(
-        TARGET JoynrCommon
-        PRE_BUILD
-        COMMAND clang-format -i ${JoynrCommon_HEADERS} ${JoynrCommon_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-endif(${ENABLE_CLANG_FORMATTER})
-
 set_target_properties(
     JoynrCommon
     PROPERTIES
@@ -160,6 +144,23 @@ generate_export_header(
 )
 
 target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(COMMENT "running C++ code formatter: clang-format")
+    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommon_HEADERS}")
+    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommon_SOURCES}")
+
+    add_custom_target(
+        format-JoynrCommon
+        COMMAND clang-format -i ${JoynrCommon_HEADERS} ${JoynrCommon_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "${COMMENT}"
+        VERBATIM
+    )
+    add_dependencies(JoynrCommon format-JoynrCommon)
+
+endif(${ENABLE_CLANG_FORMATTER})
 
 install(
     TARGETS JoynrCommon
