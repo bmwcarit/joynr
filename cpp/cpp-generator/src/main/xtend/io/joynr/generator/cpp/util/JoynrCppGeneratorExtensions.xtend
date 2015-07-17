@@ -192,13 +192,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		serviceInterface.allRequiredTypes.filter[type | type instanceof FBasicTypeId].map[type | type as FBasicTypeId]
 	}
 
-	def getIncludesFor(Iterable<FBasicTypeId> datatypes) {'''
-		«IF datatypes.exists[type | type == FBasicTypeId.STRING]»
-			#include <string>
-		«ENDIF»
-	'''
-	}
-
 	def String getIncludeOfStd(FType dataType) {
 		var path = getPackagePathWithJoynrPrefix(dataType, "/")
 		if (dataType.isPartOfTypeCollection) {

@@ -49,8 +49,6 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
-
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/IConnector.h"

@@ -24,7 +24,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FBasicTypeId
 
 class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 
@@ -51,7 +50,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
@@ -65,9 +64,6 @@ namespace joynr {
 	class IJoynrMessageSender;
 	class SubscriptionManager;
 }
-
-#include <string>
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
 
 «getNamespaceStarter(serviceInterface)»
 

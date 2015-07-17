@@ -58,8 +58,6 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 «ENDFOR»
 
 #include <memory>
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
-
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»

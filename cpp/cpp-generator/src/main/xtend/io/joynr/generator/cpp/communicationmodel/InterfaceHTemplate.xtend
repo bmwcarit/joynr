@@ -18,11 +18,11 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 
@@ -33,6 +33,8 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension InterfaceUtil
+
+	@Inject extension CppMigrateToStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -56,8 +58,9 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	«ENDIF»
 «ENDFOR»
 
-#include <string>
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
+«FOR include: serviceInterface.allPrimitiveTypes.includesFor.addElements(includeForArray, includeForString)»
+	#include «include»
+«ENDFOR»
 
 «getDllExportIncludeStatement()»
 

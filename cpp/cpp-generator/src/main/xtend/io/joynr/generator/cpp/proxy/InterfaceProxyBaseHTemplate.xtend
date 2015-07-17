@@ -22,7 +22,6 @@ import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 
 class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
@@ -42,12 +41,9 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
-
-#include <string>
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
 
 «getDllExportIncludeStatement()»
 #include "joynr/ProxyBase.h"

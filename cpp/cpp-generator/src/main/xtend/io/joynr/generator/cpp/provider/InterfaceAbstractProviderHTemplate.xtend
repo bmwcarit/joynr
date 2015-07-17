@@ -53,8 +53,6 @@ class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
 	#include «parameterType»
 «ENDFOR»
 
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
-
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»

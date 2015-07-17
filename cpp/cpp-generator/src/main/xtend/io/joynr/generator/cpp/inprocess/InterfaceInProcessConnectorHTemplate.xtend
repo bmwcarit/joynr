@@ -24,7 +24,6 @@ import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 
 class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
@@ -64,8 +63,9 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include <QSharedPointer>
 #include "joynr/TypeUtil.h"
 
-#include <string>
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface).filter[type | type !== FBasicTypeId.STRING])»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+	#include «parameterType»
+«ENDFOR»
 
 namespace joynr {
 	class RequestStatus;

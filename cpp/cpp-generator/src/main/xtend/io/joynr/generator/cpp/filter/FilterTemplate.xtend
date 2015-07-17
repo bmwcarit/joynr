@@ -19,12 +19,12 @@ package io.joynr.generator.cpp.filter
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.BroadcastTemplate
+import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FArgument
-import io.joynr.generator.util.BroadcastTemplate
-import io.joynr.generator.cpp.util.QtTypeUtil
 
 class FilterTemplate implements BroadcastTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
@@ -65,8 +65,6 @@ class FilterTemplate implements BroadcastTemplate {
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 #include «parameterType»
 «ENDFOR»
-
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"

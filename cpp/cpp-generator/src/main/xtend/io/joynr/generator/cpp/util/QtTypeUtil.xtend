@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import java.util.HashSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
@@ -157,4 +158,13 @@ class QtTypeUtil extends CppTypeUtil {
 	override getTypeNameForList(FBasicTypeId datatype) {
 		"QList<" + datatype.typeName + "> ";
 	}
- }
+
+	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {
+		return new HashSet<String>;
+	}
+	
+	override getIncludeForArray() {
+		return null
+	}
+
+}

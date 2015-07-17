@@ -55,8 +55,6 @@ class DefaultInterfaceProviderHTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
-«getIncludesFor(getAllPrimitiveTypes(serviceInterface))»
-
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»AbstractProvider.h"
 
 «getNamespaceStarter(serviceInterface)»

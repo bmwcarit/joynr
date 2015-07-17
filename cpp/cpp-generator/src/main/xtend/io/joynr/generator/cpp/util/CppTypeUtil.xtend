@@ -248,12 +248,22 @@ abstract class CppTypeUtil extends TypeUtil {
 		}
 		return typeList;
 	}
+
+	def Set<String> getIncludesFor(Iterable<FBasicTypeId> datatypes)
+
+	abstract def String getIncludeForArray()
+
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
 		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
 			if (datatype instanceof FType){
 				includeSet.add("\"" + getIncludeOf(datatype) + "\"");
 			}
+		}
+
+		includeSet.addAll(serviceInterface.allPrimitiveTypes.includesFor)
+		if (serviceInterface.hasArray && includeForArray != null){
+			includeSet.add(includeForArray)
 		}
 
 		for (broadcast: serviceInterface.broadcasts) {

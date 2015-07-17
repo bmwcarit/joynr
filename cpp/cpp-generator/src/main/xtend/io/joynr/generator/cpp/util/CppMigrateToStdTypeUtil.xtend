@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import java.util.HashSet
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FType
 
@@ -47,5 +48,40 @@ class CppMigrateToStdTypeUtil extends CppTypeUtil {
 
 	override getTypeNameForList(FBasicTypeId datatype) {
 		"QList<" + datatype.typeName + "> ";
+	}
+
+	override getIncludeForArray() {
+		"<vector>"
+	}
+
+	def getIncludeForString() {
+		"<string>"
+	}
+
+	def getIncludeForInteger() {
+		"<stdint.h>"
+	}
+
+	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {
+		var includes = new HashSet<String>;
+		if (datatypes.exists[type | type == FBasicTypeId.STRING]) {
+			includes.add(includeForString);
+		}
+		if (datatypes.exists[type | type == FBasicTypeId.BYTE_BUFFER]) {
+			includes.add(includeForArray);
+		}
+		if (datatypes.exists[type | type == FBasicTypeId.INT8  ||
+									type == FBasicTypeId.UINT8 ||
+									type == FBasicTypeId.INT16 ||
+									type == FBasicTypeId.UINT16||
+									type == FBasicTypeId.INT32 ||
+									type == FBasicTypeId.UINT32||
+									type == FBasicTypeId.INT64 ||
+									type == FBasicTypeId.UINT64||
+									type == FBasicTypeId.BYTE_BUFFER
+		]) {
+			includes.add(includeForInteger)
+		}
+		return includes;
 	}
 }
