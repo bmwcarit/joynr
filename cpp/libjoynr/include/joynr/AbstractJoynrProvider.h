@@ -65,11 +65,6 @@ public:
                                              IAttributeListener* attributeListener);
 
     /**
-     * Called by subclasses when the value of an attribute changes
-     */
-    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value);
-
-    /**
      * Register an object that will be informed when an event occurs
      */
     virtual void registerBroadcastListener(const std::string& broadcastName,
@@ -81,14 +76,19 @@ public:
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener);
 
+    virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
+
+protected:
+    /**
+     * Called by subclasses when the value of an attribute changes
+     */
+    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value);
+
     /**
      * Called by subclasses when a broadcast occurs
      */
     void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
 
-    virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
-
-protected:
     types::ProviderQos providerQos;
 
 private:

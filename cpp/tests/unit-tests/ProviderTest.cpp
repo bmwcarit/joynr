@@ -38,6 +38,14 @@ public:
     std::string getInterfaceName() const {
         return "DummyProviderInterface";
     }
+
+    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value) {
+        AbstractJoynrProvider::onAttributeValueChanged(attributeName, value);
+    }
+
+    void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values) {
+        AbstractJoynrProvider::fireBroadcast(broadcastName, values);
+    }
 };
 
 TEST(ProviderTest, register_attributeListener) {
