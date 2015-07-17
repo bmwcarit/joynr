@@ -65,7 +65,6 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 «getNamespaceStarter(serviceInterface)»
 
 class «getDllExportMacro()» «interfaceName»Provider :
-		public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Base,
 		public joynr::AbstractJoynrProvider
 {
 
@@ -74,6 +73,8 @@ public:
 	//for each Attribute the provider needs setters, sync and async getters.
 	//They have default implementation for pushing Providers and can be overwritten by pulling Providers.
 	virtual ~«interfaceName»Provider();
+
+	static const std::string& INTERFACE_NAME();
 
 	// request status, result, (params......)*
 
