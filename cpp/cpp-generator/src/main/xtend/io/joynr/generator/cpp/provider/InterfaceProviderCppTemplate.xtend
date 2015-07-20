@@ -24,6 +24,7 @@ import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FType
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -44,6 +45,8 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 «val interfaceName = serviceInterface.joynrName»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 #include "joynr/InterfaceRegistrar.h"
+#include "joynr/MetaTypeRegistrar.h"
+
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/TypeUtil.h"
@@ -56,6 +59,28 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 {
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
+
+	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface)»
+
+	«IF !typeObjs.isEmpty()»
+		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
+	«ENDIF»
+	«FOR typeobj : typeObjs»
+		«val datatype = typeobj as FType»
+
+		// Register metatype «datatype.typeName»
+		«IF isEnum(datatype)»
+		{
+			qRegisterMetaType<«getEnumContainer(datatype)»>();
+			int id = qRegisterMetaType<«datatype.typeName»>();
+			registrar.registerEnumMetaType<«getEnumContainer(datatype)»>();
+			QJson::Serializer::registerEnum(id, «getEnumContainer(datatype)»::staticMetaObject.enumerator(0));
+		}
+		«ELSE»
+			qRegisterMetaType<«datatype.typeName»>("«datatype.typeName»");
+			registrar.registerMetaType<«datatype.typeName»>();
+		«ENDIF»
+	«ENDFOR»
 }
 
 «interfaceName»Provider::~«interfaceName»Provider()
