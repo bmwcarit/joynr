@@ -52,11 +52,15 @@ import java.util.ArrayList;
 import com.google.common.collect.Lists;
 «ENDIF»
 
-@SuppressWarnings("serial")
-// NOTE: serialVersionUID is not defined since we don't support Franca versions right now. 
+// NOTE: serialVersionUID is not defined since we don't support Franca versions right now.
 //       The compiler will generate a serialVersionUID based on the class and its members
 //       (cf. http://docs.oracle.com/javase/6/docs/platform/serialization/spec/class.html#4100),
 //       which is probably more restrictive than what we want.
+
+/**
+«appendJavadocSummaryAndWriteSeeAndDescription(complexType, " *")»
+ */
+@SuppressWarnings("serial")
 public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «complexType.extendedType.typeName»«ENDIF» implements Serializable, JoynrType {
 	«FOR member : getMembers(complexType)»
 	«val memberType = member.typeName.replace("::","__")»
@@ -67,6 +71,9 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	«ENDIF»
 	«ENDFOR»
 
+	/**
+	 * Default Constructor
+	 */
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
 		this.«member.joynrName» = «member.defaultValue»;
@@ -74,6 +81,11 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	}
 
 	«val copyObjName = typeName.toFirstLower + "Obj"»
+	/**
+	 * Copy constructor
+	 *
+	 * @param «copyObjName» reference to the object to be copied
+	 */
 	public «typeName»(«typeName» «copyObjName») {
 		«IF complexType.hasExtendsDeclaration»
 		super(«copyObjName»);
@@ -103,6 +115,13 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	}
 
 	«IF !getMembersRecursive(complexType).empty»
+	/**
+	 * Parameterized constructor
+	 *
+	 «FOR member : getMembersRecursive(complexType)»
+	 «appendJavadocParameter(member, "*")»
+	 «ENDFOR»
+	 */
 	public «typeName»(
 		«FOR member : getMembersRecursive(complexType) SEPARATOR ','»
 		«member.typeName.replace("::","__")» «member.joynrName»
@@ -124,16 +143,31 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	«FOR member : getMembers(complexType)»
 	«val memberType = member.typeName.replace("::","__")»
 	«val memberName = member.joynrName»
+	/**
+	 * Gets «memberName.toFirstUpper»
+	 *
+	 * @return «appendJavadocComment(member, "* ")»
+	 */
 	public «memberType» get«memberName.toFirstUpper»() {
 		return this.«member.joynrName»;
 	}
 
+	/**
+	 * Sets «memberName.toFirstUpper»
+	 *
+	 «appendJavadocParameter(member, "*")»
+	 */
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		this.«member.joynrName» = «member.joynrName»;
 	}
 
 	«ENDFOR»
 
+	/**
+	 * Stringifies the class
+	 *
+	 * @return stringified class content
+	 */
 	@Override
 	public String toString() {
 		return "«typeName» ["
@@ -146,6 +180,12 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 		+ "]";
 	}
 
+	/**
+	 * Check for equality
+	 *
+	 * @param obj Reference to the object to compare to
+	 * @return true, if objects are equal, false otherwise
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -179,6 +219,11 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 		return true;
 	}
 
+	/**
+	 * Calculate code for hashing based on member contents
+	 *
+	 * @return The calculated hash code
+	 */
 	@Override
 	public int hashCode() {
 		«IF hasExtendsDeclaration(complexType)»

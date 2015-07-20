@@ -19,10 +19,13 @@ package io.joynr.generator.util
 
 import java.util.Iterator
 import java.util.TreeSet
+import org.franca.core.franca.FAnnotation
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
@@ -198,6 +201,52 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return includeSet;
 	}
 
+	def ReformatComment(FAnnotation comment, String prefixForNewLines) {
+		return comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefixForNewLines)
+	}
+
+	// for classes and methods
+	def appendJavadocSummaryAndWriteSeeAndDescription(FModelElement element, String prefixForNewLines)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefixForNewLines» «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::SEE»
+					«prefixForNewLines» @see «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+				«IF comment.type == FAnnotationType::DETAILS»
+					«prefixForNewLines»
+					«prefixForNewLines» «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	// for parts
+	def appendJavadocComment(FModelElement element, String prefixForNewLines)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	// for parameters
+	def appendJavadocParameter(FModelElement element, String prefixForNewLines)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefixForNewLines» @param «element.joynrName» «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
 	def String getIncludeOf(FType dataType) {
 		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;
 	}
@@ -238,8 +287,14 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	def generateEnumCode(FEnumerationType enumType) {
 		val typeName = enumType.joynrName
 '''
+/**
+«appendJavadocSummaryAndWriteSeeAndDescription(enumType, " *")»
+ */
 public enum «typeName» {
 	«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType) SEPARATOR ","»
+	/**
+	 * «appendJavadocComment(enumValue, "* ")»
+	 */
 	«enumValue.joynrName»
 	«ENDFOR»;
 
@@ -252,10 +307,19 @@ public enum «typeName» {
 		«ENDFOR»
 	}
 
+	/**
+	 * Get the matching enum for an ordinal number
+	 * @param ordinal The ordinal number
+	 * @return The matching enum for the given ordinal number
+	 */
 	public static «typeName» getEnumValue(Integer ordinal) {
 		return ordinalToEnumValues.get(ordinal);
 	}
 
+	/**
+	 * Get the matching ordinal number for this enum
+	 * @return The ordinal number representing this enum
+	 */
 	public Integer getOrdinal() {
 		// TODO should we use a bidirectional map from a third-party library?
 		Integer ordinal = null;
