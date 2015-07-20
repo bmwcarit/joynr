@@ -71,7 +71,6 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::«attributeName»Changed(
 			const «attributeType»& «attributeName»
 	) {
-		this->«attributeName» = «attributeName»;
 		onAttributeValueChanged("«attributeName»", QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»));
 	}
 «ENDFOR»

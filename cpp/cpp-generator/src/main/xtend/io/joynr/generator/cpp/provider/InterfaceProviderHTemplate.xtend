@@ -75,51 +75,73 @@ public:
 
 	static const std::string& INTERFACE_NAME();
 
-	// request status, result, (params......)*
-
-	«FOR attribute: getAttributes(serviceInterface)»
+	«IF !serviceInterface.attributes.empty»
+		// attributes
+	«ENDIF»
+	«FOR attribute : serviceInterface.attributes»
 		«var attributeName = attribute.joynrName»
-		virtual void get«attributeName.toFirstUpper»(
-				std::function<void(
-						const joynr::RequestStatus&,
-						const «attribute.typeName»&)> callbackFct);
-		virtual void set«attributeName.toFirstUpper»(
-				const «attribute.typeName»& «attributeName»,
-				std::function<void(const joynr::RequestStatus&)> callbackFct);
-		/**
-		* @brief «attributeName»Changed must be called by a concrete provider to signal attribute
-		* modifications. It is used to implement onchange subscriptions.
-		* @param «attributeName» the new attribute value
-		*/
-		virtual void «attributeName»Changed(const «attribute.typeName»& «attributeName») = 0;
+		«IF attribute.readable»
+			virtual void get«attributeName.toFirstUpper»(
+					std::function<void(
+							const joynr::RequestStatus&,
+							const «attribute.typeName»&
+					)> callbackFct
+			) = 0;
+		«ENDIF»
+		«IF attribute.writable»
+			virtual void set«attributeName.toFirstUpper»(
+					const «attribute.typeName»& «attributeName»,
+					std::function<void(const joynr::RequestStatus&)> callbackFct
+			) = 0;
+		«ENDIF»
+		«IF attribute.notifiable»
+			/**
+			 * @brief «attributeName»Changed must be called by a concrete provider
+			 * to signal attribute modifications. It is used to implement onchange
+			 * subscriptions.
+			 * @param «attributeName» the new attribute value
+			 */
+			virtual void «attributeName»Changed(
+					const «attribute.typeName»& «attributeName»
+			) = 0;
+		«ENDIF»
+
 	«ENDFOR»
-	«FOR method: getMethods(serviceInterface)»
+	«IF !serviceInterface.methods.empty»
+		// methods
+	«ENDIF»
+	«FOR method : serviceInterface.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		virtual void «method.joynrName»(
-				«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+				«IF !method.inputParameters.empty»
+					«inputTypedParamList.substring(1)»,
+				«ENDIF»
 				std::function<void(
 						const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-						«outputTypedParamList»)> callbackFct) = 0;
-	«ENDFOR»
+						«IF !method.outputParameters.empty»
+							«outputTypedParamList.substring(1)»
+						«ENDIF»
+				)> callbackFct
+		) = 0;
 
-	«FOR broadcast: serviceInterface.broadcasts»
+	«ENDFOR»
+	«IF !serviceInterface.broadcasts.empty»
+		// broadcasts
+	«ENDIF»
+	«FOR broadcast : serviceInterface.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		/**
-		* @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
-		* event. It is used to implement broadcast publications.
-		* @param «broadcastName» the new broadcast value
-		*/
-		virtual void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedConstOutputParameterList») = 0;
+		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
+		 * provider to signal an occured event. It is used to implement broadcast
+		 * publications.
+		 * @param «broadcastName» the new broadcast value
+		 */
+		virtual void fire«broadcastName.toFirstUpper»(
+				«broadcast.commaSeperatedTypedConstOutputParameterList»
+		) = 0;
+
 	«ENDFOR»
-
-	virtual std::string getInterfaceName() const;
-
-protected:
-	«FOR attribute: getAttributes(serviceInterface)»
-		«attribute.typeName» «attribute.joynrName»;
-	«ENDFOR»
-
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
 };

@@ -18,13 +18,12 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -32,10 +31,7 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension CppMigrateToStdTypeUtil
-
-	@Inject
-	private QtTypeUtil qtTypeUtil
+	private extension QtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -52,13 +48,10 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 #include "joynr/TypeUtil.h"
 
 «getNamespaceStarter(serviceInterface)»
-«interfaceName»Provider::«interfaceName»Provider()«IF !serviceInterface.attributes.empty» :«ENDIF»
-	«FOR attribute: getAttributes(serviceInterface) SEPARATOR ","»
-		«attribute.joynrName»()
-	«ENDFOR»
+«interfaceName»Provider::«interfaceName»Provider()
 {
 	// Register a request interpreter to interpret requests to this interface
-	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
+	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
 	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface)»
 
@@ -86,7 +79,9 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 «interfaceName»Provider::~«interfaceName»Provider()
 {
 	// Unregister the request interpreter
-	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
+	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(
+			INTERFACE_NAME()
+	);
 }
 
 const std::string& «interfaceName»Provider::INTERFACE_NAME()
@@ -94,27 +89,6 @@ const std::string& «interfaceName»Provider::INTERFACE_NAME()
 	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
 	return INTERFACE_NAME;
 }
-
-std::string «interfaceName»Provider::getInterfaceName() const {
-	return INTERFACE_NAME();
-}
-
-«FOR attribute: getAttributes(serviceInterface)»
-	«var attributeName = attribute.joynrName»
-	void «interfaceName»Provider::get«attributeName.toFirstUpper»(
-			std::function<void(
-					const joynr::RequestStatus&,
-					const «attribute.typeName»&)> callbackFct) {
-		callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), «attributeName»);
-	}
-
-	void «interfaceName»Provider::set«attributeName.toFirstUpper»(
-			const «attribute.typeName»& «attributeName»,
-			std::function<void(const joynr::RequestStatus&)> callbackFct) {
-		«attributeName»Changed(«attributeName»);
-		callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK));
-	}
-«ENDFOR»
 
 «getNamespaceEnder(serviceInterface)»
 '''

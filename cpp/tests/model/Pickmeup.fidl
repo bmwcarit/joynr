@@ -67,7 +67,7 @@ interface PickupSession {
 	
 	version {major 0 minor 1}
 	
-	attribute SocalTypes.PickupStatus pickupStatus readonly // NOTIFYREADONLY 
+	attribute SocalTypes.PickupStatus pickupStatus // NOTIFYREADWRITE
 	
 	method updateRequest {
 		in {

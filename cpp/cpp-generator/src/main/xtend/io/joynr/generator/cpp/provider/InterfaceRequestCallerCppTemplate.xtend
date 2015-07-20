@@ -58,22 +58,38 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 {
 }
 
-«FOR attribute: getAttributes(serviceInterface)»
+«IF !serviceInterface.attributes.empty»
+	// attributes
+«ENDIF»
+«FOR attribute : serviceInterface.attributes»
 	«var attributeName = attribute.joynrName»
 	«val returnType = attribute.typeName»
-	void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
-			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct){
-		provider->get«attributeName.toFirstUpper»(callbackFct);
-	}
-
-	void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
-			«returnType» «attributeName.toFirstLower»,
-			std::function<void(const joynr::RequestStatus& status)> callbackFct){
-		provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», callbackFct);
-	}
+	«IF attribute.readable»
+		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
+				std::function<void(
+						const joynr::RequestStatus& status,
+						const «returnType»& «attributeName.toFirstLower»
+				)> callbackFct
+		) {
+			provider->get«attributeName.toFirstUpper»(callbackFct);
+		}
+	«ENDIF»
+	«IF attribute.writable»
+		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
+				const «returnType»& «attributeName.toFirstLower»,
+				std::function<void(
+						const joynr::RequestStatus& status
+				)> callbackFct
+		) {
+			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», callbackFct);
+		}
+	«ENDIF»
 
 «ENDFOR»
-«FOR method: getMethods(serviceInterface)»
+«IF !serviceInterface.methods.empty»
+	// methods
+«ENDIF»
+«FOR method : serviceInterface.methods»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
@@ -82,11 +98,15 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			std::function<void(
 					const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-					«outputTypedParamList»)> callbackFct){
-			provider->«methodName»(
-					«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-					callbackFct);
+					«outputTypedParamList»
+			)> callbackFct
+	) {
+		provider->«methodName»(
+				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+				callbackFct
+		);
 	}
+
 «ENDFOR»
 
 void «interfaceName»RequestCaller::registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener)

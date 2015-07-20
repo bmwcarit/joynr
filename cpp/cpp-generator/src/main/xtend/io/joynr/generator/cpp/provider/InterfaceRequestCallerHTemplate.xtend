@@ -67,24 +67,44 @@ public:
 
 	virtual ~«interfaceName»RequestCaller(){}
 
-	«FOR attribute: getAttributes(serviceInterface)»
-		«val attributeName = attribute.joynrName»
-		«val returnType = attribute.typeName»
-		virtual void get«attributeName.toFirstUpper»(
-				std::function<void(
-						const joynr::RequestStatus& status,
-						const «returnType»& «attributeName.toFirstLower»)> callbackFct);
-		virtual void set«attributeName.toFirstUpper»(
-				«returnType» «attributeName.toFirstLower»,
-				std::function<void(const joynr::RequestStatus& status)> callbackFct);
+	«IF !serviceInterface.attributes.empty»
+		// attributes
+	«ENDIF»
+	«FOR attribute : serviceInterface.attributes»
+		«var attributeName = attribute.joynrName»
+		«IF attribute.readable»
+			virtual void get«attributeName.toFirstUpper»(
+					std::function<void(
+							const joynr::RequestStatus&,
+							const «attribute.typeName»&
+					)> callbackFct
+			);
+		«ENDIF»
+		«IF attribute.writable»
+			virtual void set«attributeName.toFirstUpper»(
+					const «attribute.typeName»& «attributeName»,
+					std::function<void(const joynr::RequestStatus&)> callbackFct
+			);
+		«ENDIF»
 
 	«ENDFOR»
-	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
-		«val inputTypedParamList = method.getCommaSeperatedTypedConstInputParameterList»
+	«IF !serviceInterface.methods.empty»
+		// methods
+	«ENDIF»
+	«FOR method : serviceInterface.methods»
+		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		virtual void «method.joynrName»(
-			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»)> callbackFct);
+				«IF !method.inputParameters.empty»
+					«inputTypedParamList.substring(1)»,
+				«ENDIF»
+				std::function<void(
+						const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
+						«IF !method.outputParameters.empty»
+							«outputTypedParamList.substring(1)»
+						«ENDIF»
+				)> callbackFct
+		);
 
 	«ENDFOR»
 	void registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener);

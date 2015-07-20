@@ -30,7 +30,7 @@ joynr_logging::Logger* MyRadioProvider::logger =
         joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
 
 MyRadioProvider::MyRadioProvider()
-        : RadioAbstractProvider(),
+        : DefaultRadioProvider(),
           currentStationIndex(0),
           stationsList(),
           countryGeoPositionMap(),

@@ -74,30 +74,30 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 	«ENDFOR»
 }
 
+«val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
+«val attributes = getAttributes(serviceInterface)»
+«val methods = getMethods(serviceInterface)»
 void «interfaceName»RequestInterpreter::execute(
 		QSharedPointer<joynr::RequestCaller> requestCaller,
 		const QString& methodName,
 		const QList<QVariant>& paramValues,
 		const QList<QVariant>& paramTypes,
-		std::function<void (const QList<QVariant>&)> callbackFct)
-{
-	«val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
+		std::function<void (const QList<QVariant>&)> callbackFct
+) {
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 	// cast generic RequestCaller to «interfaceName»Requestcaller
 	QSharedPointer<«interfaceName»RequestCaller> «requestCallerName» =
 			requestCaller.dynamicCast<«interfaceName»RequestCaller>();
 
-	«val attributes = getAttributes(serviceInterface)»
-	«val methods = getMethods(serviceInterface)»
-
 	// execute operation
 	// TODO need to put the status code into the reply
-	«IF attributes.size>0»
+	«IF !attributes.empty»
 		joynr::RequestStatus status;
-		«FOR attribute: attributes SEPARATOR "\n} else"»
+		«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
 			«val returnType = cppStdTypeUtil.getTypeName(attribute)»
+		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(const joynr::RequestStatus& status, «returnType» «attributeName»)> requestCallerCallbackFct =
 						[callbackFct](const joynr::RequestStatus& status, «returnType» «attributeName»){
@@ -110,7 +110,11 @@ void «interfaceName»RequestInterpreter::execute(
 							callbackFct(outParams);
 						};
 				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerCallbackFct);
-			} else if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
+				return;
+			}
+		«ENDIF»
+		«IF attribute.writable»
+			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 				QVariant «attributeName»QVar(paramValues.at(0));
 				«IF isEnum(attribute.type)»
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(attribute.type)»>(«attributeName»QVar);
@@ -137,12 +141,13 @@ void «interfaceName»RequestInterpreter::execute(
 							callbackFct(outParams);
 						};
 				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerCallbackFct);
-
+				return;
+			}
+		«ENDIF»
 		«ENDFOR»
-		} else «IF methods.empty»{«ENDIF»
 	«ENDIF»
 	«IF methods.size>0»
-		«FOR method: getMethods(serviceInterface) SEPARATOR "\n} else"»
+		«FOR method: getMethods(serviceInterface)»
 			«val inputUntypedParamList = qtTypeUtil.getCommaSeperatedUntypedInputParameterList(method, DatatypeSystemTransformation.FROM_QT_TO_STANDARD)»
 			«val methodName = method.joynrName»
 			«val inputParams = getInputParameters(method)»
@@ -198,14 +203,15 @@ void «interfaceName»RequestInterpreter::execute(
 				«requestCallerName»->«methodName»(
 						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
 						requestCallerCallbackFct);
+				return;
+			}
 		«ENDFOR»
-		} else {
 	«ENDIF»
-		LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
-		assert(false);
-		QList<QVariant> outParams;
-		callbackFct(outParams);
-	}
+
+	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
+	assert(false);
+	QList<QVariant> outParams;
+	callbackFct(outParams);
 }
 
 «getNamespaceEnder(serviceInterface)»
