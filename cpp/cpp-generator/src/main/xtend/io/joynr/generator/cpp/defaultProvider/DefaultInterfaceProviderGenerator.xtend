@@ -24,16 +24,16 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
-class DefaultProviderGenerator {
+class DefaultInterfaceProviderGenerator {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
 	@Inject
-	DefaultProviderHTemplate defaultProviderHTemplate;
+	DefaultInterfaceProviderHTemplate defaultProviderHTemplate;
 
 	@Inject
-	DefaultProviderCppTemplate defaultProviderCppTemplate;
+	DefaultInterfaceProviderCppTemplate defaultProviderCppTemplate;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,

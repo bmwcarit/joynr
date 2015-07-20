@@ -24,7 +24,7 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 
-class DefaultProviderHTemplate implements InterfaceTemplate{
+class DefaultInterfaceProviderHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
@@ -44,6 +44,8 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
+#include <functional>
+
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/DeclareMetatypeUtil.h"
@@ -59,29 +61,56 @@ class DefaultProviderHTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(serviceInterface)»
 
-class «getDllExportMacro()» Default«interfaceName»Provider: public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»AbstractProvider {
+class «getDllExportMacro()» Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»AbstractProvider {
 
 public:
 	Default«interfaceName»Provider();
 
 	virtual ~Default«interfaceName»Provider();
 
-	«FOR attribute: getAttributes(serviceInterface)»
-		// Only use this for pulling providers, not for pushing providers
-		//	void get«attribute.joynrName.toFirstUpper»(
-		//			std::future<void(
-		//					const joynr::RequestStatus&,
-		//					const «attribute.typeName»)> callbackFct);
-	«ENDFOR»
+	«IF !serviceInterface.attributes.empty»
+		// attributes
+	«ENDIF»
+	«FOR attribute : serviceInterface.attributes»
+		«var attributeName = attribute.joynrName»
+		«IF attribute.readable»
+			virtual void get«attributeName.toFirstUpper»(
+					std::function<void(
+							const joynr::RequestStatus&,
+							const «attribute.typeName»&
+					)> callbackFct
+			);
+		«ENDIF»
+		«IF attribute.writable»
+			virtual void set«attributeName.toFirstUpper»(
+					const «attribute.typeName»& «attributeName»,
+					std::function<void(const joynr::RequestStatus&)> callbackFct
+			);
+		«ENDIF»
 
-	«FOR method: getMethods(serviceInterface)»
+	«ENDFOR»
+	«IF !serviceInterface.methods.empty»
+		// methods
+	«ENDIF»
+	«FOR method : serviceInterface.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
-		void «method.joynrName»(
-				«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+		virtual void «method.joynrName»(
+				«IF !method.inputParameters.empty»
+					«inputTypedParamList.substring(1)»,
+				«ENDIF»
 				std::function<void(
 						const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-						«outputTypedParamList»)> callbackFct);
+						«IF !method.outputParameters.empty»
+							«outputTypedParamList.substring(1)»
+						«ENDIF»
+				)> callbackFct
+		);
+
+	«ENDFOR»
+protected:
+	«FOR attribute : getAttributes(serviceInterface)»
+		«attribute.typeName» «attribute.joynrName»;
 	«ENDFOR»
 
 private:

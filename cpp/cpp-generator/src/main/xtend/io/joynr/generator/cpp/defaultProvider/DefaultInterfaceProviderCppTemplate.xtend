@@ -25,7 +25,7 @@ import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FBasicTypeId
 
-class DefaultProviderCppTemplate implements InterfaceTemplate{
+class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
@@ -55,7 +55,10 @@ using namespace joynr::joynr_logging;
 Logger* Default«interfaceName»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«interfaceName»Provider");
 
 Default«interfaceName»Provider::Default«interfaceName»Provider() :
-	«interfaceName»AbstractProvider()
+		«interfaceName»AbstractProvider()«IF !serviceInterface.attributes.empty»,«ENDIF»
+		«FOR attribute : serviceInterface.attributes SEPARATOR ","»
+			«attribute.joynrName»()
+		«ENDFOR»
 {
 	// default uses a priority that is the current time,
 	// causing arbitration to the last started instance if highest priority arbitrator is used
@@ -71,55 +74,56 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 {
 }
 
-«FOR attribute: getAttributes(serviceInterface)»
-	«val attributename = attribute.joynrName»
-	«var attributeType = attribute.typeName»
-	// Only use this for pulling providers, not for pushing providers
-	//	void Default«interfaceName»Provider::get«attributename.toFirstUpper»(
-	//		std::function<void(
-	//				const joynr::RequestStatus&,
-	//				const «attribute.typeName»&)> callbackFct) {
-	// LOG_WARN(logger, "**********************************************");
-	// LOG_WARN(logger, "* Default«interfaceName»Provider::get«attributename.toFirstUpper» called");
-	// LOG_WARN(logger, "**********************************************");
-	«IF !attribute.isArray && attribute.type.predefined != null»
-		«val type = attribute.type.predefined»
-		«IF type==FBasicTypeId.STRING»
-		//	«attributeType» result = "Hello World";
-		«ELSEIF type==FBasicTypeId.BOOLEAN»
-		//	«attributeType» result = false;
-		«ELSEIF type==FBasicTypeId.INT8   ||
-				type==FBasicTypeId.UINT8  ||
-				type==FBasicTypeId.INT16  ||
-				type==FBasicTypeId.UINT16 ||
-				type==FBasicTypeId.INT32  ||
-				type==FBasicTypeId.UINT32 ||
-				type==FBasicTypeId.INT64  ||
-				type==FBasicTypeId.UINT64»
-		//	«attributeType» result = 42;
-		«ELSEIF type==FBasicTypeId.DOUBLE   ||
-				type==FBasicTypeId.FLOAT»
-		//	«attributeType» result = 3.1415;
-		«ELSE»
-		//	«attributeType» result;
-		«ENDIF»
-	«ELSE»
-	//	«attributeType» result;
-	«ENDIF»
-	//	callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
-	//}
+«IF !serviceInterface.attributes.empty»
+	// attributes
+«ENDIF»
+«FOR attribute : serviceInterface.attributes»
+	«var attributeName = attribute.joynrName»
+	«IF attribute.readable»
+		void Default«interfaceName»Provider::get«attributeName.toFirstUpper»(
+				std::function<void(
+						const joynr::RequestStatus&,
+						const «attribute.typeName»&
+				)> callbackFct
+		) {
+			callbackFct(
+					joynr::RequestStatus(joynr::RequestStatusCode::OK),
+					«attributeName»
+			);
+		}
 
+	«ENDIF»
+	«IF attribute.writable»
+		void Default«interfaceName»Provider::set«attributeName.toFirstUpper»(
+				const «attribute.typeName»& «attributeName»,
+				std::function<void(const joynr::RequestStatus&)> callbackFct
+		) {
+			this->«attributeName» = «attributeName»;
+			«attributeName»Changed(«attributeName»);
+			callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK));
+		}
+
+	«ENDIF»
 «ENDFOR»
-«FOR method: getMethods(serviceInterface)»
+«IF !serviceInterface.methods.empty»
+	// methods
+«ENDIF»
+«FOR method : serviceInterface.methods»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 	«val methodName = method.joynrName»
 	void Default«interfaceName»Provider::«method.joynrName»(
-			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+			«IF !method.inputParameters.empty»
+				«inputTypedParamList.substring(1)»,
+			«ENDIF»
 			std::function<void(
 					const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-					«outputTypedParamList»)> callbackFct) {
+					«IF !method.outputParameters.empty»
+						«outputTypedParamList.substring(1)»
+					«ENDIF»
+			)> callbackFct
+	) {
 		«FOR inputParameter: getInputParameters(method)»
 			Q_UNUSED(«inputParameter.joynrName»);
 		«ENDFOR»
