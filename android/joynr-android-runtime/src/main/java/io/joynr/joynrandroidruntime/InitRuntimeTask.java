@@ -19,6 +19,11 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -28,13 +33,10 @@ import io.joynr.runtime.JoynrRuntimeImpl;
 import io.joynr.runtime.PropertyLoader;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
-
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
-
-import com.google.inject.Injector;
 
 public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
@@ -42,15 +44,21 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
     private UILogger uiLogger;
     private Context applicationContext;
     private Properties joynrConfig;
+    private List<Module> modules;
 
     public InitRuntimeTask(Context applicationContext, UILogger uiLogger) {
-        this(PropertyLoader.loadProperties("res/raw/demo.properties"), applicationContext, uiLogger);
+        this(PropertyLoader.loadProperties("res/raw/demo.properties"), applicationContext, uiLogger, Collections.<Module> emptyList());
     }
 
-    public InitRuntimeTask(Properties joynrConfig, Context applicationContext, UILogger uiLogger) {
+    public InitRuntimeTask(Properties joynrConfig, Context applicationContext, UILogger uiLogger, List<Module> joynrModules) {
         this.joynrConfig = joynrConfig;
         this.applicationContext = applicationContext;
         this.uiLogger = uiLogger;
+
+        // Make note of custom modules and add what is needed for Android long polling
+        this.modules = new ArrayList<Module>();
+        this.modules.add(new AndroidLongPollingMessagingModule());
+        this.modules.addAll(joynrModules);
     }
 
     @Override
@@ -79,7 +87,9 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
             joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
 
-            Injector injectorA = new JoynrInjectorFactory(joynrConfig, new AndroidLongPollingMessagingModule()).createChildInjector();
+            // Create an injector with all the required custom modules
+            Module [] moduleArray = modules.toArray(new Module[modules.size()]);
+            Injector injectorA = new JoynrInjectorFactory(joynrConfig, moduleArray).createChildInjector();
 
             JoynrRuntimeImpl runtime = injectorA.getInstance(JoynrRuntimeImpl.class);
             if (runtime != null) {

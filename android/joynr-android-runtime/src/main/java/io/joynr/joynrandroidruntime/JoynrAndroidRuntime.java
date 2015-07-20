@@ -19,18 +19,20 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Messenger;
+import com.google.inject.Module;
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Messenger;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
 
@@ -43,7 +45,12 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     public JoynrAndroidRuntime(Context applicationContext, Properties joynrConfig) {
-        runtimeInitTask = new InitRuntimeTask(joynrConfig, applicationContext, uiLogger);
+        runtimeInitTask = new InitRuntimeTask(joynrConfig, applicationContext, uiLogger, Collections.<Module> emptyList());
+        runtimeInitTask.execute();
+    }
+
+    public JoynrAndroidRuntime(Context applicationContext, Properties joynrConfig, Module... joynrModules) {
+        runtimeInitTask = new InitRuntimeTask(joynrConfig, applicationContext, uiLogger, Arrays.asList(joynrModules));
         runtimeInitTask.execute();
     }
 
