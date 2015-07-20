@@ -42,7 +42,8 @@ END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "c++ generate sources took $DIFF seconds"
 
-cd cpp-build
+mkdir -p build
+cd build
 
 log "RUN CMAKE"
 
