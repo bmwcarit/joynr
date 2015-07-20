@@ -82,9 +82,7 @@ public class ShutdownTest {
     @Test(expected = JoynrShutdownException.class)
     public void testRegisterAfterShutdown() {
         dummyApplication.shutdown();
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain",
-                                                       provider,
-                                                       "ShutdownTestauthenticationToken");
+        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider);
     }
 
     @Test(expected = JoynrShutdownException.class)
@@ -93,9 +91,7 @@ public class ShutdownTest {
     public void testProxyCallAfterShutdown() throws JoynrArbitrationException, JoynrIllegalStateException,
                                             InterruptedException {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain",
-                                                       provider,
-                                                       "ShutdownTestauthenticationToken");
+        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider);
         ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
                                                                                              testProxy.class);
         testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))

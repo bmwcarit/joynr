@@ -58,7 +58,7 @@ public class JoynrAndroidLocationProviderApplication extends Application {
         if (runtime != null) {
             logToOutput("Registering provider on domain \"" + domain + "\".");
             // registers the provider at the global capabilities directory
-            runtime.registerProvider(domain, androidLocationProvider, "android-location-provider");
+            runtime.registerProvider(domain, androidLocationProvider);
         } else {
             logToOutput("Failed to bind service. Can not register provider\n");
         }
@@ -72,7 +72,7 @@ public class JoynrAndroidLocationProviderApplication extends Application {
         if (runtime != null) {
             logToOutput("Unegistering provider from domain \"" + domain + "\".");
             // registers the provider at the global capabilities directory
-            runtime.unregisterProvider(domain, androidLocationProvider, "android-location-provider");
+            runtime.unregisterProvider(domain, androidLocationProvider);
         } else {
             logToOutput("Failed to bind service. Can not register provider\n");
         }

@@ -41,9 +41,9 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.
      */
-    public void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken) {
+    public void unregisterProvider(String domain, JoynrProvider provider) {
         try {
-            super.unregisterProvider(domain, provider, authenticationToken);
+            super.unregisterProvider(domain, provider);
         } catch (JoynrCommunicationException e) {
 
         }

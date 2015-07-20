@@ -93,7 +93,7 @@ public class LocalCommunicationTest {
         provider = new PubSubTestProviderImpl();
         domain = "TestDomain" + System.currentTimeMillis();
 
-        runtimeA.registerProvider(domain, provider, "LocalCommunicationTest");
+        runtimeA.registerProvider(domain, provider);
 
         ProxyBuilder<testProxy> proxyBuilder;
 

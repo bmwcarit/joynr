@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -91,10 +90,10 @@ public class CapabilitiesRegistrarTests {
 
         when(provider.getProviderQos()).thenReturn(providerQos);
         doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
-        registrar.registerProvider(domain, provider, "registerWithCapRegistrar");
+        registrar.registerProvider(domain, provider);
         verify(localCapabilitiesDirectory).add(eq(new CapabilityEntryImpl(domain,
                                                                           TestInterface.INTERFACE_NAME,
                                                                           providerQos,
@@ -108,8 +107,8 @@ public class CapabilitiesRegistrarTests {
     @Test
     public void unregisterProvider() {
         when(provider.getProviderQos()).thenReturn(providerQos);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
-        registrar.unregisterProvider(domain, provider, "unregisterWithRegistrar");
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
+        registrar.unregisterProvider(domain, provider);
 
         verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntryImpl(domain,
                                                                              TestInterface.INTERFACE_NAME,

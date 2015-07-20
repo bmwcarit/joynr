@@ -47,7 +47,6 @@ import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class MyRadioProviderApplication extends AbstractJoynrApplication {
-    private static final String AUTH_TOKEN = "MyRadioProvider_authToken";
     private static final Logger LOG = LoggerFactory.getLogger(MyRadioProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
 
@@ -145,7 +144,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provider = new MyRadioProvider();
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
-        runtime.registerProvider(localDomain, provider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, provider);
 
         ConsoleReader console;
         try {
@@ -179,7 +178,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         LOG.info("shutting down");
         if (provider != null) {
             try {
-                runtime.unregisterProvider(localDomain, provider, AUTH_TOKEN);
+                runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException e) {
                 LOG.error("unable to unregister capabilities {}", e.getMessage());
             }

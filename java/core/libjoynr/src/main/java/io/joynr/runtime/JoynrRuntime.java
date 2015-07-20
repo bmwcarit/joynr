@@ -26,39 +26,35 @@ import io.joynr.proxy.ProxyBuilder;
 
 /**
  * Central Joyn Api object, used to register / unregister providers and create proxy builders
- * 
+ *
  */
 public interface JoynrRuntime {
 
     /**
      * Registers a provider in the joynr framework
-     * 
+     *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @param authenticationToken
-     *            Token to authenticate the provider. Should be persistent between application startups.
      * @return Returns a RegistrationFuture which can be used to check the local and global registration status.
      */
-    RegistrationFuture registerProvider(String domain, JoynrProvider provider, String authenticationToken);
+    RegistrationFuture registerProvider(String domain, JoynrProvider provider);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
-     * 
+     *
      * @param domain
      *            The domain the provider was registered for.
      * @param provider
      *            The provider instance.
-     * @param authenticationToken
-     *            Token to authenticate the provider. Should be persistent between application startups.
      */
-    void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken);
+    void unregisterProvider(String domain, JoynrProvider provider);
 
     /**
      * Returns a proxy builder instance to build a proxy object.
-     * 
+     *
      * @param <T> interface
      * @param domain
      *            Domain of the provider.
@@ -75,7 +71,7 @@ public interface JoynrRuntime {
      * <li>Discards pending outgoing messages
      * <li>Does not wait for incoming messages
      * </ul>
-     * 
+     *
      * @param clear
      *            If true, the instance removes all artifacts it created:
      *            <ul>

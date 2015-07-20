@@ -39,7 +39,6 @@ import com.google.inject.Module;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class MyGpsProviderApplication extends AbstractJoynrApplication {
-    private static final String AUTH_TOKEN = "MyRadioProvider_authToken";
     private static final Logger LOG = LoggerFactory.getLogger(MyGpsProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "gps-provider-joynr.properties";
 
@@ -140,7 +139,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
     @Override
     public void run() {
         provider = new MyGpsProvider();
-        runtime.registerProvider(localDomain, provider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, provider);
 
         ConsoleReader console;
         try {
@@ -168,7 +167,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         LOG.info("shutting down");
         if (provider != null) {
             try {
-                runtime.unregisterProvider(localDomain, provider, AUTH_TOKEN);
+                runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException e) {
                 LOG.error("unable to unregister capabilities {}", e.getMessage());
             }

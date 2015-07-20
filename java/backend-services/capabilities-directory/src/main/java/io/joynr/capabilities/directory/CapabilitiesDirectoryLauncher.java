@@ -34,8 +34,6 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
-    private static final String AUTH_TOKEN = "CapabilitiesDirectoryLauncher";
-
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
     private static JoynrApplication capabilitiesDirectoryLauncher;
@@ -75,7 +73,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     @Override
     public void run() {
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
-        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider);
     }
 
     @Override

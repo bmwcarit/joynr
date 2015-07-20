@@ -74,26 +74,26 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public RegistrationFuture registerProvider(String domain, JoynrProvider provider, String authenticationToken) {
+    public RegistrationFuture registerProvider(String domain, JoynrProvider provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long
         JoynrRuntime runtime = getJoynrRuntime();
 
         // registration of providers is asynchronously
-        RegistrationFuture future = runtime.registerProvider(domain, provider, authenticationToken);
+        RegistrationFuture future = runtime.registerProvider(domain, provider);
 
         return future;
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken) {
+    public void unregisterProvider(String domain, JoynrProvider provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
         // this will not block to long
         JoynrRuntime runtime = getJoynrRuntime();
 
-        runtime.unregisterProvider(domain, provider, authenticationToken);
+        runtime.unregisterProvider(domain, provider);
     }
 
     @Override

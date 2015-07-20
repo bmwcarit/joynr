@@ -31,13 +31,11 @@ public interface CapabilitiesRegistrar {
      *            Domain of the provided service.
      * @param provider
      *            Provider instance.
-     * @param authenticationToken
-     *            Token for authentication
      * @return registration future
      */
-    RegistrationFuture registerProvider(String domain, JoynrProvider provider, String authenticationToken);
+    RegistrationFuture registerProvider(String domain, JoynrProvider provider);
 
-    void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken);
+    void unregisterProvider(String domain, JoynrProvider provider);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

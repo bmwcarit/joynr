@@ -101,13 +101,13 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public RegistrationFuture registerProvider(String domain, JoynrProvider provider, String authenticationToken) {
-        return capabilitiesRegistrar.registerProvider(domain, provider, authenticationToken);
+    public RegistrationFuture registerProvider(String domain, JoynrProvider provider) {
+        return capabilitiesRegistrar.registerProvider(domain, provider);
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken) {
-        capabilitiesRegistrar.unregisterProvider(domain, provider, authenticationToken);
+    public void unregisterProvider(String domain, JoynrProvider provider) {
+        capabilitiesRegistrar.unregisterProvider(domain, provider);
 
     }
 

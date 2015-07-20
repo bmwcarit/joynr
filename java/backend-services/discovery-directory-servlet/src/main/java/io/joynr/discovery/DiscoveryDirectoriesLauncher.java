@@ -28,8 +28,6 @@ import com.google.inject.persist.PersistService;
 
 public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
 
-    private static final String AUTH_TOKEN = "DiscoveryDirectoryLauncher";
-
     @Inject
     private ChannelUrlDirectoryAbstractProvider channelUrlDirectoryProvider;
 
@@ -46,8 +44,8 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        runtime.registerProvider(localDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
-        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, channelUrlDirectoryProvider);
+        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider);
     }
 
     @Override

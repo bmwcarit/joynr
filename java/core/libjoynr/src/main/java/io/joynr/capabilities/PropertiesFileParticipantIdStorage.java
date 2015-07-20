@@ -33,6 +33,7 @@ import java.util.UUID;
 import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,18 +68,15 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.capabilities.ParticipantIdStorage#
      * getProviderParticipantId(java.lang.String, java.lang.Class, java.lang.String,
      * java.lang.String)
      */
     @Override
-    public String getProviderParticipantId(String domain,
-                                           Class<?> providedInterface,
-                                           String authenticationToken,
-                                           String defaultValue) {
+    public String getProviderParticipantId(String domain, Class<?> providedInterface, String defaultValue) {
 
-        String token = getProviderParticipantIdKey(domain, providedInterface, authenticationToken);
+        String token = getProviderParticipantIdKey(domain, providedInterface);
 
         String participantId;
 
@@ -118,9 +116,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static String getProviderParticipantIdKey(String domain,
-                                                      Class<?> providedInterface,
-                                                      String authenticationToken) {
+    private static String getProviderParticipantIdKey(String domain, Class<?> providedInterface) {
         String interfaceName = providedInterface.getName();
         try {
             if (providedInterface.getField("INTERFACE_NAME") != null) {
@@ -128,18 +124,18 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
             }
         } catch (Exception e) {
         }
-        String token = "joynr.participant." + domain + "." + interfaceName + "." + authenticationToken;
+        String token = "joynr.participant." + domain + "." + interfaceName;
         return token.replace('/', '.');
     }
 
     @Override
-    public String getProviderParticipantId(String domain, Class<?> providedInterface, String authenticationToken) {
+    public String getProviderParticipantId(String domain, Class<?> providedInterface) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface, authenticationToken).toLowerCase();
+        String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface).toLowerCase();
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }
-        return getProviderParticipantId(domain, providedInterface, authenticationToken, defaultParticipantId);
+        return getProviderParticipantId(domain, providedInterface, defaultParticipantId);
     }
 
 }

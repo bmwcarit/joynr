@@ -53,7 +53,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_SEND_MSG_RETRY_INTERVAL_MS = "joynr.messaging.sendmsgretryintervalms";
     public static final String PROPERTY_LONG_POLL_RETRY_INTERVAL_MS = "joynr.messaging.longpollretryintervalms";
     public static final String PROPERTY_MAX_RETRY_COUNT = "joynr.messaging.maxretriescount";
-    public static final String PROPERTY_AUTHTOKEN = "joynr.security.authtoken";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
 

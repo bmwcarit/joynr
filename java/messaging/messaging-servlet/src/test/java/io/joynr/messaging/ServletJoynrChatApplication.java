@@ -47,12 +47,12 @@ public class ServletJoynrChatApplication extends AbstractJoynrApplication {
             }
 
         };
-        runtime.registerProvider(localDomain, provider, "ServletJoynChatApplication");
+        runtime.registerProvider(localDomain, provider);
     }
 
     @Override
     public void shutdown() {
-        runtime.unregisterProvider(localDomain, provider, "ServletJoynChatApplication");
+        runtime.unregisterProvider(localDomain, provider);
 
     }
 }

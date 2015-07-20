@@ -155,7 +155,7 @@ public class SSLEnd2EndTest extends JoynrEnd2EndTest {
 
         provider = new DefaulttestProvider();
 
-        dummyProviderApplication.getRuntime().registerProvider(domain, provider, "authToken");
+        dummyProviderApplication.getRuntime().registerProvider(domain, provider);
 
         messagingQos = new MessagingQos(5000);
         discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);

@@ -57,10 +57,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public RegistrationFuture registerProvider(final String domain, JoynrProvider provider, String authenticationToken) {
-        String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             provider.getProvidedInterface(),
-                                                                             authenticationToken);
+    public RegistrationFuture registerProvider(final String domain, JoynrProvider provider) {
+        String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
         CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
                                                                   provider.getInterfaceName(),
                                                                   provider.getProviderQos(),
@@ -75,11 +73,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider, String authenticationToken) {
+    public void unregisterProvider(String domain, JoynrProvider provider) {
 
-        String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             provider.getProvidedInterface(),
-                                                                             authenticationToken);
+        String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
         CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
                                                                   provider.getInterfaceName(),
                                                                   provider.getProviderQos(),

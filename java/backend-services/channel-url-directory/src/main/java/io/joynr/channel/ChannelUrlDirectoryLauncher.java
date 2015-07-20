@@ -37,7 +37,6 @@ import com.google.inject.name.Named;
 
 public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
 
-    private static final String AUTH_TOKEN = "ChannelUrlDirectoryLauncher";
     Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoryLauncher.class);
 
     @Inject
@@ -62,7 +61,7 @@ public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        runtime.registerProvider(discoveryDirectoriesDomain, channelUrlDirectoryProvider, AUTH_TOKEN);
+        runtime.registerProvider(discoveryDirectoriesDomain, channelUrlDirectoryProvider);
     }
 
     @Override

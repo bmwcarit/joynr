@@ -62,7 +62,7 @@ public class JoynrApplicationModule extends ApplicationModule {
     }
 
     /**
-     * @param appId the unique identified of the applicaiton to be generated
+     * @param appId the unique identified of the application to be generated
      * @param applicationClass the class used for application instantiation
      */
     public JoynrApplicationModule(String appId, Class<? extends JoynrApplication> applicationClass) {

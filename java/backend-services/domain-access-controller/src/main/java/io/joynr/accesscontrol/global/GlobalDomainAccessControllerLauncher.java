@@ -32,7 +32,7 @@ import com.google.inject.Inject;
 
 public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplication {
 
-    private static final String AUTH_TOKEN = "GlobalDomainAccessControllerLauncher_authToken";
+    private static final String APP_ID = "GlobalDomainAccessControllerLauncher";
 
     @Inject
     private GlobalDomainAccessControllerAbstractProvider globalDomainAccessSyncProvider;
@@ -49,7 +49,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
 
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
                                                                         new GlobalDomainAccessControllerModule());
-        JoynrApplication domainAccessControllerLauncherApp = injectorFactory.createApplication(new JoynrApplicationModule(AUTH_TOKEN,
+        JoynrApplication domainAccessControllerLauncherApp = injectorFactory.createApplication(new JoynrApplicationModule(APP_ID,
                                                                                                                           GlobalDomainAccessControllerLauncher.class));
         domainAccessControllerLauncherApp.run();
 
@@ -59,7 +59,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     @Override
     public void run() {
 
-        runtime.registerProvider(localDomain, globalDomainAccessSyncProvider, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, globalDomainAccessSyncProvider);
     }
 
     @Override

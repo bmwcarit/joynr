@@ -21,8 +21,8 @@ package io.joynr.capabilities;
 
 public interface ParticipantIdStorage {
 
-    String getProviderParticipantId(String domain, Class<?> providedInterface, String authToken);
+    String getProviderParticipantId(String domain, Class<?> providedInterface);
 
-    String getProviderParticipantId(String domain, Class<?> providedInterface, String authToken, String defaultValue);
+    String getProviderParticipantId(String domain, Class<?> providedInterface, String defaultValue);
 
 }
