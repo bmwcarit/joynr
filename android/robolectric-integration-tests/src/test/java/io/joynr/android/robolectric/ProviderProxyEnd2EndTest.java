@@ -32,7 +32,7 @@ import org.robolectric.annotation.Config;
 import java.util.Properties;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest="./src/test/AndroidManifest.xml")
+@Config(manifest = "./src/test/AndroidManifest.xml")
 public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private TestActivity activity;
@@ -46,7 +46,7 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        if (activity == null ) {
+        if (activity == null) {
             activity = Robolectric.buildActivity(TestActivity.class).create().get();
         }
 

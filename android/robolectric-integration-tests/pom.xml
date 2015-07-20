@@ -34,13 +34,6 @@
 		and Android dependencies. A Jetty plugin is set up to only use compile 
  		dependencies and all Android dependencies are included as test dependences. -->
 	<dependencies>
-		<dependency>
-			<groupId>io.joynr.android</groupId>
-			<artifactId>integration-tests</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-		</dependency>
-
 		<!-- Android dependencies -->
 		<dependency>
 			<groupId>io.joynr.java.android</groupId>
