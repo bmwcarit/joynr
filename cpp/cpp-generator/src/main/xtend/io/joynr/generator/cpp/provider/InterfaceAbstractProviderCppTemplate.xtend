@@ -71,10 +71,6 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::«attributeName»Changed(
 			const «attributeType»& «attributeName»
 	) {
-		if(this->«attributeName» == «attributeName») {
-			// the value didn't change, no need for notification
-			return;
-		}
 		this->«attributeName» = «attributeName»;
 		onAttributeValueChanged("«attributeName»", QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»));
 	}
