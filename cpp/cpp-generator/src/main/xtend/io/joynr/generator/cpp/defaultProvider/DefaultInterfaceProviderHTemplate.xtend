@@ -99,12 +99,13 @@ public:
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList.substring(1)»,
 				«ENDIF»
-				std::function<void(
-						const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-						«IF !method.outputParameters.empty»
+				«IF method.outputParameters.empty»
+					std::function<void()> onSuccess
+				«ELSE»
+					std::function<void(
 							«outputTypedParamList.substring(1)»
-						«ENDIF»
-				)> callbackFct
+					)> onSuccess
+				«ENDIF»
 		);
 
 	«ENDFOR»

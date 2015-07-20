@@ -256,10 +256,9 @@ void AccessController::hasConsumerPermission(
 
     // Get the domain and interface of the message destination
     QString participantId = message.getHeaderTo();
-    std::function<void(const RequestStatus&, const system::DiscoveryEntry&)> lookupCallback =
-            [this, message, callback, participantId](
-                    const RequestStatus status, const system::DiscoveryEntry& discoveryEntry) {
-        if (!status.successful()) {
+    std::function<void(const system::DiscoveryEntry&)> lookupCallback =
+            [this, message, callback, participantId](const system::DiscoveryEntry& discoveryEntry) {
+        if (discoveryEntry.getParticipantId() != participantId) {
             LOG_ERROR(
                     logger,
                     QString("Failed to get capabilities for participantId %1").arg(participantId));

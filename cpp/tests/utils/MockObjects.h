@@ -188,7 +188,7 @@ public:
     }
     MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
     MOCK_METHOD2(addNextHop, void(std::string participantId, QSharedPointer<joynr::system::Address> inprocessAddress));
-    MOCK_METHOD2(removeNextHop, void(joynr::RequestStatus& joynrInternalStatus, std::string participantId));
+    MOCK_METHOD1(removeNextHop, void(std::string participantId));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -555,62 +555,57 @@ public:
 
     void sumInts(
             const QList<int>& ints,
-            std::function<void(const joynr::RequestStatus& status, const int& result)> callbackFct)
+            std::function<void(const int& result)> onSuccess)
     {
         int result = 0;
         int j;
         foreach ( j, ints) {
             result += j;
         }
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
+        onSuccess(result);
     }
     void returnPrimeNumbers(
             const int &upperBound,
             std::function<void(
-                const joynr::RequestStatus& status,
-                const QList<int>& result)> callbackFct)
+                const QList<int>& result)> onSuccess)
     {
         QList<int> result;
         assert(upperBound<7);
         result.clear();
         result << 2 << 3 << 5;
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
+        onSuccess(result);
     }
     void optimizeTrip(
             const joynr::types::Trip& input,
             std::function<void(
-                const joynr::RequestStatus& status,
-                const joynr::types::Trip& result)> callbackFct)
+                const joynr::types::Trip& result)> onSuccess)
     {
-         callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), input);
+         onSuccess(input);
     }
     void optimizeLocationList(
             const QList<joynr::types::GpsLocation>& inputList,
             std::function<void(
-                const joynr::RequestStatus& status,
-                const QList<joynr::types::GpsLocation>& result)> callbackFct)
+                const QList<joynr::types::GpsLocation>& result)> onSuccess)
     {
-         callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), inputList);
+         onSuccess(inputList);
     }
 
     void overloadedOperation(
             const joynr::tests::DerivedStruct& input,
             std::function<void(
-                const joynr::RequestStatus& status,
-                const std::string& result)> callbackFct)
+                const std::string& result)> onSuccess)
     {
         std::string result("DerivedStruct");
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
+        onSuccess(result);
     }
 
     void overloadedOperation(
             const joynr::tests::AnotherDerivedStruct& input,
             std::function<void(
-                const joynr::RequestStatus& status,
-                const std::string& result)> callbackFct)
+                const std::string& result)> onSuccess)
     {
         std::string result("AnotherDerivedStruct");
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), result);
+        onSuccess(result);
     }
 };
 
@@ -913,7 +908,7 @@ public:
             lookup,
             void(
                 const std::string& participantId,
-                std::function<void(const joynr::RequestStatus&, const joynr::system::DiscoveryEntry&)> lookupCallback
+                std::function<void(const joynr::system::DiscoveryEntry&)> lookupCallback
             ));
 
 private:

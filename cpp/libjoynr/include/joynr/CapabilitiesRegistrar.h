@@ -95,14 +95,8 @@ public:
 
         // add next hop to dispatcher
         QSharedPointer<joynr::Future<void>> future(new Future<void>());
-        auto callbackFct = [future](const joynr::RequestStatus& status) {
-            if (status.successful()) {
-                future->onSuccess(status);
-            } else {
-                future->onFailure(status);
-            }
-        };
-        messageRouter->addNextHop(participantId, dispatcherAddress, callbackFct);
+        auto onSuccess = [future]() { future->onSuccess(joynr::RequestStatusCode::OK); };
+        messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
         future->waitForFinished();
 
         return participantId;
@@ -143,13 +137,7 @@ public:
         }
 
         QSharedPointer<joynr::Future<void>> future(new Future<void>());
-        auto callbackFct = [future](const joynr::RequestStatus& status) {
-            if (status.successful()) {
-                future->onSuccess(status);
-            } else {
-                future->onFailure(status);
-            }
-        };
+        auto callbackFct = [future]() { future->onSuccess(joynr::RequestStatusCode::OK); };
         messageRouter->removeNextHop(participantId, callbackFct);
         future->waitForFinished();
 

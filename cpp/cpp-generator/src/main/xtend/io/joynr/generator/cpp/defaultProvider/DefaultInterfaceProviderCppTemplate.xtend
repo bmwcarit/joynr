@@ -117,12 +117,13 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 			«IF !method.inputParameters.empty»
 				«inputTypedParamList.substring(1)»,
 			«ENDIF»
-			std::function<void(
-					const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-					«IF !method.outputParameters.empty»
+			«IF method.outputParameters.empty»
+				std::function<void()> onSuccess
+			«ELSE»
+				std::function<void(
 						«outputTypedParamList.substring(1)»
-					«ENDIF»
-			)> callbackFct
+				)> onSuccess
+			«ENDIF»
 	) {
 		«FOR inputParameter: getInputParameters(method)»
 			Q_UNUSED(«inputParameter.joynrName»);
@@ -157,8 +158,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		LOG_WARN(logger, "**********************************************");
 		LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
 		LOG_WARN(logger, "**********************************************");
-		callbackFct(
-				joynr::RequestStatus(joynr::RequestStatusCode::OK)«IF !method.outputParameters.empty»,«ENDIF»
+		onSuccess(
 				«outputUntypedParamList»
 		);
 	}

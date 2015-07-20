@@ -96,32 +96,25 @@ public:
      */
     virtual void route(const JoynrMessage& message);
 
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::ChannelAddress& channelAddress,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::BrowserAddress& browserAddress,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::WebSocketAddress& webSocketAddress,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::WebSocketClientAddress& webSocketClientAddress,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::ChannelAddress& channelAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::BrowserAddress& browserAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::WebSocketAddress& webSocketAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::WebSocketClientAddress& webSocketClientAddress,
+                            std::function<void()> onSuccess);
     virtual void removeNextHop(const std::string& participantId,
-                               std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
-                                       callbackFct = nullptr);
+                               std::function<void()> onSuccess = nullptr);
     virtual void resolveNextHop(const std::string& participantId,
-                                std::function<void(const joynr::RequestStatus& joynrInternalStatus,
-                                                   const bool& resolved)> callbackFct);
+                                std::function<void(const bool& resolved)> onSuccess);
 
     void addProvisionedNextHop(std::string participantId,
                                QSharedPointer<joynr::system::Address> address);
@@ -134,8 +127,7 @@ public:
 
     virtual void addNextHop(const std::string& participantId,
                             const QSharedPointer<joynr::system::Address>& inprocessAddress,
-                            std::function<void(const joynr::RequestStatus& joynrInternalStatus)>
-                                    callbackFct = nullptr);
+                            std::function<void()> onSuccess = nullptr);
 
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;

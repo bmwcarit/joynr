@@ -139,25 +139,19 @@ public:
     virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(
-            const joynr::system::DiscoveryEntry& discoveryEntry,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
+    virtual void add(const joynr::system::DiscoveryEntry& discoveryEntry,
+                     std::function<void()> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
             const std::string& domain,
             const std::string& interfaceName,
             const joynr::system::DiscoveryQos& discoveryQos,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus,
-                               const QList<joynr::system::DiscoveryEntry>& result)> callbackFct);
+            std::function<void(const QList<joynr::system::DiscoveryEntry>& result)> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus,
-                               const joynr::system::DiscoveryEntry& result)> callbackFct);
+    virtual void lookup(const std::string& participantId,
+                        std::function<void(const joynr::system::DiscoveryEntry& result)> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void remove(
-            const std::string& participantId,
-            std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct);
+    virtual void remove(const std::string& participantId, std::function<void()> onSuccess);
 
     /*
      * Objects that wish to receive provider register/unregister events can attach

@@ -184,8 +184,8 @@ T* ProxyBuilder<T>::build()
      * routing table(s)
     */
     QSharedPointer<Future<void>> future(new Future<void>());
-    auto callbackFct = [future](const joynr::RequestStatus& status) { future->onSuccess(status); };
-    messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, callbackFct);
+    auto onSuccess = [future]() { future->onSuccess(joynr::RequestStatusCode::OK); };
+    messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
 
     future->waitForFinished();
     return proxy;

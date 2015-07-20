@@ -404,10 +404,10 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::add(const system::DiscoveryEntry& discoveryEntry,
-                                     std::function<void(const RequestStatus&)> callbackFct)
+                                     std::function<void()> onSuccess)
 {
     add(discoveryEntry);
-    callbackFct(RequestStatus(joynr::RequestStatusCode::OK));
+    onSuccess();
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -415,20 +415,20 @@ void LocalCapabilitiesDirectory::lookup(
         const std::string& domain,
         const std::string& interfaceName,
         const system::DiscoveryQos& discoveryQos,
-        std::function<void(const RequestStatus&, const QList<system::DiscoveryEntry>&)> callbackFct)
+        std::function<void(const QList<joynr::system::DiscoveryEntry>&)> onSuccess)
 {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(domain, interfaceName, future, discoveryQos);
     QList<CapabilityEntry> capabilities = future->get();
     QList<system::DiscoveryEntry> result;
     convertCapabilityEntriesIntoDiscoveryEntries(capabilities, result);
-    callbackFct(RequestStatus(joynr::RequestStatusCode::OK), result);
+    onSuccess(result);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
         const std::string& participantId,
-        std::function<void(const RequestStatus&, const system::DiscoveryEntry&)> callbackFct)
+        std::function<void(const joynr::system::DiscoveryEntry&)> onSuccess)
 {
     QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
@@ -442,22 +442,18 @@ void LocalCapabilitiesDirectory::lookup(
     }
 
     system::DiscoveryEntry result;
-    joynr::RequestStatus joynrInternalStatus;
     if (!capabilities.isEmpty()) {
         convertCapabilityEntryIntoDiscoveryEntry(capabilities.first(), result);
-        joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
-    } else {
-        joynrInternalStatus.setCode(joynr::RequestStatusCode::ERROR);
     }
-    callbackFct(joynrInternalStatus, result);
+    onSuccess(result);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::remove(const std::string& participantId,
-                                        std::function<void(const RequestStatus&)> callbackFct)
+                                        std::function<void()> onSuccess)
 {
     remove(participantId);
-    callbackFct(RequestStatus(joynr::RequestStatusCode::OK));
+    onSuccess();
 }
 
 void LocalCapabilitiesDirectory::addProviderRegistrationObserver(

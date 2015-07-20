@@ -157,10 +157,9 @@ void «interfaceName»RequestInterpreter::execute(
 					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method))»
-				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> requestCallerCallbackFct =
-						[callbackFct](const joynr::RequestStatus& status«outputTypedParamList»){
-							Q_UNUSED(status);
+				«val outputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
+				std::function<void(«outputTypedParamList»)> requestCallerCallbackFct =
+						[callbackFct](«outputTypedParamList»){
 							QList<QVariant> outParams;
 							«var index = 0»
 							«FOR param : method.outputParameters»

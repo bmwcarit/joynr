@@ -94,10 +94,9 @@ public:
     }
 
     void invokeCallbackFct (std::string participantId,
-                            std::function<void(const joynr::RequestStatus&,
-                                               const joynr::system::DiscoveryEntry&)> callbackFct) {
+                            std::function<void(const joynr::system::DiscoveryEntry&)> callbackFct) {
         Q_UNUSED(participantId);
-        callbackFct(requestStatus, discoveryEntry);
+        callbackFct(discoveryEntry);
     }
 
     void SetUp(){
@@ -120,7 +119,6 @@ public:
         )
                 .WillByDefault(Return("fooParticipantId"));
 
-        requestStatus.setCode(joynr::RequestStatusCode::OK);
         discoveryEntry = DiscoveryEntry(
                 TEST_DOMAIN,
                 TEST_INTERFACE,
@@ -131,7 +129,7 @@ public:
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
                 lookup(toParticipantId.toStdString(), A<std::function<void(
-                           const joynr::RequestStatus&, const joynr::system::DiscoveryEntry&)>>())
+                           const joynr::system::DiscoveryEntry&)>>())
         )
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeCallbackFct));
@@ -150,7 +148,6 @@ protected:
     JoynrMessageFactory messageFactory;
     JoynrMessage message;
     Request request;
-    RequestStatus requestStatus;
     MessagingQos messagingQos;
     DiscoveryEntry discoveryEntry;
     static const QString fromParticipantId;

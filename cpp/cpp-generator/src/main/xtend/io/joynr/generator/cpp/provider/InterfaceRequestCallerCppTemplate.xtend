@@ -96,14 +96,17 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	«val methodName = method.joynrName»
 	void «interfaceName»RequestCaller::«methodName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
-			std::function<void(
-					const joynr::RequestStatus& joynrInternalStatus«IF !method.outputParameters.empty»,«ENDIF»
-					«outputTypedParamList»
-			)> callbackFct
+			«IF method.outputParameters.empty»
+				std::function<void()> onSuccess
+			«ELSE»
+				std::function<void(
+						«outputTypedParamList.substring(1)»
+				)> onSuccess
+			«ENDIF»
 	) {
 		provider->«methodName»(
 				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-				callbackFct
+				onSuccess
 		);
 	}
 

@@ -58,14 +58,9 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     }
 
     QSharedPointer<joynr::Future<void>> future(new Future<void>());
-    auto callbackFct = [future](const joynr::RequestStatus& status) {
-        if (status.successful()) {
-            future->onSuccess(status);
-        } else {
-            future->onFailure(status);
-        }
-    };
-    messageRouter->removeNextHop(participantId, callbackFct);
+    auto onSuccess =
+            [future]() { future->onSuccess(joynr::RequestStatus(joynr::RequestStatusCode::OK)); };
+    messageRouter->removeNextHop(participantId, onSuccess);
     future->waitForFinished();
 
     if (!future->getStatus().successful()) {

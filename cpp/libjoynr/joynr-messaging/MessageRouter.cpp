@@ -280,12 +280,20 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
     }
 }
 
-void MessageRouter::addNextHop(
-        const std::string& participantId,
-        const QSharedPointer<joynr::system::Address>& inprocessAddress,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::addNextHop(const std::string& participantId,
+                               const QSharedPointer<joynr::system::Address>& inprocessAddress,
+                               std::function<void()> onSuccess)
 {
     addToRoutingTable(participantId, inprocessAddress);
+
+    std::function<void(const joynr::RequestStatus& status)> callbackFct =
+            [onSuccess](const joynr::RequestStatus& status) {
+        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+            onSuccess();
+        } else {
+            // TODO: error handling
+        }
+    };
 
     addNextHopToParent(participantId, callbackFct);
 
@@ -293,75 +301,110 @@ void MessageRouter::addNextHop(
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(
-        const std::string& participantId,
-        const joynr::system::ChannelAddress& channelAddress,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::addNextHop(const std::string& participantId,
+                               const joynr::system::ChannelAddress& channelAddress,
+                               std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::ChannelAddress> address(
             new joynr::system::ChannelAddress(channelAddress));
     addToRoutingTable(participantId, address);
 
+    std::function<void(const joynr::RequestStatus& status)> callbackFct =
+            [onSuccess](const joynr::RequestStatus& status) {
+        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+            onSuccess();
+        } else {
+            // TODO: error handling
+        }
+    };
     addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(
-        const std::string& participantId,
-        const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::addNextHop(const std::string& participantId,
+                               const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
+                               std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::CommonApiDbusAddress> address(
             new joynr::system::CommonApiDbusAddress(commonApiDbusAddress));
     addToRoutingTable(participantId, address);
 
+    std::function<void(const joynr::RequestStatus& status)> callbackFct =
+            [onSuccess](const joynr::RequestStatus& status) {
+        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+            onSuccess();
+        } else {
+            // TODO: error handling
+        }
+    };
     addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(
-        const std::string& participantId,
-        const joynr::system::BrowserAddress& browserAddress,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::addNextHop(const std::string& participantId,
+                               const joynr::system::BrowserAddress& browserAddress,
+                               std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::BrowserAddress> address(
             new joynr::system::BrowserAddress(browserAddress));
     addToRoutingTable(participantId, address);
 
+    std::function<void(const joynr::RequestStatus& status)> callbackFct =
+            [onSuccess](const joynr::RequestStatus& status) {
+        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+            onSuccess();
+        } else {
+            // TODO: error handling
+        }
+    };
     addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(
-        const std::string& participantId,
-        const joynr::system::WebSocketAddress& webSocketAddress,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::addNextHop(const std::string& participantId,
+                               const joynr::system::WebSocketAddress& webSocketAddress,
+                               std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::WebSocketAddress> address(
             new joynr::system::WebSocketAddress(webSocketAddress));
     addToRoutingTable(participantId, address);
 
+    std::function<void(const joynr::RequestStatus& status)> callbackFct =
+            [onSuccess](const joynr::RequestStatus& status) {
+        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+            onSuccess();
+        } else {
+            // TODO: error handling
+        }
+    };
     addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(
-        const std::string& participantId,
-        const joynr::system::WebSocketClientAddress& webSocketClientAddress,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::addNextHop(const std::string& participantId,
+                               const joynr::system::WebSocketClientAddress& webSocketClientAddress,
+                               std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::WebSocketClientAddress> address(
             new joynr::system::WebSocketClientAddress(webSocketClientAddress));
     addToRoutingTable(participantId, address);
 
+    std::function<void(const joynr::RequestStatus& status)> callbackFct =
+            [onSuccess](const joynr::RequestStatus& status) {
+        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+            onSuccess();
+        } else {
+            // TODO: error handling
+        }
+    };
     addNextHopToParent(participantId, callbackFct);
 
     sendMessages(participantId, address);
@@ -417,9 +460,7 @@ void MessageRouter::addToRoutingTable(std::string participantId,
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::removeNextHop(
-        const std::string& participantId,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus)> callbackFct)
+void MessageRouter::removeNextHop(const std::string& participantId, std::function<void()> onSuccess)
 {
     routingTableLock.lockForWrite();
     routingTable.remove(participantId);
@@ -427,22 +468,28 @@ void MessageRouter::removeNextHop(
 
     // remove from parent router
     if (isChildMessageRouter()) {
+        std::function<void(const joynr::RequestStatus& status)> callbackFct =
+                [onSuccess](const joynr::RequestStatus& status) {
+            if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
+                onSuccess();
+            } else {
+                // TODO: error handling
+            }
+        };
         parentRouter->removeNextHop(participantId, callbackFct);
-    } else if (callbackFct) {
-        callbackFct(joynr::RequestStatus(RequestStatusCode::OK));
+    } else if (onSuccess) {
+        onSuccess();
     }
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::resolveNextHop(
-        const std::string& participantId,
-        std::function<void(const joynr::RequestStatus& joynrInternalStatus, const bool& resolved)>
-                callbackFct)
+void MessageRouter::resolveNextHop(const std::string& participantId,
+                                   std::function<void(const bool& resolved)> onSuccess)
 {
     routingTableLock.lockForRead();
     bool resolved = routingTable.contains(participantId);
     routingTableLock.unlock();
-    callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), resolved);
+    onSuccess(resolved);
 }
 
 /**
