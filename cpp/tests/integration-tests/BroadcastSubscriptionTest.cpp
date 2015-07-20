@@ -29,6 +29,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
+#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -73,6 +74,8 @@ public:
         subscriptionManager = new SubscriptionManager();
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
+        MetaTypeRegistrar::instance().registerBroadcastMetaType<types::GpsLocation>();
+        MetaTypeRegistrar::instance().registerBroadcastMetaType<types::GpsLocation, double>();
     }
 
     void TearDown(){
