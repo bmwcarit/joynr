@@ -186,4 +186,18 @@ class QtTypeUtil extends CppTypeUtil {
 		return null
 	}
 
+	override getIncludeOf(FType dataType) {
+		val path = getPackagePathWithJoynrPrefix(dataType, "/")
+		return path + "/" + dataType.joynrName + ".h";
+	}
+
+	override getTypeName(FType datatype) {
+		val packagepath = buildPackagePath(datatype, "::");
+		if (isEnum(datatype)){
+			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
+		}
+		else{
+			return  packagepath + datatype.joynrName  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
+		}
+	}
 }

@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.EnumTemplate
@@ -29,6 +30,9 @@ class StdEnumCppTemplate implements EnumTemplate {
 	private extension TemplateBase
 
 	@Inject
+	private extension CppStdTypeUtil
+
+	@Inject
 	private extension JoynrCppGeneratorExtensions
 
 	override generate(FEnumerationType type)
@@ -37,7 +41,7 @@ class StdEnumCppTemplate implements EnumTemplate {
 «warning»
 «getDllExportIncludeStatement()»
 
-#include "«getIncludeOfStd(type)»"
+#include "«type.includeOfStd»"
 
 «getNamespaceStarter(type, true)»
 

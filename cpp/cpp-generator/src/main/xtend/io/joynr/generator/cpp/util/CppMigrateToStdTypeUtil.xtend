@@ -17,29 +17,19 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
-import java.util.HashSet
+import com.google.inject.Inject
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FType
 
 class CppMigrateToStdTypeUtil extends CppTypeUtil {
+	@Inject
+	private QtTypeUtil qtTypeUtil
+
+	@Inject
+	private CppStdTypeUtil cppStdTypeUtil
 
 	override getTypeName(FBasicTypeId datatype) {
-		switch datatype {
-			case FBasicTypeId::BOOLEAN: "bool"
-			case FBasicTypeId::INT8: "int8_t"
-			case FBasicTypeId::UINT8: "uint8_t"
-			case FBasicTypeId::INT16: "int16_t"
-			case FBasicTypeId::UINT16: "uint16_t"
-			case FBasicTypeId::INT32: "int32_t"
-			case FBasicTypeId::UINT32: "uint32_t"
-			case FBasicTypeId::INT64: "int64_t"
-			case FBasicTypeId::UINT64: "uint64_t"
-			case FBasicTypeId::FLOAT: "float"
-			case FBasicTypeId::DOUBLE: "double"
-			case FBasicTypeId::STRING: "std::string"
-			case FBasicTypeId::BYTE_BUFFER: "std::vector<uint8_t>"
-			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
-		}
+		cppStdTypeUtil.getTypeName(datatype)
 	}
 
 	override getTypeNameForList(FType datatype) {
@@ -47,41 +37,38 @@ class CppMigrateToStdTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		"std::vector<" + datatype.typeName + "> ";
+		cppStdTypeUtil.getTypeNameForList(datatype)
+	}
+
+	override getTypeName(FType dataType) {
+/*
+		if (dataType.isEnum) {
+			qtTypeUtil.getTypeName(dataType)
+		}
+		else {
+			cppStdTypeUtil.getTypeName(dataType)
+		}
+*/
+		qtTypeUtil.getTypeName(dataType)
 	}
 
 	override getIncludeForArray() {
-		"<vector>"
+		cppStdTypeUtil.getIncludeForArray
 	}
 
 	def getIncludeForString() {
-		"<string>"
+		cppStdTypeUtil.includeForString
 	}
 
 	def getIncludeForInteger() {
-		"<stdint.h>"
+		cppStdTypeUtil.includeForInteger
 	}
 
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {
-		var includes = new HashSet<String>;
-		if (datatypes.exists[type | type == FBasicTypeId.STRING]) {
-			includes.add(includeForString);
-		}
-		if (datatypes.exists[type | type == FBasicTypeId.BYTE_BUFFER]) {
-			includes.add(includeForArray);
-		}
-		if (datatypes.exists[type | type == FBasicTypeId.INT8  ||
-									type == FBasicTypeId.UINT8 ||
-									type == FBasicTypeId.INT16 ||
-									type == FBasicTypeId.UINT16||
-									type == FBasicTypeId.INT32 ||
-									type == FBasicTypeId.UINT32||
-									type == FBasicTypeId.INT64 ||
-									type == FBasicTypeId.UINT64||
-									type == FBasicTypeId.BYTE_BUFFER
-		]) {
-			includes.add(includeForInteger)
-		}
-		return includes;
+		cppStdTypeUtil.getIncludesFor(datatypes)
+	}
+
+	override String getIncludeOf(FType dataType) {
+		qtTypeUtil.getIncludeOf(dataType)
 	}
 }

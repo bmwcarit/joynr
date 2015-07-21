@@ -17,12 +17,12 @@ package io.joynr.generator.cpp.communicationmodel
  * limitations under the License.
  */
 
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.CompoundTypeTemplate
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
-import io.joynr.generator.util.CompoundTypeTemplate
-import io.joynr.generator.cpp.util.CppStdTypeUtil
 
 class StdTypeHTemplate implements CompoundTypeTemplate{
 
@@ -49,7 +49,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 #include <vector>
 
 // include complex Datatype headers.
-«FOR member: getRequiredIncludesForStd(type)»
+«FOR member: getRequiredIncludesFor(type)»
 	#include "«member»"
 «ENDFOR»
 

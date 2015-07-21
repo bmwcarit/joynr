@@ -166,16 +166,6 @@ abstract class CppTypeUtil extends TypeUtil {
 		getCommaSeperatedTypedParameterList(method.inputParameters, true, true)
 	}
 
-	override getTypeName(FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::");
-		if (isEnum(datatype)){
-			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
-		}
-		else{
-			return  packagepath + datatype.joynrName  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
-		}
-	}
-
 	def getDefaultValue(FTypedElement element) {
 		//default values are not supported (currently) by the Franca IDL 
 		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
@@ -210,28 +200,6 @@ abstract class CppTypeUtil extends TypeUtil {
 		}
 	}
 
-	def Iterable<String> getRequiredIncludesForStd(FCompoundType datatype){
-		val members = getComplexAndEnumMembers(datatype);
-
-		val typeList = new TreeSet<String>();
-		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOfStd(getExtendedType(datatype)))
-		}
-
-		for (member : members) {
-			val type = getDatatype(member.type);
-			if (type instanceof FType){
-				//TODO QT: remove this if statement once merged with std enums
-				if (isEnum(type)) {
-					typeList.add(getIncludeOf(type));
-				} else {
-					typeList.add(getIncludeOfStd(type));
-				}
-			}
-		}
-		return typeList;
-	}
-
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
 		val members = getComplexAndEnumMembers(datatype);
 
@@ -252,6 +220,8 @@ abstract class CppTypeUtil extends TypeUtil {
 	def Set<String> getIncludesFor(Iterable<FBasicTypeId> datatypes)
 
 	abstract def String getIncludeForArray()
+
+	abstract def String getIncludeOf(FType type)
 
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();

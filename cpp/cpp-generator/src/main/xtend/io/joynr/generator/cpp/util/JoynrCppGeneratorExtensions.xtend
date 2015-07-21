@@ -183,21 +183,8 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "Std" + type.name
 	}
 
-	def getIncludeOf(FType dataType) {
-		val path = getPackagePathWithJoynrPrefix(dataType, "/")
-		return path + "/" + dataType.joynrName + ".h";
-	}
-
 	def getAllPrimitiveTypes(FInterface serviceInterface) {
 		serviceInterface.allRequiredTypes.filter[type | type instanceof FBasicTypeId].map[type | type as FBasicTypeId]
-	}
-
-	def String getIncludeOfStd(FType dataType) {
-		var path = getPackagePathWithJoynrPrefix(dataType, "/")
-		if (dataType.isPartOfTypeCollection) {
-			path += "/" + dataType.typeCollectionName
-		}
-		return path + "/" + dataType.joynrNameStd + ".h";
 	}
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {

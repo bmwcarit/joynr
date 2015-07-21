@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.EnumTemplate
@@ -30,6 +31,9 @@ class StdEnumHTemplate implements EnumTemplate {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension CppStdTypeUtil
 
 	override generate(FEnumerationType type)
 '''
@@ -45,14 +49,14 @@ class StdEnumHTemplate implements EnumTemplate {
 #include <string>
 
 «IF type.hasExtendsDeclaration»
-	#include "«getIncludeOfStd(type.extendedType)»"
+	#include "«type.extendedType.includeOfStd»"
 
 «ENDIF»
 «getNamespaceStarter(type, true)»
 
 struct «getDllExportMacro()»«typeName» {
 	«IF type.hasExtendsDeclaration»
-		// This enum inherits enumeration values from «type.extendedType.buildPackagePath("::", true)»«type.extendedType.joynrNameStd».
+		// This enum inherits enumeration values from «type.extendedType.typeNameStd».
 	«ENDIF»
 	enum «getNestedEnumName()» : uint32_t {
 		«var ordinal = 0»

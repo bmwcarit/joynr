@@ -18,11 +18,11 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import org.franca.core.franca.FCompoundType
 import io.joynr.generator.util.CompoundTypeTemplate
-import io.joynr.generator.cpp.util.CppStdTypeUtil
+import org.franca.core.franca.FCompoundType
 
 class StdTypeCppTemplate implements CompoundTypeTemplate{
 
@@ -45,17 +45,14 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 #include <QMetaEnum>
 
-#include "«getIncludeOfStd(type)»"
+#include "«type.includeOf»"
 
 #include "joynr/Reply.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 #include "qjson/serializer.h"
 
-
 «getNamespaceStarter(type)»
-
-
 
 «IF !getMembersRecursive(type).empty»
 «typeName»::«typeName»(

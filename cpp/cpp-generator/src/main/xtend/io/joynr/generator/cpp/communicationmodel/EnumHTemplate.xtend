@@ -18,10 +18,11 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FEnumerationType
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.EnumTemplate
+import org.franca.core.franca.FEnumerationType
 
 class EnumHTemplate implements EnumTemplate{
 
@@ -30,6 +31,9 @@ class EnumHTemplate implements EnumTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension CppStdTypeUtil
 
 	override generate(FEnumerationType type)
 '''
@@ -43,7 +47,7 @@ class EnumHTemplate implements EnumTemplate{
 #include <QObject>
 #include <QMetaType>
 #include "joynr/Util.h"
-#include "«getIncludeOfStd(type)»"
+#include "«type.includeOfStd»"
 
 «getNamespaceStarter(type)»
 
