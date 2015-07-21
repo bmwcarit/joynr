@@ -30,6 +30,7 @@
 
 	<modules>
 		<module>radio-app</module>
+		<module>location-tester</module>
 	</modules>
 	<profiles>
 		<!-- Only include Android examples when Android is available -->
@@ -37,7 +38,8 @@
 			<id>android</id>
 			<modules>
 				<module>radio-app</module>
-				<module>android-example</module>
+				<module>location-tester</module>
+				<module>android-location-consumer</module>
 				<module>android-location-provider</module>
 			</modules>
 		</profile>

@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  Copyright (C) 2011 - 2015 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr.examples</groupId>
-	<artifactId>radio-app</artifactId>
+	<artifactId>location-tester</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 
@@ -82,7 +82,6 @@
 			<artifactId>jline</artifactId>
 			<version>2.12</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -134,27 +133,27 @@
 				<artifactId>joynr-generator-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>generate-java</id>
+						<id>generate-interfaces</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
+							<model>Localisation.fidl</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated-java</outputPath>
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-cpp</id>
+						<id>generate-types</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
-							<generationLanguage>cpp</generationLanguage>
-							<outputPath>${basedir}/src/main/generated-cpp</outputPath>
+							<model>LocalisationTypes.fidl</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/main/generated-java</outputPath>
 						</configuration>
 					</execution>
 				</executions>
@@ -165,8 +164,9 @@
 						<version>${project.version}</version>
 					</dependency>
 					<dependency>
-						<groupId>io.joynr.cpp</groupId>
-						<artifactId>cpp-generator</artifactId>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<classifier>tests</classifier>
 						<version>${project.version}</version>
 					</dependency>
 				</dependencies>
