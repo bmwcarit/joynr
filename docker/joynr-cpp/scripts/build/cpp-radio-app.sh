@@ -1,8 +1,28 @@
 #!/bin/bash
 
-START=$(date +%s)
-
 source /data/scripts/global.sh
+
+START=$(date +%s)
+JOBS=20
+
+function usage
+{
+    echo "usage: cpp-radio-app.sh [--jobs X]"
+    echo "default jobs is 20"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        --jobs )                shift
+                                JOBS=$1
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+log "CPP RADIO APP JOBS: $JOBS"
 
 log "ENVIRONMENT"
 env
@@ -28,7 +48,7 @@ cd /data/build/radio
 
 cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/examples/radio-app
 
-time make -j 20
+time make -j $JOBS
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))

@@ -4,12 +4,13 @@ source /data/scripts/global.sh
 
 function usage
 {
-    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF]"
-    echo "default dbus is OFF, gcov is OFF"
+    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X]"
+    echo "default dbus is OFF, gcov is OFF, jobs is 20"
 }
 
 DBUS='OFF'
 GCOV='OFF'
+JOBS=20
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -19,13 +20,16 @@ while [ "$1" != "" ]; do
         --gcov )                shift
                                 GCOV=$1
                                 ;;
+        --jobs )                shift
+                                JOBS=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
     shift
 done
 
-log "CPP CLEAN BUILD DBUS: $DBUS GCOV: $GCOV"
+log "CPP CLEAN BUILD DBUS: $DBUS GCOV: $GCOV JOBS: $JOBS"
 
 START=$(date +%s)
 
@@ -52,11 +56,11 @@ cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
 
 if [ "$GCOV" == "ON" ] ; then
     echo "run coverage build"
-    make -j20 UnitCoverageTarget
+    make -j $JOBS UnitCoverageTarget
 fi
 
 log "BUILD C++ JOYNR"
-make -j 20
+make -j $JOBS
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
