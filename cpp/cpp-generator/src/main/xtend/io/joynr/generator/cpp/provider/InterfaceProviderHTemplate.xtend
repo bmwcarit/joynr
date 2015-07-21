@@ -62,13 +62,18 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(serviceInterface)»
 
+/** @brief Provider class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»Provider : public virtual IJoynrProvider
 {
 
 public:
+	/** @brief Default constructor */
 	«interfaceName»Provider();
+
 	//for each Attribute the provider needs setters, sync and async getters.
 	//They have default implementation for pushing Providers and can be overwritten by pulling Providers.
+
+	/** @brief Destructor */
 	virtual ~«interfaceName»Provider();
 
 	static const std::string& INTERFACE_NAME();
@@ -79,6 +84,12 @@ public:
 	«FOR attribute : serviceInterface.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
+			/**
+			 * @brief Gets «attributeName.toFirstUpper»
+			 * @param callbackFct A callback function to be called once the asynchronous computation has
+			 * finished. It must expect a request status object as well as the attribute value.
+			 * @return the value of the attribute «attributeName.toFirstUpper»
+			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
@@ -86,6 +97,12 @@ public:
 			) = 0;
 		«ENDIF»
 		«IF attribute.writable»
+			/**
+			 * @brief Sets «attributeName.toFirstUpper»
+			 * @param «attributeName» the new value of the attribute
+			 * @param callbackFct A callback function to be called once the asynchronous computation has
+			 * finished. It must expect a request status object.
+			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess
@@ -110,6 +127,11 @@ public:
 	«FOR method : serviceInterface.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+		/**
+		 * @brief Implementation of the Franca method «method.joynrName»
+		 * @param callbackFct A callback function to be called once the asynchronous computation has
+		 * finished. It must expect a request status object as well as the method out parameters.
+		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList.substring(1)»,

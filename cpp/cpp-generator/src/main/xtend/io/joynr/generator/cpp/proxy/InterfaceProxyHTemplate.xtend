@@ -61,8 +61,18 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 #endif
 
 «getNamespaceStarter(serviceInterface)»
+/** @brief Proxy class for interface «interfaceName» */
 class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
 public:
+	/**
+	 * @brief Parameterized constructor
+	 * @param messagingAddress The address
+	 * @param connectorFactory The connector factory
+	 * @param cache The client cache
+	 * @param domain The provider domain
+	 * @param qosSettings The quality of service settings
+	 * @param cached True, if cached, false otherwise
+	 */
 	«className»(
 			QSharedPointer<joynr::system::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
@@ -71,14 +81,24 @@ public:
 			const joynr::MessagingQos& qosSettings,
 			bool cached
 	);
-
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«var attributeName = attribute.joynrName»
 		«val returnType = attribute.typeName»
+
+		/**
+		 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 */
 		void unsubscribeFrom«attributeName.toFirstUpper»(std::string &subscriptionId) {
 			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 		}
 
+		/**
+		 * @brief creates a new subscription to attribute «attributeName.toFirstUpper»
+		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+		 * @param subscriptionQos The subscription quality of service settings
+		 * @return the subscription id as string
+		 */
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos){
@@ -87,6 +107,13 @@ public:
 						subscriptionQos);
 		}
 
+		/**
+		 * @brief updates an existing subscription to attribute «attributeName.toFirstUpper»
+		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+		 * @param subscriptionQos The subscription quality of service settings
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 * @return the subscription id as string
+		 */
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
@@ -101,11 +128,23 @@ public:
 	«FOR broadcast: serviceInterface.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
+
+		/**
+		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 */
 		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string &subscriptionId) {
 			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 		}
 
 		«IF isSelective(broadcast)»
+			/**
+			 * @brief subscribes to selective broadcast «broadcastName.toFirstUpper» with filter parameters
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
@@ -116,6 +155,14 @@ public:
 							subscriptionQos);
 			}
 
+			/**
+			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 * @return the subscription id as string
+			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
@@ -128,6 +175,12 @@ public:
 							subscriptionId);
 			}
 		«ELSE»
+			/**
+			 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos){
@@ -136,6 +189,14 @@ public:
 							subscriptionQos);
 			}
 
+			/**
+			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 * @return the subscription id as string
+			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
@@ -148,6 +209,7 @@ public:
 		«ENDIF»
 	«ENDFOR»
 
+	/** @brief Destructor */
 	virtual ~«className»();
 
 	// attributes

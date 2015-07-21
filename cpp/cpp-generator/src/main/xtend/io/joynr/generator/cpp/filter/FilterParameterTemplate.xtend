@@ -43,22 +43,45 @@ class FilterParameterTemplate implements BroadcastTemplate {
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»
+/**
+ * @brief BroadcastFilterParameter class for interface «serviceInterface.joynrName.toFirstUpper»
+ * broadcast «broadcastName»
+ */
 class «getDllExportMacro()» «className» : public BroadcastFilterParameters {
 public:
 
 	«IF (getFilterParameters(broadcast).isEmpty())»
+		/**
+		 * @brief Sets value for given key
+		 * @param key The key
+		 * @param value The new value
+		 */
 		void set(std::string key, std::string value) {
 			setFilterParameter(key, value);
 		}
 
+		/**
+		 * @brief Gets value for given key
+		 * @param key The key for which value should be retrieved
+		 * @return The current value
+		 */
 		std::string get(std::string key) const {
 			return getFilterParameter(key);
 		}
 	«ELSE»
 		«FOR parameter: getFilterParameters(broadcast)»
+			/**
+			 * @brief Sets «parameter.toFirstUpper»
+			 * @param value The new value
+			 */
 			void set«parameter.toFirstUpper»(std::string value) {
 				setFilterParameter("«parameter»", value);
 			}
+
+			/**
+			 * @brief Gets «parameter.toFirstUpper»
+			 * @return The current value of «parameter.toFirstUpper»
+			 */
 			std::string get«parameter.toFirstUpper»() const {
 				return getFilterParameter("«parameter»");
 			}

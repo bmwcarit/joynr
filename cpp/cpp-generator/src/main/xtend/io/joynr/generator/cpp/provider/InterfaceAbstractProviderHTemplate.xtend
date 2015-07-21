@@ -57,15 +57,23 @@ class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
 
 «getNamespaceStarter(serviceInterface)»
 
+/** @brief Abstract provider class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»AbstractProvider :
 		public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider,
 		public joynr::AbstractJoynrProvider
 {
 
 public:
+	/** @brief Default constructor */
 	«interfaceName»AbstractProvider();
+
+	/** @brief Destructor */
 	virtual ~«interfaceName»AbstractProvider();
 
+	/**
+	 * @brief Get the interface name
+	 * @return The name of the interface
+	 */
 	virtual std::string getInterfaceName() const;
 «IF !serviceInterface.attributes.isNullOrEmpty || !serviceInterface.broadcasts.isNullOrEmpty»
 
@@ -78,10 +86,10 @@ public:
 	«FOR attribute : serviceInterface.attributes»
 		«var attributeName = attribute.joynrName»
 		/**
-		* @brief «attributeName»Changed must be called by a concrete provider to signal attribute
-		* modifications. It is used to implement onchange subscriptions.
-		* @param «attributeName» the new attribute value
-		*/
+		 * @brief «attributeName»Changed must be called by a concrete provider to signal attribute
+		 * modifications. It is used to implement onchange subscriptions.
+		 * @param «attributeName» the new attribute value
+		 */
 		virtual void «attributeName»Changed(
 				const «attribute.typeName»& «attributeName»
 		);
@@ -93,10 +101,12 @@ public:
 	«FOR broadcast: serviceInterface.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		/**
-		* @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
-		* event. It is used to implement broadcast publications.
-		* @param «broadcastName» the new broadcast value
-		*/
+		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
+		 * event. It is used to implement broadcast publications.
+		 «FOR parameter: getOutputParameters(broadcast)»
+		 * @param «parameter.name» the value for the broadcast output parameter «parameter.name»
+		 «ENDFOR»
+		 */
 		virtual void fire«broadcastName.toFirstUpper»(
 				«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
 		);

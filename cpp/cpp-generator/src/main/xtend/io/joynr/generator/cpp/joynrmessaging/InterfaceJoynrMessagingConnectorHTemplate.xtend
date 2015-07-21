@@ -72,12 +72,21 @@ namespace joynr {
 «getNamespaceStarter(serviceInterface)»
 
 
+/** @brief JoynrMessagingConnector for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 private:
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
+			/**
+			 * @brief creates a new subscription or updates an existing subscription to attribute 
+			 * «attributeName.toFirstUpper»
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionRequest The subscription request
+			 * @return the subscription id as string
+			 */
 			std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
@@ -87,12 +96,30 @@ private:
 	«FOR broadcast: serviceInterface.broadcasts»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
+		/**
+		 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
+		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+		 * @param subscriptionQos The subscription quality of service settings
+		 * @param subscriptionRequest The subscription request
+		 * @return the subscription id as string
+		 */
 		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
 	«ENDFOR»
 public:
+	/**
+	 * @brief Parameterized constructor
+	 * @param messageSender The message sender
+	 * @param subscriptionManager Pointer to subscription manager instance
+	 * @param domain the provider domain
+	 * @param proxyParticipantId The participant id of the proxy
+	 * @param providerParticipantId The participant id of the provider
+	 * @param qosSettings The quality of service settings
+	 * @param cache Pointer to the client cache instance
+	 * @param cached True, if entries are cached, false otherwise
+	 */
 	«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* messageSender,
 		joynr::ISubscriptionManager* subscriptionManager,
@@ -103,8 +130,13 @@ public:
 		joynr::IClientCache *cache,
 		bool cached);
 
+	/**
+	 * @brief Checks whether cluster controller is used
+	 * @return true, if cluster controller is used
+	 */
 	virtual bool usesClusterController() const;
 
+	/** @brief Destructor */
 	virtual ~«interfaceName»JoynrMessagingConnector(){}
 
 	«produceSyncGetters(serviceInterface, false)»
@@ -115,13 +147,33 @@ public:
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
+			/**
+			 * @brief creates a new subscription subscription to attribute 
+			 * «attributeName.toFirstUpper»
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 						const joynr::SubscriptionQos& subscriptionQos);
+
+			/**
+			 * @brief updates an existing subscription to attribute 
+			 * «attributeName.toFirstUpper»
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 						const joynr::SubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
+
+			/**
+			 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 */
 			virtual void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 		«ENDIF»
 	«ENDFOR»
@@ -134,24 +186,60 @@ public:
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
+			/**
+			 * @brief subscribes to selective broadcast «broadcastName.toFirstUpper» with filter parameters
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos);
+
+			/**
+			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 * @return the subscription id as string
+			 */
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ELSE»
+			/**
+			 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos);
+
+			/**
+			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 * @return the subscription id as string
+			 */
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ENDIF»
+
+		/**
+		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 */
 		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);
 	«ENDFOR»
 };

@@ -61,10 +61,16 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
 class «interfaceName»Provider;
 
+/** @brief RequestCaller for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»RequestCaller : public joynr::RequestCaller {
 public:
+	/**
+	 * @brief parameterized constructor
+	 * @param provider The provider instance
+	 */
 	explicit «interfaceName»RequestCaller(std::shared_ptr<«interfaceName»Provider> provider);
 
+	/** @brief Destructor */
 	virtual ~«interfaceName»RequestCaller(){}
 
 	«IF !serviceInterface.attributes.empty»
@@ -73,6 +79,11 @@ public:
 	«FOR attribute : serviceInterface.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
+			/**
+			 * @brief Gets the value of the Franca attribute «attributeName.toFirstUpper»
+			 * @param callbackFct A callback function to be called once the asynchronous computation has
+			 * finished. It must expect a request status object as well as the return value.
+			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
@@ -80,6 +91,12 @@ public:
 			);
 		«ENDIF»
 		«IF attribute.writable»
+			/**
+			 * @brief Sets the value of the Franca attribute «attributeName.toFirstUpper»
+			 * @param «attributeName» The new value of the attribute
+			 * @param callbackFct A callback function to be called once the asynchronous computation has
+			 * finished. It must expect a request status object.
+			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess
@@ -93,6 +110,16 @@ public:
 	«FOR method : serviceInterface.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+		/**
+		 * @brief Implementation of Franca method «method.joynrName»
+		 «IF !method.inputParameters.empty»
+		 «FOR iparam: method.inputParameters»
+		 * @param «iparam.joynrName» Method input parameter «iparam.joynrName»
+		 «ENDFOR»
+		 «ENDIF»
+		 * @param onSuccess A callback function to be called once the asynchronous computation has
+		 * finished. It must expect the output parameter list, if parameters are present.
+		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList.substring(1)»,
@@ -107,10 +134,32 @@ public:
 		);
 
 	«ENDFOR»
+	/**
+	 * @brief Register an attribute listener
+	 * @param attributeName The name of the attribute for which a listener should be registered
+	 * @param attributeListener The listener to be registered
+	 */
 	void registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener);
+
+	/**
+	 * @brief Unregister an attribute listener
+	 * @param attributeName The name of the attribute for which a listener should be unregistered
+	 * @param attributeListener The listener to be unregistered
+	 */
 	void unregisterAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener);
 
+	/**
+	 * @brief Register a broadcast listener
+	 * @param broadcastName The name of the broadcast for which a listener should be registered
+	 * @param broadcastListener The listener to be registered
+	 */
 	void registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener);
+
+	/**
+	 * @brief Unregister a broadcast listener
+	 * @param broadcastName The name of the broadcast for which a listener should be unregistered
+	 * @param broadcastListener The listener to be unregistered
+	 */
 	void unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener);
 
 private:
