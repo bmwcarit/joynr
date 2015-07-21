@@ -48,6 +48,6 @@ joynr::joynr_logging::Logger* ComplexDataTypeTest::logger(
 TEST_F(ComplexDataTypeTest, createCStdomplexDataType)
 {
     joynr::types::TStructExtended fixture;
-    joynr::types::StdTStructExtended result = joynr::types::TStructExtended::createStd(fixture);
+    joynr::types::TestTypes::StdTStructExtended result = joynr::types::TStructExtended::createStd(fixture);
     EXPECT_EQ(fixture.getTDouble(), result.getTDouble());
 }

@@ -52,7 +52,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/Util.h"
 #include "qjson/serializer.h"
 
-«getNamespaceStarter(type)»
+«getNamespaceStarter(type, true)»
 
 «typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
@@ -161,6 +161,6 @@ std::string «typeName»::toString() const {
 void PrintTo(const «typeName»& «typeName.toFirstLower», ::std::ostream* os) {
 	*os << "«typeName»::" << «typeName.toFirstLower».toString();
 }
-«getNamespaceEnder(type)»
+«getNamespaceEnder(type, true)»
 '''
 }

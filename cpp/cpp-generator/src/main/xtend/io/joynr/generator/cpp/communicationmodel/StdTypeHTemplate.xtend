@@ -53,7 +53,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 	#include "«member»"
 «ENDFOR»
 
-«getNamespaceStarter(type)»
+«getNamespaceStarter(type, true)»
 
 class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public Std«getExtendedType(type).joynrName»«ENDIF»{
 
@@ -107,7 +107,7 @@ private:
 	«ENDFOR»
 };
 
-«getNamespaceEnder(type)»
+«getNamespaceEnder(type, true)»
 
 #endif // «headerGuard»
 '''

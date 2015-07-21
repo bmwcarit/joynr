@@ -61,12 +61,15 @@ class CppStdTypeUtil extends CppTypeUtil {
 			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
 		}
 		else{
-			datatype.typeNameStd
+			return datatype.typeNameStd
 		}
 	}
 
 	def getTypeNameStd(FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::");
+		var packagepath = buildPackagePath(datatype, "::");
+		if (datatype.isPartOfTypeCollection) {
+			packagepath += datatype.typeCollectionName + "::"
+		}
 		return  packagepath + datatype.joynrNameStd  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
 	}
 
