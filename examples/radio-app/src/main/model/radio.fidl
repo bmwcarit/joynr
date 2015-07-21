@@ -23,21 +23,67 @@ package vehicle
 		interface.
 **>
 typeCollection RadioTypes {
+
+	<** @description: Enumeration specifying the country choices **>
 	enumeration Country {
+		<**
+			@description: Enum value representing the
+			Commonwealth of Australia
+		**>
 		AUSTRALIA
+
+		<**
+			@description: Enum value representing Canada
+		**>
 		CANADA
+
+		<**
+			@description: Enum value representing the
+			Federal Republic of Germany
+		**>
 		GERMANY
+
+		<**
+			@description: Enum value representing the
+			Italian Republic
+		**>
 		ITALY
 	}
 
+	<**
+		@description: Record describing a Radio station
+	**>
 	struct RadioStation {
-		String name 
+		<**
+			@description: The station name
+		**>
+		String name
+
+		<**
+			@description: True, if the radio station provides a traffic
+			service, false otherwise
+		**>
 		Boolean trafficService
+
+		<**
+			@description: The country, where the station is located
+		**>
 		Country country
 	}
 
+	<**
+		@description: Record describing a geographic location by
+		coordinates
+	**>
 	struct GeoPosition {
+		<**
+			@description: The latitude in decimal degrees
+		**>
 		Double latitude
+
+		<**
+			@description: The longitude in decimal degrees
+		**>
 		Double longitude
 	}
 }
@@ -54,6 +100,7 @@ interface Radio {
 	 * definitions. Other sequences or mixed definitions are currently not
 	 * possible.
 	 */
+
 	<**
 		@description: Represents the station that is currently
 			playing in the radio.
@@ -77,9 +124,16 @@ interface Radio {
 	**>
 	method addFavouriteStation {
 		in {
+			<**
+				@description: The radio station to be added
+			**>
 			RadioTypes.RadioStation newFavouriteStation
 		}
 		out {
+			<**
+				@description: True, if the adding was successful,
+				false otherwise
+			**>
 			Boolean success
 		}
 	}
@@ -92,7 +146,14 @@ interface Radio {
 	**>
 	method getLocationOfCurrentStation {
 		out {
+			<**
+				@description: The country of the current station
+			**>
 			RadioTypes.Country country
+
+			<**
+				@description: The coordinates of the current station
+			**>
 			RadioTypes.GeoPosition location
 		}
 	}
@@ -103,6 +164,9 @@ interface Radio {
 	**>
 	broadcast weakSignal {
 		out {
+			<**
+				@description: The radio station whose signal has weakened
+			**>
 			RadioTypes.RadioStation weakSignalStation
 		}
 	}
@@ -120,7 +184,7 @@ interface Radio {
 			The traffic service filter filters events based on the
 			has traffic service filter parameter or does no filtering
 			if this parameter is not set.
-			NOTE: The joynr middleware calls all filters that are 
+			NOTE: The joynr middleware calls all filters that are
 			registered for the broadcast. Whether a filter actually
 			does any filtering or not must be defined on application
 			layer (e.g. by interpreting the absence of filter
@@ -136,7 +200,14 @@ interface Radio {
 	**>
 	broadcast newStationDiscovered selective {
 		out {
+			<**
+				@description: The radio station just detected
+			**>
 			RadioTypes.RadioStation discoveredStation
+
+			<**
+				@description: The coordinates of the just detected station
+			**>
 			RadioTypes.GeoPosition geoPosition
 		}
 	}
