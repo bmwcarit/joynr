@@ -28,7 +28,6 @@
 #include "joynr/types/TStructComposition.h"
 #include "joynr/types/Trip.h"
 #include "joynr/types/ChannelUrlInformation.h"
-#include "joynr/social/PickupRequest.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/Reply.h"
@@ -1050,33 +1049,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 
     EXPECT_EQ(capabilityInformation, *deserializedCI);
     LOG_DEBUG(logger,"deserialized capabilityInformation" + deserializedCI->toString());
-}
-
-
-TEST_F(JsonSerializerTest, serialize_deserialize_PickupRequest) {
-
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
-    qRegisterMetaType<joynr::social::PickupRequest>("joynr::social::PickupRequest");
-
-    types::GpsLocation loc;
-    loc.setAltitude(2);
-
-    social::PickupRequest request;
-    request.setLocation(loc);
-    request.setMessage("message");
-    LOG_DEBUG(logger,"request Metaname: " + QString(request.metaObject()->className()));
-
-    QByteArray serialized = JsonSerializer::serialize(QVariant::fromValue(request));
-    // deserialize
-    LOG_DEBUG(logger,"serialized request: " + request.toString());
-
-    social::PickupRequest* deserializedRequest = JsonSerializer::deserialize<social::PickupRequest>(serialized);
-
-    LOG_DEBUG(logger,"deserialized request Metaname" + QString(deserializedRequest->metaObject()->className()));
-
-    EXPECT_EQ(request, *deserializedRequest);
-    LOG_DEBUG(logger,"deserialized request: " + deserializedRequest->toString());
 }
 
 // Test of ChannelURLInformation which is of type QList<QString>.

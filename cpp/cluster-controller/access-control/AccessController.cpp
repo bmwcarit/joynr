@@ -24,7 +24,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
@@ -42,7 +42,7 @@ namespace joynr
 {
 
 using namespace infrastructure;
-using namespace system;
+using namespace types;
 using namespace joynr_logging;
 
 Logger* AccessController::logger = Logging::getInstance()->getLogger("MSG", "AccessController");
@@ -256,8 +256,8 @@ void AccessController::hasConsumerPermission(
 
     // Get the domain and interface of the message destination
     QString participantId = message.getHeaderTo();
-    std::function<void(const system::DiscoveryEntry&)> lookupCallback =
-            [this, message, callback, participantId](const system::DiscoveryEntry& discoveryEntry) {
+    std::function<void(const types::DiscoveryEntry&)> lookupCallback =
+            [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
             LOG_ERROR(
                     logger,

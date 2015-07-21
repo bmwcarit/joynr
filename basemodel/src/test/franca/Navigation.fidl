@@ -18,12 +18,12 @@
  */
 package vehicle
 
-import types.ExtendedTypes.* from "classpath:/common/Types.fidl"
+import types.Localisation.* from "LocalisationTypes.fidl"
 
 interface NavigationPrimitive {
-	
+
 	version {major 0 minor 1}
-	
+
 	method requestGuidance {
 		in {
 			GpsLocation location
@@ -36,7 +36,7 @@ interface NavigationPrimitive {
 /**
  * The <code>Navigation</code> interface describes access to the navigation system inside the car.
  * The navigation system stores a list of <code>{@link Trip}</code>s. A trip could be activated and
- * used for guidance. 
+ * used for guidance.
  */
 interface Navigation{
 

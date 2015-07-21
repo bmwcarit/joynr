@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,65 +18,13 @@
  */
 package types
 
-/*
-*
-*	This document describes on an abstract level, the datatypes used 
-*	for the exchange with the SCMA API
-* 
-*/
+typeCollection {
 
-typeCollection ExtendedTypes {
-	enumeration GpsFixEnum {
-		ModeNotSeen
-		ModeNoFix
-		Mode2D
-		Mode3D
-	}
-
-	struct GpsPosition {
-		Double longitude 
-		Double latitude 
-	}
-	
-	struct GpsPositionExtended extends GpsPosition{
-		Double altitude
-		GpsFixEnum gpsFix
-		Double heading
-		Double quality //defaultValue 0.0
-	}
-	struct GpsLocation extends GpsPositionExtended{
-		Double elevation //defaultValue 0.0
-		Double bearing // defaultValue 0.0
-		Int64 gpsTime // defaultValue 0
-		Int64 deviceTime // defaultValue 0
-		Int32 time /* might be temporary, as we use timestamps on gpslocatios for debuggin purpose */
-	}
-	
-	struct PositionDetailedInfo {
-		String street
-		String houseNumber
-		String crossStreet
-		String city
-		String country
-	}
-	
-	struct Trip {
-		GpsLocation[] locations
-		String tripTitle 
-	}
-	
-	enumeration ServerWeight{
-		INVALID="0"
-		LOW="1"
-		MID="2"
-		HIGH="3"
-	}
-	
 	struct CustomParameter {
 		String name
 		String value
 	}
-	
+
 	enumeration ProviderScope{
 		GLOBAL
 		LOCAL
@@ -92,9 +40,40 @@ typeCollection ExtendedTypes {
 		// indicate that the provider is only for use with the local cluster controller
 		ProviderScope scope
 		// indicates if onChangeSubscriptions supported
-		Boolean supportsOnChangeSubscriptions 
+		Boolean supportsOnChangeSubscriptions
 	}
-	
+
+	enumeration DiscoveryScope	{
+		LOCAL_ONLY
+		LOCAL_THEN_GLOBAL
+		LOCAL_AND_GLOBAL
+		GLOBAL_ONLY
+	}
+
+	enumeration CommunicationMiddleware {
+		JOYNR
+		COMMONAPI_DBUS
+		BROWSER
+		WEBSOCKET
+		SOME_IP
+		IN_PROCESS
+		NONE
+	}
+
+	struct DiscoveryQos {
+		Int64 cacheMaxAge
+		DiscoveryScope discoveryScope
+		Boolean providerMustSupportOnChange
+	}
+
+	struct DiscoveryEntry {
+		String domain
+		String interfaceName
+		String participantId
+		ProviderQos qos
+		CommunicationMiddleware[] connections
+	}
+
 	struct CapabilityInformation {
 		String domain
 		String interfaceName
@@ -102,15 +81,8 @@ typeCollection ExtendedTypes {
 		String channelId
 		String participantId
 	}
-	
-	
+
 	struct ChannelUrlInformation {
 		String[] urls
 	}
-	
-	struct Position {
-		Int32 x
-		Int32 y
-	}
-	
 }

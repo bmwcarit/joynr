@@ -90,7 +90,7 @@ public:
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
 
-    void add(const joynr::system::DiscoveryEntry& entry);
+    void add(const joynr::types::DiscoveryEntry& entry);
 
     /*
      * Remove capability from the cache, and for permanent removal from the backend, this method
@@ -111,7 +111,7 @@ public:
     virtual void lookup(const std::string& domain,
                         const std::string& interfaceName,
                         QSharedPointer<ILocalCapabilitiesCallback> callback,
-                        const joynr::system::DiscoveryQos& discoveryQos);
+                        const joynr::types::DiscoveryQos& discoveryQos);
 
     /*
      * Returns a capability entry for a given participant ID or an empty list
@@ -141,18 +141,17 @@ public:
     virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(const joynr::system::DiscoveryEntry& discoveryEntry,
+    virtual void add(const joynr::types::DiscoveryEntry& discoveryEntry,
                      std::function<void()> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
             const std::string& domain,
             const std::string& interfaceName,
-            const joynr::system::DiscoveryQos& discoveryQos,
-            std::function<void(const std::vector<joynr::system::DiscoveryEntry>& result)>
-                    onSuccess);
+            const joynr::types::DiscoveryQos& discoveryQos,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(const std::string& participantId,
-                        std::function<void(const joynr::system::DiscoveryEntry& result)> onSuccess);
+                        std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void remove(const std::string& participantId, std::function<void()> onSuccess);
 
@@ -166,8 +165,8 @@ public:
         virtual ~IProviderRegistrationObserver()
         {
         }
-        virtual void onProviderAdd(const system::DiscoveryEntry& discoveryEntry) = 0;
-        virtual void onProviderRemove(const system::DiscoveryEntry& discoveryEntry) = 0;
+        virtual void onProviderAdd(const types::DiscoveryEntry& discoveryEntry) = 0;
+        virtual void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) = 0;
     };
 
     void addProviderRegistrationObserver(QSharedPointer<IProviderRegistrationObserver> observer);
@@ -179,21 +178,21 @@ private:
     void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results,
                               std::vector<CapabilityEntry> cachedLocalCapabilies,
                               QSharedPointer<ILocalCapabilitiesCallback> callback,
-                              joynr::system::DiscoveryScope::Enum discoveryScope);
+                              joynr::types::DiscoveryScope::Enum discoveryScope);
 
     bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
-                                       const joynr::system::DiscoveryQos& discoveryQos,
+                                       const joynr::types::DiscoveryQos& discoveryQos,
                                        QSharedPointer<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
-                                       const joynr::system::DiscoveryQos& discoveryQos,
+                                       const joynr::types::DiscoveryQos& discoveryQos,
                                        QSharedPointer<ILocalCapabilitiesCallback> callback);
-    bool callRecieverIfPossible(joynr::system::DiscoveryScope::Enum& scope,
+    bool callRecieverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<CapabilityEntry>& localCapabilities,
                                 std::vector<CapabilityEntry>& globalCapabilities,
                                 QSharedPointer<ILocalCapabilitiesCallback> callback);
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
-    void insertInCache(const joynr::system::DiscoveryEntry& entry,
+    void insertInCache(const joynr::types::DiscoveryEntry& entry,
                        bool isGlobal,
                        bool localCache,
                        bool globalCache);
@@ -205,14 +204,14 @@ private:
                                              bool localEntries);
 
     static void convertDiscoveryEntryIntoCapabilityEntry(
-            const joynr::system::DiscoveryEntry& discoveryEntry,
+            const joynr::types::DiscoveryEntry& discoveryEntry,
             CapabilityEntry& capabilityEntry);
     static void convertCapabilityEntryIntoDiscoveryEntry(
             const CapabilityEntry& capabilityEntry,
-            joynr::system::DiscoveryEntry& discoveryEntry);
+            joynr::types::DiscoveryEntry& discoveryEntry);
     static void convertCapabilityEntriesIntoDiscoveryEntries(
             const std::vector<CapabilityEntry>& capabilityEntries,
-            std::vector<joynr::system::DiscoveryEntry>& discoveryEntries);
+            std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
     static joynr_logging::Logger* logger;
     ICapabilitiesClient* capabilitiesClient;
@@ -228,8 +227,8 @@ private:
     MessageRouter& messageRouter;
     QList<QSharedPointer<IProviderRegistrationObserver>> observers;
 
-    void informObserversOnAdd(const system::DiscoveryEntry& discoveryEntry);
-    void informObserversOnRemove(const system::DiscoveryEntry& discoveryEntry);
+    void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
+    void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
 };
 
 // NOTE: This future is used to convert the synchronous call of the middleware

@@ -25,7 +25,7 @@
 #include "joynr/types/Trip.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/types/TStruct.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/system/WebSocketAddress.h"
 
 using namespace joynr;
@@ -44,11 +44,12 @@ namespace types {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }
-namespace system {
-    void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os) {
+namespace types {
+    void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
-
+}
+namespace system {
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }

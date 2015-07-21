@@ -20,7 +20,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/CustomParameter.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 
 #include <cassert>
@@ -41,7 +41,7 @@ KeywordArbitrator::KeywordArbitrator(const std::string& domain,
 void KeywordArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    std::vector<joynr::system::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -56,7 +56,7 @@ void KeywordArbitrator::attemptArbitration()
 }
 
 void KeywordArbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     // Check for an empty list of results
     if (discoveryEntries.size() == 0) {
@@ -64,7 +64,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     }
 
     // Loop through the result list
-    for (joynr::system::DiscoveryEntry discoveryEntry : discoveryEntries) {
+    for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
 
@@ -83,7 +83,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 QString res = discoveryEntry.getParticipantId();
                 LOG_TRACE(logger, "setting res to " + res);
-                joynr::system::CommunicationMiddleware::Enum preferredConnection(
+                joynr::types::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(
                         ArbitrationStatus::ArbitrationSuccessful,

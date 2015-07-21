@@ -1,0 +1,65 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package types
+
+typeCollection Localisation {
+	enumeration GpsFixEnum {
+		ModeNotSeen
+		ModeNoFix
+		Mode2D
+		Mode3D
+	}
+
+	struct GpsPosition {
+		Double longitude
+		Double latitude
+	}
+
+	struct GpsPositionExtended extends GpsPosition {
+		Double altitude
+		GpsFixEnum gpsFix
+		Double heading
+		Double quality //defaultValue 0.0
+	}
+	struct GpsLocation extends GpsPositionExtended {
+		Double elevation //defaultValue 0.0
+		Double bearing // defaultValue 0.0
+		Int64 gpsTime // defaultValue 0
+		Int64 deviceTime // defaultValue 0
+		Int32 time /* might be temporary, as we use timestamps on gpslocatios for debuggin purpose */
+	}
+
+	struct PositionDetailedInfo {
+		String street
+		String houseNumber
+		String crossStreet
+		String city
+		String country
+	}
+
+	struct Trip {
+		GpsLocation[] locations
+		String tripTitle
+	}
+
+	struct Position {
+		Int32 x
+		Int32 y
+	}
+}

@@ -18,40 +18,7 @@
  */
 package system
 
-import types.ExtendedTypes.* from "../common/Types.fidl"
-
-typeCollection DiscoveryTypes {
-    enumeration DiscoveryScope  {
-        LOCAL_ONLY
-        LOCAL_THEN_GLOBAL
-        LOCAL_AND_GLOBAL
-        GLOBAL_ONLY
-    }
-
-    enumeration CommunicationMiddleware {
-        JOYNR
-        COMMONAPI_DBUS
-        BROWSER
-        WEBSOCKET
-        SOME_IP
-        IN_PROCESS
-        NONE
-    }
-
-    struct DiscoveryQos {
-        Int64 cacheMaxAge
-        DiscoveryScope discoveryScope
-        Boolean providerMustSupportOnChange
-    }
-
-    struct DiscoveryEntry {
-        String domain
-        String interfaceName
-        String participantId
-        ProviderQos qos
-        CommunicationMiddleware[] connections
-    }
-}
+import types.* from "DiscoveryTypes.fidl"
 
 /**
  * The <code>Discovery</code> interface is a joynr internal interface. This
@@ -75,7 +42,7 @@ interface Discovery {
 	 */
     method add {
         in {
-            DiscoveryTypes.DiscoveryEntry discoveryEntry
+            DiscoveryEntry discoveryEntry
         }
     }
 
@@ -93,10 +60,10 @@ interface Discovery {
         in {
             String domain
             String interfaceName
-            DiscoveryTypes.DiscoveryQos discoveryQos
+            DiscoveryQos discoveryQos
         }
         out {
-            DiscoveryTypes.DiscoveryEntry[] result
+            DiscoveryEntry[] result
         }
     }
 
@@ -112,7 +79,7 @@ interface Discovery {
             String participantId
         }
         out {
-            DiscoveryTypes.DiscoveryEntry result
+            DiscoveryEntry result
         }
     }
 

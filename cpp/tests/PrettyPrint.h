@@ -29,6 +29,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/types/DiscoveryEntry.h"
 
 #define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
@@ -57,7 +58,7 @@ namespace types {
 }
 namespace system {
     class DiscoveryEntry;
-    void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os);
+    void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);
     class WebSocketAddress;
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }

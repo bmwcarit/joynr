@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include <stdint.h> 
+#include <stdint.h>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "PrettyPrint.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -33,6 +33,8 @@
 #include "joynr/DbusMessagingSkeleton.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/system/CommonApiDbusAddress.h"
+#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
@@ -214,9 +216,9 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
                 mockTestProvider
     );
 
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
-    joynr::system::DiscoveryEntry expectedDiscoveryEntry(
+    QList<joynr::types::CommunicationMiddleware::Enum> connections;
+    connections << joynr::types::CommunicationMiddleware::JOYNR;
+    joynr::types::DiscoveryEntry expectedDiscoveryEntry(
                 TypeUtil::toQt(domain),
                 TypeUtil::toQt(tests::testProvider::INTERFACE_NAME()),
                 TypeUtil::toQt(participantId),
@@ -224,7 +226,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
                 connections
     );
     RequestStatus status;
-    joynr::system::DiscoveryEntry discoveryEntry;
+    joynr::types::DiscoveryEntry discoveryEntry;
     discoveryProxy->lookup(status, discoveryEntry, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);

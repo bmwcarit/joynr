@@ -337,24 +337,24 @@ public:
             add,
             void(
                 joynr::RequestStatus& joynrInternalStatus,
-                const joynr::system::DiscoveryEntry& entry
+                const joynr::types::DiscoveryEntry& entry
             )
     );
     MOCK_METHOD5(
             lookup,
             void(
                 joynr::RequestStatus& joynrInternalStatus,
-                std::vector<joynr::system::DiscoveryEntry> & result,
+                std::vector<joynr::types::DiscoveryEntry> & result,
                 const std::string& domain,
                 const std::string& interfaceName,
-                const joynr::system::DiscoveryQos& discoveryQos
+                const joynr::types::DiscoveryQos& discoveryQos
             )
     );
     MOCK_METHOD3(
             lookup,
             void(
                 joynr::RequestStatus& joynrInternalStatus,
-                joynr::system::DiscoveryEntry& result,
+                joynr::types::DiscoveryEntry& result,
                 const std::string& participantId
             )
     );
@@ -368,25 +368,25 @@ public:
     MOCK_METHOD2(
             add,
             QSharedPointer<joynr::Future<void>>(
-                const joynr::system::DiscoveryEntry& discoveryEntry,
+                const joynr::types::DiscoveryEntry& discoveryEntry,
                 std::function<void(const joynr::RequestStatus& status)> callbackFct
             )
     );
     MOCK_METHOD2(
             lookup,
-            QSharedPointer<joynr::Future<joynr::system::DiscoveryEntry>>(
+            QSharedPointer<joynr::Future<joynr::types::DiscoveryEntry>>(
                 const std::string& participantId,
-                std::function<void(const joynr::RequestStatus& status, const joynr::system::DiscoveryEntry& result)>
+                std::function<void(const joynr::RequestStatus& status, const joynr::types::DiscoveryEntry& result)>
                         callbackFct
             )
     );
     MOCK_METHOD4(
             lookup,
-            QSharedPointer<joynr::Future<std::vector<joynr::system::DiscoveryEntry>>>(
+            QSharedPointer<joynr::Future<std::vector<joynr::types::DiscoveryEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
-                const joynr::system::DiscoveryQos& discoveryQos,
-                std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::system::DiscoveryEntry>& result)>
+                const joynr::types::DiscoveryQos& discoveryQos,
+                std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::DiscoveryEntry>& result)>
                         callbackFct
             )
     );
@@ -921,7 +921,7 @@ public:
             lookup,
             void(
                 const std::string& participantId,
-                std::function<void(const joynr::system::DiscoveryEntry&)> lookupCallback
+                std::function<void(const joynr::types::DiscoveryEntry&)> lookupCallback
             ));
 
 private:

@@ -60,7 +60,7 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 //tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
 void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
-		const joynr::system::CommunicationMiddleware::Enum& connection
+		const joynr::types::CommunicationMiddleware::Enum& connection
 ) {
 	if (connector != NULL){
 		delete connector;

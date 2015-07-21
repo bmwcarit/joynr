@@ -26,7 +26,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 #include <QSharedPointer>
@@ -53,7 +53,7 @@ public:
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached,
-              const joynr::system::CommunicationMiddleware::Enum& connection)
+              const joynr::types::CommunicationMiddleware::Enum& connection)
     {
 
         if (inProcessConnectorFactory->canBeCreated(connection)) {

@@ -20,7 +20,7 @@
 #define JOYNRMESSAGINGCONNECTORFACTORY_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 #include <QSharedPointer>
 #include <string>
@@ -75,7 +75,7 @@ public:
     JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
                                    SubscriptionManager* subscriptionManager);
 
-    bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
+    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
 
     template <class T>
     T* create(const std::string& domain,

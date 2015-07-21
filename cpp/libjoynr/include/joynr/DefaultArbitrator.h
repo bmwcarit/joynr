@@ -25,6 +25,7 @@
 #include "joynr/ProviderArbitrator.h"
 #include <QSharedPointer>
 #include <string>
+#include "joynr/types/DiscoveryEntry.h"
 
 namespace joynr
 {
@@ -47,7 +48,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
     virtual void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
     static joynr_logging::Logger* logger;
 };
 

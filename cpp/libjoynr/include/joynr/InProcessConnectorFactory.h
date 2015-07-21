@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/InProcessAddress.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 #include "joynr/IRequestCallerDirectory.h"
 
 #include <QSharedPointer>
@@ -67,7 +67,7 @@ public:
                               InProcessPublicationSender* inProcessPublicationSender,
                               IRequestCallerDirectory* requestCallerDirectory);
 
-    bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
+    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
     virtual ~InProcessConnectorFactory()
     {
     }

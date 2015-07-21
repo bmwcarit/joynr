@@ -47,10 +47,10 @@ qint64& DiscoveryQos::DEFAULT_CACHEMAXAGE()
     return DO_NOT_USE_CACHE();
 }
 
-joynr::system::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
+joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
 {
-    static joynr::system::DiscoveryScope::Enum default_scope =
-            joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL;
+    static joynr::types::DiscoveryScope::Enum default_scope =
+            joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL;
     return default_scope;
 }
 
@@ -150,12 +150,12 @@ const QString DiscoveryQos::KEYWORD_PARAMETER()
     return keyword;
 }
 
-joynr::system::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
+joynr::types::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
 {
     return discoveryScope;
 }
 
-void DiscoveryQos::setDiscoveryScope(joynr::system::DiscoveryScope::Enum discoveryScope)
+void DiscoveryQos::setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope)
 {
     this->discoveryScope = discoveryScope;
 }

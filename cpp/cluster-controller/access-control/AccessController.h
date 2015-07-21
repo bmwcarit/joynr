@@ -32,7 +32,7 @@ namespace joynr
 class LocalCapabilitiesDirectory;
 class LocalDomainAccessController;
 
-namespace system
+namespace types
 {
 class DiscoveryEntry;
 }

@@ -19,7 +19,7 @@
 #include "joynr/QosArbitrator.h"
 
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/types/ProviderQos.h"
@@ -46,7 +46,7 @@ QosArbitrator::QosArbitrator(const std::string& domain,
 void QosArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    std::vector<joynr::system::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -62,18 +62,18 @@ void QosArbitrator::attemptArbitration()
 
 // Returns true if arbitration was successful, false otherwise
 void QosArbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::system::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     QString res = "";
-    joynr::system::CommunicationMiddleware::Enum preferredConnection(
-            joynr::system::CommunicationMiddleware::NONE);
+    joynr::types::CommunicationMiddleware::Enum preferredConnection(
+            joynr::types::CommunicationMiddleware::NONE);
 
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     qint64 highestPriority = -1;
-    for (const joynr::system::DiscoveryEntry discoveryEntry : discoveryEntries) {
+    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
         if (discoveryQos.getProviderMustSupportOnChange() &&

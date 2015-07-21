@@ -18,14 +18,14 @@
  */
 package infrastructure
 
-import types.ExtendedTypes.* from "../common/Types.fidl"
+import types.* from "DiscoveryTypes.fidl"
 
 /**
  * The <code>GlobalCapabilitiesDirectory</code> is a joynr internal interface. When a provider
  * that is globally available is registered with joynr, the framework creates an entry for that
  * provider in the global capabilities directory. These <code>{@link CapabilityInformation}</code>
  * entries contain access information as well as supported QoS. The information is later used in the
- * arbitration process to pick a provider for a proxy.  
+ * arbitration process to pick a provider for a proxy.
  */
 interface GlobalCapabilitiesDirectory{
 
@@ -36,7 +36,7 @@ interface GlobalCapabilitiesDirectory{
 	 * @param capabilities the list of capabilities to register
 	 */
 	method add {
-		in { 
+		in {
 			CapabilityInformation[] capabilities
 		}
 	}

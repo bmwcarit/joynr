@@ -18,7 +18,7 @@
  */
 package infrastructure
 
-import types.ExtendedTypes.* from "../common/Types.fidl"
+import types.* from "DiscoveryTypes.fidl"
 
 /**
  * The <code>ChannelUrlDirectory</code> interface defines the interface of the joynr internal

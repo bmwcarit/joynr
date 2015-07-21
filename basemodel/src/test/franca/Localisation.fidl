@@ -18,11 +18,13 @@
  */
 package vehicle
 
-import types.ExtendedTypes.* from "classpath:/common/Types.fidl"
+import types.Localisation.* from "LocalisationTypes.fidl"
 
 interface Gps{
 
 	version {major 0 minor 1}
+
+	attribute GpsLocation location readonly // NOTIFYREADONLY
 
 	method restartWithRetries {
 		in {

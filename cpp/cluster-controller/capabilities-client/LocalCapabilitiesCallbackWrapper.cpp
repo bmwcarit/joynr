@@ -28,7 +28,7 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
         const std::string& participantId,
-        const joynr::system::DiscoveryQos& discoveryQos)
+        const joynr::types::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           wrappedCallback(wrappedCallback),
           participantId(participantId),
@@ -41,7 +41,7 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
         const InterfaceAddress& interfaceAddress,
-        const joynr::system::DiscoveryQos& discoveryQos)
+        const joynr::types::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           wrappedCallback(wrappedCallback),
           participantId(""),
@@ -57,8 +57,8 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
     std::vector<CapabilityEntry> mergedEntries;
 
     foreach (types::CapabilityInformation capInfo, results) {
-        QList<joynr::system::CommunicationMiddleware::Enum> connections;
-        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        QList<joynr::types::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::types::CommunicationMiddleware::JOYNR);
         CapabilityEntry capEntry(capInfo.getDomain(),
                                  capInfo.getInterfaceName(),
                                  capInfo.getProviderQos(),
@@ -70,8 +70,8 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
     }
     localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
 
-    if (discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL ||
-        discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
+    if (discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
+        discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.

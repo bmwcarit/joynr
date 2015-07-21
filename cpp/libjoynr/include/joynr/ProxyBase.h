@@ -24,7 +24,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/system/Address.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 #include <string>
 
 namespace joynr
@@ -61,7 +61,7 @@ protected:
      */
     virtual void handleArbitrationFinished(
             const std::string& participantId,
-            const joynr::system::CommunicationMiddleware::Enum& connection);
+            const joynr::types::CommunicationMiddleware::Enum& connection);
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
@@ -71,7 +71,7 @@ protected:
     bool cached;
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    joynr::system::CommunicationMiddleware::Enum* connection;
+    joynr::types::CommunicationMiddleware::Enum* connection;
     static joynr_logging::Logger* logger;
 };
 

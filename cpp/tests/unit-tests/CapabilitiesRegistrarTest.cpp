@@ -104,10 +104,10 @@ TEST_F(CapabilitiesRegistrarTest, add){
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
-                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
-                        Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
+                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
+                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
+                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).WillOnce(SetArgReferee<0>(status));
@@ -178,10 +178,10 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
-                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
-                        Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
+                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
+                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
+                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).Times(1).WillOnce(SetArgReferee<0>(status))
@@ -233,10 +233,10 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::system::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::system::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
-                        Property(&joynr::system::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
-                        Property(&joynr::system::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
+                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
+                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
+                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).Times(1).WillOnce(SetArgReferee<0>(status))

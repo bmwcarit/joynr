@@ -69,14 +69,6 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
-
-		<!-- this dependency is only required for the development phase, so that the model is accessible via classpath-->
-		<dependency>
-			<groupId>io.joynr</groupId>
-			<artifactId>basemodel</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -173,7 +165,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/model/Gps.fidl</model>
+							<model>Localisation.fidl</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated</outputPath>
 						</configuration>
@@ -188,6 +180,7 @@
 					<dependency>
 						<groupId>io.joynr</groupId>
 						<artifactId>basemodel</artifactId>
+						<classifier>tests</classifier>
 						<version>${project.version}</version>
 					</dependency>
 				</dependencies>

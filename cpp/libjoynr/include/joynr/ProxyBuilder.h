@@ -96,7 +96,7 @@ private:
     /*
      * Sets the end point address.
      */
-    void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection);
+    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
 
     /*
       * arbitrationFinished is called when the arbitrationStatus is set to successful and the
@@ -127,7 +127,7 @@ private:
     ProviderArbitrator* arbitrator;
     QSemaphore arbitrationSemaphore;
     std::string participantId;
-    joynr::system::CommunicationMiddleware::Enum connection;
+    joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 
@@ -150,7 +150,7 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
           arbitrator(NULL),
           arbitrationSemaphore(1),
           participantId(""),
-          connection(joynr::system::CommunicationMiddleware::NONE),
+          connection(joynr::types::CommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           discoveryTimeout(-1),
           dispatcherAddress(dispatcherAddress),
@@ -234,7 +234,7 @@ void ProxyBuilder<T>::setArbitrationStatus(
 {
     this->arbitrationStatus = arbitrationStatus;
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
-        if (!participantId.empty() && connection != joynr::system::CommunicationMiddleware::NONE) {
+        if (!participantId.empty() && connection != joynr::types::CommunicationMiddleware::NONE) {
             arbitrationSemaphore.release();
         } else {
             throw JoynrArbitrationFailedException("Arbitration was set to successfull by "
@@ -247,7 +247,7 @@ void ProxyBuilder<T>::setArbitrationStatus(
 }
 
 template <class T>
-void ProxyBuilder<T>::setConnection(const joynr::system::CommunicationMiddleware::Enum& connection)
+void ProxyBuilder<T>::setConnection(const joynr::types::CommunicationMiddleware::Enum& connection)
 {
     this->connection = connection;
 }

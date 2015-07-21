@@ -19,7 +19,7 @@
 #include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/system/ChannelAddress.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
@@ -48,10 +48,10 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
 void FixedParticipantArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    joynr::system::DiscoveryEntry result;
+    joynr::types::DiscoveryEntry result;
     discoveryProxy.lookup(status, result, participantId);
     if (status.successful()) {
-        joynr::system::CommunicationMiddleware::Enum preferredConnection(
+        joynr::types::CommunicationMiddleware::Enum preferredConnection(
                 selectPreferredCommunicationMiddleware(result.getConnections()));
         updateArbitrationStatusParticipantIdAndAddress(
                 ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);

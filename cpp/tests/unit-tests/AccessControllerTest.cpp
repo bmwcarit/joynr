@@ -22,12 +22,12 @@
 #include "gtest/gtest.h"
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include <string>
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr::system;
+using namespace joynr::types;
 using namespace joynr::infrastructure;
 
 // Mock objects cannot make callbacks themselves but can make calls to methods
@@ -94,7 +94,7 @@ public:
     }
 
     void invokeCallbackFct (std::string participantId,
-                            std::function<void(const joynr::system::DiscoveryEntry&)> callbackFct) {
+                            std::function<void(const joynr::types::DiscoveryEntry&)> callbackFct) {
         Q_UNUSED(participantId);
         callbackFct(discoveryEntry);
     }
@@ -129,7 +129,7 @@ public:
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
                 lookup(toParticipantId.toStdString(), A<std::function<void(
-                           const joynr::system::DiscoveryEntry&)>>())
+                           const joynr::types::DiscoveryEntry&)>>())
         )
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeCallbackFct));

@@ -27,7 +27,7 @@
 #include <QVariantMap>
 
 #include "joynr/types/CustomParameter.h"
-#include "joynr/system/DiscoveryScope.h"
+#include "joynr/types/DiscoveryScope.h"
 
 namespace joynr
 {
@@ -67,7 +67,7 @@ public:
 
     static qint64& DO_NOT_USE_CACHE();
 
-    static joynr::system::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
+    static joynr::types::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
 
     static qint64& DEFAULT_RETRYINTERVAL();
 
@@ -193,7 +193,7 @@ public:
      *
      * @return the current set discovery scope
      */
-    joynr::system::DiscoveryScope::Enum getDiscoveryScope() const;
+    joynr::types::DiscoveryScope::Enum getDiscoveryScope() const;
 
     /**
      * The scope determines where the discovery process will look for matching providers, if
@@ -205,7 +205,7 @@ public:
      * @param discoveryScope
      *                  discovery scope to be set
      */
-    void setDiscoveryScope(joynr::system::DiscoveryScope::Enum discoveryScope);
+    void setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope);
 
     /**
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
@@ -233,7 +233,7 @@ private:
     ArbitrationStrategy arbitrationStrategy;
     qint64 discoveryTimeout;
     qint64 cacheMaxAge;
-    joynr::system::DiscoveryScope::Enum discoveryScope;
+    joynr::types::DiscoveryScope::Enum discoveryScope;
     bool providerMustSupportOnChange;
     qint64 retryInterval;
 };

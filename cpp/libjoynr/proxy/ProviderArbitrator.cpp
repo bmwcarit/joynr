@@ -43,7 +43,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
           domain(domain),
           interfaceName(interfaceName),
           participantId(""),
-          connection(joynr::system::CommunicationMiddleware::NONE),
+          connection(joynr::types::CommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           listener(NULL),
           listenerSemaphore(0)
@@ -88,29 +88,29 @@ void ProviderArbitrator::startArbitration()
     // If this point is reached the arbitration timed out
     updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationCanceledForever,
                                                    "",
-                                                   joynr::system::CommunicationMiddleware::NONE);
+                                                   joynr::types::CommunicationMiddleware::NONE);
 }
 
-joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::
+joynr::types::CommunicationMiddleware::Enum ProviderArbitrator::
         selectPreferredCommunicationMiddleware(
-                const QList<joynr::system::CommunicationMiddleware::Enum>& connections)
+                const QList<joynr::types::CommunicationMiddleware::Enum>& connections)
 {
-    if (connections.contains(joynr::system::CommunicationMiddleware::IN_PROCESS)) {
-        return joynr::system::CommunicationMiddleware::IN_PROCESS;
+    if (connections.contains(joynr::types::CommunicationMiddleware::IN_PROCESS)) {
+        return joynr::types::CommunicationMiddleware::IN_PROCESS;
     }
-    if (connections.contains(joynr::system::CommunicationMiddleware::COMMONAPI_DBUS)) {
-        return joynr::system::CommunicationMiddleware::COMMONAPI_DBUS;
+    if (connections.contains(joynr::types::CommunicationMiddleware::COMMONAPI_DBUS)) {
+        return joynr::types::CommunicationMiddleware::COMMONAPI_DBUS;
     }
-    if (connections.contains(joynr::system::CommunicationMiddleware::WEBSOCKET)) {
-        return joynr::system::CommunicationMiddleware::WEBSOCKET;
+    if (connections.contains(joynr::types::CommunicationMiddleware::WEBSOCKET)) {
+        return joynr::types::CommunicationMiddleware::WEBSOCKET;
     }
-    if (connections.contains(joynr::system::CommunicationMiddleware::SOME_IP)) {
-        return joynr::system::CommunicationMiddleware::SOME_IP;
+    if (connections.contains(joynr::types::CommunicationMiddleware::SOME_IP)) {
+        return joynr::types::CommunicationMiddleware::SOME_IP;
     }
-    if (connections.contains(joynr::system::CommunicationMiddleware::JOYNR)) {
-        return joynr::system::CommunicationMiddleware::JOYNR;
+    if (connections.contains(joynr::types::CommunicationMiddleware::JOYNR)) {
+        return joynr::types::CommunicationMiddleware::JOYNR;
     }
-    return joynr::system::CommunicationMiddleware::NONE;
+    return joynr::types::CommunicationMiddleware::NONE;
 }
 
 std::string ProviderArbitrator::getParticipantId()
@@ -133,9 +133,9 @@ void ProviderArbitrator::setParticipantId(std::string participantId)
     }
 }
 
-joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::getConnection()
+joynr::types::CommunicationMiddleware::Enum ProviderArbitrator::getConnection()
 {
-    if (connection == joynr::system::CommunicationMiddleware::NONE) {
+    if (connection == joynr::types::CommunicationMiddleware::NONE) {
         throw JoynrArbitrationException("Connection is NULL: Called getConnection() before "
                                         "arbitration has finished / Arbitrator did not set "
                                         "connection.");
@@ -144,7 +144,7 @@ joynr::system::CommunicationMiddleware::Enum ProviderArbitrator::getConnection()
 }
 
 void ProviderArbitrator::setConnection(
-        const joynr::system::CommunicationMiddleware::Enum& connection)
+        const joynr::types::CommunicationMiddleware::Enum& connection)
 {
     this->connection = connection;
     if (listenerSemaphore.tryAcquire(1)) {
@@ -157,7 +157,7 @@ void ProviderArbitrator::setConnection(
 void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(
         ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
         std::string participantId,
-        const joynr::system::CommunicationMiddleware::Enum& connection)
+        const joynr::types::CommunicationMiddleware::Enum& connection)
 {
     setParticipantId(participantId);
     setConnection(connection);

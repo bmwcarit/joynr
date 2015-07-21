@@ -28,7 +28,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 
 #include <QString>
@@ -73,14 +73,14 @@ public:
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
-        QList<joynr::system::CommunicationMiddleware::Enum> connections;
-        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
+        QList<joynr::types::CommunicationMiddleware::Enum> connections;
+        connections.append(joynr::types::CommunicationMiddleware::JOYNR);
         joynr::RequestStatus status;
-        joynr::system::DiscoveryEntry entry(QString::fromStdString(domain),
-                                            QString::fromStdString(interfaceName),
-                                            QString::fromStdString(participantId),
-                                            provider->getProviderQos(),
-                                            connections);
+        joynr::types::DiscoveryEntry entry(QString::fromStdString(domain),
+                                           QString::fromStdString(interfaceName),
+                                           QString::fromStdString(participantId),
+                                           provider->getProviderQos(),
+                                           connections);
         discoveryProxy.add(status, entry);
         if (!status.successful()) {
             LOG_ERROR(logger,

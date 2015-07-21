@@ -26,7 +26,7 @@
 #include "joynr/system/Address.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/system/DiscoveryQos.h"
+#include "joynr/types/DiscoveryQos.h"
 
 #include <QSharedPointer>
 #include <QSemaphore>
@@ -66,7 +66,7 @@ public:
      */
     std::string getParticipantId();
 
-    joynr::system::CommunicationMiddleware::Enum getConnection();
+    joynr::types::CommunicationMiddleware::Enum getConnection();
 
     /*
      *  setArbitrationCallback expects a callback to a JoynrProviderProxy object which
@@ -93,7 +93,7 @@ protected:
     void updateArbitrationStatusParticipantIdAndAddress(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
             std::string participantId,
-            const joynr::system::CommunicationMiddleware::Enum& connection);
+            const joynr::types::CommunicationMiddleware::Enum& connection);
     /**
      * @brief selectPreferredCommunicationMiddleware Selects the preferred communication middleware
      * from a list of available connections.
@@ -101,11 +101,11 @@ protected:
      * @param connections List of available connections.
      * @return The preferred connection.
      */
-    virtual joynr::system::CommunicationMiddleware::Enum selectPreferredCommunicationMiddleware(
-            const QList<joynr::system::CommunicationMiddleware::Enum>& connections);
+    virtual joynr::types::CommunicationMiddleware::Enum selectPreferredCommunicationMiddleware(
+            const QList<joynr::types::CommunicationMiddleware::Enum>& connections);
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
-    joynr::system::DiscoveryQos systemDiscoveryQos;
+    joynr::types::DiscoveryQos systemDiscoveryQos;
     std::string domain;
     std::string interfaceName;
 
@@ -113,9 +113,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(std::string participantId);
-    void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection);
+    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
     std::string participantId;
-    joynr::system::CommunicationMiddleware::Enum connection;
+    joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     QSemaphore listenerSemaphore;

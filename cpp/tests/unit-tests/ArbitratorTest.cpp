@@ -68,13 +68,13 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     }
 
     // Create a list of fake connections
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
+    QList<joynr::types::CommunicationMiddleware::Enum> connections;
+    connections << joynr::types::CommunicationMiddleware::JOYNR;
 
     // Create a list of discovery entries
-    std::vector<joynr::system::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::system::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
                                  QString::fromStdString(domain),
                                  QString::fromStdString(interfaceName),
                                  QString::fromStdString(participantId[i]),
@@ -109,13 +109,13 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     }
 
     // Create a list of fake connections
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
+    QList<joynr::types::CommunicationMiddleware::Enum> connections;
+    connections << joynr::types::CommunicationMiddleware::JOYNR;
 
     // Create a list of discovery entries
-    std::vector<joynr::system::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::system::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
                                  QString::fromStdString(domain),
                                  QString::fromStdString(interfaceName),
                                  QString::fromStdString(participantId[i]),
@@ -165,13 +165,13 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     participantId << "correct_keyword";
 
     // Create a list of fake connections
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
+    QList<joynr::types::CommunicationMiddleware::Enum> connections;
+    connections << joynr::types::CommunicationMiddleware::JOYNR;
 
     // Create a list of discovery entries
-    std::vector<joynr::system::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::system::DiscoveryEntry(
+        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
                                  QString::fromStdString(domain),
                                  QString::fromStdString(interfaceName),
                                  QString::fromStdString(participantId[i]),
@@ -186,16 +186,16 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
-    std::vector<joynr::system::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntry> result;
     joynr::RequestStatus status(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 lookup(
                     A<joynr::RequestStatus&>(),
-                    A<std::vector<joynr::system::DiscoveryEntry>&>(),
+                    A<std::vector<joynr::types::DiscoveryEntry>&>(),
                     A<const std::string&>(),
                     A<const std::string&>(),
-                    A<const joynr::system::DiscoveryQos&>()
+                    A<const joynr::types::DiscoveryQos&>()
                 )
     )
             .Times(5)

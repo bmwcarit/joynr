@@ -65,18 +65,18 @@ public:
 
     // inherited from joynr::system::IDiscoverySync
     virtual void add(joynr::RequestStatus& joynrInternalStatus,
-                     const joynr::system::DiscoveryEntry& entry);
+                     const joynr::types::DiscoveryEntry& entry);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        std::vector<joynr::system::DiscoveryEntry>& result,
+                        std::vector<joynr::types::DiscoveryEntry>& result,
                         const std::string& domain,
                         const std::string& interfaceName,
-                        const joynr::system::DiscoveryQos& discoveryQos);
+                        const joynr::types::DiscoveryQos& discoveryQos);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        joynr::system::DiscoveryEntry& result,
+                        joynr::types::DiscoveryEntry& result,
                         const std::string& participantId);
 
     // inherited from joynr::system::IDiscoverySync
@@ -94,13 +94,13 @@ private:
      * @param discoveryEntry Discovery entry to check for local availability.
      */
     void checkForLocalAvailabilityAndAddInProcessConnection(
-            joynr::system::DiscoveryEntry& discoveryEntry);
+            joynr::types::DiscoveryEntry& discoveryEntry);
 
     // this pointer doesn't hold ownership in case the proxy builder is not set
     joynr::system::IDiscoverySync* discoveryProxy;
     bool hasOwnershipOfDiscoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
-    QMap<std::string, joynr::system::DiscoveryEntry> provisionedDiscoveryEntries;
+    QMap<std::string, joynr::types::DiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr

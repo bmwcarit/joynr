@@ -65,7 +65,7 @@ public:
 
 	void handleArbitrationFinished(
 			const std::string &participantId,
-			const joynr::system::CommunicationMiddleware::Enum& connection
+			const joynr::types::CommunicationMiddleware::Enum& connection
 	);
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«val returnType = attribute.typeName»

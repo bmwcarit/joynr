@@ -18,12 +18,10 @@
  */
 package chat
 
-import types.ExtendedTypes.* from "classpath:/common/Types.fidl"
-
 typeCollection MessageTypeCollection {
 
 	struct Message {
-		String message 
+		String message
 		Int64 deviceTime // UNIX timestamp in milliseconds, requires long datatype
 	 	String senderId // 64 Chars unique to device
 	}
@@ -31,8 +29,8 @@ typeCollection MessageTypeCollection {
 }
 
 interface Messenger {
-	
+
 	version {major 0 minor 1}
-	
+
 	attribute MessageTypeCollection.Message message // NOTIFYWRITEONLY
 }

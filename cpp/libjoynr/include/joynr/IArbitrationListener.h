@@ -20,7 +20,7 @@
 #define IARBITRATIONLISTENER_H
 
 #include "joynr/ArbitrationStatus.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 #include <QSharedPointer>
 #include <string>
@@ -42,7 +42,7 @@ public:
     virtual void setArbitrationStatus(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus) = 0;
     virtual void setParticipantId(const std::string& participantId) = 0;
-    virtual void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection) = 0;
+    virtual void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection) = 0;
 };
 
 } // namespace joynr
