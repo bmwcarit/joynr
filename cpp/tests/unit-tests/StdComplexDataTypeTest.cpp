@@ -27,6 +27,8 @@
 #include "joynr/types/TestTypes/StdTEverythingStruct.h"
 #include "joynr/types/TestTypes/StdTEverythingExtendedStruct.h"
 #include "joynr/types/TestTypes/StdTEverythingExtendedExtendedStruct.h"
+#include "joynr/types/TestTypes/StdTEnum.h"
+
 using namespace joynr::types;
 
 class StdComplexDataTypeTest : public testing::Test {
@@ -46,8 +48,8 @@ public:
             tBoolean(true),
             tByteBuffer({0x01, 0x02, 0x03, 0x04, 0x05}),
             tUInt8Array({0xFF, 0xFE, 0xFD, 0xFC}),
-            tEnum(TEnum::TLITERALA),
-            tEnumArray({TEnum::TLITERALA, TEnum::TLITERALB}),
+            tEnum(TestTypes::StdTEnum::TLITERALA),
+            tEnumArray({TestTypes::StdTEnum::TLITERALA, TestTypes::StdTEnum::TLITERALB}),
             tStringArray({"New York", "London", "Berlin", "Tokio"}),
             word(TestTypes::StdWord()),
             wordArray({TestTypes::StdWord()}),
@@ -117,8 +119,8 @@ protected:
     bool tBoolean;
     std::vector<uint8_t> tByteBuffer;
     std::vector<uint8_t>  tUInt8Array;
-    TEnum::Enum tEnum;
-    std::vector<joynr::types::TEnum::Enum>  tEnumArray;
+    TestTypes::StdTEnum::Enum tEnum;
+    std::vector<joynr::types::TestTypes::StdTEnum::Enum>  tEnumArray;
     std::vector<std::string>  tStringArray;
     TestTypes::StdWord word;
     std::vector<TestTypes::StdWord>  wordArray;

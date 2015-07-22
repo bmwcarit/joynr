@@ -42,6 +42,21 @@ public:
     /**
       * Converts a vector of std objects into a list of qt objects
       */
+    template <class STDTYPE, class QTTYPE, class QTTYPECONVERTER>
+    static QList<QTTYPE> toQt(const std::vector<STDTYPE>& stdValues)
+    {
+        QList<QTTYPE> qtValues;
+
+        for (STDTYPE stdValue : stdValues) {
+            qtValues.append(QTTYPECONVERTER::createQt(stdValue));
+        }
+
+        return qtValues;
+    }
+
+    /**
+      * Converts a vector of std objects into a list of qt objects
+      */
     template <class STDTYPE, class QTTYPE>
     static QList<QTTYPE> toQt(const std::vector<STDTYPE>& stdValues)
     {
@@ -70,7 +85,22 @@ public:
     }
 
     /**
-      * Converts a list of qt objects into a vector of qt objects
+      * Converts a list of qt objects into a vector of std objects
+      */
+    template <class QTTYPE, class STDTYPE, class QTTYPECONVERTER>
+    static std::vector<STDTYPE> toStd(const QList<QTTYPE>& qtValues)
+    {
+        std::vector<STDTYPE> stdValues;
+
+        for (QTTYPE qtValue : qtValues) {
+            stdValues.push_back(QTTYPECONVERTER::createStd(qtValue));
+        }
+
+        return stdValues;
+    }
+
+    /**
+      * Converts a list of qt objects into a vector of std objects
       */
     template <class QTTYPE, class STDTYPE>
     static std::vector<STDTYPE> toStd(const QList<QTTYPE>& qtValues)

@@ -25,6 +25,7 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import java.util.ArrayList
 
 class QtTypeUtil extends CppTypeUtil {
 
@@ -79,19 +80,25 @@ class QtTypeUtil extends CppTypeUtil {
 			}
 		}
 		else if (typedElement.isArray) {
-			if (!convertComplexTypes || typedElement.type.isEnum) {
+			if (!convertComplexTypes) {
 				return '''TypeUtil::toQt<«typedElement.type.typeName»>(«objectName»)'''
 			}
 			else {
-				return '''TypeUtil::toQt<«stdTypeUtil.getTypeNameStd(typedElement.type.derived)», «typedElement.type.typeName»>(«objectName»)'''
+				var templateParameters = new ArrayList;
+				if (typedElement.type.isEnum) {
+					templateParameters.add(stdTypeUtil.getTypeName(typedElement.type.derived))
+					templateParameters.add(typedElement.type.derived.typeName)
+					templateParameters.add(typedElement.type.derived.typeNameOfContainingClass)
+				}
+				else {
+					templateParameters.add(stdTypeUtil.getTypeNameStd(typedElement.type.derived))
+					templateParameters.add(typedElement.type.derived.typeName)
+				}
+				return '''TypeUtil::toQt<«FOR parameter : templateParameters SEPARATOR ", "»«parameter»«ENDFOR»>(«objectName»)'''
 			}
 		}
-		else if (typedElement.type.isEnum) {
-			//fix as long as enums are not correctly integrated in the Qt/Std type conversion
-			return objectName
-		}
 		else if (convertComplexTypes) {
-			return typedElement.type.typeName + "::createQt(" + objectName + ")";
+			return typedElement.type.derived.typeNameOfContainingClass + "::createQt(" + objectName + ")";
 		}
 		return objectName
 	}
@@ -131,18 +138,25 @@ class QtTypeUtil extends CppTypeUtil {
 			}
 		}
 		else if (typedElement.isArray) {
-			if (!convertComplexTypes || typedElement.type.isEnum) {
+			if (!convertComplexTypes) {
 				return '''TypeUtil::toStd<«typedElement.type.typeName»>(«objectName»)'''
 			}
 			else {
-				return '''TypeUtil::toStd<«typedElement.type.typeName», «stdTypeUtil.getTypeNameStd(typedElement.type.derived)»>(«objectName»)'''
+				var templateParameters = new ArrayList;
+				if (typedElement.type.isEnum) {
+					templateParameters.add(typedElement.type.derived.typeName)
+					templateParameters.add(stdTypeUtil.getTypeName(typedElement.type.derived))
+					templateParameters.add(typedElement.type.derived.typeNameOfContainingClass)
+				}
+				else {
+					templateParameters.add(typedElement.type.derived.typeName)
+					templateParameters.add(stdTypeUtil.getTypeNameStd(typedElement.type.derived))
+				}
+				return '''TypeUtil::toStd<«FOR parameter : templateParameters SEPARATOR ", "»«parameter»«ENDFOR»>(«objectName»)'''
 			}
 		}
-		else if (typedElement.type.isEnum){
-			return objectName
-		}
 		else if (convertComplexTypes) {
-			return typedElement.type.typeName + "::createStd(" + objectName + ")";
+			return typedElement.type.derived.typeNameOfContainingClass + "::createStd(" + objectName + ")";
 		}
 		//by default, return objectName
 		return objectName;
@@ -231,12 +245,16 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeName(FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::");
 		if (isEnum(datatype)){
-			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
+			return  datatype.typeNameOfContainingClass + "::" + getNestedEnumName();
 		}
 		else{
-			return  packagepath + datatype.joynrName  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
+			return  datatype.typeNameOfContainingClass  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
 		}
+	}
+
+	def getTypeNameOfContainingClass (FType datatype) {
+		val packagepath = buildPackagePath(datatype, "::");
+		return  packagepath + datatype.joynrName
 	}
 }

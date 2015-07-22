@@ -122,8 +122,7 @@ bool «typeName»::operator==(const «typeName»& other) const {
 	«val joynrName = member.joynrName»
 	«IF isEnum(member.type) && ! isArray(member)»
 		std::string «typeName»::get«joynrName.toFirstUpper»Internal() const {
-			QMetaEnum metaEnum = «member.typeName.substring(0, member.typeName.length-6)»::staticMetaObject.enumerator(0);
-			return metaEnum.valueToKey(this->«joynrName»);
+			return «member.typeName.substring(0, member.typeName.length-6)»::getLiteral(this->«joynrName»);
 		}
 
 	«ENDIF»

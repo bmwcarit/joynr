@@ -57,12 +57,9 @@ class CppStdTypeUtil extends CppTypeUtil {
 
 	override getTypeName(FType datatype) {
 		if (isEnum(datatype)){
-		val packagepath = buildPackagePath(datatype, "::");
-			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
+			return  datatype.typeNameStd + "::" + getNestedEnumName();
 		}
-		else{
-			return datatype.typeNameStd
-		}
+		return datatype.typeNameStd
 	}
 
 	def getTypeNameStd(FType datatype) {
@@ -109,13 +106,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	override String getIncludeOf(FType dataType) {
-		if (dataType.isEnum) {
-			val path = getPackagePathWithJoynrPrefix(dataType, "/")
-			return path + "/" + dataType.joynrName + ".h";
-		}
-		else {
-			dataType.includeOfStd
-		} 
+		dataType.includeOfStd
 	}
 
 	override getDefaultValue(FTypedElement element) {
