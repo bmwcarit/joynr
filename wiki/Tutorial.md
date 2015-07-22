@@ -6,36 +6,19 @@ joynr concepts:
 * A **provider**, that provides the radio information
 
 # Prerequisites
-If you haven't set up the [joynr build environment and infrastructure services]
-(Home.md) yet, please do so first.
+If you haven't built joynr yet, please do so first:
+* [Building joynr Java](java_building_joynr.md) for the Java example only.
+* [Building joynr C++](cpp_building_joynr.md) for the C++ example.
 
-**ATTENTION** Unfortunately [Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/)
-dependencies are currently not available from [Maven Central Repository](http://search.maven.org/).
-Since Franca is needed for joynr code generation, we ship Franca dependencies together with the
-joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory. Install them into
-your local Maven repository by executing the following command:
-
-```bash
-~$ cd <JOYNR>/tools/generator/dependency-libs/
-<JOYNR>$ mvn install
-```
+This will install the necessary dependencies to your local Maven repository and generate the radio application source files. In particular, the [Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/) dependencies that are currently not available from [Maven Central Repository](http://search.maven.org/) are installed. Since Franca is needed for joynr code generation, we ship Franca dependencies together with the joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.
 
 # Exploring the demo
-To walk though the radio application, set up the project in your workspace. The example project
-contains a java and c++ variation, letting you explore whichever one you find more comfortable.
+The example project contains a java and c++ variation, letting you explore whichever one you find more comfortable.
 
 The RadioApp demo is located in `<JOYNR>/examples/radio-app`. We refer to this location as
-`RADIO_HOME`. Before importing the project into Eclipse or QtCreator, let Maven generate the source
-files using the command below:
+`RADIO_HOME`.
 
-```bash
-~$ cd <RADIO_HOME>
-<RADIO_HOME>$ mvn generate-sources
-```
-
-For exploring the Java code and for viewing the radio communication interface, use Eclipse and
-import the RadioApp (`<RADIO_HOME>/pom.xml`)as a Maven project, using the M2E plugin. For C++, open
-`<RADIO_HOME>/CMakeLists.txt` in QtCreator.
+For exploring the Java code and for viewing the radio communication interface, you can use Eclipse and import the RadioApp (`<RADIO_HOME>/pom.xml`) as a Maven project, using the M2E plugin. For C++, open `<RADIO_HOME>/CMakeLists.txt` in QtCreator.
 
 >**Note: Dependency Resolution**
 >
@@ -79,64 +62,11 @@ To generate the source code for the interface, right click on your **project** a
 >`mvn generate-sources`.
 >Code generation is triggered by the joynr-generator-maven-plugin. The plugin is configured in the
 >plugin section of the <RADIO_HOME>/pom.xml file:
->* the base model is loaded from the classpath through the `io.joynr:basemodel` dependency
 >* the custom model is loaded from the `<RADIO_HOME>/src/main/model` directory specified in the
 >  model plugin configuration
 >* code generation templates for Java and C++ are loaded from the classpath through the
 >  `io.joynr.java:java-generator` and `io.joynr.cpp:cpp-generator` dependencies
 >* there are two separate plugin executions: one to generate Java and one to generate C++
->
->**Maven joynr Generator Plugin Configuration**
->
->```xml
-><plugin>
->	<groupId>io.joynr.tools.generator</groupId>
->	<artifactId>joynr-generator-maven-plugin</artifactId>
->	<executions>
->		<execution>
->			<id>generate-java</id>
->			<phase>generate-sources</phase>
->			<goals>
->				<goal>generate</goal>
->			</goals>
->			<configuration>
->				<model>${basedir}/src/main/model</model>
->				<generationLanguage>java</generationLanguage>
->				<outputPath>${basedir}/src/main/generated-java</outputPath>
->			</configuration>
->		</execution>
->		<execution>
->			<id>generate-cpp</id>
->			<phase>generate-sources</phase>
->			<goals>
->				<goal>generate</goal>
->			</goals>
->			<configuration>
->				<model>${basedir}/src/main/model</model>
->				<generationLanguage>cpp</generationLanguage>
->				<outputPath>${basedir}/src/main/generated-cpp</outputPath>
->			</configuration>
->		</execution>
->	</executions>
->	<dependencies>
->		<dependency>
->			<groupId>io.joynr.java</groupId>
->			<artifactId>java-generator</artifactId>
->			<version>${project.version}</version>
->		</dependency>
->		<dependency>
->			<groupId>io.joynr.cpp</groupId>
->			<artifactId>cpp-generator</artifactId>
->			<version>${project.version}</version>
->		</dependency>
->		<dependency>
->			<groupId>io.joynr</groupId>
->			<artifactId>basemodel</artifactId>
->			<version>${project.version}</version>
->		</dependency>
->	</dependencies>
-></plugin>
->```
 
 Now refresh the project folder by hitting F5 and navigate to the
 `<RADIO_HOME>/src/main/generated-java` and `<RADIO_HOME>/src/main/generated-cpp` folders.
@@ -474,11 +404,13 @@ The following keyboard commands can be used to control the consumer application:
 The radio app can be run in all combinations of consumer and provider: java-java, cpp-cpp, java-cpp,
 and cpp-java.
 
+### Prerequisite
+You need to have Maven installed. Joynr is tested with Maven 3.2.5, but more recent versions should also work here.
+
+For both, consumer and provider, the backend (Bounceproxy and Discovery) has to be started first.
+
 ### Starting the Backend
-First we need to start the backend services: [Bounceproxy](Home.md#bounceproxy) and
-[Discovery](Home.md#discovery-directories). The following Maven command will start a
-[Jetty Server](http://eclipse.org/jetty/) on `localhost:8080` and automatically deploy Bounceproxy
-and Discovery services:
+The following Maven command will start a [Jetty Server](http://eclipse.org/jetty/) on `localhost:8080` and automatically deploy Bounceproxy and Discovery services:
 
 ```bash
 <RADIO_HOME>$ mvn jetty:run-war
@@ -519,25 +451,12 @@ Alternatively, run the consumer from the command line by executing the following
 ```
 
 ### C++
-
-The build files for the project can be generated by running:
-
-**Generating Build Files for CppDemoApp**
-
-```bash
-<RADIO_HOME>$ mkdir cpp-build
-<RADIO_HOME>$ cd cpp-build
-<RADIO_HOME>/cpp-build$ cmake -DENABLE_CLANG_FORMATTER=OFF ..
-```
-
-Depending on your environment, the project can then be build by Qt Creator or on the command line.
-Pick a domain that will be used to identify the provider. Now to run the example, compile the
-project and go to the bin directory:
+Pick a domain that will be used to identify the provider and run the example:
 
 **Running the Provider**
 
 ```bash
-<RADIO_HOME>/cpp-build/bin$ ./radio-app-provider-cc <my provider domain>
+<CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-provider-cc <my provider domain>
 ```
 
 In another terminal window execute:
@@ -545,12 +464,23 @@ In another terminal window execute:
 **Running the Consumer**
 
 ```bash
-<RADIO_HOME>/cpp-build/bin$ ./radio-app-consumer-cc <my provider domain>
+<CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-consumer-cc <my provider domain>
 ```
 
 This consumer will make a call to the joynr runtime to find a provider with the domain. If there are
 several providers of the same type registered on the same domain, then the ArbitrationStrategy (see
 in the main function of MyRadioConsumerApplication.cpp) is used to work out which provider to take.
+
+>**Note**: Since the C\+\+ radio application has been built using docker ([Building joynr C++](cpp_building_joynr.md)), the shared joynr libraries are only found if your build directory is ```/data/build/``` as in the docker container. After building joynr C++ with docker, you can either copy your build directory to this location or add the following directories to your library path:
+>* ```<CPP_BUILD_DIRECTORY>/joynr/bin```
+>* ```<CPP_BUILD_DIRECTORY>/joynr/bin/lib/log4qt```
+>* ```<CPP_BUILD_DIRECTORY>/joynr/bin/lib/qjson```
+>
+>In Linux, this can be achieved by
+>```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<BUILD_DIRECTORY>/joynr/bin:<BUILD_DIRECTORY>/joynr/bin/lib/qjson:<BUILD_DIRECTORY>/joynr/bin/lib/log4qt
+```
+>Afterwards, the C++ radio application can be started as explained.
 
 ## Summary
 In this tutorial, you have seen a communication interface, generated joynr code from it, adapted a
