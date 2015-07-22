@@ -65,12 +65,12 @@ public:
 	«typeName»(const «typeName»& o) : QObject() { Q_UNUSED(o); }
 
 	static «typeName»::«getNestedEnumName()» createQt(
-			const «type.typeCollectionName»::«type.joynrNameStd»::«getNestedEnumName()»& «type.joynrNameStd.toFirstLower»
+			const «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()»& «type.joynrNameStd.toFirstLower»
 	) {
 		«typeName»::«getNestedEnumName()» qt«typeName»;
 		switch («type.joynrNameStd.toFirstLower») {
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type)»
-			case «type.typeCollectionName»::«type.joynrNameStd»::«enumtype.joynrName»:
+			case «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«enumtype.joynrName»:
 				qt«typeName» = «enumtype.joynrName»;
 				break;
 		«ENDFOR»
@@ -78,14 +78,14 @@ public:
 		return qt«typeName»;
 	}
 
-	static «type.typeCollectionName»::«type.joynrNameStd»::«getNestedEnumName()» createStd(
+	static «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()» createStd(
 			const «typeName»::«getNestedEnumName()»& qt«typeName»
 	) {
-		«type.typeCollectionName»::«type.joynrNameStd»::«getNestedEnumName()» «type.joynrNameStd.toFirstLower»;
+		«IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()» «type.joynrNameStd.toFirstLower»;
 		switch (qt«typeName») {
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type)»
 			case «enumtype.joynrName»:
-				«type.joynrNameStd.toFirstLower» = «type.typeCollectionName»::«type.joynrNameStd»::«enumtype.joynrName»;
+				«type.joynrNameStd.toFirstLower» = «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«enumtype.joynrName»;
 				break;
 		«ENDFOR»
 		}

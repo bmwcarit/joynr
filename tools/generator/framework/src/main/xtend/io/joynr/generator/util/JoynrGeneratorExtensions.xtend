@@ -138,8 +138,11 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
-		return datatype.eContainer instanceof FTypeCollection;
+		return datatype.eContainer instanceof FTypeCollection &&
+			(datatype.eContainer as FTypeCollection).name != "" &&
+			(datatype.eContainer as FTypeCollection).name != null;
 	}
+
 	def String getTypeCollectionName(FType datatype) {
 		if(!datatype.isPartOfTypeCollection) {
 			throw new IllegalStateException(
