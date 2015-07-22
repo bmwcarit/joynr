@@ -16,29 +16,38 @@
  * limitations under the License.
  * #L%
  */
-#ifndef PERIODICSUBSCRIPTIONQOS_H
-#define PERIODICSUBSCRIPTIONQOS_H
+#ifndef STDONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
+#define STDONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/SubscriptionQos.h"
+#include "joynr/StdOnChangeSubscriptionQos.h"
+#include <stdint.h>
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public SubscriptionQos
+class JOYNRCOMMON_EXPORT StdOnChangeWithKeepAliveSubscriptionQos : public StdOnChangeSubscriptionQos
 {
-
-    Q_OBJECT
-
-    Q_PROPERTY(qint64 period READ getPeriod WRITE setPeriod)
-    Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval WRITE setAlertAfterInterval)
-
 public:
-    PeriodicSubscriptionQos();
-    PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other);
-    PeriodicSubscriptionQos(const qint64& validity,
-                            const qint64& period,
-                            const qint64& alertAfterInterval);
+    StdOnChangeWithKeepAliveSubscriptionQos();
+    StdOnChangeWithKeepAliveSubscriptionQos(const StdOnChangeWithKeepAliveSubscriptionQos& other);
+    StdOnChangeWithKeepAliveSubscriptionQos(const int64_t& validity,
+                                            const int64_t& minInterval,
+                                            const int64_t& maxInterval,
+                                            const int64_t& alertAfterInterval);
+
+    /**
+     * The provider will maintain at least a minimum interval idle time in milliseconds between
+     * successive notifications, even if on-change notifications are enabled and the value changes
+     *more
+     * often. This prevents the consumer from being flooded by updated values. The filtering happens
+     *on
+     * the provider's side, thus also preventing excessive network traffic.
+     *
+     * @param minInterval
+     *            The publisher will keep a minimum idle time of minInterval between two successive
+     *notifications.
+     */
+    virtual void setMinInterval(const int64_t& minInterval);
 
     /**
     * The provider will send notifications every maximum interval in milliseconds, even if the value
@@ -48,10 +57,10 @@ public:
     *interval
     * can thus be seen as a sort of heart beat.
     *
-    * @return qint64 period
+    * @return int64_t maxInterval
     *            The publisher will send a notification at least every maxInterval_ms.
     */
-    virtual qint64 getPeriod() const;
+    virtual int64_t getMaxInterval() const;
 
     /**
      * The provider will send notifications every maximum interval in milliseconds, even if the
@@ -61,10 +70,10 @@ public:
      *interval
      * can thus be seen as a sort of heart beat.
      *
-     * @param period
+     * @param maxInterval
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setPeriod(const qint64& period);
+    virtual void setMaxInterval(const int64_t& period);
 
     /**
      * If no notification was received within the last alert interval, a missed publication
@@ -75,7 +84,7 @@ public:
      *subscriptionManager will issue a
      *            publicationMissed.
      */
-    virtual qint64 getAlertAfterInterval() const;
+    virtual int64_t getAlertAfterInterval() const;
 
     /**
      * If no notification was received within the last alert interval, a missed publication
@@ -86,33 +95,23 @@ public:
      *will issue a
      *            publicationMissed..
      */
-    virtual void setAlertAfterInterval(const qint64& alertAfterInterval);
+    virtual void setAlertAfterInterval(const int64_t& alertAfterInterval);
 
-    /**
-     * Resets the alertAfterInterval and disables the alert by setting its value to
-     * NO_ALERT_AFTER_INTERVAL.
-     */
-    virtual void clearAlertAfterInterval();
+    StdOnChangeWithKeepAliveSubscriptionQos& operator=(
+            const StdOnChangeWithKeepAliveSubscriptionQos& other);
+    virtual bool operator==(const StdOnChangeWithKeepAliveSubscriptionQos& other) const;
 
-    PeriodicSubscriptionQos& operator=(const PeriodicSubscriptionQos& other);
-    virtual bool operator==(const PeriodicSubscriptionQos& other) const;
+    static const int64_t& MAX_MAX_INTERVAL();
 
-    static const qint64& MIN_PERIOD();
-    static const qint64& MAX_PERIOD();
-
-    static const qint64& MAX_ALERT_AFTER_INTERVAL();
-    static const qint64& DEFAULT_ALERT_AFTER_INTERVAL();
-    static const qint64& NO_ALERT_AFTER_INTERVAL();
-
-    virtual bool equals(const QObject& other) const;
+    static const int64_t& MAX_ALERT_AFTER_INTERVAL();
+    static const int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
+    static const int64_t& NO_ALERT_AFTER_INTERVAL();
 
 protected:
-    qint64 period;
-    qint64 alertAfterInterval;
+    int64_t maxInterval;
+    int64_t alertAfterInterval;
 };
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::PeriodicSubscriptionQos)
-
-#endif // PERIODICSUBSCRIPTIONQOS_H
+#endif // STDONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H

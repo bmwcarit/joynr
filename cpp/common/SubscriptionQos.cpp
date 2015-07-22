@@ -1,4 +1,4 @@
-/*
+#/*
  * #%L
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
@@ -17,6 +17,9 @@
  * #L%
  */
 #include "joynr/SubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
 #include <limits>
 
@@ -138,4 +141,65 @@ bool SubscriptionQos::equals(const QObject& other) const
     auto newOther = dynamic_cast<const SubscriptionQos*>(&other);
     return typeThis == typeOther && *this == *newOther;
 }
+
+SubscriptionQos* SubscriptionQos::createQt(const StdSubscriptionQos& from)
+{
+    SubscriptionQos* to;
+    if (dynamic_cast<const StdOnChangeSubscriptionQos*>(&from) != NULL) {
+        to = createQt(dynamic_cast<const StdOnChangeSubscriptionQos&>(from));
+    } else if (dynamic_cast<const StdPeriodicSubscriptionQos*>(&from) != NULL) {
+        to = new PeriodicSubscriptionQos();
+        createQtInternal(dynamic_cast<const StdPeriodicSubscriptionQos&>(from), *to);
+    } else {
+        to = new SubscriptionQos();
+        createQtInternal(from, *to);
+    }
+    return to;
+}
+
+OnChangeSubscriptionQos* SubscriptionQos::createQt(const StdOnChangeSubscriptionQos& from)
+{
+    if (dynamic_cast<const StdOnChangeWithKeepAliveSubscriptionQos*>(&from) != NULL) {
+        OnChangeWithKeepAliveSubscriptionQos* to = new OnChangeWithKeepAliveSubscriptionQos();
+        createQtInternal(dynamic_cast<const StdOnChangeWithKeepAliveSubscriptionQos&>(from), *to);
+        return to;
+    } else {
+        OnChangeSubscriptionQos* to = new OnChangeSubscriptionQos();
+        createQtInternal(from, *to);
+        return to;
+    }
+}
+
+void SubscriptionQos::createQtInternal(const StdSubscriptionQos& from, SubscriptionQos& to)
+{
+    to.setExpiryDate(TypeUtil::toQt(from.getExpiryDate()));
+    to.setPublicationTtl(TypeUtil::toQt(from.getPublicationTtl()));
+}
+
+void SubscriptionQos::createQtInternal(const StdPeriodicSubscriptionQos& from,
+                                       PeriodicSubscriptionQos& to)
+{
+    SubscriptionQos::createQtInternal(
+            static_cast<const StdSubscriptionQos&>(from), static_cast<SubscriptionQos&>(to));
+    to.setAlertAfterInterval(TypeUtil::toQt(from.getAlertAfterInterval()));
+    to.setPeriod(TypeUtil::toQt(from.getPeriod()));
+}
+
+void SubscriptionQos::createQtInternal(const StdOnChangeSubscriptionQos& from,
+                                       OnChangeSubscriptionQos& to)
+{
+    SubscriptionQos::createQtInternal(
+            static_cast<const StdSubscriptionQos&>(from), static_cast<SubscriptionQos&>(to));
+    to.setMinInterval(TypeUtil::toQt(from.getMinInterval()));
+}
+
+void SubscriptionQos::createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
+                                       OnChangeWithKeepAliveSubscriptionQos& to)
+{
+    SubscriptionQos::createQtInternal(static_cast<const StdOnChangeSubscriptionQos&>(from),
+                                      static_cast<OnChangeSubscriptionQos&>(to));
+    to.setAlertAfterInterval(TypeUtil::toQt(from.getAlertAfterInterval()));
+    to.setMaxInterval(TypeUtil::toQt(from.getMaxInterval()));
+}
+
 } // namespace joynr

@@ -16,37 +16,26 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SUBSCRIPTIONQOS_H
-#define SUBSCRIPTIONQOS_H
+#ifndef STDSUBSCRIPTIONQOS_H
+#define STDSUBSCRIPTIONQOS_H
 
-#include <QObject>
+#include <stdint.h>
 #include <QDate>
+
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/StdSubscriptionQos.h"
-#include "joynr/StdOnChangeSubscriptionQos.h"
-#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/StdPeriodicSubscriptionQos.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
-class PeriodicSubscriptionQos;
-class OnChangeSubscriptionQos;
-class OnChangeWithKeepAliveSubscriptionQos;
 
-class JOYNRCOMMON_EXPORT SubscriptionQos : public QObject
+class JOYNRCOMMON_EXPORT StdSubscriptionQos
 {
-    Q_OBJECT
-
-    Q_PROPERTY(qint64 expiryDate READ getExpiryDate WRITE setExpiryDate)
-    Q_PROPERTY(qint64 publicationTtl READ getPublicationTtl WRITE setPublicationTtl)
 
 public:
-    SubscriptionQos();
-    SubscriptionQos(const SubscriptionQos& subscriptionQos);
-    SubscriptionQos(const qint64& validity);
+    StdSubscriptionQos();
+    StdSubscriptionQos(const StdSubscriptionQos& subscriptionQos);
+    StdSubscriptionQos(const int64_t& validity);
 
-    virtual ~SubscriptionQos();
+    virtual ~StdSubscriptionQos();
 
     /**
      * The provider will send notifications until the end date is reached. You will not receive any
@@ -56,9 +45,9 @@ public:
      * @return endDate_ms
      * 		The publication will automatically expire at that EndDate.
      *
-     * @see SubscriptionQos#setValidity_ms
+     * @see StdSubscriptionQos#setValidity_ms
      */
-    qint64 getExpiryDate() const;
+    int64_t getExpiryDate() const;
 
     /**
      * Clears the current expiry date and disables it, by setting the value to NO_EXPIRY_DATE.
@@ -74,9 +63,9 @@ public:
      * @param endDate_ms
      * 		The publication will automatically expire at that date.
      *
-     * @see SubscriptionQos#setValidity_ms
+     * @see StdSubscriptionQos#setValidity_ms
      */
-    virtual void setExpiryDate(const qint64& expiryDate);
+    virtual void setExpiryDate(const int64_t& expiryDate);
 
     /**
      * Notification messages will be sent with this time-to-live. If a notification message can not
@@ -90,10 +79,10 @@ public:
      *until the EndDate of the
      *            Subscription.
      *
-     * @see SubscriptionQos#setAlertInterval_ms
-     * @see SubscriptionQos#setEndDate_ms
+     * @see StdSubscriptionQos#setAlertInterval_ms
+     * @see StdSubscriptionQos#setEndDate_ms
      */
-    virtual qint64 getPublicationTtl() const;
+    virtual int64_t getPublicationTtl() const;
 
     /**
      * The provider will send notifications for the next validity ms. You will not receive any
@@ -105,9 +94,9 @@ public:
      * @param validity
      *            The publication will automatically expire in validty_ms milliseconds
      *
-     * @see SubscriptionQos#setEndDate_ms
+     * @see StdSubscriptionQos#setEndDate_ms
      */
-    virtual void setValidity(const qint64& validity);
+    virtual void setValidity(const int64_t& validity);
 
     /**
      * Notification messages will be sent with this time-to-live. If a notification message can not
@@ -121,42 +110,25 @@ public:
      *the EndDate of the
      *            Subscription.
      *
-     * @see SubscriptionQos#setAlertInterval_ms
+     * @see StdSubscriptionQos#setAlertInterval_ms
      */
-    virtual void setPublicationTtl(const qint64& publicationTtl_ms);
+    virtual void setPublicationTtl(const int64_t& publicationTtl_ms);
 
-    SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
-    virtual bool operator==(const SubscriptionQos& subscriptionQos) const;
+    StdSubscriptionQos& operator=(const StdSubscriptionQos& subscriptionQos);
+    virtual bool operator==(const StdSubscriptionQos& subscriptionQos) const;
 
-    static const qint64& DEFAULT_PUBLICATION_TTL();
-    static const qint64& MIN_PUBLICATION_TTL();
-    static const qint64& MAX_PUBLICATION_TTL();
-    static const qint64& NO_EXPIRY_DATE_TTL();
+    static const int64_t& DEFAULT_PUBLICATION_TTL();
+    static const int64_t& MIN_PUBLICATION_TTL();
+    static const int64_t& MAX_PUBLICATION_TTL();
+    static const int64_t& NO_EXPIRY_DATE_TTL();
 
-    static const qint64& NO_EXPIRY_DATE();
-
-    virtual bool equals(const QObject& other) const;
-
-    static SubscriptionQos* createQt(const StdSubscriptionQos& from);
-    static OnChangeSubscriptionQos* createQt(const StdOnChangeSubscriptionQos& from);
+    static const int64_t& NO_EXPIRY_DATE();
 
 protected:
-    qint64 expiryDate;
-    qint64 publicationTtl;
-
-private:
-    static void createQtInternal(const StdSubscriptionQos& from, SubscriptionQos& to);
-    static void createQtInternal(const StdOnChangeSubscriptionQos& from,
-                                 OnChangeSubscriptionQos& to);
-    static void createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
-                                 OnChangeWithKeepAliveSubscriptionQos& to);
-    static void createQtInternal(const StdPeriodicSubscriptionQos& from,
-                                 PeriodicSubscriptionQos& to);
+    int64_t expiryDate;
+    int64_t publicationTtl;
 };
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::SubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionQos>)
-
-#endif // SUBSCRIPTIONQOS_H
+#endif // STDSUBSCRIPTIONQOS_H
