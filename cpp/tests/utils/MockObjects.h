@@ -914,7 +914,8 @@ public:
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
     MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
-        LocalCapabilitiesDirectory(messagingSettings,NULL,*messageRouter){}
+        messageRouter(),
+        LocalCapabilitiesDirectory(messagingSettings,NULL, messageRouter){}
 
     MOCK_METHOD2(
             lookup,
@@ -924,7 +925,7 @@ public:
             ));
 
 private:
-    joynr::MessageRouter* messageRouter;
+    MockMessageRouter messageRouter;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
