@@ -92,11 +92,10 @@ public:
         delete runtime;
     }
 
-    void invokeCallbackWithGpsLocation(
-            std::function<void(
-                    const joynr::RequestStatus& status,
-                    const joynr::types::GpsLocation location)> callbackFct) {
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), gpsLocation);
+    void invokeOnSuccessWithGpsLocation(
+            std::function<void(const joynr::types::GpsLocation location)> onSuccess
+    ) {
+        onSuccess(gpsLocation);
     }
 
 private:
@@ -134,11 +133,14 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    EXPECT_CALL(*mockTestProvider,
-                getLocation(A<std::function<void(const joynr::RequestStatus&,
-                                                 const types::GpsLocation&)>>()))
-            .WillOnce(Invoke(this,
-                             &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(A<std::function<void(const types::GpsLocation&)>>())
+    )
+            .WillOnce(Invoke(
+                      this,
+                      &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
+            ));
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
@@ -224,12 +226,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    EXPECT_CALL(*mockTestProvider,
-                getLocation(A<std::function<void(const joynr::RequestStatus&,
-                                                 const types::GpsLocation&)>>()))
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(A<std::function<void(const types::GpsLocation&)>>())
+    )
             .Times(Between(1, 2))
-            .WillRepeatedly(Invoke(this,
-                                   &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
+            .WillRepeatedly(Invoke(
+                    this,
+                    &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
+            ));
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
@@ -279,9 +284,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    EXPECT_CALL(*mockTestProvider, getLocation(A<std::function<void(const joynr::RequestStatus&, const types::GpsLocation&)>>()))
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(A<std::function<void(const types::GpsLocation&)>>())
+    )
             .Times(Between(3, 4))
-            .WillRepeatedly(Invoke(this, &JoynrClusterControllerRuntimeTest::invokeCallbackWithGpsLocation));
+            .WillRepeatedly(Invoke(
+                    this,
+                    &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
+            ));
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(

@@ -82,25 +82,21 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	«IF attribute.readable»
 		void Default«interfaceName»Provider::get«attributeName.toFirstUpper»(
 				std::function<void(
-						const joynr::RequestStatus&,
 						const «attribute.typeName»&
-				)> callbackFct
+				)> onSuccess
 		) {
-			callbackFct(
-					joynr::RequestStatus(joynr::RequestStatusCode::OK),
-					«attributeName»
-			);
+			onSuccess(«attributeName»);
 		}
 
 	«ENDIF»
 	«IF attribute.writable»
 		void Default«interfaceName»Provider::set«attributeName.toFirstUpper»(
 				const «attribute.typeName»& «attributeName»,
-				std::function<void(const joynr::RequestStatus&)> callbackFct
+				std::function<void()> onSuccess
 		) {
 			this->«attributeName» = «attributeName»;
 			«attributeName»Changed(«attributeName»);
-			callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK));
+			onSuccess();
 		}
 
 	«ENDIF»

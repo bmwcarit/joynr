@@ -134,7 +134,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     EXPECT_CALL(*mockRequestCaller, getLocation(_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeCallbackFct),
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     QString attributeName = "Location";
@@ -237,12 +237,14 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(
-                    A<std::function<void(const RequestStatus&, const types::GpsLocation&)>>()))
-            .WillOnce(
-                DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeCallbackFct),
-                    ReleaseSemaphore(&semaphore)));
+    EXPECT_CALL(
+            *mockRequestCaller,
+            getLocation(A<std::function<void(const types::GpsLocation&)>>())
+    )
+            .WillOnce(DoAll(
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    ReleaseSemaphore(&semaphore)
+            ));
     QString attributeName = "Location";
     auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
@@ -286,7 +288,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     EXPECT_CALL(*mockRequestCaller, getLocation(_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeCallbackFct),
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
@@ -333,7 +335,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     EXPECT_CALL(*mockRequestCaller, getLocation(_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeCallbackFct),
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);

@@ -77,9 +77,9 @@ public:
     void TearDown(){
     }
 
-    void invokeCallbackWithGpsLocation(
-            std::function<void(const joynr::RequestStatus& status, const joynr::types::GpsLocation& location)> callbackFct) {
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), gpsLocation1);
+    void invokeOnSuccessWithGpsLocation(
+            std::function<void(const joynr::types::GpsLocation& location)> onSuccess) {
+        onSuccess(gpsLocation1);
     }
 
 protected:
@@ -115,9 +115,9 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     EXPECT_CALL(
                 *mockRequestCaller,
                 getLocation(
-                    A<std::function<void(const joynr::RequestStatus&, const joynr::types::GpsLocation&)>>()
+                    A<std::function<void(const joynr::types::GpsLocation&)>>()
                 )
-    ).WillOnce(Invoke(this, &DispatcherTest::invokeCallbackWithGpsLocation));
+    ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
     qos.setTtl(1000);
     // build request for location from mock Gps Provider

@@ -111,17 +111,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> requestCallerCallbackFct =
-					[future] (const joynr::RequestStatus& internalStatus, const «returnType»& «attributeName») {
-						if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(internalStatus, «attributeName»);
-						} else {
-							future->onFailure(internalStatus);
-						}
+			std::function<void(const «returnType»& «attributeName»)> onSuccess =
+					[future] (const «returnType»& «attributeName») {
+						future->onSuccess(joynr::RequestStatusCode::OK, «attributeName»);
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(requestCallerCallbackFct);
+			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess);
 			status = future->waitForFinished();
 			if (status.successful()) {
 				future->getValues(attributeValue);
@@ -139,20 +135,16 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> requestCallerCallbackFct =
-					[future, callbackFct] (const joynr::RequestStatus& internalStatus, const «returnType»& «attributeName») {
-						if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(internalStatus, «attributeName»);
-						} else {
-							future->onFailure(internalStatus);
-						}
+			std::function<void(const «returnType»& «attributeName»)> onSuccess =
+					[future, callbackFct] (const «returnType»& «attributeName») {
+						future->onSuccess(joynr::RequestStatusCode::OK, «attributeName»);
 						if (callbackFct) {
-							callbackFct(internalStatus, «attributeName»);
+							callbackFct(joynr::RequestStatusCode::OK, «attributeName»);
 						}
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(requestCallerCallbackFct);
+			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess);
 			return future;
 		}
 
@@ -169,21 +161,17 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			assert(!«serviceInterface.interfaceCaller».isNull());
 
 			QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
-			std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
-					[future, callbackFct] (const joynr::RequestStatus& internalStatus) {
-						if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(internalStatus);
-						} else {
-							future->onFailure(internalStatus);
-						}
+			std::function<void()> onSuccess =
+					[future, callbackFct] () {
+						future->onSuccess(joynr::RequestStatusCode::OK);
 						if (callbackFct) {
-							callbackFct(internalStatus);
+							callbackFct(joynr::RequestStatusCode::OK);
 						}
 					};
 
 			//see header for more information
 			LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, requestCallerCallbackFct);
+			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess);
 			return future;
 		}
 
@@ -198,17 +186,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			assert(!«serviceInterface.interfaceCaller».isNull());
 
 			QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
-			std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
-					[future] (const joynr::RequestStatus& internalStatus) {
-						if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(internalStatus);
-						} else {
-							future->onFailure(internalStatus);
-						}
+			std::function<void()> onSuccess =
+					[future] () {
+						future->onSuccess(joynr::RequestStatusCode::OK);
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, requestCallerCallbackFct);
+			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess);
 			status = future->waitForFinished();
 		}
 

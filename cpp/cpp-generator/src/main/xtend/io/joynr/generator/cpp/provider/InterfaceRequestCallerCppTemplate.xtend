@@ -67,21 +67,18 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	«IF attribute.readable»
 		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 				std::function<void(
-						const joynr::RequestStatus& status,
 						const «returnType»& «attributeName.toFirstLower»
-				)> callbackFct
+				)> onSuccess
 		) {
-			provider->get«attributeName.toFirstUpper»(callbackFct);
+			provider->get«attributeName.toFirstUpper»(onSuccess);
 		}
 	«ENDIF»
 	«IF attribute.writable»
 		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»,
-				std::function<void(
-						const joynr::RequestStatus& status
-				)> callbackFct
+				std::function<void()> onSuccess
 		) {
-			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», callbackFct);
+			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess);
 		}
 	«ENDIF»
 

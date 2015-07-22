@@ -517,26 +517,23 @@ public:
     MockTestProvider() :
         joynr::tests::DefaulttestProvider()
     {
-        EXPECT_CALL(*this,
-                    getLocation(_)).
-                WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeCallbackFct));
+        EXPECT_CALL(*this, getLocation(_))
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeOnSuccess));
     }
     MockTestProvider(joynr::types::ProviderQos qos) :
         DefaulttestProvider()
     {
         providerQos = qos;
-        EXPECT_CALL(*this,
-                    getLocation(_)).
-                WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeCallbackFct));
+        EXPECT_CALL(*this, getLocation(_))
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeOnSuccess));
     }
     ~MockTestProvider()
     {
     };
 
-    void invokeCallbackFct (std::function<void(const joynr::RequestStatus&,
-                                               const joynr::types::GpsLocation&)> callbackFct) {
+    void invokeOnSuccess(std::function<void(const joynr::types::GpsLocation&)> onSuccess) {
         joynr::types::GpsLocation location;
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), location);
+        onSuccess(location);
     }
 
     void fireLocationUpdateSelective(const joynr::types::GpsLocation& location) {
@@ -545,14 +542,17 @@ public:
 
     MOCK_METHOD1(
             getLocation,
-            void(std::function<void(
-                     const joynr::RequestStatus& status,
-                     const joynr::types::GpsLocation& result)> callbackFct));
+            void(
+                    std::function<void(const joynr::types::GpsLocation& result)> onSuccess
+            )
+    );
     MOCK_METHOD2(
             setLocation,
             void(
                     const joynr::types::GpsLocation& gpsLocation,
-                    std::function<void(const joynr::RequestStatus& status)> callbackFct));
+                    std::function<void()> onSuccess
+            )
+    );
 
     void sumInts(
             const std::vector<int32_t>& ints,
@@ -615,23 +615,31 @@ public:
 
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
-    void invokeCallbackFct (std::function<void(const joynr::RequestStatus&, const joynr::types::GpsLocation&)> callbackFct) {
+    void invokeOnSuccessFct(std::function<void(const joynr::types::GpsLocation&)> onSuccess) {
         joynr::types::GpsLocation location;
-        callbackFct(joynr::RequestStatus(joynr::RequestStatusCode::OK), location);
+        onSuccess(location);
     }
 
-    MockTestRequestCaller() : joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>() ) {
-        EXPECT_CALL(*this,
-                    getLocation(_)).
-                WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeCallbackFct));
+    MockTestRequestCaller() :
+            joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
+    {
+        EXPECT_CALL(
+                *this,
+                getLocation(_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeOnSuccessFct));
     }
-    MockTestRequestCaller(testing::Cardinality getLocationCardinality) : joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>() ) {
-        EXPECT_CALL(*this,
-                    getLocation(_))
+    MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
+            joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
+    {
+        EXPECT_CALL(
+                *this,
+                getLocation(_)
+        )
                 .Times(getLocationCardinality)
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeCallbackFct));
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeOnSuccessFct));
     }
-    MOCK_METHOD1(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::GpsLocation& location)>));
+    MOCK_METHOD1(getLocation, void(std::function<void(const joynr::types::GpsLocation& location)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));

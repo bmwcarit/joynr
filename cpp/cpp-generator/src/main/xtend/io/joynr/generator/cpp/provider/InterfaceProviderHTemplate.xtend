@@ -81,15 +81,14 @@ public:
 		«IF attribute.readable»
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
-							const joynr::RequestStatus&,
 							const «attribute.typeName»&
-					)> callbackFct
+					)> onSuccess
 			) = 0;
 		«ENDIF»
 		«IF attribute.writable»
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
-					std::function<void(const joynr::RequestStatus&)> callbackFct
+					std::function<void()> onSuccess
 			) = 0;
 		«ENDIF»
 		«IF attribute.notifiable»

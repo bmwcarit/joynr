@@ -91,25 +91,21 @@ void «interfaceName»RequestInterpreter::execute(
 			requestCaller.dynamicCast<«interfaceName»RequestCaller>();
 
 	// execute operation
-	// TODO need to put the status code into the reply
 	«IF !attributes.empty»
-		joynr::RequestStatus status;
 		«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
 			«val returnType = cppStdTypeUtil.getTypeName(attribute)»
 		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
-				std::function<void(const joynr::RequestStatus& status, «returnType» «attributeName»)> requestCallerCallbackFct =
-						[callbackFct](const joynr::RequestStatus& status, «returnType» «attributeName»){
-							Q_UNUSED(status);
+				std::function<void(«returnType» «attributeName»)> onSuccess =
+						[callbackFct] («returnType» «attributeName») {
 							«val convertedAttribute = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»
-
 							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«qtTypeUtil.getTypeName(attribute.type)»>(«convertedAttribute»)«ELSE»QVariant::fromValue(«convertedAttribute»)«ENDIF»);
 							QList<QVariant> outParams;
 							outParams.insert(0, singleOutParam);
 							callbackFct(outParams);
 						};
-				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerCallbackFct);
+				«requestCallerName»->get«attributeName.toFirstUpper»(onSuccess);
 				return;
 			}
 		«ENDIF»
@@ -134,13 +130,12 @@ void «interfaceName»RequestInterpreter::execute(
 					«cppStdTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«qtTypeUtil.fromQTTypeToStdType(attribute, attributeRef)»;
 				«ENDIF»
-				std::function<void(const joynr::RequestStatus& status)> requestCallerCallbackFct =
-						[callbackFct](const joynr::RequestStatus& status){
-							Q_UNUSED(status);
+				std::function<void()> onSuccess =
+						[callbackFct] () {
 							QList<QVariant> outParams;
 							callbackFct(outParams);
 						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerCallbackFct);
+				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», onSuccess);
 				return;
 			}
 		«ENDIF»
