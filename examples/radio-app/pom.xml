@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  Copyright (C) 2011 - 2015 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -22,7 +22,16 @@
 	<artifactId>radio-app</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
+	<!--
+		Uncomment the following version entry, if this pom.xml is to be used standalone.
+		Replace the version number as required.
+		<version>1.0</version>
+	-->
 
+	<!--
+		If this pom.xml should be used standalone, the following parent section
+		must be removed
+	-->
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
@@ -31,61 +40,71 @@
 	</parent>
 
 	<properties>
+		<!--
+			If this pom.xml should be used standalone, the following version
+			of the joynr framework which is inherited from the parent pom
+			must be replaced by a fixed one.
+		-->
+		<joynr.version>${project.version}</joynr.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<license.useLicensesConfigFile>true</license.useLicensesConfigFile>
 	</properties>
 
 	<dependencies>
+		<!-- Core joynr framework -->
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
-			<version>${project.version}</version>
+			<version>${joynr.version}</version>
 		</dependency>
+
+		<!-- Logging used in the demo app -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.6</version>
 		</dependency>
-		<!--
-			This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>single-bounceproxy</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!--
-			This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery-directory-servlet</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!--
-			This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>domain-access-controller-servlet</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
+
+		<!-- Console I/O framework used in the demo app -->
 		<dependency>
 			<groupId>jline</groupId>
 			<artifactId>jline</artifactId>
 			<version>2.12</version>
 		</dependency>
 
+		<!--
+			The following dependencies are only required for convenience
+			and are not required for the demo app itself.
+			They allow to run a jetty server that contains the minimum
+			backend
+		-->
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+			<artifactId>single-bounceproxy</artifactId>
+			<version>${joynr.version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>discovery-directory-servlet</artifactId>
+			<version>${joynr.version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>domain-access-controller-servlet</artifactId>
+			<version>${joynr.version}</version>
+			<type>war</type>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<!--
+			If a local subdirectory is used to store Franca files,
+			it should be specified here as a resource
+		-->
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -97,22 +116,50 @@
 		</resources>
 
 		<finalName>${project.artifactId}</finalName>
+
 		<plugins>
+			<!-- The following section makes sure that Java 7
+				is used since joynr framework requires it -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<testSource>1.7</testSource>
+					<testTarget>1.7</testTarget>
+					<debug>true</debug>
+					<debuglevel>lines,vars,source</debuglevel>
+				</configuration>
+				<!-- The following plugin is only needed for Eclipse -->
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.plexus</groupId>
+						<artifactId>plexus-compiler-eclipse</artifactId>
+						<version>1.8.6</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
 				<configuration>
 					<excludes>
 						<exclude>**/package-info*</exclude> <!-- to prevent package-info files from different projects to collide -->
-						<exclude>**/CheckForNull*</exclude> <!-- to prevent check-for-null annotations from package-info to be pulled 
+						<exclude>**/CheckForNull*</exclude> <!-- to prevent check-for-null annotations from package-info to be pulled
 							into jar-files -->
 					</excludes>
 				</configuration>
 			</plugin>
 
+			<!-- Add the generated Java and Franca files to the processing of sources -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.7</version>
 				<executions>
 					<execution>
 						<id>add-source</id>
@@ -129,10 +176,21 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!--
+			  Call the joynr framework code generator to
+			  create the required API files from the Franca input files.
+			  The input files can be specified either by relative path to file,
+			  relative path to directory they reside in, or using a
+			  dependency artifact that contains them.
+			  For further details please refer to the external documentation.
+			-->
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<version>${joynr.version}</version>
 				<executions>
+					<!-- The following part is only required for target language Java -->
 					<execution>
 						<id>generate-java</id>
 						<phase>generate-sources</phase>
@@ -145,6 +203,7 @@
 							<outputPath>${basedir}/src/main/generated-java</outputPath>
 						</configuration>
 					</execution>
+					<!-- The following part is only required for target language C++ -->
 					<execution>
 						<id>generate-cpp</id>
 						<phase>generate-sources</phase>
@@ -159,28 +218,35 @@
 					</execution>
 				</executions>
 				<dependencies>
+					<!-- The following part is only required for target language Java -->
 					<dependency>
 						<groupId>io.joynr.java</groupId>
 						<artifactId>java-generator</artifactId>
-						<version>${project.version}</version>
+						<version>${joynr.version}</version>
 					</dependency>
+					<!-- The following part is only required for target language C++ -->
 					<dependency>
 						<groupId>io.joynr.cpp</groupId>
 						<artifactId>cpp-generator</artifactId>
-						<version>${project.version}</version>
+						<version>${joynr.version}</version>
 					</dependency>
 				</dependencies>
 			</plugin>
+
+			<!-- clean up should remove any generated code as well -->
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.5</version>
 				<configuration>
 					<filesets>
+						<!-- The following part is only required for target language Java -->
 						<fileset>
 							<directory>src/main/generated-java</directory>
 							<includes>
 								<include>**</include>
 							</includes>
 						</fileset>
+						<!-- The following part is only required for target language C++ -->
 						<fileset>
 							<directory>src/main/generated-cpp</directory>
 							<includes>
@@ -190,6 +256,13 @@
 					</filesets>
 				</configuration>
 			</plugin>
+
+			<!--
+				The following plugins are only required for convenience
+				and are not required for the demo app itself.
+				They allow to run a jetty server that contains the minimum
+				backend
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -209,7 +282,7 @@
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
+									<version>${joynr.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>bounceproxy.war</destFileName>
@@ -217,7 +290,7 @@
 								<artifactItem>
 									<groupId>io.joynr.java.backend-services</groupId>
 									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
+									<version>${joynr.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>accesscontrol.war</destFileName>
@@ -225,7 +298,7 @@
 								<artifactItem>
 									<groupId>io.joynr.java.backend-services</groupId>
 									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
+									<version>${joynr.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>discovery.war</destFileName>
@@ -240,6 +313,49 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.2.2.v20140723</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+						<version>1.6.6</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<webApp>
+						<contextPath>/</contextPath>
+					</webApp>
+					<stopPort>9966</stopPort>
+					<stopKey>joynr</stopKey>
+					<contextHandlers>
+						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+							<war>${project.build.directory}/bounceproxy.war</war>
+							<contextPath>/bounceproxy</contextPath>
+						</contextHandler>
+						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+							<war>${project.build.directory}/discovery.war</war>
+							<contextPath>/discovery</contextPath>
+						</contextHandler>
+						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+							<war>${project.build.directory}/accesscontrol.war</war>
+							<contextPath>/accesscontrol</contextPath>
+						</contextHandler>
+					</contextHandlers>
+					<systemProperties>
+						<systemProperty>
+							<name>log4j.configuration</name>
+							<value>file:${basedir}/src/main/resources/log4j.properties</value>
+						</systemProperty>
+						<systemProperty>
+							<name>joynr.servlet.hostPath</name>
+							<value>http://localhost:8080</value>
+						</systemProperty>
+						<systemProperty>
+							<name>org.atmosphere.useNative</name>
+							<value>true</value>
+						</systemProperty>
+					</systemProperties>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
