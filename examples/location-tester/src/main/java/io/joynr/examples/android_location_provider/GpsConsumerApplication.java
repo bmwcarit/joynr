@@ -98,7 +98,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         //       the concrete hostname (and _not_ localhost) in the bounceproxy URL, since this URL
         //       is registered in the channel URL directory and must be resolvable by the Android
         //       device.
-        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://<concrete host>:8080/bounceproxy/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://<concrete host>:8080/bounceproxy/");
 
         // 2) Or set them in the static persistence file (default: joynr.properties in working dir) at
         // runtime. If not available in the working dir, it will be created during the first launch
