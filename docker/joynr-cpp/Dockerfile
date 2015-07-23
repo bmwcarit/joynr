@@ -6,11 +6,12 @@ ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 # install qt 5.3.1
 ###################################################
 WORKDIR /opt
-RUN wget https://dl.bmw-carit.de/joynr/qt5.tar.gz \
-	&& tar -xf qt5.tar.gz \
-	&& rm qt5.tar.gz \
-	&& cd /opt/qt5 \
-	&& ./configure --prefix=/usr/local \
+RUN wget http://download.qt.io/archive/qt/5.3/5.3.2/single/qt-everywhere-opensource-src-5.3.2.tar.gz
+RUN mkdir -p /opt/qt5 \
+	&& tar -xf qt-everywhere-opensource-src-5.3.2.tar.gz -C /opt/qt5 --strip-components=1 \
+	&& rm qt-everywhere-opensource-src-5.3.2.tar.gz
+RUN cd /opt/qt5 \
+	&&./configure --prefix=/usr/local \
 		-developer-build \
 		-opensource \
 		-nomake examples \
@@ -18,31 +19,22 @@ RUN wget https://dl.bmw-carit.de/joynr/qt5.tar.gz \
 		-no-gtkstyle \
 		-confirm-license \
 		-openssl \
-		-skip qt3d \
 		-skip qtactiveqt \
 		-skip qtandroidextras \
 		-skip qtconnectivity \
 		-skip qtdeclarative \
 		-skip qtdoc \
-		-skip qtdocgallery \
 		-skip qtenginio \
-		-skip qtfeedback \
 		-skip qtgraphicaleffects \
 		-skip qtimageformats \
-		-skip qtjsondb \
 		-skip qtlocation \
 		-skip qtmacextras \
 		-skip qtmultimedia \
-		-skip qtpim \
-		-skip qtqa \
 		-skip qtquick1 \
 		-skip qtquickcontrols \
-		-skip qtrepotools \
 		-skip qtsensors \
 		-skip qtserialport \
-		-skip qtsystems \
 		-skip qttranslations \
-		-skip qtwayland \
 		-skip qtwebkit \
 		-skip qtwebkit-examples \
 		-skip qtwinextras \
