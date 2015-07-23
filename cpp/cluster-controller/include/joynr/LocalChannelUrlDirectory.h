@@ -23,7 +23,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
-#include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/types/StdChannelUrlInformation.h"
 #include "joynr/MessagingSettings.h"
 #include <string>
 
@@ -55,7 +55,7 @@ public:
      */
     virtual QSharedPointer<joynr::Future<void>> registerChannelUrls(
             const std::string& channelId,
-            types::ChannelUrlInformation channelUrlInformation,
+            types::StdChannelUrlInformation channelUrlInformation,
             std::function<void(const RequestStatus& status)> callbackFct = nullptr);
 
     /**
@@ -77,11 +77,11 @@ public:
      * @param timeout
      * @param callbackFct
      */
-    virtual QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannel(
+    virtual QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> getUrlsForChannel(
             const std::string& channelId,
             const qint64& timeout_ms,
             std::function<void(const RequestStatus& status,
-                               const types::ChannelUrlInformation& channelUrls)> = nullptr);
+                               const types::StdChannelUrlInformation& channelUrls)> = nullptr);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);

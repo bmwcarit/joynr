@@ -57,30 +57,30 @@ namespace joynr {
 
 class MyTestProvider : public tests::DefaulttestProvider {
 public:
-    virtual void locationChanged(const joynr::types::GpsLocation& location) {
+    virtual void locationChanged(const joynr::types::Localisation::StdGpsLocation& location) {
         tests::testAbstractProvider::locationChanged(location);
     }
 
-    virtual void fireLocation(const joynr::types::GpsLocation& location) {
+    virtual void fireLocation(const joynr::types::Localisation::StdGpsLocation& location) {
         tests::testAbstractProvider::fireLocation(location);
     }
 
-    virtual void fireBroadcastWithEnumOutput(const joynr::tests::TestEnum::Enum& testEnum) {
+    virtual void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::StdTestEnum::Enum& testEnum) {
         tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
     }
 
-    virtual void fireLocationUpdate(const joynr::types::GpsLocation& location) {
+    virtual void fireLocationUpdate(const joynr::types::Localisation::StdGpsLocation& location) {
         tests::testAbstractProvider::fireLocationUpdate(location);
     }
 
     virtual void fireLocationUpdateWithSpeed(
-            const joynr::types::GpsLocation& location,
+            const joynr::types::Localisation::StdGpsLocation& location,
             const double& currentSpeed
     ) {
         tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
     }
 
-    virtual void fireLocationUpdateSelective(const joynr::types::GpsLocation& location) {
+    virtual void fireLocationUpdateSelective(const joynr::types::Localisation::StdGpsLocation& location) {
         tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
 };
@@ -209,15 +209,15 @@ private:
 } // namespace joynr
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
-    tests::TestEnum::Enum expectedTestEnum = tests::TestEnum::TWO;
-    MockSubscriptionListenerOneType<tests::TestEnum::Enum>* mockListener =
-            new MockSubscriptionListenerOneType<tests::TestEnum::Enum>();
+    tests::testTypes::StdTestEnum::Enum expectedTestEnum = tests::testTypes::StdTestEnum::TWO;
+    MockSubscriptionListenerOneType<tests::testTypes::StdTestEnum::Enum>* mockListener =
+            new MockSubscriptionListenerOneType<tests::testTypes::StdTestEnum::Enum>();
 
     // Use a semaphore to count and wait on calls to the mock listener
     ON_CALL(*mockListener, onReceive(Eq(expectedTestEnum)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<tests::TestEnum::Enum>> subscriptionListener(
+    QSharedPointer<ISubscriptionListener<tests::testTypes::StdTestEnum::Enum>> subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -276,11 +276,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener2, onReceive(_))
             .WillRepeatedly(ReleaseSemaphore(&altSemaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener2(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener2(
                     mockListener2);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -318,11 +318,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     QThreadSleep::msleep(subscribeToBroadcastWait);
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -339,11 +339,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -361,11 +361,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     QThreadSleep::msleep(subscribeToBroadcastWait);
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -382,11 +382,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     //now, the next broadcast shall not be received, as the minInterval has been updated
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -408,11 +408,11 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -422,11 +422,11 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                            2))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -436,7 +436,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                            3))))
             .Times(0);
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -474,11 +474,11 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     QThreadSleep::msleep(subscribeToBroadcastWait);
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -498,11 +498,11 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -519,11 +519,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -533,11 +533,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                            2))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -547,11 +547,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                            3))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -561,7 +561,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                            4))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -597,11 +597,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -618,11 +618,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -638,11 +638,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -661,11 +661,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -675,11 +675,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                            2)), Eq(100)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -689,11 +689,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                            3)), Eq(200)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -703,7 +703,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                            4)), Eq(300)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation, float> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation, float> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -741,11 +741,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     // Change the location 3 times
 
     testProvider->fireLocationUpdateWithSpeed(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -762,11 +762,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdateWithSpeed(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -782,11 +782,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdateWithSpeed(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -805,11 +805,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -819,11 +819,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                            2))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -833,11 +833,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                            3))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
                                            9.0,
                                            51.0,
                                            508.0,
-                                           types::GpsFixEnum::MODE2D,
+                                           types::Localisation::StdGpsFixEnum::MODE2D,
                                            0.0,
                                            0.0,
                                            0.0,
@@ -847,7 +847,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                            4))))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
@@ -891,11 +891,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // Change the location 3 times
 
     testProvider->fireLocationUpdateSelective(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -912,11 +912,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdateSelective(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -933,11 +933,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdateSelective(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -957,10 +957,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>())).
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>())).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
@@ -1004,11 +1004,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // Change the location 3 times
 
     testProvider->fireLocationUpdate(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -1025,11 +1025,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdateSelective(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -1046,11 +1046,11 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     QThreadSleep::msleep(minInterval_ms);
 
     testProvider->fireLocationUpdateSelective(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -1073,14 +1073,14 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     // Use a semaphore to count and wait on calls to the mock listener
 
     // Expect initial attribute publication with default value
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::GpsLocation()))).
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::Localisation::StdGpsLocation()))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::Localisation::StdGpsLocation(
                                                                   9.0,
                                                                   51.0,
                                                                   508.0,
-                                                                  types::GpsFixEnum::MODE2D,
+                                                                  types::Localisation::StdGpsFixEnum::MODE2D,
                                                                   0.0,
                                                                   0.0,
                                                                   0.0,
@@ -1090,11 +1090,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                                   2)))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(types::GpsLocation(
+    EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(types::Localisation::StdGpsLocation(
                                                                   9.0,
                                                                   51.0,
                                                                   508.0,
-                                                                  types::GpsFixEnum::MODE2D,
+                                                                  types::Localisation::StdGpsFixEnum::MODE2D,
                                                                   0.0,
                                                                   0.0,
                                                                   0.0,
@@ -1104,10 +1104,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                                   3)))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListenerAttribute(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerAttribute(
                     mockListenerAttribute);
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListenerBroadcast(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -1154,11 +1154,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     // Change attribute
     testProvider->locationChanged(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,
@@ -1172,11 +1172,11 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     // Emit broadcast
     testProvider->fireLocation(
-                types::GpsLocation(
+                types::Localisation::StdGpsLocation(
                     9.0,
                     51.0,
                     508.0,
-                    types::GpsFixEnum::MODE2D,
+                    types::Localisation::StdGpsFixEnum::MODE2D,
                     0.0,
                     0.0,
                     0.0,

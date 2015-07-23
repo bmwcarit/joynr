@@ -19,7 +19,7 @@
 #ifndef CAPABILITIESRESULTCALLBACK_H
 #define CAPABILITIESRESULTCALLBACK_H
 
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/StdCapabilityInformation.h"
 #include "joynr/joynrlogging.h"
 #include <vector>
 
@@ -44,7 +44,7 @@ public:
     virtual ~IGlobalCapabilitiesCallback()
     {
     }
-    virtual void capabilitiesReceived(std::vector<types::CapabilityInformation> results) = 0;
+    virtual void capabilitiesReceived(std::vector<types::StdCapabilityInformation> results) = 0;
 
 private:
     static joynr_logging::Logger* logger;

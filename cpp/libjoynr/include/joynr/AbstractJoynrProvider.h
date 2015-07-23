@@ -22,7 +22,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/IJoynrProvider.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/StdProviderQos.h"
 #include "joynr/IBroadcastFilter.h"
 
 #include <QReadWriteLock>
@@ -48,7 +48,7 @@ public:
     virtual ~AbstractJoynrProvider();
 
     // --- Interface to be implemented by Providers ---
-    virtual types::ProviderQos getProviderQos() const;
+    virtual types::StdProviderQos getProviderQos() const;
 
     // --- Support for listening to onChange events ---
 
@@ -89,7 +89,7 @@ protected:
      */
     void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
 
-    types::ProviderQos providerQos;
+    types::StdProviderQos providerQos;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);

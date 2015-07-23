@@ -67,7 +67,7 @@ public:
                               InProcessPublicationSender* inProcessPublicationSender,
                               IRequestCallerDirectory* requestCallerDirectory);
 
-    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
+    bool canBeCreated(const joynr::types::StdCommunicationMiddleware::Enum& connection);
     virtual ~InProcessConnectorFactory()
     {
     }

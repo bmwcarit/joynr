@@ -32,11 +32,11 @@ namespace joynr
 
 namespace system
 {
-class DiscoveryEntry;
+class IDiscoverySync;
 }
 namespace types
 {
-class DiscoveryEntry;
+class StdDiscoveryEntry;
 }
 
 /*
@@ -64,7 +64,7 @@ public:
      * Made public for testing purposes
      */
     void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrator);

@@ -54,10 +54,10 @@ ProxyBase::~ProxyBase()
 
 void ProxyBase::handleArbitrationFinished(
         const std::string& participantId,
-        const joynr::types::CommunicationMiddleware::Enum& connection)
+        const joynr::types::StdCommunicationMiddleware::Enum& connection)
 {
     providerParticipantId = participantId;
-    this->connection = new joynr::types::CommunicationMiddleware::Enum(connection);
+    this->connection = new joynr::types::StdCommunicationMiddleware::Enum(connection);
 }
 
 std::string ProxyBase::getProxyParticipantId()

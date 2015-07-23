@@ -29,21 +29,22 @@ using namespace ::testing;
 using namespace joynr;
 using namespace joynr::types;
 using namespace joynr::infrastructure;
+using namespace joynr::infrastructure::DacTypes;
 
 // Mock objects cannot make callbacks themselves but can make calls to methods
 // with the same arguments as the mocked method call.
 class ConsumerPermissionCallbackMaker
 {
 public:
-    ConsumerPermissionCallbackMaker(Permission::Enum permission) :
+    ConsumerPermissionCallbackMaker(StdPermission::Enum permission) :
         permission(permission)
     {}
 
     void consumerPermission(
-            const QString& userId,
-            const QString& domain,
-            const QString& interfaceName,
-            infrastructure::TrustLevel::Enum trustLevel,
+            const std::string& userId,
+            const std::string& domain,
+            const std::string& interfaceName,
+            StdTrustLevel::Enum trustLevel,
             QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
     ) {
         Q_UNUSED(userId)
@@ -54,10 +55,10 @@ public:
     }
 
     void operationNeeded(
-            const QString& userId,
-            const QString& domain,
-            const QString& interfaceName,
-            infrastructure::TrustLevel::Enum trustLevel,
+            const std::string& userId,
+            const std::string& domain,
+            const std::string& interfaceName,
+            StdTrustLevel::Enum trustLevel,
             QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
     ) {
         Q_UNUSED(userId)
@@ -68,7 +69,7 @@ public:
     }
 
 private:
-    Permission::Enum permission;
+    StdPermission::Enum permission;
 };
 
 
@@ -94,19 +95,19 @@ public:
     }
 
     void invokeCallbackFct (std::string participantId,
-                            std::function<void(const joynr::types::DiscoveryEntry&)> callbackFct) {
+                            std::function<void(const joynr::types::StdDiscoveryEntry&)> callbackFct) {
         Q_UNUSED(participantId);
         callbackFct(discoveryEntry);
     }
 
     void SetUp(){
-        request.setMethodName(TEST_OPERATION);
+        request.setMethodName(QString::fromStdString(TEST_OPERATION));
         messagingQos = MessagingQos(5000);
-        message = messageFactory.createRequest(fromParticipantId,
-                                     toParticipantId,
+        message = messageFactory.createRequest(QString::fromStdString(fromParticipantId),
+                                     QString::fromStdString(toParticipantId),
                                      messagingQos,
                                      request);
-        message.setHeaderCreatorUserId(DUMMY_USERID);
+        message.setHeaderCreatorUserId(QString::fromStdString(DUMMY_USERID));
 
         ON_CALL(
                 messagingSettingsMock,
@@ -119,17 +120,17 @@ public:
         )
                 .WillByDefault(Return("fooParticipantId"));
 
-        discoveryEntry = DiscoveryEntry(
+        discoveryEntry = StdDiscoveryEntry(
                 TEST_DOMAIN,
                 TEST_INTERFACE,
                 toParticipantId,
-                types::ProviderQos(),
+                types::StdProviderQos(),
                 connections
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
-                lookup(toParticipantId.toStdString(), A<std::function<void(
-                           const joynr::types::DiscoveryEntry&)>>())
+                lookup(toParticipantId, A<std::function<void(
+                           const joynr::types::StdDiscoveryEntry&)>>())
         )
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeCallbackFct));
@@ -149,37 +150,38 @@ protected:
     JoynrMessage message;
     Request request;
     MessagingQos messagingQos;
-    DiscoveryEntry discoveryEntry;
-    static const QString fromParticipantId;
-    static const QString toParticipantId;
-    static const QString replyToChannelId;
-    static const QString DUMMY_USERID;
-    static const QString TEST_DOMAIN;
-    static const QString TEST_INTERFACE;
-    static const QString TEST_OPERATION;
-    static const QList<CommunicationMiddleware::Enum> connections;
+    StdDiscoveryEntry discoveryEntry;
+    static const std::string fromParticipantId;
+    static const std::string toParticipantId;
+    static const std::string replyToChannelId;
+    static const std::string DUMMY_USERID;
+    static const std::string TEST_DOMAIN;
+    static const std::string TEST_INTERFACE;
+    static const std::string TEST_OPERATION;
+    static const std::vector<StdCommunicationMiddleware::Enum> connections;
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControllerTest);
 };
 
 //----- Constants --------------------------------------------------------------
-const QString AccessControllerTest::fromParticipantId("sender");
-const QString AccessControllerTest::toParticipantId("receiver");
-const QString AccessControllerTest::replyToChannelId("replyToId");
-const QString AccessControllerTest::DUMMY_USERID("testUserId");
-const QString AccessControllerTest::TEST_DOMAIN("testDomain");
-const QString AccessControllerTest::TEST_INTERFACE("testInterface");
-const QString AccessControllerTest::TEST_OPERATION("testOperation");
-const QList<CommunicationMiddleware::Enum> AccessControllerTest::connections =
-        QList<CommunicationMiddleware::Enum>() << CommunicationMiddleware::SOME_IP;
+const std::string AccessControllerTest::fromParticipantId("sender");
+const std::string AccessControllerTest::toParticipantId("receiver");
+const std::string AccessControllerTest::replyToChannelId("replyToId");
+const std::string AccessControllerTest::DUMMY_USERID("testUserId");
+const std::string AccessControllerTest::TEST_DOMAIN("testDomain");
+const std::string AccessControllerTest::TEST_INTERFACE("testInterface");
+const std::string AccessControllerTest::TEST_OPERATION("testOperation");
+const std::vector<StdCommunicationMiddleware::Enum> AccessControllerTest::connections = {
+        StdCommunicationMiddleware::SOME_IP
+};
 
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
-    ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
+    ConsumerPermissionCallbackMaker makeCallback(StdPermission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
-            getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TrustLevel::HIGH, _)
+            getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, StdTrustLevel::HIGH, _)
     )
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
@@ -194,16 +196,16 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
-    ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
+    ConsumerPermissionCallbackMaker makeCallback(StdPermission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
-            getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TrustLevel::HIGH, _)
+            getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, StdTrustLevel::HIGH, _)
     )
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::operationNeeded));
 
-    Permission::Enum permissionYes = Permission::Enum::YES;
-    DefaultValue<Permission::Enum>::Set(permissionYes);
+    StdPermission::Enum permissionYes = StdPermission::YES;
+    DefaultValue<StdPermission::Enum>::Set(permissionYes);
     EXPECT_CALL(
             localDomainAccessControllerMock,
             getConsumerPermission(
@@ -211,10 +213,10 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
                     TEST_DOMAIN,
                     TEST_INTERFACE,
                     TEST_OPERATION,
-                    TrustLevel::HIGH
+                    StdTrustLevel::HIGH
             )
     )
-            .WillOnce(Return(permissionYes));
+            .WillOnce(Return(Permission::createQt(permissionYes)));
 
     EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true))
             .Times(1);
@@ -226,10 +228,10 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessage) {
-    ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
+    ConsumerPermissionCallbackMaker makeCallback(StdPermission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
-            getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TrustLevel::HIGH, _)
+            getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, StdTrustLevel::HIGH, _)
     )
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::operationNeeded));

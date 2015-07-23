@@ -41,7 +41,7 @@ DefaultArbitrator::DefaultArbitrator(const std::string& domain,
 void DefaultArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -56,20 +56,19 @@ void DefaultArbitrator::attemptArbitration()
 }
 
 void DefaultArbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries)
 {
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     // default arbitrator picks first entry
-    joynr::types::DiscoveryEntry discoveredProvider = discoveryEntries.front();
-    joynr::types::CommunicationMiddleware::Enum preferredConnection(
+    joynr::types::StdDiscoveryEntry discoveredProvider = discoveryEntries.front();
+    joynr::types::StdCommunicationMiddleware::Enum preferredConnection(
             selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
-    updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationSuccessful,
-            discoveredProvider.getParticipantId().toStdString(),
-            preferredConnection);
+    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
+                                                   discoveredProvider.getParticipantId(),
+                                                   preferredConnection);
 }
 
 } // namespace joynr

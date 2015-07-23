@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -34,7 +34,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	@Inject
 	private extension InterfaceUtil
 
-	@Inject extension CppMigrateToStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -51,7 +51,9 @@ class InterfaceHTemplate implements InterfaceTemplate{
 «FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 	«IF datatype instanceof FType»
 		«IF isComplex(datatype)»
-			«getNamespaceStarter(datatype)» class «(datatype).joynrName»; «getNamespaceEnder(datatype)»
+			«getNamespaceStarter(datatype, true)»
+				class «(datatype).joynrNameStd»;
+			«getNamespaceEnder(datatype, true)»
 		«ELSE »
 			#include "«getIncludeOf(datatype)»"
 		«ENDIF»

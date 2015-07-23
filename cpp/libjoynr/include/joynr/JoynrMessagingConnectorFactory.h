@@ -75,7 +75,7 @@ public:
     JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
                                    ISubscriptionManager* subscriptionManager);
 
-    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
+    bool canBeCreated(const joynr::types::StdCommunicationMiddleware::Enum& connection);
 
     template <class T>
     T* create(const std::string& domain,

@@ -73,14 +73,11 @@ public:
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
-        QList<joynr::types::CommunicationMiddleware::Enum> connections;
-        connections.append(joynr::types::CommunicationMiddleware::JOYNR);
+        std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections = {
+                joynr::types::StdCommunicationMiddleware::JOYNR};
         joynr::RequestStatus status;
-        joynr::types::DiscoveryEntry entry(QString::fromStdString(domain),
-                                           QString::fromStdString(interfaceName),
-                                           QString::fromStdString(participantId),
-                                           provider->getProviderQos(),
-                                           connections);
+        joynr::types::StdDiscoveryEntry entry(
+                domain, interfaceName, participantId, provider->getProviderQos(), connections);
         discoveryProxy.add(status, entry);
         if (!status.successful()) {
             LOG_ERROR(logger,

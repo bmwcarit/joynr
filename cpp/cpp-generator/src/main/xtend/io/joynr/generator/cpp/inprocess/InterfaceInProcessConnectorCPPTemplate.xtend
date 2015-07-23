@@ -18,13 +18,13 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
@@ -32,10 +32,10 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private CppMigrateToStdTypeUtil cppStdTypeUtil
+	private extension CppStdTypeUtil cppStdTypeUtil
 
 	@Inject
-	private extension QtTypeUtil qtTypeUtil
+	private QtTypeUtil qtTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -93,7 +93,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 «FOR attribute : getAttributes(serviceInterface)»
 	«val returnType = cppStdTypeUtil.getTypeName(attribute)»
-	«val returnTypeQT = qtTypeUtil.getTypeName(attribute)»
+	«val returnTypeQt = qtTypeUtil.getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
@@ -232,12 +232,15 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != NULL);
 				QString attributeName("«attributeName»");
-				«val subscriptionListenerName = if (needsDatatypeConversion(attribute)) "subscriptionListenerWrapper" else "subscriptionListener"»
-				«IF needsDatatypeConversion(attribute)»
-					QSharedPointer<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> subscriptionListenerWrapper(
-						new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(subscriptionListener));
-				«ENDIF»
-				QSharedPointer<joynr::SubscriptionCallback<«returnTypeQT»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnTypeQT»>(«subscriptionListenerName»));
+				QSharedPointer<joynr::SubscriptionCallback<«returnTypeQt»>> subscriptionCallback(
+						«IF qtTypeUtil.needsDatatypeConversion(attribute)»
+							new «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
+						«ELSE»
+							new joynr::SubscriptionCallback<«returnTypeQt»>(
+						«ENDIF»
+								subscriptionListener
+						)
+				);
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -307,14 +310,14 @@ void «interfaceName»InProcessConnector::«methodname»(
 	QSharedPointer<joynr::Future<«outputParameters»> > future(
 			new joynr::Future<«outputParameters»>());
 
-	std::function<void(«outputTypedParamListStd»)> requestCallerCallbackFct =
+	std::function<void(«outputTypedParamListStd»)> onSuccess =
 			[future] («outputTypedParamListStd») {
 				future->onSuccess(
 						joynr::RequestStatusCode::OK«outputUntypedParamList»
 				);
 			};
 
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»requestCallerCallbackFct);
+	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess);
 	status = future->waitForFinished();
 	«IF !method.outputParameters.empty»
 		if (status.successful()) {
@@ -334,7 +337,7 @@ QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessC
 	QSharedPointer<joynr::Future<«outputParameters»> > future(
 			new joynr::Future<«outputParameters»>());
 
-	std::function<void(«outputTypedParamListStd»)> requestCallerCallbackFct =
+	std::function<void(«outputTypedParamListStd»)> onSuccess =
 			[future, callbackFct] («outputTypedParamListStd») {
 				future->onSuccess(joynr::RequestStatusCode::OK«outputUntypedParamList»);
 				if (callbackFct)
@@ -342,7 +345,7 @@ QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessC
 					callbackFct(joynr::RequestStatusCode::OK«outputUntypedParamList»);
 				}
 			};
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»requestCallerCallbackFct);
+	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess);
 	return future;
 }
 
@@ -350,7 +353,7 @@ QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessC
 
 «FOR broadcast: serviceInterface.broadcasts»
 	«val returnTypes = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
-	«val returnTypesQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
+	«val returnTypesQt = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»
@@ -410,13 +413,8 @@ QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessC
 		assert(subscriptionManager != NULL);
 		QString broadcastName("«broadcastName»");
 
-		«val subscriptionListenerName = if (needsDatatypeConversion(broadcast)) "subscriptionListenerWrapper" else "subscriptionListener"»
-		«IF needsDatatypeConversion(broadcast)»
-			QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> subscriptionListenerWrapper(
-				new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(subscriptionListener));
-		«ENDIF»
-		QSharedPointer<joynr::SubscriptionCallback<«returnTypesQT»>> subscriptionCallback(
-					new joynr::SubscriptionCallback<«returnTypesQT»>(«subscriptionListenerName»));
+		QSharedPointer<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
+					new «broadcastName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(subscriptionListener));
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,

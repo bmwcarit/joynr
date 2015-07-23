@@ -33,7 +33,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-class DiscoveryEntry;
+class StdDiscoveryEntry;
 }
 
 class DefaultArbitrator : public ProviderArbitrator
@@ -48,7 +48,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
     virtual void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries);
     static joynr_logging::Logger* logger;
 };
 

@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -27,7 +27,7 @@ import org.franca.core.franca.FInterface
 class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension CppMigrateToStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -60,7 +60,7 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 //tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
 void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
-		const joynr::types::CommunicationMiddleware::Enum& connection
+		const joynr::types::StdCommunicationMiddleware::Enum& connection
 ) {
 	if (connector != NULL){
 		delete connector;

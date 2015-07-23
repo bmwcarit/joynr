@@ -71,7 +71,7 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::StdCapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
@@ -86,8 +86,8 @@ public:
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                             const std::string& interfaceName);
+    virtual std::vector<types::StdCapabilityInformation> lookup(const std::string& domain,
+                                                                const std::string& interfaceName);
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
@@ -96,13 +96,13 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const RequestStatus& status,
-                               const std::vector<joynr::types::CapabilityInformation>& result)>
+                               const std::vector<joynr::types::StdCapabilityInformation>& result)>
                     callbackFct);
 
     virtual void lookup(
             const std::string& participantId,
             std::function<void(const RequestStatus& status,
-                               const std::vector<joynr::types::CapabilityInformation>& result)>
+                               const std::vector<joynr::types::StdCapabilityInformation>& result)>
                     callbackFct);
 
     virtual ~CapabilitiesClient();

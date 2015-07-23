@@ -313,6 +313,8 @@ void «typeName»::createQt(const «stdTypeUtil.getTypeName(type)»& from, «typ
 	«ENDIF»
 	return to;
 }
+
+
 «getNamespaceEnder(type)»
 '''
 }

@@ -39,20 +39,20 @@ public:
     LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
                                      QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
                                      const std::string& participantId,
-                                     const joynr::types::DiscoveryQos& discoveryQos);
+                                     const joynr::types::StdDiscoveryQos& discoveryQos);
     LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
                                      QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
                                      const InterfaceAddress& interfaceAddress,
-                                     const joynr::types::DiscoveryQos& discoveryQos);
+                                     const joynr::types::StdDiscoveryQos& discoveryQos);
 
-    void capabilitiesReceived(std::vector<types::CapabilityInformation> results);
+    void capabilitiesReceived(std::vector<types::StdCapabilityInformation> results);
 
 private:
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback;
     std::string participantId;
     InterfaceAddress interfaceAddress;
-    joynr::types::DiscoveryQos discoveryQos;
+    joynr::types::StdDiscoveryQos discoveryQos;
 
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallbackWrapper);
 };

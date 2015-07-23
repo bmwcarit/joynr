@@ -35,8 +35,7 @@ KeywordArbitrator::KeywordArbitrator(const std::string& domain,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          keyword(TypeUtil::toQt(
-                  discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue())),
+          keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue()),
           logger(joynr_logging::Logging::getInstance()->getLogger("KArb", "KeywordArbitrator"))
 {
 }
@@ -44,7 +43,7 @@ KeywordArbitrator::KeywordArbitrator(const std::string& domain,
 void KeywordArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -59,7 +58,7 @@ void KeywordArbitrator::attemptArbitration()
 }
 
 void KeywordArbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries)
 {
     // Check for an empty list of results
     if (discoveryEntries.size() == 0) {
@@ -67,9 +66,11 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     }
 
     // Loop through the result list
-    for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
-        types::ProviderQos providerQos = discoveryEntry.getQos();
-        LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
+    for (joynr::types::StdDiscoveryEntry discoveryEntry : discoveryEntries) {
+        types::StdProviderQos providerQos = discoveryEntry.getQos();
+        LOG_TRACE(logger,
+                  QString("Looping over capabilitiesEntry: %")
+                          .arg(QString::fromStdString(discoveryEntry.toString())));
 
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&
@@ -78,21 +79,16 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
         }
 
         // Search the QosParameters for the keyword field
-        QList<types::CustomParameter> qosParameters = providerQos.getCustomParameters();
-        QListIterator<types::CustomParameter> parameterIterator(qosParameters);
-        while (parameterIterator.hasNext()) {
-            types::CustomParameter parameter = parameterIterator.next();
-            QString name = parameter.getName();
-            if (name == TypeUtil::toQt(DiscoveryQos::KEYWORD_PARAMETER()) &&
-                keyword == parameter.getValue()) {
-                QString res = discoveryEntry.getParticipantId();
-                LOG_TRACE(logger, "setting res to " + res);
-                joynr::types::CommunicationMiddleware::Enum preferredConnection(
+        std::vector<types::StdCustomParameter> qosParameters = providerQos.getCustomParameters();
+        for (types::StdCustomParameter parameter : qosParameters) {
+            std::string name = parameter.getName();
+            if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
+                std::string res = discoveryEntry.getParticipantId();
+                LOG_TRACE(logger, QString("setting res to %").arg(QString::fromStdString(res)));
+                joynr::types::StdCommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(
-                        ArbitrationStatus::ArbitrationSuccessful,
-                        res.toStdString(),
-                        preferredConnection);
+                        ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
                 return;
             }
         }

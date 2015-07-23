@@ -61,7 +61,8 @@ std::string CapabilitiesClient::getLocalChannelId()
     return localChannelId;
 }
 
-void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilitiesInformationList)
+void CapabilitiesClient::add(
+        std::vector<types::StdCapabilityInformation> capabilitiesInformationList)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -71,7 +72,7 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
                        // yet;
     } else {
         for (uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
-            capabilitiesInformationList[i].setChannelId(QString::fromStdString(localChannelId));
+            capabilitiesInformationList[i].setChannelId(localChannelId);
         }
         RequestStatus rs;
         // TM switching from sync to async
@@ -105,7 +106,7 @@ void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
     capabilitiesProxy->remove(status, participantIdList);
 }
 
-std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
+std::vector<types::StdCapabilityInformation> CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName)
 {
@@ -113,7 +114,7 @@ std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
                                          // the capabilitiesProxy has been set via the init method
 
     RequestStatus status;
-    std::vector<types::CapabilityInformation> result;
+    std::vector<types::StdCapabilityInformation> result;
     capabilitiesProxy->lookup(status, result, domain, interfaceName);
     return result;
 }
@@ -122,8 +123,7 @@ void CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName,
         std::function<void(const RequestStatus& status,
-                           const std::vector<joynr::types::CapabilityInformation>& result)>
-                callbackFct)
+                           const std::vector<types::StdCapabilityInformation>& result)> callbackFct)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
@@ -134,18 +134,19 @@ void CapabilitiesClient::lookup(
 void CapabilitiesClient::lookup(
         const std::string& participantId,
         std::function<void(const RequestStatus& status,
-                           const std::vector<joynr::types::CapabilityInformation>& result)>
+                           const std::vector<joynr::types::StdCapabilityInformation>& result)>
                 callbackFct)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
-    capabilitiesProxy->lookup(participantId,
-                              [callbackFct](const RequestStatus& status,
-                                            const joynr::types::CapabilityInformation& capability) {
-        std::vector<joynr::types::CapabilityInformation> result;
-        result.push_back(capability);
-        callbackFct(status, result);
-    });
+    capabilitiesProxy->lookup(
+            participantId,
+            [callbackFct](const RequestStatus& status,
+                          const joynr::types::StdCapabilityInformation& capability) {
+                std::vector<joynr::types::StdCapabilityInformation> result;
+                result.push_back(capability);
+                callbackFct(status, result);
+            });
 }
 
 void CapabilitiesClient::init(

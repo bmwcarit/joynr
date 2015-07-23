@@ -62,7 +62,7 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::StdCapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
@@ -72,8 +72,8 @@ public:
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                             const std::string& interfaceName);
+    virtual std::vector<types::StdCapabilityInformation> lookup(const std::string& domain,
+                                                                const std::string& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
@@ -97,13 +97,14 @@ private:
                      MessagingQos qosSettings,
                      QSharedPointer<IReplyCaller> callBack);
 
-    std::vector<types::CapabilityInformation> createFakedCapInfoList(const QString& domain,
-                                                                     const QString& interfaceName);
-    std::vector<types::CapabilityInformation> createFakedCapInfoListForChannelId(
-            const QString& channelId);
-    std::vector<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
-            const QString& participantId);
-    std::vector<types::CapabilityInformation> createFakedCapInfoList();
+    std::vector<types::StdCapabilityInformation> createFakedCapInfoList(
+            const std::string& domain,
+            const std::string& interfaceName);
+    std::vector<types::StdCapabilityInformation> createFakedCapInfoListForChannelId(
+            const std::string& channelId);
+    std::vector<types::StdCapabilityInformation> createFakedCapInfoListForParticipantId(
+            const std::string& participantId);
+    std::vector<types::StdCapabilityInformation> createFakedCapInfoList();
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
@@ -113,10 +114,10 @@ private:
 
     QSettings configuration;
 
-    QString preconfiguredDomain;
-    QString preconfiguredInterfaceName;
-    QString preconfiguredChannelId;
-    QString preconfiguredParticipantId;
+    std::string preconfiguredDomain;
+    std::string preconfiguredInterfaceName;
+    std::string preconfiguredChannelId;
+    std::string preconfiguredParticipantId;
 };
 
 } // namespace joynr

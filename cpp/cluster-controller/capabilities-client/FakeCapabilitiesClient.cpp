@@ -34,13 +34,20 @@ FakeCapabilitiesClient::FakeCapabilitiesClient(const std::string& localChannelId
           localChannelId(localChannelId),
           configuration(settingsFileName, QSettings::IniFormat),
           preconfiguredDomain(configuration.value("capabilitiesClient/fakeDomain", "fakeDomain")
-                                      .value<QString>()),
-          preconfiguredInterfaceName(configuration.value("capabilitiesClient/fakeInterfaceName",
-                                                         "fakeInterfaceName").value<QString>()),
-          preconfiguredChannelId(configuration.value("capabilitiesClient/fakeChannelId",
-                                                     "fakeChannelId").value<QString>()),
-          preconfiguredParticipantId(configuration.value("capabilitiesClient/fakeParticipantId",
-                                                         "fakeParticipantId").value<QString>())
+                                      .value<QString>()
+                                      .toStdString()),
+          preconfiguredInterfaceName(
+                  configuration.value("capabilitiesClient/fakeInterfaceName", "fakeInterfaceName")
+                          .value<QString>()
+                          .toStdString()),
+          preconfiguredChannelId(
+                  configuration.value("capabilitiesClient/fakeChannelId", "fakeChannelId")
+                          .value<QString>()
+                          .toStdString()),
+          preconfiguredParticipantId(
+                  configuration.value("capabilitiesClient/fakeParticipantId", "fakeParticipantId")
+                          .value<QString>()
+                          .toStdString())
 {
     QString uuid = QUuid::createUuid().toString();
     capabilitiesClientParticipantId = uuid.mid(1, uuid.length() - 2).toStdString();
@@ -56,7 +63,7 @@ std::string FakeCapabilitiesClient::getLocalChannelId()
 }
 
 void FakeCapabilitiesClient::add(
-        std::vector<types::CapabilityInformation> capabilitiesInformationList)
+        std::vector<types::StdCapabilityInformation> capabilitiesInformationList)
 {
     Q_UNUSED(capabilitiesInformationList)
     if (localChannelId.empty()) {
@@ -72,13 +79,12 @@ void FakeCapabilitiesClient::remove(std::vector<std::string> participantIdList)
     Q_UNUSED(participantIdList);
 }
 
-std::vector<types::CapabilityInformation> FakeCapabilitiesClient::lookup(
+std::vector<types::StdCapabilityInformation> FakeCapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName)
 {
     // return faked list to simulate incoming results
-    return createFakedCapInfoList(
-            QString::fromStdString(domain), QString::fromStdString(interfaceName));
+    return createFakedCapInfoList(domain, interfaceName);
 }
 
 void FakeCapabilitiesClient::lookup(const std::string& domain,
@@ -86,62 +92,70 @@ void FakeCapabilitiesClient::lookup(const std::string& domain,
                                     QSharedPointer<IGlobalCapabilitiesCallback> callback)
 {
     // return faked list to simulate incoming results
-    callback->capabilitiesReceived(createFakedCapInfoList(
-            QString::fromStdString(domain), QString::fromStdString(interfaceName)));
+    callback->capabilitiesReceived(createFakedCapInfoList(domain, interfaceName));
 }
 
 void FakeCapabilitiesClient::lookup(const std::string& participantId,
                                     QSharedPointer<IGlobalCapabilitiesCallback> callback)
 {
-    callback->capabilitiesReceived(
-            createFakedCapInfoListForParticipantId(QString::fromStdString(participantId)));
+    callback->capabilitiesReceived(createFakedCapInfoListForParticipantId(participantId));
 }
 
-std::vector<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList(
-        const QString& domain,
-        const QString& interfaceName)
+std::vector<types::StdCapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList(
+        const std::string& domain,
+        const std::string& interfaceName)
 {
-    std::vector<types::CapabilityInformation> fakedCapInfoList;
-    QString fakeParticipantId = preconfiguredParticipantId + "_" + interfaceName + "DummyProvider";
-    fakedCapInfoList.push_back(types::CapabilityInformation(
+    std::vector<types::StdCapabilityInformation> fakedCapInfoList;
+    std::string fakeParticipantId =
+            preconfiguredParticipantId + "_" + interfaceName + "DummyProvider";
+    fakedCapInfoList.push_back(types::StdCapabilityInformation(
             domain,
             interfaceName,
-            types::ProviderQos(
-                    QList<types::CustomParameter>(), 1, 1, types::ProviderScope::GLOBAL, false),
+            types::StdProviderQos(std::vector<types::StdCustomParameter>(),
+                                  1,
+                                  1,
+                                  types::StdProviderScope::GLOBAL,
+                                  false),
             preconfiguredChannelId,
             fakeParticipantId));
     return fakedCapInfoList;
 }
 
-std::vector<types::CapabilityInformation> FakeCapabilitiesClient::
-        createFakedCapInfoListForChannelId(const QString& channelId)
+std::vector<types::StdCapabilityInformation> FakeCapabilitiesClient::
+        createFakedCapInfoListForChannelId(const std::string& channelId)
 {
-    std::vector<types::CapabilityInformation> fakedCapInfoList;
-    fakedCapInfoList.push_back(types::CapabilityInformation(
+    std::vector<types::StdCapabilityInformation> fakedCapInfoList;
+    fakedCapInfoList.push_back(types::StdCapabilityInformation(
             preconfiguredDomain,
             preconfiguredInterfaceName,
-            types::ProviderQos(
-                    QList<types::CustomParameter>(), 1, 1, types::ProviderScope::GLOBAL, false),
+            types::StdProviderQos(std::vector<types::StdCustomParameter>(),
+                                  1,
+                                  1,
+                                  types::StdProviderScope::GLOBAL,
+                                  false),
             channelId,
             preconfiguredParticipantId));
     return fakedCapInfoList;
 }
 
-std::vector<types::CapabilityInformation> FakeCapabilitiesClient::
-        createFakedCapInfoListForParticipantId(const QString& participantId)
+std::vector<types::StdCapabilityInformation> FakeCapabilitiesClient::
+        createFakedCapInfoListForParticipantId(const std::string& participantId)
 {
-    std::vector<types::CapabilityInformation> fakedCapInfoList;
-    fakedCapInfoList.push_back(types::CapabilityInformation(
+    std::vector<types::StdCapabilityInformation> fakedCapInfoList;
+    fakedCapInfoList.push_back(types::StdCapabilityInformation(
             preconfiguredDomain,
             preconfiguredInterfaceName,
-            types::ProviderQos(
-                    QList<types::CustomParameter>(), 1, 1, types::ProviderScope::GLOBAL, false),
+            types::StdProviderQos(std::vector<types::StdCustomParameter>(),
+                                  1,
+                                  1,
+                                  types::StdProviderScope::GLOBAL,
+                                  false),
             preconfiguredChannelId,
             participantId));
     return fakedCapInfoList;
 }
 
-std::vector<types::CapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList()
+std::vector<types::StdCapabilityInformation> FakeCapabilitiesClient::createFakedCapInfoList()
 {
     return createFakedCapInfoList(preconfiguredDomain, preconfiguredInterfaceName);
 }

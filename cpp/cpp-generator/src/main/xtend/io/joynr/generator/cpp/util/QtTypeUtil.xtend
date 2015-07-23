@@ -52,7 +52,7 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName) {
-		fromStdTypeToQTType(typedElement, objectName, false)
+		fromStdTypeToQTType(typedElement, objectName, true)
 	}
 
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName, boolean convertComplexTypes) {
@@ -104,7 +104,7 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	def fromQTTypeToStdType(FTypedElement typedElement, String objectName) {
-		fromQTTypeToStdType(typedElement, objectName, false)
+		fromQTTypeToStdType(typedElement, objectName, true)
 	}
 
 	def fromQTTypeToStdType(FTypedElement typedElement, String objectName, boolean convertComplexTypes) {
@@ -189,8 +189,8 @@ class QtTypeUtil extends CppTypeUtil {
 
 	private def transformBetweenDatatypeSystems(FArgument argument, String argumentName, DatatypeSystemTransformation transformation) {
 		switch (transformation) {
-			case FROM_QT_TO_STANDARD: return fromQTTypeToStdType(argument, argumentName)
-			case FROM_STANDARD_TO_QT: return fromStdTypeToQTType(argument, argumentName)
+			case FROM_QT_TO_STANDARD: return fromQTTypeToStdType(argument, argumentName, true)
+			case FROM_STANDARD_TO_QT: return fromStdTypeToQTType(argument, argumentName, true)
 			default : return argumentName
 		}
 	}
@@ -211,7 +211,9 @@ class QtTypeUtil extends CppTypeUtil {
 
 	def needsDatatypeConversion(FTypedElement typedElement) {
 		typedElement.isArray || 
-		needsDatatypeConversion(typedElement.type.predefined)
+		needsDatatypeConversion(typedElement.type.predefined) ||
+		typedElement.type.isEnum ||
+		typedElement.type.isComplex
 	}
 
 	def needsDatatypeConversion(FBroadcast broadcast) {

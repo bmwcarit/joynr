@@ -42,6 +42,7 @@ namespace joynr
 {
 
 using namespace infrastructure;
+using namespace infrastructure::DacTypes;
 using namespace types;
 using namespace joynr_logging;
 
@@ -63,7 +64,7 @@ public:
             QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
-    void consumerPermission(infrastructure::Permission::Enum permission);
+    void consumerPermission(StdPermission::Enum permission);
     void operationNeeded();
 
 private:
@@ -94,9 +95,9 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 }
 
 void AccessController::LdacConsumerPermissionCallback::consumerPermission(
-        Permission::Enum permission)
+        StdPermission::Enum permission)
 {
-    bool hasPermission = convertToBool(permission);
+    bool hasPermission = convertToBool(Permission::createQt(permission));
 
     if (hasPermission == false) {
         LOG_ERROR(logger,
@@ -148,7 +149,11 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     // Get the permission for given operation
     Permission::Enum permission =
             owningAccessController.localDomainAccessController.getConsumerPermission(
-                    message.getHeaderCreatorUserId(), domain, interfaceName, operation, trustlevel);
+                    message.getHeaderCreatorUserId().toStdString(),
+                    domain.toStdString(),
+                    interfaceName.toStdString(),
+                    operation.toStdString(),
+                    TrustLevel::createStd(trustlevel));
 
     bool hasPermission = convertToBool(permission);
 
@@ -190,13 +195,13 @@ public:
             : localDomainAccessController(localDomainAccessController)
     {
     }
-    virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
+    virtual void onProviderAdd(const StdDiscoveryEntry& discoveryEntry)
     {
         Q_UNUSED(discoveryEntry)
         // Ignored
     }
 
-    virtual void onProviderRemove(const DiscoveryEntry& discoveryEntry)
+    virtual void onProviderRemove(const StdDiscoveryEntry& discoveryEntry)
     {
         localDomainAccessController.unregisterProvider(
                 discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
@@ -255,19 +260,20 @@ void AccessController::hasConsumerPermission(
     }
 
     // Get the domain and interface of the message destination
-    QString participantId = message.getHeaderTo();
-    std::function<void(const types::DiscoveryEntry&)> lookupCallback =
-            [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
+    std::string participantId = message.getHeaderTo().toStdString();
+    std::function<void(const types::StdDiscoveryEntry&)> lookupCallback =
+            [this, message, callback, participantId](
+                    const types::StdDiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
-            LOG_ERROR(
-                    logger,
-                    QString("Failed to get capabilities for participantId %1").arg(participantId));
+            LOG_ERROR(logger,
+                      QString("Failed to get capabilities for participantId %1")
+                              .arg(QString::fromStdString(participantId)));
             callback->hasConsumerPermission(false);
             return;
         }
 
-        QString domain = discoveryEntry.getDomain();
-        QString interfaceName = discoveryEntry.getInterfaceName();
+        std::string domain = discoveryEntry.getDomain();
+        std::string interfaceName = discoveryEntry.getInterfaceName();
 
         // TODO: remove this shortcut used for system integration tests
         if (interfaceName == "tests/test") {
@@ -277,16 +283,23 @@ void AccessController::hasConsumerPermission(
 
         // Create a callback object
         QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
-                new LdacConsumerPermissionCallback(
-                        *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
+                new LdacConsumerPermissionCallback(*this,
+                                                   message,
+                                                   QString::fromStdString(domain),
+                                                   QString::fromStdString(interfaceName),
+                                                   TrustLevel::HIGH,
+                                                   callback));
 
         // Try to determine permission without expensive message deserialization
         // For now TrustLevel::HIGH is assumed.
         QString msgCreatorUid = message.getHeaderCreatorUserId();
-        localDomainAccessController.getConsumerPermission(
-                msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
+        localDomainAccessController.getConsumerPermission(msgCreatorUid.toStdString(),
+                                                          domain,
+                                                          interfaceName,
+                                                          StdTrustLevel::HIGH,
+                                                          ldacCallback);
     };
-    localCapabilitiesDirectory.lookup(participantId.toStdString(), lookupCallback);
+    localCapabilitiesDirectory.lookup(participantId, lookupCallback);
 }
 
 bool AccessController::hasProviderPermission(const QString& userId,

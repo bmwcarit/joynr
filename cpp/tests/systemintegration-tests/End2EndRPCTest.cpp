@@ -93,7 +93,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    types::Localisation::StdGpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
@@ -124,7 +124,13 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 TEST_F(End2EndRPCTest, call_void_operation)
 {
 
-    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
+    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::StdProviderQos(
+            std::vector<types::StdCustomParameter>(),
+            1,
+            1,
+            types::StdProviderScope::GLOBAL,
+            false
+    )));
 
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
@@ -154,7 +160,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
-    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    types::Localisation::StdGpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
     QThreadSleep::msleep(550);
@@ -173,10 +179,10 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
             ->build());
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                 mockListener);
 
-    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
             .Times(AtLeast(2));
 
     auto subscriptionQos = QSharedPointer<StdSubscriptionQos>(new StdOnChangeWithKeepAliveSubscriptionQos(

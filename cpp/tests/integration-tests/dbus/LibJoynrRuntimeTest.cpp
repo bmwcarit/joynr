@@ -61,7 +61,7 @@ public:
     LibJoynrDbusRuntime* runtime;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
-    joynr::types::ProviderQos mockTestProviderQos;
+    joynr::types::StdProviderQos mockTestProviderQos;
     std::shared_ptr<MockTestProvider> mockTestProvider;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
@@ -77,10 +77,10 @@ public:
             routingProxyBuilder(NULL),
             routingProxy(NULL),
             mockTestProviderQos(
-                QList<joynr::types::CustomParameter>(), // custom provider parameters
+                std::vector<joynr::types::StdCustomParameter>(), // custom provider parameters
                 1,                                      // version
                 1,                                      // priority
-                joynr::types::ProviderScope::LOCAL,     // visibilitiy scope
+                joynr::types::StdProviderScope::LOCAL,     // visibilitiy scope
                 false                                   // supports on change subscriptions
             ),
             mockTestProvider(),
@@ -218,17 +218,18 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
                 mockTestProvider
     );
 
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
-    joynr::types::DiscoveryEntry expectedDiscoveryEntry(
-                TypeUtil::toQt(domain),
-                TypeUtil::toQt(tests::testProvider::INTERFACE_NAME()),
-                TypeUtil::toQt(participantId),
+    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections {
+            joynr::types::StdCommunicationMiddleware::JOYNR
+    };
+    joynr::types::StdDiscoveryEntry expectedDiscoveryEntry(
+                domain,
+                tests::testProvider::INTERFACE_NAME(),
+                participantId,
                 mockTestProviderQos,
                 connections
     );
     RequestStatus status;
-    joynr::types::DiscoveryEntry discoveryEntry;
+    joynr::types::StdDiscoveryEntry discoveryEntry;
     discoveryProxy->lookup(status, discoveryEntry, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);

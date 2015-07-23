@@ -104,15 +104,12 @@ void LongPollingMessageReceiver::run()
       * register the channelUrl with the ChannelUrlDirectory (asynchronously)
       */
     assert(channelUrlDirectory != NULL);
-    types::ChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    // urls << channelUrl + QString("pseudoDirectUrlForTestingPurpose");  //for testing purpose
-    // (bogus Url)
-    urls << channelUrl;
+    types::StdChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {channelUrl.toStdString()};
     urlInformation.setUrls(urls);
     LOG_INFO(logger,
              "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
-                     urls.first());
+                     channelUrl);
     channelUrlDirectory->registerChannelUrls(channelId.toStdString(), urlInformation);
 
     while (!isInterrupted()) {

@@ -104,27 +104,28 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     LOG_DEBUG(logger,
               "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
                       channelId);
-    QSharedPointer<Future<types::ChannelUrlInformation>> proxyFuture(
+    QSharedPointer<Future<types::StdChannelUrlInformation>> proxyFuture(
             channelUrlDirectory->getUrlsForChannel(channelId.toStdString(), timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
         LOG_DEBUG(logger,
                   "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = " + channelId);
-        types::ChannelUrlInformation urlInformation;
+        types::StdChannelUrlInformation urlInformation;
         proxyFuture->getValues(urlInformation);
-        if (urlInformation.getUrls().isEmpty()) {
+        if (urlInformation.getUrls().empty()) {
             LOG_DEBUG(logger, "obtainUrl: empty list of urls obtained from id = " + channelId);
             LOG_DEBUG(logger, "obtainUrl: constructing default url for id = " + channelId);
             status.setCode(RequestStatusCode::ERROR);
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
         }
-        url = urlInformation.getUrls().first(); // return the first, store all
-        entries.insert(channelId,
-                       new ChannelUrlSelectorEntry(urlInformation,
-                                                   punishmentFactor,
-                                                   timeForOneRecouperation)); // deleted where?
+        url = QString::fromStdString(urlInformation.getUrls().at(0)); // return the first, store all
+        entries.insert(
+                channelId,
+                new ChannelUrlSelectorEntry(types::ChannelUrlInformation::createQt(urlInformation),
+                                            punishmentFactor,
+                                            timeForOneRecouperation)); // deleted where?
         status.setCode(RequestStatusCode::OK);
         return constructUrl(url);
     } else {

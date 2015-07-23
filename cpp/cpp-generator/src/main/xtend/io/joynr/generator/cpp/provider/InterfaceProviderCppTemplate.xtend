@@ -46,6 +46,9 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/TypeUtil.h"
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+	#include «parameterType»
+«ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»
 «interfaceName»Provider::«interfaceName»Provider()

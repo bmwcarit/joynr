@@ -97,20 +97,23 @@ public:
     virtual void route(const JoynrMessage& message);
 
     virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::ChannelAddress& channelAddress,
+                            const joynr::system::RoutingTypes::StdChannelAddress& channelAddress,
                             std::function<void()> onSuccess);
+    virtual void addNextHop(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::StdCommonApiDbusAddress& commonApiDbusAddress,
+            std::function<void()> onSuccess);
     virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::CommonApiDbusAddress& commonApiDbusAddress,
+                            const joynr::system::RoutingTypes::StdBrowserAddress& browserAddress,
                             std::function<void()> onSuccess);
-    virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::BrowserAddress& browserAddress,
-                            std::function<void()> onSuccess);
-    virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::WebSocketAddress& webSocketAddress,
-                            std::function<void()> onSuccess);
-    virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::WebSocketClientAddress& webSocketClientAddress,
-                            std::function<void()> onSuccess);
+    virtual void addNextHop(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::StdWebSocketAddress& webSocketAddress,
+            std::function<void()> onSuccess);
+    virtual void addNextHop(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::StdWebSocketClientAddress& webSocketClientAddress,
+            std::function<void()> onSuccess);
     virtual void removeNextHop(const std::string& participantId,
                                std::function<void()> onSuccess = nullptr);
     virtual void resolveNextHop(const std::string& participantId,

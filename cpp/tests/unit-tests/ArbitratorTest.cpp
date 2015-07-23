@@ -54,30 +54,31 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
-    QList<types::ProviderQos> qosEntries;
+    QList<types::StdProviderQos> qosEntries;
     QList<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
-        qosEntries << types::ProviderQos(
-                          QList<types::CustomParameter>(),     // custom provider parameters
+        qosEntries << types::StdProviderQos(
+                          std::vector<types::StdCustomParameter>(),     // custom provider parameters
                           1,                                   // version
                           priority,                            // priority
-                          joynr::types::ProviderScope::GLOBAL, // discovery scope
+                          joynr::types::StdProviderScope::GLOBAL, // discovery scope
                           false                                // supports on change notifications
         );
         participantId << std::to_string(priority);
     }
 
     // Create a list of fake connections
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
+    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections {
+            joynr::types::StdCommunicationMiddleware::JOYNR
+    };
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::StdDiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
-                                 QString::fromStdString(domain),
-                                 QString::fromStdString(interfaceName),
-                                 QString::fromStdString(participantId[i]),
+        discoveryEntries.push_back(joynr::types::StdDiscoveryEntry(
+                                 domain,
+                                 interfaceName,
+                                 participantId[i],
                                  qosEntries[i],
                                  connections
         ));
@@ -97,28 +98,29 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
-    QList<types::ProviderQos> qosEntries;
+    QList<types::StdProviderQos> qosEntries;
     QList<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
-        qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, false);
+        qosEntries << types::StdProviderQos(std::vector<types::StdCustomParameter>(), 1, priority, types::StdProviderScope::GLOBAL, false);
         participantId << std::to_string(priority);
     }
     for (int priority = 0; priority < 2; priority++) {
-        qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, true);
+        qosEntries << types::StdProviderQos(std::vector<types::StdCustomParameter>(), 1, priority, types::StdProviderScope::GLOBAL, true);
         participantId << ("onChange_%1" + std::to_string(priority));
     }
 
     // Create a list of fake connections
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
+    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections {
+            joynr::types::StdCommunicationMiddleware::JOYNR
+    };
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::StdDiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
-                                 QString::fromStdString(domain),
-                                 QString::fromStdString(interfaceName),
-                                 QString::fromStdString(participantId[i]),
+        discoveryEntries.push_back(joynr::types::StdDiscoveryEntry(
+                                 domain,
+                                 interfaceName,
+                                 participantId[i],
                                  qosEntries[i],
                                  connections
         ));
@@ -132,49 +134,50 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
 // Test that the KeywordArbitrator selects the provider with the correct keyword
 TEST_F(ArbitratorTest, getKeywordProvider) {
     // Search for this keyword value
-    const QString keywordValue("unittests-keyword");
+    const std::string keywordValue("unittests-keyword");
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
-    discoveryQos.addCustomParameter("keyword", TypeUtil::toStd(keywordValue));
+    discoveryQos.addCustomParameter("keyword", keywordValue);
     KeywordArbitrator keywordArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
-    QList<types::ProviderQos> qosEntries;
+    QList<types::StdProviderQos> qosEntries;
     QList<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
         // Entries with no parameters
-        qosEntries << types::ProviderQos(QList<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, false);
+        qosEntries << types::StdProviderQos(std::vector<types::StdCustomParameter>(), 1, priority, types::StdProviderScope::GLOBAL, false);
         participantId << std::to_string(priority);
     }
 
     // An entry with no keyword parameters
-    QList<types::CustomParameter> parameterList;
-    parameterList << types::CustomParameter("xxx", "yyy");
-    qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
+    std::vector<types::StdCustomParameter> parameterList;
+    parameterList.push_back(types::StdCustomParameter("xxx", "yyy"));
+    qosEntries << types::StdProviderQos(parameterList, 1, 1, types::StdProviderScope::GLOBAL, false);
     participantId << "no_keyword";
 
     // An entry with an incorrect keyword parameter
-    parameterList << types::CustomParameter("keyword", "unwanted");
-    qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
+    parameterList.push_back(types::StdCustomParameter("keyword", "unwanted"));
+    qosEntries << types::StdProviderQos(parameterList, 1, 1, types::StdProviderScope::GLOBAL, false);
     participantId << "incorrect_keyword";
 
     // An entry with the correct keyword parameter
-    parameterList << types::CustomParameter("keyword", keywordValue);
-    qosEntries << types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false);
+    parameterList.push_back(types::StdCustomParameter("keyword", keywordValue));
+    qosEntries << types::StdProviderQos(parameterList, 1, 1, types::StdProviderScope::GLOBAL, false);
     participantId << "correct_keyword";
 
     // Create a list of fake connections
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
+    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections {
+            joynr::types::StdCommunicationMiddleware::JOYNR
+    };
 
     // Create a list of discovery entries
-    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    std::vector<joynr::types::StdDiscoveryEntry> discoveryEntries;
     for (int i = 0; i < qosEntries.size(); i++) {
-        discoveryEntries.push_back(joynr::types::DiscoveryEntry(
-                                 QString::fromStdString(domain),
-                                 QString::fromStdString(interfaceName),
-                                 QString::fromStdString(participantId[i]),
+        discoveryEntries.push_back(joynr::types::StdDiscoveryEntry(
+                                 domain,
+                                 interfaceName,
+                                 participantId[i],
                                  qosEntries[i],
                                  connections
         ));
@@ -186,16 +189,16 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     joynr::RequestStatus status(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 lookup(
                     A<joynr::RequestStatus&>(),
-                    A<std::vector<joynr::types::DiscoveryEntry>&>(),
+                    A<std::vector<joynr::types::StdDiscoveryEntry>&>(),
                     A<const std::string&>(),
                     A<const std::string&>(),
-                    A<const joynr::types::DiscoveryQos&>()
+                    A<const joynr::types::StdDiscoveryQos&>()
                 )
     )
             .Times(5)

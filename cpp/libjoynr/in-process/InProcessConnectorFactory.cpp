@@ -35,9 +35,9 @@ InProcessConnectorFactory::InProcessConnectorFactory(
 }
 
 bool InProcessConnectorFactory::canBeCreated(
-        const joynr::types::CommunicationMiddleware::Enum& connection)
+        const joynr::types::StdCommunicationMiddleware::Enum& connection)
 {
-    return connection == joynr::types::CommunicationMiddleware::IN_PROCESS;
+    return connection == joynr::types::StdCommunicationMiddleware::IN_PROCESS;
 }
 
 } // namespace joynr

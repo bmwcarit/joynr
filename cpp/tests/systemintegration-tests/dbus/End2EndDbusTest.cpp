@@ -99,7 +99,7 @@ public:
 
     void registerTestProvider() {
         // create provider
-        types::ProviderQos providerQos;
+        types::StdProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));

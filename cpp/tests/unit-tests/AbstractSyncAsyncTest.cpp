@@ -107,9 +107,9 @@ private:
 class AbstractSyncAsyncTest : public ::testing::Test {
 public:
     AbstractSyncAsyncTest():
-        expectedGpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 95302963),
+        expectedGpsLocation(1.1, 1.2, 1.3, types::Localisation::StdGpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 95302963),
         expectedInt(60284917),
-        callBackActions(expectedGpsLocation, expectedInt),
+        callBackActions(types::GpsLocation::createQt(expectedGpsLocation), expectedInt),
         qosSettings(),
         mockDispatcher(),
         mockMessagingStub(),
@@ -152,11 +152,11 @@ public:
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
 
-        MockCallback<joynr::types::GpsLocation>* callback = new MockCallback<joynr::types::GpsLocation>();
+        MockCallback<joynr::types::Localisation::StdGpsLocation>* callback = new MockCallback<joynr::types::Localisation::StdGpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation");
         asyncTestFixture->getLocation(
-                [callback] (const joynr::RequestStatus& status, const joynr::types::GpsLocation& location) {
+                [callback] (const joynr::RequestStatus& status, const joynr::types::Localisation::StdGpsLocation& location) {
                     callback->callbackFct(status, location);
                 });
     }
@@ -193,7 +193,7 @@ public:
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         RequestStatus status;
-        types::GpsLocation gpsLocation;
+        types::Localisation::StdGpsLocation gpsLocation;
         testFixture->getLocation(status, gpsLocation);
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
@@ -203,17 +203,17 @@ public:
     void testAsync_getAttributeCached() {
         asyncTestFixture = createFixture(true);
 
-        MockCallback<joynr::types::GpsLocation>* callback = new MockCallback<joynr::types::GpsLocation>();
+        MockCallback<joynr::types::Localisation::StdGpsLocation>* callback = new MockCallback<joynr::types::Localisation::StdGpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation").Times(0);
 
         QVariant qvariant;
-        qvariant.setValue(expectedGpsLocation);
+        qvariant.setValue(types::GpsLocation::createQt(expectedGpsLocation));
 
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         asyncTestFixture->getLocation(
-                [callback] (const RequestStatus& status, const types::GpsLocation& location) {
+                [callback] (const RequestStatus& status, const types::Localisation::StdGpsLocation& location) {
                     callback->callbackFct(status, location);
                 });
     }
@@ -224,11 +224,11 @@ public:
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::GpsLocation>(), "getLocation").Times(0);
 
         QVariant qvariant;
-        qvariant.setValue(expectedGpsLocation);
+        qvariant.setValue(types::GpsLocation::createQt(expectedGpsLocation));
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         RequestStatus status;
-        types::GpsLocation gpsLocation;
+        types::Localisation::StdGpsLocation gpsLocation;
         testFixture->getLocation(status, gpsLocation);
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
@@ -265,7 +265,7 @@ public:
         //EXPECT_CALL(*mockJoynrMessageSender,
         //            sendSubscriptionRequest(_,_,_,_)).Times(1);
 
-        QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+        QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     new MockGpsSubscriptionListener());
         //TODO uncomment once the connector has the correct signature!
         //vehicle::IGps* gpsFixture = createFixture(false);
@@ -275,7 +275,7 @@ public:
     }
 
 protected:
-    joynr::types::GpsLocation expectedGpsLocation;
+    joynr::types::Localisation::StdGpsLocation expectedGpsLocation;
     int expectedInt;
     CallBackActions callBackActions;
     MessagingQos qosSettings;

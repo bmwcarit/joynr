@@ -18,16 +18,16 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 
 class InterfaceProxyHTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension CppMigrateToStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''

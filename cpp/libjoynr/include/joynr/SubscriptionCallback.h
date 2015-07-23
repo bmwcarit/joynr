@@ -51,12 +51,12 @@ public:
         LOG_TRACE(logger, "destructor: leaving...");
     }
 
-    void onError()
+    virtual void onError()
     {
         listener->onError();
     }
 
-    void onSuccess(const T value, const Ts... values)
+    void onSuccess(const T& value, const Ts&... values)
     {
         listener->onReceive(value, values...);
     }
@@ -71,9 +71,11 @@ public:
         return Util::getTypeId<T, Ts...>();
     }
 
+protected:
+    QSharedPointer<ISubscriptionListener<T, Ts...>> listener;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
-    QSharedPointer<ISubscriptionListener<T, Ts...>> listener;
     static joynr_logging::Logger* logger;
 };
 

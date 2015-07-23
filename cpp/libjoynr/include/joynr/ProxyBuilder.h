@@ -96,7 +96,7 @@ private:
     /*
      * Sets the end point address.
      */
-    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
+    void setConnection(const joynr::types::StdCommunicationMiddleware::Enum& connection);
 
     /*
       * arbitrationFinished is called when the arbitrationStatus is set to successful and the
@@ -127,7 +127,7 @@ private:
     ProviderArbitrator* arbitrator;
     QSemaphore arbitrationSemaphore;
     std::string participantId;
-    joynr::types::CommunicationMiddleware::Enum connection;
+    joynr::types::StdCommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 
@@ -150,7 +150,7 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
           arbitrator(NULL),
           arbitrationSemaphore(1),
           participantId(""),
-          connection(joynr::types::CommunicationMiddleware::NONE),
+          connection(joynr::types::StdCommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           discoveryTimeout(-1),
           dispatcherAddress(dispatcherAddress),
@@ -234,7 +234,8 @@ void ProxyBuilder<T>::setArbitrationStatus(
 {
     this->arbitrationStatus = arbitrationStatus;
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
-        if (!participantId.empty() && connection != joynr::types::CommunicationMiddleware::NONE) {
+        if (!participantId.empty() &&
+            connection != joynr::types::StdCommunicationMiddleware::NONE) {
             arbitrationSemaphore.release();
         } else {
             throw JoynrArbitrationFailedException("Arbitration was set to successfull by "
@@ -247,7 +248,8 @@ void ProxyBuilder<T>::setArbitrationStatus(
 }
 
 template <class T>
-void ProxyBuilder<T>::setConnection(const joynr::types::CommunicationMiddleware::Enum& connection)
+void ProxyBuilder<T>::setConnection(
+        const joynr::types::StdCommunicationMiddleware::Enum& connection)
 {
     this->connection = connection;
 }

@@ -22,7 +22,7 @@ import org.franca.core.franca.FInterface
 
 class InterfaceSubscriptionUtil {
 	@Inject	extension JoynrCppGeneratorExtensions
-	@Inject	extension CppMigrateToStdTypeUtil
+	@Inject	extension CppStdTypeUtil
 
 	def produceSubscribeUnsubscribeMethods(FInterface serviceInterface, boolean pure)
 '''

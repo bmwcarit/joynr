@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.joynrmessaging
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
@@ -37,7 +37,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 	private extension QtTypeUtil qtTypeUtil
 
 	@Inject
-	private CppMigrateToStdTypeUtil cppStdTypeUtil
+	private CppStdTypeUtil cppStdTypeUtil
 	
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -47,7 +47,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 joynr::Request internalRequestObject;
 internalRequestObject.setMethodName(QString("«method.joynrName»"));
 «FOR param : getInputParameters(method)»
-	«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName)»
+	«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
 	«IF isEnum(param.type) && isArray(param)»
 		internalRequestObject.addParam(joynr::Util::convertListToVariantList(«paramRef»), "«getJoynrTypeName(param)»");
 	«ELSEIF isEnum(param.type)»

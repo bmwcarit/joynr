@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -27,7 +27,7 @@ import org.franca.core.franca.FInterface
 class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension CppMigrateToStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -65,7 +65,7 @@ public:
 
 	void handleArbitrationFinished(
 			const std::string &participantId,
-			const joynr::types::CommunicationMiddleware::Enum& connection
+			const joynr::types::StdCommunicationMiddleware::Enum& connection
 	);
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«val returnType = attribute.typeName»

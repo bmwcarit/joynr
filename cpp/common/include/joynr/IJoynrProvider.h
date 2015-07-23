@@ -30,7 +30,7 @@ class IBroadcastFilter;
 
 namespace types
 {
-class ProviderQos;
+class StdProviderQos;
 }
 
 class IJoynrProvider
@@ -40,7 +40,7 @@ public:
     {
     }
 
-    virtual types::ProviderQos getProviderQos() const = 0;
+    virtual types::StdProviderQos getProviderQos() const = 0;
 
     /**
      * Register an object that will be informed when the value of an attribute changes

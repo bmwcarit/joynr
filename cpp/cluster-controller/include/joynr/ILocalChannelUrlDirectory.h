@@ -29,7 +29,7 @@ template <class... T>
 class Future;
 namespace types
 {
-class ChannelUrlInformation;
+class StdChannelUrlInformation;
 }
 
 /**
@@ -54,7 +54,7 @@ public:
      */
     virtual QSharedPointer<joynr::Future<void>> registerChannelUrls(
             const std::string& channelId,
-            types::ChannelUrlInformation channelUrlInformation,
+            types::StdChannelUrlInformation channelUrlInformation,
             std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
 
     /**
@@ -75,10 +75,10 @@ public:
      * @param channelId
      * @param callbackFct
      */
-    virtual QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannel(
+    virtual QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> getUrlsForChannel(
             const std::string& channelId,
             const qint64& timeout_ms,
-            std::function<void(const joynr::RequestStatus&, const types::ChannelUrlInformation&)>
+            std::function<void(const joynr::RequestStatus&, const types::StdChannelUrlInformation&)>
                     callbackFct = nullptr) = 0;
 };
 

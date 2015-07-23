@@ -53,7 +53,7 @@ public:
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached,
-              const joynr::types::CommunicationMiddleware::Enum& connection)
+              const joynr::types::StdCommunicationMiddleware::Enum& connection)
     {
 
         if (inProcessConnectorFactory->canBeCreated(connection)) {

@@ -47,7 +47,7 @@ QosArbitrator::QosArbitrator(const std::string& domain,
 void QosArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -63,27 +63,29 @@ void QosArbitrator::attemptArbitration()
 
 // Returns true if arbitration was successful, false otherwise
 void QosArbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries)
 {
-    QString res = "";
-    joynr::types::CommunicationMiddleware::Enum preferredConnection(
-            joynr::types::CommunicationMiddleware::NONE);
+    std::string res = "";
+    joynr::types::StdCommunicationMiddleware::Enum preferredConnection(
+            joynr::types::StdCommunicationMiddleware::NONE);
 
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     qint64 highestPriority = -1;
-    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
-        types::ProviderQos providerQos = discoveryEntry.getQos();
-        LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
+    for (const joynr::types::StdDiscoveryEntry discoveryEntry : discoveryEntries) {
+        types::StdProviderQos providerQos = discoveryEntry.getQos();
+        LOG_TRACE(logger,
+                  QString("Looping over capabilitiesEntry: %")
+                          .arg(QString::fromStdString(discoveryEntry.toString())));
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
-            LOG_TRACE(logger, "setting res to " + res);
+            LOG_TRACE(logger, QString("setting res to %").arg(QString::fromStdString(res)));
             preferredConnection =
                     selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
@@ -97,7 +99,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     }
 
     updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationSuccessful, res.toStdString(), preferredConnection);
+            ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
 }
 
 } // namespace joynr

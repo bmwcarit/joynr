@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
@@ -33,7 +33,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private CppMigrateToStdTypeUtil cppStdTypeUtil
+	private CppStdTypeUtil cppStdTypeUtil
 
 	@Inject
 	private QtTypeUtil qtTypeUtil
@@ -99,7 +99,7 @@ void «interfaceName»RequestInterpreter::execute(
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(«returnType» «attributeName»)> onSuccess =
 						[callbackFct] («returnType» «attributeName») {
-							«val convertedAttribute = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»
+							«val convertedAttribute = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
 							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«qtTypeUtil.getTypeName(attribute.type)»>(«convertedAttribute»)«ELSE»QVariant::fromValue(«convertedAttribute»)«ENDIF»);
 							QList<QVariant> outParams;
 							outParams.insert(0, singleOutParam);
@@ -117,25 +117,25 @@ void «interfaceName»RequestInterpreter::execute(
 				«ELSEIF isEnum(attribute.type) && isArray(attribute)»
 					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToEnumList<" + getEnumContainer(attribute.type) + ">(" + attributeName + "QVar.toList())"»
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-						«qtTypeUtil.fromQTTypeToStdType(attribute, attributeRef)»;
+						«attributeRef»;
 				«ELSEIF isArray(attribute)»
 					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToList<" + qtTypeUtil.getTypeName(attribute.type) + ">(paramQList)"»
 					assert(«attributeName»QVar.canConvert<QList<QVariant> >());
 					QList<QVariant> paramQList = «attributeName»QVar.value<QList<QVariant> >();
-					«cppStdTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
-							«qtTypeUtil.fromQTTypeToStdType(attribute, attributeRef)»;
+					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
+							«attributeRef»;
 				«ELSE»
 					«val attributeRef = attributeName + "QVar.value<" + qtTypeUtil.getTypeName(attribute) + ">()"»
-					assert(«attributeName»QVar.canConvert<«cppStdTypeUtil.getTypeName(attribute)»>());
-					«cppStdTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-							«qtTypeUtil.fromQTTypeToStdType(attribute, attributeRef)»;
+					assert(«attributeName»QVar.canConvert<«qtTypeUtil.getTypeName(attribute)»>());
+					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+							«attributeRef»;
 				«ENDIF»
 				std::function<void()> onSuccess =
 						[callbackFct] () {
 							QList<QVariant> outParams;
 							callbackFct(outParams);
 						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», onSuccess);
+				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», onSuccess);
 				return;
 			}
 		«ENDIF»
@@ -153,12 +153,12 @@ void «interfaceName»RequestInterpreter::execute(
 				«ENDFOR»
 			) {
 				«val outputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
-				std::function<void(«outputTypedParamList»)> requestCallerCallbackFct =
+				std::function<void(«outputTypedParamList»)> onSuccess =
 						[callbackFct](«outputTypedParamList»){
 							QList<QVariant> outParams;
 							«var index = 0»
 							«FOR param : method.outputParameters»
-								«val convertedParameter = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName)»
+								«val convertedParameter = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
 								outParams.insert(
 										«index++»,
 										«IF isArray(param)»
@@ -196,7 +196,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 				«requestCallerName»->«methodName»(
 						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-						requestCallerCallbackFct);
+						onSuccess);
 				return;
 			}
 		«ENDFOR»

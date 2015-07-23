@@ -43,7 +43,7 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
     }
 }
 
-types::ProviderQos AbstractJoynrProvider::getProviderQos() const
+types::StdProviderQos AbstractJoynrProvider::getProviderQos() const
 {
     return providerQos;
 }

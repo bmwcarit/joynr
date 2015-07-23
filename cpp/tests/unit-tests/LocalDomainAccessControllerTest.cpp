@@ -29,6 +29,7 @@
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure;
+using namespace joynr::infrastructure::DacTypes;
 
 // Consumer permissions are obtained asynchronously
 class ConsumerPermissionCallback : public LocalDomainAccessController::IGetConsumerPermissionCallback
@@ -36,13 +37,13 @@ class ConsumerPermissionCallback : public LocalDomainAccessController::IGetConsu
 public:
     ConsumerPermissionCallback() :
         isValid(false),
-        permission(Permission::YES),
+        permission(StdPermission::YES),
         sem(0)
     {}
 
     ~ConsumerPermissionCallback() {}
 
-    void consumerPermission(Permission::Enum permission) {
+    void consumerPermission(StdPermission::Enum permission) {
         this->permission = permission;
         isValid = true;
         sem.release(1);
@@ -56,7 +57,7 @@ public:
         return isValid;
     }
 
-    Permission::Enum getPermission() const {
+    StdPermission::Enum getPermission() const {
         return permission;
     }
 
@@ -67,7 +68,7 @@ public:
 
 private:
     bool isValid;
-    Permission::Enum permission;
+    StdPermission::Enum permission;
     QSemaphore sem;
 };
 
@@ -90,27 +91,27 @@ public:
         QSharedPointer<GlobalDomainAccessControllerProxy> mockGDACPtr(mockGdacProxy);
         localDomainAccessController->init(mockGDACPtr);
 
-        userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
-        masterAce = MasterAccessControlEntry(
+        userDre = StdDomainRoleEntry(TEST_USER, DOMAINS, StdRole::OWNER);
+        masterAce = StdMasterAccessControlEntry(
                 TEST_USER,       // uid
                 TEST_DOMAIN1,    // domain
                 TEST_INTERFACE1, // interface name
-                TrustLevel::LOW, // default required trust level
+                StdTrustLevel::LOW, // default required trust level
                 TRUST_LEVELS,    // possible required trust levels
-                TrustLevel::LOW, // default required control entry change trust level
+                StdTrustLevel::LOW, // default required control entry change trust level
                 TRUST_LEVELS,    // possible required control entry change trust levels
                 TEST_OPERATION1, // operation
-                Permission::NO,  // default comsumer permission
+                StdPermission::NO,  // default comsumer permission
                 PERMISSIONS      // possible comsumer permissions
         );
-        ownerAce = OwnerAccessControlEntry(
+        ownerAce = StdOwnerAccessControlEntry(
                 TEST_USER,       // uid
                 TEST_DOMAIN1,    // domain
                 TEST_INTERFACE1, // interface name
-                TrustLevel::LOW, // required trust level
-                TrustLevel::LOW, // required ACE change trust level
+                StdTrustLevel::LOW, // required trust level
+                StdTrustLevel::LOW, // required ACE change trust level
                 TEST_OPERATION1, // operation
-                Permission::YES  // consumer permission
+                StdPermission::YES  // consumer permission
         );
     }
 
@@ -122,135 +123,136 @@ protected:
     LocalDomainAccessStore* localDomainAccessStore;
     LocalDomainAccessController* localDomainAccessController;
     MockGlobalDomainAccessControllerProxy* mockGdacProxy;
-    OwnerAccessControlEntry ownerAce;
-    MasterAccessControlEntry masterAce;
-    DomainRoleEntry userDre;
-    static const QString TEST_USER;
-    static const QString TEST_DOMAIN1;
-    static const QString TEST_INTERFACE1;
-    static const QString TEST_OPERATION1;
-    static const QList<QString> DOMAINS;
-    static const QList<Permission::Enum> PERMISSIONS;
-    static const QList<TrustLevel::Enum> TRUST_LEVELS;
-    static const QString joynrDomain;
+    StdOwnerAccessControlEntry ownerAce;
+    StdMasterAccessControlEntry masterAce;
+    StdDomainRoleEntry userDre;
+    static const std::string TEST_USER;
+    static const std::string TEST_DOMAIN1;
+    static const std::string TEST_INTERFACE1;
+    static const std::string TEST_OPERATION1;
+    static const std::vector<std::string> DOMAINS;
+    static const std::vector<StdPermission::Enum> PERMISSIONS;
+    static const std::vector<StdTrustLevel::Enum> TRUST_LEVELS;
+    static const std::string joynrDomain;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessControllerTest);
 };
 
 //----- Constants --------------------------------------------------------------
-const QString LocalDomainAccessControllerTest::TEST_USER("testUser");
-const QString LocalDomainAccessControllerTest::TEST_DOMAIN1("domain1");
-const QString LocalDomainAccessControllerTest::TEST_INTERFACE1("interface1");
-const QString LocalDomainAccessControllerTest::TEST_OPERATION1("operation1");
-const QList<QString> LocalDomainAccessControllerTest::DOMAINS =
-        QList<QString>()
-        << LocalDomainAccessControllerTest::TEST_DOMAIN1;
-const QList<Permission::Enum> LocalDomainAccessControllerTest::PERMISSIONS =
-        QList<Permission::Enum>()
-        << Permission::NO << Permission::ASK << Permission::YES;
-const QList<TrustLevel::Enum> LocalDomainAccessControllerTest::TRUST_LEVELS =
-        QList<TrustLevel::Enum>()
-        << TrustLevel::LOW << TrustLevel::MID << TrustLevel::HIGH;
-const QString LocalDomainAccessControllerTest::joynrDomain("LocalDomainAccessControllerTest.Domain.A");
+const std::string LocalDomainAccessControllerTest::TEST_USER("testUser");
+const std::string LocalDomainAccessControllerTest::TEST_DOMAIN1("domain1");
+const std::string LocalDomainAccessControllerTest::TEST_INTERFACE1("interface1");
+const std::string LocalDomainAccessControllerTest::TEST_OPERATION1("operation1");
+const std::vector<std::string> LocalDomainAccessControllerTest::DOMAINS = {
+        LocalDomainAccessControllerTest::TEST_DOMAIN1
+};
+const std::vector<StdPermission::Enum> LocalDomainAccessControllerTest::PERMISSIONS = {
+        StdPermission::NO, StdPermission::ASK, StdPermission::YES
+};
+const std::vector<StdTrustLevel::Enum> LocalDomainAccessControllerTest::TRUST_LEVELS = {
+        StdTrustLevel::LOW, StdTrustLevel::MID, StdTrustLevel::HIGH
+};
+const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAccessControllerTest.Domain.A");
 
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(LocalDomainAccessControllerTest, testHasRole) {
-    localDomainAccessStore->updateDomainRole(userDre);
+    localDomainAccessStore->updateDomainRole(DomainRoleEntry::createQt(userDre));
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
 
-    EXPECT_TRUE(localDomainAccessController->hasRole(LocalDomainAccessControllerTest::TEST_USER,
-                                                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
+    EXPECT_TRUE(localDomainAccessController->hasRole(QString::fromStdString(LocalDomainAccessControllerTest::TEST_USER),
+                                                     QString::fromStdString(LocalDomainAccessControllerTest::TEST_DOMAIN1),
                                                      Role::OWNER));
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStore->updateOwnerAccessControlEntry(OwnerAccessControlEntry::createQt(ownerAce));
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
     EXPECT_EQ(
-            Permission::YES,
+            StdPermission::YES,
             localDomainAccessController->getConsumerPermission(
                     LocalDomainAccessControllerTest::TEST_USER,
                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                     LocalDomainAccessControllerTest::TEST_INTERFACE1,
                     LocalDomainAccessControllerTest::TEST_OPERATION1,
-                    TrustLevel::HIGH
+                    StdTrustLevel::HIGH
             )
     );
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStore->updateOwnerAccessControlEntry(OwnerAccessControlEntry::createQt(ownerAce));
 
-    // Update the MasterACE so that it does not permit Permission::YES
-    QList<Permission::Enum> possiblePermissions;
-    possiblePermissions << Permission::NO << Permission::ASK;
-    masterAce.setDefaultConsumerPermission(Permission::ASK);
+    // Update the MasterACE so that it does not permit StdPermission::YES
+    std::vector<StdPermission::Enum> possiblePermissions = {
+            StdPermission::NO, StdPermission::ASK
+    };
+    masterAce.setDefaultConsumerPermission(StdPermission::ASK);
     masterAce.setPossibleConsumerPermissions(possiblePermissions);
-    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
+    localDomainAccessStore->updateMasterAccessControlEntry(MasterAccessControlEntry::createQt(masterAce));
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
     EXPECT_EQ(
-            Permission::NO,
+            StdPermission::NO,
             localDomainAccessController->getConsumerPermission(
                     LocalDomainAccessControllerTest::TEST_USER,
                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                     LocalDomainAccessControllerTest::TEST_INTERFACE1,
                     LocalDomainAccessControllerTest::TEST_OPERATION1,
-                    TrustLevel::HIGH
+                    StdTrustLevel::HIGH
             )
     );
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
-    ownerAce.setRequiredTrustLevel(TrustLevel::MID);
-    ownerAce.setConsumerPermission(Permission::ASK);
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
-    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
+    ownerAce.setRequiredTrustLevel(StdTrustLevel::MID);
+    ownerAce.setConsumerPermission(StdPermission::ASK);
+    localDomainAccessStore->updateOwnerAccessControlEntry(OwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateMasterAccessControlEntry(MasterAccessControlEntry::createQt(masterAce));
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
     EXPECT_EQ(
-            Permission::ASK,
+            StdPermission::ASK,
             localDomainAccessController->getConsumerPermission(
                     LocalDomainAccessControllerTest::TEST_USER,
                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                     LocalDomainAccessControllerTest::TEST_INTERFACE1,
                     LocalDomainAccessControllerTest::TEST_OPERATION1,
-                    TrustLevel::HIGH
+                    StdTrustLevel::HIGH
             )
     );
     EXPECT_EQ(
-            Permission::NO,
+            StdPermission::NO,
             localDomainAccessController->getConsumerPermission(
                     LocalDomainAccessControllerTest::TEST_USER,
                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                     LocalDomainAccessControllerTest::TEST_INTERFACE1,
                     LocalDomainAccessControllerTest::TEST_OPERATION1,
-                    TrustLevel::LOW
+                    StdTrustLevel::LOW
             )
     );
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStore->updateOwnerAccessControlEntry(OwnerAccessControlEntry::createQt(ownerAce));
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
     EXPECT_EQ(
-            Permission::YES,
+            StdPermission::YES,
             localDomainAccessController->getConsumerPermission(
                     LocalDomainAccessControllerTest::TEST_USER,
                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                     LocalDomainAccessControllerTest::TEST_INTERFACE1,
                     LocalDomainAccessControllerTest::TEST_OPERATION1,
-                    TrustLevel::HIGH
+                    StdTrustLevel::HIGH
             )
     );
 }
@@ -258,36 +260,36 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
+    std::vector<StdMasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
-    std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
+    std::vector<StdOwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdacProxy, getDomainRoles(_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
-                    Return(QSharedPointer<Future<std::vector<DomainRoleEntry>>>()) // null pointer
+                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<StdDomainRoleEntry>()),
+                    Return(QSharedPointer<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<MasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<StdMasterAccessControlEntry>()),
+                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -303,7 +305,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
             LocalDomainAccessControllerTest::TEST_USER,
             LocalDomainAccessControllerTest::TEST_DOMAIN1,
             LocalDomainAccessControllerTest::TEST_INTERFACE1,
-            TrustLevel::HIGH,
+            StdTrustLevel::HIGH,
             getConsumerPersmissionCallback
     );
 
@@ -314,13 +316,13 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
 
     // Operation level permission should work
     EXPECT_EQ(
-            Permission::YES,
+            StdPermission::YES,
             localDomainAccessController->getConsumerPermission(
                     LocalDomainAccessControllerTest::TEST_USER,
                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                     LocalDomainAccessControllerTest::TEST_INTERFACE1,
                     LocalDomainAccessControllerTest::TEST_OPERATION1,
-                    TrustLevel::HIGH
+                    StdTrustLevel::HIGH
             )
     );
 }
@@ -329,10 +331,10 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
+    std::vector<StdMasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
-    std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
+    std::vector<StdOwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
     RequestStatus getMediatorAceCommunicationError(RequestStatusCode::ERROR);
@@ -342,26 +344,26 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     EXPECT_CALL(*mockGdacProxy, getDomainRoles(_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
-                    Return(QSharedPointer<Future<std::vector<DomainRoleEntry>>>()) // null pointer
+                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<StdDomainRoleEntry>()),
+                    Return(QSharedPointer<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(getMediatorAceCommunicationError, std::vector<MasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    InvokeArgument<2>(getMediatorAceCommunicationError, std::vector<StdMasterAccessControlEntry>()),
+                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -377,53 +379,53 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
             LocalDomainAccessControllerTest::TEST_USER,
             LocalDomainAccessControllerTest::TEST_DOMAIN1,
             LocalDomainAccessControllerTest::TEST_INTERFACE1,
-            TrustLevel::HIGH,
+            StdTrustLevel::HIGH,
             getConsumerPermissionCallback
     );
 
     EXPECT_TRUE(getConsumerPermissionCallback->expectCallback(1000));
     EXPECT_TRUE(getConsumerPermissionCallback->isPermissionAvailable());
-    EXPECT_EQ(Permission::NO, getConsumerPermissionCallback->getPermission());
+    EXPECT_EQ(StdPermission::NO, getConsumerPermissionCallback->getPermission());
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
+    std::vector<StdMasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
 
     ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
+    std::vector<StdOwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
     std::function<void(const joynr::RequestStatus& status,
-                       const std::vector<joynr::infrastructure::MasterAccessControlEntry>&
+                       const std::vector<StdMasterAccessControlEntry>&
                                masterAces)> getMasterAcesCallbackFct;
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdacProxy, getDomainRoles(_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
-                    Return(QSharedPointer<Future<std::vector<DomainRoleEntry>>>()) // null pointer
+                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<StdDomainRoleEntry>()),
+                    Return(QSharedPointer<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     SaveArg<2>(&getMasterAcesCallbackFct),
-                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<MasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<StdMasterAccessControlEntry>()),
+                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(QSharedPointer<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -439,7 +441,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
             LocalDomainAccessControllerTest::TEST_USER,
             LocalDomainAccessControllerTest::TEST_DOMAIN1,
             LocalDomainAccessControllerTest::TEST_INTERFACE1,
-            TrustLevel::HIGH,
+            StdTrustLevel::HIGH,
             getConsumerPermissionCallback1
     );
 
@@ -452,7 +454,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
                 LocalDomainAccessControllerTest::TEST_USER,
                 LocalDomainAccessControllerTest::TEST_DOMAIN1,
                 LocalDomainAccessControllerTest::TEST_INTERFACE1,
-                TrustLevel::HIGH,
+                StdTrustLevel::HIGH,
                 getConsumerPermissionCallback2
     );
 
@@ -464,7 +466,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
 
     EXPECT_TRUE(getConsumerPermissionCallback1->isPermissionAvailable());
     EXPECT_TRUE(getConsumerPermissionCallback2->isPermissionAvailable());
-    EXPECT_EQ(Permission::YES, getConsumerPermissionCallback1->getPermission());
-    EXPECT_EQ(Permission::YES, getConsumerPermissionCallback2->getPermission());
+    EXPECT_EQ(StdPermission::YES, getConsumerPermissionCallback1->getPermission());
+    EXPECT_EQ(StdPermission::YES, getConsumerPermissionCallback2->getPermission());
 
 }

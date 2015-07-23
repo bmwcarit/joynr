@@ -34,9 +34,9 @@ JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
 }
 
 bool JoynrMessagingConnectorFactory::canBeCreated(
-        const joynr::types::CommunicationMiddleware::Enum& connection)
+        const joynr::types::StdCommunicationMiddleware::Enum& connection)
 {
-    return connection == joynr::types::CommunicationMiddleware::JOYNR;
+    return connection == joynr::types::StdCommunicationMiddleware::JOYNR;
 }
 
 } // namespace joynr

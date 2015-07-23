@@ -35,7 +35,7 @@ class IDiscoverySync;
 }
 namespace types
 {
-class DiscoveryEntry;
+class StdDiscoveryEntry;
 }
 
 /**
@@ -65,17 +65,17 @@ public:
     /*
      * The key of the keyword parameter in the provider Qos parameters
      */
-    static const QString KEYWORD_PARAMETER_KEY();
+    static const std::string KEYWORD_PARAMETER_KEY();
 
     /*
      * Made public for testing purposes
      */
     void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);
-    QString keyword;
+    std::string keyword;
     static int ARBITRATION_RETRY_INTERVAL;
     joynr_logging::Logger* logger;
 };

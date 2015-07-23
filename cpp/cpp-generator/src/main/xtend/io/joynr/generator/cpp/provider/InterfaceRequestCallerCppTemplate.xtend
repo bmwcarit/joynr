@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
@@ -30,7 +30,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension CppMigrateToStdTypeUtil
+	private extension CppStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions

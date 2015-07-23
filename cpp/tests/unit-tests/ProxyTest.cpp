@@ -90,7 +90,7 @@ public:
                     MessagingQos(),
                     cacheEnabled
                     );
-        proxy->handleArbitrationFinished(providerParticipantId, joynr::types::CommunicationMiddleware::JOYNR);
+        proxy->handleArbitrationFinished(providerParticipantId, joynr::types::StdCommunicationMiddleware::JOYNR);
         return dynamic_cast<tests::Itest*>(proxy);
     }
 

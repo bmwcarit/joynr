@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -30,7 +30,7 @@ import org.franca.core.franca.FInterface
 class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject private CppMigrateToStdTypeUtil cppStdTypeUtil;
+	@Inject private CppStdTypeUtil cppStdTypeUtil;
 	@Inject private extension QtTypeUtil qtTypeUtil
 
 	@Inject extension InterfaceSubscriptionUtil
@@ -48,9 +48,13 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 «FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
 «ENDFOR»
+«FOR parameterType: qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
+	#include «parameterType»
+«ENDFOR»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
+#include "joynr/SubscriptionCallback.h"
 #include "joynr/IConnector.h"
 #include "joynr/TypeUtil.h"
 
@@ -85,8 +89,11 @@ protected:
 		«IF needsDatatypeConversion(attribute)»
 			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypeQT»> {
 				public:
-					«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener) {
-						this->wrappedListener = wrappedListener;
+					«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(
+							QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener
+					) :
+							wrappedListener(wrappedListener)
+					{
 					}
 					void onReceive(const «returnTypeQT»& receivedValue) {
 						wrappedListener->onReceive(«fromQTTypeToStdType(attribute, "receivedValue")»);
@@ -99,6 +106,30 @@ protected:
 					QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener;
 			};
 
+			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper : public SubscriptionCallback<«returnTypeQT»> {
+			public:
+				«attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
+						QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener
+				) :
+						SubscriptionCallback(
+								QSharedPointer<ISubscriptionListener<«returnTypeQT»>>(
+										new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(wrappedListener))
+								)
+				{
+				}
+				virtual void onSuccess(const «returnTypeQT»& receivedValue) {
+					QSharedPointer<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
+						listener.dynamicCast<
+								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>();
+					wrapper->onReceive(receivedValue);
+				}
+				virtual void onError() {
+					QSharedPointer<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
+						listener.dynamicCast<
+								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>();
+					wrapper->onError();
+				}
+			};
 		«ENDIF»
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
@@ -108,8 +139,11 @@ protected:
 			«val outputParametersSignature = qtTypeUtil.getCommaSeperatedTypedConstOutputParameterList(broadcast)»
 			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypesQT»> {
 				public:
-					«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener) {
-						this->wrappedListener = wrappedListener;
+					«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(
+							QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener
+					) :
+							wrappedListener(wrappedListener)
+					{
 					}
 					void onReceive(
 							«outputParametersSignature»
@@ -122,6 +156,39 @@ protected:
 
 				private:
 					QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener;
+			};
+
+			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper
+					: public SubscriptionCallback<«returnTypesQT»>
+			{
+			public:
+				«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(
+						QSharedPointer<ISubscriptionListener<
+								«returnTypesStd»
+						>> wrappedListener
+				) :
+						SubscriptionCallback(
+								QSharedPointer<ISubscriptionListener<
+										«returnTypesQT»
+								>>(new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(wrappedListener)))
+				{
+				}
+				virtual void onSuccess(
+						«outputParametersSignature.substring(1)»
+				) {
+					QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
+							listener.dynamicCast<
+									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>();
+					wrapper->onReceive(«cppStdTypeUtil.getCommaSeperatedUntypedParameterList(broadcast.outputParameters)»
+					);
+				}
+				virtual void onError()
+				{
+					QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
+							listener.dynamicCast<
+									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>();
+					wrapper->onError();
+				}
 			};
 
 		«ENDIF»

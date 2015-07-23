@@ -82,7 +82,7 @@ protected:
 
 TEST_F(CapabilitiesRegistrarTest, add){
 
-    types::ProviderQos testQos;
+    types::StdProviderQos testQos;
     testQos.setPriority(100);
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
@@ -104,10 +104,10 @@ TEST_F(CapabilitiesRegistrarTest, add){
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
-                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::StdDiscoveryEntry::getDomain, Eq(domain)),
+                        Property(&joynr::types::StdDiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
+                        Property(&joynr::types::StdDiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::types::StdDiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).WillOnce(SetArgReferee<0>(status));
@@ -157,7 +157,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
 TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability){
     MockDispatcher* mockDispatcher1 = new MockDispatcher();
     MockDispatcher* mockDispatcher2 = new MockDispatcher();
-    types::ProviderQos testQos;
+    types::StdProviderQos testQos;
     testQos.setPriority(100);
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
@@ -178,10 +178,10 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
-                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::StdDiscoveryEntry::getDomain, Eq(domain)),
+                        Property(&joynr::types::StdDiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
+                        Property(&joynr::types::StdDiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::types::StdDiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).Times(1).WillOnce(SetArgReferee<0>(status))
@@ -207,7 +207,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
 TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     MockDispatcher* mockDispatcher1 = new MockDispatcher();
     MockDispatcher* mockDispatcher2 = new MockDispatcher();
-    types::ProviderQos testQos;
+    types::StdProviderQos testQos;
     testQos.setPriority(100);
 
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
@@ -233,10 +233,10 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                 add(
                     A<joynr::RequestStatus&>(),
                     AllOf(
-                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(QString::fromStdString(domain))),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(QString::fromStdString(IMockProviderInterface::INTERFACE_NAME()))),
-                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(QString::fromStdString(expectedParticipantId))),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
+                        Property(&joynr::types::StdDiscoveryEntry::getDomain, Eq(domain)),
+                        Property(&joynr::types::StdDiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
+                        Property(&joynr::types::StdDiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
+                        Property(&joynr::types::StdDiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
     ).Times(1).WillOnce(SetArgReferee<0>(status))

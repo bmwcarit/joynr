@@ -186,7 +186,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::GpsLocation::createStd(gpsLocation)), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<joynr::StdOnChangeSubscriptionQos> qos(new joynr::StdOnChangeSubscriptionQos());

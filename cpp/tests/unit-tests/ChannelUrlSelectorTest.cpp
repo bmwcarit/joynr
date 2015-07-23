@@ -38,12 +38,11 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
-    types::ChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
+    types::StdChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    QSharedPointer<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
+    QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> future(new joynr::Future<types::StdChannelUrlInformation>());
     future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
     return future;
 }
@@ -89,7 +88,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                     A<const qint64&>(),
                     A<std::function<void(
                         const RequestStatus& status,
-                        const types::ChannelUrlInformation& urls)>>()))
+                        const types::StdChannelUrlInformation& urls)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
@@ -131,7 +130,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                     A<const qint64&>(),
                     A<std::function<void(
                         const RequestStatus& status,
-                        const types::ChannelUrlInformation& urls)>>()))
+                        const types::StdChannelUrlInformation& urls)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
@@ -187,7 +186,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                     A<const qint64&>(),
                     A<std::function<void(
                         const RequestStatus& status,
-                        const types::ChannelUrlInformation& urls)>>()))
+                        const types::StdChannelUrlInformation& urls)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();

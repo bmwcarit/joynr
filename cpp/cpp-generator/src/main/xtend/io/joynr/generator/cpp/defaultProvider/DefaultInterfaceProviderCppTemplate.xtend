@@ -18,12 +18,12 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FInterface
 
 class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -31,7 +31,7 @@ class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
-	private extension CppMigrateToStdTypeUtil
+	private extension CppStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -66,7 +66,7 @@ Default«interfaceName»Provider::Default«interfaceName»Provider() :
 			std::chrono::system_clock::now().time_since_epoch()
 	);
 	providerQos.setPriority(millisSinceEpoch.count());
-	providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+	providerQos.setScope(joynr::types::StdProviderScope::GLOBAL);
 	providerQos.setSupportsOnChangeSubscriptions(true);
 }
 

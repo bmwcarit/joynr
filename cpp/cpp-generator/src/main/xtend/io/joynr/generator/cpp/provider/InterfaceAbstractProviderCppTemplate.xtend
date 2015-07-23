@@ -18,7 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.util.CppMigrateToStdTypeUtil
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
@@ -31,7 +31,7 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 	private extension TemplateBase
 
 	@Inject
-	private extension CppMigrateToStdTypeUtil
+	private extension CppStdTypeUtil
 
 	@Inject
 	private QtTypeUtil qtTypeUtil
@@ -47,6 +47,10 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/TypeUtil.h"
+
+«FOR parameterType: qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
+	#include «parameterType»
+«ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»
 «interfaceName»AbstractProvider::«interfaceName»AbstractProvider()
@@ -71,7 +75,10 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::«attributeName»Changed(
 			const «attributeType»& «attributeName»
 	) {
-		onAttributeValueChanged("«attributeName»", QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»));
+		onAttributeValueChanged(
+				"«attributeName»",
+				QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»)
+		);
 	}
 «ENDFOR»
 
@@ -82,7 +89,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	) {
 		QList<QVariant> broadcastValues;
 		«FOR parameter: getOutputParameters(broadcast)»
-			broadcastValues.append(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(parameter, parameter.name)»));
+			broadcastValues.append(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(parameter, parameter.name, true)»));
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}

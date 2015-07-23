@@ -77,10 +77,9 @@ int main(int argc, char* argv[])
     // Run until the user hits q
     int key;
     while ((key = MyRadioHelper::getch()) != 'q') {
-        joynr::RequestStatus status;
         switch (key) {
         case 's':
-            provider->shuffleStations([](const joynr::RequestStatus& status) { Q_UNUSED(status); });
+            provider->shuffleStations([]() {});
             break;
         case 'w':
             provider->fireWeakSignalBroadcast();

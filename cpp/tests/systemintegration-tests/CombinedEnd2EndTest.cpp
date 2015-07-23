@@ -151,7 +151,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 //    qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
 
 
-    types::ProviderQos providerQos;
+    types::StdProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
@@ -196,16 +196,16 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
       * Now try to send a Trip (which contains a list) and check if the returned trip is identical.
       */
 
-        QList<types::GpsLocation> inputLocationList;
-        inputLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
-        inputLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
-        inputLocationList.append(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
-        types::Trip inputTrip;
+        std::vector<types::Localisation::StdGpsLocation> inputLocationList;
+        inputLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
+        inputLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
+        inputLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
+        types::Localisation::StdTrip inputTrip;
         inputTrip.setLocations(inputLocationList);
-        QSharedPointer<Future<types::Trip> > tripFuture (testProxy->optimizeTrip(inputTrip));
+        QSharedPointer<Future<types::Localisation::StdTrip> > tripFuture (testProxy->optimizeTrip(inputTrip));
         tripFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
-        types::Trip actualTrip;
+        types::Localisation::StdTrip actualTrip;
         tripFuture->getValues(actualTrip);
         EXPECT_EQ(inputTrip, actualTrip);
 
@@ -252,14 +252,14 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
      * Now try to send a List of GpsLocations and see if it is returned correctly.
      */
         // is currently deactivated, because it throws an assertion.
-        std::vector<types::GpsLocation> inputGpsLocationList;
-        inputGpsLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
-        inputGpsLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
-        inputGpsLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
-        QSharedPointer<Future<std::vector<types::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
+        std::vector<types::Localisation::StdGpsLocation> inputGpsLocationList;
+        inputGpsLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
+        inputGpsLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
+        inputGpsLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
+        QSharedPointer<Future<std::vector<types::Localisation::StdGpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
         listLocationFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
-        std::vector<joynr::types::GpsLocation> actualLocation;
+        std::vector<joynr::types::Localisation::StdGpsLocation> actualLocation;
         listLocationFuture->getValues(actualLocation);
         EXPECT_EQ(inputGpsLocationList, actualLocation);
 
@@ -403,16 +403,16 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
     // Provider: (runtime1)
 
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
-    types::GpsLocation gpsLocation1;
+    types::Localisation::StdGpsLocation gpsLocation1;
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -461,10 +461,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
     // Provider: (runtime1)
 
@@ -507,20 +507,20 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     // Change the location once
     RequestStatus requestStatus;
     testProxy->setLocation(requestStatus,
-                          types::GpsLocation(9.0, 51.0, 508.0, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
+                          types::Localisation::StdGpsLocation(9.0, 51.0, 508.0, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 20000));
 
     // Change the location 3 times
     testProxy->setLocation(requestStatus,
-                          types::GpsLocation(9.0, 51.0, 508.0, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+                          types::Localisation::StdGpsLocation(9.0, 51.0, 508.0, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
     QThreadSleep::msleep(minInterval_ms + 50);
     testProxy->setLocation(requestStatus,
-                          types::GpsLocation(9.0, 51.0, 508.0, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
+                          types::Localisation::StdGpsLocation(9.0, 51.0, 508.0, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
     QThreadSleep::msleep(minInterval_ms + 50);
     testProxy->setLocation(requestStatus,
-                          types::GpsLocation(9.0, 51.0, 508.0, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
+                          types::Localisation::StdGpsLocation(9.0, 51.0, 508.0, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(semaphore.tryAcquire(3, 20000));
@@ -545,7 +545,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     QSharedPointer<ISubscriptionListener<std::vector<int> > > subscriptionListener(mockListener);
     // Provider: (runtime1)
 
-    types::ProviderQos providerQos;
+    types::StdProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
@@ -592,7 +592,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 	// Setup a mock listener - this will never be called
     qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
-	QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(mockListener);
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(mockListener);
 
     std::string nonexistentDomain(std::string("non-existent-").append(uuid));
 
@@ -646,16 +646,16 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
     // Provider: (runtime1)
 
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
-    types::GpsLocation gpsLocation1;
+    types::Localisation::StdGpsLocation gpsLocation1;
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -746,7 +746,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
                 ->build();
 
     RequestStatus status;
-    types::ChannelUrlInformation result;
+    types::StdChannelUrlInformation result;
     std::string channelId("test");
     channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
     EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
@@ -775,9 +775,8 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     // Register new channel URLs
     RequestStatus status1;
     std::string channelId = "bogus_1";
-    types::ChannelUrlInformation channelUrlInformation;
-    QList<QString> urls;
-    urls << "bogusTestUrl_1" << "bogusTestUrl_2" ;
+    types::StdChannelUrlInformation channelUrlInformation;
+    std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
     channelUrlInformation.setUrls(urls);
     channelUrlDirectoryProxy->registerChannelUrls(
                 status1,
@@ -786,7 +785,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 
     EXPECT_TRUE(status1.successful()) << "Registering Url was not successful";
     RequestStatus status2;
-    types::ChannelUrlInformation result;
+    types::StdChannelUrlInformation result;
     channelUrlDirectoryProxy->getUrlsForChannel(status2,result,channelId);
     EXPECT_TRUE(status2.successful())<< "Requesting Url was not successful";
     EXPECT_EQ(channelUrlInformation,result) << "Returned Url did not match Expected Url";
@@ -812,15 +811,14 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
 
     RequestStatus status1;
     std::string channelId = "bogus_3";
-    types::ChannelUrlInformation channelUrlInformation;
-    QList<QString> urls;
-    urls << "bogusTestUrl_1" << "bogusTestUrl_2" ;
+    types::StdChannelUrlInformation channelUrlInformation;
+    std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
     channelUrlInformation.setUrls(urls);
     channelUrlDirectoryProxy->registerChannelUrls(status1, channelId, channelUrlInformation);
 
     EXPECT_TRUE(status1.successful());
     RequestStatus status2;
-    types::ChannelUrlInformation result;
+    types::StdChannelUrlInformation result;
     channelUrlDirectoryProxy->getUrlsForChannel(status2,result,channelId);
     EXPECT_TRUE(status2.successful());
     EXPECT_EQ(channelUrlInformation,result);
@@ -830,7 +828,7 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     EXPECT_TRUE(status3.successful());
 
     RequestStatus status4;
-    types::ChannelUrlInformation result2;
+    types::StdChannelUrlInformation result2;
     channelUrlDirectoryProxy->getUrlsForChannel(status4,result2,channelId);
     EXPECT_EQ(0,result2.getUrls().size());
     EXPECT_FALSE(status4.successful());
@@ -857,7 +855,7 @@ tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, const 
 
 
 // A function that subscribes to a GpsPosition - to be run in a background thread
-void subscribeToLocation(QSharedPointer<ISubscriptionListener<types::GpsLocation> > listener,
+void subscribeToLocation(QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > listener,
                             tests::testProxy* testProxy,
                             CombinedEnd2EndTest* testSuite) {
     QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeWithKeepAliveSubscriptionQos(
@@ -885,10 +883,10 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     // Use a semaphore to count and wait on calls to the mock listener
     // QSemaphore semaphore(0);
-    EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
@@ -914,7 +912,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 }
 
 TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
-    types::ProviderQos providerQos;
+    types::StdProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
@@ -954,7 +952,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 }
 
 TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
-    types::ProviderQos providerQos;
+    types::StdProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 

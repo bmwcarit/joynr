@@ -22,7 +22,7 @@ import org.franca.core.franca.FInterface
 
 class InterfaceUtil {
 	@Inject extension JoynrCppGeneratorExtensions
-	@Inject extension CppMigrateToStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
 	def printFutureReturnDefinition()
 '''

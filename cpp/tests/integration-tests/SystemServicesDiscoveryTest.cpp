@@ -117,12 +117,12 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
             ->build();
 
     RequestStatus status;
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    joynr::types::DiscoveryQos discoveryQos(
+    joynr::types::StdDiscoveryQos discoveryQos(
                 5000,                                      // max cache age
-                joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
+                joynr::types::StdDiscoveryScope::LOCAL_ONLY, // discovery scope
                 false                                      // provider must support on change subscriptions
     );
 
@@ -141,29 +141,30 @@ TEST_F(SystemServicesDiscoveryTest, add)
             ->build();
 
     RequestStatus status;
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
-    joynr::types::DiscoveryQos discoveryQos(
+    joynr::types::StdDiscoveryQos discoveryQos(
                 5000,                                      // max cache age
-                joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
+                joynr::types::StdDiscoveryScope::LOCAL_ONLY, // discovery scope
                 false                                      // provider must support on change subscriptions
     );
-    joynr::types::ProviderQos providerQos(
-                QList<joynr::types::CustomParameter>(), // custom provider parameters
+    joynr::types::StdProviderQos providerQos(
+                std::vector<joynr::types::StdCustomParameter>(), // custom provider parameters
                 1,                                      // provider version
                 1,                                      // priority
-                joynr::types::ProviderScope::LOCAL,     // scope for provider registration
+                joynr::types::StdProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
-    std::vector<joynr::types::DiscoveryEntry> expectedResult;
-    joynr::types::DiscoveryEntry discoveryEntry(
-                QString::fromStdString(domain),
-                QString::fromStdString(interfaceName),
-                QString::fromStdString(participantId),
+    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections {
+            joynr::types::StdCommunicationMiddleware::JOYNR
+    };
+    std::vector<joynr::types::StdDiscoveryEntry> expectedResult;
+    joynr::types::StdDiscoveryEntry discoveryEntry(
+                domain,
+                interfaceName,
+                participantId,
                 providerQos,
                 connections
     );
@@ -194,25 +195,26 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
-    joynr::types::DiscoveryQos discoveryQos(
+    joynr::types::StdDiscoveryQos discoveryQos(
                 5000,                                      // max cache age
-                joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
+                joynr::types::StdDiscoveryScope::LOCAL_ONLY, // discovery scope
                 false                                      // provider must support on change subscriptions
     );
-    joynr::types::ProviderQos providerQos(
-                QList<joynr::types::CustomParameter>(), // custom provider parameters
+    joynr::types::StdProviderQos providerQos(
+                std::vector<joynr::types::StdCustomParameter>(), // custom provider parameters
                 1,                                      // provider version
                 1,                                      // priority
-                joynr::types::ProviderScope::LOCAL,     // scope for provider registration
+                joynr::types::StdProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
-    std::vector<joynr::types::DiscoveryEntry> expectedResult;
-    joynr::types::DiscoveryEntry discoveryEntry(
-                QString::fromStdString(domain),
-                QString::fromStdString(interfaceName),
-                QString::fromStdString(participantId),
+    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections {
+            joynr::types::StdCommunicationMiddleware::JOYNR
+    };
+    std::vector<joynr::types::StdDiscoveryEntry> expectedResult;
+    joynr::types::StdDiscoveryEntry discoveryEntry(
+                domain,
+                interfaceName,
+                participantId,
                 providerQos,
                 connections
     );
@@ -221,7 +223,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     discoveryProxy->add(status, discoveryEntry);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::StdDiscoveryEntry> result;
     discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_EQ(expectedResult, result);
