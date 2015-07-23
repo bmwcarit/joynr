@@ -64,7 +64,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
     private static final long expected_latency_ms = 50;
 
-    private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
+    // The timeout applies to all test environments
+    private static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
 
     @Rule
     public TestName name = new TestName();
