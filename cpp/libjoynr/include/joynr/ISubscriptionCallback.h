@@ -32,7 +32,7 @@ namespace joynr
 class ISubscriptionCallback
 {
 public:
-    virtual void publicationMissed() = 0;
+    virtual void onError() = 0;
     virtual ~ISubscriptionCallback()
     {
     }

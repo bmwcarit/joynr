@@ -61,7 +61,6 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/BroadcastSubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
@@ -416,8 +415,8 @@ QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessC
 			QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> subscriptionListenerWrapper(
 				new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(subscriptionListener));
 		«ENDIF»
-		QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypesQT»>> subscriptionCallback(
-					new joynr::BroadcastSubscriptionCallback<«returnTypesQT»>(«subscriptionListenerName»));
+		QSharedPointer<joynr::SubscriptionCallback<«returnTypesQT»>> subscriptionCallback(
+					new joynr::SubscriptionCallback<«returnTypesQT»>(«subscriptionListenerName»));
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,

@@ -22,7 +22,7 @@
 #include "joynr/IReplyCaller.h"
 #include <string>
 #include "utils/MockObjects.h"
-#include "joynr/BroadcastSubscriptionCallback.h"
+#include "joynr/SubscriptionCallback.h"
 #include "joynr/StdOnChangeSubscriptionQos.h"
 
 using ::testing::A;
@@ -124,10 +124,10 @@ public:
         std::ignore = qos;
         std::ignore = subscriptionRequest;
 
-        QSharedPointer<BroadcastSubscriptionCallback<joynr::types::GpsLocation, double>> typedCallbackQsp =
-                callback.dynamicCast<BroadcastSubscriptionCallback<joynr::types::GpsLocation, double>>();
+        QSharedPointer<SubscriptionCallback<joynr::types::GpsLocation, double>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<joynr::types::GpsLocation, double>>();
 
-        typedCallbackQsp->receive(gpsLocation, floatValue);
+        typedCallbackQsp->onSuccess(gpsLocation, floatValue);
     }
 };
 

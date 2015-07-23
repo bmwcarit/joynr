@@ -813,7 +813,7 @@ void PublicationManager::sendPublication(
         QSharedPointer<Publication> publication,
         QSharedPointer<SubscriptionInformation> subscriptionInformation,
         QSharedPointer<SubscriptionRequest> request,
-        const QVariant& value)
+        const QList<QVariant>& value)
 {
     LOG_DEBUG(logger, "sending subscriptionreply");
     MessagingQos mQos;
@@ -903,7 +903,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         std::function<void(const QList<QVariant>&)> callbackFct =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
                         const QList<QVariant>& response) {
-            sendPublication(publication, subscriptionRequest, subscriptionRequest, response.at(0));
+            sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
 
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
@@ -962,7 +962,9 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 
             if (timeUntilNextPublication == 0) {
                 // Send the publication
-                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+                QList<QVariant> values;
+                values.append(value);
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, values);
             } else {
                 reschedulePublication(subscriptionId, timeUntilNextPublication);
             }
@@ -1007,8 +1009,7 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
             // Execute broadcast filters
             if (processFilterChain(subscriptionId, values, filters)) {
                 // Send the publication
-                QVariant value = QVariant::fromValue(values);
-                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, values);
             }
         } else {
             LOG_DEBUG(

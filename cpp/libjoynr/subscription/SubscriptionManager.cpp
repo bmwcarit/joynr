@@ -255,7 +255,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             LOG_DEBUG(logger, "Publication missed!");
             QSharedPointer<ISubscriptionCallback> callback = subscription->subscriptionCaller;
 
-            callback->publicationMissed();
+            callback->onError();
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
         LOG_DEBUG(logger,

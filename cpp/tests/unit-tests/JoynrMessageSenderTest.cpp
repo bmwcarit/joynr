@@ -252,7 +252,9 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
-    publication.setResponse("publication");
+    QList<QVariant> response;
+    response.append("publication");
+    publication.setResponse(response);
     JoynrMessage message = messageFactory.createSubscriptionPublication(
                 QString::fromStdString(senderID),
                 QString::fromStdString(receiverID),

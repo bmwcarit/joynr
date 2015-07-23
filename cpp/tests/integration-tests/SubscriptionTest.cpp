@@ -195,8 +195,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QVariant response;
-    response.setValue(gpsLocation1);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
     QSharedPointer<SubscriptionCallback<types::GpsLocation>> subscriptionCallback(

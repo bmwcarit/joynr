@@ -74,7 +74,6 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 #include "joynr/joynrlogging.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/BroadcastSubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
@@ -457,8 +456,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> subscriptionListenerWrapper(
 				new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(subscriptionListener));
 		«ENDIF»
-		QSharedPointer<joynr::BroadcastSubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
-					new joynr::BroadcastSubscriptionCallback<«returnTypesQt»>(«subscriptionListenerName»));
+		QSharedPointer<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
+					new joynr::SubscriptionCallback<«returnTypesQt»>(«subscriptionListenerName»));
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,

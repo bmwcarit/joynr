@@ -22,7 +22,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
-#include "joynr/BroadcastSubscriptionCallback.h"
+#include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/JoynrMessageFactory.h"
@@ -74,8 +74,8 @@ public:
         subscriptionManager = new SubscriptionManager();
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerBroadcastMetaType<types::GpsLocation>();
-        MetaTypeRegistrar::instance().registerBroadcastMetaType<types::GpsLocation, double>();
+        MetaTypeRegistrar::instance().registerMetaType<types::GpsLocation>();
+        MetaTypeRegistrar::instance().registerMetaType<types::GpsLocation, double>();
     }
 
     void TearDown(){
@@ -131,14 +131,12 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> responseList;
-    responseList.append(QVariant::fromValue(gpsLocation1));
-    QVariant response;
-    response.setValue(responseList);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<BroadcastSubscriptionCallback<types::GpsLocation>> subscriptionCallback(
-            new BroadcastSubscriptionCallback<types::GpsLocation>(mockSubscriptionListenerOne));
+    QSharedPointer<SubscriptionCallback<types::GpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListenerOne));
 
 
     // subscriptionRequest is an out param
@@ -188,15 +186,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> responseList;
-    responseList.append(QVariant::fromValue(gpsLocation1));
-    responseList.append(QVariant::fromValue(speed1));
-    QVariant response;
-    response.setValue(responseList);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gpsLocation1));
+    response.append(QVariant::fromValue(speed1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<BroadcastSubscriptionCallback<types::GpsLocation, double>> subscriptionCallback(
-            new BroadcastSubscriptionCallback<types::GpsLocation, double>(mockSubscriptionListenerTwo));
+    QSharedPointer<SubscriptionCallback<types::GpsLocation, double>> subscriptionCallback(
+            new SubscriptionCallback<types::GpsLocation, double>(mockSubscriptionListenerTwo));
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

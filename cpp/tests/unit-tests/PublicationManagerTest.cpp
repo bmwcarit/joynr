@@ -260,7 +260,9 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
                 mockPublicationSender,
@@ -332,7 +334,9 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -405,7 +409,9 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -484,7 +490,9 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -607,7 +615,9 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -698,7 +708,9 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(

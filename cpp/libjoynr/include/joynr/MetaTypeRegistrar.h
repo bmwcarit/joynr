@@ -57,16 +57,16 @@ public:
     void registerMetaType();
 
     /**
+     * Register a metatype
+     */
+    template <class T1, class T2, class... Ts>
+    void registerMetaType();
+
+    /**
      * Register an enum metatype
      */
     template <class T>
     void registerEnumMetaType();
-
-    /**
-     * Register a composite metatype
-     */
-    template <class... Ts>
-    void registerBroadcastMetaType();
 
     /**
      * Register a composite reply metatype
@@ -107,7 +107,7 @@ private:
     // Helper functions that add publication and reply interpreters
     template <class T>
     void addEnumPublicationInterpreter(int typeId);
-    template <class T>
+    template <class... Ts>
     void addPublicationInterpreter();
     template <class... Ts>
     void addReplyInterpreterForReplyType();
@@ -144,16 +144,6 @@ void MetaTypeRegistrar::registerEnumMetaType()
 }
 
 template <class T>
-void MetaTypeRegistrar::addPublicationInterpreter()
-{
-    int typeId = qMetaTypeId<T>();
-
-    if (!publicationInterpreters.contains(typeId)) {
-        publicationInterpreters.insert(typeId, new PublicationInterpreter<T>());
-    }
-}
-
-template <class T>
 void MetaTypeRegistrar::registerMetaType()
 {
     {
@@ -163,16 +153,22 @@ void MetaTypeRegistrar::registerMetaType()
     }
 }
 
-template <class... Ts>
-void MetaTypeRegistrar::registerBroadcastMetaType()
+template <class T1, class T2, class... Ts>
+void MetaTypeRegistrar::registerMetaType()
 {
     {
         QMutexLocker locker(&publicationInterpretersMutex);
-        int typeId = Util::getTypeId<Ts...>();
+        addPublicationInterpreter<T1, T2, Ts...>();
+    }
+}
 
-        if (!publicationInterpreters.contains(typeId)) {
-            publicationInterpreters.insert(typeId, new BroadcastPublicationInterpreter<Ts...>());
-        }
+template <class... Ts>
+void MetaTypeRegistrar::addPublicationInterpreter()
+{
+    int typeId = Util::getTypeId<Ts...>();
+
+    if (!publicationInterpreters.contains(typeId)) {
+        publicationInterpreters.insert(typeId, new PublicationInterpreter<Ts...>());
     }
 }
 

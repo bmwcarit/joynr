@@ -258,7 +258,7 @@ private:
     void sendPublication(QSharedPointer<Publication> publication,
                          QSharedPointer<SubscriptionInformation> subscriptionInformation,
                          QSharedPointer<SubscriptionRequest> subscriptionRequest,
-                         const QVariant& value);
+                         const QList<QVariant>& value);
     void handleAttributeSubscriptionRequest(
             QSharedPointer<SubscriptionRequestInformation> requestInfo,
             QSharedPointer<RequestCaller> requestCaller,

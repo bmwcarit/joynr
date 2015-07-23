@@ -49,12 +49,12 @@ void SubscriptionPublication::setSubscriptionId(QString subscriptionId)
     this->subscriptionId = subscriptionId;
 }
 
-QVariant SubscriptionPublication::getResponse() const
+QList<QVariant> SubscriptionPublication::getResponse() const
 {
     return response;
 }
 
-void SubscriptionPublication::setResponse(QVariant response)
+void SubscriptionPublication::setResponse(QList<QVariant> response)
 {
     this->response = response;
 }

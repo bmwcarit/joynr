@@ -25,6 +25,7 @@
 #include <QString>
 #include <QVariant>
 #include <QSharedPointer>
+#include <QList>
 
 namespace joynr
 {
@@ -34,7 +35,7 @@ class JOYNR_EXPORT SubscriptionPublication : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
-    Q_PROPERTY(QVariant response READ getResponse WRITE setResponse)
+    Q_PROPERTY(QList<QVariant> response READ getResponse WRITE setResponse)
 public:
     SubscriptionPublication& operator=(const SubscriptionPublication& other);
     bool operator==(const SubscriptionPublication& other) const;
@@ -48,12 +49,12 @@ public:
     QString getSubscriptionId() const;
     void setSubscriptionId(QString subscriptionId);
 
-    QVariant getResponse() const;
-    void setResponse(QVariant response);
+    QList<QVariant> getResponse() const;
+    void setResponse(QList<QVariant> response);
 
 private:
     QString subscriptionId;
-    QVariant response;
+    QList<QVariant> response;
 };
 
 } // namespace joynr

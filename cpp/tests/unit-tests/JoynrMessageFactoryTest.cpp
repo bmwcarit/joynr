@@ -66,7 +66,9 @@ public:
 
         QString subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
-        subscriptionPublication.setResponse("publication");
+        response.clear();
+        response.append("publication");
+        subscriptionPublication.setResponse(response);
     }
     void TearDown(){
 
@@ -103,7 +105,7 @@ public:
     void checkSubscriptionPublication(const JoynrMessage& joynrMessage){
         QString expectedPayload = QString(
                     "{\"_typeName\":\"joynr.SubscriptionPublication\","
-                    "\"response\":\"publication\","
+                    "\"response\":[\"publication\"],"
                     "\"subscriptionId\":\"%1\"}"
         );
         expectedPayload = expectedPayload.arg(subscriptionPublication.getSubscriptionId());
