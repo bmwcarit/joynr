@@ -31,7 +31,7 @@ Logger* AbstractJoynrMessagingConnector::logger =
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         IJoynrMessageSender* joynrMessageSender,
-        SubscriptionManager* subscriptionManager,
+        ISubscriptionManager* subscriptionManager,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string proxyParticipantId,

@@ -35,7 +35,7 @@ InProcessPublicationSender::~InProcessPublicationSender()
 {
 }
 
-InProcessPublicationSender::InProcessPublicationSender(SubscriptionManager* subscriptionManager)
+InProcessPublicationSender::InProcessPublicationSender(ISubscriptionManager* subscriptionManager)
         : subscriptionManager(subscriptionManager)
 {
 }

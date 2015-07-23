@@ -25,7 +25,7 @@
 namespace joynr
 {
 
-class SubscriptionManager;
+class ISubscriptionManager;
 class PublicationManager;
 class IReplyCaller;
 class MessagingQos;
@@ -47,7 +47,7 @@ public:
     virtual void removeRequestCaller(const std::string& participantId) = 0;
     virtual void receive(const JoynrMessage& message) = 0;
 
-    virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager) = 0;
+    virtual void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) = 0;
     virtual void registerPublicationManager(PublicationManager* publicationManager) = 0;
 };
 

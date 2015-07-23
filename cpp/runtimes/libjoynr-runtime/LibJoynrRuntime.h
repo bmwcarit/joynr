@@ -36,6 +36,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
+#include "joynr/SubscriptionManager.h"
 
 namespace joynr
 {

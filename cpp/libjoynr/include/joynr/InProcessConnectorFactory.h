@@ -32,7 +32,7 @@ namespace joynr
 {
 
 class InProcessPublicationSender;
-class SubscriptionManager;
+class ISubscriptionManager;
 class PublicationManager;
 
 // Default implementation for the InProcessConnectorFactoryHelper
@@ -41,7 +41,7 @@ template <class T>
 class InProcessConnectorFactoryHelper
 {
 public:
-    T* create(SubscriptionManager* subscriptionManager,
+    T* create(ISubscriptionManager* subscriptionManager,
               PublicationManager* publicationManager,
               const std::string& proxyParticipantId,
               const std::string& providerParticipantId,
@@ -62,7 +62,7 @@ public:
 class JOYNR_EXPORT InProcessConnectorFactory
 {
 public:
-    InProcessConnectorFactory(SubscriptionManager* subscriptionManager,
+    InProcessConnectorFactory(ISubscriptionManager* subscriptionManager,
                               PublicationManager* publicationManager,
                               InProcessPublicationSender* inProcessPublicationSender,
                               IRequestCallerDirectory* requestCallerDirectory);
@@ -90,7 +90,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConnectorFactory);
-    SubscriptionManager* subscriptionManager;
+    ISubscriptionManager* subscriptionManager;
     PublicationManager* publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
     IRequestCallerDirectory* requestCallerDirectory;

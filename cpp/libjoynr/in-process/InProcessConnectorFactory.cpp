@@ -23,7 +23,7 @@ namespace joynr
 {
 
 InProcessConnectorFactory::InProcessConnectorFactory(
-        SubscriptionManager* subscriptionManager,
+        ISubscriptionManager* subscriptionManager,
         PublicationManager* publicationManager,
         InProcessPublicationSender* inProcessPublicationSender,
         IRequestCallerDirectory* requestCallerDirectory)

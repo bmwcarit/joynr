@@ -62,7 +62,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 namespace joynr {
 	class MessagingQos;
 	class IJoynrMessageSender;
-	class SubscriptionManager;
+	class ISubscriptionManager;
 }
 
 «getNamespaceStarter(serviceInterface)»
@@ -91,7 +91,7 @@ private:
 public:
 	«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* messageSender,
-		joynr::SubscriptionManager* subscriptionManager,
+		joynr::ISubscriptionManager* subscriptionManager,
 		const std::string &domain,
 		const std::string proxyParticipantId,
 		const std::string& providerParticipantId,
@@ -162,7 +162,7 @@ class JoynrMessagingConnectorFactoryHelper <«getPackagePathWithJoynrPrefix(serv
 public:
 	«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector* create(
 			joynr::IJoynrMessageSender* messageSender,
-			joynr::SubscriptionManager* subscriptionManager,
+			joynr::ISubscriptionManager* subscriptionManager,
 			const std::string &domain,
 			const std::string proxyParticipantId,
 			const std::string& providerParticipantId,

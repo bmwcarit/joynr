@@ -58,7 +58,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 «ENDFOR»
 
 #include "joynr/InProcessAddress.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionCallback.h"
@@ -72,7 +72,7 @@ using namespace joynr::joynr_logging;
 Logger* «interfaceName»InProcessConnector::logger = Logging::getInstance()->getLogger("MSG", "«interfaceName»InProcessConnector");
 
 «interfaceName»InProcessConnector::«interfaceName»InProcessConnector(
-			joynr::SubscriptionManager* subscriptionManager,
+			joynr::ISubscriptionManager* subscriptionManager,
 			joynr::PublicationManager* publicationManager,
 			joynr::InProcessPublicationSender* inProcessPublicationSender,
 			const std::string& proxyParticipantId,

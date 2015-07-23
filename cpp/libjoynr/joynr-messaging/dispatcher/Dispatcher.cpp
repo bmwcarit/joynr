@@ -38,7 +38,7 @@
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
 #include "joynr/PublicationInterpreter.h"
 #include "joynr/PublicationManager.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
@@ -370,7 +370,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     delete subscriptionPublication;
 }
 
-void Dispatcher::registerSubscriptionManager(SubscriptionManager* subscriptionManager)
+void Dispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionManager)
 {
     this->subscriptionManager = subscriptionManager;
 }

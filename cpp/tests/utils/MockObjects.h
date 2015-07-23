@@ -165,7 +165,7 @@ public:
     MOCK_METHOD2(addRequestCaller, void(const std::string& participantId, QSharedPointer<joynr::RequestCaller> requestCaller));
     MOCK_METHOD1(removeRequestCaller, void(const std::string& participantId));
     MOCK_METHOD1(receive, void(const joynr::JoynrMessage& message));
-    MOCK_METHOD1(registerSubscriptionManager, void(joynr::SubscriptionManager* subscriptionManager));
+    MOCK_METHOD1(registerSubscriptionManager, void(joynr::ISubscriptionManager* subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
 };
 
@@ -687,14 +687,13 @@ typedef MockDirectory<QString, joynr::system::Address> MockMessagingEndpointDire
 
 
 
-class MockSubscriptionManager : joynr::SubscriptionManager {
+class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
     MOCK_METHOD1(getSubscriptionCallback,QSharedPointer<joynr::ISubscriptionCallback>(const QString& subscriptionId));
-    MOCK_METHOD6(registerSubscription,void(const QString &proxyId,const QString &providerId,
-                                                    const QString &attributeName,
-                                                    joynr::ISubscriptionCallback * attributeSubscriptionCaller, // SubMgr gets ownership of ptr
-                                                    const joynr::SubscriptionQos &qos,
-                                                    joynr::SubscriptionRequest& subscriptionReques));
+    MOCK_METHOD4(registerSubscription,void(const QString& subscribeToName,
+                                                    QSharedPointer<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
+                                                    QSharedPointer<joynr::SubscriptionQos> qos,
+                                                    joynr::SubscriptionRequest& subscriptionRequest));
     MOCK_METHOD1(unregisterSubscription, void(const QString& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const QString& subscriptionId));
 };

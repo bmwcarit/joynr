@@ -67,7 +67,7 @@ public:
 
     virtual void receive(const JoynrMessage& message);
 
-    virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager);
+    virtual void registerSubscriptionManager(ISubscriptionManager* subscriptionManager);
 
     virtual void registerPublicationManager(PublicationManager* publicationManager);
 
@@ -85,7 +85,7 @@ private:
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
-    SubscriptionManager* subscriptionManager;
+    ISubscriptionManager* subscriptionManager;
     QThreadPool handleReceivedMessageThreadPool;
     static joynr_logging::Logger* logger;
     QMutex subscriptionHandlingMutex;

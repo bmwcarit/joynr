@@ -28,7 +28,7 @@ namespace joynr
 
 JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
         IJoynrMessageSender* messageSender,
-        SubscriptionManager* subscriptionManager)
+        ISubscriptionManager* subscriptionManager)
         : messageSender(messageSender), subscriptionManager(subscriptionManager)
 {
 }

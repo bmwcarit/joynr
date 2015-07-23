@@ -70,7 +70,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 namespace joynr {
 	class RequestStatus;
 	class InProcessAddress;
-	class SubscriptionManager;
+	class ISubscriptionManager;
 	class PublicationManager;
 }
 
@@ -96,7 +96,7 @@ private:
 public:
 
 	«interfaceName»InProcessConnector(
-				joynr::SubscriptionManager* subscriptionManager,
+				joynr::ISubscriptionManager* subscriptionManager,
 				joynr::PublicationManager* publicationManager,
 				joynr::InProcessPublicationSender* inProcessPublicationSender,
 				const std::string& proxyParticipantId,
@@ -122,7 +122,7 @@ private:
 	std::string proxyParticipantId;
 	std::string providerParticipantId;
 	QSharedPointer<joynr::InProcessAddress> address;
-	joynr::SubscriptionManager* subscriptionManager;
+	joynr::ISubscriptionManager* subscriptionManager;
 	joynr::PublicationManager* publicationManager;
 	joynr::InProcessPublicationSender* inProcessPublicationSender;
 };
@@ -138,7 +138,7 @@ template <>
 class InProcessConnectorFactoryHelper <«packagePrefix»::I«interfaceName»Connector> {
 public:
 	«packagePrefix»::«interfaceName»InProcessConnector* create(
-			SubscriptionManager* subscriptionManager,
+			ISubscriptionManager* subscriptionManager,
 			PublicationManager* publicationManager,
 			InProcessPublicationSender* inProcessPublicationSender,
 			const std::string& proxyParticipantId,

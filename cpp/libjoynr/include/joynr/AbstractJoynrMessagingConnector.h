@@ -40,13 +40,13 @@ namespace joynr
 {
 
 class IJoynrMessageSender;
-class SubscriptionManager;
+class ISubscriptionManager;
 
 class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
 {
 public:
     AbstractJoynrMessagingConnector(IJoynrMessageSender* joynrMessageSender,
-                                    SubscriptionManager* subscriptionManager,
+                                    ISubscriptionManager* subscriptionManager,
                                     const std::string& domain,
                                     const std::string& interfaceName,
                                     const std::string proxyParticipantId,
@@ -104,7 +104,7 @@ public:
 
 protected:
     IJoynrMessageSender* joynrMessageSender;
-    SubscriptionManager* subscriptionManager;
+    ISubscriptionManager* subscriptionManager;
     std::string domain;
     std::string interfaceName;
     std::string proxyParticipantId;

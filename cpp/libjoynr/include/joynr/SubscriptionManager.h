@@ -22,7 +22,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/joynrlogging.h"
-
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
@@ -48,7 +48,7 @@ class DelayedScheduler;
   * This listener is notified (via the callback) when a subscription is missed or when a publication
   * arrives.
   */
-class JOYNR_EXPORT SubscriptionManager
+class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager
 {
 
 public:

@@ -29,7 +29,7 @@ namespace joynr
 {
 
 class IJoynrMessageSender;
-class SubscriptionManager;
+class ISubscriptionManager;
 class MessagingQos;
 class IClientCache;
 namespace system
@@ -44,7 +44,7 @@ class JoynrMessagingConnectorFactoryHelper
 {
 public:
     T* create(IJoynrMessageSender* messageSender,
-              SubscriptionManager* subscriptionManager,
+              ISubscriptionManager* subscriptionManager,
               const std::string& domain,
               const std::string& interfaceName,
               const std::string proxyParticipantId,
@@ -73,7 +73,7 @@ class JOYNR_EXPORT JoynrMessagingConnectorFactory
 {
 public:
     JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
-                                   SubscriptionManager* subscriptionManager);
+                                   ISubscriptionManager* subscriptionManager);
 
     bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
 
@@ -97,7 +97,7 @@ public:
 
 private:
     IJoynrMessageSender* messageSender;
-    SubscriptionManager* subscriptionManager;
+    ISubscriptionManager* subscriptionManager;
 };
 
 } // namespace joynr

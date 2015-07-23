@@ -72,7 +72,7 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
@@ -93,7 +93,7 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 
 «interfaceName»JoynrMessagingConnector::«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* joynrMessageSender,
-		joynr::SubscriptionManager* subscriptionManager,
+		joynr::ISubscriptionManager* subscriptionManager,
 		const std::string &domain,
 		const std::string proxyParticipantId,
 		const std::string& providerParticipantId,
