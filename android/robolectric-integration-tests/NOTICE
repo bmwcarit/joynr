@@ -106,6 +106,7 @@ This project has dependencies to:
   robolectric-utils under MIT license
   shadows-core under MIT license
   Simple API for CSS under The W3C Software License
+  SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   sqlite4java under The Apache Software License, Version 2.0

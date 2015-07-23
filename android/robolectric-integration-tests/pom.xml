@@ -40,14 +40,6 @@
 			<artifactId>joynr-android-runtime</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-			<exclusions>
-				<!-- Use log4j when testing -->
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-android</artifactId>
-				</exclusion>
-			</exclusions>
-
 		</dependency>
 		<dependency>
 			<groupId>android</groupId>
