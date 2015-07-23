@@ -19,16 +19,17 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
+import java.util.Arrays;
+import java.util.List;
+
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
 
 // Test the access control Algorithm
 public class AccessControlAlgorithmTest {

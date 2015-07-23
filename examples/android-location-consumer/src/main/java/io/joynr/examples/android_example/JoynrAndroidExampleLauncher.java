@@ -31,7 +31,7 @@ import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import joynr.PeriodicSubscriptionQos;
-import joynr.types.GpsLocation;
+import joynr.types.localisation.GpsLocation;
 import joynr.vehicle.GpsProxy;
 
 import org.slf4j.Logger;

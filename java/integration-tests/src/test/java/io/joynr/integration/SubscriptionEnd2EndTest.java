@@ -53,9 +53,9 @@ import java.util.UUID;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
-import joynr.tests.TestEnum;
 import joynr.tests.testProxy;
-import joynr.types.GpsLocation;
+import joynr.tests.testtypes.TestEnum;
+import joynr.types.localisation.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;

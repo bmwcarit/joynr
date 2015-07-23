@@ -37,15 +37,15 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import joynr.OnChangeSubscriptionQos;
-import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
 import joynr.infrastructure.GlobalDomainAccessControllerProxy;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.TrustLevel;
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.dactypes.TrustLevel;
 import net.sf.ehcache.CacheManager;
 
 import org.junit.After;

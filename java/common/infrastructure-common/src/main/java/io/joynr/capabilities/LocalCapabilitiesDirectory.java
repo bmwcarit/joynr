@@ -19,9 +19,9 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import javax.annotation.CheckForNull;
-
 import io.joynr.arbitration.DiscoveryQos;
+
+import javax.annotation.CheckForNull;
 
 public interface LocalCapabilitiesDirectory {
     /**

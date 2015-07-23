@@ -19,24 +19,25 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+
+import java.io.IOException;
+
 import joynr.JoynrMessage;
 import joynr.Request;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 
 public class AccessControllerImpl implements AccessController {
     private static final Logger logger = LoggerFactory.getLogger(AccessControllerImpl.class);

@@ -19,10 +19,10 @@ package io.joynr.proxy;
  * #L%
  */
 
-import com.google.inject.assistedinject.Assisted;
-
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
+
+import com.google.inject.assistedinject.Assisted;
 
 public interface ProxyInvocationHandlerFactory {
     public ProxyInvocationHandler create(@Assisted("domain") String domain,

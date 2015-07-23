@@ -21,17 +21,18 @@ package io.joynr.accesscontrol;
 
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.MasterRegistrationControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.OwnerRegistrationControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.TrustLevel;
+
+import java.util.List;
 
 import javax.annotation.CheckForNull;
 
-import java.util.List;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 /**
  * Manages access control lists for local providers.

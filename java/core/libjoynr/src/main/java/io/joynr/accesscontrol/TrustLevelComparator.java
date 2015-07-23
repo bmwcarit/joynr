@@ -19,10 +19,10 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.TrustLevel;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import joynr.infrastructure.dactypes.TrustLevel;
 
 public class TrustLevelComparator {
 

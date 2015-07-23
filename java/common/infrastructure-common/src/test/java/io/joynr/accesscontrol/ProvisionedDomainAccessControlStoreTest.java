@@ -26,11 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
 
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.TrustLevel;
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.dactypes.TrustLevel;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.Configuration;
 

@@ -23,7 +23,6 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.messaging.http.operation.LongPollingChannelLifecycle;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 

@@ -19,27 +19,28 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
-import joynr.infrastructure.ChangeType;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.TrustLevel;
+
+import java.util.Arrays;
+
+import joynr.infrastructure.dactypes.ChangeType;
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.dactypes.TrustLevel;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Arrays;
-
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GdacBroadcastListenerTest {

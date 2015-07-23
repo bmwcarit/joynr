@@ -19,6 +19,24 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
+import static org.mockito.Matchers.eq;
+import io.joynr.accesscontrol.DomainAccessControlStore;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.servlet.ServletContextEvent;
+
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.dactypes.TrustLevel;
+
+import org.mockito.Mockito;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
@@ -26,21 +44,6 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
-import joynr.infrastructure.Role;
-import org.mockito.Mockito;
-
-import javax.servlet.ServletContextEvent;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-
-import static org.mockito.Matchers.eq;
 
 /**
  *  ServletContextListener for AclServletTest. Creates test data and a mock-up for the acl store and a guice

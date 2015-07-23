@@ -30,9 +30,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import joynr.types.CustomParameter;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
 import joynr.types.ProviderQos;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
 import android.content.Context;
 import android.location.Location;

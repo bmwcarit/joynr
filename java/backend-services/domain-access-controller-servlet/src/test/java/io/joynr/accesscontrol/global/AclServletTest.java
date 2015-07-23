@@ -19,21 +19,24 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ws.rs.core.MediaType;
+
+import joynr.infrastructure.dactypes.Role;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
-import joynr.infrastructure.Role;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import javax.ws.rs.core.MediaType;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * JerseyTest for the ACL editor's rest interface.Tests  the CRUD methods.

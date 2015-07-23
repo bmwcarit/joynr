@@ -20,11 +20,12 @@ package io.joynr.accesscontrol.global;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
 
 import java.util.List;
+
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
 
 /**
  * Interface to ACL store used for admin tasks. Used by the GDAC web interface.

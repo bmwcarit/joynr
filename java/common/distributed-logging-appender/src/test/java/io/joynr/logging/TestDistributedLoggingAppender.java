@@ -39,8 +39,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import joynr.system.JoynrLogEvent;
 import joynr.system.LoggingProxy;
+import joynr.system.loggingtypes.JoynrLogEvent;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

@@ -20,8 +20,8 @@ package io.joynr.examples.android_example;
  */
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
 
 import org.slf4j.Logger;

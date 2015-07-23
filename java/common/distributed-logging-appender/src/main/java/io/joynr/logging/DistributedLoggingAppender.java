@@ -23,11 +23,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import joynr.system.JoynrLogEvent;
-import joynr.system.JoynrLogLevel;
-import joynr.system.JoynrLoggingContextTag;
-
-import joynr.system.JoynrLoggedError;
+import joynr.system.loggingtypes.JoynrLogEvent;
+import joynr.system.loggingtypes.JoynrLogLevel;
+import joynr.system.loggingtypes.JoynrLoggedError;
+import joynr.system.loggingtypes.JoynrLoggingContextTag;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.logging.log4j.core.Filter;

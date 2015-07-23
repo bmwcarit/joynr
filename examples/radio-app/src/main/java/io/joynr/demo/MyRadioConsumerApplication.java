@@ -23,17 +23,17 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.proxy.Future;
-import io.joynr.proxy.Callback;
-import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -41,14 +41,14 @@ import java.util.Properties;
 import jline.console.ConsoleReader;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.vehicle.Country;
-import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
-import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSync.GetLocationOfCurrentStationReturned;
+import joynr.vehicle.radiotypes.Country;
+import joynr.vehicle.radiotypes.GeoPosition;
+import joynr.vehicle.radiotypes.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
      * with Guice bindings 3. Starting the application. 4. Ending the application so that the necessary clean up calls
      * are made.
-     * 
+     *
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {

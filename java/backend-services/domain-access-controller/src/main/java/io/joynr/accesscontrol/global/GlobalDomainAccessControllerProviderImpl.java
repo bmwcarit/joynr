@@ -19,19 +19,19 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
-import com.google.inject.Singleton;
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.provider.Promise;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.ChangeType;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.MasterRegistrationControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.OwnerRegistrationControlEntry;
-import joynr.infrastructure.Role;
+import joynr.infrastructure.dactypes.ChangeType;
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.dactypes.Role;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * Manages the Access Control Lists for all providers.

@@ -19,14 +19,15 @@ package io.joynr.proxy;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesCallback;
@@ -52,6 +53,11 @@ import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.UUID;
+
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -62,6 +68,7 @@ import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListene
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
 import joynr.vehicle.NavigationProxy;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,16 +79,14 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 public class ProxyTest {
     private DiscoveryQos discoveryQos;

@@ -35,8 +35,8 @@ import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.proxy.ProxyInvocationHandler;
-import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyInvocationHandlerImpl;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

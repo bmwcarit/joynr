@@ -60,19 +60,19 @@ import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
 import joynr.OnChangeSubscriptionQos;
-import joynr.tests.AnotherDerivedStruct;
-import joynr.tests.ComplexTestType;
-import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.DerivedStruct;
-import joynr.tests.TestEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
-import joynr.types.Trip;
+import joynr.tests.testtypes.AnotherDerivedStruct;
+import joynr.tests.testtypes.ComplexTestType;
+import joynr.tests.testtypes.ComplexTestType2;
+import joynr.tests.testtypes.DerivedStruct;
+import joynr.tests.testtypes.TestEnum;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
+import joynr.types.localisation.Trip;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;

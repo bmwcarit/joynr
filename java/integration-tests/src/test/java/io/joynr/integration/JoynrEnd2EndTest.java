@@ -27,9 +27,9 @@ import java.util.List;
 
 import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;

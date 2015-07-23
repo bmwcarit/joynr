@@ -19,26 +19,29 @@ package io.joynr.accesscontrol.global;
  * #L%
  */
 
-import com.google.inject.Inject;
-import com.sun.jersey.api.core.InjectParam;
 import io.joynr.servlet.JoynrWebServlet;
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Role;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
-import javax.ws.rs.GET;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.POST;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.logging.Logger;
+
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Role;
+
+import com.google.inject.Inject;
+import com.sun.jersey.api.core.InjectParam;
 
 @Singleton
 @JoynrWebServlet(value = "/" + AccessControlEditorServlet.SERVLET_PATH + "/")
@@ -203,6 +206,7 @@ public class AccessControlEditorServlet extends HttpServlet {
         domainAccessControllerProvider.updateOwnerAccessControlEntry(ownerAccessControlEntry);
     }
 
+    @Override
     public void destroy() {
         // do nothing.
     }

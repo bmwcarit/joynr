@@ -17,16 +17,16 @@ import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import java.util.List;
 
 import joynr.OnChangeSubscriptionQos;
-import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerProxy;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.MasterRegistrationControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.OwnerRegistrationControlEntry;
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
 
 /*
  * #%L

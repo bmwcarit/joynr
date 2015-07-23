@@ -33,9 +33,9 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

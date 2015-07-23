@@ -46,13 +46,13 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface;
+import joynr.tests.testtypes.TestEnum;
 import joynr.types.CapabilityInformation;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
-import joynr.types.GpsPosition;
 import joynr.types.ProviderQos;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
+import joynr.types.localisation.GpsPosition;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -38,20 +38,20 @@ import javax.annotation.CheckForNull;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.infrastructure.ChannelUrlDirectory;
-import joynr.infrastructure.DomainRoleEntry;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MasterAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.MasterRegistrationControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.OwnerRegistrationControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.Role;
-import joynr.infrastructure.TrustLevel;
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

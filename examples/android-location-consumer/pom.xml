@@ -164,11 +164,24 @@
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
+						<id>generate-interfaces</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
 							<model>Localisation.fidl</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/main/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
+						<phase>generate-sources</phase>
+						<id>generate-types</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>LocalisationTypes.fidl</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated</outputPath>
 						</configuration>

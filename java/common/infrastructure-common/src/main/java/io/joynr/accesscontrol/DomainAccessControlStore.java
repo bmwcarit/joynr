@@ -19,12 +19,12 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.DomainRoleEntry;
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Role;
-
 import java.util.List;
+
+import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Role;
 
 /**
  * The DomainAccessControlStore interface stores Access Control Lists.

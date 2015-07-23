@@ -20,9 +20,10 @@ package io.joynr.accesscontrol.broadcastlistener;
  */
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
-import joynr.infrastructure.ChangeType;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastListener;
-import joynr.infrastructure.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.ChangeType;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

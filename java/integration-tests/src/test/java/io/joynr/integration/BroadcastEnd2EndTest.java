@@ -43,13 +43,13 @@ import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
+import joynr.tests.testtypes.TestEnum;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;

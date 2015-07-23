@@ -39,8 +39,8 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
-import joynr.chat.Message;
 import joynr.chat.MessengerSync;
+import joynr.chat.messagetypecollection.Message;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;

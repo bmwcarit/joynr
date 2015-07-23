@@ -19,12 +19,12 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.MasterAccessControlEntry;
-import joynr.infrastructure.OwnerAccessControlEntry;
-import joynr.infrastructure.Permission;
-import joynr.infrastructure.TrustLevel;
-
 import javax.annotation.Nullable;
+
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 /**
  * Algorithm that aggregates permission from all relevant control entries.

@@ -32,7 +32,7 @@ class ComplexTypeTemplate implements CompoundTypeTemplate{
 
 	override generate(FCompoundType complexType) {
 		val typeName = complexType.joynrName
-		val complexTypePackageName = getPackagePathWithJoynrPrefix(complexType, ".")
+		val complexTypePackageName = complexType.buildPackagePath(".", true)
 		'''
 		«warning()»
 

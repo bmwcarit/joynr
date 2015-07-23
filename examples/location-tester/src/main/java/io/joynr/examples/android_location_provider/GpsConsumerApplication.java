@@ -36,7 +36,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.types.GpsLocation;
+import joynr.types.localisation.GpsLocation;
 import joynr.vehicle.GpsProxy;
 
 import org.slf4j.Logger;

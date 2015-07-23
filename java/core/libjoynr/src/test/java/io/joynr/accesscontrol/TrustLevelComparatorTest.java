@@ -19,10 +19,10 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.TrustLevel;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+import joynr.infrastructure.dactypes.TrustLevel;
+
+import org.junit.Test;
 
 public class TrustLevelComparatorTest {
 

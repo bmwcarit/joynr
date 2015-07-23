@@ -19,10 +19,10 @@ package io.joynr.demo;
  * #L%
  */
 
-import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioNewStationDiscoveredBroadcastFilter;
-import joynr.vehicle.RadioStation;
+import joynr.vehicle.radiotypes.GeoPosition;
+import joynr.vehicle.radiotypes.RadioStation;
 
 public class TrafficServiceBroadcastFilter extends RadioNewStationDiscoveredBroadcastFilter {
 

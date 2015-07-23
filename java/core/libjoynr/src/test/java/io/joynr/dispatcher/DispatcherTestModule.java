@@ -19,10 +19,6 @@ package io.joynr.dispatcher;
  * #L%
  */
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.RpcUtils;
@@ -34,6 +30,11 @@ import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.publication.PublicationManagerImpl;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.pubsub.subscription.SubscriptionManagerImpl;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
 import joynr.Request;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;

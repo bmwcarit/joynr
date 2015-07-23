@@ -29,7 +29,7 @@ class EnumTypeTemplate implements EnumTemplate{
 	@Inject extension TemplateBase
 
 	override generate(FEnumerationType enumType) {
-		val packagePath = getPackagePathWithJoynrPrefix(enumType, ".")
+		val packagePath = enumType.buildPackagePath(".", true)
 		'''
 		«warning()»
 
