@@ -19,175 +19,22 @@ package io.joynr.integration;
  * #L%
  */
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
+import com.google.inject.Injector;
 import io.joynr.messaging.LongPollingMessagingModule;
-import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.PubSubTestProviderImpl;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
 
-import joynr.OnChangeSubscriptionQos;
-import joynr.PeriodicSubscriptionQos;
-import joynr.tests.testProxy;
+public class LocalCommunicationTest extends AbstractLocalCommunicationTest {
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Injector;
-
-@RunWith(MockitoJUnitRunner.class)
-/*
- * This testClass registers one consumer and one provider both on the same runtime. It can be used to test local
- * communication.
- */
-public class LocalCommunicationTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(LocalCommunicationTest.class);
     private Injector injectorA;
-    private JoynrRuntime runtimeA;
-    private PubSubTestProviderImpl provider;
-    private String domain;
-    private testProxy proxy;
 
-    @Mock
-    private AttributeSubscriptionListener<Integer> listener;
-    private SubscriptionQos subscriptionQos;
-    private int lengthInMS = 2000;
-
-    @Before
-    public void setUp() throws Exception {
-        logger.info("setup beginning...");
-
-        String channelId = UUID.randomUUID().toString() + "-end2endA";
-
-        Properties customProperties = new Properties();
-        customProperties.put(MessagingPropertyKeys.CHANNELID, channelId);
-        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(customProperties, new LongPollingMessagingModule())).getInjector();
-
-        runtimeA = injectorA.getInstance(JoynrRuntime.class);
-
-        provider = new PubSubTestProviderImpl();
-        domain = "TestDomain" + System.currentTimeMillis();
-
-        runtimeA.registerProvider(domain, provider);
-
-        ProxyBuilder<testProxy> proxyBuilder;
-
-        MessagingQos messagingQos = new MessagingQos(20000);
-        DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
-
-        proxyBuilder = runtimeA.getProxyBuilder(domain, testProxy.class);
-        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-
-    }
-
-    @After
-    public void tearDown() throws InterruptedException {
-        // Get the messageReceiver singleton and delete the channel
-        MessageReceiver messageReceiver = injectorA.getInstance(MessageReceiver.class);
-        messageReceiver.shutdown(true);
-        Thread.sleep(200);
-    }
-
-    // This is a manual test that subscribes for 30 seconds, and checks if all subscriptions arrive. This should also
-    // work
-    // when connection is lost during subscription. It will most likely not work, when connection is not present during
-    // startup.
-    @Test
-    @Ignore
-    public void registerPeriodicSubscriptionAndReceiveUpdatesForLongTime() throws InterruptedException {
-        int times = 5;
-        final int initialValue = 42;
-
-        int period = lengthInMS / times;
-        provider.setATTRIBUTEWITHCAPITALLETTERS(initialValue);
-        subscriptionQos = new PeriodicSubscriptionQos(period, // period_ms,
-                                                      System.currentTimeMillis() + lengthInMS, // expiryDate
-                                                      lengthInMS, // alertInterval_ms,
-                                                      lengthInMS / 4 // publicationTtl_ms
-        );
-
-        proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            int value = initialValue;
-
-            @Override
-            public void run() {
-                value++;
-                provider.setATTRIBUTEWITHCAPITALLETTERS(value);
-            }
-        }, period, period);
-
-        Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).onError();
-        // verify(listener, times(times)).receive(anyInt());
-        // TODO verify publications shipped correct data
-        for (int i = 42; i < 42 + times; i++) {
-            verify(listener, times(1)).onReceive(eq(i));
-        }
-        verifyNoMoreInteractions(listener);
-    }
-
-    /* This is a manual test that subscribes for 30 seconds, and checks if all subscriptions arrive. In this case,
-     * the test expect publication in case of value change
-     */
-
-    @Test
-    @Ignore
-    public void registerSubscriptionOnChangeAndReceiveUpdatesForLongTime() throws InterruptedException {
-        final int times = 5;
-        final int initialValue = 42;
-
-        int period = lengthInMS / times;
-        provider.ATTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
-        subscriptionQos = new OnChangeSubscriptionQos(lengthInMS / 4, System.currentTimeMillis() + lengthInMS, // expiryDate
-                                                      lengthInMS / 4);
-
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            int value = initialValue;
-
-            @Override
-            public void run() {
-                value++;
-                if (value < initialValue + times) {
-                    provider.ATTRIBUTEWITHCAPITALLETTERSChanged(value);
-                }
-            }
-        }, period, period);
-        proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
-
-        Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).onError();
-        verify(listener, times(times)).onReceive(anyInt());
-        // TODO verify publications shipped correct data
-        for (int i = 42; i < 42 + times; i++) {
-            verify(listener, times(1)).onReceive(eq(i));
-        }
-        verifyNoMoreInteractions(listener);
+    @Override
+    protected JoynrRuntime getRuntime(Properties joynrConfig) {
+        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(joynrConfig, new LongPollingMessagingModule())).getInjector();
+        return injectorA.getInstance(JoynrRuntime.class);
     }
 
 }
