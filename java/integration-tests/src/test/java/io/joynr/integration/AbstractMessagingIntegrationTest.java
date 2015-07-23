@@ -19,6 +19,12 @@ package io.joynr.integration;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
 import io.joynr.capabilities.DummyCapabilitiesDirectory;
 import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
@@ -36,9 +42,16 @@ import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
+import joynr.JoynrMessage;
+import joynr.types.ChannelUrlInformation;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,25 +60,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-import joynr.JoynrMessage;
-import joynr.types.ChannelUrlInformation;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
-
 public abstract class AbstractMessagingIntegrationTest {
 
-    private static final int DEFAULT_TIMEOUT = 5000;
+    // The timeout should be achievable in all test environments
+    private static final int DEFAULT_TIMEOUT = 8000;
 
     private MessageSender joynrMessageSender1;
     private MessageSender joynrMessageSender2;
@@ -89,11 +87,15 @@ public abstract class AbstractMessagingIntegrationTest {
     private static final String STATIC_PERSISTENCE_FILE = "target/temp/persistence.properties";
     private LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient;
     private DummyCapabilitiesDirectory localCapDir;
+
     private String bounceProxyUrl = Guice.createInjector(new JoynrBaseModule())
                                          .getInstance(Key.get(String.class,
                                                               Names.named(MessagingPropertyKeys.BOUNCE_PROXY_URL)));
 
     private long relativeTtl_ms = 10000L;
+
+    // To be provided by subclasses
+    public abstract Injector createInjector(Properties joynrConfig, Module... modules);
 
     @Before
     public void setUp() throws SecurityException {
@@ -143,10 +145,9 @@ public abstract class AbstractMessagingIntegrationTest {
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
         joynrConfig.put(MessagingPropertyKeys.CHANNELID, channelId);
         joynrConfig.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        Injector injector = new JoynrInjectorFactory(joynrConfig,
-                                                     new DummyDiscoveryModule(localChannelUrlDirectoryClient,
-                                                                              localCapDir),
-                                                     new PreconfiguredEndpointDirectoryModule(messagingEndpointDirectory)).getInjector();
+        Injector injector = createInjector(joynrConfig,
+                                           new DummyDiscoveryModule(localChannelUrlDirectoryClient, localCapDir),
+                                           new PreconfiguredEndpointDirectoryModule(messagingEndpointDirectory));
 
         return injector;
 

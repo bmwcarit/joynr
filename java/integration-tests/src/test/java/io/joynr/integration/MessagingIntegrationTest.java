@@ -19,12 +19,17 @@ package io.joynr.integration;
  * #L%
  */
 
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 
+import io.joynr.runtime.JoynrInjectorFactory;
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.util.Properties;
 
 //import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
@@ -50,4 +55,8 @@ public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
         jettyServer.stop();
     }
 
+    @Override
+    public Injector createInjector(Properties joynrConfig, Module... modules) {
+        return new JoynrInjectorFactory(joynrConfig, modules).getInjector();
+    }
 }
