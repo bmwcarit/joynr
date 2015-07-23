@@ -18,8 +18,11 @@
  */
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
+#include "joynr/tests/ItestConnector.h"
 #include "joynr/IReplyCaller.h"
 #include <string>
+#include "utils/MockObjects.h"
+#include "joynr/BroadcastSubscriptionCallback.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -33,13 +36,41 @@ using ::testing::Unused;
 
 using namespace joynr;
 
+ACTION_P(ReleaseSemaphore,semaphore)
+{
+    semaphore->release(1);
+}
+
 /**
  * @brief Fixutre.
  */
 class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest {
 public:
 
-    TestJoynrMessagingConnectorTest() {}
+    TestJoynrMessagingConnectorTest():
+        mockSubscriptionManager(new MockSubscriptionManager()),
+        gpsLocation(types::GpsLocation(
+                        9.0,
+                        51.0,
+                        508.0,
+                        types::GpsFixEnum::MODE2D,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        444,
+                        444,
+                        2)),
+        floatValue(123.45),
+        semaphore(0)
+    {
+    }
+
+    ~TestJoynrMessagingConnectorTest()
+    {
+        delete mockSubscriptionManager;
+    }
+
     // sets the expectations on the call expected on the MessageSender from the connector
     testing::internal::TypedExpectation<void(
             const std::string&, // sender participant ID
@@ -63,25 +94,43 @@ public:
         );
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) {
+    MockSubscriptionManager* mockSubscriptionManager;
+    joynr::types::GpsLocation gpsLocation;
+    float floatValue;
+    QSemaphore semaphore;
 
-        tests::testJoynrMessagingConnector* connector = new tests::testJoynrMessagingConnector(
+    tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
+        return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
-                    (SubscriptionManager*) NULL,
+                    mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,
                     providerParticipantId,
                     MessagingQos(),
                     &mockClientCache,
                     cacheEnabled);
-
-        return dynamic_cast<tests::Itest*>(connector);
     }
 
+    tests::Itest* createFixture(bool cacheEnabled) {
+        return dynamic_cast<tests::Itest*>(createConnector(cacheEnabled));
+    }
+
+    void invokeSubscriptionCallback(const QString& subscribeToName,
+                                      QSharedPointer<ISubscriptionCallback> callback,
+                                      QSharedPointer<SubscriptionQos> qos,
+                                      SubscriptionRequest& subscriptionRequest) {
+        std::ignore = subscribeToName;
+        std::ignore = qos;
+        std::ignore = subscriptionRequest;
+
+        QSharedPointer<BroadcastSubscriptionCallback<joynr::types::GpsLocation, double>> typedCallbackQsp =
+                callback.dynamicCast<BroadcastSubscriptionCallback<joynr::types::GpsLocation, double>>();
+
+        typedCallbackQsp->receive(gpsLocation, floatValue);
+    }
 };
 
 typedef TestJoynrMessagingConnectorTest TestJoynrMessagingConnectorTestDeathTest;
-
 
 /*
  * Tests
@@ -118,4 +167,30 @@ TEST_F(TestJoynrMessagingConnectorTest, sync_OperationWithNoArguments) {
 
 TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
     testSubscribeToAttribute();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
+    tests::testJoynrMessagingConnector* connector = createConnector(false);
+
+    QSharedPointer<MockGpsFloatSubscriptionListener> mockListener(new MockGpsFloatSubscriptionListener());
+
+    EXPECT_CALL(
+                        *mockSubscriptionManager,
+                        registerSubscription(
+                            Eq("locationUpdateWithSpeed"), //broadcastName
+                            _,
+                            _, // messaging QoS
+                            _
+                        )).WillRepeatedly(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeSubscriptionCallback));
+    //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    QSharedPointer<joynr::OnChangeSubscriptionQos> qos(new joynr::OnChangeSubscriptionQos());
+    connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
+
+    // Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.tryAcquire(1, 2000));
 }
