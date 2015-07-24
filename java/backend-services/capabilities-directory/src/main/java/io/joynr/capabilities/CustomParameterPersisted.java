@@ -29,6 +29,14 @@ import joynr.types.CustomParameter;
 @Table(name = "customparameters")
 public class CustomParameterPersisted extends CustomParameter {
 
+    public CustomParameterPersisted() {
+    }
+
+    public CustomParameterPersisted(String participantId, CustomParameter parameter) {
+        super(parameter);
+        this.participantId = participantId;
+    }
+
     private static final long serialVersionUID = 1L;
 
     private String participantId;

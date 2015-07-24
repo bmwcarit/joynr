@@ -20,6 +20,7 @@ package io.joynr.capabilities;
  */
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -33,6 +34,9 @@ import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+
 @Entity
 @Table(name = "providerqos")
 public class ProviderQosPersisted extends ProviderQos implements Serializable {
@@ -43,8 +47,20 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
 
     private String participantId;
 
-    public ProviderQosPersisted(String participantId, ProviderQos providerQos) {
-        super(providerQos);
+    public ProviderQosPersisted(final String participantId, ProviderQos providerQos) {
+        super(new ArrayList<CustomParameter>(Collections2.transform(providerQos.getCustomParameters(),
+                                                                    new Function<CustomParameter, CustomParameterPersisted>() {
+                                                                        @Override
+                                                                        public CustomParameterPersisted apply(CustomParameter input) {
+                                                                            return new CustomParameterPersisted(participantId,
+                                                                                                                input);
+                                                                        }
+
+                                                                    })),
+              providerQos.getProviderVersion(),
+              providerQos.getPriority(),
+              providerQos.getScope(),
+              providerQos.getSupportsOnChangeSubscriptions());
         this.participantId = participantId;
     }
 

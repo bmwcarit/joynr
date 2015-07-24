@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
+import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -58,9 +59,15 @@ public class CapabilitiesStorePersistedTest {
 
     private PersistService service;
     CapabilitiesStore store;
+    String testDomain;
+    String testParticipantId;
+    String testChannelId;
 
     @Before
     public void setUp() {
+        testDomain = "testDomain";
+        testParticipantId = "testParticipantId";
+        testChannelId = "testChannelId";
         Injector injector = Guice.createInjector(new JpaPersistModule("CapabilitiesDirectory"), new AbstractModule() {
 
             @Override
@@ -103,7 +110,51 @@ public class CapabilitiesStorePersistedTest {
             thrown = true;
         }
         Assert.assertTrue(thrown);
+    }
 
+    private void checkCapabilityEntry(CapabilityEntry capabilityEntry) {
+        boolean capabilityFound = false;
+        boolean thrown = false;
+        try {
+            store.add(capabilityEntry);
+            capabilityFound = store.lookup(capabilityEntry.getDomain(), GpsAsync.INTERFACE_NAME, 10000).size() > 0;
+        } catch (Exception e) {
+            thrown = true;
+        }
+        Assert.assertFalse(thrown);
+        Assert.assertTrue(capabilityFound);
+    }
+
+    @Test
+    public void testValidEntryCreation() throws Exception {
+        ProviderQos testProviderQos = new ProviderQos();
+        testProviderQos.setScope(ProviderScope.LOCAL);
+
+        CustomParameter customParameter = new CustomParameter("key", "value");
+        testProviderQos.setCustomParameters(Lists.newArrayList(customParameter));
+        CapabilityInformation capabilityInformation = new CapabilityInformation(testDomain,
+                                                                                GpsAsync.INTERFACE_NAME,
+                                                                                testProviderQos,
+                                                                                testChannelId,
+                                                                                testParticipantId);
+        checkCapabilityEntry(new CapabilityEntryPersisted(capabilityInformation));
+    }
+
+    @Test
+    public void testValidEntry() throws Exception {
+        String endpointAddress = "EndpointAddress1";
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
+        CustomParameter keywordParameter = new CustomParameterPersisted(testParticipantId,
+                                                                        new CustomParameter("myKeyword", "keyword"));
+        providerQos.setCustomParameters(Lists.newArrayList(keywordParameter));
+        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(testDomain,
+                                                                       GpsAsync.INTERFACE_NAME,
+                                                                       providerQos,
+                                                                       testParticipantId,
+                                                                       System.currentTimeMillis(),
+                                                                       new JoynrMessagingEndpointAddressPersisted(endpointAddress));
+        checkCapabilityEntry(capabilityEntry);
     }
 
     @Test
