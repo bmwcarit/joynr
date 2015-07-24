@@ -39,7 +39,7 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     public final CapabilityEntry select(Map<String, String> parameters, final Collection<CapabilityEntry> capabilities) {
         logger.trace("starting select Provider by priority");
         CapabilityEntry highestPriorityCapability = null;
-        long highestPriority = Long.MIN_VALUE;
+        long highestPriority = -1L;
         for (CapabilityEntry capEntry : capabilities) {
             // Search for the provider with the highest priority
             Long priority = capEntry.getProviderQos().getPriority();
