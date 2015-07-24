@@ -52,9 +52,11 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
     public AndroidLocationProvider(String keyword, Context applicationContext, Output output) {
         this.applicationContext = applicationContext;
         this.output = output;
-        List<CustomParameter> qosParameterList = Lists.newArrayList();
-        qosParameterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword));
-        providerQos.setCustomParameters(qosParameterList);
+        if (keyword != null && keyword != "") {
+            List<CustomParameter> qosParameterList = Lists.newArrayList();
+            qosParameterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword));
+            providerQos.setCustomParameters(qosParameterList);
+        }
         providerQos.setPriority(System.currentTimeMillis());
 
         initLocationProviderAndListener();
