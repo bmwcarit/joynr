@@ -34,7 +34,7 @@
 	<properties>
 		<deploymentdirectory>${project.build.directory}/deploy</deploymentdirectory>
 	</properties>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
@@ -73,6 +73,11 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.interceptor</groupId>
+			<artifactId>javax.interceptor-api</artifactId>
+			<version>1.2</version>
 		</dependency>
 	</dependencies>
 
