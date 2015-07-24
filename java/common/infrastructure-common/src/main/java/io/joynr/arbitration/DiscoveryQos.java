@@ -36,7 +36,7 @@ public class DiscoveryQos {
     private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private ArbitrationStrategy arbitrationStrategy;
-    private ArbitrationStrategyFunction arbitrationStategyFunction;
+    private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.HighestPriority;
 
     long cacheMaxAge;
@@ -128,6 +128,8 @@ public class DiscoveryQos {
         this.discoveryScope = discoveryScope;
         this.discoveryTimeout = discoveryTimeout;
         this.arbitrationStrategy = arbitrationStrategy;
+        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
     @Deprecated
@@ -140,14 +142,15 @@ public class DiscoveryQos {
     public DiscoveryQos(long discoveryTimeout,
                         ArbitrationStrategyFunction arbitrationStrategyFunction,
                         long cacheMaxAge,
-                        DiscoveryScope discoveryscope) {
+                        DiscoveryScope discoveryScope) {
 
         this.arbitrationStrategy = ArbitrationStrategy.Custom;
         this.discoveryTimeout = discoveryTimeout;
-        arbitrationStategyFunction = arbitrationStrategyFunction;
+        this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         this.cacheMaxAge = cacheMaxAge;
-        discoveryScope = discoveryscope;
-
+        this.discoveryScope = discoveryScope;
+        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
     /**
@@ -310,7 +313,7 @@ public class DiscoveryQos {
     }
 
     ArbitrationStrategyFunction getArbitrationStrategyFunction() {
-        return arbitrationStategyFunction;
+        return arbitrationStrategyFunction;
     }
 
     public Map<String, String> getCustomParameters() {
