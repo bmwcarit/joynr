@@ -19,35 +19,60 @@
 package system
 
 typeCollection RoutingTypes {
+	<** @description: Generic Address **>
 	struct Address polymorphic {}
 
+	<** @description: Channel Address **>
 	struct ChannelAddress extends Address {
+		<** @description: Channel identification **>
 		String channelId
 	}
 
+	<** @description: CommonApiDbus address **>
 	struct CommonApiDbusAddress extends Address {
+		<** @description: Domain name **>
 		String domain
+
+		<** @description: Name of service **>
 		String serviceName
+
+		<** @description: the ID of the target participant **>
 		String participantId
 	}
 
+	<** @description: Browser address **>
 	struct BrowserAddress extends Address {
+		<** @description: the ID of the browser window **>
 		String windowId
 	}
 
+	<** @description: Websocket protocol type **>
 	enumeration WebSocketProtocol  {
+		<** @description: Websocket (non-secure) **>
 		WS
+
+		<** @description: Websocket (secure) **>
 		WSS
 	}
 
+	<** @description: Websocket address **>
 	struct WebSocketAddress extends Address {
+		<** @description: Websocket protocol type **>
 		WebSocketProtocol protocol
+
+		<** @description: Websocket host **>
 		String host
+
+		<** @description: Websocket port **>
 		Int32 port
+
+		<** @description: Websocket path **>
 		String path
 	}
 
+	<** @description: Websocket client address **>
 	struct WebSocketClientAddress extends Address {
+		<** @description: Websocket client ID **>
 		String id
 	}
 }

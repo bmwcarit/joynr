@@ -128,15 +128,27 @@ typeCollection {
 		CommunicationMiddleware[] connections
 	}
 
+	<** @description: the capability information holding the information for a provider **>
 	struct CapabilityInformation {
+		<** @description: the domain name of the provider **>
 		String domain
+
+		<** @description: the name of the interface of the provider **>
 		String interfaceName
+
+		<** @description: the provider quality of service settings **>
 		ProviderQos providerQos
+
+		<** @description: the channel id of the provider **>
 		String channelId
+
+		<** @description: the participant id of the provider **>
 		String participantId
 	}
 
+	<** @description: the channel URL information **>
 	struct ChannelUrlInformation {
+		<** @description: a list of urls **>
 		String[] urls
 	}
 }

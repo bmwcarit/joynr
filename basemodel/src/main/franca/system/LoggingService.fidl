@@ -19,34 +19,58 @@
 package system
 
 typeCollection LoggingTypes {
+	
+	<** @description: The log level **>
 	enumeration JoynrLogLevel {
+		<** @description: No logging **>
 		OFF
+		<** @description: Logging level for fatal errors **>
 		FATAL
+		<** @description: Logging level for generic errors **>
 		ERROR
+		<** @description: Logging level for warnings **>
 		WARN
+		<** @description: Logging level for informations **>
 		INFO
+		<** @description: Logging level for debugging info **>
 		DEBUG
+		<** @description: Logging level for tracing info **>
 		TRACE
 	}
 
+	<** @description: The classification of the exception **>
 	struct JoynrLoggedError {
+		<** @description: The classification of the exception **>
 		String exceptionClass
+		<** @description: The message describing the exception **>
 		String exceptionMessage
 	}
 
+	<** @description: Context information record for log event **>
 	struct JoynrLoggingContextTag {
+		<** @description: The key of a context tag entry **>
 		String key
+		<** @description: The value of a context tag entry **>
 		String value
 	}
 
+	<** @description: Record describing a log event **>
 	struct JoynrLogEvent {
+		<** @description: The time the logging event happened **>
 		Int64 timestamp
+		<** @description: The version of the event **>
 		String eventVersion
+		<** @description: The host **>
 		String host
+		<** @description: The path **>
 		String path
+		<** @description: The message **>
 		String message
+		<** @description: The priority **>
 		JoynrLogLevel priority
+		<** @description: The event **>
 		JoynrLoggedError errorEvent
+		<** @description: List of text classifying the event **>
 		JoynrLoggingContextTag[] tags
 	}
 }
@@ -58,10 +82,11 @@ typeCollection LoggingTypes {
 interface Logging  {
 
 	<**
-		@description: An operation with return value and parameters.
+		@description: log a number of events
 	**>
 	method log {
 		in {
+			<** @description: The list of events to be logged **>
 			LoggingTypes.JoynrLogEvent[] logEvents
 		}
 	}
