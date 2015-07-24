@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <stdint.h>
 #include <QtConcurrent/QtConcurrent>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -38,8 +39,8 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/SettingsMerger.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/StdOnChangeSubscriptionQos.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 
 using namespace ::testing;
@@ -433,10 +434,10 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 1000;
-    qint64 maxInterval_ms = 2000;
+    int64_t minInterval_ms = 1000;
+    int64_t maxInterval_ms = 2000;
 
-    QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeWithKeepAliveSubscriptionQos(
+    QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeWithKeepAliveSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms,
                                     maxInterval_ms,
@@ -493,8 +494,8 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     // changes more often. This prevents the consumer from being flooded by updated values.
     // The filtering happens on the provider's side, thus also preventing excessive network traffic.
     // This value is provided in milliseconds. The minimum value for minInterval is 50 ms.
-    qint64 minInterval_ms = 50;
-    QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
     std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
@@ -571,7 +572,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeWithKeepAliveSubscriptionQos(
+    QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeWithKeepAliveSubscriptionQos(
                                     500000,  // validity_ms
                                     1000,   // minInterval_ms
                                     2000,    // maxInterval_ms
@@ -621,7 +622,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 												   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
 												   ->build());
-        QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeWithKeepAliveSubscriptionQos(
+        QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeWithKeepAliveSubscriptionQos(
                                         500000,  // validity_ms
                                         1000,   // minInterval_ms
                                         2000,    //  maxInterval_ms
@@ -674,7 +675,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeWithKeepAliveSubscriptionQos(
+    QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeWithKeepAliveSubscriptionQos(
                                     9000,   // validity_ms
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms
@@ -859,7 +860,7 @@ tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, const 
 void subscribeToLocation(QSharedPointer<ISubscriptionListener<types::GpsLocation> > listener,
                             tests::testProxy* testProxy,
                             CombinedEnd2EndTest* testSuite) {
-    QSharedPointer<SubscriptionQos> subscriptionQos(new OnChangeWithKeepAliveSubscriptionQos(
+    QSharedPointer<StdSubscriptionQos> subscriptionQos(new StdOnChangeWithKeepAliveSubscriptionQos(
                                     500000,   // validity_ms
                                     1000,    // minInterval_ms
                                     2000,   //  maxInterval_ms

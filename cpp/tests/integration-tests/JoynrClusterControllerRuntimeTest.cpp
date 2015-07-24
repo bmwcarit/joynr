@@ -28,7 +28,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
 #include "joynr/tests/Itest.h"
@@ -263,8 +263,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             .Times(Between(1, 2));
 
 
-    QSharedPointer<SubscriptionQos> subscriptionQos = QSharedPointer<SubscriptionQos>(
-                new OnChangeWithKeepAliveSubscriptionQos(
+    QSharedPointer<StdSubscriptionQos> subscriptionQos = QSharedPointer<StdSubscriptionQos>(
+                new StdOnChangeWithKeepAliveSubscriptionQos(
                     480, // validity
                     200, // min interval
                     200, // max interval
@@ -320,8 +320,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtMost(3));
 
-    QSharedPointer<SubscriptionQos> subscriptionQos = QSharedPointer<SubscriptionQos>(
-                new OnChangeWithKeepAliveSubscriptionQos(
+    QSharedPointer<StdOnChangeWithKeepAliveSubscriptionQos> subscriptionQos = QSharedPointer<StdOnChangeWithKeepAliveSubscriptionQos>(
+                new StdOnChangeWithKeepAliveSubscriptionQos(
                     800,   // validity
                     200,   // min interval
                     200,   // max interval

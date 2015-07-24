@@ -72,10 +72,10 @@ public:
 		«var attributeName = attribute.joynrName»
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos);
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
 					std::string& subcriptionId);
 		void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 	«ENDFOR»
@@ -87,21 +87,21 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos);
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId);
 		«ELSE»
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos);
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId);
 		«ENDIF»
 		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);

@@ -19,6 +19,7 @@
 
 #include <QFileInfo>
 #include <string>
+#include <stdint.h>
 
 #include "MyRadioHelper.h"
 #include "joynr/vehicle/RadioProxy.h"
@@ -27,7 +28,7 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
 #include <cassert>
 #include <limits>
 #include "joynr/JsonSerializer.h"
@@ -205,8 +206,8 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <attribute>Changed method of the <interface>Provider class whenever the
     //       <attribute> value changes.
-    QSharedPointer<OnChangeWithKeepAliveSubscriptionQos> subscriptionQos(
-            new OnChangeWithKeepAliveSubscriptionQos());
+    QSharedPointer<StdOnChangeWithKeepAliveSubscriptionQos> subscriptionQos(
+            new StdOnChangeWithKeepAliveSubscriptionQos());
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
@@ -243,8 +244,8 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
     //       the <broadcast> should be triggered.
-    QSharedPointer<OnChangeSubscriptionQos> weakSignalBroadcastSubscriptionQos(
-            new OnChangeSubscriptionQos());
+    QSharedPointer<StdOnChangeSubscriptionQos> weakSignalBroadcastSubscriptionQos(
+            new StdOnChangeSubscriptionQos());
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
@@ -262,8 +263,8 @@ int main(int argc, char* argv[])
 
     // selective broadcast subscription
 
-    QSharedPointer<OnChangeSubscriptionQos> newStationDiscoveredBroadcastSubscriptionQos(
-            new OnChangeSubscriptionQos());
+    QSharedPointer<StdOnChangeSubscriptionQos> newStationDiscoveredBroadcastSubscriptionQos(
+            new StdOnChangeSubscriptionQos());
     newStationDiscoveredBroadcastSubscriptionQos->setMinInterval(2 * 1000);
     newStationDiscoveredBroadcastSubscriptionQos->setValidity(180 * 1000);
     QSharedPointer<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>

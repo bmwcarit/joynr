@@ -58,6 +58,8 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/StdSubscriptionQos.h"
+#include "joynr/StdOnChangeSubscriptionQos.h"
 
 namespace joynr {
 	class MessagingQos;
@@ -76,7 +78,7 @@ private:
 		«IF attribute.notifiable»
 			std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest);
 		«ENDIF»
 	«ENDFOR»
@@ -85,7 +87,7 @@ private:
 		«val broadcastName = broadcast.joynrName»
 		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
 	«ENDFOR»
 public:
@@ -113,10 +115,10 @@ public:
 		«IF attribute.notifiable»
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						QSharedPointer<joynr::SubscriptionQos> subscriptionQos);
+						QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos);
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId);
 			virtual void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 		«ENDIF»
@@ -133,19 +135,19 @@ public:
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos);
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId);
 		«ELSE»
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos);
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos);
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId);
 		«ENDIF»
 		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);

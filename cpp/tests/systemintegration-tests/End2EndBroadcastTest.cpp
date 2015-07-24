@@ -33,7 +33,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/StdOnChangeSubscriptionQos.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
@@ -224,8 +224,8 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -287,8 +287,8 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -443,8 +443,8 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -568,8 +568,8 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -710,8 +710,8 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -857,8 +857,8 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -970,8 +970,8 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 
@@ -1114,8 +1114,8 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    qint64 minInterval_ms = 50;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(
+    int64_t minInterval_ms = 50;
+    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms));  // minInterval_ms
 

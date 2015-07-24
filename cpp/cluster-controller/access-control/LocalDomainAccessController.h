@@ -35,6 +35,7 @@
 #include <QList>
 #include <QString>
 #include <string>
+#include <stdint.h>
 #include <QSharedPointer>
 #include <QMutex>
 
@@ -458,9 +459,9 @@ private:
     LocalDomainAccessStore* localDomainAccessStore;
 
     static joynr_logging::Logger* logger;
-    static qint64 broadcastMinIntervalMs;
-    static qint64 broadcastSubscriptionValidityMs;
-    static qint64 broadcastPublicationTtlMs;
+    static int64_t broadcastMinIntervalMs;
+    static int64_t broadcastSubscriptionValidityMs;
+    static int64_t broadcastPublicationTtlMs;
 
     void initialiseLocalDomainAccessStore(const QString& userId,
                                           const QString& domain,

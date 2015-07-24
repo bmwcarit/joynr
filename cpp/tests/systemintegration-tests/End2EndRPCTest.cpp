@@ -32,7 +32,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -179,7 +179,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     EXPECT_CALL(*mockListener, onReceive(A<const types::GpsLocation&>()))
             .Times(AtLeast(2));
 
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<StdSubscriptionQos>(new StdOnChangeWithKeepAliveSubscriptionQos(
                 800, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms

@@ -245,7 +245,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«IF attribute.notifiable»
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypeStd» > > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos
 		) {
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
@@ -253,7 +253,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypeStd» > > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId
 		) {
 
@@ -264,14 +264,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypeStd»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
 			LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			QString attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
-			if (subscriptionQos->getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
+			if (subscriptionQos->getExpiryDate() == joynr::StdSubscriptionQos::NO_EXPIRY_DATE()) {
+				clonedMessagingQos.setTtl(joynr::StdSubscriptionQos::NO_EXPIRY_DATE_TTL());
 			}
 			else{
 				clonedMessagingQos.setTtl(subscriptionQos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
@@ -286,7 +286,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						subscriptionQos,
+						QSharedPointer<SubscriptionQos>(SubscriptionQos::createQt(*subscriptionQos)),
 						subscriptionRequest);
 			LOG_DEBUG(logger, subscriptionRequest.toQString());
 			joynrMessageSender->sendSubscriptionRequest(
@@ -402,11 +402,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos
+					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos
 	«ELSE»
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos
+					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos
 	«ENDIF»
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
@@ -420,12 +420,12 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId
 	«ELSE»
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-					QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId
 	«ENDIF»
 	) {
@@ -439,14 +439,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 		QString broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
-		if (subscriptionQos->getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
+		if (subscriptionQos->getExpiryDate() == joynr::StdSubscriptionQos::NO_EXPIRY_DATE()) {
+			clonedMessagingQos.setTtl(joynr::StdSubscriptionQos::NO_EXPIRY_DATE_TTL());
 		}
 		else{
 			clonedMessagingQos.setTtl(subscriptionQos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
@@ -462,7 +462,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					subscriptionQos,
+					QSharedPointer<OnChangeSubscriptionQos>(SubscriptionQos::createQt(*subscriptionQos)),
 					subscriptionRequest);
 		LOG_DEBUG(logger, subscriptionRequest.toQString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(

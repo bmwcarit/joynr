@@ -30,7 +30,7 @@
 #include "joynr/tests/testProxy.h"
 
 #include "joynr/RequestStatus.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -229,7 +229,7 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     EXPECT_CALL(*mockListener, onReceive(A<const int&>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
     QSharedPointer<ISubscriptionListener<int> > subscriptionListener(mockListener);
 
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<StdSubscriptionQos>(new StdOnChangeWithKeepAliveSubscriptionQos(
                 500000, // validity_ms
                 2000, // minInterval_ms
                 3000, // maxInterval_ms

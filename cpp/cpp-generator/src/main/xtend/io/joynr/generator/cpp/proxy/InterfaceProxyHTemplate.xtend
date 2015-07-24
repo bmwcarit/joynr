@@ -80,7 +80,7 @@ public:
 
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos);
@@ -88,7 +88,7 @@ public:
 
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
+					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
 					std::string& subscriptionId){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
@@ -108,7 +108,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
 							subscriptionListener,
@@ -118,7 +118,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
@@ -129,7 +129,7 @@ public:
 		«ELSE»
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,
 							subscriptionQos);
@@ -137,7 +137,7 @@ public:
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
+						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
 						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,

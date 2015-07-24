@@ -28,7 +28,7 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/RequestStatus.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/StdOnChangeSubscriptionQos.h"
 #include <vector>
 #include "joynr/joynrlogging.h"
 
@@ -44,10 +44,10 @@ using namespace joynr_logging;
 Logger* LocalDomainAccessController::logger =
         Logging::getInstance()->getLogger("MSG", "LocalDomainAccessController");
 
-qint64 LocalDomainAccessController::broadcastMinIntervalMs = 1 * 1000;
-qint64 LocalDomainAccessController::broadcastSubscriptionValidityMs =
+int64_t LocalDomainAccessController::broadcastMinIntervalMs = 1 * 1000;
+int64_t LocalDomainAccessController::broadcastSubscriptionValidityMs =
         10 * 365 * 24 * 3600 * 1000LL; // 10 years
-qint64 LocalDomainAccessController::broadcastPublicationTtlMs = 5 * 1000;
+int64_t LocalDomainAccessController::broadcastPublicationTtlMs = 5 * 1000;
 
 //--- Declarations of nested classes -------------------------------------------
 
@@ -762,7 +762,8 @@ void LocalDomainAccessController::processConsumerRequests(
 
 QString LocalDomainAccessController::subscribeForDreChange(const QString& userId)
 {
-    QSharedPointer<OnChangeSubscriptionQos> broadcastSubscriptionQos(new OnChangeSubscriptionQos());
+    QSharedPointer<StdOnChangeSubscriptionQos> broadcastSubscriptionQos(
+            new StdOnChangeSubscriptionQos());
     broadcastSubscriptionQos->setMinInterval(broadcastMinIntervalMs);
     broadcastSubscriptionQos->setValidity(broadcastSubscriptionValidityMs);
     broadcastSubscriptionQos->setPublicationTtl(broadcastPublicationTtlMs);
@@ -784,7 +785,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
         const QString& domain,
         const QString& interfaceName)
 {
-    QSharedPointer<OnChangeSubscriptionQos> broadcastSubscriptionQos(new OnChangeSubscriptionQos());
+    QSharedPointer<StdOnChangeSubscriptionQos> broadcastSubscriptionQos(
+            new StdOnChangeSubscriptionQos());
     broadcastSubscriptionQos->setMinInterval(broadcastMinIntervalMs);
     broadcastSubscriptionQos->setValidity(broadcastSubscriptionValidityMs);
     broadcastSubscriptionQos->setPublicationTtl(broadcastPublicationTtlMs);
