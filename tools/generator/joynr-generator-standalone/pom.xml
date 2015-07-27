@@ -29,35 +29,40 @@
 		<version>0.9.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
+	<profiles>
+		<profile>
+			<id>deployStandalone</id>
+			<properties>
+				<assembly.skipAssembly>false</assembly.skipAssembly>
+			</properties>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
-        <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.5.2</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <finalName>joynr-generator-standalone-${project.version}</finalName>
-          <!--appendAssemblyId>false</appendAssemblyId-->
-          <archive>
-            <manifest>
-              <mainClass>io.joynr.generator.ExecutorCL</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id> <!-- this is used for inheritance merges -->
-            <phase>package</phase> <!-- bind to the packaging phase -->
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-        </plugin>
-      </plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>io.joynr.generator.ExecutorCL</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+	 	</plugins>
 	</build>
 
 	<dependencies>
@@ -75,6 +80,29 @@
 			<groupId>io.joynr.tools.generator</groupId>
 			<artifactId>generator-framework</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!--
+			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
+			It is pulled in as transitive dependency:
+			io.joynr.java.messaging:messaging-servlet:jar:classes
+			+- org.reflections:reflections:jar
+			|  +- javassist:javassist:jar
+		-->
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

@@ -31,10 +31,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<properties>
-			<javaassist.version>3.12.1.GA</javaassist.version>
-	</properties>
-
 	<modules>
 		<module>discovery-directory-servlet</module>
 		<module>capabilities-directory</module>

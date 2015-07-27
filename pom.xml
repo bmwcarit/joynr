@@ -385,6 +385,7 @@
 		<hibernate.version>4.3.8.Final</hibernate.version>
 		<android.platform.version>5.0.1_r2</android.platform.version>
 		<android.platform.level>21</android.platform.level>
+		<javaassist.version>3.12.1.GA</javaassist.version>
 	</properties>
 
 	<!--
@@ -407,6 +408,17 @@
 						<groupId>xerces</groupId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>${javaassist.version}</version>
+				<classifier>sources</classifier>
+			</dependency>
+			<dependency>
+				<groupId>javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>${javaassist.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>

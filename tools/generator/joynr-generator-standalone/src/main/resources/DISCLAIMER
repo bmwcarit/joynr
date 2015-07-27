@@ -1,0 +1,62 @@
+This project includes software developed by
+BMW Car IT GmbH (http://www.bmw-carit.de)
+and BMW Forschung & Technik GmbH
+
+Licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations
+under the License.
+
+The software listed below included in some products is licensed under the "Apache License,
+Version 2.0". A copy of that license in the English original version with a copyright notice, a
+disclaimer of warranty, and an exclusion of liability is included in this document 
+"META-INF/licenses/Apache-2.txt" as well as the content of the NOTICE file if applicable.
+  Apache Log4j
+  FindBugs-jsr305
+  javax.inject
+  Google Guice - Core Library
+  Guava: Google Core Libraries for Java
+  io.joynr.cpp:cpp-generator
+  io.joynr.java:java-generator
+  io.joynr.tools.generator:generator-framework
+  XML Commons External Components XML APIs
+
+The software listed below included in some products is licensed under the "Eclipse License,
+Version 1.0".
+  codegen
+  Eclipse Xbase Runtime Library
+  Eclipse Xtend Macro Library
+  Eclipse Xtend Runtime Library
+  org.eclipse.xtend.standalone
+  org.franca.core
+  org.franca.core.dsl
+  org.franca.deploymodel.dsl
+
+Software libraries listed below included in some products are free software that is licensed under
+"GNU Lesser General Public License (LGPL) v2.1". A copy of that license in the English original
+version with a disclaimer of warranty and an exclusion of liability is included in this document
+"META-INF/licenses/LGPL-2.1.txt". This free software has been developed by third parties and is
+copyrighted. It is provided for free, and you are permitted to use it according to the mentioned
+license. LGPL v 2.1 supersedes other licenses. The complete corresponding source code is included
+in the files listed below.
+- javassist:javassist:3.12.1.GA
+  Sources: WEB-INF/lib/javassist-3.12.1.GA-sources.jar
+
+The software listed below included in some products is licensed under the WTF Public License
+  Reflections
+
+The software listed below included in some products is under Public Domain
+  AOP alliance
+
+The software listed below included in some products is licensed under the "DOM4J License".
+A copy of that license in the English original version with a copyright notice, a disclaimer of warranty,
+and an exclusion of liability is included in this document "META-INF/licences/DOM4J-License.txt".
+- dom4j:dom4j:1.6.1
