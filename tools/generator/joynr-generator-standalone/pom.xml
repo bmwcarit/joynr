@@ -40,7 +40,7 @@
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
           <finalName>joynr-generator-standalone-${project.version}</finalName>
-          <appendAssemblyId>false</appendAssemblyId>
+          <!--appendAssemblyId>false</appendAssemblyId-->
           <archive>
             <manifest>
               <mainClass>io.joynr.generator.ExecutorCL</mainClass>
