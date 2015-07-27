@@ -18,6 +18,7 @@
  */
 #include "joynr/BroadcastFilterParameters.h"
 #include <QMapIterator>
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -104,4 +105,26 @@ bool BroadcastFilterParameters::equals(const QObject& other) const
     return typeThis == typeOther && *this == *newOther;
 }
 
+BroadcastFilterParameters BroadcastFilterParameters::createQt(
+        const StdBroadcastFilterParameters& from)
+{
+    BroadcastFilterParameters to;
+    std::map<std::string, std::string> filterParameters(from.getFilterParameters());
+    for (std::map<std::string, std::string>::const_iterator iterator = filterParameters.begin();
+         iterator != filterParameters.end();
+         iterator++) {
+        to.setFilterParameter(TypeUtil::toQt(iterator->first), TypeUtil::toQt(iterator->second));
+    }
+    return to;
+}
+
+StdBroadcastFilterParameters BroadcastFilterParameters::createStd(
+        const BroadcastFilterParameters& from)
+{
+    StdBroadcastFilterParameters to;
+    for (auto e : from.getFilterParameters().toStdMap()) {
+        to.setFilterParameter(TypeUtil::toStd(e.first), TypeUtil::toStd(e.second));
+    }
+    return to;
+}
 } // namespace joynr
