@@ -72,6 +72,7 @@ This project has dependencies to:
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
+  javax.interceptor API under CDDL + GPLv2 with classpath exception
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
   JBoss Logging 3 under Apache License, version 2.0
   JBoss Logging I18n Annotations under Public Domain

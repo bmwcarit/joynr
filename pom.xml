@@ -82,7 +82,7 @@
 				<!--
 					maven-jgitflow-plugin will set the performRelease property during
 					release and thus automatically activate this profile during release.
-					NOTE: You need to install GPG [1] and publish your public key to a key 
+					NOTE: You need to install GPG [1] and publish your public key to a key
 					server.
 					The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
 					[2].
@@ -176,14 +176,14 @@
 			</properties>
 		</profile>
 		<profile>
-			<!-- 
+			<!--
 				NOTE: if you change activation or the profile ID here, your also must
 				change it in the following child modules that extend this profile:
 				* io.joynr.java.messaging.bounceproxy:bounceproxy-ui
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.6</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
@@ -249,8 +249,8 @@
 			<id>carit-license</id>
 			<properties>
 				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
-				<!-- 
-					For unknown reasons useLicensesConfigFile and licensesConfigFile 
+				<!--
+					For unknown reasons useLicensesConfigFile and licensesConfigFile
 					configuration properties must be set as global properties. It is
 					not sufficient to specify them directly in the plugin configuration.
 				-->
@@ -287,8 +287,8 @@
 							<generateBundle>true</generateBundle>
 							<fileTemplate>license/joynr-third-party-file.ftl</fileTemplate>
 							<bundleThirdPartyPath>${project.artifactId}-LICENSES.html</bundleThirdPartyPath>
-							<!-- 
-								For unknown reasons useLicensesConfigFile and licensesConfigFile 
+							<!--
+								For unknown reasons useLicensesConfigFile and licensesConfigFile
 								configuration properties must be set as global properties. It is
 								not sufficient to specify them directly in the plugin configuration.
 							-->
@@ -1483,7 +1483,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
-					<!-- 
+					<!--
 						Workaraound: sets properties to skip execution of copying NOTICE file
 						and unpacking of LICENSE information on Maven projects with packaging pom.
 					-->
