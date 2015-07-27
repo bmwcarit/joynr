@@ -47,10 +47,16 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
     private List<Module> modules;
 
     public InitRuntimeTask(Context applicationContext, UILogger uiLogger) {
-        this(PropertyLoader.loadProperties("res/raw/demo.properties"), applicationContext, uiLogger, Collections.<Module> emptyList());
+        this(PropertyLoader.loadProperties("res/raw/demo.properties"),
+             applicationContext,
+             uiLogger,
+             Collections.<Module> emptyList());
     }
 
-    public InitRuntimeTask(Properties joynrConfig, Context applicationContext, UILogger uiLogger, List<Module> joynrModules) {
+    public InitRuntimeTask(Properties joynrConfig,
+                           Context applicationContext,
+                           UILogger uiLogger,
+                           List<Module> joynrModules) {
         this.joynrConfig = joynrConfig;
         this.applicationContext = applicationContext;
         this.uiLogger = uiLogger;
@@ -88,7 +94,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
             joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
 
             // Create an injector with all the required custom modules
-            Module [] moduleArray = modules.toArray(new Module[modules.size()]);
+            Module[] moduleArray = modules.toArray(new Module[modules.size()]);
             Injector injectorA = new JoynrInjectorFactory(joynrConfig, moduleArray).createChildInjector();
 
             JoynrRuntimeImpl runtime = injectorA.getInstance(JoynrRuntimeImpl.class);

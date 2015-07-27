@@ -45,7 +45,10 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     public JoynrAndroidRuntime(Context applicationContext, Properties joynrConfig) {
-        runtimeInitTask = new InitRuntimeTask(joynrConfig, applicationContext, uiLogger, Collections.<Module> emptyList());
+        runtimeInitTask = new InitRuntimeTask(joynrConfig,
+                                              applicationContext,
+                                              uiLogger,
+                                              Collections.<Module> emptyList());
         runtimeInitTask.execute();
     }
 

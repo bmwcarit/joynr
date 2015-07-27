@@ -24,6 +24,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest="./src/main/AndroidManifest.xml")
+@Config(manifest = "./src/main/AndroidManifest.xml")
 public class ProxyTest extends io.joynr.proxy.ProxyTest {
 }
