@@ -274,7 +274,8 @@ int main(int argc, char* argv[])
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
     vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
     QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
-    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
+    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(
+            TypeUtil::toStd(positionOfInterestJson));
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
     std::string newStationDiscoveredBroadcastSubscriptionId =
             proxy->subscribeToNewStationDiscoveredBroadcast(

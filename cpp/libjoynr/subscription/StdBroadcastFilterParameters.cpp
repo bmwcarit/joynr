@@ -60,13 +60,15 @@ void StdBroadcastFilterParameters::setFilterParameter(const std::string& paramet
 
 std::map<std::string, std::string> StdBroadcastFilterParameters::getFilterParameters() const
 {
-    std::map<std::string, std::string> stringParams;
-    for (std::map<std::string, std::string>::const_iterator iterator = filterParameters.begin();
-         iterator != filterParameters.end();
+    std::map<std::string, std::string> fiterParameters;
+    for (std::map<std::string, std::string>::const_iterator iterator =
+                 this->filterParameters.begin();
+         iterator != this->filterParameters.end();
          iterator++) {
-        stringParams.insert(std::pair<std::string, std::string>(iterator->first, iterator->second));
+        fiterParameters.insert(
+                std::pair<std::string, std::string>(iterator->first, iterator->second));
     }
-    return stringParams;
+    return fiterParameters;
 }
 
 std::string StdBroadcastFilterParameters::getFilterParameter(const std::string& parameter) const

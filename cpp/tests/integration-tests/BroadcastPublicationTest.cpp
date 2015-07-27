@@ -74,7 +74,7 @@ public:
                     80 // alertInterval_ms
         ));
         request.setQos(subscriptionQos);
-        request.setFilterParameters(filterParameters);
+        request.setFilterParameters(BroadcastFilterParameters::createQt(filterParameters));
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",

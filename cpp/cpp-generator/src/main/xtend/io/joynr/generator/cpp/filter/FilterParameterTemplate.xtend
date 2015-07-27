@@ -38,28 +38,28 @@ class FilterParameterTemplate implements BroadcastTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/StdBroadcastFilterParameters.h"
 #include <string>
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»
-class «getDllExportMacro()» «className» : public BroadcastFilterParameters {
+class «getDllExportMacro()» «className» : public StdBroadcastFilterParameters {
 public:
 
 	«IF (getFilterParameters(broadcast).isEmpty())»
-		void set(QString key, QString value) {
+		void set(std::string key, std::string value) {
 			setFilterParameter(key, value);
 		}
 
-		QString get(QString key) const {
+		std::string get(std::string key) const {
 			return getFilterParameter(key);
 		}
 	«ELSE»
 		«FOR parameter: getFilterParameters(broadcast)»
-			void set«parameter.toFirstUpper»(QString value) {
+			void set«parameter.toFirstUpper»(std::string value) {
 				setFilterParameter("«parameter»", value);
 			}
-			QString get«parameter.toFirstUpper»() const {
+			std::string get«parameter.toFirstUpper»() const {
 				return getFilterParameter("«parameter»");
 			}
 		«ENDFOR»

@@ -31,6 +31,7 @@
 #include "joynr/StdOnChangeSubscriptionQos.h"
 #include <vector>
 #include "joynr/joynrlogging.h"
+#include "joynr/TypeUtil.h"
 
 #include <cassert>
 #include <QAtomicInt>
@@ -769,7 +770,7 @@ QString LocalDomainAccessController::subscribeForDreChange(const QString& userId
     broadcastSubscriptionQos->setPublicationTtl(broadcastPublicationTtlMs);
     GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
             domainRoleFilterParameters;
-    domainRoleFilterParameters.setUserIdOfInterest(userId);
+    domainRoleFilterParameters.setUserIdOfInterest(TypeUtil::toStd(userId));
 
     std::string subscriptionId =
             globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
@@ -795,8 +796,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters
             masterAcefilterParameters;
-    masterAcefilterParameters.setDomainOfInterest(domain);
-    masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
+    masterAcefilterParameters.setDomainOfInterest(TypeUtil::toStd(domain));
+    masterAcefilterParameters.setInterfaceOfInterest(TypeUtil::toStd(interfaceName));
     subscriptionIds.masterAceSubscriptionId =
             globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
                     masterAcefilterParameters,
@@ -806,8 +807,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters
             mediatorAceFilterParameters;
-    mediatorAceFilterParameters.setDomainOfInterest(domain);
-    mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
+    mediatorAceFilterParameters.setDomainOfInterest(TypeUtil::toStd(domain));
+    mediatorAceFilterParameters.setInterfaceOfInterest(TypeUtil::toStd(interfaceName));
     subscriptionIds.mediatorAceSubscriptionId =
             globalDomainAccessControllerProxy
                     ->subscribeToMediatorAccessControlEntryChangedBroadcast(
@@ -819,8 +820,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters
             ownerAceFilterParameters;
-    ownerAceFilterParameters.setDomainOfInterest(domain);
-    ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
+    ownerAceFilterParameters.setDomainOfInterest(TypeUtil::toStd(domain));
+    ownerAceFilterParameters.setInterfaceOfInterest(TypeUtil::toStd(interfaceName));
     subscriptionIds.ownerAceSubscriptionId =
             globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
                     ownerAceFilterParameters,

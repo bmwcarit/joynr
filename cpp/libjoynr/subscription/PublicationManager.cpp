@@ -789,7 +789,9 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
     foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
-        success = success && filter->filter(broadcastValues, filterParameters);
+        success = success &&
+                  filter->filter(
+                          broadcastValues, BroadcastFilterParameters::createStd(filterParameters));
     }
 
     return success;

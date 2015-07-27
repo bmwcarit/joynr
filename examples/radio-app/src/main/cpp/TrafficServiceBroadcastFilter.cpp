@@ -28,11 +28,10 @@ bool TrafficServiceBroadcastFilter::filter(
         const joynr::vehicle::GeoPosition& geoPosition,
         const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters)
 {
-    if (filterParameters.getHasTrafficService().isNull()) {
+    if (filterParameters.getHasTrafficService().empty()) {
         // filter parameter not set, so we do no filtering
         return true;
     }
-    bool hasTrafficService =
-            filterParameters.getHasTrafficService().compare("true", Qt::CaseInsensitive) == 0;
+    bool hasTrafficService = filterParameters.getHasTrafficService() == "true";
     return discoveredStation.getTrafficService() == hasTrafficService;
 }
