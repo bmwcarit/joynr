@@ -58,7 +58,7 @@ public interface LocalDomainAccessController {
      * @param interfaceName The interface that is being accessed
      * @param trustLevel    The trust level of the device accessing the interface
      * @return Permission to access given interface, or NULL if there is more than one ACE for given uid, domain, interfaceName.
-     * If function returns NULL, use {@link io.joynr.accesscontrol.LocalDomainAccessController#getConsumerPermission(String, String, String, String, joynr.infrastructure.TrustLevel)} to gain Permission on interface operation.
+     * If function returns NULL, use {@link #getConsumerPermission(String, String, String, TrustLevel)} to gain Permission on interface operation.
      */
     @CheckForNull
     Permission getConsumerPermission(String userId, String domain, String interfaceName, TrustLevel trustLevel);
