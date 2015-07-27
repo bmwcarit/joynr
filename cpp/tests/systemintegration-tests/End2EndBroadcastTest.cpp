@@ -103,6 +103,7 @@ public:
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     QSharedPointer<MockLocationUpdatedSelectiveFilter> filter;
     unsigned long registerProviderWait;
+    unsigned long subscribeToAttributeWait;
     unsigned long subscribeToBroadcastWait;
 
     End2EndBroadcastTest() :
@@ -121,6 +122,7 @@ public:
         altSemaphore(0),
         filter(new MockLocationUpdatedSelectiveFilter),
         registerProviderWait(1000),
+        subscribeToAttributeWait(2000),
         subscribeToBroadcastWait(2000)
 
     {
@@ -158,6 +160,23 @@ public:
 
         // Delete the persisted participant ids so that each test uses different participant ids
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    }
+
+    /*
+     *  This wait is necessary, because subcriptions are async, and a broadcast could occur
+     * before the subscription has started.
+     */
+    void waitForAttributeSubscriptionArrivedAtProvider(
+            std::shared_ptr<tests::testAbstractProvider> testProvider,
+            const std::string& attributeName)
+    {
+        unsigned long delay = 0;
+
+        while (testProvider->attributeListeners.value(attributeName).isEmpty() && delay <= subscribeToBroadcastWait) {
+            QThreadSleep::msleep(50);
+            delay+=50;
+        }
+        assert(!testProvider->attributeListeners.value(attributeName).isEmpty());
     }
 
     /*
@@ -1127,6 +1146,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                 subscriptionListenerBroadcast,
                 subscriptionQos);
 
+    waitForAttributeSubscriptionArrivedAtProvider(testProvider, "location");
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "location");
 
     // Initial attribute publication
