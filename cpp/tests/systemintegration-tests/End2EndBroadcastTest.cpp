@@ -101,7 +101,7 @@ public:
     QSemaphore semaphore;
     QSemaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
-    QSharedPointer<MockLocationUpdatedSelectiveFilter> filter;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
     unsigned long registerProviderWait;
     unsigned long subscribeToAttributeWait;
     unsigned long subscribeToBroadcastWait;

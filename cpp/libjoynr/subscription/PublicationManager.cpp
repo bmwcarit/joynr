@@ -779,7 +779,7 @@ void PublicationManager::removePublicationEndRunnable(QSharedPointer<Publication
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(const QString& subscriptionId,
                                             const QList<QVariant>& broadcastValues,
-                                            const QList<QSharedPointer<IBroadcastFilter>>& filters)
+                                            const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     bool success = true;
 
@@ -788,7 +788,7 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
-    foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
+    foreach (std::shared_ptr<IBroadcastFilter> filter, filters) {
         success = success &&
                   filter->filter(
                           broadcastValues, BroadcastFilterParameters::createStd(filterParameters));
@@ -974,7 +974,7 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 
 void PublicationManager::broadcastOccurred(const QString& subscriptionId,
                                            const QList<QVariant>& values,
-                                           const QList<QSharedPointer<IBroadcastFilter>>& filters)
+                                           const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
               QString("broadcastOccurred for subscription %1. Number of values: %2")

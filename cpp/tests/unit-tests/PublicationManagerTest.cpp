@@ -798,7 +798,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
-    QList<QSharedPointer<IBroadcastFilter> > filters;
+    QList<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
@@ -918,7 +918,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
-    QList<QSharedPointer<IBroadcastFilter> > filters;
+    QList<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");
@@ -1006,7 +1006,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
-    QList<QSharedPointer<IBroadcastFilter> > filters;
+    QList<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");

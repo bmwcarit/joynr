@@ -20,7 +20,7 @@
 #define IJOYNRPROVIDER_H
 
 #include <string>
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -65,7 +65,7 @@ public:
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener) = 0;
 
-    virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter) = 0;
+    virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter) = 0;
 
     virtual std::string getInterfaceName() const = 0;
 };

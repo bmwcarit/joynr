@@ -30,6 +30,7 @@
 #include <QList>
 #include <QVariant>
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -76,7 +77,7 @@ public:
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener);
 
-    virtual void addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter);
+    virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter);
 
 protected:
     /**
@@ -97,7 +98,7 @@ private:
     QReadWriteLock lock;
     QMap<std::string, QList<IAttributeListener*>> attributeListeners;
     QMap<std::string, QList<IBroadcastListener*>> broadcastListeners;
-    QMap<std::string, QList<QSharedPointer<IBroadcastFilter>>> broadcastFilters;
+    QMap<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     friend class End2EndBroadcastTest;
 };

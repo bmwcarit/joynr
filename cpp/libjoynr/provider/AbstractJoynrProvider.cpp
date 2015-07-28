@@ -114,16 +114,16 @@ void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
     }
 }
 
-void AbstractJoynrProvider::addBroadcastFilter(QSharedPointer<IBroadcastFilter> filter)
+void AbstractJoynrProvider::addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter)
 {
-    QMap<std::string, QList<QSharedPointer<IBroadcastFilter>>>::iterator it =
+    QMap<std::string, QList<std::shared_ptr<IBroadcastFilter>>>::iterator it =
             broadcastFilters.find(filter->getName());
 
     if (it != broadcastFilters.end()) {
         it.value().append(filter);
     } else {
         broadcastFilters.insert(
-                filter->getName(), QList<QSharedPointer<IBroadcastFilter>>({filter}));
+                filter->getName(), QList<std::shared_ptr<IBroadcastFilter>>({filter}));
     }
 }
 

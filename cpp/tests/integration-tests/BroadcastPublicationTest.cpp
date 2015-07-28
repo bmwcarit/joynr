@@ -95,8 +95,8 @@ public:
         delete publicationManager;
         delete publicationSender;
         delete subscriptionBroadcastListener;
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.data()));
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.data()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
     }
 
 protected:
@@ -114,8 +114,8 @@ protected:
     std::shared_ptr<MockTestProvider> provider;
     QSharedPointer<RequestCaller> requestCaller;
     TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
-    QSharedPointer<MockLocationUpdatedSelectiveFilter> filter1;
-    QSharedPointer<MockLocationUpdatedSelectiveFilter> filter2;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter1;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter2;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastPublicationTest);

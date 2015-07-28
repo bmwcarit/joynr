@@ -20,13 +20,11 @@
 #define IBROADCASTLISTENER_H
 
 #include "joynr/JoynrExport.h"
+#include <memory>
 
 template <typename T>
 class QList;
 class QVariant;
-
-template <typename T>
-class QSharedPointer;
 
 namespace joynr
 {
@@ -40,7 +38,7 @@ public:
     {
     }
     virtual void broadcastOccurred(const QList<QVariant>& values,
-                                   const QList<QSharedPointer<IBroadcastFilter>>& filters) = 0;
+                                   const QList<std::shared_ptr<IBroadcastFilter>>& filters) = 0;
 };
 
 } // namespace joynr

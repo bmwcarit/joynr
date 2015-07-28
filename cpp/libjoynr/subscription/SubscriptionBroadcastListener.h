@@ -23,6 +23,7 @@
 #include "joynr/IBroadcastListener.h"
 
 #include <QString>
+#include <memory>
 
 namespace joynr
 {
@@ -44,7 +45,7 @@ public:
 
     // Implementation of IBroadcastListener::receive
     void broadcastOccurred(const QList<QVariant>& values,
-                           const QList<QSharedPointer<IBroadcastFilter>>& filters);
+                           const QList<std::shared_ptr<IBroadcastFilter>>& filters);
 
 private:
     QString subscriptionId;

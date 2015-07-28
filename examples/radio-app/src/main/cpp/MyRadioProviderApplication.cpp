@@ -65,10 +65,10 @@ int main(int argc, char* argv[])
     // create provider instance
     std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
     // add broadcast filters
-    QSharedPointer<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
+    std::shared_ptr<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
             new TrafficServiceBroadcastFilter());
     provider->addBroadcastFilter(trafficServiceBroadcastFilter);
-    QSharedPointer<GeocastBroadcastFilter> geocastBroadcastFilter(new GeocastBroadcastFilter());
+    std::shared_ptr<GeocastBroadcastFilter> geocastBroadcastFilter(new GeocastBroadcastFilter());
     provider->addBroadcastFilter(geocastBroadcastFilter);
 
     // Register the provider
