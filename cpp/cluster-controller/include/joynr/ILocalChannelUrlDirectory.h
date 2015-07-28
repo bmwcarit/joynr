@@ -21,6 +21,7 @@
 #include <QSharedPointer>
 #include <functional>
 #include <string>
+#include <QtGlobal>
 
 namespace joynr
 {

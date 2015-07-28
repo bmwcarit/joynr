@@ -26,6 +26,7 @@
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
+#include <QtGlobal>
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
