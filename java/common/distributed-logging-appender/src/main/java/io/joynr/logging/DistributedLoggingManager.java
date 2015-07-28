@@ -32,8 +32,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import joynr.system.JoynrLogEvent;
 import joynr.system.LoggingProxy;
-import joynr.system.loggingtypes.JoynrLogEvent;
 
 import org.apache.logging.log4j.core.appender.AbstractManager;
 

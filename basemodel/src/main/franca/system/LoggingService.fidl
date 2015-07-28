@@ -18,7 +18,7 @@
  */
 package system
 
-typeCollection LoggingTypes {
+typeCollection {
 	
 	<** @description: The log level **>
 	enumeration JoynrLogLevel {
@@ -87,7 +87,7 @@ interface Logging  {
 	method log {
 		in {
 			<** @description: The list of events to be logged **>
-			LoggingTypes.JoynrLogEvent[] logEvents
+			JoynrLogEvent[] logEvents
 		}
 	}
 }
