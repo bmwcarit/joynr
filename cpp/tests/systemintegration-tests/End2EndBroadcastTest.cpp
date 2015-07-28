@@ -258,7 +258,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     ON_CALL(*mockListener, onReceive(Eq(expectedTestEnum)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<tests::testTypes::StdTestEnum::Enum>> subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<tests::testTypes::StdTestEnum::Enum>> subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -285,9 +285,9 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
             ->build();
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
 
@@ -317,11 +317,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener2, onReceive(_))
             .WillRepeatedly(ReleaseSemaphore(&altSemaphore));
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener2(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener2(
                     mockListener2);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -348,9 +348,9 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
@@ -374,7 +374,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
     // update subscription, much longer minInterval_ms
-    subscriptionQos->setMinInterval(5000);
+    subscriptionQos.setMinInterval(5000);
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
     QThreadSleep::msleep(subscribeToBroadcastWait);
@@ -408,7 +408,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3)))
             .Times(0);
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -435,9 +435,9 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     std::string subscriptionId = testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
@@ -476,7 +476,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -503,9 +503,9 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
@@ -549,7 +549,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4), Eq(300)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation, float> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation, float> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -576,9 +576,9 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     testProxy->subscribeToLocationUpdateWithSpeedBroadcast(subscriptionListener, subscriptionQos);
 
@@ -624,7 +624,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
@@ -654,9 +654,9 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     testProxy->subscribeToLocationUpdateSelectiveBroadcast(
                 filterParameters,
@@ -701,7 +701,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>())).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
@@ -731,9 +731,9 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     testProxy->subscribeToLocationUpdateSelectiveBroadcast(
                 filterParameters,
@@ -787,10 +787,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(gpsLocation3))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerAttribute(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerAttribute(
                     mockListenerAttribute);
 
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerBroadcast(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -817,9 +817,9 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    QSharedPointer<StdOnChangeSubscriptionQos> subscriptionQos(new StdOnChangeSubscriptionQos(
-                                    500000,   // validity_ms
-                                    minInterval_ms));  // minInterval_ms
+    StdOnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
 
     testProxy->subscribeToLocation(
                 subscriptionListenerAttribute,

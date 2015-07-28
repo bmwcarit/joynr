@@ -85,8 +85,8 @@ public:
 protected:
     QSharedPointer<MockMessageRouter> mockMessageRouter;
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListenerOne;
-    QSharedPointer<MockSubscriptionListenerTwoTypes<types::GpsLocation, double> > mockSubscriptionListenerTwo;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListenerOne;
+    std::shared_ptr<MockSubscriptionListenerTwoTypes<types::GpsLocation, double> > mockSubscriptionListenerTwo;
 
     types::GpsLocation gpsLocation1;
     double speed1;

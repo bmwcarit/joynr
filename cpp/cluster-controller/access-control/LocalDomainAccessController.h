@@ -35,6 +35,7 @@
 #include <QList>
 #include <QString>
 #include <string>
+#include <memory>
 #include <stdint.h>
 #include <QSharedPointer>
 #include <QMutex>
@@ -506,18 +507,19 @@ private:
     // Classes used to receive broadcasts
 
     class DomainRoleEntryChangedBroadcastListener;
-    QSharedPointer<DomainRoleEntryChangedBroadcastListener> domainRoleEntryChangedBroadcastListener;
+    std::shared_ptr<DomainRoleEntryChangedBroadcastListener>
+            domainRoleEntryChangedBroadcastListener;
 
     class MasterAccessControlEntryChangedBroadcastListener;
-    QSharedPointer<MasterAccessControlEntryChangedBroadcastListener>
+    std::shared_ptr<MasterAccessControlEntryChangedBroadcastListener>
             masterAccessControlEntryChangedBroadcastListener;
 
     class MediatorAccessControlEntryChangedBroadcastListener;
-    QSharedPointer<MediatorAccessControlEntryChangedBroadcastListener>
+    std::shared_ptr<MediatorAccessControlEntryChangedBroadcastListener>
             mediatorAccessControlEntryChangedBroadcastListener;
 
     class OwnerAccessControlEntryChangedBroadcastListener;
-    QSharedPointer<OwnerAccessControlEntryChangedBroadcastListener>
+    std::shared_ptr<OwnerAccessControlEntryChangedBroadcastListener>
             ownerAccessControlEntryChangedBroadcastListener;
 };
 } // namespace joynr

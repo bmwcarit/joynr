@@ -198,8 +198,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 	«ENDIF»
 	«IF attribute.notifiable»
 		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
-				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::StdSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
@@ -208,16 +208,16 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 		}
 
 		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
-				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos)
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::StdSubscriptionQos& subscriptionQos)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
 		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
-				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::StdSubscriptionQos& subscriptionQos,
 				joynr::SubscriptionRequest& subscriptionRequest)
 		{
 			«IF isEnum(attribute.type)»
@@ -244,7 +244,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						QSharedPointer<SubscriptionQos>(SubscriptionQos::createQt(*subscriptionQos)),
+						QSharedPointer<SubscriptionQos>(SubscriptionQos::createQt(subscriptionQos)),
 						subscriptionRequest);
 				LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
 				assert(!address.isNull());
@@ -358,13 +358,13 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 
 	«IF isSelective(broadcast)»
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos
+				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+				const joynr::StdOnChangeSubscriptionQos& subscriptionQos
 	«ELSE»
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos
+				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+				const joynr::StdOnChangeSubscriptionQos& subscriptionQos
 	«ENDIF»
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
@@ -382,14 +382,14 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 
 	«IF isSelective(broadcast)»
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+				const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId
 	«ELSE»
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+				const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId
 	«ENDIF»
 	) {
@@ -405,8 +405,8 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	}
 
 	std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
@@ -418,7 +418,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					QSharedPointer<OnChangeSubscriptionQos>(SubscriptionQos::createQt(*subscriptionQos)),
+					QSharedPointer<OnChangeSubscriptionQos>(SubscriptionQos::createQt(subscriptionQos)),
 					subscriptionRequest);
 		LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
 		assert(!address.isNull());

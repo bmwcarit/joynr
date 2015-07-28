@@ -19,7 +19,7 @@
 #ifndef SUBSCRIPTIONCALLBACK_H
 #define SUBSCRIPTIONCALLBACK_H
 #include "joynr/PrivateCopyAssign.h"
-#include <QSharedPointer>
+#include <memory>
 #include <QMetaType>
 
 #include "joynr/ISubscriptionCallback.h"
@@ -40,7 +40,7 @@ template <typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
-    SubscriptionCallback(QSharedPointer<ISubscriptionListener<T, Ts...>> listener)
+    SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener)
             : listener(listener)
     {
     }
@@ -72,7 +72,7 @@ public:
     }
 
 protected:
-    QSharedPointer<ISubscriptionListener<T, Ts...>> listener;
+    std::shared_ptr<ISubscriptionListener<T, Ts...>> listener;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);

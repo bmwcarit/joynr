@@ -173,7 +173,7 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     tests::testJoynrMessagingConnector* connector = createConnector(false);
 
-    QSharedPointer<MockGpsFloatSubscriptionListener> mockListener(new MockGpsFloatSubscriptionListener());
+    std::shared_ptr<MockGpsFloatSubscriptionListener> mockListener(new MockGpsFloatSubscriptionListener());
 
     EXPECT_CALL(
                         *mockSubscriptionManager,
@@ -189,7 +189,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::GpsLocation::createStd(gpsLocation)), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    QSharedPointer<joynr::StdOnChangeSubscriptionQos> qos(new joynr::StdOnChangeSubscriptionQos());
+    joynr::StdOnChangeSubscriptionQos qos;
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive

@@ -179,18 +179,18 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
             ->build());
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
-    QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                 mockListener);
 
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
             .Times(AtLeast(2));
 
-    auto subscriptionQos = QSharedPointer<StdSubscriptionQos>(new StdOnChangeWithKeepAliveSubscriptionQos(
+    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                 800, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
     testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     QThreadSleep::msleep(1500);
     //TODO CA: shared pointer for proxy builder?

@@ -46,6 +46,7 @@ class InterfaceProxyHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
+#include <memory>
 
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
@@ -79,16 +80,16 @@ public:
 		}
 
 		std::string subscribeTo«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos){
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					const joynr::StdSubscriptionQos& subscriptionQos){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos);
 		}
 
 		std::string subscribeTo«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					const joynr::StdSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
@@ -106,9 +107,9 @@ public:
 
 		«IF isSelective(broadcast)»
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos){
+						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
 							subscriptionListener,
@@ -116,9 +117,9 @@ public:
 			}
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
@@ -128,16 +129,16 @@ public:
 			}
 		«ELSE»
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos){
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,
 							subscriptionQos);
 			}
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,

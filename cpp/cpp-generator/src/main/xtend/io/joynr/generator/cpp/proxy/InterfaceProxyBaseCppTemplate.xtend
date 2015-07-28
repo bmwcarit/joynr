@@ -93,8 +93,8 @@ void «className»::handleArbitrationFinished(
 	}
 
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
-				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::StdSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId) {
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
@@ -110,8 +110,8 @@ void «className»::handleArbitrationFinished(
 	}
 
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
-				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos) {
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::StdSubscriptionQos& subscriptionQos) {
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
@@ -143,13 +143,13 @@ void «className»::handleArbitrationFinished(
 
 	«IF isSelective(broadcast)»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					«fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-					QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos) {
+					const «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+					const joynr::StdOnChangeSubscriptionQos& subscriptionQos) {
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos) {
+					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+					const joynr::StdOnChangeSubscriptionQos& subscriptionQos) {
 	«ENDIF»
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
@@ -172,14 +172,14 @@ void «className»::handleArbitrationFinished(
 
 	«IF isSelective(broadcast)»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					«fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-					QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+					const «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+					const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+					const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
 	«ENDIF»
 		if (connector==NULL){

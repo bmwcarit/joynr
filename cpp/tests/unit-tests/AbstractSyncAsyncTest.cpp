@@ -265,7 +265,7 @@ public:
         //EXPECT_CALL(*mockJoynrMessageSender,
         //            sendSubscriptionRequest(_,_,_,_)).Times(1);
 
-        QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+        std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
                     new MockGpsSubscriptionListener());
         //TODO uncomment once the connector has the correct signature!
         //vehicle::IGps* gpsFixture = createFixture(false);

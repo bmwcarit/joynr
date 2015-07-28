@@ -779,11 +779,10 @@ void LocalDomainAccessController::processConsumerRequests(
 
 QString LocalDomainAccessController::subscribeForDreChange(const QString& userId)
 {
-    QSharedPointer<StdOnChangeSubscriptionQos> broadcastSubscriptionQos(
-            new StdOnChangeSubscriptionQos());
-    broadcastSubscriptionQos->setMinInterval(broadcastMinIntervalMs);
-    broadcastSubscriptionQos->setValidity(broadcastSubscriptionValidityMs);
-    broadcastSubscriptionQos->setPublicationTtl(broadcastPublicationTtlMs);
+    StdOnChangeSubscriptionQos broadcastSubscriptionQos;
+    broadcastSubscriptionQos.setMinInterval(broadcastMinIntervalMs);
+    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidityMs);
+    broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtlMs);
     GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
             domainRoleFilterParameters;
     domainRoleFilterParameters.setUserIdOfInterest(TypeUtil::toStd(userId));
@@ -791,8 +790,9 @@ QString LocalDomainAccessController::subscribeForDreChange(const QString& userId
     std::string subscriptionId =
             globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
                     domainRoleFilterParameters,
-                    domainRoleEntryChangedBroadcastListener.staticCast<
-                            ISubscriptionListener<StdChangeType::Enum, StdDomainRoleEntry>>(),
+                    std::static_pointer_cast<
+                            ISubscriptionListener<StdChangeType::Enum, StdDomainRoleEntry>>(
+                            domainRoleEntryChangedBroadcastListener),
                     broadcastSubscriptionQos);
 
     return QString::fromStdString(subscriptionId);
@@ -802,11 +802,11 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
         const QString& domain,
         const QString& interfaceName)
 {
-    QSharedPointer<StdOnChangeSubscriptionQos> broadcastSubscriptionQos(
-            new StdOnChangeSubscriptionQos());
-    broadcastSubscriptionQos->setMinInterval(broadcastMinIntervalMs);
-    broadcastSubscriptionQos->setValidity(broadcastSubscriptionValidityMs);
-    broadcastSubscriptionQos->setPublicationTtl(broadcastPublicationTtlMs);
+    StdOnChangeSubscriptionQos broadcastSubscriptionQos;
+
+    broadcastSubscriptionQos.setMinInterval(broadcastMinIntervalMs);
+    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidityMs);
+    broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtlMs);
 
     AceSubscription subscriptionIds;
 
@@ -817,9 +817,9 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
     subscriptionIds.masterAceSubscriptionId =
             globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
                     masterAcefilterParameters,
-                    masterAccessControlEntryChangedBroadcastListener
-                            .staticCast<ISubscriptionListener<StdChangeType::Enum,
-                                                              StdMasterAccessControlEntry>>(),
+                    std::static_pointer_cast<ISubscriptionListener<StdChangeType::Enum,
+                                                                   StdMasterAccessControlEntry>>(
+                            masterAccessControlEntryChangedBroadcastListener),
                     broadcastSubscriptionQos);
 
     GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters
@@ -830,9 +830,10 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
             globalDomainAccessControllerProxy
                     ->subscribeToMediatorAccessControlEntryChangedBroadcast(
                             mediatorAceFilterParameters,
-                            mediatorAccessControlEntryChangedBroadcastListener.staticCast<
+                            std::static_pointer_cast<
                                     ISubscriptionListener<StdChangeType::Enum,
-                                                          StdMasterAccessControlEntry>>(),
+                                                          StdMasterAccessControlEntry>>(
+                                    mediatorAccessControlEntryChangedBroadcastListener),
                             broadcastSubscriptionQos);
 
     GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters
@@ -842,9 +843,9 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
     subscriptionIds.ownerAceSubscriptionId =
             globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
                     ownerAceFilterParameters,
-                    ownerAccessControlEntryChangedBroadcastListener
-                            .staticCast<ISubscriptionListener<StdChangeType::Enum,
-                                                              StdOwnerAccessControlEntry>>(),
+                    std::static_pointer_cast<
+                            ISubscriptionListener<StdChangeType::Enum, StdOwnerAccessControlEntry>>(
+                            ownerAccessControlEntryChangedBroadcastListener),
                     broadcastSubscriptionQos);
 
     return subscriptionIds;

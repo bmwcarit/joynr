@@ -100,7 +100,7 @@ protected:
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
     QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
-    QSharedPointer<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListener;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListener;
 
     types::Localisation::StdGpsLocation gpsLocation1;
 

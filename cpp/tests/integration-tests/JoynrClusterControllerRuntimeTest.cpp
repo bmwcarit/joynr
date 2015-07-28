@@ -256,21 +256,19 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(Between(1, 2));
 
 
-    QSharedPointer<StdSubscriptionQos> subscriptionQos = QSharedPointer<StdSubscriptionQos>(
-                new StdOnChangeWithKeepAliveSubscriptionQos(
+    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     480, // validity
                     200, // min interval
                     200, // max interval
                     100  // alert after interval
-                )
-    );
+                );
     std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(250);
     testProxy->unsubscribeFromLocation(subscriptionId);
@@ -314,20 +312,18 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtMost(3));
 
-    QSharedPointer<StdOnChangeWithKeepAliveSubscriptionQos> subscriptionQos = QSharedPointer<StdOnChangeWithKeepAliveSubscriptionQos>(
-                new StdOnChangeWithKeepAliveSubscriptionQos(
+    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     800,   // validity
                     200,   // min interval
                     200,   // max interval
                     10000  // alert after interval
-                )
-    );
+                );
     std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(500);
     testProxy->unsubscribeFromLocation(subscriptionId);

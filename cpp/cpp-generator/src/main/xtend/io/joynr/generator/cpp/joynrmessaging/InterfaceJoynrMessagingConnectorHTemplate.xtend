@@ -79,8 +79,8 @@ private:
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
 			std::string subscribeTo«attributeName.toFirstUpper»(
-					QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					const joynr::StdSubscriptionQos& subscriptionQos,
 					SubscriptionRequest& subscriptionRequest);
 		«ENDIF»
 	«ENDFOR»
@@ -88,8 +88,8 @@ private:
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
 		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-				QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+				const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
 	«ENDFOR»
 public:
@@ -116,11 +116,11 @@ public:
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
-						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos);
+						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+						const joynr::StdSubscriptionQos& subscriptionQos);
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
-						QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+						const joynr::StdSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 			virtual void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 		«ENDIF»
@@ -135,21 +135,21 @@ public:
 		«val broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos);
+						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos);
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						«interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ELSE»
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos);
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos);
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-						QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ENDIF»
 		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);

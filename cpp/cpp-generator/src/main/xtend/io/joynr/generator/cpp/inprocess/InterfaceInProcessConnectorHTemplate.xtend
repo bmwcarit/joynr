@@ -84,16 +84,16 @@ private:
 «FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 	«val returnType = attribute.typeName»
 	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
-				QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				QSharedPointer<joynr::StdSubscriptionQos> subscriptionQos,
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::StdSubscriptionQos& subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 «FOR broadcast: serviceInterface.broadcasts»
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 «val broadcastName = broadcast.joynrName»
 	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
-			QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			QSharedPointer<joynr::StdOnChangeSubscriptionQos> subscriptionQos,
+			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
 			BroadcastSubscriptionRequest& subscriptionRequest);
 «ENDFOR»
 public:

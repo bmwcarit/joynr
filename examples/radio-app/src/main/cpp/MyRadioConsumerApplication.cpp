@@ -20,6 +20,7 @@
 #include <QFileInfo>
 #include <string>
 #include <stdint.h>
+#include <memory>
 
 #include "MyRadioHelper.h"
 #include "joynr/vehicle/RadioProxy.h"
@@ -210,31 +211,30 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <attribute>Changed method of the <interface>Provider class whenever the
     //       <attribute> value changes.
-    QSharedPointer<StdOnChangeWithKeepAliveSubscriptionQos> subscriptionQos(
-            new StdOnChangeWithKeepAliveSubscriptionQos());
+    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos;
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos->setMinInterval(5 * 1000);
+    subscriptionQos.setMinInterval(5 * 1000);
     // The provider will send notifications every maximum interval in milliseconds, even if the
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
     // maximum interval can thus be seen as a sort of heart beat.
-    subscriptionQos->setMaxInterval(8 * 1000);
+    subscriptionQos.setMaxInterval(8 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidity_ms will set the end date to current time millis + validity_ms
-    subscriptionQos->setValidity(60 * 1000);
+    subscriptionQos.setValidity(60 * 1000);
     // Notification messages will be sent with this time-to-live. If a notification message can not
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
     //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos->setAlertAfterInterval(10 * 1000);
+    subscriptionQos.setAlertAfterInterval(10 * 1000);
 
     // Subscriptions go to a listener object
-    QSharedPointer<ISubscriptionListener<vehicle::RadioTypes::StdRadioStation>> listener(
+    std::shared_ptr<ISubscriptionListener<vehicle::RadioTypes::StdRadioStation>> listener(
             new RadioStationListener());
 
     // Subscribe to the radio station.
@@ -248,31 +248,29 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
     //       the <broadcast> should be triggered.
-    QSharedPointer<StdOnChangeSubscriptionQos> weakSignalBroadcastSubscriptionQos(
-            new StdOnChangeSubscriptionQos());
+    StdOnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos->setMinInterval(1 * 1000);
+    weakSignalBroadcastSubscriptionQos.setMinInterval(1 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidity_ms will set the end date to current time millis + validity_ms
-    weakSignalBroadcastSubscriptionQos->setValidity(60 * 1000);
-    QSharedPointer<ISubscriptionListener<vehicle::RadioTypes::StdRadioStation>>
+    weakSignalBroadcastSubscriptionQos.setValidity(60 * 1000);
+    std::shared_ptr<ISubscriptionListener<vehicle::RadioTypes::StdRadioStation>>
             weakSignalBroadcastListener(new WeakSignalBroadcastListener());
     std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
             weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
 
-    QSharedPointer<StdOnChangeSubscriptionQos> newStationDiscoveredBroadcastSubscriptionQos(
-            new StdOnChangeSubscriptionQos());
-    newStationDiscoveredBroadcastSubscriptionQos->setMinInterval(2 * 1000);
-    newStationDiscoveredBroadcastSubscriptionQos->setValidity(180 * 1000);
-    QSharedPointer<ISubscriptionListener<vehicle::RadioTypes::StdRadioStation,
-                                         vehicle::RadioTypes::StdGeoPosition>>
+    StdOnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
+    newStationDiscoveredBroadcastSubscriptionQos.setMinInterval(2 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos.setValidity(180 * 1000);
+    std::shared_ptr<ISubscriptionListener<vehicle::RadioTypes::StdRadioStation,
+                                          vehicle::RadioTypes::StdGeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;

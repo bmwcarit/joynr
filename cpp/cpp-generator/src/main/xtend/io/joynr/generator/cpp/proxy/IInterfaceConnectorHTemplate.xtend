@@ -57,6 +57,7 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/IConnector.h"
 #include "joynr/TypeUtil.h"
+#include <memory>
 
 namespace joynr {
 	template <class ... Ts> class ISubscriptionListener;
@@ -68,7 +69,7 @@ namespace joynr {
 «getNamespaceStarter(serviceInterface)»
 class «getDllExportMacro()» I«interfaceName»Subscription{
 	/**
-	  * in  - subscriptionListener      QSharedPointer to a SubscriptionListener which will receive the updates.
+	  * in  - subscriptionListener      std::shared_ptr to a SubscriptionListener which will receive the updates.
 	  * in  - subscriptionQos           SubscriptionQos parameters like interval and end date.
 	  * out - assignedSubscriptionId    Buffer for the assigned subscriptionId.
 	  */
@@ -90,7 +91,7 @@ protected:
 			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypeQT»> {
 				public:
 					«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(
-							QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener
+							std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener
 					) :
 							wrappedListener(wrappedListener)
 					{
@@ -103,30 +104,30 @@ protected:
 					}
 
 				private:
-					QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener;
+					std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener;
 			};
 
 			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper : public SubscriptionCallback<«returnTypeQT»> {
 			public:
 				«attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
-						QSharedPointer<ISubscriptionListener<«returnType»>> wrappedListener
+						std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener
 				) :
 						SubscriptionCallback(
-								QSharedPointer<ISubscriptionListener<«returnTypeQT»>>(
+								std::shared_ptr<ISubscriptionListener<«returnTypeQT»>>(
 										new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(wrappedListener))
 								)
 				{
 				}
 				virtual void onSuccess(const «returnTypeQT»& receivedValue) {
-					QSharedPointer<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
-						listener.dynamicCast<
-								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>();
+					std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
+						std::dynamic_pointer_cast<
+								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
 					wrapper->onReceive(receivedValue);
 				}
 				virtual void onError() {
-					QSharedPointer<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
-						listener.dynamicCast<
-								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>();
+					std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
+						std::dynamic_pointer_cast<
+								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
 					wrapper->onError();
 				}
 			};
@@ -140,7 +141,7 @@ protected:
 			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypesQT»> {
 				public:
 					«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(
-							QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener
+							std::shared_ptr<ISubscriptionListener<«returnTypesStd»>> wrappedListener
 					) :
 							wrappedListener(wrappedListener)
 					{
@@ -155,7 +156,7 @@ protected:
 					}
 
 				private:
-					QSharedPointer<ISubscriptionListener<«returnTypesStd»>> wrappedListener;
+					std::shared_ptr<ISubscriptionListener<«returnTypesStd»>> wrappedListener;
 			};
 
 			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper
@@ -163,12 +164,12 @@ protected:
 			{
 			public:
 				«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(
-						QSharedPointer<ISubscriptionListener<
+						std::shared_ptr<ISubscriptionListener<
 								«returnTypesStd»
 						>> wrappedListener
 				) :
 						SubscriptionCallback(
-								QSharedPointer<ISubscriptionListener<
+								std::shared_ptr<ISubscriptionListener<
 										«returnTypesQT»
 								>>(new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(wrappedListener)))
 				{
@@ -176,17 +177,17 @@ protected:
 				virtual void onSuccess(
 						«outputParametersSignature.substring(1)»
 				) {
-					QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
-							listener.dynamicCast<
-									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>();
+					std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
+						std::dynamic_pointer_cast<
+									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>(listener);
 					wrapper->onReceive(«cppStdTypeUtil.getCommaSeperatedUntypedParameterList(broadcast.outputParameters)»
 					);
 				}
 				virtual void onError()
 				{
-					QSharedPointer<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
-							listener.dynamicCast<
-									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>();
+					std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
+						std::dynamic_pointer_cast<
+									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>(listener);
 					wrapper->onError();
 				}
 			};
