@@ -41,7 +41,7 @@ class TypeHTemplate implements CompoundTypeTemplate{
 
 	override generate(FCompoundType type)
 '''
-«val typeName = type.joynrName»
+«val typeName = type.joynrNameQt»
 «val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -76,7 +76,7 @@ class TypeHTemplate implements CompoundTypeTemplate{
 
 «getNamespaceStarter(type)»
 
-class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(type)»«getExtendedType(type).joynrName»«ELSE»QObject«ENDIF»{
+class «getDllExportMacro()» «typeName» : public «IF hasExtendsDeclaration(type)»«getExtendedType(type).joynrNameQt»«ELSE»QObject«ENDIF»{
 	Q_OBJECT
 
 	«FOR member: getMembers(type)»

@@ -36,7 +36,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 	private extension CppStdTypeUtil
 
 	override generate(FCompoundType type) '''
-«val typeName = "Std" + type.joynrName»
+«val typeName = type.joynrNameStd»
 «warning»
 
 #include <sstream>
@@ -89,7 +89,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 // Copy Constructor
 «typeName»::«typeName»(const «typeName»& other) :
 		«IF hasExtendsDeclaration(type)»
-			Std«getExtendedType(type).joynrName»(other),
+			«getExtendedType(type).joynrNameStd»(other),
 		«ENDIF»
 		«FOR member: getMembers(type) SEPARATOR ','»
 			«member.joynrName»(other.«member.joynrName»)

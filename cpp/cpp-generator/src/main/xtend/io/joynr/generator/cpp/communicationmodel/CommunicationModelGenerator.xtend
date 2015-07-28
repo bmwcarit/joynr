@@ -77,14 +77,14 @@ class CommunicationModelGenerator {
 
 				generateFile(
 					headerFileSystem,
-					headerpath + type.joynrName + ".h",
+					headerpath + type.joynrNameQt + ".h",
 					typeH,
 					type
 				)
 				
 				generateFile(
 					sourceFileSystem,
-					sourcepath + type.joynrName + ".cpp",
+					sourcepath + type.joynrNameQt + ".cpp",
 					typeCpp,
 					type
 				)
@@ -96,14 +96,14 @@ class CommunicationModelGenerator {
 
 				generateFile(
 					headerFileSystem,
-					headerpath + "Std" + type.joynrName + ".h",
+					headerpath + type.joynrNameStd + ".h",
 					stdTypeH,
 					type
 				)
 
 				generateFile(
 					sourceFileSystem,
-					sourcepath + "Std" + type.joynrName + ".cpp",
+					sourcepath + type.joynrNameStd + ".cpp",
 					stdTypeCpp,
 					type
 				)
@@ -115,7 +115,7 @@ class CommunicationModelGenerator {
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			generateFile(
 				headerFileSystem,
-				headerpath + type.joynrName + ".h",
+				headerpath + type.joynrNameQt + ".h",
 				enumh,
 				type as FEnumerationType
 			)
@@ -127,13 +127,13 @@ class CommunicationModelGenerator {
 
 			generateFile(
 				headerFileSystem,
-				headerpath +"Std"+ type.joynrName + ".h",
+				headerpath + type.joynrNameStd + ".h",
 				stdEnumH,
 				type as FEnumerationType
 			)
 			generateFile(
 				sourceFileSystem,
-				sourcepath +"Std"+ type.joynrName + ".cpp",
+				sourcepath + type.joynrNameStd + ".cpp",
 				stdEnumCpp,
 				type as FEnumerationType
 			)

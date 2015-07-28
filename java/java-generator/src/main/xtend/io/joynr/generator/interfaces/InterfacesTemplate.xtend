@@ -108,8 +108,8 @@ public interface «className»  {
 	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
 
 	«FOR type : filterTypesByToken(getAllTypes(serviceInterface))»
-		public static class «if (type.joynrName==null) "Typename not found" else getTokenTypeForArrayType(type.joynrName)»Token extends TypeReference<«getTokenTypeForArrayType(type.joynrName)»> {}
-		public static class List«getTokenTypeForArrayType(type.joynrName)»Token extends TypeReference<List<«getTokenTypeForArrayType(type.joynrName)»> > {}
+		public static class «if (type.joynrNameQt==null) "Typename not found" else getTokenTypeForArrayType(type.joynrNameQt)»Token extends TypeReference<«getTokenTypeForArrayType(type.joynrNameQt)»> {}
+		public static class List«getTokenTypeForArrayType(type.joynrNameQt)»Token extends TypeReference<List<«getTokenTypeForArrayType(type.joynrNameQt)»> > {}
 	«ENDFOR»
 
 	«FOR method: getMethods(serviceInterface)»
@@ -129,9 +129,9 @@ public interface «className»  {
 		val result = new ArrayList<Object>()
 		val tokens = new ArrayList<String>();
 		for (object: objects){
-			if (object!=null && !tokens.contains(getTokenTypeForArrayType(object.joynrName))){
+			if (object!=null && !tokens.contains(getTokenTypeForArrayType(object.joynrNameQt))){
 				result.add(object)
-				tokens.add(getTokenTypeForArrayType(object.joynrName))
+				tokens.add(getTokenTypeForArrayType(object.joynrNameQt))
 			}
 		}
 		return result;

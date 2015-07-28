@@ -545,7 +545,7 @@ abstract class JoynrGeneratorExtensions {
 		}
 	}
 
-	def String joynrName(Object type) {
+	def String joynrNameQt(Object type) {
 		if (type instanceof FType){
 			type.joynrName
 		}
@@ -564,10 +564,10 @@ abstract class JoynrGeneratorExtensions {
 			for (returnParameter : getOutputParameters(method)) {
 				if (returnParameter != null) {
 					val datatype = getDatatype(returnParameter.type)
-					val typename = datatype.joynrName;
+					val typename = datatype.joynrNameQt;
 					if (typename != null){
 						if (!typeList.containsKey(typename)){
-							typeList.put(datatype.joynrName, datatype);
+							typeList.put(datatype.joynrNameQt, datatype);
 						}
 					}
 					else {
@@ -579,10 +579,10 @@ abstract class JoynrGeneratorExtensions {
 			for (inputParameter : getInputParameters(method)) {
 				if (inputParameter != null) {
 					val datatype = getDatatype(inputParameter.type)
-					val typename = datatype.joynrName;
+					val typename = datatype.joynrNameQt;
 					if (typename != null){
 						if (!typeList.containsKey(typename)){
-							typeList.put(datatype.joynrName, datatype);
+							typeList.put(datatype.joynrNameQt, datatype);
 						}
 					}
 					else {
@@ -593,8 +593,8 @@ abstract class JoynrGeneratorExtensions {
 		}
 		for (attribute : getAttributes(fInterface)) {
 			val datatype = getDatatype(attribute.type)
-			if (!typeList.containsKey(datatype.joynrName)){
-				typeList.put(datatype.joynrName, datatype);
+			if (!typeList.containsKey(datatype.joynrNameQt)){
+				typeList.put(datatype.joynrNameQt, datatype);
 			}
 		}
 		return typeList.values;

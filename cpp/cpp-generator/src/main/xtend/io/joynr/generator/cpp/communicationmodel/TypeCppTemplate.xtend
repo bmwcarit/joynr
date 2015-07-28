@@ -40,7 +40,7 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 	private extension JoynrCppGeneratorExtensions
 
 	override generate(FCompoundType type) '''
-«val typeName = type.joynrName»
+«val typeName = type.joynrNameQt»
 «warning»
 
 #include "«getPackagePathWithJoynrPrefix(type, "/")»/«typeName».h"
@@ -52,7 +52,7 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include <QMetaEnum>
 #include <QDateTime>
 
-#include "«getPackagePathWithJoynrPrefix(type, "/")»«IF type.isPartOfTypeCollection»/«type.typeCollectionName»«ENDIF»/Std«typeName».h"
+#include "«getPackagePathWithJoynrPrefix(type, "/")»«IF type.isPartOfTypeCollection»/«type.typeCollectionName»«ENDIF»/«type.joynrNameStd».h"
 
 
 «getNamespaceStarter(type)»
@@ -74,7 +74,7 @@ void «typeName»::registerMetatypes() {
 
 «typeName»::«typeName»() :
 	«IF hasExtendsDeclaration(type)»
-		«getExtendedType(type).joynrName»()«IF !getMembers(type).empty»,«ENDIF»
+		«getExtendedType(type).joynrNameQt»()«IF !getMembers(type).empty»,«ENDIF»
 	«ELSE»
 		QObject()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
@@ -93,7 +93,7 @@ void «typeName»::registerMetatypes() {
 	):
 	«IF hasExtendsDeclaration(type)»
 		«val extendedType = getExtendedType(type)»
-		«extendedType.joynrName»(
+		«extendedType.joynrNameQt»(
 		«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 			new_«member.joynrName»
 		«ENDFOR»
@@ -112,7 +112,7 @@ void «typeName»::registerMetatypes() {
 //CopyConstructor
 «typeName»::«typeName»(const «typeName»& other) :
 	«IF hasExtendsDeclaration(type)»
-		«getExtendedType(type).joynrName»(other),
+		«getExtendedType(type).joynrNameQt»(other),
 	«ELSE»
 		QObject()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
@@ -274,7 +274,7 @@ QString «typeName»::toString() const {
 «IF !type.members.empty»
 void «typeName»::createStd(const «typeName»& from, «stdTypeUtil.getTypeName(type)»& to) {
 	«IF hasExtendsDeclaration(type) && !(type.extendedType.members.empty)»
-		«type.extendedType.joynrName»::createStd(from, to);
+		«type.extendedType.joynrNameQt»::createStd(from, to);
 	«ENDIF»
 	«FOR member: getMembers(type)»
 		«var from = "from.get" + member.joynrName.toFirstUpper + "()"»
@@ -284,7 +284,7 @@ void «typeName»::createStd(const «typeName»& from, «stdTypeUtil.getTypeName
 
 void «typeName»::createQt(const «stdTypeUtil.getTypeName(type)»& from, «typeName»& to) {
 	«IF hasExtendsDeclaration(type) && !(type.extendedType.members.empty)»
-		«type.extendedType.joynrName»::createQt(from, to);
+		«type.extendedType.joynrNameQt»::createQt(from, to);
 	«ENDIF»
 	«FOR member: getMembers(type)»
 		«var from = "from.get" + member.joynrName.toFirstUpper + "()"»

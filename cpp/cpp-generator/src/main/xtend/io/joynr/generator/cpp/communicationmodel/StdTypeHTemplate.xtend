@@ -37,7 +37,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 
 	override generate(FCompoundType type)
 '''
-«val typeName = "Std" + type.joynrName»
+«val typeName = type.joynrNameStd»
 «val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -55,7 +55,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 
 «getNamespaceStarter(type, true)»
 
-class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public Std«getExtendedType(type).joynrName»«ENDIF»{
+class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).joynrNameStd»«ENDIF»{
 
 public:
 	// general methods

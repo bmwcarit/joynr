@@ -125,7 +125,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	// Get the class that encloses a known enum
 	def String getEnumContainer(FType enumeration) {
 		var packagepath = buildPackagePath(enumeration, "::");
-		return packagepath + enumeration.joynrName;
+		return packagepath + enumeration.joynrNameQt;
 	}
 
 	// Get the class that encloses a known enum
@@ -147,7 +147,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		switch datatype {
 		case isArray(element)     : "List"
 		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") +
-									"." + datatype.joynrName
+									"." + datatype.joynrNameQt
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
 		case isLong(predefined)   : "Long"
@@ -156,7 +156,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") +
-									"." + datatype.joynrName
+									"." + datatype.joynrNameQt
 		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
@@ -179,8 +179,12 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "";
 	}
 
+	def joynrNameQt(FType type){
+		return type.joynrName
+	}
+
 	def joynrNameStd(FType type){
-		return "Std" + type.name
+		return "Std" + type.joynrName
 	}
 
 	def getAllPrimitiveTypes(FInterface serviceInterface) {

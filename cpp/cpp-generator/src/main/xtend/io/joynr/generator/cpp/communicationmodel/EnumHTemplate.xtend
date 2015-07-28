@@ -37,7 +37,7 @@ class EnumHTemplate implements EnumTemplate{
 
 	override generate(FEnumerationType type)
 '''
-«val typeName = type.joynrName»
+«val typeName = type.joynrNameQt»
 «val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
