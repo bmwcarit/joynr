@@ -129,11 +129,11 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered) {
 
     // It's only guaranteed that all filters are executed when they return true
     // (When not returning true, filter chain execution is interrupted)
-    ON_CALL(*filter1, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*filter2, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*filter1, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters)));
-    EXPECT_CALL(*filter2, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters)));
+    EXPECT_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters)));
+    EXPECT_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters)));
 
     provider->fireLocationUpdateSelective(gpsLocation1);
 }
@@ -144,8 +144,8 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered) {
   */
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
 
-    ON_CALL(*filter1, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*filter2, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
     EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
                     Eq(providerParticipantId),
@@ -165,8 +165,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
   */
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
 
-    ON_CALL(*filter1, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*filter2, filter(Eq(types::GpsLocation::createQt(gpsLocation1)), Eq(filterParameters))).WillByDefault(Return(false));
+    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
 
     EXPECT_CALL(*publicationSender, sendSubscriptionPublication(
                     Eq(providerParticipantId),

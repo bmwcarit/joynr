@@ -757,7 +757,7 @@ class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpda
 public:
     MOCK_METHOD2(filter,
                  bool(
-                     const joynr::types::GpsLocation &location,
+                     const joynr::types::Localisation::StdGpsLocation &location,
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
 

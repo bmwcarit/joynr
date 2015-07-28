@@ -18,28 +18,34 @@ package io.joynr.generator.cpp.filter
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.BroadcastTemplate
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class FilterTemplate implements BroadcastTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject extension QtTypeUtil
+	@Inject extension CppStdTypeUtil
+
+	@Inject
+	private QtTypeUtil qtTypeUtil
 
 	def getCommaSeperatedEventArgumentListFromQList(Iterable<FArgument> arguments) {
 		val returnStringBuilder = new StringBuilder();
 		var i = 0
-		for(FArgument argument : arguments){
+		for (FArgument argument : arguments) {
+			returnStringBuilder.append(qtTypeUtil.getTypeName(argument));
+			returnStringBuilder.append("::createStd(");
 			returnStringBuilder.append("eventValues[");
 			returnStringBuilder.append(i++);
 			returnStringBuilder.append("].value<");
-			returnStringBuilder.append(argument.typeName);
-			returnStringBuilder.append(">(),\n");
+			returnStringBuilder.append(qtTypeUtil.getTypeName(argument));
+			returnStringBuilder.append(">()),\n");
 		}
 		val returnString = returnStringBuilder.toString();
 		if (returnString.length() == 0) {
@@ -65,6 +71,9 @@ class FilterTemplate implements BroadcastTemplate {
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 #include «parameterType»
 «ENDFOR»
+«FOR parameterType : qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
+#include «parameterType»
+«ENDFOR»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
@@ -75,7 +84,9 @@ class FilterTemplate implements BroadcastTemplate {
 class «getDllExportMacro()» «className» : public IBroadcastFilter {
 public:
 	«className»() :
-		IBroadcastFilter("«broadcastName»") { }
+			IBroadcastFilter("«broadcastName»")
+	{
+	}
 
 	~«className»() {}
 
@@ -83,23 +94,23 @@ public:
 	* Override this method to provide a filter logic implementation.
 	*/
 	virtual bool filter(
-			«broadcast.commaSeperatedTypedConstOutputParameterList»,
+			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»,
 			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters
 	) = 0;
-
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 
 	virtual bool filter(
 			const QList<QVariant>& eventValues,
-			const StdBroadcastFilterParameters& filterParameters) {
-
+			const StdBroadcastFilterParameters& filterParameters
+	) {
 		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
 		params.setFilterParameters(filterParameters.getFilterParameters());
 
 		return filter(
 				«getCommaSeperatedEventArgumentListFromQList(getOutputParameters(broadcast))»,
-				params);
+				params
+		);
 	}
 };
 
