@@ -105,6 +105,10 @@ public:
     unsigned long registerProviderWait;
     unsigned long subscribeToAttributeWait;
     unsigned long subscribeToBroadcastWait;
+    joynr::types::Localisation::StdGpsLocation gpsLocation;
+    joynr::types::Localisation::StdGpsLocation gpsLocation2;
+    joynr::types::Localisation::StdGpsLocation gpsLocation3;
+    joynr::types::Localisation::StdGpsLocation gpsLocation4;
 
     End2EndBroadcastTest() :
         qRegisterMetaTypeQos(),
@@ -123,7 +127,44 @@ public:
         filter(new MockLocationUpdatedSelectiveFilter),
         registerProviderWait(1000),
         subscribeToAttributeWait(2000),
-        subscribeToBroadcastWait(2000)
+        subscribeToBroadcastWait(2000),
+        gpsLocation(types::Localisation::StdGpsLocation()),
+        gpsLocation2(types::Localisation::StdGpsLocation(
+                         9.0,
+                         51.0,
+                         508.0,
+                         types::Localisation::StdGpsFixEnum::MODE2D,
+                         0.0,
+                         0.0,
+                         0.0,
+                         0.0,
+                         444,
+                         444,
+                         2)),
+        gpsLocation3(types::Localisation::StdGpsLocation(
+                         9.0,
+                         51.0,
+                         508.0,
+                         types::Localisation::StdGpsFixEnum::MODE2D,
+                         0.0,
+                         0.0,
+                         0.0,
+                         0.0,
+                         444,
+                         444,
+                         3)),
+        gpsLocation4(types::Localisation::StdGpsLocation(
+                         9.0,
+                         51.0,
+                         508.0,
+                         types::Localisation::StdGpsFixEnum::MODE2D,
+                         0.0,
+                         0.0,
+                         0.0,
+                         0.0,
+                         444,
+                         444,
+                         4))
 
     {
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
@@ -172,7 +213,7 @@ public:
     {
         unsigned long delay = 0;
 
-        while (testProvider->attributeListeners.value(attributeName).isEmpty() && delay <= subscribeToBroadcastWait) {
+        while (testProvider->attributeListeners.value(attributeName).isEmpty() && delay <= subscribeToAttributeWait) {
             QThreadSleep::msleep(50);
             delay+=50;
         }
@@ -318,18 +359,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     QThreadSleep::msleep(subscribeToBroadcastWait);
 
     testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+                gpsLocation2);
 
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -338,19 +368,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -360,19 +378,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
     QThreadSleep::msleep(subscribeToBroadcastWait);
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.tryAcquire(1, 3000));
 
@@ -381,19 +387,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     QThreadSleep::msleep(minInterval_ms);
 
     //now, the next broadcast shall not be received, as the minInterval has been updated
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
     ASSERT_FALSE(altSemaphore.tryAcquire(1, 1000));
@@ -408,32 +402,10 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           2))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           3))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3)))
             .Times(0);
 
     QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
@@ -473,19 +445,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     // before the subscription has started.
     QThreadSleep::msleep(subscribeToBroadcastWait);
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -497,19 +457,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    3));
+    testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 2000));
 }
@@ -519,46 +467,13 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           2))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           3))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           4))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
@@ -596,19 +511,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "locationUpdate");
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -617,19 +520,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    3));
+    testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
@@ -637,19 +528,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    4));
+    testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
@@ -661,46 +540,13 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           2)), Eq(100)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2), Eq(100)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           3)), Eq(200)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3), Eq(200)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           4)), Eq(300)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4), Eq(300)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation, float> > subscriptionListener(
@@ -740,19 +586,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Change the location 3 times
 
-    testProvider->fireLocationUpdateWithSpeed(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2), 100);
+    testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
 
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -761,19 +595,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdateWithSpeed(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    3), 200);
+    testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
@@ -781,19 +603,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdateWithSpeed(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    4), 300);
+    testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
 
@@ -805,46 +615,13 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           2))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           3))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                           9.0,
-                                           51.0,
-                                           508.0,
-                                           types::Localisation::StdGpsFixEnum::MODE2D,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           0.0,
-                                           444,
-                                           444,
-                                           4))))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
@@ -890,19 +667,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Change the location 3 times
 
-    testProvider->fireLocationUpdateSelective(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdateSelective(gpsLocation2);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -911,19 +676,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdateSelective(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    3));
+    testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -932,19 +685,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdateSelective(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    4));
+    testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
@@ -1003,19 +744,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Change the location 3 times
 
-    testProvider->fireLocationUpdate(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->fireLocationUpdate(gpsLocation2);
 
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
@@ -1024,19 +753,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdateSelective(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    3));
+    testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
@@ -1045,19 +762,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     // otherwise the publications could be omitted.
     QThreadSleep::msleep(minInterval_ms);
 
-    testProvider->fireLocationUpdateSelective(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    4));
+    testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
     ASSERT_FALSE(semaphore.tryAcquire(1, 500));
@@ -1073,35 +778,13 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     // Use a semaphore to count and wait on calls to the mock listener
 
     // Expect initial attribute publication with default value
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::Localisation::StdGpsLocation()))).
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                                                  9.0,
-                                                                  51.0,
-                                                                  508.0,
-                                                                  types::Localisation::StdGpsFixEnum::MODE2D,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  444,
-                                                                  444,
-                                                                  2)))).
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(types::Localisation::StdGpsLocation(
-                                                                  9.0,
-                                                                  51.0,
-                                                                  508.0,
-                                                                  types::Localisation::StdGpsFixEnum::MODE2D,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  444,
-                                                                  444,
-                                                                  3)))).
+    EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(gpsLocation3))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     QSharedPointer<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerAttribute(
@@ -1150,43 +833,21 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "location");
 
     // Initial attribute publication
-    ASSERT_TRUE(semaphore.tryAcquire(1, 50));
+    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+
+    QThreadSleep::msleep(minInterval_ms); //ensure to wait for the minInterval_ms before changing location
 
     // Change attribute
-    testProvider->locationChanged(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    2));
+    testProvider->locationChanged(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 50));
+    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
 
     // Emit broadcast
-    testProvider->fireLocation(
-                types::Localisation::StdGpsLocation(
-                    9.0,
-                    51.0,
-                    508.0,
-                    types::Localisation::StdGpsFixEnum::MODE2D,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    444,
-                    444,
-                    3));
+    testProvider->fireLocation(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 50));
+    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
 
     delete testProxyBuilder;
 }
