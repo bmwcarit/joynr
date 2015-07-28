@@ -68,6 +68,9 @@ public class InvocationArguments {
     }
 
     public InvocationArguments(String[] args) throws IllegalStateException {
+        if (args.length == 0) {
+            throw new IllegalStateException("No parameters provided!" + dumpCorrectInvocation());
+        }
         parseArguments(args);
 
         if (!new File(modelpath).exists()) {
@@ -103,7 +106,7 @@ public class InvocationArguments {
         result += ("       -outputPath <path to output directory>\n");
         result += ("      Also one of:\n");
         result += ("       -rootGenerator <full name of template root> OR\n");
-        result += ("       -generationLanguage <cpp|java|javascript>\n");
+        result += ("       -generationLanguage <cpp|java>\n");
         result += ("      Optional: \n");
         result += ("       -templatesDir <folder name of templates directory>\n");
         result += ("       -templatesEncoding <encoding of templates>\n");
