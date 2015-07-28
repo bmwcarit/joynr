@@ -39,7 +39,7 @@ class InterfaceProxyCppTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(fInterface)»
 «className»::«className»(
-		QSharedPointer<joynr::system::Address> messagingAddress,
+		QSharedPointer<joynr::system::QtAddress> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,

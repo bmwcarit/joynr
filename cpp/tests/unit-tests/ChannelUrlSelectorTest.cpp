@@ -215,7 +215,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
 
 TEST(ChannelUrlSelectorTest, initFitnessTest) {
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);
@@ -232,7 +232,7 @@ TEST(ChannelUrlSelectorTest, initFitnessTest) {
 }
 
 TEST(ChannelUrlSelectorTest, punishTest) {
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);
@@ -273,7 +273,7 @@ TEST(ChannelUrlSelectorTest, punishTest) {
 
 TEST(ChannelUrlSelectorTest, updateTest) {
 
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);
@@ -341,7 +341,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
 
 TEST(ChannelUrlSelectorTest, bestTest) {
 
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);

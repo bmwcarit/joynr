@@ -56,7 +56,7 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
 public:
 	«syncClassName»(
-			QSharedPointer<joynr::system::Address> messagingAddress,
+			QSharedPointer<joynr::system::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,

@@ -20,11 +20,11 @@
 #include "gmock/gmock.h"
 #include <string>
 #include "utils/TestQString.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtProviderQos.h"
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 
 #include "tests/utils/MockObjects.h"
 

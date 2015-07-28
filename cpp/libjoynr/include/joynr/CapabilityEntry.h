@@ -31,8 +31,8 @@
 #include <QString>
 #include <QDateTime>
 #include <QDataStream>
-#include "joynr/types/ProviderQos.h"
-#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 
 namespace joynr
 {
@@ -42,9 +42,9 @@ class JOYNR_EXPORT CapabilityEntry : QObject
     Q_OBJECT
     Q_PROPERTY(QString interface READ getInterfaceName WRITE setInterfaceName)
     Q_PROPERTY(QString domain READ getDomain WRITE setDomain)
-    Q_PROPERTY(joynr__types__ProviderQos qos READ getQos WRITE setQos)
+    Q_PROPERTY(joynr__types__QtProviderQos qos READ getQos WRITE setQos)
     Q_PROPERTY(QString participantId READ getParticipantId WRITE setParticipantId)
-    Q_PROPERTY(QList<joynr::types::CommunicationMiddleware::Enum> middlewareConnections READ
+    Q_PROPERTY(QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections READ
                        getMiddlewareConnections WRITE setMiddlewareConnections)
     Q_PROPERTY(bool global READ isGlobal)
 
@@ -55,9 +55,9 @@ public:
 
     CapabilityEntry(const QString& domain,
                     const QString& interfaceName,
-                    joynr::types::ProviderQos qos,
+                    joynr::types::QtProviderQos qos,
                     const QString& participantId,
-                    QList<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
+                    QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections,
                     bool isGlobal,
                     QObject* parent = 0);
 
@@ -70,18 +70,18 @@ public:
     void setInterfaceName(QString interfaceName);
     void setDomain(QString domain);
 
-    types::ProviderQos getQos() const;
-    void setQos(joynr::types::ProviderQos qos);
+    types::QtProviderQos getQos() const;
+    void setQos(joynr::types::QtProviderQos qos);
 
     QString getParticipantId() const;
     void setParticipantId(QString participantId);
 
     void setMiddlewareConnections(
-            QList<joynr::types::CommunicationMiddleware::Enum> middlewareConnections);
-    QList<joynr::types::CommunicationMiddleware::Enum> getMiddlewareConnections() const;
+            QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections);
+    QList<joynr::types::QtCommunicationMiddleware::Enum> getMiddlewareConnections() const;
 
     void prependMiddlewareConnection(
-            joynr::types::CommunicationMiddleware::Enum middlewareConnection);
+            joynr::types::QtCommunicationMiddleware::Enum middlewareConnection);
 
     bool isGlobal() const;
     void setGlobal(bool global);
@@ -91,9 +91,9 @@ public:
 private:
     QString domain;
     QString interfaceName;
-    types::ProviderQos qos;
+    types::QtProviderQos qos;
     QString participantId;
-    QList<joynr::types::CommunicationMiddleware::Enum> middlewareConnections;
+    QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections;
     bool global;
 };
 

@@ -25,8 +25,8 @@ namespace joynr
 
 using namespace infrastructure;
 
-int TrustLevelComparator::compare(infrastructure::TrustLevel::Enum a,
-                                  infrastructure::TrustLevel::Enum b)
+int TrustLevelComparator::compare(infrastructure::QtTrustLevel::Enum a,
+                                  infrastructure::QtTrustLevel::Enum b)
 {
     int ordinalA = trustLevelOrdinal(a);
     int ordinalB = trustLevelOrdinal(b);
@@ -40,16 +40,16 @@ int TrustLevelComparator::compare(infrastructure::TrustLevel::Enum a,
     }
 }
 
-int TrustLevelComparator::trustLevelOrdinal(TrustLevel::Enum trustLevel)
+int TrustLevelComparator::trustLevelOrdinal(QtTrustLevel::Enum trustLevel)
 {
     switch (trustLevel) {
-    case TrustLevel::NONE:
+    case QtTrustLevel::NONE:
         return 0;
-    case TrustLevel::LOW:
+    case QtTrustLevel::LOW:
         return 1;
-    case TrustLevel::MID:
+    case QtTrustLevel::MID:
         return 2;
-    case TrustLevel::HIGH:
+    case QtTrustLevel::HIGH:
         return 3;
     default:
         assert(false);

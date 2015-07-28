@@ -21,13 +21,13 @@
 #define LOCALDOMAINACCESSCONTROLLER_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/OwnerAccessControlEntry.h"
-#include "joynr/infrastructure/MasterRegistrationControlEntry.h"
-#include "joynr/infrastructure/OwnerRegistrationControlEntry.h"
-#include "joynr/infrastructure/Permission.h"
-#include "joynr/infrastructure/TrustLevel.h"
-#include "joynr/infrastructure/Role.h"
+#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/QtMasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/StdOwnerRegistrationControlEntry.h"
+#include "joynr/infrastructure/QtPermission.h"
+#include "joynr/infrastructure/QtTrustLevel.h"
+#include "joynr/infrastructure/QtRole.h"
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -99,7 +99,7 @@ public:
      */
     virtual bool hasRole(const QString& userId,
                          const QString& domain,
-                         infrastructure::Role::Enum role);
+                         infrastructure::QtRole::Enum role);
 
     /**
       * Get consumer permission to access an interface
@@ -111,8 +111,8 @@ public:
       * \param callbacks     Object that will receive the result and then be deleted
       *
       * Use :
-      *    getConsumerPermission(String, String, String, String, TrustLevel, callbacks)
-      * to gain exact Permission on interface operation.
+      *    getConsumerPermission(String, String, String, String, QtTrustLevel, callbacks)
+      * to gain exact QtPermission on interface operation.
       */
     virtual void getConsumerPermission(const std::string& userId,
                                        const std::string& domain,
@@ -133,7 +133,7 @@ public:
       * This synchronous function assumes that the data to do ACL checks is available
       * and has been obtained through a call to getConsumerPermission()
       */
-    virtual infrastructure::Permission::Enum getConsumerPermission(
+    virtual infrastructure::QtPermission::Enum getConsumerPermission(
             const std::string& userId,
             const std::string& domain,
             const std::string& interfaceName,

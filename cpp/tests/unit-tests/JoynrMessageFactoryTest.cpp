@@ -28,7 +28,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/joynrlogging.h"
 
 using namespace joynr;
@@ -205,7 +205,7 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeSubscriptionQos());
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeSubscriptionQos());
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
     subscriptionRequest.setSubscribeToName(QString("attributeName"));

@@ -36,7 +36,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::A;
@@ -169,7 +169,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     qint64 period = 2000;
     qint64 validity = 100000;
     qint64 alert = 4000;
-    auto qos = QSharedPointer<SubscriptionQos>(new PeriodicSubscriptionQos(validity, period, alert));
+    auto qos = QSharedPointer<QtSubscriptionQos>(new QtPeriodicSubscriptionQos(validity, period, alert));
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
@@ -199,10 +199,10 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
     qint64 minInterval = 2000;
     qint64 validity = 100000;
-    auto qos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeSubscriptionQos(validity, minInterval));
+    auto qos = QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(validity, minInterval));
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    BroadcastFilterParameters filter;
+    QtBroadcastFilterParameters filter;
     filter.setFilterParameter("MyParameter", "MyValue");
     subscriptionRequest.setFilterParameters(filter);
     subscriptionRequest.setSubscriptionId(QString("subscriptionId"));

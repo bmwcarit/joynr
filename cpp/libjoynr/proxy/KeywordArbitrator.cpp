@@ -18,9 +18,8 @@
  */
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/CustomParameter.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 
 #include "joynr/TypeUtil.h"

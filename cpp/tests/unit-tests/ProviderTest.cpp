@@ -22,7 +22,7 @@
 #include <string>
 
 #include "joynr/AbstractJoynrProvider.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtProviderQos.h"
 #include "joynr/IAttributeListener.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
 #include "tests/utils/MockObjects.h"

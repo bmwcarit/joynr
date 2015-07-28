@@ -50,11 +50,11 @@ public:
 
     TestJoynrMessagingConnectorTest():
         mockSubscriptionManager(new MockSubscriptionManager()),
-        gpsLocation(types::GpsLocation(
+        gpsLocation(types::QtGpsLocation(
                         9.0,
                         51.0,
                         508.0,
-                        types::GpsFixEnum::MODE2D,
+                        types::QtGpsFixEnum::MODE2D,
                         0.0,
                         0.0,
                         0.0,
@@ -96,7 +96,7 @@ public:
     }
 
     MockSubscriptionManager* mockSubscriptionManager;
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     float floatValue;
     QSemaphore semaphore;
 
@@ -118,14 +118,14 @@ public:
 
     void invokeSubscriptionCallback(const QString& subscribeToName,
                                       QSharedPointer<ISubscriptionCallback> callback,
-                                      QSharedPointer<SubscriptionQos> qos,
+                                      QSharedPointer<QtSubscriptionQos> qos,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
         std::ignore = qos;
         std::ignore = subscriptionRequest;
 
-        QSharedPointer<SubscriptionCallback<joynr::types::GpsLocation, double>> typedCallbackQsp =
-                callback.dynamicCast<SubscriptionCallback<joynr::types::GpsLocation, double>>();
+        QSharedPointer<SubscriptionCallback<joynr::types::QtGpsLocation, double>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<joynr::types::QtGpsLocation, double>>();
 
         typedCallbackQsp->onSuccess(gpsLocation, floatValue);
     }
@@ -186,7 +186,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::GpsLocation::createStd(gpsLocation)), Eq(floatValue)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::QtGpsLocation::createStd(gpsLocation)), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     joynr::StdOnChangeSubscriptionQos qos;

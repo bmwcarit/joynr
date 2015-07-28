@@ -21,7 +21,7 @@
 #include "gmock/gmock.h"
 
 #include "joynr/StdBroadcastFilterParameters.h"
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/QtBroadcastFilterParameters.h"
 
 using namespace joynr;
 
@@ -63,10 +63,10 @@ TEST_F(BroadcastFilterParametersTest, correctConvertsionFromStdToQt)
     stdParam.setFilterParameter("firstEntry", "firstEntry");
     stdParam.setFilterParameter("secondentry", "sndEntry");
 
-    BroadcastFilterParameters qtParam = BroadcastFilterParameters::createQt(stdParam);
-    EXPECT_EQ(stdParam, BroadcastFilterParameters::createStd(qtParam));
+    QtBroadcastFilterParameters qtParam = QtBroadcastFilterParameters::createQt(stdParam);
+    EXPECT_EQ(stdParam, QtBroadcastFilterParameters::createStd(qtParam));
 
     stdParam.setFilterParameter("aaaa", "b");
-    qtParam = BroadcastFilterParameters::createQt(stdParam);
-    EXPECT_EQ(stdParam, BroadcastFilterParameters::createStd(qtParam));
+    qtParam = QtBroadcastFilterParameters::createQt(stdParam);
+    EXPECT_EQ(stdParam, QtBroadcastFilterParameters::createStd(qtParam));
 }

@@ -21,7 +21,7 @@
 #define TRUSTLEVELCOMPARATOR_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/TrustLevel.h"
+#include "joynr/infrastructure/QtTrustLevel.h"
 
 namespace joynr
 {
@@ -36,10 +36,10 @@ public:
      * Compare two trustlevels
      * \return 0 if a == b, -1 if a <= b, 1 if a > b
      */
-    static int compare(infrastructure::TrustLevel::Enum a, infrastructure::TrustLevel::Enum b);
+    static int compare(infrastructure::QtTrustLevel::Enum a, infrastructure::QtTrustLevel::Enum b);
 
 private:
-    static int trustLevelOrdinal(infrastructure::TrustLevel::Enum trustLevel);
+    static int trustLevelOrdinal(infrastructure::QtTrustLevel::Enum trustLevel);
 };
 
 } // namespace joynr

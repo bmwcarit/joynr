@@ -25,7 +25,7 @@
 #include "joynr/system/IDiscovery.h"
 
 #include "joynr/TypeUtil.h"
-#include "joynr/types/DiscoveryScope.h"
+#include "joynr/types/QtDiscoveryScope.h"
 
 #include <cassert>
 

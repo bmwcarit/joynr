@@ -23,7 +23,7 @@ namespace joynr
 
 InProcessMessagingAddress::InProcessMessagingAddress(
         QSharedPointer<InProcessMessagingSkeleton> skeleton)
-        : Address(), skeleton(skeleton)
+        : QtAddress(), skeleton(skeleton)
 {
 }
 

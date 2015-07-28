@@ -19,9 +19,9 @@
 #include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/types/StdDiscoveryEntry.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
 

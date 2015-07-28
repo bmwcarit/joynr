@@ -21,8 +21,8 @@
 #include "AceValidator.h"
 #include "TrustLevelComparator.h"
 
-#include "joynr/infrastructure/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
 
 #include <cassert>
 
@@ -39,49 +39,49 @@ AccessControlAlgorithm::~AccessControlAlgorithm()
 {
 }
 
-Permission::Enum AccessControlAlgorithm::getConsumerPermission(
-        const Optional<MasterAccessControlEntry>& masterOptional,
-        const Optional<MasterAccessControlEntry>& mediatorOptional,
-        const Optional<OwnerAccessControlEntry>& ownerOptional,
-        TrustLevel::Enum trustLevel)
+QtPermission::Enum AccessControlAlgorithm::getConsumerPermission(
+        const Optional<QtMasterAccessControlEntry>& masterOptional,
+        const Optional<QtMasterAccessControlEntry>& mediatorOptional,
+        const Optional<QtOwnerAccessControlEntry>& ownerOptional,
+        QtTrustLevel::Enum trustLevel)
 {
     return getPermission(
             PERMISSION_FOR_CONSUMER, masterOptional, mediatorOptional, ownerOptional, trustLevel);
 }
 
-Permission::Enum AccessControlAlgorithm::getProviderPermission(
-        const Optional<MasterAccessControlEntry>& masterOptional,
-        const Optional<MasterAccessControlEntry>& mediatorOptional,
-        const Optional<OwnerAccessControlEntry>& ownerOptional,
-        TrustLevel::Enum trustLevel)
+QtPermission::Enum AccessControlAlgorithm::getProviderPermission(
+        const Optional<QtMasterAccessControlEntry>& masterOptional,
+        const Optional<QtMasterAccessControlEntry>& mediatorOptional,
+        const Optional<QtOwnerAccessControlEntry>& ownerOptional,
+        QtTrustLevel::Enum trustLevel)
 {
     return getPermission(
             PERMISSION_FOR_PROVIDER, masterOptional, mediatorOptional, ownerOptional, trustLevel);
 }
 
-Permission::Enum AccessControlAlgorithm::getPermission(
+QtPermission::Enum AccessControlAlgorithm::getPermission(
         AccessControlAlgorithm::PermissionType permissionType,
-        const Optional<MasterAccessControlEntry>& masterOptional,
-        const Optional<MasterAccessControlEntry>& mediatorOptional,
-        const Optional<OwnerAccessControlEntry>& ownerOptional,
-        TrustLevel::Enum trustLevel)
+        const Optional<QtMasterAccessControlEntry>& masterOptional,
+        const Optional<QtMasterAccessControlEntry>& mediatorOptional,
+        const Optional<QtOwnerAccessControlEntry>& ownerOptional,
+        QtTrustLevel::Enum trustLevel)
 {
     AceValidator validator(masterOptional, mediatorOptional, ownerOptional);
     if (!validator.isValid()) {
-        return Permission::NO;
+        return QtPermission::NO;
     }
 
-    Permission::Enum permission = Permission::Enum::NO;
+    QtPermission::Enum permission = QtPermission::Enum::NO;
 
     if (ownerOptional) {
-        OwnerAccessControlEntry ownerAce = ownerOptional.getValue();
+        QtOwnerAccessControlEntry ownerAce = ownerOptional.getValue();
         if (TrustLevelComparator::compare(trustLevel, ownerAce.getRequiredTrustLevel()) >= 0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {
                 permission = ownerAce.getConsumerPermission();
             }
         }
     } else if (mediatorOptional) {
-        MasterAccessControlEntry mediatorAce = mediatorOptional.getValue();
+        QtMasterAccessControlEntry mediatorAce = mediatorOptional.getValue();
         if (TrustLevelComparator::compare(trustLevel, mediatorAce.getDefaultRequiredTrustLevel()) >=
             0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {
@@ -89,7 +89,7 @@ Permission::Enum AccessControlAlgorithm::getPermission(
             }
         }
     } else if (masterOptional) {
-        MasterAccessControlEntry masterAce = masterOptional.getValue();
+        QtMasterAccessControlEntry masterAce = masterOptional.getValue();
         if (TrustLevelComparator::compare(trustLevel, masterAce.getDefaultRequiredTrustLevel()) >=
             0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {

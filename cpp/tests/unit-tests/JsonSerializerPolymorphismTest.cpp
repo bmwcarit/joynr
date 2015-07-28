@@ -18,19 +18,19 @@
  */
 #include <gtest/gtest.h>
 #include "PrettyPrint.h"
-#include "joynr/types/GpsPosition.h"
-#include "joynr/types/GpsPositionExtended.h"
-#include "joynr/types/GpsLocation.h"
-#include "joynr/types/GpsFixEnum.h"
-#include "joynr/types/Trip.h"
+#include "joynr/types/QtGpsPosition.h"
+#include "joynr/types/QtGpsPositionExtended.h"
+#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/QtGpsFixEnum.h"
+#include "joynr/types/QtTrip.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 #include <QList>
 
-#include "joynr/types/TStruct.h"
-#include "joynr/types/TStructExtended.h"
+#include "joynr/types/QtTStruct.h"
+#include "joynr/types/QtTStructExtended.h"
 
 using namespace joynr;
 using namespace joynr_logging;
@@ -48,26 +48,26 @@ protected:
 };
 
 TEST_F(JsonSerializerPolymorphismTest, deserializeSuperTypeFromDerivedType) {
-    joynr::types::TStruct expectedSuper;
+    joynr::types::QtTStruct expectedSuper;
     expectedSuper.setTDouble(1.1);
     expectedSuper.setTInt64(64);
     expectedSuper.setTString("test string");
 
-    joynr::types::TStructExtended derived;
+    joynr::types::QtTStructExtended derived;
     derived.setTDouble(1.1);
     derived.setTInt64(64);
     derived.setTString("test string");
-    derived.setTEnum(joynr::types::TEnum::TLITERALA);
+    derived.setTEnum(joynr::types::QtTEnum::TLITERALA);
     derived.setTInt32(32);
 
     QByteArray serializedDerived = JsonSerializer::serialize(derived);
 
-    joynr::types::TStruct* deserializedSuper =
-            JsonSerializer::deserialize<joynr::types::TStruct>(serializedDerived);
+    joynr::types::QtTStruct* deserializedSuper =
+            JsonSerializer::deserialize<joynr::types::QtTStruct>(serializedDerived);
     EXPECT_EQ(expectedSuper, *deserializedSuper);
 
     // this means the deserialized super is actually a derived
-    joynr::types::TStructExtended* castedDerived = qobject_cast<joynr::types::TStructExtended*>(deserializedSuper);
+    joynr::types::QtTStructExtended* castedDerived = qobject_cast<joynr::types::QtTStructExtended*>(deserializedSuper);
     EXPECT_EQ(derived, *castedDerived);
 
     delete deserializedSuper;
@@ -79,32 +79,32 @@ TEST_F(JsonSerializerPolymorphismTest, deserializeSuperTypeFromDerivedType) {
 // causes all data of derived types to be lost (when passing derived types as
 // parameters to methods).
 TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperType) {
-    joynr::types::TStruct expectedSuper;
+    joynr::types::QtTStruct expectedSuper;
     expectedSuper.setTDouble(1.1);
     expectedSuper.setTInt64(64);
     expectedSuper.setTString("test string");
 
-    joynr::types::TStructExtended derived;
+    joynr::types::QtTStructExtended derived;
     derived.setTDouble(1.1);
     derived.setTInt64(64);
     derived.setTString("test string");
-    derived.setTEnum(joynr::types::TEnum::TLITERALA);
+    derived.setTEnum(joynr::types::QtTEnum::TLITERALA);
     derived.setTInt32(32);
 
     // [1] calls the copy constructor of the super type, all data of derived
     // type is lost
-    joynr::types::TStruct super(derived);
+    joynr::types::QtTStruct super(derived);
 
     QByteArray serializedSuper = JsonSerializer::serialize(super);
 
     LOG_DEBUG(logger, QString(serializedSuper));
 
-    joynr::types::TStruct* deserializedSuper =
-            JsonSerializer::deserialize<joynr::types::TStruct>(serializedSuper);
+    joynr::types::QtTStruct* deserializedSuper =
+            JsonSerializer::deserialize<joynr::types::QtTStruct>(serializedSuper);
     EXPECT_EQ(expectedSuper, *deserializedSuper);
 
     // this means the deserialized super is actually a derived
-    joynr::types::TStructExtended* castedDerived = qobject_cast<joynr::types::TStructExtended*>(deserializedSuper);
+    joynr::types::QtTStructExtended* castedDerived = qobject_cast<joynr::types::QtTStructExtended*>(deserializedSuper);
     EXPECT_TRUE(castedDerived != NULL); // cast successfull?
     if(castedDerived != NULL) {
         // causes seg-fault if cast is not successfull
@@ -115,30 +115,30 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperTyp
 }
 
 TEST_F(JsonSerializerPolymorphismTest, serializeGpsLocationListWithLocationInside) {
-    qRegisterMetaType<joynr::types::GpsPosition>("joynr::types::GpsPosition");
-    qRegisterMetaType<joynr__types__GpsPosition>("joynr__types__GpsPosition");
-    qRegisterMetaType<joynr::types::GpsPositionExtended>("joynr::types::GpsPositionExtended");
-    qRegisterMetaType<joynr__types__GpsPositionExtended>("joynr__types__GpsPositionExtended");
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
+    qRegisterMetaType<joynr::types::QtGpsPosition>("joynr::types::QtGpsPosition");
+    qRegisterMetaType<joynr__types__QtGpsPosition>("joynr__types__GpsPosition");
+    qRegisterMetaType<joynr::types::QtGpsPositionExtended>("joynr::types::QtGpsPositionExtended");
+    qRegisterMetaType<joynr__types__QtGpsPositionExtended>("joynr__types__GpsPositionExtended");
+    qRegisterMetaType<joynr::types::QtGpsLocation>("joynr::types::QtGpsLocation");
+    qRegisterMetaType<joynr__types__QtGpsLocation>("joynr__types__GpsLocation");
 
-    joynr::types::GpsPosition gpsPosition;
+    joynr::types::QtGpsPosition gpsPosition;
     gpsPosition.setLongitude(1.1);
     gpsPosition.setLatitude(2.1);
 
-    joynr::types::GpsPositionExtended gpsPositionExt;
+    joynr::types::QtGpsPositionExtended gpsPositionExt;
     gpsPositionExt.setLongitude(1.2);
     gpsPositionExt.setLatitude(2.2);
     gpsPositionExt.setAltitude(3.2);
-    gpsPositionExt.setGpsFix(joynr::types::GpsFixEnum::MODE2D);
+    gpsPositionExt.setGpsFix(joynr::types::QtGpsFixEnum::MODE2D);
     gpsPositionExt.setHeading(4.2);
     gpsPositionExt.setQuality(5.2);
 
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     gpsLocation.setLongitude(1.3);
     gpsLocation.setLatitude(2.3);
     gpsLocation.setAltitude(3.3);
-    gpsLocation.setGpsFix(types::GpsFixEnum::MODE3D);
+    gpsLocation.setGpsFix(types::QtGpsFixEnum::MODE3D);
     gpsLocation.setHeading(4.3);
     gpsLocation.setQuality(5.3);
     gpsLocation.setElevation(6.3);
@@ -147,7 +147,7 @@ TEST_F(JsonSerializerPolymorphismTest, serializeGpsLocationListWithLocationInsid
     gpsLocation.setDeviceTime(93);
     gpsLocation.setTime(103);
 
-    QList<joynr::types::GpsPosition> gpsPositions;
+    QList<joynr::types::QtGpsPosition> gpsPositions;
     gpsPositions.push_back(gpsPosition);
     gpsPositions.push_back(gpsPositionExt);
     gpsPositions.push_back(gpsLocation);

@@ -57,11 +57,11 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
     std::vector<CapabilityEntry> mergedEntries;
 
     foreach (types::StdCapabilityInformation capInfo, results) {
-        QList<joynr::types::CommunicationMiddleware::Enum> connections;
-        connections.append(joynr::types::CommunicationMiddleware::JOYNR);
+        QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
+        connections.append(joynr::types::QtCommunicationMiddleware::JOYNR);
         CapabilityEntry capEntry(QString::fromStdString(capInfo.getDomain()),
                                  QString::fromStdString(capInfo.getInterfaceName()),
-                                 types::ProviderQos::createQt(capInfo.getProviderQos()),
+                                 types::QtProviderQos::createQt(capInfo.getProviderQos()),
                                  QString::fromStdString(capInfo.getParticipantId()),
                                  connections,
                                  true);

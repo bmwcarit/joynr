@@ -57,7 +57,7 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 public:
 	«asyncClassName»(
-			QSharedPointer<joynr::system::Address> messagingAddress,
+			QSharedPointer<joynr::system::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,

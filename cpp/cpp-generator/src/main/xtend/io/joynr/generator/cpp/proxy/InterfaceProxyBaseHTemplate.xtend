@@ -55,7 +55,7 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
 public:
 	«className»(
-			QSharedPointer<joynr::system::Address> messagingAddress,
+			QSharedPointer<joynr::system::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -111,7 +111,7 @@ public:
 	«ENDFOR»
 
 protected:
-	QSharedPointer<joynr::system::Address> messagingAddress;
+	QSharedPointer<joynr::system::QtAddress> messagingAddress;
 	I«interfaceName»Connector* connector;
 
 private:

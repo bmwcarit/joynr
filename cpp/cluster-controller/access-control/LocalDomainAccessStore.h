@@ -21,9 +21,9 @@
 #define LOCALDOMAINACCESSSTORE_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/DomainRoleEntry.h"
-#include "joynr/infrastructure/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/QtDomainRoleEntry.h"
+#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
 #include "joynr/Optional.h"
 #include <QString>
 #include <QtSql/QSqlDatabase>
@@ -44,23 +44,23 @@ public:
      * Get the domain roles for the given user.
      *
      * \param userId The user to get the domain roles for. No wildcards supported.
-     * \return QList of Domain Role Entries that apply to the user uid.
+     * \return QList of Domain QtRole Entries that apply to the user uid.
      * The QList contains max two entries (since we only have two roles Master and Owner).
      * Used to get domain roles when a user logs in.
      */
-    QList<infrastructure::DomainRoleEntry> getDomainRoles(const QString& userId);
+    QList<infrastructure::QtDomainRoleEntry> getDomainRoles(const QString& userId);
 
     /**
      * Get the domain role for the given user and role.
      *
      * \param uid The user to get the domain role for. No wildcards supported.
      * \param role The user to get the domain role for. No wildcards supported.
-     * \return Domain Role Entry that apply to the user uid and role.
+     * \return Domain QtRole Entry that apply to the user uid and role.
      * Returned domain role entry domains value is empty list, if no domain role entry for uid
      *found.
      */
-    Optional<infrastructure::DomainRoleEntry> getDomainRole(const QString& uid,
-                                                            infrastructure::Role::Enum role);
+    Optional<infrastructure::QtDomainRoleEntry> getDomainRole(const QString& uid,
+                                                              infrastructure::QtRole::Enum role);
 
     /**
      * Updates given domain role entry. If such doesn't already exist in the store, it will be added
@@ -69,7 +69,7 @@ public:
      * \param updatedEntry Entry that has to be updated.
      * \return If operation succeeded return true.
      */
-    bool updateDomainRole(const infrastructure::DomainRoleEntry& updatedEntry);
+    bool updateDomainRole(const infrastructure::QtDomainRoleEntry& updatedEntry);
 
     /**
      * Removes an entry according to the specified primary key.
@@ -79,7 +79,7 @@ public:
      *be removed.
      * \return If operation succeeded return true.
      */
-    bool removeDomainRole(const QString& userId, infrastructure::Role::Enum role);
+    bool removeDomainRole(const QString& userId, infrastructure::QtRole::Enum role);
 
     /**
      * Returns a list of entries that apply to user uid, i.e. the entries that define the access
@@ -91,7 +91,7 @@ public:
      * \return QList of master ACEs with entries owned by the user.
      * If no entry has been found for specified uid, then returns master ACE with uid "*".
      */
-    QList<infrastructure::MasterAccessControlEntry> getMasterAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& uid);
 
     /**
@@ -102,7 +102,7 @@ public:
      * \return QList of master ACEs with entries owned by the user.
      * In case userId has no domains with role MASTER, this function returns empty QList.
      */
-    QList<infrastructure::MasterAccessControlEntry> getEditableMasterAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getEditableMasterAccessControlEntries(
             const QString& userId);
 
     /**
@@ -113,7 +113,7 @@ public:
      * \param interfaceName The interface you search ACE's for.
      * \return List of master ACEs associated to given domain and interface.
      */
-    QList<infrastructure::MasterAccessControlEntry> getMasterAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& domain,
             const QString& interfaceName);
 
@@ -126,7 +126,7 @@ public:
      * \param interfaceName The interface being called.
      * \return The matching Master ACEs.
      */
-    QList<infrastructure::MasterAccessControlEntry> getMasterAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& uid,
             const QString& domain,
             const QString& interfaceName);
@@ -142,7 +142,7 @@ public:
      * \return Master ACE Optional associated to given uid, domain, interface and operation.
      * If no master ACE found for given parameters, returned Optional is null.
      */
-    Optional<infrastructure::MasterAccessControlEntry> getMasterAccessControlEntry(
+    Optional<infrastructure::QtMasterAccessControlEntry> getMasterAccessControlEntry(
             const QString& uid,
             const QString& domain,
             const QString& interfaceName,
@@ -156,7 +156,7 @@ public:
      * \return false if update fails.
      */
     bool updateMasterAccessControlEntry(
-            const infrastructure::MasterAccessControlEntry& updatedMasterAce);
+            const infrastructure::QtMasterAccessControlEntry& updatedMasterAce);
 
     /**
      * Remove master access control entry uniquely identified with userId, domain, interface and
@@ -184,7 +184,7 @@ public:
      * If no entry has been found for specified uid, then returns master ACE from Mediator ACL with
      *uid "*".
      */
-    QList<infrastructure::MasterAccessControlEntry> getMediatorAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& uid);
 
     /**
@@ -196,7 +196,7 @@ public:
      * \return List of master ACEs with entries owned by the user.
      * In case userId has no domains with role MASTER, this function returns empty QList.
      */
-    QList<infrastructure::MasterAccessControlEntry> getEditableMediatorAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getEditableMediatorAccessControlEntries(
             const QString& userId);
 
     /**
@@ -208,7 +208,7 @@ public:
      * \param interfaceName The interface you search ACE's for.
      * \return QList of master ACEs associated to given domain and interface.
      */
-    QList<infrastructure::MasterAccessControlEntry> getMediatorAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& domain,
             const QString& interfaceName);
 
@@ -221,7 +221,7 @@ public:
      * \param interfaceName The interface being called.
      * \return The matching mediator ACEs
      */
-    QList<infrastructure::MasterAccessControlEntry> getMediatorAccessControlEntries(
+    QList<infrastructure::QtMasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& uid,
             const QString& domain,
             const QString& interfaceName);
@@ -237,7 +237,7 @@ public:
      * \return Mediator ACE Optional associated to given uid, domain, interface and operation.
      * If no mediator ACE found for given parameters, returned Optional is null.
      */
-    Optional<infrastructure::MasterAccessControlEntry> getMediatorAccessControlEntry(
+    Optional<infrastructure::QtMasterAccessControlEntry> getMediatorAccessControlEntry(
             const QString& uid,
             const QString& domain,
             const QString& interfaceName,
@@ -250,7 +250,7 @@ public:
      * \return false if update fails.
      */
     bool updateMediatorAccessControlEntry(
-            const infrastructure::MasterAccessControlEntry& updatedMediatorAce);
+            const infrastructure::QtMasterAccessControlEntry& updatedMediatorAce);
 
     /**
      * Remove mediator ACE from MediatorACL identified with userId, domain, interface and operation.
@@ -275,7 +275,8 @@ public:
      * \param uid The user id that owns the domains.
      * \return QList of owner ACEs with entries owned by the user.
      */
-    QList<infrastructure::OwnerAccessControlEntry> getOwnerAccessControlEntries(const QString& uid);
+    QList<infrastructure::QtOwnerAccessControlEntry> getOwnerAccessControlEntries(
+            const QString& uid);
 
     /**
      * Returns a QList of owner ACEs from Owner ACL applying to domains the user uid has role OWNER,
@@ -288,7 +289,7 @@ public:
      * In case userId has no domains with role OWNER, this function returns QList of all userId
      *owner ACEs.
      */
-    QList<infrastructure::OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(
+    QList<infrastructure::QtOwnerAccessControlEntry> getEditableOwnerAccessControlEntries(
             const QString& userId);
 
     /**
@@ -299,7 +300,7 @@ public:
      * \param interfaceName The interface you search ACE's for.
      * \return QList of owner ACEs associated to given domain and interface.
      */
-    QList<infrastructure::OwnerAccessControlEntry> getOwnerAccessControlEntries(
+    QList<infrastructure::QtOwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& domain,
             const QString& interfaceName);
 
@@ -311,7 +312,7 @@ public:
      * \param interfaceName The interface being accessed
      * \return The matching OwnerACEs
      */
-    QList<infrastructure::OwnerAccessControlEntry> getOwnerAccessControlEntries(
+    QList<infrastructure::QtOwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& userId,
             const QString& domain,
             const QString& interfaceName);
@@ -326,7 +327,7 @@ public:
      * \return Owner ACE Optional associated to given uid, domain, interface and operation.
      * If no owner ACE found for given parameters, returned Optional is null.
      */
-    Optional<infrastructure::OwnerAccessControlEntry> getOwnerAccessControlEntry(
+    Optional<infrastructure::QtOwnerAccessControlEntry> getOwnerAccessControlEntry(
             const QString& userId,
             const QString& domain,
             const QString& interfaceName,
@@ -340,7 +341,7 @@ public:
      * \return false if update fails.
      */
     bool updateOwnerAccessControlEntry(
-            const infrastructure::OwnerAccessControlEntry& updatedOwnerAce);
+            const infrastructure::QtOwnerAccessControlEntry& updatedOwnerAce);
 
     /**
      * Remove ownerAce ACE identified with userId, domain, interface and operation.
@@ -408,23 +409,23 @@ private:
 
     // Helper functions
     bool insertDomainRoleEntry(const QString& userId,
-                               infrastructure::Role::Enum role,
+                               infrastructure::QtRole::Enum role,
                                const QList<QString>& domains);
 
-    QList<infrastructure::MasterAccessControlEntry> extractMasterAces(QSqlQuery& query);
+    QList<infrastructure::QtMasterAccessControlEntry> extractMasterAces(QSqlQuery& query);
 
-    QList<infrastructure::OwnerAccessControlEntry> extractOwnerAces(QSqlQuery& query);
+    QList<infrastructure::QtOwnerAccessControlEntry> extractOwnerAces(QSqlQuery& query);
 
-    void setPossibleConsumerPermissions(infrastructure::MasterAccessControlEntry& entry,
+    void setPossibleConsumerPermissions(infrastructure::QtMasterAccessControlEntry& entry,
                                         QSqlQuery& query,
                                         int field);
 
-    void setPossibleRequiredTrustLevels(infrastructure::MasterAccessControlEntry& entry,
+    void setPossibleRequiredTrustLevels(infrastructure::QtMasterAccessControlEntry& entry,
                                         QSqlQuery& query,
                                         int field);
 
     void setPossibleRequiredControlEntryChangeTrustLevels(
-            infrastructure::MasterAccessControlEntry& entry,
+            infrastructure::QtMasterAccessControlEntry& entry,
             QSqlQuery& query,
             int field);
 
@@ -459,7 +460,7 @@ private:
 
     QSqlQuery createUpdateMasterAceQuery(
             const QString& sqlQuery,
-            const infrastructure::MasterAccessControlEntry& updatedMasterAce);
+            const infrastructure::QtMasterAccessControlEntry& updatedMasterAce);
     QSqlQuery createRemoveAceQuery(const QString& sqlQuery,
                                    const QString& uid,
                                    const QString& domain,
@@ -467,7 +468,7 @@ private:
                                    const QString& operation);
     QSqlQuery createGetEditableAceQuery(const QString& sqlQuery,
                                         const QString& uid,
-                                        infrastructure::Role::Enum role);
+                                        infrastructure::QtRole::Enum role);
 
     /**
      * Reset store to initial state.

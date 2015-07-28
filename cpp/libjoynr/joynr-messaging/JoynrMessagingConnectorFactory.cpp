@@ -18,8 +18,8 @@
  */
 
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/system/Address.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 
 #include <QSharedPointer>
 

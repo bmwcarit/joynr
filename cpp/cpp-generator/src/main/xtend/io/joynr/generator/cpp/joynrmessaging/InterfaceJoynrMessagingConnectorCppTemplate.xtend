@@ -285,7 +285,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						QSharedPointer<SubscriptionQos>(SubscriptionQos::createQt(subscriptionQos)),
+						QSharedPointer<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 						subscriptionRequest);
 			LOG_DEBUG(logger, subscriptionRequest.toQString());
 			joynrMessageSender->sendSubscriptionRequest(
@@ -410,7 +410,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(BroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
@@ -430,7 +430,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(BroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
 		«ENDIF»
 		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
@@ -461,7 +461,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					QSharedPointer<OnChangeSubscriptionQos>(SubscriptionQos::createQt(subscriptionQos)),
+					QSharedPointer<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 					subscriptionRequest);
 		LOG_DEBUG(logger, subscriptionRequest.toQString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(

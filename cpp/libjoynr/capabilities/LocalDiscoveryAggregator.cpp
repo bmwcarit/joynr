@@ -25,7 +25,7 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/types/StdDiscoveryEntry.h"
 #include "joynr/types/StdDiscoveryQos.h"
 #include "joynr/system/IRouting.h"
@@ -45,22 +45,22 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
           provisionedDiscoveryEntries(),
           systemServicesSettings(systemServicesSettings)
 {
-    QList<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections << joynr::types::CommunicationMiddleware::JOYNR;
-    joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
+    QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
+    connections << joynr::types::QtCommunicationMiddleware::JOYNR;
+    joynr::types::QtDiscoveryEntry routingProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
             TypeUtil::toQt(joynr::system::IRouting::INTERFACE_NAME()),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
-            joynr::types::ProviderQos(),
+            joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
             routingProviderDiscoveryEntry.getParticipantId().toStdString(),
             routingProviderDiscoveryEntry);
-    joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
+    joynr::types::QtDiscoveryEntry discoveryProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
             TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
-            joynr::types::ProviderQos(),
+            joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
             discoveryProviderDiscoveryEntry.getParticipantId().toStdString(),
@@ -136,7 +136,7 @@ void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
 {
     if (provisionedDiscoveryEntries.contains(participantId)) {
         joynrInternalStatus.setCode(RequestStatusCode::OK);
-        result = joynr::types::DiscoveryEntry::createStd(
+        result = joynr::types::QtDiscoveryEntry::createStd(
                 provisionedDiscoveryEntries.value(participantId));
     } else {
         if (discoveryProxy == NULL) {

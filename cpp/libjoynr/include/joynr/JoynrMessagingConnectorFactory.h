@@ -20,7 +20,7 @@
 #define JOYNRMESSAGINGCONNECTORFACTORY_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 
 #include <QSharedPointer>
 #include <string>
@@ -34,7 +34,7 @@ class MessagingQos;
 class IClientCache;
 namespace system
 {
-class Address;
+class QtAddress;
 }
 
 // Default implementation of a JoynrMessagingConnectorFactoryHelper

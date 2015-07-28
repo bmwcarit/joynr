@@ -45,7 +45,7 @@ void LocalChannelUrlDirectory::init()
 {
 
     // provisioning of Global Channel URL Directory URL
-    types::ChannelUrlInformation channelUrlDirectoryUrlInformation;
+    types::QtChannelUrlInformation channelUrlDirectoryUrlInformation;
     QList<QString> channelUrlDirectoryUrls;
     QString channelUrlDirectoryUrl = messagingSettings.getChannelUrlDirectoryUrl();
     channelUrlDirectoryUrls << channelUrlDirectoryUrl;
@@ -57,7 +57,7 @@ void LocalChannelUrlDirectory::init()
                       "Channel URL Directory").arg(channelUrlDirectoryUrl));
 
     // provisioning of Global Capabilities Directory URL
-    types::ChannelUrlInformation capabilitiesDirectoryUrlInformation;
+    types::QtChannelUrlInformation capabilitiesDirectoryUrlInformation;
     QList<QString> capabilitiesDirectoryUrls;
     QString capabilitiesDirectoryUrl = messagingSettings.getCapabilitiesDirectoryUrl();
     capabilitiesDirectoryUrls << capabilitiesDirectoryUrl;
@@ -104,10 +104,10 @@ std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChan
         std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
                 new joynr::Future<joynr::types::StdChannelUrlInformation>());
         future->onSuccess(
-                status, types::ChannelUrlInformation::createStd(localCache.value(channelIdQT)));
+                status, types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
         if (callbackFct) {
-            callbackFct(
-                    status, types::ChannelUrlInformation::createStd(localCache.value(channelIdQT)));
+            callbackFct(status,
+                        types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
         }
         return future;
     }
@@ -120,7 +120,7 @@ std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChan
         LOG_INFO(logger, "Received remote url information for channelId=" + channelIdQT);
         joynr::types::StdChannelUrlInformation urls;
         future->getValues(urls);
-        localCache.insert(channelIdQT, types::ChannelUrlInformation::createQt(urls));
+        localCache.insert(channelIdQT, types::QtChannelUrlInformation::createQt(urls));
         LOG_INFO(logger, "Stored url information for channelId=" + channelIdQT);
     } else {
         LOG_INFO(logger,

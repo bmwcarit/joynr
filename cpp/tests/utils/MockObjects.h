@@ -38,8 +38,8 @@
 #include "utils/QThreadSleep.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
-#include "joynr/types/GpsLocation.h"
-#include "joynr/types/Trip.h"
+#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/QtTrip.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
@@ -54,7 +54,7 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 
-#include "joynr/system/Address.h"
+#include "joynr/system/QtAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionReply.h"
@@ -74,7 +74,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtGpsLocation.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
@@ -153,7 +153,7 @@ public:
         : InProcessConnectorFactory(NULL,NULL,NULL,NULL) {
     }
 
-    MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::system::Address> address));
+    MOCK_METHOD1(canBeCreated, bool(const QSharedPointer<joynr::system::QtAddress> address));
 };
 
 class MockDispatcher : public joynr::IDispatcher {
@@ -188,7 +188,7 @@ public:
 
     }
     MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
-    MOCK_METHOD2(addNextHop, void(std::string participantId, QSharedPointer<joynr::system::Address> inprocessAddress));
+    MOCK_METHOD2(addNextHop, void(std::string participantId, QSharedPointer<joynr::system::QtAddress> inprocessAddress));
     MOCK_METHOD1(removeNextHop, void(std::string participantId));
 };
 
@@ -465,7 +465,7 @@ public:
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
-    MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(std::string destParticipantId, const joynr::system::Address& destEndpointAddress));
+    MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(std::string destParticipantId, const joynr::system::QtAddress& destEndpointAddress));
     MOCK_METHOD1(remove, void(std::string destParticipantId));
     MOCK_METHOD1(contains, bool(std::string destPartId));
 };
@@ -485,9 +485,9 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     {
         qDebug() << "I am being destroyed_ MockProvider";
     };
-    /*void getLocation(RequestStatus& status, GpsLocation& result)
+    /*void getLocation(RequestStatus& status, QtGpsLocation& result)
     {
-        result = GpsLocation(GpsFixEnum::MODE2D, 4,5,6,7);
+        result = QtGpsLocation(QtGpsFixEnum::MODE2D, 4,5,6,7);
     }
     */
     MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::Localisation::StdGpsLocation& result) );
@@ -599,7 +599,7 @@ public:
             std::function<void(
                 const std::string& result)> onSuccess)
     {
-        std::string result("DerivedStruct");
+        std::string result("QtDerivedStruct");
         onSuccess(result);
     }
 
@@ -608,7 +608,7 @@ public:
             std::function<void(
                 const std::string& result)> onSuccess)
     {
-        std::string result("AnotherDerivedStruct");
+        std::string result("QtAnotherDerivedStruct");
         onSuccess(result);
     }
 };
@@ -662,7 +662,7 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
 };
 
-class MockEndpointAddress : public joynr::system::Address {
+class MockEndpointAddress : public joynr::system::QtAddress {
 
 };
 
@@ -682,7 +682,7 @@ public:
     MOCK_METHOD1_T(remove, void(const Key& keyId));
 };
 
-typedef MockDirectory<QString, joynr::system::Address> MockMessagingEndpointDirectory;
+typedef MockDirectory<QString, joynr::system::QtAddress> MockMessagingEndpointDirectory;
 
 
 
@@ -692,7 +692,7 @@ public:
     MOCK_METHOD1(getSubscriptionCallback,QSharedPointer<joynr::ISubscriptionCallback>(const QString& subscriptionId));
     MOCK_METHOD4(registerSubscription,void(const QString& subscribeToName,
                                                     QSharedPointer<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
-                                                    QSharedPointer<joynr::SubscriptionQos> qos,
+                                                    QSharedPointer<joynr::QtSubscriptionQos> qos,
                                                     joynr::SubscriptionRequest& subscriptionRequest));
     MOCK_METHOD1(unregisterSubscription, void(const QString& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const QString& subscriptionId));
@@ -708,11 +708,11 @@ public:
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
     MockChannelUrlDirectoryProxy() :
-        ChannelUrlDirectoryProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryProxy(QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()), NULL, NULL, "domain", joynr::MessagingQos(), false),
         joynr::ProxyBase(NULL, NULL, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false){}
+        ChannelUrlDirectoryProxyBase(QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectorySyncProxy(QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()), NULL, NULL, "domain", joynr::MessagingQos(), false){}
 
 
     MOCK_METHOD2(getUrlsForChannel,std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> (const std::string& channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::StdChannelUrlInformation& urls)> callbackFct));
@@ -765,7 +765,7 @@ class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructu
 public:
     MockGlobalDomainAccessControllerProxy() :
         GlobalDomainAccessControllerProxy(
-                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()),
                 NULL,
                 NULL,
                 "domain",
@@ -779,21 +779,21 @@ public:
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
-                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()),
                 NULL,
                 NULL,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerSyncProxy(
-                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()),
                 NULL,
                 NULL,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerAsyncProxy(
-                QSharedPointer<joynr::system::Address> (new joynr::system::Address()),
+                QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()),
                 NULL,
                 NULL,
                 "domain",
@@ -854,25 +854,25 @@ public:
                      joynr::infrastructure::GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters,
                      QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::StdDomainRoleEntry,
                                                                  joynr::infrastructure::DacTypes::StdChangeType::Enum>>,
-                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+                     QSharedPointer<joynr::QtOnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToOwnerAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters,
                      QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::StdOwnerAccessControlEntry,
                                                                  joynr::infrastructure::DacTypes::StdChangeType::Enum>>,
-                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+                     QSharedPointer<joynr::QtOnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToMediatorAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters,
                      QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::StdChangeType::Enum,
                                                                  joynr::infrastructure::DacTypes::StdMasterAccessControlEntry>>,
-                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+                     QSharedPointer<joynr::QtOnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToMasterAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters,
                      QSharedPointer<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::StdChangeType::Enum,
                                                                  joynr::infrastructure::DacTypes::StdMasterAccessControlEntry>>,
-                     QSharedPointer<joynr::OnChangeSubscriptionQos>));
+                     QSharedPointer<joynr::QtOnChangeSubscriptionQos>));
 
 };
 
@@ -890,7 +890,7 @@ public:
                      QSharedPointer<joynr::LocalDomainAccessController::IGetConsumerPermissionCallback> callback));
 
     MOCK_METHOD5(getConsumerPermission,
-                 joynr::infrastructure::Permission::Enum(
+                 joynr::infrastructure::QtPermission::Enum(
                      const std::string& userId,
                      const std::string& domain,
                      const std::string& interfaceName,

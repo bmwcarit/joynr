@@ -29,8 +29,8 @@ class InProcessMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     InProcessMessagingStubFactory();
-    QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress);
-    bool canCreate(const joynr::system::Address& destAddress);
+    QSharedPointer<IMessaging> create(const joynr::system::QtAddress& destAddress);
+    bool canCreate(const joynr::system::QtAddress& destAddress);
 };
 
 } // namespace joynr

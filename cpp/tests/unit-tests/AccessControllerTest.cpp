@@ -22,7 +22,7 @@
 #include "gtest/gtest.h"
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include <string>
 
 using namespace ::testing;
@@ -216,7 +216,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
                     StdTrustLevel::HIGH
             )
     )
-            .WillOnce(Return(Permission::createQt(permissionYes)));
+            .WillOnce(Return(QtPermission::createQt(permissionYes)));
 
     EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true))
             .Times(1);

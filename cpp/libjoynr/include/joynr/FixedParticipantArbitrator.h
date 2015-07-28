@@ -32,7 +32,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-class DiscoveryEntry;
+class QtDiscoveryEntry;
 }
 
 class FixedParticipantArbitrator : public ProviderArbitrator

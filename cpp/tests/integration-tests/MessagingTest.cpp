@@ -30,7 +30,7 @@
 #include <string>
 #include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -86,13 +86,13 @@ public:
         messageRouter(new MessageRouter(messagingStubFactory, NULL))
     {
         // provision global capabilities directory
-        QSharedPointer<joynr::system::Address> addressCapabilitiesDirectory(
-            new system::ChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        QSharedPointer<joynr::system::QtAddress> addressCapabilitiesDirectory(
+            new system::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
         // provision channel url directory
-        QSharedPointer<joynr::system::Address> addressChannelUrlDirectory(
-            new system::ChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        QSharedPointer<joynr::system::QtAddress> addressChannelUrlDirectory(
+            new system::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
@@ -136,8 +136,8 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     QSharedPointer<IReplyCaller> replyCaller;
     messageSender.registerDispatcher(&mockDispatcher);
 
-    QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
+    QSharedPointer<system::QtChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -240,8 +240,8 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
     EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
             .Times(1);
 
-    QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
+    QSharedPointer<system::QtChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -285,8 +285,8 @@ TEST_F(MessagingTest, routeMultipleMessages)
 
     messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
 
-    QSharedPointer<system::ChannelAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<system::ChannelAddress>(new system::ChannelAddress());
+    QSharedPointer<system::QtChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -297,8 +297,8 @@ TEST_F(MessagingTest, routeMultipleMessages)
 }
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::ChannelUrlInformation> > future , QString channelId, int timeout) {
-    types::ChannelUrlInformation urlInformation;
+void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::QtChannelUrlInformation> > future , QString channelId, int timeout) {
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);
@@ -317,7 +317,7 @@ TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChanne
 //    MockLocalChannelUrlDirectory mockDirectory;
 //    messageSender->init(mockDirectory, *settings);
 
-//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<std::shared_ptr<Future<types::ChannelUrlInformation> > >(), A<QString>(),A<int>()))
+//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<std::shared_ptr<Future<types::QtChannelUrlInformation> > >(), A<QString>(),A<int>()))
 //            .WillOnce(Invoke(messagingTestPseudoGetChannelUrls));
 
 

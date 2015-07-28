@@ -33,7 +33,7 @@ class IMessaging;
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 class InProcessMessagingSkeleton;
 
@@ -60,7 +60,7 @@ public:
     // messagingSkeleton);
 
     QSharedPointer<IMessaging> create(std::string destParticipantId,
-                                      const joynr::system::Address& destinationAddress);
+                                      const joynr::system::QtAddress& destinationAddress);
     void remove(std::string destParticipantId);
     bool contains(std::string destParticipantId);
 

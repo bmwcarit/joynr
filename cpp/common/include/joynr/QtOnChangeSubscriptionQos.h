@@ -19,7 +19,7 @@
 #ifndef ONCHANGESUBSCRIPTIONQOS_H
 #define ONCHANGESUBSCRIPTIONQOS_H
 
-#include "joynr/SubscriptionQos.h"
+#include "joynr/QtSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 
 /*
@@ -32,7 +32,7 @@
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
+class JOYNRCOMMON_EXPORT QtOnChangeSubscriptionQos : public QtSubscriptionQos
 {
 
     Q_OBJECT
@@ -40,9 +40,9 @@ class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
     Q_PROPERTY(qint64 minInterval READ getMinInterval WRITE setMinInterval)
 
 public:
-    OnChangeSubscriptionQos();
-    OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other);
-    OnChangeSubscriptionQos(const qint64& validity, const qint64& minInterval);
+    QtOnChangeSubscriptionQos();
+    QtOnChangeSubscriptionQos(const QtOnChangeSubscriptionQos& other);
+    QtOnChangeSubscriptionQos(const qint64& validity, const qint64& minInterval);
 
     /**
     * The provider will maintain at least a minimum interval idle time in milliseconds between
@@ -72,8 +72,8 @@ public:
      */
     virtual void setMinInterval(const qint64& minInterval);
 
-    OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
-    virtual bool operator==(const OnChangeSubscriptionQos& other) const;
+    QtOnChangeSubscriptionQos& operator=(const QtOnChangeSubscriptionQos& other);
+    virtual bool operator==(const QtOnChangeSubscriptionQos& other) const;
 
     static const qint64& DEFAULT_MIN_INTERVAL();
     static const qint64& MIN_MIN_INTERVAL();
@@ -87,7 +87,7 @@ protected:
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::OnChangeSubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::OnChangeSubscriptionQos>)
+Q_DECLARE_METATYPE(joynr::QtOnChangeSubscriptionQos)
+Q_DECLARE_METATYPE(QSharedPointer<joynr::QtOnChangeSubscriptionQos>)
 
 #endif // ONCHANGESUBSCRIPTIONQOS_H

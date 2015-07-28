@@ -24,8 +24,8 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/Trip.h"
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtTrip.h"
+#include "joynr/types/QtGpsLocation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
@@ -119,7 +119,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
     //sync methods are not yet implemented
-//    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
+//    std::vector<types::QtCapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
     QSharedPointer<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 

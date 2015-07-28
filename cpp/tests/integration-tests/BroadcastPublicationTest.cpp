@@ -22,10 +22,10 @@
 #include <memory>
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtGpsLocation.h"
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;
@@ -67,14 +67,14 @@ public:
         request.setSubscriptionId(subscriptionId);
 
         auto subscriptionQos =
-                QSharedPointer<OnChangeSubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+                QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                     80, // validity_ms
                     100, // minInterval_ms
                     200, // maxInterval_ms
                     80 // alertInterval_ms
         ));
         request.setQos(subscriptionQos);
-        request.setFilterParameters(BroadcastFilterParameters::createQt(filterParameters));
+        request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",

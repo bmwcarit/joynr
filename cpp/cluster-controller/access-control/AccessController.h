@@ -22,7 +22,7 @@
 
 #include "IAccessController.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/infrastructure/TrustLevel.h"
+#include "joynr/infrastructure/QtTrustLevel.h"
 
 #include <QSharedPointer>
 #include <QList>
@@ -34,7 +34,7 @@ class LocalDomainAccessController;
 
 namespace types
 {
-class DiscoveryEntry;
+class QtDiscoveryEntry;
 }
 
 namespace joynr_logging
@@ -59,7 +59,7 @@ public:
                                        QSharedPointer<IHasConsumerPermissionCallback> callback);
 
     virtual bool hasProviderPermission(const QString& userId,
-                                       infrastructure::TrustLevel::Enum trustLevel,
+                                       infrastructure::QtTrustLevel::Enum trustLevel,
                                        const QString& domain,
                                        const QString& interfaceName);
 

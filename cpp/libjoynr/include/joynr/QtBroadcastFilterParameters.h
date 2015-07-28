@@ -33,22 +33,22 @@ namespace joynr
 {
 
 /**
- * \class BroadcastFilterParameters
- * \brief The BroadcastFilterParameters class represents generic filter parameters
+ * \class QtBroadcastFilterParameters
+ * \brief The QtBroadcastFilterParameters class represents generic filter parameters
  * for selective broadcasts
  */
-class JOYNRCOMMON_EXPORT BroadcastFilterParameters : public QObject
+class JOYNRCOMMON_EXPORT QtBroadcastFilterParameters : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(QMap filterParameters MEMBER filterParameters)
 
 public:
-    BroadcastFilterParameters();
-    BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters);
-    BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters);
-    ~BroadcastFilterParameters();
-    bool operator==(const BroadcastFilterParameters& filterParameters) const;
+    QtBroadcastFilterParameters();
+    QtBroadcastFilterParameters(const QtBroadcastFilterParameters& filterParameters);
+    QtBroadcastFilterParameters& operator=(const QtBroadcastFilterParameters& filterParameters);
+    ~QtBroadcastFilterParameters();
+    bool operator==(const QtBroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(const QString& parameter, const QString& value);
     void setFilterParameters(const QMap<QString, QString>& value);
@@ -58,8 +58,8 @@ public:
     QMap<QString, QString> getFilterParameters() const;
     QString getFilterParameter(const QString& parameter) const;
 
-    static BroadcastFilterParameters createQt(const StdBroadcastFilterParameters& from);
-    static StdBroadcastFilterParameters createStd(const BroadcastFilterParameters& from);
+    static QtBroadcastFilterParameters createQt(const StdBroadcastFilterParameters& from);
+    static StdBroadcastFilterParameters createStd(const QtBroadcastFilterParameters& from);
 
 private:
     QMap<QString, QVariant> filterParameters;
@@ -67,6 +67,6 @@ private:
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::BroadcastFilterParameters)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::BroadcastFilterParameters>)
+Q_DECLARE_METATYPE(joynr::QtBroadcastFilterParameters)
+Q_DECLARE_METATYPE(QSharedPointer<joynr::QtBroadcastFilterParameters>)
 #endif // BROADCASTFILTERPARAMETERS_H

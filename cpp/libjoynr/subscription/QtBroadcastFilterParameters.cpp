@@ -16,35 +16,37 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/QtBroadcastFilterParameters.h"
 #include <QMapIterator>
 #include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
-BroadcastFilterParameters::BroadcastFilterParameters() : filterParameters(QMap<QString, QVariant>())
+QtBroadcastFilterParameters::QtBroadcastFilterParameters()
+        : filterParameters(QMap<QString, QVariant>())
 {
 }
 
-BroadcastFilterParameters::BroadcastFilterParameters(
-        const BroadcastFilterParameters& filterParameters)
+QtBroadcastFilterParameters::QtBroadcastFilterParameters(
+        const QtBroadcastFilterParameters& filterParameters)
         : QObject(), filterParameters(filterParameters.filterParameters)
 {
 }
 
-BroadcastFilterParameters& BroadcastFilterParameters::operator=(
-        const BroadcastFilterParameters& filterParameters)
+QtBroadcastFilterParameters& QtBroadcastFilterParameters::operator=(
+        const QtBroadcastFilterParameters& filterParameters)
 {
     this->filterParameters = filterParameters.filterParameters;
     return *this;
 }
 
-BroadcastFilterParameters::~BroadcastFilterParameters()
+QtBroadcastFilterParameters::~QtBroadcastFilterParameters()
 {
 }
 
-bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& filterParameters) const
+bool QtBroadcastFilterParameters::operator==(
+        const QtBroadcastFilterParameters& filterParameters) const
 {
     bool equal = this->filterParameters.keys() == filterParameters.filterParameters.keys();
 
@@ -62,12 +64,12 @@ bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& filt
     return equal;
 }
 
-void BroadcastFilterParameters::setFilterParameter(const QString& parameter, const QString& value)
+void QtBroadcastFilterParameters::setFilterParameter(const QString& parameter, const QString& value)
 {
     filterParameters.insert(parameter, value);
 }
 
-QMap<QString, QString> BroadcastFilterParameters::getFilterParameters() const
+QMap<QString, QString> QtBroadcastFilterParameters::getFilterParameters() const
 {
     QMap<QString, QString> stringParams;
     QMapIterator<QString, QVariant> i(filterParameters);
@@ -78,7 +80,7 @@ QMap<QString, QString> BroadcastFilterParameters::getFilterParameters() const
     return stringParams;
 }
 
-QString BroadcastFilterParameters::getFilterParameter(const QString& parameter) const
+QString QtBroadcastFilterParameters::getFilterParameter(const QString& parameter) const
 {
     if (filterParameters.contains(parameter)) {
         return filterParameters.value(parameter).toString();
@@ -87,7 +89,7 @@ QString BroadcastFilterParameters::getFilterParameter(const QString& parameter) 
     }
 }
 
-void BroadcastFilterParameters::setFilterParameters(const QMap<QString, QString>& value)
+void QtBroadcastFilterParameters::setFilterParameters(const QMap<QString, QString>& value)
 {
     filterParameters.clear();
     QMapIterator<QString, QString> i(value);
@@ -97,18 +99,18 @@ void BroadcastFilterParameters::setFilterParameters(const QMap<QString, QString>
     }
 }
 
-bool BroadcastFilterParameters::equals(const QObject& other) const
+bool QtBroadcastFilterParameters::equals(const QObject& other) const
 {
     int typeThis = QMetaType::type(this->metaObject()->className());
     int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const BroadcastFilterParameters*>(&other);
+    auto newOther = dynamic_cast<const QtBroadcastFilterParameters*>(&other);
     return typeThis == typeOther && *this == *newOther;
 }
 
-BroadcastFilterParameters BroadcastFilterParameters::createQt(
+QtBroadcastFilterParameters QtBroadcastFilterParameters::createQt(
         const StdBroadcastFilterParameters& from)
 {
-    BroadcastFilterParameters to;
+    QtBroadcastFilterParameters to;
     std::map<std::string, std::string> filterParameters(from.getFilterParameters());
     for (std::map<std::string, std::string>::const_iterator iterator = filterParameters.begin();
          iterator != filterParameters.end();
@@ -118,8 +120,8 @@ BroadcastFilterParameters BroadcastFilterParameters::createQt(
     return to;
 }
 
-StdBroadcastFilterParameters BroadcastFilterParameters::createStd(
-        const BroadcastFilterParameters& from)
+StdBroadcastFilterParameters QtBroadcastFilterParameters::createStd(
+        const QtBroadcastFilterParameters& from)
 {
     StdBroadcastFilterParameters to;
     for (auto e : from.getFilterParameters().toStdMap()) {

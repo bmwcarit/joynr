@@ -19,9 +19,9 @@
 #include "cluster-controller/http-communication-manager/MessagingMetaTypes.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
 
 #include <QRunnable>
 
@@ -33,9 +33,10 @@ void registerMessagingMetaTypes()
 
     qRegisterMetaType<JoynrMessage>("joynr.JoynrMessage");
     qRegisterMetaType<QRunnable*>("QRunnableStar");
-    qRegisterMetaType<OnChangeSubscriptionQos>("OnChangeSubscriptionQos");
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<PeriodicSubscriptionQos>("PeriodicSubscriptionQos");
+    qRegisterMetaType<QtOnChangeSubscriptionQos>("QtOnChangeSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>(
+            "QtOnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
 }
 
 } // namespace joynr

@@ -26,7 +26,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 
 #include <string>
 #include <QSharedPointer>
@@ -36,7 +36,7 @@ namespace joynr
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 class InProcessDispatcher;
 

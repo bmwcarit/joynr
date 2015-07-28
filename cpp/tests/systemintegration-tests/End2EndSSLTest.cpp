@@ -28,7 +28,7 @@
 #include "joynr/SettingsMerger.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"

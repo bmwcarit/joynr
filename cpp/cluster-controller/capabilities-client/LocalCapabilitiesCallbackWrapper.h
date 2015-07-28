@@ -22,7 +22,7 @@
 
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "common/InterfaceAddress.h"
-#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/QtDiscoveryQos.h"
 
 #include <QSharedPointer>
 #include <string>

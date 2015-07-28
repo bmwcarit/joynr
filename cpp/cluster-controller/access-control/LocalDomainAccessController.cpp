@@ -21,7 +21,7 @@
 #include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
-#include "joynr/infrastructure/DomainRoleEntry.h"
+#include "joynr/infrastructure/QtDomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
@@ -165,13 +165,13 @@ void LocalDomainAccessController::init(
 
 bool LocalDomainAccessController::hasRole(const QString& userId,
                                           const QString& domain,
-                                          Role::Enum role)
+                                          QtRole::Enum role)
 {
     LOG_DEBUG(logger, QString("execute: entering hasRole"));
 
     // See if the user has the given role
     bool hasRole = false;
-    Optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
+    Optional<QtDomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
         QList<QString> domains = dre.getValue().getDomains();
         if (domains.contains(domain)) {
@@ -225,20 +225,21 @@ void LocalDomainAccessController::getConsumerPermission(
     }
 
     // If this point is reached the data for the ACL check is available
-    QList<MasterAccessControlEntry> masterAces =
+    QList<QtMasterAccessControlEntry> masterAces =
             localDomainAccessStore->getMasterAccessControlEntries(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
                     QString::fromStdString(interfaceName));
-    QList<MasterAccessControlEntry> mediatorAces =
+    QList<QtMasterAccessControlEntry> mediatorAces =
             localDomainAccessStore->getMediatorAccessControlEntries(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
                     QString::fromStdString(interfaceName));
-    QList<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(
-            QString::fromStdString(userId),
-            QString::fromStdString(domain),
-            QString::fromStdString(interfaceName));
+    QList<QtOwnerAccessControlEntry> ownerAces =
+            localDomainAccessStore->getOwnerAccessControlEntries(
+                    QString::fromStdString(userId),
+                    QString::fromStdString(domain),
+                    QString::fromStdString(interfaceName));
 
     // The operations of the ACEs should only contain wildcards, if not
     // getConsumerPermission should be called with an operation
@@ -247,13 +248,13 @@ void LocalDomainAccessController::getConsumerPermission(
         callback->operationNeeded();
     } else {
         // The operations are all wildcards
-        Permission::Enum permission = getConsumerPermission(
+        QtPermission::Enum permission = getConsumerPermission(
                 userId, domain, interfaceName, LocalDomainAccessStore::WILDCARD, trustLevel);
-        callback->consumerPermission(Permission::createStd(permission));
+        callback->consumerPermission(QtPermission::createStd(permission));
     }
 }
 
-Permission::Enum LocalDomainAccessController::getConsumerPermission(
+QtPermission::Enum LocalDomainAccessController::getConsumerPermission(
         const std::string& userId,
         const std::string& domain,
         const std::string& interfaceName,
@@ -262,19 +263,19 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
 {
     LOG_DEBUG(logger, QString("Entering getConsumerPermission with known operation"));
 
-    Optional<MasterAccessControlEntry> masterAceOptional =
+    Optional<QtMasterAccessControlEntry> masterAceOptional =
             localDomainAccessStore->getMasterAccessControlEntry(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
                     QString::fromStdString(interfaceName),
                     QString::fromStdString(operation));
-    Optional<MasterAccessControlEntry> mediatorAceOptional =
+    Optional<QtMasterAccessControlEntry> mediatorAceOptional =
             localDomainAccessStore->getMediatorAccessControlEntry(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
                     QString::fromStdString(interfaceName),
                     QString::fromStdString(operation));
-    Optional<OwnerAccessControlEntry> ownerAceOptional =
+    Optional<QtOwnerAccessControlEntry> ownerAceOptional =
             localDomainAccessStore->getOwnerAccessControlEntry(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
@@ -284,7 +285,7 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
     return accessControlAlgorithm.getConsumerPermission(masterAceOptional,
                                                         mediatorAceOptional,
                                                         ownerAceOptional,
-                                                        TrustLevel::createQt(trustLevel));
+                                                        QtTrustLevel::createQt(trustLevel));
 }
 
 std::vector<StdMasterAccessControlEntry> LocalDomainAccessController::getMasterAccessControlEntries(
@@ -432,11 +433,11 @@ StdPermission::Enum LocalDomainAccessController::getProviderPermission(
     Q_UNUSED(domain);
     Q_UNUSED(interfaceName);
 
-    return Permission::createStd(accessControlAlgorithm.getProviderPermission(
-            Optional<MasterAccessControlEntry>::createNull(),
-            Optional<MasterAccessControlEntry>::createNull(),
-            Optional<OwnerAccessControlEntry>::createNull(),
-            TrustLevel::createQt(trustLevel)));
+    return QtPermission::createStd(accessControlAlgorithm.getProviderPermission(
+            Optional<QtMasterAccessControlEntry>::createNull(),
+            Optional<QtMasterAccessControlEntry>::createNull(),
+            Optional<QtOwnerAccessControlEntry>::createNull(),
+            QtTrustLevel::createQt(trustLevel)));
 }
 
 std::vector<StdMasterRegistrationControlEntry> LocalDomainAccessController::
@@ -607,7 +608,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         if (status.successful()) {
             // Add the results
             foreach (const StdDomainRoleEntry& dre, domainRoleEntries) {
-                localDomainAccessStore->updateDomainRole(DomainRoleEntry::createQt(dre));
+                localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(dre));
             }
             initialiser->update();
         } else {
@@ -631,7 +632,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             // Add the results
             foreach (const StdMasterAccessControlEntry& masterAce, masterAces) {
                 localDomainAccessStore->updateMasterAccessControlEntry(
-                        MasterAccessControlEntry::createQt(masterAce));
+                        QtMasterAccessControlEntry::createQt(masterAce));
             }
             initialiser->update();
         } else {
@@ -657,7 +658,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             // Add the results
             foreach (const StdMasterAccessControlEntry& mediatorAce, mediatorAces) {
                 localDomainAccessStore->updateMediatorAccessControlEntry(
-                        MasterAccessControlEntry::createQt(mediatorAce));
+                        QtMasterAccessControlEntry::createQt(mediatorAce));
             }
             initialiser->update();
         } else {
@@ -683,7 +684,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             // Add the results
             foreach (const StdOwnerAccessControlEntry& ownerAce, ownerAces) {
                 localDomainAccessStore->updateOwnerAccessControlEntry(
-                        OwnerAccessControlEntry::createQt(ownerAce));
+                        QtOwnerAccessControlEntry::createQt(ownerAce));
             }
             initialiser->update();
         } else {
@@ -909,10 +910,10 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
         const StdDomainRoleEntry& changedDre)
 {
     if (changeType != StdChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateDomainRole(DomainRoleEntry::createQt(changedDre));
+        parent.localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(changedDre));
     } else {
-        parent.localDomainAccessStore->removeDomainRole(
-                QString::fromStdString(changedDre.getUid()), Role::createQt(changedDre.getRole()));
+        parent.localDomainAccessStore->removeDomainRole(QString::fromStdString(changedDre.getUid()),
+                                                        QtRole::createQt(changedDre.getRole()));
     }
     LOG_DEBUG(parent.logger,
               QString("Changed DRE: %1").arg(QString::fromStdString(changedDre.toString())));
@@ -935,7 +936,7 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 {
     if (changeType != StdChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterAccessControlEntry(
-                MasterAccessControlEntry::createQt(changedMasterAce));
+                QtMasterAccessControlEntry::createQt(changedMasterAce));
         LOG_DEBUG(parent.logger,
                   QString("Changed MasterAce: %1")
                           .arg(QString::fromStdString(changedMasterAce.toString())));
@@ -968,7 +969,7 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
 {
     if (changeType != StdChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMediatorAccessControlEntry(
-                MasterAccessControlEntry::createQt(changedMediatorAce));
+                QtMasterAccessControlEntry::createQt(changedMediatorAce));
     } else {
         parent.localDomainAccessStore->removeMediatorAccessControlEntry(
                 QString::fromStdString(changedMediatorAce.getUid()),
@@ -998,7 +999,7 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
 {
     if (changeType != StdChangeType::REMOVE) {
         parent.localDomainAccessStore->updateOwnerAccessControlEntry(
-                OwnerAccessControlEntry::createQt(changedOwnerAce));
+                QtOwnerAccessControlEntry::createQt(changedOwnerAce));
     } else {
         parent.localDomainAccessStore->removeOwnerAccessControlEntry(
                 QString::fromStdString(changedOwnerAce.getUid()),

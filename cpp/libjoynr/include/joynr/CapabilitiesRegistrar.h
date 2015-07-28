@@ -28,7 +28,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/Future.h"
 
 #include <QString>
@@ -49,9 +49,9 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 public:
     CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
                           joynr::system::IDiscoverySync& discoveryProxy,
-                          QSharedPointer<joynr::system::Address> messagingStubAddress,
+                          QSharedPointer<joynr::system::QtAddress> messagingStubAddress,
                           QSharedPointer<ParticipantIdStorage> participantIdStorage,
-                          QSharedPointer<joynr::system::Address> dispatcherAddress,
+                          QSharedPointer<joynr::system::QtAddress> dispatcherAddress,
                           QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
@@ -154,9 +154,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    QSharedPointer<joynr::system::Address> messagingStubAddress;
+    QSharedPointer<joynr::system::QtAddress> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
-    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<joynr::system::QtAddress> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
     static joynr_logging::Logger* logger;
 };

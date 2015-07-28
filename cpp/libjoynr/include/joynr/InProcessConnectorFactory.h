@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/InProcessAddress.h"
-#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 #include "joynr/IRequestCallerDirectory.h"
 
 #include <QSharedPointer>

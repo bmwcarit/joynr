@@ -41,9 +41,9 @@ CapabilityEntry::CapabilityEntry(const CapabilityEntry& other)
 CapabilityEntry::CapabilityEntry(
         const QString& domain,
         const QString& interfaceName,
-        joynr::types::ProviderQos qos,
+        joynr::types::QtProviderQos qos,
         const QString& participantId,
-        QList<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
+        QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections,
         bool isGlobal,
         QObject* parent)
         : QObject(parent),
@@ -95,12 +95,12 @@ void CapabilityEntry::setDomain(QString domain)
     this->domain = domain;
 }
 
-joynr::types::ProviderQos CapabilityEntry::getQos() const
+joynr::types::QtProviderQos CapabilityEntry::getQos() const
 {
     return qos;
 }
 
-void CapabilityEntry::setQos(joynr::types::ProviderQos qos)
+void CapabilityEntry::setQos(joynr::types::QtProviderQos qos)
 {
     this->qos = qos;
 }
@@ -116,18 +116,19 @@ QString CapabilityEntry::getParticipantId() const
 }
 
 void CapabilityEntry::setMiddlewareConnections(
-        QList<joynr::types::CommunicationMiddleware::Enum> middlewareConnections)
+        QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections)
 {
     this->middlewareConnections = middlewareConnections;
 }
 
-QList<joynr::types::CommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections() const
+QList<joynr::types::QtCommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections()
+        const
 {
     return middlewareConnections;
 }
 
 void CapabilityEntry::prependMiddlewareConnection(
-        joynr::types::CommunicationMiddleware::Enum middlewareConnection)
+        joynr::types::QtCommunicationMiddleware::Enum middlewareConnection)
 {
     middlewareConnections.prepend(middlewareConnection);
 }

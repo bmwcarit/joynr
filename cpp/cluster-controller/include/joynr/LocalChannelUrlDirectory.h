@@ -90,7 +90,7 @@ private:
     void init();
     MessagingSettings& messagingSettings;
     QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
-    QMap<QString, types::ChannelUrlInformation> localCache;
+    QMap<QString, types::QtChannelUrlInformation> localCache;
     static joynr_logging::Logger* logger;
 };
 

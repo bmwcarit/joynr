@@ -35,12 +35,12 @@
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
 #include <string>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtGpsLocation.h"
 
 using namespace ::testing;
 
@@ -58,15 +58,15 @@ class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::GpsLocation>()),
+        mockCallback(new MockCallback<types::QtGpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::GpsLocation>(
-                [this](const RequestStatus& status, const types::GpsLocation& location) {
+        mockReplyCaller(new MockReplyCaller<types::QtGpsLocation>(
+                [this](const RequestStatus& status, const types::QtGpsLocation& location) {
                     mockCallback->callbackFct(status, location);
                 },
                 [] (const RequestStatus status){
                 })),
-        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::GpsLocation>()),
+        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::QtGpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -87,7 +87,7 @@ public:
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::GpsLocation>();
+        MetaTypeRegistrar::instance().registerMetaType<types::QtGpsLocation>();
     }
 
     void TearDown(){
@@ -96,11 +96,11 @@ public:
 
 protected:
     QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
+    QSharedPointer<MockCallback<types::QtGpsLocation> > mockCallback;
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListener;
+    QSharedPointer<MockReplyCaller<types::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::QtGpsLocation> > mockSubscriptionListener;
 
     types::Localisation::StdGpsLocation gpsLocation1;
 
@@ -126,7 +126,7 @@ private:
   *             the MockCaller for the attribute.
   */
 TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
@@ -138,7 +138,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                     ReleaseSemaphore(&semaphore)));
 
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -175,16 +175,16 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("GpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtGpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::GpsLocation&>()))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::QtGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -192,15 +192,15 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ));
 
     SubscriptionRequest subscriptionRequest;
-    //construct a reply containing a GpsLocation
+    //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     QList<QVariant> response;
-    response.append(QVariant::fromValue(types::GpsLocation::createQt(gpsLocation1)));
+    response.append(QVariant::fromValue(types::QtGpsLocation::createQt(gpsLocation1)));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::GpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListener));
+    QSharedPointer<SubscriptionCallback<types::QtGpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::QtGpsLocation>(mockSubscriptionListener));
 
 
     // subscriptionRequest is an out param
@@ -232,7 +232,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
   */
 TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
@@ -246,7 +246,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                     ReleaseSemaphore(&semaphore)
             ));
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -279,7 +279,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
   * Expected:   The PublicationManager stops all subscriptions for this provider
   */
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<SubscriptionStop>("SubscriptionStop");
 
@@ -293,7 +293,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
@@ -327,7 +327,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
   */
 TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
@@ -340,7 +340,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms

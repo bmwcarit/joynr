@@ -69,7 +69,7 @@ public:
      */
     void registerSubscription(const QString& subscribeToName,
                               QSharedPointer<ISubscriptionCallback> subscriptionCaller,
-                              QSharedPointer<SubscriptionQos> qos,
+                              QSharedPointer<QtSubscriptionQos> qos,
                               SubscriptionRequest& subscriptionRequest);
 
     /**

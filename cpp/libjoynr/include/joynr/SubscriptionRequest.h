@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/SubscriptionQos.h"
+#include "joynr/QtSubscriptionQos.h"
 
 #include <QString>
 #include <QSharedPointer>
@@ -59,8 +59,8 @@ public:
     QString getSubscribeToName() const;
     void setSubscribeToName(const QString& subscribedToName);
 
-    void setQos(QSharedPointer<SubscriptionQos> qos);
-    QSharedPointer<SubscriptionQos> getQos() const;
+    void setQos(QSharedPointer<QtSubscriptionQos> qos);
+    QSharedPointer<QtSubscriptionQos> getQos() const;
 
     QString toQString() const;
 
@@ -78,7 +78,7 @@ private:
       */
     QString subscriptionId;
     QString subscribedToName;
-    QSharedPointer<SubscriptionQos> qos;
+    QSharedPointer<QtSubscriptionQos> qos;
 
     static joynr_logging::Logger* logger;
 };

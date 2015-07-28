@@ -20,7 +20,7 @@
 #define IBROADCASTFILTER_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/QtBroadcastFilterParameters.h"
 
 template <typename K, typename V>
 class QMap;

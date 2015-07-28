@@ -16,43 +16,29 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
-#define ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
+#ifndef PERIODICSUBSCRIPTIONQOS_H
+#define PERIODICSUBSCRIPTIONQOS_H
 
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/QtSubscriptionQos.h"
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT OnChangeWithKeepAliveSubscriptionQos : public OnChangeSubscriptionQos
+class JOYNRCOMMON_EXPORT QtPeriodicSubscriptionQos : public QtSubscriptionQos
 {
 
     Q_OBJECT
 
-    Q_PROPERTY(qint64 maxInterval READ getMaxInterval WRITE setMaxInterval)
+    Q_PROPERTY(qint64 period READ getPeriod WRITE setPeriod)
     Q_PROPERTY(qint64 alertAfterInterval READ getAlertAfterInterval WRITE setAlertAfterInterval)
 
 public:
-    OnChangeWithKeepAliveSubscriptionQos();
-    OnChangeWithKeepAliveSubscriptionQos(const OnChangeWithKeepAliveSubscriptionQos& other);
-    OnChangeWithKeepAliveSubscriptionQos(const qint64& validity,
-                                         const qint64& minInterval,
-                                         const qint64& maxInterval,
-                                         const qint64& alertAfterInterval);
-
-    /**
-     * The provider will maintain at least a minimum interval idle time in milliseconds between
-     * successive notifications, even if on-change notifications are enabled and the value changes
-     *more
-     * often. This prevents the consumer from being flooded by updated values. The filtering happens
-     *on
-     * the provider's side, thus also preventing excessive network traffic.
-     *
-     * @param minInterval
-     *            The publisher will keep a minimum idle time of minInterval between two successive
-     *notifications.
-     */
-    virtual void setMinInterval(const qint64& minInterval);
+    QtPeriodicSubscriptionQos();
+    QtPeriodicSubscriptionQos(const QtPeriodicSubscriptionQos& other);
+    QtPeriodicSubscriptionQos(const qint64& validity,
+                              const qint64& period,
+                              const qint64& alertAfterInterval);
 
     /**
     * The provider will send notifications every maximum interval in milliseconds, even if the value
@@ -62,10 +48,10 @@ public:
     *interval
     * can thus be seen as a sort of heart beat.
     *
-    * @return qint64 maxInterval
+    * @return qint64 period
     *            The publisher will send a notification at least every maxInterval_ms.
     */
-    virtual qint64 getMaxInterval() const;
+    virtual qint64 getPeriod() const;
 
     /**
      * The provider will send notifications every maximum interval in milliseconds, even if the
@@ -75,10 +61,10 @@ public:
      *interval
      * can thus be seen as a sort of heart beat.
      *
-     * @param maxInterval
+     * @param period
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setMaxInterval(const qint64& period);
+    virtual void setPeriod(const qint64& period);
 
     /**
      * If no notification was received within the last alert interval, a missed publication
@@ -102,11 +88,17 @@ public:
      */
     virtual void setAlertAfterInterval(const qint64& alertAfterInterval);
 
-    OnChangeWithKeepAliveSubscriptionQos& operator=(
-            const OnChangeWithKeepAliveSubscriptionQos& other);
-    virtual bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
+    /**
+     * Resets the alertAfterInterval and disables the alert by setting its value to
+     * NO_ALERT_AFTER_INTERVAL.
+     */
+    virtual void clearAlertAfterInterval();
 
-    static const qint64& MAX_MAX_INTERVAL();
+    QtPeriodicSubscriptionQos& operator=(const QtPeriodicSubscriptionQos& other);
+    virtual bool operator==(const QtPeriodicSubscriptionQos& other) const;
+
+    static const qint64& MIN_PERIOD();
+    static const qint64& MAX_PERIOD();
 
     static const qint64& MAX_ALERT_AFTER_INTERVAL();
     static const qint64& DEFAULT_ALERT_AFTER_INTERVAL();
@@ -115,13 +107,12 @@ public:
     virtual bool equals(const QObject& other) const;
 
 protected:
-    qint64 maxInterval;
+    qint64 period;
     qint64 alertAfterInterval;
 };
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::OnChangeWithKeepAliveSubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::OnChangeWithKeepAliveSubscriptionQos>)
+Q_DECLARE_METATYPE(joynr::QtPeriodicSubscriptionQos)
 
-#endif // ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
+#endif // PERIODICSUBSCRIPTIONQOS_H

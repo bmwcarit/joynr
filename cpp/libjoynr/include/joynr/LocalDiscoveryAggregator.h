@@ -36,7 +36,7 @@ class SystemServicesSettings;
 
 namespace system
 {
-class DiscoveryEntry;
+class QtDiscoveryEntry;
 class DiscoveryQos;
 class DiscoveryProxy;
 }
@@ -100,7 +100,7 @@ private:
     joynr::system::IDiscoverySync* discoveryProxy;
     bool hasOwnershipOfDiscoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
-    QMap<std::string, joynr::types::DiscoveryEntry> provisionedDiscoveryEntries;
+    QMap<std::string, joynr::types::QtDiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr

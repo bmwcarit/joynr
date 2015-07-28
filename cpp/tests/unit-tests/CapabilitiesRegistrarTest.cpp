@@ -26,7 +26,7 @@
 #include "utils/TestQString.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtProviderQos.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -70,7 +70,7 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    QSharedPointer<joynr::system::Address> messagingStubAddress;
+    QSharedPointer<joynr::system::QtAddress> messagingStubAddress;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;

@@ -24,15 +24,15 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/GpsLocation.h"
-#include "joynr/types/ProviderQos.h"
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "utils/QThreadSleep.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/StdOnChangeSubscriptionQos.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
@@ -87,8 +87,8 @@ public:
 
 class End2EndBroadcastTest : public Test {
 public:
-    types::ProviderQos qRegisterMetaTypeQos;
-//    types::CapabilityInformation qRegisterMetaTypeCi;
+    types::QtProviderQos qRegisterMetaTypeQos;
+//    types::QtCapabilityInformation qRegisterMetaTypeCi;
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
     QSettings settings1;

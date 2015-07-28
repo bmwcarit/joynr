@@ -25,8 +25,8 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/IAttributeListener.h"
 #include "joynr/IBroadcastListener.h"
-#include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 
 using ::testing::A;
@@ -97,7 +97,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     qint64 period_ms = 100;
     qint64 validity_ms = 500;
     qint64 alertInterval_ms = 2000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -131,11 +131,11 @@ TEST_F(PublicationManagerTest, stop_publications) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -175,11 +175,11 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -196,7 +196,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
 
 TEST_F(PublicationManagerTest, restore_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    qRegisterMetaType<PeriodicSubscriptionQos>("PeriodicSubscriptionQos");
+    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
@@ -216,11 +216,11 @@ TEST_F(PublicationManagerTest, restore_publications) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 1000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -253,7 +253,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
@@ -298,10 +298,10 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 500;
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -327,7 +327,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
@@ -365,10 +365,10 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = -1; //no expiry date -> infinite subscription
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -402,7 +402,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
@@ -440,10 +440,10 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = 600;
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -479,7 +479,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
@@ -535,10 +535,10 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -604,7 +604,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
@@ -642,12 +642,12 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -697,7 +697,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
@@ -735,13 +735,13 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -794,7 +794,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The broacast will fire this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
@@ -852,10 +852,10 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -914,7 +914,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The value will be fired by the broadcast
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
@@ -954,12 +954,12 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -1002,7 +1002,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The broadcast will fire this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
@@ -1042,13 +1042,13 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -1121,10 +1121,10 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 1;
     qint64 validity_ms = 100;
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 

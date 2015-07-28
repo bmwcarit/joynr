@@ -48,13 +48,13 @@
 #include "joynr/Directory.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryQos.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include <vector>
 
 #include <QCache>
@@ -71,11 +71,11 @@ class CapabilityEntry;
 class InterfaceAddress;
 namespace system
 {
-class Address;
+class QtAddress;
 }
 namespace types
 {
-class ProviderQos;
+class QtProviderQos;
 class CapabilitiesInformation;
 }
 
@@ -185,12 +185,12 @@ private:
                               joynr::types::StdDiscoveryScope::Enum discoveryScope);
 
     bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
-                                       const joynr::types::DiscoveryQos& discoveryQos,
+                                       const joynr::types::QtDiscoveryQos& discoveryQos,
                                        QSharedPointer<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
-                                       const joynr::types::DiscoveryQos& discoveryQos,
+                                       const joynr::types::QtDiscoveryQos& discoveryQos,
                                        QSharedPointer<ILocalCapabilitiesCallback> callback);
-    bool callRecieverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
+    bool callRecieverIfPossible(joynr::types::QtDiscoveryScope::Enum& scope,
                                 std::vector<CapabilityEntry>& localCapabilities,
                                 std::vector<CapabilityEntry>& globalCapabilities,
                                 QSharedPointer<ILocalCapabilitiesCallback> callback);

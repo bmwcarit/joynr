@@ -29,9 +29,9 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         QList<IDispatcher*> dispatcherList,
         joynr::system::IDiscoverySync& discoveryProxy,
-        QSharedPointer<joynr::system::Address> messagingStubAddress,
+        QSharedPointer<joynr::system::QtAddress> messagingStubAddress,
         QSharedPointer<ParticipantIdStorage> participantIdStorage,
-        QSharedPointer<joynr::system::Address> dispatcherAddress,
+        QSharedPointer<joynr::system::QtAddress> dispatcherAddress,
         QSharedPointer<MessageRouter> messageRouter)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),

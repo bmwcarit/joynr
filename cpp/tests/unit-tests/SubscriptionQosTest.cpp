@@ -18,10 +18,10 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "joynr/SubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/QtSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
 #include "joynr/StdSubscriptionQos.h"
 #include "joynr/StdOnChangeSubscriptionQos.h"
 #include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
@@ -31,32 +31,32 @@ using namespace joynr;
 
 TEST(SubscriptionQosTest, createQt_SubscriptionQos) {
     StdSubscriptionQos origin;
-    SubscriptionQos* test = SubscriptionQos::createQt(origin);
-    EXPECT_TRUE(dynamic_cast<SubscriptionQos*>(test) != NULL);
+    QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
+    EXPECT_TRUE(dynamic_cast<QtSubscriptionQos*>(test) != NULL);
     delete test;
 }
 
 TEST(SubscriptionQosTest, createQt_OnChangeSubscriptionQos) {
     StdOnChangeSubscriptionQos origin;
-    SubscriptionQos* test = SubscriptionQos::createQt(origin);
-    EXPECT_TRUE(dynamic_cast<OnChangeSubscriptionQos*>(test) != NULL);
+    QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
+    EXPECT_TRUE(dynamic_cast<QtOnChangeSubscriptionQos*>(test) != NULL);
     delete test;
 
-    test = SubscriptionQos::createQt(dynamic_cast<const StdSubscriptionQos&>(origin));
-    EXPECT_TRUE(dynamic_cast<OnChangeSubscriptionQos*>(test) != NULL);
+    test = QtSubscriptionQos::createQt(dynamic_cast<const StdSubscriptionQos&>(origin));
+    EXPECT_TRUE(dynamic_cast<QtOnChangeSubscriptionQos*>(test) != NULL);
     delete test;
 }
 
 TEST(SubscriptionQosTest, createQt_OnChangeWithKeepAliveSubscriptionQos) {
     StdOnChangeWithKeepAliveSubscriptionQos origin;
-    SubscriptionQos* test = SubscriptionQos::createQt(origin);
-    EXPECT_TRUE(dynamic_cast<OnChangeWithKeepAliveSubscriptionQos*>(test) != NULL);
+    QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
+    EXPECT_TRUE(dynamic_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(test) != NULL);
     delete test;
 }
 
 TEST(SubscriptionQosTest, createQt_PeriodicSubscriptionQos) {
     StdPeriodicSubscriptionQos origin;
-    SubscriptionQos* test = SubscriptionQos::createQt(origin);
-    EXPECT_TRUE(dynamic_cast<PeriodicSubscriptionQos*>(test) != NULL);
+    QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
+    EXPECT_TRUE(dynamic_cast<QtPeriodicSubscriptionQos*>(test) != NULL);
     delete test;
 }

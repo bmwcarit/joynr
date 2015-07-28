@@ -16,74 +16,74 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/SubscriptionQos.h"
-#include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
 #include <limits>
 
 namespace joynr
 {
 
-const qint64& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
+const qint64& QtSubscriptionQos::DEFAULT_PUBLICATION_TTL()
 {
     static const qint64 defaultPublicationTtl = 10000;
     return defaultPublicationTtl;
 }
 
-const qint64& SubscriptionQos::MIN_PUBLICATION_TTL()
+const qint64& QtSubscriptionQos::MIN_PUBLICATION_TTL()
 {
     static const qint64 minPublicationTtl = 100;
     return minPublicationTtl;
 }
 
-const qint64& SubscriptionQos::MAX_PUBLICATION_TTL()
+const qint64& QtSubscriptionQos::MAX_PUBLICATION_TTL()
 {
     static const qint64 maxPublicationTtl = 2592000000UL;
     return maxPublicationTtl;
 }
 
-const qint64& SubscriptionQos::NO_EXPIRY_DATE_TTL()
+const qint64& QtSubscriptionQos::NO_EXPIRY_DATE_TTL()
 {
     static const qint64 noExpiryDateTTL = std::numeric_limits<qint64>::max(); // 2^63-1
     return noExpiryDateTTL;
 }
 
-const qint64& SubscriptionQos::NO_EXPIRY_DATE()
+const qint64& QtSubscriptionQos::NO_EXPIRY_DATE()
 {
     static qint64 noExpiryDate = 0;
     return noExpiryDate;
 }
 
-SubscriptionQos::SubscriptionQos() : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
+QtSubscriptionQos::QtSubscriptionQos() : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
 {
     setValidity(1000);
 }
 
-SubscriptionQos::SubscriptionQos(const qint64& validity)
+QtSubscriptionQos::QtSubscriptionQos(const qint64& validity)
         : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
 {
     setValidity(validity);
 }
 
-SubscriptionQos::SubscriptionQos(const SubscriptionQos& subscriptionQos)
+QtSubscriptionQos::QtSubscriptionQos(const QtSubscriptionQos& subscriptionQos)
         : QObject(),
           expiryDate(subscriptionQos.expiryDate),
           publicationTtl(subscriptionQos.publicationTtl)
 {
 }
 
-SubscriptionQos::~SubscriptionQos()
+QtSubscriptionQos::~QtSubscriptionQos()
 {
 }
 
-qint64 SubscriptionQos::getPublicationTtl() const
+qint64 QtSubscriptionQos::getPublicationTtl() const
 {
     return publicationTtl;
 }
 
-void SubscriptionQos::setPublicationTtl(const qint64& publicationTtl)
+void QtSubscriptionQos::setPublicationTtl(const qint64& publicationTtl)
 {
     this->publicationTtl = publicationTtl;
     if (this->publicationTtl > MAX_PUBLICATION_TTL()) {
@@ -94,12 +94,12 @@ void SubscriptionQos::setPublicationTtl(const qint64& publicationTtl)
     }
 }
 
-qint64 SubscriptionQos::getExpiryDate() const
+qint64 QtSubscriptionQos::getExpiryDate() const
 {
     return expiryDate;
 }
 
-void SubscriptionQos::setExpiryDate(const qint64& expiryDate)
+void QtSubscriptionQos::setExpiryDate(const qint64& expiryDate)
 {
     this->expiryDate = expiryDate;
     if (this->expiryDate < QDateTime::currentMSecsSinceEpoch()) {
@@ -107,97 +107,97 @@ void SubscriptionQos::setExpiryDate(const qint64& expiryDate)
     }
 }
 
-void SubscriptionQos::clearExpiryDate()
+void QtSubscriptionQos::clearExpiryDate()
 {
     this->expiryDate = NO_EXPIRY_DATE();
 }
 
-void SubscriptionQos::setValidity(const qint64& validity)
+void QtSubscriptionQos::setValidity(const qint64& validity)
 {
     if (validity == -1) {
-        setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
+        setExpiryDate(joynr::QtSubscriptionQos::NO_EXPIRY_DATE());
     } else {
         setExpiryDate(QDateTime::currentMSecsSinceEpoch() + validity);
     }
 }
 
-SubscriptionQos& SubscriptionQos::operator=(const SubscriptionQos& subscriptionQos)
+QtSubscriptionQos& QtSubscriptionQos::operator=(const QtSubscriptionQos& subscriptionQos)
 {
     expiryDate = subscriptionQos.getExpiryDate();
     publicationTtl = subscriptionQos.getPublicationTtl();
     return *this;
 }
 
-bool SubscriptionQos::operator==(const SubscriptionQos& subscriptionQos) const
+bool QtSubscriptionQos::operator==(const QtSubscriptionQos& subscriptionQos) const
 {
     return getExpiryDate() == subscriptionQos.getExpiryDate() &&
            publicationTtl == subscriptionQos.getPublicationTtl();
 }
 
-bool SubscriptionQos::equals(const QObject& other) const
+bool QtSubscriptionQos::equals(const QObject& other) const
 {
     int typeThis = QMetaType::type(this->metaObject()->className());
     int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const SubscriptionQos*>(&other);
+    auto newOther = dynamic_cast<const QtSubscriptionQos*>(&other);
     return typeThis == typeOther && *this == *newOther;
 }
 
-SubscriptionQos* SubscriptionQos::createQt(const StdSubscriptionQos& from)
+QtSubscriptionQos* QtSubscriptionQos::createQt(const StdSubscriptionQos& from)
 {
-    SubscriptionQos* to;
+    QtSubscriptionQos* to;
     if (dynamic_cast<const StdOnChangeSubscriptionQos*>(&from) != NULL) {
         to = createQt(dynamic_cast<const StdOnChangeSubscriptionQos&>(from));
     } else if (dynamic_cast<const StdPeriodicSubscriptionQos*>(&from) != NULL) {
-        to = new PeriodicSubscriptionQos();
+        to = new QtPeriodicSubscriptionQos();
         createQtInternal(dynamic_cast<const StdPeriodicSubscriptionQos&>(from), *to);
     } else {
-        to = new SubscriptionQos();
+        to = new QtSubscriptionQos();
         createQtInternal(from, *to);
     }
     return to;
 }
 
-OnChangeSubscriptionQos* SubscriptionQos::createQt(const StdOnChangeSubscriptionQos& from)
+QtOnChangeSubscriptionQos* QtSubscriptionQos::createQt(const StdOnChangeSubscriptionQos& from)
 {
     if (dynamic_cast<const StdOnChangeWithKeepAliveSubscriptionQos*>(&from) != NULL) {
-        OnChangeWithKeepAliveSubscriptionQos* to = new OnChangeWithKeepAliveSubscriptionQos();
+        QtOnChangeWithKeepAliveSubscriptionQos* to = new QtOnChangeWithKeepAliveSubscriptionQos();
         createQtInternal(dynamic_cast<const StdOnChangeWithKeepAliveSubscriptionQos&>(from), *to);
         return to;
     } else {
-        OnChangeSubscriptionQos* to = new OnChangeSubscriptionQos();
+        QtOnChangeSubscriptionQos* to = new QtOnChangeSubscriptionQos();
         createQtInternal(from, *to);
         return to;
     }
 }
 
-void SubscriptionQos::createQtInternal(const StdSubscriptionQos& from, SubscriptionQos& to)
+void QtSubscriptionQos::createQtInternal(const StdSubscriptionQos& from, QtSubscriptionQos& to)
 {
     to.setExpiryDate(TypeUtil::toQt(from.getExpiryDate()));
     to.setPublicationTtl(TypeUtil::toQt(from.getPublicationTtl()));
 }
 
-void SubscriptionQos::createQtInternal(const StdPeriodicSubscriptionQos& from,
-                                       PeriodicSubscriptionQos& to)
+void QtSubscriptionQos::createQtInternal(const StdPeriodicSubscriptionQos& from,
+                                         QtPeriodicSubscriptionQos& to)
 {
-    SubscriptionQos::createQtInternal(
-            static_cast<const StdSubscriptionQos&>(from), static_cast<SubscriptionQos&>(to));
+    QtSubscriptionQos::createQtInternal(
+            static_cast<const StdSubscriptionQos&>(from), static_cast<QtSubscriptionQos&>(to));
     to.setAlertAfterInterval(TypeUtil::toQt(from.getAlertAfterInterval()));
     to.setPeriod(TypeUtil::toQt(from.getPeriod()));
 }
 
-void SubscriptionQos::createQtInternal(const StdOnChangeSubscriptionQos& from,
-                                       OnChangeSubscriptionQos& to)
+void QtSubscriptionQos::createQtInternal(const StdOnChangeSubscriptionQos& from,
+                                         QtOnChangeSubscriptionQos& to)
 {
-    SubscriptionQos::createQtInternal(
-            static_cast<const StdSubscriptionQos&>(from), static_cast<SubscriptionQos&>(to));
+    QtSubscriptionQos::createQtInternal(
+            static_cast<const StdSubscriptionQos&>(from), static_cast<QtSubscriptionQos&>(to));
     to.setMinInterval(TypeUtil::toQt(from.getMinInterval()));
 }
 
-void SubscriptionQos::createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
-                                       OnChangeWithKeepAliveSubscriptionQos& to)
+void QtSubscriptionQos::createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
+                                         QtOnChangeWithKeepAliveSubscriptionQos& to)
 {
-    SubscriptionQos::createQtInternal(static_cast<const StdOnChangeSubscriptionQos&>(from),
-                                      static_cast<OnChangeSubscriptionQos&>(to));
+    QtSubscriptionQos::createQtInternal(static_cast<const StdOnChangeSubscriptionQos&>(from),
+                                        static_cast<QtOnChangeSubscriptionQos&>(to));
     to.setAlertAfterInterval(TypeUtil::toQt(from.getAlertAfterInterval()));
     to.setMaxInterval(TypeUtil::toQt(from.getMaxInterval()));
 }

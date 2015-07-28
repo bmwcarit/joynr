@@ -45,7 +45,7 @@
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/SystemServicesSettings.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
@@ -152,14 +152,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     messageRouter =
             QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory, securityManager));
     // provision global capabilities directory
-    QSharedPointer<joynr::system::Address> globalCapabilitiesDirectoryAddress(
-            new system::ChannelAddress(messagingSettings->getCapabilitiesDirectoryChannelId()));
+    QSharedPointer<joynr::system::QtAddress> globalCapabilitiesDirectoryAddress(
+            new system::QtChannelAddress(messagingSettings->getCapabilitiesDirectoryChannelId()));
     messageRouter->addProvisionedNextHop(
             messagingSettings->getCapabilitiesDirectoryParticipantId().toStdString(),
             globalCapabilitiesDirectoryAddress);
     // provision channel url directory
-    QSharedPointer<joynr::system::Address> globalChannelUrlDirectoryAddress(
-            new system::ChannelAddress(messagingSettings->getChannelUrlDirectoryChannelId()));
+    QSharedPointer<joynr::system::QtAddress> globalChannelUrlDirectoryAddress(
+            new system::QtChannelAddress(messagingSettings->getChannelUrlDirectoryChannelId()));
     messageRouter->addProvisionedNextHop(
             messagingSettings->getChannelUrlDirectoryParticipantId().toStdString(),
             globalChannelUrlDirectoryAddress);
@@ -240,7 +240,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    QSharedPointer<joynr::system::Address> libjoynrMessagingAddress(
+    QSharedPointer<joynr::system::QtAddress> libjoynrMessagingAddress(
             new InProcessMessagingAddress(libJoynrMessagingSkeleton));
     // subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(

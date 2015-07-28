@@ -47,9 +47,10 @@ CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
           localChannelId(localChannelId),
           capabilitiesProxy(NULL)
 {
-    // We will be deserializing CapabilityInformation - register the metatypes
-    qRegisterMetaType<joynr::types::CapabilityInformation>("joynr::types::CapabilityInformation");
-    qRegisterMetaType<joynr__types__CapabilityInformation>("joynr__types__CapabilityInformation");
+    // We will be deserializing QtCapabilityInformation - register the metatypes
+    qRegisterMetaType<joynr::types::QtCapabilityInformation>(
+            "joynr::types::QtCapabilityInformation");
+    qRegisterMetaType<joynr__types__QtCapabilityInformation>("joynr__types__CapabilityInformation");
 }
 
 CapabilitiesClient::~CapabilitiesClient()

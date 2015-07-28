@@ -21,10 +21,10 @@
 #include "gtest/gtest.h"
 #include "cluster-controller/access-control/AccessControlAlgorithm.h"
 
-#include "joynr/infrastructure/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/OwnerAccessControlEntry.h"
-#include "joynr/infrastructure/Permission.h"
-#include "joynr/infrastructure/TrustLevel.h"
+#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/QtPermission.h"
+#include "joynr/infrastructure/QtTrustLevel.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -42,34 +42,34 @@ public:
 
     void SetUp()
     {
-        masterAce = MasterAccessControlEntry(TEST_USER,TEST_DOMAIN1,TEST_INTERFACE1,TrustLevel::LOW,ALL_TRUST_LEVELS,TrustLevel::LOW,ALL_TRUST_LEVELS,QString(),Permission::NO,ALL_PERMISSIONS);
+        masterAce = QtMasterAccessControlEntry(TEST_USER,TEST_DOMAIN1,TEST_INTERFACE1,QtTrustLevel::LOW,ALL_TRUST_LEVELS,QtTrustLevel::LOW,ALL_TRUST_LEVELS,QString(),QtPermission::NO,ALL_PERMISSIONS);
 
-        mediatorAce = MasterAccessControlEntry(TEST_USER,
+        mediatorAce = QtMasterAccessControlEntry(TEST_USER,
                                                TEST_DOMAIN1,
                                                TEST_INTERFACE1,
-                                               TrustLevel::LOW,
+                                               QtTrustLevel::LOW,
                                                ALL_TRUST_LEVELS,
-                                               TrustLevel::LOW,
+                                               QtTrustLevel::LOW,
                                                ALL_TRUST_LEVELS,
                                                QString(),
-                                               Permission::NO,
+                                               QtPermission::NO,
                                                ALL_PERMISSIONS);
 
-        ownerAce = OwnerAccessControlEntry(TEST_USER,TEST_DOMAIN1,TEST_INTERFACE1,TrustLevel::LOW,TrustLevel::LOW,QString(),Permission::NO);
+        ownerAce = QtOwnerAccessControlEntry(TEST_USER,TEST_DOMAIN1,TEST_INTERFACE1,QtTrustLevel::LOW,QtTrustLevel::LOW,QString(),QtPermission::NO);
     }
 
     void TearDown()
     {
     }
 
-    static const QList<TrustLevel::Enum> ALL_TRUST_LEVELS;
-    static const QList<Permission::Enum> ALL_PERMISSIONS;
+    static const QList<QtTrustLevel::Enum> ALL_TRUST_LEVELS;
+    static const QList<QtPermission::Enum> ALL_PERMISSIONS;
 
 protected:
     AccessControlAlgorithm accessControlAlgorithm;
-    MasterAccessControlEntry masterAce;
-    MasterAccessControlEntry mediatorAce;
-    OwnerAccessControlEntry ownerAce;
+    QtMasterAccessControlEntry masterAce;
+    QtMasterAccessControlEntry mediatorAce;
+    QtOwnerAccessControlEntry ownerAce;
     static const QString TEST_USER;
     static const QString TEST_DOMAIN1;
     static const QString TEST_INTERFACE1;
@@ -81,180 +81,180 @@ private:
 const QString AccessControlAlgorithmTest::TEST_USER("testUser");
 const QString AccessControlAlgorithmTest::TEST_DOMAIN1("domain1");
 const QString AccessControlAlgorithmTest::TEST_INTERFACE1("interface1");
-const QList<TrustLevel::Enum> AccessControlAlgorithmTest::ALL_TRUST_LEVELS =
-        QList<TrustLevel::Enum>()
-        << TrustLevel::LOW << TrustLevel::MID << TrustLevel::HIGH;
-const QList<Permission::Enum> AccessControlAlgorithmTest::ALL_PERMISSIONS =
-        QList<Permission::Enum>()
-        << Permission::NO << Permission::ASK << Permission::YES;
+const QList<QtTrustLevel::Enum> AccessControlAlgorithmTest::ALL_TRUST_LEVELS =
+        QList<QtTrustLevel::Enum>()
+        << QtTrustLevel::LOW << QtTrustLevel::MID << QtTrustLevel::HIGH;
+const QList<QtPermission::Enum> AccessControlAlgorithmTest::ALL_PERMISSIONS =
+        QList<QtPermission::Enum>()
+        << QtPermission::NO << QtPermission::ASK << QtPermission::YES;
 
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAceOnly)
 {
-    masterAce.setDefaultConsumerPermission(Permission::YES);
-    masterAce.setDefaultRequiredTrustLevel(TrustLevel::HIGH);
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    masterAce.setDefaultConsumerPermission(QtPermission::YES);
+    masterAce.setDefaultRequiredTrustLevel(QtTrustLevel::HIGH);
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<OwnerAccessControlEntry>::createNull(),
-                TrustLevel::HIGH);
+                Optional<QtMasterAccessControlEntry>::createNull(),
+                Optional<QtOwnerAccessControlEntry>::createNull(),
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::YES, consumerPermission);
+    EXPECT_EQ(QtPermission::YES, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionMessageTrustLevelDoesntMatchAce) {
-    masterAce.setDefaultConsumerPermission(Permission::YES);
-    masterAce.setDefaultRequiredTrustLevel(TrustLevel::MID);
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    masterAce.setDefaultConsumerPermission(QtPermission::YES);
+    masterAce.setDefaultRequiredTrustLevel(QtTrustLevel::MID);
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<OwnerAccessControlEntry>::createNull(),
-                TrustLevel::LOW);
+                Optional<QtMasterAccessControlEntry>::createNull(),
+                Optional<QtOwnerAccessControlEntry>::createNull(),
+                QtTrustLevel::LOW);
 
-    EXPECT_EQ(Permission::NO, consumerPermission);
+    EXPECT_EQ(QtPermission::NO, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithAllAceNull) {
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<OwnerAccessControlEntry>::createNull(),
-                TrustLevel::HIGH);
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+                Optional<QtMasterAccessControlEntry>::createNull(),
+                Optional<QtMasterAccessControlEntry>::createNull(),
+                Optional<QtOwnerAccessControlEntry>::createNull(),
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::NO, consumerPermission);
+    EXPECT_EQ(QtPermission::NO, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndMediatorAce) {
-    masterAce.setDefaultConsumerPermission(Permission::YES);
-    masterAce.setDefaultRequiredTrustLevel(TrustLevel::HIGH);
+    masterAce.setDefaultConsumerPermission(QtPermission::YES);
+    masterAce.setDefaultRequiredTrustLevel(QtTrustLevel::HIGH);
     masterAce.setPossibleConsumerPermissions(ALL_PERMISSIONS);
     masterAce.setPossibleRequiredTrustLevels(ALL_TRUST_LEVELS);
 
-    mediatorAce.setDefaultConsumerPermission(Permission::ASK);
-    mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::LOW);
+    mediatorAce.setDefaultConsumerPermission(QtPermission::ASK);
+    mediatorAce.setDefaultRequiredTrustLevel(QtTrustLevel::LOW);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
                 mediatorAce,
-                Optional<OwnerAccessControlEntry>::createNull(),
-                TrustLevel::LOW);
+                Optional<QtOwnerAccessControlEntry>::createNull(),
+                QtTrustLevel::LOW);
 
-    EXPECT_EQ(Permission::ASK, consumerPermission);
+    EXPECT_EQ(QtPermission::ASK, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMediatorOnly) {
-    mediatorAce.setDefaultConsumerPermission(Permission::YES);
-    mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::MID);
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
+    mediatorAce.setDefaultConsumerPermission(QtPermission::YES);
+    mediatorAce.setDefaultRequiredTrustLevel(QtTrustLevel::MID);
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+                Optional<QtMasterAccessControlEntry>::createNull(),
                 mediatorAce,
-                Optional<OwnerAccessControlEntry>::createNull(),
-                TrustLevel::HIGH);
+                Optional<QtOwnerAccessControlEntry>::createNull(),
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::YES, consumerPermission);
+    EXPECT_EQ(QtPermission::YES, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndInvalidMediatorAce) {
-    QList<Permission::Enum> possibleMasterConsumerPermissions;
-    possibleMasterConsumerPermissions.append(Permission::NO);
+    QList<QtPermission::Enum> possibleMasterConsumerPermissions;
+    possibleMasterConsumerPermissions.append(QtPermission::NO);
     masterAce.setPossibleConsumerPermissions(possibleMasterConsumerPermissions);
 
-    QList<Permission::Enum> possibleMediatorConsumerPermissions;
-    possibleMediatorConsumerPermissions.append(Permission::ASK);
-    possibleMediatorConsumerPermissions.append(Permission::YES);
+    QList<QtPermission::Enum> possibleMediatorConsumerPermissions;
+    possibleMediatorConsumerPermissions.append(QtPermission::ASK);
+    possibleMediatorConsumerPermissions.append(QtPermission::YES);
     mediatorAce.setPossibleConsumerPermissions(possibleMediatorConsumerPermissions);
-    mediatorAce.setDefaultConsumerPermission(Permission::YES);
-    mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::MID);
+    mediatorAce.setDefaultConsumerPermission(QtPermission::YES);
+    mediatorAce.setDefaultRequiredTrustLevel(QtTrustLevel::MID);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
                 mediatorAce,
-                Optional<OwnerAccessControlEntry>::createNull(),
-                TrustLevel::HIGH);
+                Optional<QtOwnerAccessControlEntry>::createNull(),
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::NO, consumerPermission);
+    EXPECT_EQ(QtPermission::NO, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterMediatorAndOwnerAce) {
-    masterAce.setDefaultConsumerPermission(Permission::YES);
-    masterAce.setDefaultRequiredTrustLevel(TrustLevel::LOW);
+    masterAce.setDefaultConsumerPermission(QtPermission::YES);
+    masterAce.setDefaultRequiredTrustLevel(QtTrustLevel::LOW);
 
-    mediatorAce.setDefaultConsumerPermission(Permission::ASK);
-    mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::HIGH);
+    mediatorAce.setDefaultConsumerPermission(QtPermission::ASK);
+    mediatorAce.setDefaultRequiredTrustLevel(QtTrustLevel::HIGH);
 
-    ownerAce.setConsumerPermission(Permission::YES);
-    ownerAce.setRequiredTrustLevel(TrustLevel::MID);
+    ownerAce.setConsumerPermission(QtPermission::YES);
+    ownerAce.setRequiredTrustLevel(QtTrustLevel::MID);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
                 mediatorAce,
                 ownerAce,
-                TrustLevel::MID);
+                QtTrustLevel::MID);
 
-    EXPECT_EQ(Permission::YES, consumerPermission);
+    EXPECT_EQ(QtPermission::YES, consumerPermission);
 }
 
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndOwnerAce) {
-    masterAce.setDefaultConsumerPermission(Permission::ASK);
-    masterAce.setDefaultRequiredTrustLevel(TrustLevel::LOW);
+    masterAce.setDefaultConsumerPermission(QtPermission::ASK);
+    masterAce.setDefaultRequiredTrustLevel(QtTrustLevel::LOW);
 
-    ownerAce.setConsumerPermission(Permission::YES);
-    ownerAce.setRequiredTrustLevel(TrustLevel::HIGH);
+    ownerAce.setConsumerPermission(QtPermission::YES);
+    ownerAce.setRequiredTrustLevel(QtTrustLevel::HIGH);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
                 mediatorAce,
                 ownerAce,
-                TrustLevel::HIGH);
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::YES, consumerPermission);
+    EXPECT_EQ(QtPermission::YES, consumerPermission);
 }
 
 
 TEST_F(AccessControlAlgorithmTest, permissionWithOwnerAceOnly) {
-    ownerAce.setConsumerPermission(Permission::YES);
-    ownerAce.setRequiredTrustLevel(TrustLevel::HIGH);
+    ownerAce.setConsumerPermission(QtPermission::YES);
+    ownerAce.setRequiredTrustLevel(QtTrustLevel::HIGH);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<MasterAccessControlEntry>::createNull(),
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+                Optional<QtMasterAccessControlEntry>::createNull(),
+                Optional<QtMasterAccessControlEntry>::createNull(),
                 ownerAce,
-                TrustLevel::HIGH);
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::YES, consumerPermission);
+    EXPECT_EQ(QtPermission::YES, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMediatorAndInvalidOwnerAce) {
-    QList<Permission::Enum> possibleMediatorConsumerPermissions;
-    possibleMediatorConsumerPermissions.append(Permission::NO);
+    QList<QtPermission::Enum> possibleMediatorConsumerPermissions;
+    possibleMediatorConsumerPermissions.append(QtPermission::NO);
     mediatorAce.setPossibleConsumerPermissions(possibleMediatorConsumerPermissions);
 
-    ownerAce.setConsumerPermission(Permission::ASK);
+    ownerAce.setConsumerPermission(QtPermission::ASK);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+                Optional<QtMasterAccessControlEntry>::createNull(),
                 mediatorAce,
                 ownerAce,
-                TrustLevel::HIGH);
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::NO, consumerPermission);
+    EXPECT_EQ(QtPermission::NO, consumerPermission);
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndInvalidOwnerAce) {
-    QList<Permission::Enum> possibleMasterConsumerPermissions;
-    possibleMasterConsumerPermissions.append(Permission::NO);
+    QList<QtPermission::Enum> possibleMasterConsumerPermissions;
+    possibleMasterConsumerPermissions.append(QtPermission::NO);
     masterAce.setPossibleConsumerPermissions(possibleMasterConsumerPermissions);
 
-    ownerAce.setConsumerPermission(Permission::ASK);
+    ownerAce.setConsumerPermission(QtPermission::ASK);
 
-    Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
+    QtPermission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
-                Optional<MasterAccessControlEntry>::createNull(),
+                Optional<QtMasterAccessControlEntry>::createNull(),
                 ownerAce,
-                TrustLevel::HIGH);
+                QtTrustLevel::HIGH);
 
-    EXPECT_EQ(Permission::NO, consumerPermission);
+    EXPECT_EQ(QtPermission::NO, consumerPermission);
 }
 

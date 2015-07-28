@@ -75,7 +75,7 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
 void SubscriptionManager::registerSubscription(
         const QString& subscribeToName,
         QSharedPointer<ISubscriptionCallback> subscriptionCaller,
-        QSharedPointer<SubscriptionQos> qos,
+        QSharedPointer<QtSubscriptionQos> qos,
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
@@ -92,7 +92,7 @@ void SubscriptionManager::registerSubscription(
         unregisterSubscription(subscriptionId);
     }
 
-    if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
+    if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
         qos->getExpiryDate() < QDateTime::currentMSecsSinceEpoch()) {
         LOG_DEBUG(logger, "Expiry date is in the past: no subscription created");
         return;
@@ -114,8 +114,8 @@ void SubscriptionManager::registerSubscription(
             qint64 periodicPublicationInterval =
                     SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
 
-            if (expiryDate == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-                expiryDate = joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL();
+            if (expiryDate == joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
+                expiryDate = joynr::QtSubscriptionQos::NO_EXPIRY_DATE_TTL();
             }
 
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
@@ -126,7 +126,7 @@ void SubscriptionManager::registerSubscription(
                                                   *this,
                                                   alertAfterInterval),
                     alertAfterInterval);
-        } else if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+        } else if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
                     new SubscriptionEndRunnable(subscriptionId, *this),
                     qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());

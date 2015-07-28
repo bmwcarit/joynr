@@ -26,9 +26,9 @@ namespace joynr
 
 using namespace infrastructure;
 
-AceValidator::AceValidator(const Optional<MasterAccessControlEntry>& masterAceOptional,
-                           const Optional<MasterAccessControlEntry>& mediatorAceOptional,
-                           const Optional<OwnerAccessControlEntry>& ownerAceOptional)
+AceValidator::AceValidator(const Optional<QtMasterAccessControlEntry>& masterAceOptional,
+                           const Optional<QtMasterAccessControlEntry>& mediatorAceOptional,
+                           const Optional<QtOwnerAccessControlEntry>& ownerAceOptional)
         : masterAceOptional(masterAceOptional),
           mediatorAceOptional(mediatorAceOptional),
           ownerAceOptional(ownerAceOptional)
@@ -67,17 +67,17 @@ bool AceValidator::isMediatorValid()
         return true;
     }
 
-    MasterAccessControlEntry masterAce = masterAceOptional.getValue();
-    MasterAccessControlEntry mediatorAce = mediatorAceOptional.getValue();
+    QtMasterAccessControlEntry masterAce = masterAceOptional.getValue();
+    QtMasterAccessControlEntry mediatorAce = mediatorAceOptional.getValue();
     bool isMediatorValid = true;
     if (!masterAce.getPossibleConsumerPermissions().contains(
                 mediatorAce.getDefaultConsumerPermission())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
-        QSet<Permission::Enum> masterPossiblePermissions =
+        QSet<QtPermission::Enum> masterPossiblePermissions =
                 masterAce.getPossibleConsumerPermissions().toSet();
-        QSet<Permission::Enum> mediatorPossiblePermissions =
+        QSet<QtPermission::Enum> mediatorPossiblePermissions =
                 mediatorAce.getPossibleConsumerPermissions().toSet();
         if (!masterPossiblePermissions.contains(mediatorPossiblePermissions)) {
             isMediatorValid = false;
@@ -88,9 +88,9 @@ bool AceValidator::isMediatorValid()
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
-        QSet<TrustLevel::Enum> masterPossibleTrustLevels =
+        QSet<QtTrustLevel::Enum> masterPossibleTrustLevels =
                 masterAce.getPossibleRequiredTrustLevels().toSet();
-        QSet<TrustLevel::Enum> mediatorPossibleTrustLevels =
+        QSet<QtTrustLevel::Enum> mediatorPossibleTrustLevels =
                 mediatorAce.getPossibleRequiredTrustLevels().toSet();
         if (!masterPossibleTrustLevels.contains(mediatorPossibleTrustLevels)) {
             isMediatorValid = false;
@@ -100,13 +100,13 @@ bool AceValidator::isMediatorValid()
     return isMediatorValid;
 }
 
-bool AceValidator::validateOwner(MasterAccessControlEntry targetMasterAce)
+bool AceValidator::validateOwner(QtMasterAccessControlEntry targetMasterAce)
 {
     if (!ownerAceOptional) {
         return true;
     }
 
-    OwnerAccessControlEntry ownerAce = ownerAceOptional.getValue();
+    QtOwnerAccessControlEntry ownerAce = ownerAceOptional.getValue();
     bool isValid = true;
     if (!targetMasterAce.getPossibleConsumerPermissions().contains(
                 ownerAce.getConsumerPermission())) {

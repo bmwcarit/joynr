@@ -30,11 +30,11 @@
 
 namespace joynr
 {
-class PeriodicSubscriptionQos;
-class OnChangeSubscriptionQos;
-class OnChangeWithKeepAliveSubscriptionQos;
+class QtPeriodicSubscriptionQos;
+class QtOnChangeSubscriptionQos;
+class QtOnChangeWithKeepAliveSubscriptionQos;
 
-class JOYNRCOMMON_EXPORT SubscriptionQos : public QObject
+class JOYNRCOMMON_EXPORT QtSubscriptionQos : public QObject
 {
     Q_OBJECT
 
@@ -42,11 +42,11 @@ class JOYNRCOMMON_EXPORT SubscriptionQos : public QObject
     Q_PROPERTY(qint64 publicationTtl READ getPublicationTtl WRITE setPublicationTtl)
 
 public:
-    SubscriptionQos();
-    SubscriptionQos(const SubscriptionQos& subscriptionQos);
-    SubscriptionQos(const qint64& validity);
+    QtSubscriptionQos();
+    QtSubscriptionQos(const QtSubscriptionQos& subscriptionQos);
+    QtSubscriptionQos(const qint64& validity);
 
-    virtual ~SubscriptionQos();
+    virtual ~QtSubscriptionQos();
 
     /**
      * The provider will send notifications until the end date is reached. You will not receive any
@@ -56,7 +56,7 @@ public:
      * @return endDate_ms
      * 		The publication will automatically expire at that EndDate.
      *
-     * @see SubscriptionQos#setValidity_ms
+     * @see QtSubscriptionQos#setValidity_ms
      */
     qint64 getExpiryDate() const;
 
@@ -74,7 +74,7 @@ public:
      * @param endDate_ms
      * 		The publication will automatically expire at that date.
      *
-     * @see SubscriptionQos#setValidity_ms
+     * @see QtSubscriptionQos#setValidity_ms
      */
     virtual void setExpiryDate(const qint64& expiryDate);
 
@@ -90,8 +90,8 @@ public:
      *until the EndDate of the
      *            Subscription.
      *
-     * @see SubscriptionQos#setAlertInterval_ms
-     * @see SubscriptionQos#setEndDate_ms
+     * @see QtSubscriptionQos#setAlertInterval_ms
+     * @see QtSubscriptionQos#setEndDate_ms
      */
     virtual qint64 getPublicationTtl() const;
 
@@ -105,7 +105,7 @@ public:
      * @param validity
      *            The publication will automatically expire in validty_ms milliseconds
      *
-     * @see SubscriptionQos#setEndDate_ms
+     * @see QtSubscriptionQos#setEndDate_ms
      */
     virtual void setValidity(const qint64& validity);
 
@@ -121,12 +121,12 @@ public:
      *the EndDate of the
      *            Subscription.
      *
-     * @see SubscriptionQos#setAlertInterval_ms
+     * @see QtSubscriptionQos#setAlertInterval_ms
      */
     virtual void setPublicationTtl(const qint64& publicationTtl_ms);
 
-    SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
-    virtual bool operator==(const SubscriptionQos& subscriptionQos) const;
+    QtSubscriptionQos& operator=(const QtSubscriptionQos& subscriptionQos);
+    virtual bool operator==(const QtSubscriptionQos& subscriptionQos) const;
 
     static const qint64& DEFAULT_PUBLICATION_TTL();
     static const qint64& MIN_PUBLICATION_TTL();
@@ -137,26 +137,26 @@ public:
 
     virtual bool equals(const QObject& other) const;
 
-    static SubscriptionQos* createQt(const StdSubscriptionQos& from);
-    static OnChangeSubscriptionQos* createQt(const StdOnChangeSubscriptionQos& from);
+    static QtSubscriptionQos* createQt(const StdSubscriptionQos& from);
+    static QtOnChangeSubscriptionQos* createQt(const StdOnChangeSubscriptionQos& from);
 
 protected:
     qint64 expiryDate;
     qint64 publicationTtl;
 
 private:
-    static void createQtInternal(const StdSubscriptionQos& from, SubscriptionQos& to);
+    static void createQtInternal(const StdSubscriptionQos& from, QtSubscriptionQos& to);
     static void createQtInternal(const StdOnChangeSubscriptionQos& from,
-                                 OnChangeSubscriptionQos& to);
+                                 QtOnChangeSubscriptionQos& to);
     static void createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
-                                 OnChangeWithKeepAliveSubscriptionQos& to);
+                                 QtOnChangeWithKeepAliveSubscriptionQos& to);
     static void createQtInternal(const StdPeriodicSubscriptionQos& from,
-                                 PeriodicSubscriptionQos& to);
+                                 QtPeriodicSubscriptionQos& to);
 };
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::SubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionQos>)
+Q_DECLARE_METATYPE(joynr::QtSubscriptionQos)
+Q_DECLARE_METATYPE(QSharedPointer<joynr::QtSubscriptionQos>)
 
 #endif // SUBSCRIPTIONQOS_H

@@ -18,8 +18,8 @@
  */
 #include "joynr/DefaultArbitrator.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/types/DiscoveryEntry.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"
 #include <vector>

@@ -27,9 +27,9 @@ using namespace joynr::infrastructure;
 
 class AceValidatorTest : public ::testing::Test {
 public:
-    MasterAccessControlEntry masterAce;
-    MasterAccessControlEntry mediatorAce;
-    OwnerAccessControlEntry ownerAce;
+    QtMasterAccessControlEntry masterAce;
+    QtMasterAccessControlEntry mediatorAce;
+    QtOwnerAccessControlEntry ownerAce;
 public:
     AceValidatorTest()
     {
@@ -40,44 +40,44 @@ public:
     }
 
     void SetUp(){
-        QList<Permission::Enum> possiblePermissions;
-        possiblePermissions.append(Permission::NO);
-        possiblePermissions.append(Permission::ASK);
-        QList<TrustLevel::Enum> possibleRequiredTrustLevels;
-        possibleRequiredTrustLevels.append(TrustLevel::LOW);
-        possibleRequiredTrustLevels.append(TrustLevel::MID);
-        QList<TrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
-        possibleRequiredAceChangeTrustLevels.append(TrustLevel::MID);
-        possibleRequiredAceChangeTrustLevels.append(TrustLevel::HIGH);
-        masterAce = MasterAccessControlEntry(TEST_USER,
+        QList<QtPermission::Enum> possiblePermissions;
+        possiblePermissions.append(QtPermission::NO);
+        possiblePermissions.append(QtPermission::ASK);
+        QList<QtTrustLevel::Enum> possibleRequiredTrustLevels;
+        possibleRequiredTrustLevels.append(QtTrustLevel::LOW);
+        possibleRequiredTrustLevels.append(QtTrustLevel::MID);
+        QList<QtTrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
+        possibleRequiredAceChangeTrustLevels.append(QtTrustLevel::MID);
+        possibleRequiredAceChangeTrustLevels.append(QtTrustLevel::HIGH);
+        masterAce = QtMasterAccessControlEntry(TEST_USER,
                                                                     QString(),
                                                                     QString(),
-                                                                    TrustLevel::LOW,
+                                                                    QtTrustLevel::LOW,
                                                                     possibleRequiredTrustLevels,
-                                                                    TrustLevel::LOW,
+                                                                    QtTrustLevel::LOW,
                                                                     possibleRequiredAceChangeTrustLevels,
                                                                     QString(),
-                                                                    Permission::NO,
+                                                                    QtPermission::NO,
                                                                     possiblePermissions);
 
-        mediatorAce = MasterAccessControlEntry(TEST_USER,
+        mediatorAce = QtMasterAccessControlEntry(TEST_USER,
                                                QString(),
                                                QString(),
-                                               TrustLevel::LOW,
+                                               QtTrustLevel::LOW,
                                                possibleRequiredTrustLevels,
-                                               TrustLevel::LOW,
+                                               QtTrustLevel::LOW,
                                                possibleRequiredAceChangeTrustLevels,
                                                QString(),
-                                               Permission::NO,
+                                               QtPermission::NO,
                                                possiblePermissions);
 
-        ownerAce = OwnerAccessControlEntry(TEST_USER,
+        ownerAce = QtOwnerAccessControlEntry(TEST_USER,
                                                                   QString(),
                                                                   QString(),
-                                                                  TrustLevel::MID,
-                                                                  TrustLevel::HIGH,
+                                                                  QtTrustLevel::MID,
+                                                                  QtTrustLevel::HIGH,
                                                                   QString(),
-                                                                  Permission::ASK);
+                                                                  QtPermission::ASK);
     }
 
     void TearDown()
@@ -95,9 +95,9 @@ const QString AceValidatorTest::TEST_USER("testUser");
 
 TEST_F(AceValidatorTest, TestMediatorInvalidPossiblePermissions)
 {
-    QList<Permission::Enum> possiblePermissions;
-    possiblePermissions.append(Permission::ASK);
-    possiblePermissions.append(Permission::YES);
+    QList<QtPermission::Enum> possiblePermissions;
+    possiblePermissions.append(QtPermission::ASK);
+    possiblePermissions.append(QtPermission::YES);
     mediatorAce.setPossibleConsumerPermissions(possiblePermissions);
     AceValidator validator(masterAce, mediatorAce, ownerAce);
 
@@ -106,9 +106,9 @@ TEST_F(AceValidatorTest, TestMediatorInvalidPossiblePermissions)
 
 TEST_F(AceValidatorTest, TestMediatorInvalidPossibleTrustLevels)
 {
-    QList<TrustLevel::Enum> possibleRequiredTrustLevels;
-    possibleRequiredTrustLevels.append(TrustLevel::HIGH);
-    possibleRequiredTrustLevels.append(TrustLevel::MID);
+    QList<QtTrustLevel::Enum> possibleRequiredTrustLevels;
+    possibleRequiredTrustLevels.append(QtTrustLevel::HIGH);
+    possibleRequiredTrustLevels.append(QtTrustLevel::MID);
     mediatorAce.setPossibleRequiredTrustLevels(possibleRequiredTrustLevels);
     AceValidator validator(masterAce, mediatorAce, ownerAce);
 
@@ -131,7 +131,7 @@ TEST_F(AceValidatorTest, TestOwnerValid)
 
 TEST_F(AceValidatorTest, TestOwnerInvalid)
 {
-    ownerAce.setConsumerPermission(Permission::YES);
+    ownerAce.setConsumerPermission(QtPermission::YES);
     AceValidator validator(masterAce, mediatorAce, ownerAce);
     EXPECT_FALSE(validator.isOwnerValid());
 }

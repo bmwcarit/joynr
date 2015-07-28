@@ -330,5 +330,9 @@ QString Serializer::turnMetaObjectIntoTypename(const QMetaObject* metaObject){
 
     QString fullClassName = QString::fromLatin1(metaObject->className());
 
-    return fullClassName.replace(doubleColon, dot);
+    // since generated Qt types are now prefixed with "Qt", it must be removed in the
+    // _typename field during serialization to stay compatible with Java and JS
+    QString qtFreeFullClassName = fullClassName.replace(QString::fromLatin1("::Qt"), doubleColon);
+
+    return qtFreeFullClassName.replace(doubleColon, dot);
 }

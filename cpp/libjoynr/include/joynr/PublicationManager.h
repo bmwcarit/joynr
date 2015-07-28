@@ -44,7 +44,7 @@ class SubscriptionRequestInformation;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class SubscriptionQos;
+class QtSubscriptionQos;
 class IBroadcastFilter;
 
 /**
@@ -239,7 +239,7 @@ private:
      *          -1 on error
      */
     qint64 getTimeUntilNextPublication(QSharedPointer<Publication> publication,
-                                       QSharedPointer<SubscriptionQos> qos);
+                                       QSharedPointer<QtSubscriptionQos> qos);
 
     void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
                                      const QString& storageFilename);

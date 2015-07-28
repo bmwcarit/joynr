@@ -41,8 +41,8 @@ bool GeocastBroadcastFilter::filter(
     }
 
     QString positionOfInterestQt(TypeUtil::toQt(filterParameters.getPositionOfInterest()));
-    joynr::vehicle::GeoPosition* positionOfInterest =
-            JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
+    joynr::vehicle::QtGeoPosition* positionOfInterest =
+            JsonSerializer::deserialize<joynr::vehicle::QtGeoPosition>(
                     positionOfInterestQt.toLatin1());
     if (positionOfInterest == Q_NULLPTR) {
         LOG_ERROR(logger,

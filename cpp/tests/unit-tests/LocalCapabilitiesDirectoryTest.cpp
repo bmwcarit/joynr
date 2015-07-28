@@ -26,7 +26,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
@@ -66,16 +66,16 @@ public:
         dummyParticipantId1 = QUuid::createUuid().toString().toStdString();
         dummyParticipantId2 = QUuid::createUuid().toString().toStdString();
         dummyParticipantId3 = QUuid::createUuid().toString().toStdString();
-        localJoynrMessagingAddress1 = QSharedPointer<system::ChannelAddress>(new system::ChannelAddress("LOCAL_CHANNEL_ID"));
+        localJoynrMessagingAddress1 = QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress("LOCAL_CHANNEL_ID"));
         callback = QSharedPointer<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
 
         // init a capentry recieved from the global capabilities directory
-        types::ProviderQos qos;
-        QList<joynr::types::CommunicationMiddleware::Enum> connections;
-        connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
+        types::QtProviderQos qos;
+        QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
+        connections.push_back(joynr::types::QtCommunicationMiddleware::JOYNR);
         CapabilityEntry globalCapEntry(
                     QString::fromStdString(DOMAIN_1_NAME),
                     QString::fromStdString(INTERFACE_1_NAME),
@@ -209,7 +209,7 @@ protected:
     std::string dummyParticipantId1;
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
-    QSharedPointer<system::ChannelAddress> localJoynrMessagingAddress1;
+    QSharedPointer<system::QtChannelAddress> localJoynrMessagingAddress1;
     joynr::types::StdDiscoveryQos discoveryQos;
     QMap<std::string, CapabilityEntry> globalCapEntryMap;
 

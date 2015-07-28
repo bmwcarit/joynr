@@ -24,9 +24,9 @@
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 
@@ -190,7 +190,8 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
-        QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress(replyChannelId));
+        QSharedPointer<system::QtChannelAddress> address(
+                new system::QtChannelAddress(replyChannelId));
         messageRouter->addNextHop(msg->getHeaderFrom().toStdString(), address);
     }
 

@@ -28,7 +28,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/QtBroadcastFilterParameters.h"
 #include "joynr/Util.h"
 #include "joynr/IBroadcastFilter.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
@@ -205,9 +205,9 @@ PublicationManager::PublicationManager(int maxThreads)
     loadSavedBroadcastSubscriptionRequestsMap();
 }
 
-bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0)
+bool isSubscriptionExpired(QSharedPointer<QtSubscriptionQos> qos, int offset = 0)
 {
-    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
+    return qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
            qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
 }
 
@@ -260,12 +260,12 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
+        QSharedPointer<QtSubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
@@ -407,12 +407,12 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
+        QSharedPointer<QtSubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
@@ -786,12 +786,12 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
     QReadLocker subscriptionLocker(&subscriptionLock);
     QSharedPointer<BroadcastSubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
+    QtBroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
     foreach (std::shared_ptr<IBroadcastFilter> filter, filters) {
         success = success &&
-                  filter->filter(
-                          broadcastValues, BroadcastFilterParameters::createStd(filterParameters));
+                  filter->filter(broadcastValues,
+                                 QtBroadcastFilterParameters::createStd(filterParameters));
     }
 
     return success;
@@ -869,7 +869,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     {
         QMutexLocker publicationLocker(&(publication->mutex));
         // See if the publication is needed
-        QSharedPointer<SubscriptionQos> qos(subscriptionRequest->getQos());
+        QSharedPointer<QtSubscriptionQos> qos(subscriptionRequest->getQos());
         qint64 now = QDateTime::currentMSecsSinceEpoch();
         qint64 publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
 
@@ -1031,7 +1031,7 @@ bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscripti
 }
 
 qint64 PublicationManager::getTimeUntilNextPublication(QSharedPointer<Publication> publication,
-                                                       QSharedPointer<SubscriptionQos> qos)
+                                                       QSharedPointer<QtSubscriptionQos> qos)
 {
     QMutexLocker publicationLocker(&(publication->mutex));
     // Check the last publication time against the min interval

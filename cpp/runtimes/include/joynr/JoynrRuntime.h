@@ -154,7 +154,7 @@ protected:
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     SystemServicesSettings systemServicesSettings;
-    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    QSharedPointer<joynr::system::QtAddress> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
     LocalDiscoveryAggregator* discoveryProxy;
     PublicationManager* publicationManager;

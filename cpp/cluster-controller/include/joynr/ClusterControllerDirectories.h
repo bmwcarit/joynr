@@ -27,7 +27,7 @@ namespace joynr
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 class IMessaging;
 

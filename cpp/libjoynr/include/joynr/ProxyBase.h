@@ -23,8 +23,8 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/system/Address.h"
-#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/system/QtAddress.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 #include <string>
 
 namespace joynr

@@ -122,11 +122,11 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
             return constructUrl(url);
         }
         url = QString::fromStdString(urlInformation.getUrls().at(0)); // return the first, store all
-        entries.insert(
-                channelId,
-                new ChannelUrlSelectorEntry(types::ChannelUrlInformation::createQt(urlInformation),
-                                            punishmentFactor,
-                                            timeForOneRecouperation)); // deleted where?
+        entries.insert(channelId,
+                       new ChannelUrlSelectorEntry(
+                               types::QtChannelUrlInformation::createQt(urlInformation),
+                               punishmentFactor,
+                               timeForOneRecouperation)); // deleted where?
         status.setCode(RequestStatusCode::OK);
         return constructUrl(url);
     } else {
@@ -184,7 +184,7 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
     if (!useDefaultUrl)
         assert(false);
     QString url = bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId;
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << url;
     urlInformation.setUrls(urls);
@@ -205,9 +205,10 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
 joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "ChannelUrlSelectorEntry");
 
-ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
-                                                 double punishmentFactor,
-                                                 qint64 timeForOneRecouperation)
+ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(
+        const types::QtChannelUrlInformation& urlInformation,
+        double punishmentFactor,
+        qint64 timeForOneRecouperation)
         : lastUpdate(QDateTime::currentMSecsSinceEpoch()),
           fitness(),
           urlInformation(urlInformation),

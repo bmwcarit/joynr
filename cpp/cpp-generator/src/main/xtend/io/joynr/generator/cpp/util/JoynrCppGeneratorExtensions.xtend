@@ -147,7 +147,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		switch datatype {
 		case isArray(element)     : "List"
 		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") +
-									"." + datatype.joynrNameQt
+									"." + datatype.joynrName
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
 		case isLong(predefined)   : "Long"
@@ -156,7 +156,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") +
-									"." + datatype.joynrNameQt
+									"." + datatype.joynrName
 		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
@@ -180,7 +180,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	def joynrNameQt(FType type){
-		return type.joynrName
+		return "Qt" + type.joynrName
 	}
 
 	def joynrNameStd(FType type){

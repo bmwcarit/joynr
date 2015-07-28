@@ -244,7 +244,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						QSharedPointer<SubscriptionQos>(SubscriptionQos::createQt(subscriptionQos)),
+						QSharedPointer<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 						subscriptionRequest);
 				LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
 				assert(!address.isNull());
@@ -372,7 +372,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		QString broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(BroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
@@ -395,7 +395,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(BroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
 		«ENDIF»
 		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
@@ -418,7 +418,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					QSharedPointer<OnChangeSubscriptionQos>(SubscriptionQos::createQt(subscriptionQos)),
+					QSharedPointer<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 					subscriptionRequest);
 		LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
 		assert(!address.isNull());

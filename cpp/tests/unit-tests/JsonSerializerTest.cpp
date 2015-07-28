@@ -22,14 +22,14 @@
 #include <QSharedPointer>
 #include <limits>
 #include "joynr/Util.h"
-#include "joynr/types/TEnum.h"
-#include "joynr/types/TStruct.h"
-#include "joynr/types/TStructExtended.h"
-#include "joynr/types/TStructComposition.h"
-#include "joynr/types/Trip.h"
-#include "joynr/types/ChannelUrlInformation.h"
-#include "joynr/types/CapabilityInformation.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtTEnum.h"
+#include "joynr/types/QtTStruct.h"
+#include "joynr/types/QtTStructExtended.h"
+#include "joynr/types/QtTStructComposition.h"
+#include "joynr/types/QtTrip.h"
+#include "joynr/types/QtChannelUrlInformation.h"
+#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/types/QtProviderQos.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/JoynrMessage.h"
@@ -37,18 +37,18 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "joynr/system/ChannelAddress.h"
-#include "joynr/system/CommonApiDbusAddress.h"
-#include "joynr/system/WebSocketAddress.h"
-#include "joynr/system/WebSocketClientAddress.h"
-#include "joynr/tests/TestEnum.h"
+#include "joynr/system/QtChannelAddress.h"
+#include "joynr/system/QtCommonApiDbusAddress.h"
+#include "joynr/system/QtWebSocketAddress.h"
+#include "joynr/system/QtWebSocketClientAddress.h"
+#include "joynr/tests/QtTestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
 
-#include "joynr/infrastructure/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
 
 using namespace joynr;
 using namespace joynr_logging;
@@ -65,7 +65,7 @@ public:
 
     }
 
-    void test(types::TStruct tStruct){
+    void test(types::QtTStruct tStruct){
         LOG_DEBUG(logger, tStruct.toString());
     }
 
@@ -111,7 +111,7 @@ protected:
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     qRegisterMetaType<joynr::SubscriptionRequest>();
     SubscriptionRequest request;
-    QSharedPointer<SubscriptionQos> subscriptionQos(new SubscriptionQos(5000));
+    QSharedPointer<QtSubscriptionQos> subscriptionQos(new QtSubscriptionQos(5000));
     request.setQos(subscriptionQos);
     QByteArray result = JsonSerializer::serialize(request);
     LOG_DEBUG(logger, QString(result));
@@ -122,9 +122,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
     BroadcastSubscriptionRequest request;
-    QSharedPointer<OnChangeSubscriptionQos> subscriptionQos(new OnChangeSubscriptionQos(5000, 2000));
+    QSharedPointer<QtOnChangeSubscriptionQos> subscriptionQos(new QtOnChangeSubscriptionQos(5000, 2000));
     request.setQos(subscriptionQos);
-    BroadcastFilterParameters filterParams;
+    QtBroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
     request.setFilterParameters(filterParams);
     QByteArray requestJson = JsonSerializer::serialize(request);
@@ -279,19 +279,19 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt64) {
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 
     qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<tests::TestEnum>();
-    int typeId = qRegisterMetaType<tests::TestEnum::Enum>("tests::TestEnum");
+    qRegisterMetaType<tests::QtTestEnum>();
+    int typeId = qRegisterMetaType<tests::QtTestEnum::Enum>("tests::QtTestEnum");
 
     // Set the request method name
     Request request;
     request.setMethodName(QString("methodEnumDoubleParameters"));
 
     // Set the request parameters
-    request.addParam(QVariant::fromValue(tests::TestEnum::ONE), "joynr.tests.TestEnum");
+    request.addParam(QVariant::fromValue(tests::QtTestEnum::ONE), "joynr.tests.TestEnum");
     request.addParam(2.2, "Double");
 
     // Serialize the request
-    QJson::Serializer::registerEnum(typeId, tests::TestEnum::staticMetaObject.enumerator(0));
+    QJson::Serializer::registerEnum(typeId, tests::QtTestEnum::staticMetaObject.enumerator(0));
     QString serializedContent = JsonSerializer::serialize(request);
 
     QString expected(
@@ -309,8 +309,8 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
 
     qRegisterMetaType<joynr::Request>();
-    qRegisterMetaType<tests::TestEnum>();
-    qRegisterMetaType<tests::TestEnum::Enum>("tests::TestEnum");
+    qRegisterMetaType<tests::QtTestEnum>();
+    qRegisterMetaType<tests::QtTestEnum::Enum>("tests::QtTestEnum");
 
     // Deserialize a request containing a Java style enum parameter
     QByteArray serializedContent("{\"_typeName\":\"joynr.Request\","
@@ -330,7 +330,7 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
     EXPECT_EQ(2.2, doubleParam.value<double>());
 
     // Extract the parameters in the same way as a RequestInterpreter
-    tests::TestEnum::Enum value = Util::convertVariantToEnum<tests::TestEnum>(enumParam);
+    tests::QtTestEnum::Enum value = Util::convertVariantToEnum<tests::QtTestEnum>(enumParam);
     EXPECT_EQ(1, value);
     delete(request);
 }
@@ -339,11 +339,11 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
 
     using namespace infrastructure;
 
-    qRegisterMetaType<joynr::infrastructure::Permission>();
-    qRegisterMetaType<joynr::infrastructure::Permission::Enum>("joynr::infrastructure::Permission");
-    qRegisterMetaType<joynr::infrastructure::TrustLevel>();
-    qRegisterMetaType<joynr::infrastructure::TrustLevel::Enum>("joynr::infrastructure::TrustLevel");
-    qRegisterMetaType<joynr::infrastructure::MasterAccessControlEntry>("joynr::infrastructure::MasterAccessControlEntry");
+    qRegisterMetaType<joynr::infrastructure::QtPermission>();
+    qRegisterMetaType<joynr::infrastructure::QtPermission::Enum>("joynr::infrastructure::QtPermission");
+    qRegisterMetaType<joynr::infrastructure::QtTrustLevel>();
+    qRegisterMetaType<joynr::infrastructure::QtTrustLevel::Enum>("joynr::infrastructure::QtTrustLevel");
+    qRegisterMetaType<joynr::infrastructure::QtMasterAccessControlEntry>("joynr::infrastructure::QtMasterAccessControlEntry");
 
     // Deserialize a type containing multiple enum lists
     QByteArray serializedContent("{\"_typeName\":\"joynr.infrastructure.MasterAccessControlEntry\","
@@ -358,19 +358,19 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
                                  "\"possibleRequiredTrustLevels\":[\"HIGH\",\"MID\",\"LOW\"],"
                                  "\"uid\":\"*\"}");
 
-    infrastructure::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::MasterAccessControlEntry>(serializedContent);
+    infrastructure::QtMasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::QtMasterAccessControlEntry>(serializedContent);
 
     // Check scalar enums
-    EXPECT_EQ(Permission::NO, mac->getDefaultConsumerPermission());
-    EXPECT_EQ(TrustLevel::LOW, mac->getDefaultRequiredTrustLevel());
+    EXPECT_EQ(QtPermission::NO, mac->getDefaultConsumerPermission());
+    EXPECT_EQ(QtTrustLevel::LOW, mac->getDefaultRequiredTrustLevel());
 
     // Check enum lists
-    QList<Permission::Enum> possibleRequiredPermissions;
-    possibleRequiredPermissions << Permission::YES << Permission::NO;
+    QList<QtPermission::Enum> possibleRequiredPermissions;
+    possibleRequiredPermissions << QtPermission::YES << QtPermission::NO;
     EXPECT_EQ(possibleRequiredPermissions, mac->getPossibleConsumerPermissions());
 
-    QList<TrustLevel::Enum> possibleRequiredTrustLevels;
-    possibleRequiredTrustLevels << TrustLevel::HIGH << TrustLevel::MID << TrustLevel::LOW;
+    QList<QtTrustLevel::Enum> possibleRequiredTrustLevels;
+    possibleRequiredTrustLevels << QtTrustLevel::HIGH << QtTrustLevel::MID << QtTrustLevel::LOW;
     EXPECT_EQ(possibleRequiredTrustLevels, mac->getPossibleRequiredTrustLevels());
 
     delete(mac);
@@ -380,33 +380,33 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
     using namespace infrastructure;
 
-    qRegisterMetaType<joynr::infrastructure::Permission>();
-    qRegisterMetaType<joynr::infrastructure::Permission::Enum>("joynr::infrastructure::Permission");
-    qRegisterMetaType<joynr::infrastructure::TrustLevel>();
-    qRegisterMetaType<joynr::infrastructure::TrustLevel::Enum>("joynr::infrastructure::TrustLevel");
-    qRegisterMetaType<joynr::infrastructure::MasterAccessControlEntry>("joynr::infrastructure::MasterAccessControlEntry");
+    qRegisterMetaType<joynr::infrastructure::QtPermission>();
+    qRegisterMetaType<joynr::infrastructure::QtPermission::Enum>("joynr::infrastructure::QtPermission");
+    qRegisterMetaType<joynr::infrastructure::QtTrustLevel>();
+    qRegisterMetaType<joynr::infrastructure::QtTrustLevel::Enum>("joynr::infrastructure::QtTrustLevel");
+    qRegisterMetaType<joynr::infrastructure::QtMasterAccessControlEntry>("joynr::infrastructure::QtMasterAccessControlEntry");
 
-    QList<TrustLevel::Enum> possibleTrustLevels;
-    possibleTrustLevels << TrustLevel::LOW << TrustLevel::MID << TrustLevel::HIGH;
-    QList<Permission::Enum> possiblePermissions;
-    possiblePermissions << Permission::NO << Permission::ASK << Permission::YES;
+    QList<QtTrustLevel::Enum> possibleTrustLevels;
+    possibleTrustLevels << QtTrustLevel::LOW << QtTrustLevel::MID << QtTrustLevel::HIGH;
+    QList<QtPermission::Enum> possiblePermissions;
+    possiblePermissions << QtPermission::NO << QtPermission::ASK << QtPermission::YES;
 
-    infrastructure::MasterAccessControlEntry expectedMac(QStringLiteral("*"),
+    infrastructure::QtMasterAccessControlEntry expectedMac(QStringLiteral("*"),
                                                          QStringLiteral("unittest"),
                                                          QStringLiteral("vehicle/radio"),
-                                                         TrustLevel::LOW,
+                                                         QtTrustLevel::LOW,
                                                          possibleTrustLevels,
-                                                         TrustLevel::HIGH,
+                                                         QtTrustLevel::HIGH,
                                                          possibleTrustLevels,
                                                          QStringLiteral("*"),
-                                                         Permission::YES,
+                                                         QtPermission::YES,
                                                          possiblePermissions);
 
     // Serialize
     QByteArray serializedContent = JsonSerializer::serialize(expectedMac);
 
     // Deserialize the result
-    infrastructure::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::MasterAccessControlEntry>(serializedContent);
+    infrastructure::QtMasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::QtMasterAccessControlEntry>(serializedContent);
 
     // Check that the object serialized/deserialized correctly
     EXPECT_EQ(expectedMac, *mac);
@@ -449,10 +449,10 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
 
 TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
-    qRegisterMetaType<joynr::types::TStruct>("joynr::types::TStruct");
-    qRegisterMetaType<joynr__types__TStruct>("joynr__types__TStruct");
+    qRegisterMetaType<joynr::types::QtTStruct>("joynr::types::QtTStruct");
+    qRegisterMetaType<joynr__types__QtTStruct>("joynr__types__TStruct");
 
-    types::TStruct tStruct;
+    types::QtTStruct tStruct;
     tStruct.setTDouble(0.123456789);
     tStruct.setTInt64(64);
     tStruct.setTString("myTestString");
@@ -470,7 +470,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
     LOG_DEBUG(logger, QString::fromUtf8(serializedContent));
     EXPECT_EQ(expectedTStruct, serializedContent);
 
-    types::TStruct* tStructDeserialized = JsonSerializer::deserialize<types::TStruct>(serializedContent);
+    types::QtTStruct* tStructDeserialized = JsonSerializer::deserialize<types::QtTStruct>(serializedContent);
 
     EXPECT_EQ(tStruct, *tStructDeserialized);
 
@@ -478,14 +478,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
-    qRegisterMetaType<joynr::types::TStructExtended>("joynr::types::TStructExtended");
-    qRegisterMetaType<joynr__types__TStructExtended>("joynr__types__TStructExtended");
+    qRegisterMetaType<joynr::types::QtTStructExtended>("joynr::types::QtTStructExtended");
+    qRegisterMetaType<joynr__types__QtTStructExtended>("joynr__types__TStructExtended");
 
-    types::TStructExtended tStructExt;
+    types::QtTStructExtended tStructExt;
     tStructExt.setTDouble(0.123456789);
     tStructExt.setTInt64(64);
     tStructExt.setTString("myTestString");
-    tStructExt.setTEnum(types::TEnum::TLITERALA);
+    tStructExt.setTEnum(types::QtTEnum::TLITERALA);
     tStructExt.setTInt32(32);
 
     QByteArray expectedTStructExt(
@@ -503,7 +503,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
     LOG_DEBUG(logger, QString::fromUtf8(serializedTStructExt));
 
     EXPECT_EQ(expectedTStructExt, serializedTStructExt);
-    types::TStructExtended* deserializedTStructExt = JsonSerializer::deserialize<types::TStructExtended>(serializedTStructExt);
+    types::QtTStructExtended* deserializedTStructExt = JsonSerializer::deserialize<types::QtTStructExtended>(serializedTStructExt);
 
     EXPECT_EQ(tStructExt, *deserializedTStructExt);
 
@@ -512,8 +512,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
-    types::GpsLocation gps1(1.1, 1.2, 1.3, types::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
-//    types::GpsLocation gps1(1.1, 2.2, 3.3,types::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17);
+    types::QtGpsLocation gps1(1.1, 1.2, 1.3, types::QtGpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+//    types::QtGpsLocation gps1(1.1, 2.2, 3.3,types::QtGpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17);
 
     // Expected literal is:
     Reply reply;
@@ -553,13 +553,13 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
     EXPECT_TRUE(receivedReply->getResponse().size() == 1);
-    EXPECT_TRUE(receivedReply->getResponse().at(0).canConvert<types::GpsLocation>());
+    EXPECT_TRUE(receivedReply->getResponse().at(0).canConvert<types::QtGpsLocation>());
 
-//    GpsLocation gps2;
+//    QtGpsLocation gps2;
 
 //    QJson::QObjectHelper::qvariant2qobject(receivedReply->getResponse().value<QVariantMap>(), &gps2);
 
-    types::GpsLocation gps2 = receivedReply->getResponse().at(0).value<types::GpsLocation>();
+    types::QtGpsLocation gps2 = receivedReply->getResponse().at(0).value<types::QtGpsLocation>();
 
     EXPECT_EQ(gps1, gps2)
             << "Gps locations gps1 " << gps1.toString().toLatin1().data()
@@ -602,8 +602,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
 
     QList<QVariant> locList;
-    locList.append(QVariant::fromValue(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17)));
-    locList.append(QVariant::fromValue(types::GpsLocation(4.4, 5.5, 6.6, types::GpsFixEnum::MODENOFIX, 0.0, 0.0, 0.0, 0.0, 0, 0, 18)));
+    locList.append(QVariant::fromValue(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17)));
+    locList.append(QVariant::fromValue(types::QtGpsLocation(4.4, 5.5, 6.6, types::QtGpsFixEnum::MODENOFIX, 0.0, 0.0, 0.0, 0.0, 0, 0, 18)));
 
     QString expectedReplyString(
                 "{"
@@ -658,8 +658,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     QListIterator<QVariant> i_received(receivedReply->getResponse().at(0).value<QList<QVariant> >());
     QListIterator<QVariant> i_origin(reply.getResponse().at(0).value<QList<QVariant> >());
     while(i_received.hasNext()) {
-        types::GpsLocation receivedIterValue = i_received.next().value<types::GpsLocation>();
-        types::GpsLocation originItervalue = i_origin.next().value<types::GpsLocation>();
+        types::QtGpsLocation receivedIterValue = i_received.next().value<types::QtGpsLocation>();
+        types::QtGpsLocation originItervalue = i_origin.next().value<types::QtGpsLocation>();
         LOG_DEBUG(logger, receivedIterValue.toString());
         EXPECT_EQ(originItervalue, receivedIterValue);
     }
@@ -668,15 +668,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
+    qRegisterMetaType<joynr::types::QtGpsLocation>("joynr::types::QtGpsLocation");
+    qRegisterMetaType<joynr__types__QtGpsLocation>("joynr__types__GpsLocation");
 
-    qRegisterMetaType<joynr::types::Trip>("joynr::types::Trip");
+    qRegisterMetaType<joynr::types::QtTrip>("joynr::types::QtTrip");
 
-    QList<types::GpsLocation> locations;
-    locations.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-    locations.push_back(types::GpsLocation(4.4, 5.5, 6.6, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-    locations.push_back(types::GpsLocation(7.7, 8.8, 9.9, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    QList<types::QtGpsLocation> locations;
+    locations.push_back(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
+    locations.push_back(types::QtGpsLocation(4.4, 5.5, 6.6, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
+    locations.push_back(types::QtGpsLocation(7.7, 8.8, 9.9, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
 
     QByteArray expected("{\"_typeName\":\"joynr.types.Trip\","
                         "\"locations\":[{\"_typeName\":\"joynr.types.GpsLocation\","
@@ -718,12 +718,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
                         "\"tripTitle\":\"trip1_name\"}");
 
     // Expected literal is:
-    types::Trip trip1(locations, QString("trip1_name"));
+    types::QtTrip trip1(locations, QString("trip1_name"));
 
     QByteArray serializedContent = JsonSerializer::serialize(QVariant::fromValue(trip1));
     EXPECT_EQ(expected, serializedContent);
 
-    types::Trip* trip2 = JsonSerializer::deserialize<types::Trip>(serializedContent);
+    types::QtTrip* trip2 = JsonSerializer::deserialize<types::QtTrip>(serializedContent);
     EXPECT_EQ(trip1, *trip2) << "trips \n trip1: " << trip1.toString().toLatin1().data()
                              << " and \n trip2: " << trip2->toString().toLatin1().data()
                              << "\n are not the same";;
@@ -734,14 +734,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::Trip>("joynr::types::Trip");
+    qRegisterMetaType<joynr::types::QtTrip>("joynr::types::QtTrip");
 
-    QList<types::GpsLocation> locations;
-    locations.push_back(types::GpsLocation(1.1, 1.2, 1.3, types::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110));
-    locations.push_back(types::GpsLocation(2.1, 2.2, 2.3, types::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210));
-    locations.push_back(types::GpsLocation(3.1, 3.2, 3.3, types::GpsFixEnum::MODE2D, 3.4, 3.5, 3.6, 3.7, 38, 39, 310));
+    QList<types::QtGpsLocation> locations;
+    locations.push_back(types::QtGpsLocation(1.1, 1.2, 1.3, types::QtGpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110));
+    locations.push_back(types::QtGpsLocation(2.1, 2.2, 2.3, types::QtGpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210));
+    locations.push_back(types::QtGpsLocation(3.1, 3.2, 3.3, types::QtGpsFixEnum::MODE2D, 3.4, 3.5, 3.6, 3.7, 38, 39, 310));
 
-    types::Trip trip1(locations, QString("trip1_name"));
+    types::QtTrip trip1(locations, QString("trip1_name"));
 
     Request request1;
     request1.setMethodName(QString("serialize_deserialize_JsonRequestTest_method"));
@@ -766,7 +766,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     QVariantList paramsReceived = request2->getParams();
 
     EXPECT_EQ(paramsReceived.at(0).value<QString>(), contentParam1);
-    EXPECT_EQ(paramsReceived.at(1).value<types::Trip>(), trip1);
+    EXPECT_EQ(paramsReceived.at(1).value<types::QtTrip>(), trip1);
 
     //EXPECT_EQ on the Request doesn't work, because the == method of QVariantMap says:
     // "Warning: This function doesn't support custom types registered with qRegisterMetaType()."
@@ -777,19 +777,19 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
-    qRegisterMetaType<joynr::types::CapabilityInformation>("joynr::types::CapabilityInformation");
+    qRegisterMetaType<joynr::types::QtCapabilityInformation>("joynr::types::QtCapabilityInformation");
 
-    QList<types::CapabilityInformation> capabilityInformations;
-    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
+    QList<types::QtCapabilityInformation> capabilityInformations;
+    types::QtCapabilityInformation cap1(types::QtCapabilityInformation("domain1", "interface1", types::QtProviderQos(), "channel1", "participant1"));
     capabilityInformations.append(cap1);
-    capabilityInformations.append(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
+    capabilityInformations.append(types::QtCapabilityInformation("domain2", "interface2", types::QtProviderQos(), "channel2", "participant2"));
 
     Reply reply;
 
     QVariantList response;
     reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
     //this is the magic code: do not call "append" for lists, because this will append all list elements to the outer list
-    response.insert(0, joynr::Util::convertListToVariantList<joynr::types::CapabilityInformation>(capabilityInformations));
+    response.insert(0, joynr::Util::convertListToVariantList<joynr::types::QtCapabilityInformation>(capabilityInformations));
     reply.setResponse(response);
  QByteArray serializedContent = JsonSerializer::serialize(reply);
     LOG_DEBUG(logger, QString::fromUtf8(serializedContent));
@@ -799,7 +799,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     response = deserializedReply->getResponse();
 
     QVariantList receivedCaps = response.at(0).value<QVariantList>();
-    types::CapabilityInformation receivedCap1 = receivedCaps.at(0).value<types::CapabilityInformation>();
+    types::QtCapabilityInformation receivedCap1 = receivedCaps.at(0).value<types::QtCapabilityInformation>();
     EXPECT_EQ(receivedCap1, cap1);
     EXPECT_EQ(deserializedReply->getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
 
@@ -808,16 +808,16 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
+    qRegisterMetaType<joynr::types::QtGpsLocation>("joynr::types::QtGpsLocation");
+    qRegisterMetaType<joynr__types__QtGpsLocation>("joynr__types__GpsLocation");
 
     QString contentParam1("ListParameter");
 
     //creating Request
-    QList<types::GpsLocation> inputLocationList;
-    inputLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-    inputLocationList.push_back(types::GpsLocation(4.4, 5.5, 6.6, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-    inputLocationList.push_back(types::GpsLocation(7.7, 8.8, 9.9, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    QList<types::QtGpsLocation> inputLocationList;
+    inputLocationList.push_back(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
+    inputLocationList.push_back(types::QtGpsLocation(4.4, 5.5, 6.6, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
+    inputLocationList.push_back(types::QtGpsLocation(7.7, 8.8, 9.9, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
 
     QString expectedString(
                 "{\"_typeName\":\"joynr.Request\","
@@ -884,10 +884,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     ASSERT_TRUE(returnQvl.size() == 3) << "list size size != 3";
     LOG_DEBUG(logger, QString(returnQvl.at(0).typeName()));
 
-    ASSERT_TRUE(returnQvl.at(0).canConvert<types::GpsLocation>()) << "Cannot convert the first entry of the return List to GpsLocation";
+    ASSERT_TRUE(returnQvl.at(0).canConvert<types::QtGpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
 
-    QList<types::GpsLocation> resultLocationList = Util::convertVariantListToList<types::GpsLocation>(returnQvl);
-    EXPECT_EQ(resultLocationList.at(1), types::GpsLocation(4.4, 5.5, 6.6, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
+    QList<types::QtGpsLocation> resultLocationList = Util::convertVariantListToList<types::QtGpsLocation>(returnQvl);
+    EXPECT_EQ(resultLocationList.at(1), types::QtGpsLocation(4.4, 5.5, 6.6, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
 
     delete request2;
 }
@@ -895,18 +895,18 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 // Test to investigate whether long lists cause a problem with during deserialization
 TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<joynr__types__GpsLocation>("joynr__types__GpsLocation");
+    qRegisterMetaType<joynr::types::QtGpsLocation>("joynr::types::QtGpsLocation");
+    qRegisterMetaType<joynr__types__QtGpsLocation>("joynr__types__GpsLocation");
 
     QString contentParam1("ListParameter");
 
     //creating Request
-    QList<types::GpsLocation> inputLocationList;
+    QList<types::QtGpsLocation> inputLocationList;
 
     // Create a JSON list
     int firstListSize = 10000;
     for (int i = 0; i < firstListSize; i++) {
-        inputLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 17));
+        inputLocationList.push_back(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 17));
     }
 
     // Create a request that uses this list
@@ -931,7 +931,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Double the size of the JSON list
     for (int i = 0; i < firstListSize; i++) {
-        inputLocationList.push_back(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE3D, 0.0, 0,0,0,0,0,17));
+        inputLocationList.push_back(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE3D, 0.0, 0,0,0,0,0,17));
     }
 
     // Create a request that uses this bigger list
@@ -966,18 +966,18 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-    qRegisterMetaType<joynr::system::ChannelAddress>("joynr::system::ChannelAddress");
-    qRegisterMetaType<joynr::system::CommonApiDbusAddress>("joynr::system::CommonApiDbusAddress");
+    qRegisterMetaType<joynr::system::QtChannelAddress>("joynr::system::QtChannelAddress");
+    qRegisterMetaType<joynr::system::QtCommonApiDbusAddress>("joynr::system::QtCommonApiDbusAddress");
 
-    joynr::system::ChannelAddress joynr("TEST_channelId");
-    joynr::system::CommonApiDbusAddress dbus("domain", "interfacename", "id");
-    joynr::system::WebSocketAddress wsServer(
-                joynr::system::WebSocketProtocol::WS,
+    joynr::system::QtChannelAddress joynr("TEST_channelId");
+    joynr::system::QtCommonApiDbusAddress dbus("domain", "interfacename", "id");
+    joynr::system::QtWebSocketAddress wsServer(
+                joynr::system::QtWebSocketProtocol::WS,
                 "localhost",
                 42,
                 "some/path"
     );
-    joynr::system::WebSocketClientAddress wsClient("TEST_clientId");
+    joynr::system::QtWebSocketClientAddress wsClient("TEST_clientId");
 
     // serialize
     QByteArray joynrSerialized = JsonSerializer::serialize(joynr);
@@ -991,10 +991,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     LOG_DEBUG(logger, QString("serialized WS client address: %0").arg(QString::fromUtf8(wsClientSerialized)));
 
     // deserialize
-    joynr::system::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::ChannelAddress>(joynrSerialized);
-    joynr::system::CommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserialize<joynr::system::CommonApiDbusAddress>(dbusSerialized);
-    joynr::system::WebSocketAddress* wsServerDeserialized = JsonSerializer::deserialize<joynr::system::WebSocketAddress>(wsServerSerialized);
-    joynr::system::WebSocketClientAddress* wsClientDeserialized = JsonSerializer::deserialize<joynr::system::WebSocketClientAddress>(wsClientSerialized);
+    joynr::system::QtChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::QtChannelAddress>(joynrSerialized);
+    joynr::system::QtCommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserialize<joynr::system::QtCommonApiDbusAddress>(dbusSerialized);
+    joynr::system::QtWebSocketAddress* wsServerDeserialized = JsonSerializer::deserialize<joynr::system::QtWebSocketAddress>(wsServerSerialized);
+    joynr::system::QtWebSocketClientAddress* wsClientDeserialized = JsonSerializer::deserialize<joynr::system::QtWebSocketClientAddress>(wsClientSerialized);
 
     EXPECT_EQ(joynr, *joynrDeserialized);
     EXPECT_EQ(dbus, *dbusDeserialized);
@@ -1026,15 +1026,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
     // { "_typeName" : "joynr.types.CapabilityInformation", "channelId" : "channeldId", "domain" : "domain", "interfaceName" : "", "participantId" : "", "providerQos" : { "_typeName" : "joynr.types.ProviderQos", "isLocalOnly" : false, "onChangeSubscriptions" : false, "priority" : 2, "qos" : [  ], "Version" : 4 }
 
     //TODO: also remove the variables qRegisterMetaTypeQos
-    qRegisterMetaType<joynr::types::ProviderQos>("joynr::types::ProviderQos");
-    qRegisterMetaType<joynr__types__ProviderQos>("joynr__types__ProviderQos");
-    qRegisterMetaType<joynr::types::CapabilityInformation>("joynr::types::CapabilityInformation");
-    qRegisterMetaType<joynr__types__CapabilityInformation>("joynr__types__CapabilityInformation");
+    qRegisterMetaType<joynr::types::QtProviderQos>("joynr::types::QtProviderQos");
+    qRegisterMetaType<joynr__types__QtProviderQos>("joynr__types__ProviderQos");
+    qRegisterMetaType<joynr::types::QtCapabilityInformation>("joynr::types::QtCapabilityInformation");
+    qRegisterMetaType<joynr__types__QtCapabilityInformation>("joynr__types__CapabilityInformation");
 
-    types::ProviderQos qos;
+    types::QtProviderQos qos;
     qos.setPriority(2);
     qos.setProviderVersion(4);
-    types::CapabilityInformation capabilityInformation;
+    types::QtCapabilityInformation capabilityInformation;
     capabilityInformation.setChannelId("channeldId");
     capabilityInformation.setDomain("domain");
     capabilityInformation.setProviderQos(qos);
@@ -1045,7 +1045,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
     // deserialize
     LOG_DEBUG(logger,"serialized capabilityInformation" + QString::fromUtf8(serialized));
 
-    types::CapabilityInformation* deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
+    types::QtCapabilityInformation* deserializedCI = JsonSerializer::deserialize<types::QtCapabilityInformation>(serialized);
 
     EXPECT_EQ(capabilityInformation, *deserializedCI);
     LOG_DEBUG(logger,"deserialized capabilityInformation" + deserializedCI->toString());
@@ -1054,17 +1054,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 // Test of ChannelURLInformation which is of type QList<QString>.
 // QList<QString> is a special case in some places (for an example see Request.h)
 TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
-    qRegisterMetaType<joynr::types::ChannelUrlInformation>("joynr::types::ChannelUrlInformation");
-    qRegisterMetaType<joynr__types__ChannelUrlInformation>("joynr__types__ChannelUrlInformation");
+    qRegisterMetaType<joynr::types::QtChannelUrlInformation>("joynr::types::QtChannelUrlInformation");
+    qRegisterMetaType<joynr__types__QtChannelUrlInformation>("joynr__types__ChannelUrlInformation");
 
     QList<QString> urls;
     urls.append("http://example1.com/");
     urls.append("http://example2.com/");
-    types::ChannelUrlInformation urlInformation(urls);
+    types::QtChannelUrlInformation urlInformation(urls);
 
     // Serialize the URL Information
     QByteArray serialized = JsonSerializer::serialize(QVariant::fromValue(urlInformation));
-    LOG_DEBUG(logger,"serialized ChannelUrlInformation" + QString::fromUtf8(serialized));
+    LOG_DEBUG(logger,"serialized QtChannelUrlInformation" + QString::fromUtf8(serialized));
 
     // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
     QByteArray expected("{\"_typeName\":\"joynr.types.ChannelUrlInformation\",\"urls\":[\"http://example1.com/\",\"http://example2.com/\"]}");
@@ -1072,7 +1072,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
     EXPECT_EQ(expected, serialized);
 
     // Deserialize
-    types::ChannelUrlInformation* deserializedInfo = JsonSerializer::deserialize<types::ChannelUrlInformation>(serialized);
+    types::QtChannelUrlInformation* deserializedInfo = JsonSerializer::deserialize<types::QtChannelUrlInformation>(serialized);
 
     // Check the structure
     QList<QString> deserializedUrls = deserializedInfo->getUrls();
@@ -1080,13 +1080,13 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
 }
 
 TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
-    joynr::types::ProviderQos qos;
+    joynr::types::QtProviderQos qos;
 
     QByteArray jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":3,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
-    joynr::types::ProviderQos* providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
+    joynr::types::QtProviderQos* providerQos = JsonSerializer::deserialize<joynr::types::QtProviderQos>(jsonProviderQos);
 
-    EXPECT_EQ(providerQos->getScope(), joynr::types::ProviderScope::LOCAL);
+    EXPECT_EQ(providerQos->getScope(), joynr::types::QtProviderScope::LOCAL);
     EXPECT_EQ(providerQos->getProviderVersion(), 3);
     EXPECT_EQ(providerQos->getPriority(), 5);
 
@@ -1094,8 +1094,8 @@ TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
 }
 
 TEST_F(JsonSerializerTest, serialize_ProviderQos) {
-    joynr::types::ProviderQos qos;
-    qos.setScope(joynr::types::ProviderScope::LOCAL);
+    joynr::types::QtProviderQos qos;
+    qos.setScope(joynr::types::QtProviderScope::LOCAL);
     qos.setPriority(5);
     qos.setProviderVersion(-1);
 
@@ -1108,9 +1108,9 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos) {
 
 
 TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
-    qRegisterMetaType<joynr::types::GpsLocation>("joynr::types::GpsLocation");
-    qRegisterMetaType<types::GpsFixEnum>();
-    qRegisterMetaType<types::GpsFixEnum::Enum>("types::GpsFixEnum");
+    qRegisterMetaType<joynr::types::QtGpsLocation>("joynr::types::QtGpsLocation");
+    qRegisterMetaType<types::QtGpsFixEnum>();
+    qRegisterMetaType<types::QtGpsFixEnum::Enum>("types::QtGpsFixEnum");
 
     QByteArray jsonGPS(
                 "{\"_typeName\":\"joynr.types.GpsLocation\","
@@ -1125,31 +1125,31 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
                 "\"longitude\":1.1,"
                 "\"time\":17}"
     );
-    joynr::types::GpsLocation* receivedReply = JsonSerializer::deserialize<joynr::types::GpsLocation>(jsonGPS);
+    joynr::types::QtGpsLocation* receivedReply = JsonSerializer::deserialize<joynr::types::QtGpsLocation>(jsonGPS);
     // Clean up
     delete receivedReply;
 }
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
-    qRegisterMetaType<joynr::SubscriptionQos>("joynr::SubscriptionQos");
-    qRegisterMetaType<QSharedPointer<SubscriptionQos>>();
+    qRegisterMetaType<joynr::QtSubscriptionQos>("joynr::QtSubscriptionQos");
+    qRegisterMetaType<QSharedPointer<QtSubscriptionQos>>();
 
-    qRegisterMetaType<joynr::OnChangeSubscriptionQos>("joynr::OnChangeSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<OnChangeSubscriptionQos>>();
+    qRegisterMetaType<joynr::QtOnChangeSubscriptionQos>("joynr::QtOnChangeSubscriptionQos");
+    qRegisterMetaType<QSharedPointer<QtOnChangeSubscriptionQos>>();
 
-    qRegisterMetaType<joynr::OnChangeWithKeepAliveSubscriptionQos>("joynr::OnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<joynr::OnChangeWithKeepAliveSubscriptionQos>>();
+    qRegisterMetaType<joynr::QtOnChangeWithKeepAliveSubscriptionQos>("joynr::QtOnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QSharedPointer<joynr::QtOnChangeWithKeepAliveSubscriptionQos>>();
 
 
-    joynr::OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
+    joynr::QtOnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
 
     QByteArray jsonQos = JsonSerializer::serialize(qos);
-    LOG_DEBUG(logger,"serialized OnChangeWithKeepAliveSubscriptionQos" + QString::fromUtf8(jsonQos));
+    LOG_DEBUG(logger,"serialized QtOnChangeWithKeepAliveSubscriptionQos" + QString::fromUtf8(jsonQos));
 
-    joynr::OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+    joynr::QtOnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::QtOnChangeWithKeepAliveSubscriptionQos>(jsonQos);
 
     jsonQos = JsonSerializer::serialize(*desQos);
-    LOG_DEBUG(logger,"serialized OnChangeWithKeepAliveSubscriptionQos" + QString::fromUtf8(jsonQos));
+    LOG_DEBUG(logger,"serialized QtOnChangeWithKeepAliveSubscriptionQos" + QString::fromUtf8(jsonQos));
 
 
     EXPECT_EQ(qos, *desQos);

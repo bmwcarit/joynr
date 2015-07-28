@@ -25,7 +25,7 @@
 #include "joynr/ProviderArbitrator.h"
 #include <QSharedPointer>
 #include <string>
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 
 namespace joynr
 {

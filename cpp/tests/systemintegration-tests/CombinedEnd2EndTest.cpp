@@ -26,12 +26,12 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/tests/DerivedStruct.h"
-#include "joynr/tests/AnotherDerivedStruct.h"
-#include "joynr/types/Trip.h"
-#include "joynr/types/GpsLocation.h"
-#include "joynr/types/ProviderQos.h"
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/tests/QtDerivedStruct.h"
+#include "joynr/tests/QtAnotherDerivedStruct.h"
+#include "joynr/types/QtTrip.h"
+#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
@@ -65,8 +65,8 @@ static const QString messagingPropertiesPersistenceFileName2("CombinedEnd2EndTes
 
 class CombinedEnd2EndTest : public Test {
 public:
-    types::ProviderQos qRegisterMetaTypeQos; //this is necessary to force a qRegisterMetaType<types::ProviderQos>(); during setup
-    types::CapabilityInformation qRegisterMetaTypeCi; //this is necessary to force a qRegisterMetaType<types::ProviderQos>(); during setup
+    types::QtProviderQos qRegisterMetaTypeQos; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
+    types::QtCapabilityInformation qRegisterMetaTypeCi; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
     std::string registeredSubscriptionId;
@@ -100,9 +100,9 @@ public:
         //Normally a new datatype is registered in all datatypes that use the new datatype.
         //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
         //so the datatype is not registered, and cannot be deserialized.
-        joynr::types::ProviderQos a;
-        joynr__types__ProviderQos b;
-//        qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+        joynr::types::QtProviderQos a;
+        joynr__types__QtProviderQos b;
+//        qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 //        //TODO: also remove the variables qRegisterMetaTypeQos
 //        qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
 
@@ -145,9 +145,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     //Normally a new datatype is registered in all datatypes that use the new datatype.
     //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
     //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
     //TODO: also remove the variables qRegisterMetaTypeQos
-    types::ProviderQos();
+    types::QtProviderQos();
 //    qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
 
 
@@ -193,7 +193,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
      /*
       * Testing TRIP
-      * Now try to send a Trip (which contains a list) and check if the returned trip is identical.
+      * Now try to send a QtTrip (which contains a list) and check if the returned trip is identical.
       */
 
         std::vector<types::Localisation::StdGpsLocation> inputLocationList;
@@ -234,13 +234,13 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
      * Now try to send a List of Vowels and see if it is returned correctly.
      */
 // does not compile, see 654
-//       std::vector<Vowel> inputWord;
+//       std::vector<QtVowel> inputWord;
 //       inputWord.push_back("h");
 //       inputWord.push_back("e");
 //       inputWord.push_back("l");
 //       inputWord.push_back("l");
 //       inputWord.push_back("o");
-//       std::shared_ptr<Future<std::vector<Vowel> > > wordFuture (new std::shared_ptr<Future<std::vector<Vowel> > >());
+//       std::shared_ptr<Future<std::vector<QtVowel> > > wordFuture (new std::shared_ptr<Future<std::vector<QtVowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->waitForFinished();
 //       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
@@ -382,10 +382,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
-        testProxy->overloadedOperation(status, derivedStructResult, tests::DerivedStruct());
-        testProxy->overloadedOperation(status, anotherDerivedStructResult, tests::AnotherDerivedStruct());
-        EXPECT_EQ(derivedStructResult, "DerivedStruct");
-        EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
+        testProxy->overloadedOperation(status, derivedStructResult, tests::QtDerivedStruct());
+        testProxy->overloadedOperation(status, anotherDerivedStructResult, tests::QtAnotherDerivedStruct());
+        EXPECT_EQ(derivedStructResult, "QtDerivedStruct");
+        EXPECT_EQ(anotherDerivedStructResult, "QtAnotherDerivedStruct");
     }
 #endif
 
@@ -398,7 +398,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     //Normally a new datatype is registered in all datatypes that use the new datatype.
     //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
     //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -456,7 +456,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     //Normally a new datatype is registered in all datatypes that use the new datatype.
     //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
     //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -534,7 +534,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     //Normally a new datatype is registered in all datatypes that use the new datatype.
     //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
     //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 
     MockSubscriptionListenerOneType<std::vector<int> > *mockListener = new MockSubscriptionListenerOneType<std::vector<int> >();
 
@@ -590,7 +590,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
 	// Setup a mock listener - this will never be called
-    qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
     std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(mockListener);
 
@@ -866,7 +866,7 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
     testSuite->registeredSubscriptionId = testProxy->subscribeToLocation(listener, subscriptionQos);
 }
 
-// A function that subscribes to a GpsPosition - to be run in a background thread
+// A function that subscribes to a QtGpsPosition - to be run in a background thread
 void unsubscribeFromLocation(tests::testProxy* testProxy,
                             std::string subscriptionId) {
     testProxy->unsubscribeFromLocation(subscriptionId);
@@ -877,7 +877,7 @@ void unsubscribeFromLocation(tests::testProxy* testProxy,
 // causes a runtime error to be reported by Qt
 TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
-    qRegisterMetaType<types::ProviderQos>("types::ProviderQos");
+    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 

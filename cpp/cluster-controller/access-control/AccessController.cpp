@@ -24,12 +24,12 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/system/Address.h"
+#include "joynr/system/QtAddress.h"
 #include "joynr/joynrlogging.h"
 
 #include <QByteArray>
@@ -60,7 +60,7 @@ public:
             const JoynrMessage& message,
             const QString& domain,
             const QString& interfaceName,
-            TrustLevel::Enum trustlevel,
+            QtTrustLevel::Enum trustlevel,
             QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
@@ -72,10 +72,10 @@ private:
     JoynrMessage message;
     QString domain;
     QString interfaceName;
-    TrustLevel::Enum trustlevel;
+    QtTrustLevel::Enum trustlevel;
     QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback;
 
-    bool convertToBool(Permission::Enum permission);
+    bool convertToBool(QtPermission::Enum permission);
 };
 
 AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
@@ -83,7 +83,7 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
         const JoynrMessage& message,
         const QString& domain,
         const QString& interfaceName,
-        TrustLevel::Enum trustlevel,
+        QtTrustLevel::Enum trustlevel,
         QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback)
         : owningAccessController(parent),
           message(message),
@@ -97,7 +97,7 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 void AccessController::LdacConsumerPermissionCallback::consumerPermission(
         StdPermission::Enum permission)
 {
-    bool hasPermission = convertToBool(Permission::createQt(permission));
+    bool hasPermission = convertToBool(QtPermission::createQt(permission));
 
     if (hasPermission == false) {
         LOG_ERROR(logger,
@@ -147,13 +147,13 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     // Get the permission for given operation
-    Permission::Enum permission =
+    QtPermission::Enum permission =
             owningAccessController.localDomainAccessController.getConsumerPermission(
                     message.getHeaderCreatorUserId().toStdString(),
                     domain.toStdString(),
                     interfaceName.toStdString(),
                     operation.toStdString(),
-                    TrustLevel::createStd(trustlevel));
+                    QtTrustLevel::createStd(trustlevel));
 
     bool hasPermission = convertToBool(permission);
 
@@ -169,16 +169,17 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     callback->hasConsumerPermission(hasPermission);
 }
 
-bool AccessController::LdacConsumerPermissionCallback::convertToBool(Permission::Enum permission)
+bool AccessController::LdacConsumerPermissionCallback::convertToBool(QtPermission::Enum permission)
 {
     switch (permission) {
-    case Permission::YES:
+    case QtPermission::YES:
         return true;
-    case Permission::ASK:
-        Q_ASSERT_X(
-                false, "hasConsumerPermission", "Permission.ASK user dialog not yet implemented.");
+    case QtPermission::ASK:
+        Q_ASSERT_X(false,
+                   "hasConsumerPermission",
+                   "QtPermission.ASK user dialog not yet implemented.");
         return false;
-    case Permission::NO:
+    case QtPermission::NO:
         return false;
     default:
         return false;
@@ -287,11 +288,11 @@ void AccessController::hasConsumerPermission(
                                                    message,
                                                    QString::fromStdString(domain),
                                                    QString::fromStdString(interfaceName),
-                                                   TrustLevel::HIGH,
+                                                   QtTrustLevel::HIGH,
                                                    callback));
 
         // Try to determine permission without expensive message deserialization
-        // For now TrustLevel::HIGH is assumed.
+        // For now QtTrustLevel::HIGH is assumed.
         QString msgCreatorUid = message.getHeaderCreatorUserId();
         localDomainAccessController.getConsumerPermission(msgCreatorUid.toStdString(),
                                                           domain,
@@ -303,7 +304,7 @@ void AccessController::hasConsumerPermission(
 }
 
 bool AccessController::hasProviderPermission(const QString& userId,
-                                             TrustLevel::Enum trustLevel,
+                                             QtTrustLevel::Enum trustLevel,
                                              const QString& domain,
                                              const QString& interfaceName)
 {
