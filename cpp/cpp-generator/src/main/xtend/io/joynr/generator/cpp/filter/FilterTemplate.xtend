@@ -84,9 +84,9 @@ public:
 	*/
 	virtual bool filter(
 			«broadcast.commaSeperatedTypedConstOutputParameterList»,
-			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters) {
-				return true;
-	}
+			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters
+	) = 0;
+
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 
