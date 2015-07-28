@@ -68,7 +68,7 @@ class InterfaceUtil {
 		«printCallbackFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		virtual QSharedPointer<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»(
+		virtual std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»(
 				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
@@ -106,7 +106,7 @@ class InterfaceUtil {
 		«printCallbackFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		virtual QSharedPointer<joynr::Future<void> > set«attributeName.toFirstUpper»(
+		virtual std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»(
 				«returnType» «attributeName.toFirstLower»,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct = nullptr
 		)«IF pure»=0«ENDIF»;
@@ -147,7 +147,7 @@ class InterfaceUtil {
 		«printFutureReturnDefinition»
 		*/
 
-		virtual QSharedPointer<joynr::Future<«outputParameters»> > «method.joynrName»(
+		virtual std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»(
 				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
 	«ENDFOR»

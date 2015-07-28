@@ -35,6 +35,7 @@
 #include "tests/utils/MockObjects.h"
 
 #include "joynr/Future.h"
+#include <memory>
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -168,7 +169,7 @@ TEST_F(End2EndDbusTest, call_async_method)
     // connect the proxy
     connectProxy();
 
-    QSharedPointer<Future<std::string>> sayHelloFuture(testProxy->sayHello());
+    std::shared_ptr<Future<std::string>> sayHelloFuture(testProxy->sayHello());
     sayHelloFuture->waitForFinished();
     ASSERT_TRUE(sayHelloFuture->isOk());
     std::string actualValue;
@@ -204,11 +205,11 @@ TEST_F(End2EndDbusTest, get_set_attribute_async)
     connectProxy();
 
     // asynchronous
-    QSharedPointer<Future<void>> setAttributeFuture(testProxy->setTestAttribute(18));
+    std::shared_ptr<Future<void>> setAttributeFuture(testProxy->setTestAttribute(18));
     setAttributeFuture->waitForFinished();
     ASSERT_TRUE(setAttributeFuture->isOk());
 
-    QSharedPointer<Future<int>> getAttributeFuture(testProxy->getTestAttribute());
+    std::shared_ptr<Future<int>> getAttributeFuture(testProxy->getTestAttribute());
     getAttributeFuture->waitForFinished();
     ASSERT_TRUE(getAttributeFuture->isOk());
     int actualValue;
@@ -249,7 +250,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     connectProxy();
 
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    QList<QSharedPointer<Future<int32_t> > >testFutureList;
+    QList<std::shared_ptr<Future<int32_t> > >testFutureList;
     int numberOfMessages = 500;
     int successFullMessages = 0;
     for (int32_t i=0; i<numberOfMessages; i++){

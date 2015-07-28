@@ -39,6 +39,7 @@
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
+#include <memory>
 
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
@@ -290,7 +291,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     ints.push_back(6);
     ints.push_back(12);
     int32_t expectedSum = 22;
-    QSharedPointer<Future<int32_t> > future(testProxy->sumInts(ints));
+    std::shared_ptr<Future<int32_t> > future(testProxy->sumInts(ints));
     future->waitForFinished(500);
 
     ASSERT_TRUE(future->getStatus().successful());

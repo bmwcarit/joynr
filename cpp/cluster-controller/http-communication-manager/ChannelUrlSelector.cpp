@@ -22,6 +22,7 @@
 
 #include <QDateTime>
 #include <cmath>
+#include <memory>
 
 namespace joynr
 {
@@ -104,7 +105,7 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     LOG_DEBUG(logger,
               "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
                       channelId);
-    QSharedPointer<Future<types::StdChannelUrlInformation>> proxyFuture(
+    std::shared_ptr<Future<types::StdChannelUrlInformation>> proxyFuture(
             channelUrlDirectory->getUrlsForChannel(channelId.toStdString(), timeout_ms));
     status = proxyFuture->getStatus();
 

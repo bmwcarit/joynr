@@ -123,7 +123,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			}
 		}
 
-		QSharedPointer<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»(
+		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»(
 				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> callbackFct
 		) {
 			assert(!address.isNull());
@@ -132,7 +132,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			assert(!«serviceInterface.interfaceCaller».isNull());
 
-			QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
 					[future, callbackFct] (const «returnType»& «attributeName») {
@@ -149,7 +149,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.writable»
-		QSharedPointer<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»(
+		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»(
 				«returnType» input,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct
 		) {
@@ -159,7 +159,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 			assert(!«serviceInterface.interfaceCaller».isNull());
 
-			QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
+			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 			std::function<void()> onSuccess =
 					[future, callbackFct] () {
 						future->onSuccess(joynr::RequestStatusCode::OK);
@@ -326,7 +326,7 @@ void «interfaceName»InProcessConnector::«methodname»(
 	«ENDIF»
 }
 
-QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamListStd.prependCommaIfNotEmpty»)> callbackFct)
 {
 	assert(!address.isNull());
@@ -334,7 +334,7 @@ QSharedPointer<joynr::Future<«outputParameters»> > «interfaceName»InProcessC
 	assert(!caller.isNull());
 	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
 	assert(!«serviceInterface.interfaceCaller».isNull());
-	QSharedPointer<joynr::Future<«outputParameters»> > future(
+	std::shared_ptr<joynr::Future<«outputParameters»> > future(
 			new joynr::Future<«outputParameters»>());
 
 	std::function<void(«outputTypedParamListStd»)> onSuccess =

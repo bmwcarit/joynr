@@ -26,6 +26,7 @@
 #include "joynr/types/StdChannelUrlInformation.h"
 #include "joynr/MessagingSettings.h"
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -53,7 +54,7 @@ public:
      * @param channelUrlInformation
      * @param callbackFct
      */
-    virtual QSharedPointer<joynr::Future<void>> registerChannelUrls(
+    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrls(
             const std::string& channelId,
             types::StdChannelUrlInformation channelUrlInformation,
             std::function<void(const RequestStatus& status)> callbackFct = nullptr);
@@ -64,7 +65,7 @@ public:
      * @param channelId
      * @param callbackFct
      */
-    virtual QSharedPointer<joynr::Future<void>> unregisterChannelUrls(
+    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrls(
             const std::string& channelId,
             std::function<void(const RequestStatus& status)> callbackFct = nullptr);
 
@@ -77,7 +78,8 @@ public:
      * @param timeout
      * @param callbackFct
      */
-    virtual QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> getUrlsForChannel(
+    virtual std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>>
+    getUrlsForChannel(
             const std::string& channelId,
             const qint64& timeout_ms,
             std::function<void(const RequestStatus& status,

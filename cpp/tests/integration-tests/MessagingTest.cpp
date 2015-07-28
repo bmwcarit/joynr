@@ -297,7 +297,7 @@ TEST_F(MessagingTest, routeMultipleMessages)
 }
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-void messagingTestPseudoGetChannelUrls(QSharedPointer<Future<types::ChannelUrlInformation> > future , QString channelId, int timeout) {
+void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::ChannelUrlInformation> > future , QString channelId, int timeout) {
     types::ChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
@@ -317,7 +317,7 @@ TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChanne
 //    MockLocalChannelUrlDirectory mockDirectory;
 //    messageSender->init(mockDirectory, *settings);
 
-//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<QSharedPointer<Future<types::ChannelUrlInformation> > >(), A<QString>(),A<int>()))
+//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<std::shared_ptr<Future<types::ChannelUrlInformation> > >(), A<QString>(),A<int>()))
 //            .WillOnce(Invoke(messagingTestPseudoGetChannelUrls));
 
 

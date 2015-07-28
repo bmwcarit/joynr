@@ -367,14 +367,14 @@ public:
     );
     MOCK_METHOD2(
             add,
-            QSharedPointer<joynr::Future<void>>(
+            std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::StdDiscoveryEntry& discoveryEntry,
                 std::function<void(const joynr::RequestStatus& status)> callbackFct
             )
     );
     MOCK_METHOD2(
             lookup,
-            QSharedPointer<joynr::Future<joynr::types::StdDiscoveryEntry>>(
+            std::shared_ptr<joynr::Future<joynr::types::StdDiscoveryEntry>>(
                 const std::string& participantId,
                 std::function<void(const joynr::RequestStatus& status, const joynr::types::StdDiscoveryEntry& result)>
                         callbackFct
@@ -382,7 +382,7 @@ public:
     );
     MOCK_METHOD4(
             lookup,
-            QSharedPointer<joynr::Future<std::vector<joynr::types::StdDiscoveryEntry>>>(
+            std::shared_ptr<joynr::Future<std::vector<joynr::types::StdDiscoveryEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
                 const joynr::types::StdDiscoveryQos& discoveryQos,
@@ -392,7 +392,7 @@ public:
     );
     MOCK_METHOD2(
             remove,
-            QSharedPointer<joynr::Future<void>>(
+            std::shared_ptr<joynr::Future<void>>(
                 const std::string& participantId,
                 std::function<void(const joynr::RequestStatus& status)> callbackFct
             )
@@ -715,29 +715,29 @@ public:
         ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::Address> (new joynr::system::Address()), NULL, NULL, "domain", joynr::MessagingQos(), false){}
 
 
-    MOCK_METHOD2(getUrlsForChannel,QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> (const std::string& channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::StdChannelUrlInformation& urls)> callbackFct));
+    MOCK_METHOD2(getUrlsForChannel,std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> (const std::string& channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::StdChannelUrlInformation& urls)> callbackFct));
 
-    MOCK_METHOD3(registerChannelUrls, QSharedPointer<joynr::Future<void> >(
+    MOCK_METHOD3(registerChannelUrls, std::shared_ptr<joynr::Future<void> >(
                                            const std::string& channelId,
                                            const joynr::types::StdChannelUrlInformation& channelUrlInformation,
                                            std::function<void(const joynr::RequestStatus&)> callbackFct));
 
-    MOCK_METHOD2(unregisterChannelUrls, QSharedPointer<joynr::Future<void> >(const std::string& channelId, std::function<void(const joynr::RequestStatus&)> callbackFct));
+    MOCK_METHOD2(unregisterChannelUrls, std::shared_ptr<joynr::Future<void> >(const std::string& channelId, std::function<void(const joynr::RequestStatus&)> callbackFct));
 };
 
 
 class MockLocalChannelUrlDirectory : public joynr::ILocalChannelUrlDirectory {
 public:
-    MOCK_METHOD3(registerChannelUrls, QSharedPointer<joynr::Future<void>>(
+    MOCK_METHOD3(registerChannelUrls, std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
                      joynr::types::StdChannelUrlInformation channelUrlInformation,
                      std::function<void(const joynr::RequestStatus&)> callbackFct));
 
-    MOCK_METHOD2(unregisterChannelUrls, QSharedPointer<joynr::Future<void>>(
+    MOCK_METHOD2(unregisterChannelUrls, std::shared_ptr<joynr::Future<void>>(
                     const std::string& channelId,
                     std::function<void(const joynr::RequestStatus&)> callbackFct));
 
-    MOCK_METHOD3(getUrlsForChannel, QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>>(
+    MOCK_METHOD3(getUrlsForChannel, std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>>(
                     const std::string& channelId,
                     const qint64& timeout_ms,
                     std::function<void(const joynr::RequestStatus&, const joynr::types::StdChannelUrlInformation&)>
@@ -804,7 +804,7 @@ public:
 
     MOCK_METHOD2(
             getDomainRoles,
-            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdDomainRoleEntry>>>(
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdDomainRoleEntry>>>(
                     const std::string& uid,
                     std::function<void(
                         const joynr::RequestStatus& status,
@@ -815,7 +815,7 @@ public:
 
     MOCK_METHOD3(
             getMasterAccessControlEntries,
-            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdMasterAccessControlEntry>>>(
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdMasterAccessControlEntry>>>(
                     const std::string& domain,
                     const std::string& interfaceName,
                     std::function<void(
@@ -827,7 +827,7 @@ public:
 
     MOCK_METHOD3(
             getMediatorAccessControlEntries,
-            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdMasterAccessControlEntry>>>(
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdMasterAccessControlEntry>>>(
                     const std::string& domain,
                     const std::string& interfaceName,
                     std::function<void(
@@ -839,7 +839,7 @@ public:
 
     MOCK_METHOD3(
             getOwnerAccessControlEntries,
-            QSharedPointer<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdOwnerAccessControlEntry>>>(
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::StdOwnerAccessControlEntry>>>(
                     const std::string& domain,
                     const std::string& interfaceName,
                     std::function<void(

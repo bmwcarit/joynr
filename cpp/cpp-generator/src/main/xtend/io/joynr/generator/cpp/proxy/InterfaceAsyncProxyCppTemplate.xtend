@@ -69,13 +69,13 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 * «getAttribute»
 		 */
 
-		QSharedPointer<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»(
+		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»(
 				std::function<void(const joynr::RequestStatus& status, const «attributeType»& «attributeName»)> callbackFct)
 		{
 			if (connector==NULL){
 				LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
 				//TODO error reaction for this case?
-				QSharedPointer<joynr::Future<«attributeType»> > future;
+				std::shared_ptr<joynr::Future<«attributeType»> > future;
 				return future;
 			}
 			else{
@@ -90,14 +90,14 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 * «setAttribute»
 		 */
 
-		QSharedPointer<joynr::Future<void>> «asyncClassName»::«setAttribute»(
+		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»(
 				«attributeType» «attributeName»,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct)
 		{
 			if (connector==NULL){
 				LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
 				//TODO error reaction for this case?
-				QSharedPointer<joynr::Future<void> > future;
+				std::shared_ptr<joynr::Future<void> > future;
 				return future;
 			}
 			else{
@@ -115,14 +115,14 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	/*
 	 * «methodName»
 	 */
-	QSharedPointer<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»(
+	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»(
 			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 	{
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
 			//TODO error reaction for this case?
-			QSharedPointer<joynr::Future<«outputParameters»> > future;
+			std::shared_ptr<joynr::Future<«outputParameters»> > future;
 			return future;
 		}
 		else{

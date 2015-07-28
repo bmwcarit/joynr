@@ -109,7 +109,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
-    QSharedPointer<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellites());
+    std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellites());
     gpsFuture->waitForFinished();
     int expectedValue = 42; //as defined in MockGpsProvider
     int actualValue;

@@ -123,7 +123,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    QList<QSharedPointer<Future<int> > >testFutureList;
+    QList<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfMessages = 150;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){

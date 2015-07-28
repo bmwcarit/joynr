@@ -51,6 +51,7 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
+#include <memory>
 
 «getNamespaceStarter(serviceInterface)»
 class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {

@@ -116,7 +116,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				joynr::RequestStatus& status,
 				«returnTypeStd»& «attributeName»
 		) {
-			QSharedPointer<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
+			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
 
 			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> replyCallerCallbackFct =
 					[future] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
@@ -143,10 +143,10 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			}
 		}
 
-		QSharedPointer<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
 				std::function<void(const joynr::RequestStatus& status, const «returnTypeStd»& «attributeName»)> callbackFct
 		) {
-			QSharedPointer<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
+			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
 
 			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> replyCallerCallbackFct =
 					[future, callbackFct] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
@@ -175,7 +175,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.writable»
-		QSharedPointer<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
 				«returnTypeStd» «attributeName»,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct
 		) {
@@ -188,7 +188,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				internalRequestObject.addParam(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
-			QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
+			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 
 			std::function<void(const joynr::RequestStatus& status)> replyCallerCallbackFct =
 					[future, callbackFct] (const joynr::RequestStatus& status) {
@@ -357,13 +357,13 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		«ENDIF»
 	}
 
-	QSharedPointer<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»(
+	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»(
 			«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListStd»)> callbackFct)
 	{
 		«produceParameterSetters(method)»
 
-		QSharedPointer<joynr::Future<«outputParametersStd»> > future(
+		std::shared_ptr<joynr::Future<«outputParametersStd»> > future(
 				new joynr::Future<«outputParametersStd»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> replyCallerCallbackFct =

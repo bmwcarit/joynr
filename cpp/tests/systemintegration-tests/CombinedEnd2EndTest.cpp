@@ -182,7 +182,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         list.push_back(2);
         list.push_back(4);
         list.push_back(8);
-        QSharedPointer<Future<int> >gpsFuture (testProxy->sumInts(list));
+        std::shared_ptr<Future<int> >gpsFuture (testProxy->sumInts(list));
         gpsFuture->waitForFinished();
         int expectedValue = 2+4+8;
         ASSERT_TRUE(gpsFuture->getStatus().successful());
@@ -202,7 +202,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
         types::Localisation::StdTrip inputTrip;
         inputTrip.setLocations(inputLocationList);
-        QSharedPointer<Future<types::Localisation::StdTrip> > tripFuture (testProxy->optimizeTrip(inputTrip));
+        std::shared_ptr<Future<types::Localisation::StdTrip> > tripFuture (testProxy->optimizeTrip(inputTrip));
         tripFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
         types::Localisation::StdTrip actualTrip;
@@ -240,7 +240,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 //       inputWord.push_back("l");
 //       inputWord.push_back("l");
 //       inputWord.push_back("o");
-//       QSharedPointer<Future<std::vector<Vowel> > > wordFuture (new QSharedPointer<Future<std::vector<Vowel> > >());
+//       std::shared_ptr<Future<std::vector<Vowel> > > wordFuture (new std::shared_ptr<Future<std::vector<Vowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->waitForFinished();
 //       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
@@ -256,7 +256,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputGpsLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
         inputGpsLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
         inputGpsLocationList.push_back(types::Localisation::StdGpsLocation(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
-        QSharedPointer<Future<std::vector<types::Localisation::StdGpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
+        std::shared_ptr<Future<std::vector<types::Localisation::StdGpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
         listLocationFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
         std::vector<joynr::types::Localisation::StdGpsLocation> actualLocation;
@@ -351,7 +351,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
-        QSharedPointer<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
+        std::shared_ptr<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
         testFuture->waitForFinished();
         ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
         //TODO CA: shared pointer for proxy builder?
@@ -717,13 +717,13 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     QThreadSleep::msleep(150);
-    QSharedPointer<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
+    std::shared_ptr<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
     testFuture->waitForFinished();
 
     runtime1->deleteChannel();
     runtime2->deleteChannel();
 
-    QSharedPointer<Future<int> > gpsFuture2(testProxy->addNumbers(1, 2, 3));
+    std::shared_ptr<Future<int> > gpsFuture2(testProxy->addNumbers(1, 2, 3));
     gpsFuture2->waitForFinished(1000);
 
     delete testProxyBuilder;
@@ -942,7 +942,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     };
 
     // Asynchonously call the void operation
-    QSharedPointer<Future<void> > future (testProxy->voidOperation(callbackFct));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperation(callbackFct));
 
     // Wait for the operation to finish and check for a successful callback
     future->waitForFinished();
@@ -989,7 +989,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     };
 
     // Asynchonously call the void operation
-    QSharedPointer<Future<void> > future (testProxy->voidOperation(callbackFct));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperation(callbackFct));
 
     // Wait for the operation to finish and check for a failure callback
     future->waitForFinished();

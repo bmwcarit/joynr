@@ -271,25 +271,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<StdDomainRoleEntry>()),
-                    Return(QSharedPointer<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<StdMasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -345,25 +345,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<StdDomainRoleEntry>()),
-                    Return(QSharedPointer<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(getMediatorAceCommunicationError, std::vector<StdMasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock
@@ -407,25 +407,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<StdDomainRoleEntry>()),
-                    Return(QSharedPointer<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdDomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     SaveArg<2>(&getMasterAcesCallbackFct),
-                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<StdMasterAccessControlEntry>()),
-                    Return(QSharedPointer<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdMasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntries(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
-                    Return(QSharedPointer<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<StdOwnerAccessControlEntry>>>()) // null pointer
             ));
 
     // Set default return value for Google mock

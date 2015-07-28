@@ -69,7 +69,7 @@ void LocalChannelUrlDirectory::init()
                       "Channel URL Directory").arg(capabilitiesDirectoryUrl));
 }
 
-QSharedPointer<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrls(
+std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrls(
         const std::string& channelId,
         types::StdChannelUrlInformation channelUrlInformation,
         std::function<void(const RequestStatus& status)> callbackFct)
@@ -79,7 +79,7 @@ QSharedPointer<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrl
             channelId, channelUrlInformation, callbackFct);
 }
 
-QSharedPointer<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrls(
+std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrls(
         const std::string& channelId,
         std::function<void(const RequestStatus& status)> callbackFct)
 {
@@ -87,7 +87,7 @@ QSharedPointer<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelU
     return channelUrlDirectoryProxy->unregisterChannelUrls(channelId, callbackFct);
 }
 
-QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChannelUrlDirectory::
+std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChannelUrlDirectory::
         getUrlsForChannel(
                 const std::string& channelId,
                 const qint64& timeout_ms,
@@ -101,7 +101,7 @@ QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChann
         LOG_TRACE(logger, "using cached Urls for id=" + channelIdQT);
         RequestStatus status;
         status.setCode(RequestStatusCode::OK);
-        QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
+        std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
                 new joynr::Future<joynr::types::StdChannelUrlInformation>());
         future->onSuccess(
                 status, types::ChannelUrlInformation::createStd(localCache.value(channelIdQT)));
@@ -112,7 +112,7 @@ QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChann
         return future;
     }
     assert(!channelUrlDirectoryProxy.isNull());
-    QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
+    std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
             channelUrlDirectoryProxy->getUrlsForChannel(channelId, callbackFct));
     future->waitForFinished(timeout_ms);
 

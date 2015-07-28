@@ -66,7 +66,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 
-#include <QSharedPointer>
+#include <memory>
 #include <functional>
 
 namespace joynr {

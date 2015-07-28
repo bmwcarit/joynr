@@ -68,6 +68,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
+#include <memory>
 
 namespace joynr {
 	class RequestStatus;

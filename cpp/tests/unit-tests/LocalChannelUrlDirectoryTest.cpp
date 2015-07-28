@@ -40,7 +40,7 @@ using ::testing::Invoke;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
+std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
         const std::string& channelId,
         std::function<void(
             RequestStatus& status,
@@ -48,7 +48,7 @@ QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> localChann
     types::StdChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> future(new joynr::Future<types::StdChannelUrlInformation>());
+    std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(new joynr::Future<types::StdChannelUrlInformation>());
     future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
     RequestStatus status(RequestStatusCode::OK);
     callbackFct(status, urlInformation);
@@ -92,7 +92,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
-    QSharedPointer<Future<types::StdChannelUrlInformation> > futureUrls(
+    std::shared_ptr<Future<types::StdChannelUrlInformation> > futureUrls(
                 localDirectory.getUrlsForChannel(
                     "pseudoChannelID",
                     20000,
@@ -118,7 +118,7 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
                     _,
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
-            .WillOnce(Return(QSharedPointer<joynr::Future<void>>(
+            .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(
                                  new joynr::Future<void>())));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
@@ -134,7 +134,7 @@ TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
                     A<const std::string&>(),
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
-            .WillOnce(Return(QSharedPointer<joynr::Future<void>>(new joynr::Future<void>())));
+            .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(new joynr::Future<void>())));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 

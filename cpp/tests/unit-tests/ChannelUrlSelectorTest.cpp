@@ -24,6 +24,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 #include <string>
+#include <memory>
 
 using ::testing::A;
 using ::testing::_;
@@ -38,11 +39,11 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
+std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
     types::StdChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    QSharedPointer<joynr::Future<joynr::types::StdChannelUrlInformation>> future(new joynr::Future<types::StdChannelUrlInformation>());
+    std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(new joynr::Future<types::StdChannelUrlInformation>());
     future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
     return future;
 }
