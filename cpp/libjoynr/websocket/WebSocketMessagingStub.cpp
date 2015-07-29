@@ -50,7 +50,8 @@ WebSocketMessagingStub::WebSocketMessagingStub(system::RoutingTypes::QtAddress* 
 
 WebSocketMessagingStub::~WebSocketMessagingStub()
 {
-    webSocket->close();
+    // QWebSocket.close() is a slot - call from the event loop
+    QMetaObject::invokeMethod(webSocket, "close", Qt::QueuedConnection);
     webSocket->deleteLater();
     address->deleteLater();
 }
