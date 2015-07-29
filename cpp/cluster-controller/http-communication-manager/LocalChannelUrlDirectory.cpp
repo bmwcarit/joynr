@@ -69,26 +69,26 @@ void LocalChannelUrlDirectory::init()
                       "Channel URL Directory").arg(capabilitiesDirectoryUrl));
 }
 
-std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrls(
+std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync(
         const std::string& channelId,
         types::ChannelUrlInformation channelUrlInformation,
         std::function<void(const RequestStatus& status)> callbackFct)
 {
     LOG_INFO(logger, "registering Urls for id=" + QString::fromStdString(channelId));
-    return channelUrlDirectoryProxy->registerChannelUrls(
+    return channelUrlDirectoryProxy->registerChannelUrlsAsync(
             channelId, channelUrlInformation, callbackFct);
 }
 
-std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrls(
+std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
         const std::string& channelId,
         std::function<void(const RequestStatus& status)> callbackFct)
 {
     LOG_TRACE(logger, "unregistering ALL Urls for id=" + QString::fromStdString(channelId));
-    return channelUrlDirectoryProxy->unregisterChannelUrls(channelId, callbackFct);
+    return channelUrlDirectoryProxy->unregisterChannelUrlsAsync(channelId, callbackFct);
 }
 
 std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
-        getUrlsForChannel(
+        getUrlsForChannelAsync(
                 const std::string& channelId,
                 const qint64& timeout_ms,
                 std::function<void(const RequestStatus& status,
@@ -112,7 +112,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
     }
     assert(!channelUrlDirectoryProxy.isNull());
     std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
-            channelUrlDirectoryProxy->getUrlsForChannel(channelId, callbackFct));
+            channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, callbackFct));
     future->waitForFinished(timeout_ms);
 
     if (future->getStatus().successful()) {

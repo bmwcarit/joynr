@@ -106,7 +106,7 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
               "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
                       channelId);
     std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
-            channelUrlDirectory->getUrlsForChannel(channelId.toStdString(), timeout_ms));
+            channelUrlDirectory->getUrlsForChannelAsync(channelId.toStdString(), timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {

@@ -143,7 +143,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			}
 		}
 
-		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
 				std::function<void(const joynr::RequestStatus& status, const «returnTypeStd»& «attributeName»)> callbackFct
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
@@ -175,7 +175,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.writable»
-		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
+		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»Async(
 				«returnTypeStd» «attributeName»,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct
 		) {
@@ -357,7 +357,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		«ENDIF»
 	}
 
-	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»(
+	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
 			«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListStd»)> callbackFct)
 	{

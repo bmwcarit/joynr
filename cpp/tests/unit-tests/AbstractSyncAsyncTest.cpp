@@ -155,7 +155,7 @@ public:
         MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation");
-        asyncTestFixture->getLocation(
+        asyncTestFixture->getLocationAsync(
                 [callback] (const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
                     callback->callbackFct(status, location);
                 });
@@ -212,7 +212,7 @@ public:
 
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
-        asyncTestFixture->getLocation(
+        asyncTestFixture->getLocationAsync(
                 [callback] (const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                     callback->callbackFct(status, location);
                 });
@@ -242,7 +242,7 @@ public:
 
         setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters");
 
-        asyncTestFixture->methodWithNoInputParameters(
+        asyncTestFixture->methodWithNoInputParametersAsync(
                 [callback] (const RequestStatus& status, const int& value) {
                     callback->callbackFct(status, value);
                 });

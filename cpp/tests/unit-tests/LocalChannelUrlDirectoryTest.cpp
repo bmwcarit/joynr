@@ -86,14 +86,14 @@ protected:
 TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
-    EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannel(
+    EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<std::function<void(const RequestStatus& status, const types::ChannelUrlInformation& urls)>>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
     std::shared_ptr<Future<types::ChannelUrlInformation> > futureUrls(
-                localDirectory.getUrlsForChannel(
+                localDirectory.getUrlsForChannelAsync(
                     "pseudoChannelID",
                     20000,
                     [](const RequestStatus& status, const types::ChannelUrlInformation& url) {
@@ -113,7 +113,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
 TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
-    EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrls(
+    EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrlsAsync(
                     A<const std::string&>(),
                     _,
                     A<std::function<void(const RequestStatus& status)>>()))
@@ -124,13 +124,13 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
     types::ChannelUrlInformation urlInformation;
-    localDirectory.registerChannelUrls("myChannelId", urlInformation);
+    localDirectory.registerChannelUrlsAsync("myChannelId", urlInformation);
 }
 
 TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
     QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
-    EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrls(
+    EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrlsAsync(
                     A<const std::string&>(),
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
@@ -138,7 +138,7 @@ TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
-    localDirectory.unregisterChannelUrls("pseudoChannelId");
+    localDirectory.unregisterChannelUrlsAsync("pseudoChannelId");
 }
 
 

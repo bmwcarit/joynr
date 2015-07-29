@@ -69,7 +69,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 * «getAttribute»
 		 */
 
-		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»(
+		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
 				std::function<void(const joynr::RequestStatus& status, const «attributeType»& «attributeName»)> callbackFct)
 		{
 			if (connector==NULL){
@@ -79,7 +79,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				return future;
 			}
 			else{
-				return connector->«getAttribute»(callbackFct);
+				return connector->«getAttribute»Async(callbackFct);
 			}
 		}
 
@@ -90,7 +90,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 * «setAttribute»
 		 */
 
-		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»(
+		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
 				«attributeType» «attributeName»,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct)
 		{
@@ -101,7 +101,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				return future;
 			}
 			else{
-				return connector->«setAttribute»(«attributeName», callbackFct);
+				return connector->«setAttribute»Async(«attributeName», callbackFct);
 			}
 		}
 
@@ -115,7 +115,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	/*
 	 * «methodName»
 	 */
-	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»(
+	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»Async(
 			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
 	{
@@ -126,7 +126,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			return future;
 		}
 		else{
-			return connector->«methodName»(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»callbackFct);
+			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»callbackFct);
 		}
 	}
 

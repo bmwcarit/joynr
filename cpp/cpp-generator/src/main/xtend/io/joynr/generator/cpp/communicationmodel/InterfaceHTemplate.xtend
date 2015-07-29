@@ -118,16 +118,16 @@ public:
 		«val attributeName = attribute.name.toFirstUpper»
 		«IF attribute.readable»
 			using I«interfaceName»Sync::get«attributeName»;
-			using I«interfaceName»Async::get«attributeName»;
+			using I«interfaceName»Async::get«attributeName»Async;
 		«ENDIF»
 		«IF attribute.writable»
 			using I«interfaceName»Sync::set«attributeName»;
-			using I«interfaceName»Async::set«attributeName»;
+			using I«interfaceName»Async::set«attributeName»Async;
 		«ENDIF»
 	«ENDFOR»
 	«FOR methodName: getUniqueMethodNames(serviceInterface)»
 		using I«interfaceName»Sync::«methodName»;
-		using I«interfaceName»Async::«methodName»;
+		using I«interfaceName»Async::«methodName»Async;
 	«ENDFOR»
 };
 

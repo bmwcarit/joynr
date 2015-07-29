@@ -163,7 +163,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocation());
+    std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocationAsync());
     future->waitForFinished(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
@@ -209,7 +209,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::shared_ptr<Future<int> > future(testProxy->sumInts(ints));
+    std::shared_ptr<Future<int> > future(testProxy->sumIntsAsync(ints));
     future->waitForFinished(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());

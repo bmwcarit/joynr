@@ -123,7 +123,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			}
 		}
 
-		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»(
+		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»Async(
 				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> callbackFct
 		) {
 			assert(!address.isNull());
@@ -149,7 +149,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.writable»
-		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»(
+		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»Async(
 				«returnType» input,
 				std::function<void(const joynr::RequestStatus& status)> callbackFct
 		) {
@@ -326,7 +326,7 @@ void «interfaceName»InProcessConnector::«methodname»(
 	«ENDIF»
 }
 
-std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»Async(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(const joynr::RequestStatus& status«outputTypedParamListStd.prependCommaIfNotEmpty»)> callbackFct)
 {
 	assert(!address.isNull());

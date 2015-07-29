@@ -84,7 +84,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                 mockDirectory,
                 *settings);
 
-    EXPECT_CALL(*mockDir, getUrlsForChannel(
+    EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(
@@ -126,7 +126,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                 mockDirectory,
                 *settings);
 
-    EXPECT_CALL(*mockDir, getUrlsForChannel(
+    EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(
@@ -182,7 +182,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                 mockDirectory,
                 *settings);
 
-    EXPECT_CALL(*mockDir, getUrlsForChannel(
+    EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(

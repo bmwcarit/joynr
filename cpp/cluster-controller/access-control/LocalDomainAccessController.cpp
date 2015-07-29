@@ -621,7 +621,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             initialiser->abort();
         }
     };
-    globalDomainAccessControllerProxy->getDomainRoles(userId, domainRoleCallbackFct);
+    globalDomainAccessControllerProxy->getDomainRolesAsync(userId, domainRoleCallbackFct);
 
     std::function<void(
             const RequestStatus& status, const std::vector<MasterAccessControlEntry>& masterAces)>
@@ -645,7 +645,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             initialiser->abort();
         }
     };
-    globalDomainAccessControllerProxy->getMasterAccessControlEntries(
+    globalDomainAccessControllerProxy->getMasterAccessControlEntriesAsync(
             domain, interfaceName, masterAceCallbackFct);
 
     // Initialise mediator access control entries from global data
@@ -671,7 +671,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             initialiser->abort();
         }
     };
-    globalDomainAccessControllerProxy->getMediatorAccessControlEntries(
+    globalDomainAccessControllerProxy->getMediatorAccessControlEntriesAsync(
             domain, interfaceName, mediatorAceCallbackFct);
 
     // Initialise owner access control entries from global data
@@ -696,7 +696,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             initialiser->abort();
         }
     };
-    globalDomainAccessControllerProxy->getOwnerAccessControlEntries(
+    globalDomainAccessControllerProxy->getOwnerAccessControlEntriesAsync(
             domain, interfaceName, ownerAceCallbackFct);
 }
 

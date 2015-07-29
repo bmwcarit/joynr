@@ -86,7 +86,7 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
                           QString("Error occured during the execution of capabilitiesProxy->add"));
             }
         };
-        capabilitiesProxy->add(capabilitiesInformationList, callbackFct);
+        capabilitiesProxy->addAsync(capabilitiesInformationList, callbackFct);
     }
 }
 
@@ -128,7 +128,7 @@ void CapabilitiesClient::lookup(
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
 
-    capabilitiesProxy->lookup(domain, interfaceName, callbackFct);
+    capabilitiesProxy->lookupAsync(domain, interfaceName, callbackFct);
 }
 
 void CapabilitiesClient::lookup(
@@ -139,13 +139,14 @@ void CapabilitiesClient::lookup(
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
-    capabilitiesProxy->lookup(participantId,
-                              [callbackFct](const RequestStatus& status,
-                                            const joynr::types::CapabilityInformation& capability) {
-        std::vector<joynr::types::CapabilityInformation> result;
-        result.push_back(capability);
-        callbackFct(status, result);
-    });
+    capabilitiesProxy->lookupAsync(
+            participantId,
+            [callbackFct](const RequestStatus& status,
+                          const joynr::types::CapabilityInformation& capability) {
+                std::vector<joynr::types::CapabilityInformation> result;
+                result.push_back(capability);
+                callbackFct(status, result);
+            });
 }
 
 void CapabilitiesClient::init(

@@ -169,7 +169,7 @@ TEST_F(End2EndDbusTest, call_async_method)
     // connect the proxy
     connectProxy();
 
-    std::shared_ptr<Future<std::string>> sayHelloFuture(testProxy->sayHello());
+    std::shared_ptr<Future<std::string>> sayHelloFuture(testProxy->sayHelloAsync());
     sayHelloFuture->waitForFinished();
     ASSERT_TRUE(sayHelloFuture->isOk());
     std::string actualValue;
@@ -205,11 +205,11 @@ TEST_F(End2EndDbusTest, get_set_attribute_async)
     connectProxy();
 
     // asynchronous
-    std::shared_ptr<Future<void>> setAttributeFuture(testProxy->setTestAttribute(18));
+    std::shared_ptr<Future<void>> setAttributeFuture(testProxy->setTestAttributeAsync(18));
     setAttributeFuture->waitForFinished();
     ASSERT_TRUE(setAttributeFuture->isOk());
 
-    std::shared_ptr<Future<int>> getAttributeFuture(testProxy->getTestAttribute());
+    std::shared_ptr<Future<int>> getAttributeFuture(testProxy->getTestAttributeAsync());
     getAttributeFuture->waitForFinished();
     ASSERT_TRUE(getAttributeFuture->isOk());
     int actualValue;
@@ -259,7 +259,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
         list.push_back(4);
         list.push_back(8);
         list.push_back(i);
-        testFutureList.append(testProxy->sumInts(list));
+        testFutureList.append(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){

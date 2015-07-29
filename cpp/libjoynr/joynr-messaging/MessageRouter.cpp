@@ -225,7 +225,7 @@ void MessageRouter::route(const JoynrMessage& message)
                     }
                 };
 
-                parentRouter->resolveNextHop(destinationPartId.toStdString(), callbackFct);
+                parentRouter->resolveNextHopAsync(destinationPartId.toStdString(), callbackFct);
             }
         } else {
             // no parent message router to resolve destination address
@@ -421,35 +421,36 @@ void MessageRouter::addNextHopToParent(
     // add to parent router
     if (isChildMessageRouter()) {
         if (incomingAddress->inherits("joynr::system::QtChannelAddress")) {
-            parentRouter->addNextHop(participantId,
-                                     joynr::system::QtChannelAddress::createStd(
-                                             *dynamic_cast<joynr::system::QtChannelAddress*>(
-                                                     incomingAddress.data())),
-                                     callbackFct);
+            parentRouter->addNextHopAsync(participantId,
+                                          joynr::system::QtChannelAddress::createStd(
+                                                  *dynamic_cast<joynr::system::QtChannelAddress*>(
+                                                          incomingAddress.data())),
+                                          callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::QtCommonApiDbusAddress")) {
-            parentRouter->addNextHop(participantId,
-                                     joynr::system::QtCommonApiDbusAddress::createStd(
-                                             *dynamic_cast<joynr::system::QtCommonApiDbusAddress*>(
-                                                     incomingAddress.data())),
-                                     callbackFct);
+            parentRouter->addNextHopAsync(
+                    participantId,
+                    joynr::system::QtCommonApiDbusAddress::createStd(
+                            *dynamic_cast<joynr::system::QtCommonApiDbusAddress*>(
+                                    incomingAddress.data())),
+                    callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::QtBrowserAddress")) {
-            parentRouter->addNextHop(participantId,
-                                     joynr::system::QtBrowserAddress::createStd(
-                                             *dynamic_cast<joynr::system::QtBrowserAddress*>(
-                                                     incomingAddress.data())),
-                                     callbackFct);
+            parentRouter->addNextHopAsync(participantId,
+                                          joynr::system::QtBrowserAddress::createStd(
+                                                  *dynamic_cast<joynr::system::QtBrowserAddress*>(
+                                                          incomingAddress.data())),
+                                          callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::QtWebSocketAddress")) {
-            parentRouter->addNextHop(participantId,
-                                     joynr::system::QtWebSocketAddress::createStd(
-                                             *dynamic_cast<joynr::system::QtWebSocketAddress*>(
-                                                     incomingAddress.data())),
-                                     callbackFct);
+            parentRouter->addNextHopAsync(participantId,
+                                          joynr::system::QtWebSocketAddress::createStd(
+                                                  *dynamic_cast<joynr::system::QtWebSocketAddress*>(
+                                                          incomingAddress.data())),
+                                          callbackFct);
         }
         if (incomingAddress->inherits("joynr::system::QtWebSocketClientAddress")) {
-            parentRouter->addNextHop(
+            parentRouter->addNextHopAsync(
                     participantId,
                     joynr::system::QtWebSocketClientAddress::createStd(
                             *dynamic_cast<joynr::system::QtWebSocketClientAddress*>(
@@ -486,7 +487,7 @@ void MessageRouter::removeNextHop(const std::string& participantId, std::functio
                 // TODO: error handling
             }
         };
-        parentRouter->removeNextHop(participantId, callbackFct);
+        parentRouter->removeNextHopAsync(participantId, callbackFct);
     } else if (onSuccess) {
         onSuccess();
     }

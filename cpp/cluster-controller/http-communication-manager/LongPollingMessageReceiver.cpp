@@ -110,7 +110,7 @@ void LongPollingMessageReceiver::run()
     LOG_INFO(logger,
              "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
                      channelUrl);
-    channelUrlDirectory->registerChannelUrls(channelId.toStdString(), urlInformation);
+    channelUrlDirectory->registerChannelUrlsAsync(channelId.toStdString(), urlInformation);
 
     while (!isInterrupted()) {
 

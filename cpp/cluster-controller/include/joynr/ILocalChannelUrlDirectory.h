@@ -53,7 +53,7 @@ public:
      * @param channelUrlInformation
      * @param callbackFct
      */
-    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrls(
+    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
@@ -64,7 +64,7 @@ public:
      * @param channelId
      * @param callbackFct
      */
-    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrls(
+    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
 
@@ -76,7 +76,8 @@ public:
      * @param channelId
      * @param callbackFct
      */
-    virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannel(
+    virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
+    getUrlsForChannelAsync(
             const std::string& channelId,
             const qint64& timeout_ms,
             std::function<void(const joynr::RequestStatus&, const types::ChannelUrlInformation&)>

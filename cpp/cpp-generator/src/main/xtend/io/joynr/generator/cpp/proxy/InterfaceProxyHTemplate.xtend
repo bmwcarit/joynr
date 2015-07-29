@@ -154,18 +154,18 @@ public:
 	«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
-			using «asyncClassName»::get«attributeName.toFirstUpper»;
+			using «asyncClassName»::get«attributeName.toFirstUpper»Async;
 			using «syncClassName»::get«attributeName.toFirstUpper»;
 		«ENDIF»
 		«IF attribute.writable»
-			using «asyncClassName»::set«attributeName.toFirstUpper»;
+			using «asyncClassName»::set«attributeName.toFirstUpper»Async;
 			using «syncClassName»::set«attributeName.toFirstUpper»;
 		«ENDIF»
 	«ENDFOR»
 
 	// operations
 	«FOR methodName: getUniqueMethodNames(serviceInterface)»
-		using «asyncClassName»::«methodName»;
+		using «asyncClassName»::«methodName»Async;
 		using «syncClassName»::«methodName»;
 
 	«ENDFOR»

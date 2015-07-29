@@ -182,7 +182,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         list.push_back(2);
         list.push_back(4);
         list.push_back(8);
-        std::shared_ptr<Future<int> >gpsFuture (testProxy->sumInts(list));
+        std::shared_ptr<Future<int> >gpsFuture (testProxy->sumIntsAsync(list));
         gpsFuture->waitForFinished();
         int expectedValue = 2+4+8;
         ASSERT_TRUE(gpsFuture->getStatus().successful());
@@ -202,7 +202,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
         types::Localisation::Trip inputTrip;
         inputTrip.setLocations(inputLocationList);
-        std::shared_ptr<Future<types::Localisation::Trip> > tripFuture (testProxy->optimizeTrip(inputTrip));
+        std::shared_ptr<Future<types::Localisation::Trip> > tripFuture (testProxy->optimizeTripAsync(inputTrip));
         tripFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
         types::Localisation::Trip actualTrip;
@@ -256,7 +256,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
-        std::shared_ptr<Future<std::vector<types::Localisation::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationList(inputGpsLocationList));
+        std::shared_ptr<Future<std::vector<types::Localisation::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationListAsync(inputGpsLocationList));
         listLocationFuture->waitForFinished();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
         std::vector<joynr::types::Localisation::GpsLocation> actualLocation;
@@ -351,7 +351,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
-        std::shared_ptr<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
+        std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
         testFuture->waitForFinished();
         ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
         //TODO CA: shared pointer for proxy builder?
@@ -717,13 +717,13 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     QThreadSleep::msleep(150);
-    std::shared_ptr<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
+    std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
     testFuture->waitForFinished();
 
     runtime1->deleteChannel();
     runtime2->deleteChannel();
 
-    std::shared_ptr<Future<int> > gpsFuture2(testProxy->addNumbers(1, 2, 3));
+    std::shared_ptr<Future<int> > gpsFuture2(testProxy->addNumbersAsync(1, 2, 3));
     gpsFuture2->waitForFinished(1000);
 
     delete testProxyBuilder;
@@ -942,7 +942,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     };
 
     // Asynchonously call the void operation
-    std::shared_ptr<Future<void> > future (testProxy->voidOperation(callbackFct));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(callbackFct));
 
     // Wait for the operation to finish and check for a successful callback
     future->waitForFinished();
@@ -989,7 +989,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     };
 
     // Asynchonously call the void operation
-    std::shared_ptr<Future<void> > future (testProxy->voidOperation(callbackFct));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(callbackFct));
 
     // Wait for the operation to finish and check for a failure callback
     future->waitForFinished();
