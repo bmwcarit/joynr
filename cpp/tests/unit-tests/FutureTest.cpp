@@ -51,7 +51,7 @@ protected:
 };
 
 TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
-    intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 10);
+    intFuture.onSuccess(10);
     int actualValue;
     intFuture.getValues(actualValue);
     ASSERT_EQ(10, actualValue);
@@ -66,7 +66,7 @@ TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
 
 TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
     ASSERT_FALSE(intFuture.isOk());
-    intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 10);
+    intFuture.onSuccess(10);
     ASSERT_TRUE(intFuture.isOk());
 }
 
@@ -85,7 +85,7 @@ TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
 }
 
 TEST_F(FutureTest, getStatusForVoidAfterResultReceived) {
-    voidFuture.onSuccess(RequestStatusCode::OK);
+    voidFuture.onSuccess();
     ASSERT_EQ(RequestStatusCode::OK, voidFuture.getStatus().getCode());
 }
 

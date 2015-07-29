@@ -302,7 +302,7 @@ void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::QtChannelUr
     QList<QString> urls;
     urls << "firstUrl" << "secondUrl" << "thirdUrl";
     urlInformation.setUrls(urls);
-    future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
+    future->onSuccess(urlInformation);
 }
 
 

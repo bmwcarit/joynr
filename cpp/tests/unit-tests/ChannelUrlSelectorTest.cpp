@@ -44,7 +44,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetCha
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
     std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
-    future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
+    future->onSuccess(urlInformation);
     return future;
 }
 

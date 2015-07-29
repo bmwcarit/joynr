@@ -187,7 +187,7 @@ T* ProxyBuilder<T>::build()
      * routing table(s)
     */
     QSharedPointer<Future<void>> future(new Future<void>());
-    auto onSuccess = [future]() { future->onSuccess(joynr::RequestStatusCode::OK); };
+    auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
 
     future->waitForFinished();

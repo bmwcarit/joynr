@@ -121,7 +121,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> replyCallerCallbackFct =
 					[future] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(status, «qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
 						} else {
 							future->onError(status);
 						}
@@ -151,7 +151,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> replyCallerCallbackFct =
 					[future, callbackFct] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(status, «qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
 						} else {
 							future->onError(status);
 						}
@@ -193,7 +193,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::function<void(const joynr::RequestStatus& status)> replyCallerCallbackFct =
 					[future, callbackFct] (const joynr::RequestStatus& status) {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(status);
+							future->onSuccess();
 						} else {
 							future->onError(status);
 						}
@@ -227,7 +227,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::function<void(const joynr::RequestStatus& status)> replyCallerCallbackFct =
 					[future] (const joynr::RequestStatus& status) {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(status);
+							future->onSuccess();
 						} else {
 							future->onError(status);
 						}
@@ -321,7 +321,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«val outputTypedParamListStd = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method))»
 	«val outputParametersStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
 	«val outputParametersQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
-	«var outputUntypedParamList = prependCommaIfNotEmpty(qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(method, DatatypeSystemTransformation::FROM_QT_TO_STANDARD))»
+	«var outputUntypedParamList = qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(method, DatatypeSystemTransformation::FROM_QT_TO_STANDARD)»
 	«val inputTypedParamListStd = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method))»
 	«val methodName = method.joynrName»
 	void «interfaceName»JoynrMessagingConnector::«methodName»(
@@ -334,7 +334,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> replyCallerCallbackFct =
 				[future] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
-						future->onSuccess(status«outputUntypedParamList»);
+						future->onSuccess(«outputUntypedParamList»);
 					} else {
 						future->onError(status);
 					}
@@ -369,13 +369,13 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> replyCallerCallbackFct =
 				[future, callbackFct] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
-						future->onSuccess(status«outputUntypedParamList»);
+						future->onSuccess(«outputUntypedParamList»);
 					} else {
 						future->onError(status);
 					}
 					if (callbackFct)
 					{
-						callbackFct(status«outputUntypedParamList»);
+						callbackFct(status«outputUntypedParamList.prependCommaIfNotEmpty»);
 					}
 				};
 

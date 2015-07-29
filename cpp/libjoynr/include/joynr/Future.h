@@ -196,10 +196,10 @@ public:
     /**
      * @brief Callback which indicates the operation has finished and is successful.
      */
-    void onSuccess(const RequestStatus& status, Ts... results)
+    void onSuccess(Ts... results)
     {
         LOG_INFO(logger, "onSuccess has been invoked");
-        this->status = RequestStatus(status);
+        status.setCode(RequestStatusCode::OK);
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
         resultReceived.release();
@@ -265,9 +265,9 @@ public:
         return status.successful();
     }
 
-    void onSuccess(const RequestStatus& status)
+    void onSuccess()
     {
-        this->status = RequestStatus(status);
+        status.setCode(RequestStatusCode::OK);
         resultReceived.release(1);
     }
 

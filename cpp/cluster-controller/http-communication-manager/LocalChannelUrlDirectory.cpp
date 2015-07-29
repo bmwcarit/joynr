@@ -103,8 +103,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
         status.setCode(RequestStatusCode::OK);
         std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
                 new joynr::Future<joynr::types::ChannelUrlInformation>());
-        future->onSuccess(
-                status, types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
+        future->onSuccess(types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
         if (callbackFct) {
             callbackFct(status,
                         types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
