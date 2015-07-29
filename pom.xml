@@ -386,6 +386,7 @@
 		<android.platform.version>5.0.1_r2</android.platform.version>
 		<android.platform.level>21</android.platform.level>
 		<javaassist.version>3.12.1.GA</javaassist.version>
+		<skipTests>true</skipTests>
 	</properties>
 
 	<!--
@@ -963,6 +964,7 @@
 						<!-- one JVM per test suite -->
 						<reuseForks>false</reuseForks>
 						<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+						<skipTests>${skipTests}</skipTests>
 					</configuration>
 				</plugin>
 				<plugin>
