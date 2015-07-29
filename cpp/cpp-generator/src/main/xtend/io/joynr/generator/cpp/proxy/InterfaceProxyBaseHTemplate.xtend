@@ -67,17 +67,17 @@ public:
 
 	void handleArbitrationFinished(
 			const std::string &participantId,
-			const joynr::types::StdCommunicationMiddleware::Enum& connection
+			const joynr::types::CommunicationMiddleware::Enum& connection
 	);
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«val returnType = attribute.typeName»
 		«var attributeName = attribute.joynrName»
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos);
+					const joynr::SubscriptionQos& subscriptionQos);
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos,
+					const joynr::SubscriptionQos& subscriptionQos,
 					std::string& subcriptionId);
 		void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 	«ENDFOR»
@@ -89,21 +89,21 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos);
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ELSE»
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos);
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ENDIF»
 		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);

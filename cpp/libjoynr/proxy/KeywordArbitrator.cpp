@@ -42,7 +42,7 @@ KeywordArbitrator::KeywordArbitrator(const std::string& domain,
 void KeywordArbitrator::attemptArbitration()
 {
     joynr::RequestStatus status;
-    std::vector<joynr::types::StdDiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntry> result;
     discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
@@ -57,7 +57,7 @@ void KeywordArbitrator::attemptArbitration()
 }
 
 void KeywordArbitrator::receiveCapabilitiesLookupResults(
-        const std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     // Check for an empty list of results
     if (discoveryEntries.size() == 0) {
@@ -65,8 +65,8 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     }
 
     // Loop through the result list
-    for (joynr::types::StdDiscoveryEntry discoveryEntry : discoveryEntries) {
-        types::StdProviderQos providerQos = discoveryEntry.getQos();
+    for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+        types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger,
                   QString("Looping over capabilitiesEntry: %")
                           .arg(QString::fromStdString(discoveryEntry.toString())));
@@ -78,13 +78,13 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
         }
 
         // Search the QosParameters for the keyword field
-        std::vector<types::StdCustomParameter> qosParameters = providerQos.getCustomParameters();
-        for (types::StdCustomParameter parameter : qosParameters) {
+        std::vector<types::CustomParameter> qosParameters = providerQos.getCustomParameters();
+        for (types::CustomParameter parameter : qosParameters) {
             std::string name = parameter.getName();
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 std::string res = discoveryEntry.getParticipantId();
                 LOG_TRACE(logger, QString("setting res to %").arg(QString::fromStdString(res)));
-                joynr::types::StdCommunicationMiddleware::Enum preferredConnection(
+                joynr::types::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(
                         ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);

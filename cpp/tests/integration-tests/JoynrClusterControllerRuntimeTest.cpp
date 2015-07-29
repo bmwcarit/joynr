@@ -28,7 +28,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
-#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
 #include "joynr/tests/Itest.h"
@@ -48,7 +48,7 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     QString settingsFilename;
     JoynrClusterControllerRuntime* runtime;
-    joynr::types::Localisation::StdGpsLocation gpsLocation;
+    joynr::types::Localisation::GpsLocation gpsLocation;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
 
@@ -59,7 +59,7 @@ public:
                 1.1,                        // longitude
                 2.2,                        // latitude
                 3.3,                        // altitude
-                types::Localisation::StdGpsFixEnum::MODE2D,  // gps fix
+                types::Localisation::GpsFixEnum::MODE2D,  // gps fix
                 0.0,                        // heading
                 0.0,                        // quality
                 0.0,                        // elevation
@@ -93,7 +93,7 @@ public:
     }
 
     void invokeOnSuccessWithGpsLocation(
-            std::function<void(const joynr::types::Localisation::StdGpsLocation location)> onSuccess
+            std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess
     ) {
         onSuccess(gpsLocation);
     }
@@ -135,7 +135,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::StdGpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
     )
             .WillOnce(Invoke(
                       this,
@@ -163,12 +163,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::shared_ptr<Future<types::Localisation::StdGpsLocation> > future(testProxy->getLocation());
+    std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocation());
     future->waitForFinished(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
-    joynr::types::Localisation::StdGpsLocation actualValue;
+    joynr::types::Localisation::GpsLocation actualValue;
     future->getValues(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
     delete testProxy;
@@ -228,7 +228,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::StdGpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
     )
             .Times(Between(1, 2))
             .WillRepeatedly(Invoke(
@@ -263,7 +263,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             .Times(Between(1, 2));
 
 
-    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     480, // validity
                     200, // min interval
                     200, // max interval
@@ -284,7 +284,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::StdGpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
     )
             .Times(Between(3, 4))
             .WillRepeatedly(Invoke(
@@ -318,7 +318,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtMost(3));
 
-    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     800,   // validity
                     200,   // min interval
                     200,   // max interval

@@ -22,40 +22,40 @@
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/QtPeriodicSubscriptionQos.h"
-#include "joynr/StdSubscriptionQos.h"
-#include "joynr/StdOnChangeSubscriptionQos.h"
-#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/StdPeriodicSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 
 using namespace joynr;
 
 TEST(SubscriptionQosTest, createQt_SubscriptionQos) {
-    StdSubscriptionQos origin;
+    SubscriptionQos origin;
     QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
     EXPECT_TRUE(dynamic_cast<QtSubscriptionQos*>(test) != NULL);
     delete test;
 }
 
 TEST(SubscriptionQosTest, createQt_OnChangeSubscriptionQos) {
-    StdOnChangeSubscriptionQos origin;
+    OnChangeSubscriptionQos origin;
     QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
     EXPECT_TRUE(dynamic_cast<QtOnChangeSubscriptionQos*>(test) != NULL);
     delete test;
 
-    test = QtSubscriptionQos::createQt(dynamic_cast<const StdSubscriptionQos&>(origin));
+    test = QtSubscriptionQos::createQt(dynamic_cast<const SubscriptionQos&>(origin));
     EXPECT_TRUE(dynamic_cast<QtOnChangeSubscriptionQos*>(test) != NULL);
     delete test;
 }
 
 TEST(SubscriptionQosTest, createQt_OnChangeWithKeepAliveSubscriptionQos) {
-    StdOnChangeWithKeepAliveSubscriptionQos origin;
+    OnChangeWithKeepAliveSubscriptionQos origin;
     QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
     EXPECT_TRUE(dynamic_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(test) != NULL);
     delete test;
 }
 
 TEST(SubscriptionQosTest, createQt_PeriodicSubscriptionQos) {
-    StdPeriodicSubscriptionQos origin;
+    PeriodicSubscriptionQos origin;
     QtSubscriptionQos* test = QtSubscriptionQos::createQt(origin);
     EXPECT_TRUE(dynamic_cast<QtPeriodicSubscriptionQos*>(test) != NULL);
     delete test;

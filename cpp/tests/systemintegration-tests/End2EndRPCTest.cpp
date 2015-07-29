@@ -32,7 +32,7 @@
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
-#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -93,7 +93,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::Localisation::StdGpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    types::Localisation::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
@@ -124,11 +124,11 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 TEST_F(End2EndRPCTest, call_void_operation)
 {
 
-    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::StdProviderQos(
-            std::vector<types::StdCustomParameter>(),
+    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(
+            std::vector<types::CustomParameter>(),
             1,
             1,
-            types::StdProviderScope::GLOBAL,
+            types::ProviderScope::GLOBAL,
             false
     )));
 
@@ -160,7 +160,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
-    types::Localisation::StdGpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    types::Localisation::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
     QThreadSleep::msleep(550);
@@ -179,13 +179,13 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
             ->build());
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                 mockListener);
 
-    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .Times(AtLeast(2));
 
-    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                 800, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms

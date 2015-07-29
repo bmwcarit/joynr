@@ -19,21 +19,21 @@
 #ifndef STDONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 #define STDONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 
-#include "joynr/StdOnChangeSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include <stdint.h>
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT StdOnChangeWithKeepAliveSubscriptionQos : public StdOnChangeSubscriptionQos
+class JOYNRCOMMON_EXPORT OnChangeWithKeepAliveSubscriptionQos : public OnChangeSubscriptionQos
 {
 public:
-    StdOnChangeWithKeepAliveSubscriptionQos();
-    StdOnChangeWithKeepAliveSubscriptionQos(const StdOnChangeWithKeepAliveSubscriptionQos& other);
-    StdOnChangeWithKeepAliveSubscriptionQos(const int64_t& validity,
-                                            const int64_t& minInterval,
-                                            const int64_t& maxInterval,
-                                            const int64_t& alertAfterInterval);
+    OnChangeWithKeepAliveSubscriptionQos();
+    OnChangeWithKeepAliveSubscriptionQos(const OnChangeWithKeepAliveSubscriptionQos& other);
+    OnChangeWithKeepAliveSubscriptionQos(const int64_t& validity,
+                                         const int64_t& minInterval,
+                                         const int64_t& maxInterval,
+                                         const int64_t& alertAfterInterval);
 
     /**
      * The provider will maintain at least a minimum interval idle time in milliseconds between
@@ -97,9 +97,9 @@ public:
      */
     virtual void setAlertAfterInterval(const int64_t& alertAfterInterval);
 
-    StdOnChangeWithKeepAliveSubscriptionQos& operator=(
-            const StdOnChangeWithKeepAliveSubscriptionQos& other);
-    virtual bool operator==(const StdOnChangeWithKeepAliveSubscriptionQos& other) const;
+    OnChangeWithKeepAliveSubscriptionQos& operator=(
+            const OnChangeWithKeepAliveSubscriptionQos& other);
+    virtual bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
 
     static const int64_t& MAX_MAX_INTERVAL();
 

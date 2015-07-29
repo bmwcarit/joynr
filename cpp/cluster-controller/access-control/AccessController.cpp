@@ -64,7 +64,7 @@ public:
             QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
-    void consumerPermission(StdPermission::Enum permission);
+    void consumerPermission(Permission::Enum permission);
     void operationNeeded();
 
 private:
@@ -95,7 +95,7 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 }
 
 void AccessController::LdacConsumerPermissionCallback::consumerPermission(
-        StdPermission::Enum permission)
+        Permission::Enum permission)
 {
     bool hasPermission = convertToBool(QtPermission::createQt(permission));
 
@@ -196,13 +196,13 @@ public:
             : localDomainAccessController(localDomainAccessController)
     {
     }
-    virtual void onProviderAdd(const StdDiscoveryEntry& discoveryEntry)
+    virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
     {
         Q_UNUSED(discoveryEntry)
         // Ignored
     }
 
-    virtual void onProviderRemove(const StdDiscoveryEntry& discoveryEntry)
+    virtual void onProviderRemove(const DiscoveryEntry& discoveryEntry)
     {
         localDomainAccessController.unregisterProvider(
                 discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
@@ -262,9 +262,8 @@ void AccessController::hasConsumerPermission(
 
     // Get the domain and interface of the message destination
     std::string participantId = message.getHeaderTo().toStdString();
-    std::function<void(const types::StdDiscoveryEntry&)> lookupCallback =
-            [this, message, callback, participantId](
-                    const types::StdDiscoveryEntry& discoveryEntry) {
+    std::function<void(const types::DiscoveryEntry&)> lookupCallback =
+            [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
             LOG_ERROR(logger,
                       QString("Failed to get capabilities for participantId %1")
@@ -294,11 +293,8 @@ void AccessController::hasConsumerPermission(
         // Try to determine permission without expensive message deserialization
         // For now QtTrustLevel::HIGH is assumed.
         QString msgCreatorUid = message.getHeaderCreatorUserId();
-        localDomainAccessController.getConsumerPermission(msgCreatorUid.toStdString(),
-                                                          domain,
-                                                          interfaceName,
-                                                          StdTrustLevel::HIGH,
-                                                          ldacCallback);
+        localDomainAccessController.getConsumerPermission(
+                msgCreatorUid.toStdString(), domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
     localCapabilitiesDirectory.lookup(participantId, lookupCallback);
 }

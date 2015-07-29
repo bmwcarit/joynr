@@ -102,7 +102,7 @@ private:
 
 	virtual bool filter(
 			const QList<QVariant>& eventValues,
-			const StdBroadcastFilterParameters& filterParameters
+			const BroadcastFilterParameters& filterParameters
 	) {
 		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
 		params.setFilterParameters(filterParameters.getFilterParameters());

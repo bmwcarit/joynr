@@ -107,14 +107,14 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
         );
     capabilitiesClient->init(cabilitiesProxy);
 
-    std::vector<types::StdCapabilityInformation> capabilitiesInformationList;
+    std::vector<types::CapabilityInformation> capabilitiesInformationList;
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
-    types::StdProviderQos capProviderQos;
+    types::ProviderQos capProviderQos;
     std::string capChannelId("testChannelId");
     std::string capParticipantId("testParticipantId");
 
-    capabilitiesInformationList.push_back(types::StdCapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
+    capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
     LOG_DEBUG(logger,"Registering capabilities");
     capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
@@ -125,10 +125,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     // use a semaphore to wait for capabilities to be received
     QSemaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<const joynr::RequestStatus&>(), A<const std::vector<types::StdCapabilityInformation>&>()))
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const joynr::RequestStatus&>(), A<const std::vector<types::CapabilityInformation>&>()))
            .WillRepeatedly(ReleaseSemaphore(&semaphore));
-    std::function<void(const joynr::RequestStatus&, const std::vector<types::StdCapabilityInformation>&)> callbackFct =
-            [&](const joynr::RequestStatus& status, const std::vector<types::StdCapabilityInformation>& capabilities) {
+    std::function<void(const joynr::RequestStatus&, const std::vector<types::CapabilityInformation>&)> callbackFct =
+            [&](const joynr::RequestStatus& status, const std::vector<types::CapabilityInformation>& capabilities) {
                 callback->capabilitiesReceived(status, capabilities);
             };
 

@@ -52,7 +52,7 @@ public:
         callback(),
         connections()
     {
-        connections.push_back(joynr::types::StdCommunicationMiddleware::JOYNR);
+        connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
     }
 
     ~LocalCapabilitiesDirectoryTest() {
@@ -68,7 +68,7 @@ public:
         dummyParticipantId3 = QUuid::createUuid().toString().toStdString();
         localJoynrMessagingAddress1 = QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress("LOCAL_CHANNEL_ID"));
         callback = QSharedPointer<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
-        discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_THEN_GLOBAL);
+        discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
 
@@ -97,11 +97,11 @@ public:
             const std::string& interfaceName,
             std::function<void(
                 const RequestStatus& status,
-                const std::vector<types::StdCapabilityInformation>& capability)> callbackFct){
+                const std::vector<types::CapabilityInformation>& capability)> callbackFct){
         Q_UNUSED(domain);
         Q_UNUSED(interfaceName);
         RequestStatus status(RequestStatusCode::OK);
-        std::vector<types::StdCapabilityInformation> result;
+        std::vector<types::CapabilityInformation> result;
         callbackFct(status, result);
     }
 
@@ -109,10 +109,10 @@ public:
             const std::string& participantId,
             std::function<void(
                 const RequestStatus& status,
-                const std::vector<types::StdCapabilityInformation>& capabilities)> callbackFct){
+                const std::vector<types::CapabilityInformation>& capabilities)> callbackFct){
         Q_UNUSED(participantId);
         RequestStatus status(RequestStatusCode::OK);
-        std::vector<types::StdCapabilityInformation> result;
+        std::vector<types::CapabilityInformation> result;
         callbackFct(status, result);
     }
 
@@ -121,18 +121,18 @@ public:
             const std::string& interfaceName,
             std::function<void(
                 const RequestStatus& status,
-                const std::vector<types::StdCapabilityInformation>& capabilities)> callbackFct){
+                const std::vector<types::CapabilityInformation>& capabilities)> callbackFct){
         Q_UNUSED(domain);
         Q_UNUSED(interfaceName);
-        types::StdProviderQos qos;
-        std::vector<types::StdCapabilityInformation> capInfoList;
-        capInfoList.push_back(types::StdCapabilityInformation(
+        types::ProviderQos qos;
+        std::vector<types::CapabilityInformation> capInfoList;
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_1_NAME,
                                INTERFACE_1_NAME,
                                qos,
                                EXTERNAL_CHANNEL_ID,
                                dummyParticipantId1));
-        capInfoList.push_back(types::StdCapabilityInformation(
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_1_NAME,
                                INTERFACE_1_NAME,
                                qos,
@@ -146,16 +146,16 @@ public:
             const std::string& participantId,
             std::function<void(
                 const RequestStatus& status,
-                const std::vector<types::StdCapabilityInformation>& capabilities)> callbackFct){
-        types::StdProviderQos qos;
-        std::vector<types::StdCapabilityInformation> capInfoList;
-        capInfoList.push_back(types::StdCapabilityInformation(
+                const std::vector<types::CapabilityInformation>& capabilities)> callbackFct){
+        types::ProviderQos qos;
+        std::vector<types::CapabilityInformation> capInfoList;
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_1_NAME,
                                INTERFACE_1_NAME,
                                qos,
                                LOCAL_CHANNEL_ID,
                                participantId));
-        capInfoList.push_back(types::StdCapabilityInformation(
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_2_NAME,
                                INTERFACE_2_NAME,
                                qos,
@@ -169,23 +169,23 @@ public:
             const std::string& participantId,
             std::function<void(
                 const RequestStatus& status,
-                const std::vector<types::StdCapabilityInformation>& capabilities)> callbackFct){
+                const std::vector<types::CapabilityInformation>& capabilities)> callbackFct){
         Q_UNUSED(participantId);
-        types::StdProviderQos qos;
-        std::vector<types::StdCapabilityInformation> capInfoList;
-        capInfoList.push_back(types::StdCapabilityInformation(
+        types::ProviderQos qos;
+        std::vector<types::CapabilityInformation> capInfoList;
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_1_NAME,
                                INTERFACE_1_NAME,
                                qos,
                                LOCAL_CHANNEL_ID,
                                dummyParticipantId1));
-        capInfoList.push_back(types::StdCapabilityInformation(
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_2_NAME,
                                INTERFACE_2_NAME,
                                qos,
                                LOCAL_CHANNEL_ID,
                                dummyParticipantId1));
-        capInfoList.push_back(types::StdCapabilityInformation(
+        capInfoList.push_back(types::CapabilityInformation(
                                DOMAIN_3_NAME,
                                INTERFACE_3_NAME,
                                qos,
@@ -210,7 +210,7 @@ protected:
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
     QSharedPointer<system::QtChannelAddress> localJoynrMessagingAddress1;
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     QMap<std::string, CapabilityEntry> globalCapEntryMap;
 
     static const std::string INTERFACE_1_NAME;
@@ -223,7 +223,7 @@ protected:
     static const std::string EXTERNAL_CHANNEL_ID;
     static const int TIMEOUT;
     QSharedPointer<MockLocalCapabilitiesDirectoryCallback> callback;
-    std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections;
+    std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);
 };
@@ -241,12 +241,12 @@ const int LocalCapabilitiesDirectoryTest::TIMEOUT(2000);
 
 
 TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient) {
-    EXPECT_CALL(*capabilitiesClient, add(An<std::vector<types::StdCapabilityInformation> >())).Times(1);
-    joynr::types::StdDiscoveryEntry entry(
+    EXPECT_CALL(*capabilitiesClient, add(An<std::vector<types::CapabilityInformation> >())).Times(1);
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
-        types::StdProviderQos(),
+        types::ProviderQos(),
         connections
     );
     localCapabilitiesDirectory->add(entry);
@@ -257,14 +257,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
                     dummyParticipantId1,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<joynr::types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<joynr::types::CapabilityInformation>& capabilities)>>()))
             .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
-        types::StdProviderQos(),
+        types::ProviderQos(),
         connections
     );
     localCapabilitiesDirectory->add(entry);
@@ -278,12 +278,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<joynr::types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<joynr::types::CapabilityInformation>& capabilities)>>()))
             .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::LOCAL);
-    joynr::types::StdDiscoveryEntry entry(
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -302,15 +302,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlob
     std::vector<std::string> participantIdsToRemove;
     participantIdsToRemove.push_back(dummyParticipantId1);
     EXPECT_CALL(*capabilitiesClient, remove(participantIdsToRemove)).Times(1);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
-        types::StdProviderQos(),
+        types::ProviderQos(),
         connections
     );
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::StdProviderQos());
+    localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
@@ -321,19 +321,19 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<joynr::types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<joynr::types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
 
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
-        types::StdProviderQos(),
+        types::ProviderQos(),
         connections
     );
     localCapabilitiesDirectory->add(entry);
-    localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::StdProviderQos());
+    localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(0, callback->getResults(TIMEOUT).size());
 }
@@ -342,9 +342,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByInterfaceAddressDo
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     EXPECT_CALL(*capabilitiesClient, remove(dummyParticipantId1)).Times(0);
 
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::LOCAL);
-    joynr::types::StdDiscoveryEntry entry(
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -372,7 +372,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<joynr::types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<joynr::types::CapabilityInformation>& capabilities)>>()))
             .Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(TIMEOUT).size());
@@ -418,7 +418,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
@@ -428,7 +428,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
@@ -442,7 +442,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
                     dummyParticipantId1,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithThreeResults));
 
@@ -472,7 +472,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
@@ -486,7 +486,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(1);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
 
@@ -494,17 +494,17 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIfTheyAreMerged) {
 
-    std::vector<types::StdCapabilityInformation> firstCapInfoList;
-    std::vector<types::StdCapabilityInformation> secondCapInfoList;
-    types::StdProviderQos qos;
-    types::StdCapabilityInformation capInfo1(DOMAIN_1_NAME,
+    std::vector<types::CapabilityInformation> firstCapInfoList;
+    std::vector<types::CapabilityInformation> secondCapInfoList;
+    types::ProviderQos qos;
+    types::CapabilityInformation capInfo1(DOMAIN_1_NAME,
                                              INTERFACE_1_NAME,
                                              qos,
                                              LOCAL_CHANNEL_ID,
                                              dummyParticipantId1);
     firstCapInfoList.push_back(capInfo1);
     secondCapInfoList.push_back(capInfo1);
-    secondCapInfoList.push_back(types::StdCapabilityInformation(
+    secondCapInfoList.push_back(types::CapabilityInformation(
                                  DOMAIN_2_NAME,
                                  INTERFACE_1_NAME,
                                  qos,
@@ -518,7 +518,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
     }
 
 
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -526,7 +526,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
         connections
     );
     localCapabilitiesDirectory->add(entry);
-    joynr::types::StdDiscoveryEntry entry2(
+    joynr::types::DiscoveryEntry entry2(
         DOMAIN_2_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId2,
@@ -537,14 +537,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoesNotDuplicate) {
-    types::StdProviderQos qos;
+    types::ProviderQos qos;
     int exceptionCounter = 0;
     //simulate capabilities client lost connection to the directory
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(3).WillRepeatedly(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
 
     for (int i = 0; i<3; i++){
         try {
-            joynr::types::StdDiscoveryEntry entry(
+            joynr::types::DiscoveryEntry entry(
                 DOMAIN_1_NAME,
                 INTERFACE_1_NAME,
                 dummyParticipantId1,
@@ -563,15 +563,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
-    types::StdProviderQos qos;
+    types::ProviderQos qos;
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(0);
 
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -589,7 +589,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
                     _,
                     A<std::function<void(
                         const RequestStatus& status,
-                        const std::vector<types::StdCapabilityInformation>& capabilities)>>()))
+                        const std::vector<types::CapabilityInformation>& capabilities)>>()))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
@@ -599,15 +599,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::LOCAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_ONLY);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -631,14 +631,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGlobal){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::LOCAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_THEN_GLOBAL);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -673,14 +673,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlobal){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::LOCAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_AND_GLOBAL);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
 
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -726,15 +726,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::LOCAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::GLOBAL_ONLY);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -775,15 +775,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::GLOBAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_ONLY);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -803,15 +803,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenGlobal){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::GLOBAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(100);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::LOCAL_THEN_GLOBAL);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
@@ -849,16 +849,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly){
-    types::StdProviderQos providerQos;
-    providerQos.setScope(types::StdProviderScope::GLOBAL);
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    joynr::types::StdDiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(100);
-    discoveryQos.setDiscoveryScope(joynr::types::StdDiscoveryScope::GLOBAL_ONLY);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
     //JoynrTimeOutException timeoutException;
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
-    joynr::types::StdDiscoveryEntry entry(
+    joynr::types::DiscoveryEntry entry(
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,

@@ -60,8 +60,8 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/StdSubscriptionQos.h"
-#include "joynr/StdOnChangeSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 
 namespace joynr {
 	class MessagingQos;
@@ -80,7 +80,7 @@ private:
 		«IF attribute.notifiable»
 			std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos,
+					const joynr::SubscriptionQos& subscriptionQos,
 					SubscriptionRequest& subscriptionRequest);
 		«ENDIF»
 	«ENDFOR»
@@ -89,7 +89,7 @@ private:
 		«val broadcastName = broadcast.joynrName»
 		std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest);
 	«ENDFOR»
 public:
@@ -117,10 +117,10 @@ public:
 		«IF attribute.notifiable»
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						const joynr::StdSubscriptionQos& subscriptionQos);
+						const joynr::SubscriptionQos& subscriptionQos);
 			virtual std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						const joynr::StdSubscriptionQos& subscriptionQos,
+						const joynr::SubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 			virtual void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
 		«ENDIF»
@@ -137,19 +137,19 @@ public:
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos);
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ELSE»
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos);
 			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId);
 		«ENDIF»
 		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);

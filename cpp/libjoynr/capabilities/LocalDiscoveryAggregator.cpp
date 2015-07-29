@@ -26,8 +26,8 @@
 #include "joynr/RequestStatusCode.h"
 
 #include "joynr/types/QtDiscoveryEntry.h"
-#include "joynr/types/StdDiscoveryEntry.h"
-#include "joynr/types/StdDiscoveryQos.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/system/DiscoveryProxy.h"
@@ -82,7 +82,7 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::add(joynr::RequestStatus& joynrInternalStatus,
-                                   const joynr::types::StdDiscoveryEntry& discoveryEntry)
+                                   const joynr::types::DiscoveryEntry& discoveryEntry)
 {
     if (discoveryProxy == NULL) {
         joynrInternalStatus.setCode(RequestStatusCode::ERROR);
@@ -96,24 +96,23 @@ void LocalDiscoveryAggregator::add(joynr::RequestStatus& joynrInternalStatus,
 }
 
 void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnection(
-        joynr::types::StdDiscoveryEntry& discoveryEntry)
+        joynr::types::DiscoveryEntry& discoveryEntry)
 {
     std::string participantId(discoveryEntry.getParticipantId());
     if (requestCallerDirectory.containsRequestCaller(participantId)) {
-        std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections(
+        std::vector<joynr::types::CommunicationMiddleware::Enum> connections(
                 discoveryEntry.getConnections());
-        connections.insert(
-                connections.begin(), joynr::types::StdCommunicationMiddleware::IN_PROCESS);
+        connections.insert(connections.begin(), joynr::types::CommunicationMiddleware::IN_PROCESS);
         discoveryEntry.setConnections(connections);
     }
 }
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                      std::vector<joynr::types::StdDiscoveryEntry>& result,
+                                      std::vector<joynr::types::DiscoveryEntry>& result,
                                       const std::string& domain,
                                       const std::string& interfaceName,
-                                      const joynr::types::StdDiscoveryQos& discoveryQos)
+                                      const joynr::types::DiscoveryQos& discoveryQos)
 {
     if (discoveryProxy == NULL) {
         joynrInternalStatus.setCode(RequestStatusCode::ERROR);
@@ -124,14 +123,14 @@ void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
     }
     discoveryProxy->lookup(joynrInternalStatus, result, domain, interfaceName, discoveryQos);
 
-    for (joynr::types::StdDiscoveryEntry& discoveryEntry : result) {
+    for (joynr::types::DiscoveryEntry& discoveryEntry : result) {
         checkForLocalAvailabilityAndAddInProcessConnection(discoveryEntry);
     }
 }
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                      joynr::types::StdDiscoveryEntry& result,
+                                      joynr::types::DiscoveryEntry& result,
                                       const std::string& participantId)
 {
     if (provisionedDiscoveryEntries.contains(participantId)) {

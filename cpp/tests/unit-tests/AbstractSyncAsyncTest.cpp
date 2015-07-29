@@ -107,7 +107,7 @@ private:
 class AbstractSyncAsyncTest : public ::testing::Test {
 public:
     AbstractSyncAsyncTest():
-        expectedGpsLocation(1.1, 1.2, 1.3, types::Localisation::StdGpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 95302963),
+        expectedGpsLocation(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 95302963),
         expectedInt(60284917),
         callBackActions(types::QtGpsLocation::createQt(expectedGpsLocation), expectedInt),
         qosSettings(),
@@ -152,11 +152,11 @@ public:
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
 
-        MockCallback<joynr::types::Localisation::StdGpsLocation>* callback = new MockCallback<joynr::types::Localisation::StdGpsLocation>();
+        MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation");
         asyncTestFixture->getLocation(
-                [callback] (const joynr::RequestStatus& status, const joynr::types::Localisation::StdGpsLocation& location) {
+                [callback] (const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
                     callback->callbackFct(status, location);
                 });
     }
@@ -193,7 +193,7 @@ public:
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         RequestStatus status;
-        types::Localisation::StdGpsLocation gpsLocation;
+        types::Localisation::GpsLocation gpsLocation;
         testFixture->getLocation(status, gpsLocation);
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
@@ -203,7 +203,7 @@ public:
     void testAsync_getAttributeCached() {
         asyncTestFixture = createFixture(true);
 
-        MockCallback<joynr::types::Localisation::StdGpsLocation>* callback = new MockCallback<joynr::types::Localisation::StdGpsLocation>();
+        MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation").Times(0);
 
@@ -213,7 +213,7 @@ public:
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         asyncTestFixture->getLocation(
-                [callback] (const RequestStatus& status, const types::Localisation::StdGpsLocation& location) {
+                [callback] (const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                     callback->callbackFct(status, location);
                 });
     }
@@ -228,7 +228,7 @@ public:
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         RequestStatus status;
-        types::Localisation::StdGpsLocation gpsLocation;
+        types::Localisation::GpsLocation gpsLocation;
         testFixture->getLocation(status, gpsLocation);
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
@@ -265,7 +265,7 @@ public:
         //EXPECT_CALL(*mockJoynrMessageSender,
         //            sendSubscriptionRequest(_,_,_,_)).Times(1);
 
-        std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+        std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     new MockGpsSubscriptionListener());
         //TODO uncomment once the connector has the correct signature!
         //vehicle::IGps* gpsFixture = createFixture(false);
@@ -275,7 +275,7 @@ public:
     }
 
 protected:
-    joynr::types::Localisation::StdGpsLocation expectedGpsLocation;
+    joynr::types::Localisation::GpsLocation expectedGpsLocation;
     int expectedInt;
     CallBackActions callBackActions;
     MessagingQos qosSettings;

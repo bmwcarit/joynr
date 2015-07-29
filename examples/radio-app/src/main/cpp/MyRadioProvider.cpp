@@ -41,26 +41,26 @@ MyRadioProvider::MyRadioProvider()
     // started provider
     providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-    stationsList << vehicle::RadioTypes::StdRadioStation(
-                            "ABC Trible J", true, vehicle::RadioTypes::StdCountry::AUSTRALIA)
-                 << vehicle::RadioTypes::StdRadioStation(
-                            "Radio Popolare", false, vehicle::RadioTypes::StdCountry::ITALY)
-                 << vehicle::RadioTypes::StdRadioStation(
-                            "JAZZ.FM91", false, vehicle::RadioTypes::StdCountry::CANADA)
-                 << vehicle::RadioTypes::StdRadioStation(
-                            "Bayern 3", true, vehicle::RadioTypes::StdCountry::GERMANY);
+    stationsList << vehicle::RadioTypes::RadioStation(
+                            "ABC Trible J", true, vehicle::RadioTypes::Country::AUSTRALIA)
+                 << vehicle::RadioTypes::RadioStation(
+                            "Radio Popolare", false, vehicle::RadioTypes::Country::ITALY)
+                 << vehicle::RadioTypes::RadioStation(
+                            "JAZZ.FM91", false, vehicle::RadioTypes::Country::CANADA)
+                 << vehicle::RadioTypes::RadioStation(
+                            "Bayern 3", true, vehicle::RadioTypes::Country::GERMANY);
     countryGeoPositionMap.insert(
-            vehicle::RadioTypes::StdCountry::AUSTRALIA,
-            vehicle::RadioTypes::StdGeoPosition(-37.8141070, 144.9632800)); // Melbourne
+            vehicle::RadioTypes::Country::AUSTRALIA,
+            vehicle::RadioTypes::GeoPosition(-37.8141070, 144.9632800)); // Melbourne
     countryGeoPositionMap.insert(
-            vehicle::RadioTypes::StdCountry::ITALY,
-            vehicle::RadioTypes::StdGeoPosition(46.4982950, 11.3547580)); // Bolzano
+            vehicle::RadioTypes::Country::ITALY,
+            vehicle::RadioTypes::GeoPosition(46.4982950, 11.3547580)); // Bolzano
     countryGeoPositionMap.insert(
-            vehicle::RadioTypes::StdCountry::CANADA,
-            vehicle::RadioTypes::StdGeoPosition(53.5443890, -113.4909270)); // Edmonton
+            vehicle::RadioTypes::Country::CANADA,
+            vehicle::RadioTypes::GeoPosition(53.5443890, -113.4909270)); // Edmonton
     countryGeoPositionMap.insert(
-            vehicle::RadioTypes::StdCountry::GERMANY,
-            vehicle::RadioTypes::StdGeoPosition(48.1351250, 11.5819810)); // Munich
+            vehicle::RadioTypes::Country::GERMANY,
+            vehicle::RadioTypes::GeoPosition(48.1351250, 11.5819810)); // Munich
     currentStation = stationsList.at(currentStationIndex);
 }
 
@@ -69,7 +69,7 @@ MyRadioProvider::~MyRadioProvider()
 }
 
 void MyRadioProvider::getCurrentStation(
-        std::function<void(const vehicle::RadioTypes::StdRadioStation&)> onSuccess)
+        std::function<void(const vehicle::RadioTypes::RadioStation&)> onSuccess)
 {
     QMutexLocker locker(&mutex);
 
@@ -83,7 +83,7 @@ void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
 {
     QMutexLocker locker(&mutex);
 
-    vehicle::RadioTypes::StdRadioStation oldStation = currentStation;
+    vehicle::RadioTypes::RadioStation oldStation = currentStation;
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
     currentStationChanged(stationsList.at(currentStationIndex));
@@ -94,7 +94,7 @@ void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
     onSuccess();
 }
 
-void MyRadioProvider::addFavouriteStation(const vehicle::RadioTypes::StdRadioStation& radioStation,
+void MyRadioProvider::addFavouriteStation(const vehicle::RadioTypes::RadioStation& radioStation,
                                           std::function<void(const bool& returnValue)> onSuccess)
 {
     QMutexLocker locker(&mutex);
@@ -107,15 +107,15 @@ void MyRadioProvider::addFavouriteStation(const vehicle::RadioTypes::StdRadioSta
 }
 
 void MyRadioProvider::getLocationOfCurrentStation(
-        std::function<void(const joynr::vehicle::RadioTypes::StdCountry::Enum& country,
-                           const joynr::vehicle::RadioTypes::StdGeoPosition& location)> onSuccess)
+        std::function<void(const joynr::vehicle::RadioTypes::Country::Enum& country,
+                           const joynr::vehicle::RadioTypes::GeoPosition& location)> onSuccess)
 {
-    joynr::vehicle::RadioTypes::StdCountry::Enum country(currentStation.getCountry());
-    joynr::vehicle::RadioTypes::StdGeoPosition location(countryGeoPositionMap.value(country));
+    joynr::vehicle::RadioTypes::Country::Enum country(currentStation.getCountry());
+    joynr::vehicle::RadioTypes::GeoPosition location(countryGeoPositionMap.value(country));
     MyRadioHelper::prettyLog(
             logger,
             QString("getLocationOfCurrentStation: return country \"%1\" and location \"%2\"")
-                    .arg(QString::fromStdString(joynr::vehicle::RadioTypes::StdCountry::getLiteral(
+                    .arg(QString::fromStdString(joynr::vehicle::RadioTypes::Country::getLiteral(
                             currentStation.getCountry())))
                     .arg(QString::fromStdString(location.toString())));
     onSuccess(country, location);
@@ -131,8 +131,8 @@ void MyRadioProvider::fireWeakSignalBroadcast()
 
 void MyRadioProvider::fireNewStationDiscoveredBroadcast()
 {
-    vehicle::RadioTypes::StdRadioStation discoveredStation(stationsList.at(currentStationIndex));
-    vehicle::RadioTypes::StdGeoPosition geoPosition(
+    vehicle::RadioTypes::RadioStation discoveredStation(stationsList.at(currentStationIndex));
+    vehicle::RadioTypes::GeoPosition geoPosition(
             countryGeoPositionMap.value(discoveredStation.getCountry()));
     MyRadioHelper::prettyLog(logger,
                              QString("fire newStationDiscoveredBroadcast: %1 at %2")

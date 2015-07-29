@@ -31,8 +31,8 @@ public:
     GeocastBroadcastFilter();
 
     virtual bool filter(
-            const joynr::vehicle::RadioTypes::StdRadioStation& discoveredStation,
-            const joynr::vehicle::RadioTypes::StdGeoPosition& geoPosition,
+            const joynr::vehicle::RadioTypes::RadioStation& discoveredStation,
+            const joynr::vehicle::RadioTypes::GeoPosition& geoPosition,
             const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters);
 
 private:

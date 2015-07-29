@@ -39,8 +39,8 @@ public:
     /**
       * Get the current radio station
       */
-    void getCurrentStation(std::function<
-            void(const joynr::vehicle::RadioTypes::StdRadioStation& result)> onSuccess);
+    void getCurrentStation(
+            std::function<void(const joynr::vehicle::RadioTypes::RadioStation& result)> onSuccess);
 
     /**
       * Get the next radio station in a circular list of stations
@@ -50,23 +50,23 @@ public:
     /**
       * Add a favourite radio station
       */
-    void addFavouriteStation(const joynr::vehicle::RadioTypes::StdRadioStation& radioStation,
+    void addFavouriteStation(const joynr::vehicle::RadioTypes::RadioStation& radioStation,
                              std::function<void(const bool& returnValue)> onSuccess);
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();
-    void getLocationOfCurrentStation(std::function<
-            void(const joynr::vehicle::RadioTypes::StdCountry::Enum& country,
-                 const joynr::vehicle::RadioTypes::StdGeoPosition& location)> onSuccess);
+    void getLocationOfCurrentStation(
+            std::function<void(const joynr::vehicle::RadioTypes::Country::Enum& country,
+                               const joynr::vehicle::RadioTypes::GeoPosition& location)> onSuccess);
 
 private:
     // Disallow copy and assign
     MyRadioProvider(const MyRadioProvider&);
     void operator=(const MyRadioProvider&);
 
-    int currentStationIndex;                                         // Index to the current station
-    QList<joynr::vehicle::RadioTypes::StdRadioStation> stationsList; // List of possible stations
-    QMap<joynr::vehicle::RadioTypes::StdCountry::Enum, joynr::vehicle::RadioTypes::StdGeoPosition>
+    int currentStationIndex;                                      // Index to the current station
+    QList<joynr::vehicle::RadioTypes::RadioStation> stationsList; // List of possible stations
+    QMap<joynr::vehicle::RadioTypes::Country::Enum, joynr::vehicle::RadioTypes::GeoPosition>
             countryGeoPositionMap;
     QMutex mutex; // Providers need to be threadsafe
 

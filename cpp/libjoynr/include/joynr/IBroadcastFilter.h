@@ -49,7 +49,7 @@ public:
     }
 
     virtual bool filter(const QList<QVariant>& eventValues,
-                        const StdBroadcastFilterParameters& filterParameters) = 0;
+                        const BroadcastFilterParameters& filterParameters) = 0;
 
     const std::string& getName()
     {

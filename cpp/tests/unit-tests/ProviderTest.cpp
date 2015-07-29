@@ -31,8 +31,8 @@ using namespace joynr;
 
 class DummyProvider : public AbstractJoynrProvider {
 public:
-    types::StdProviderQos getProviderQos() const {
-        types::StdProviderQos ret;
+    types::ProviderQos getProviderQos() const {
+        types::ProviderQos ret;
         return ret;
     }
     std::string getInterfaceName() const {

@@ -16,69 +16,69 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/StdSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
 #include <limits>
 
 namespace joynr
 {
 
-const int64_t& StdSubscriptionQos::DEFAULT_PUBLICATION_TTL()
+const int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
 {
     static const int64_t defaultPublicationTtl = 10000;
     return defaultPublicationTtl;
 }
 
-const int64_t& StdSubscriptionQos::MIN_PUBLICATION_TTL()
+const int64_t& SubscriptionQos::MIN_PUBLICATION_TTL()
 {
     static const int64_t minPublicationTtl = 100;
     return minPublicationTtl;
 }
 
-const int64_t& StdSubscriptionQos::MAX_PUBLICATION_TTL()
+const int64_t& SubscriptionQos::MAX_PUBLICATION_TTL()
 {
     static const int64_t maxPublicationTtl = 2592000000UL;
     return maxPublicationTtl;
 }
 
-const int64_t& StdSubscriptionQos::NO_EXPIRY_DATE_TTL()
+const int64_t& SubscriptionQos::NO_EXPIRY_DATE_TTL()
 {
     static const int64_t noExpiryDateTTL = std::numeric_limits<int64_t>::max(); // 2^63-1
     return noExpiryDateTTL;
 }
 
-const int64_t& StdSubscriptionQos::NO_EXPIRY_DATE()
+const int64_t& SubscriptionQos::NO_EXPIRY_DATE()
 {
     static int64_t noExpiryDate = 0;
     return noExpiryDate;
 }
 
-StdSubscriptionQos::StdSubscriptionQos() : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
+SubscriptionQos::SubscriptionQos() : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
 {
     setValidity(1000);
 }
 
-StdSubscriptionQos::StdSubscriptionQos(const int64_t& validity)
+SubscriptionQos::SubscriptionQos(const int64_t& validity)
         : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
 {
     setValidity(validity);
 }
 
-StdSubscriptionQos::StdSubscriptionQos(const StdSubscriptionQos& subscriptionQos)
+SubscriptionQos::SubscriptionQos(const SubscriptionQos& subscriptionQos)
         : expiryDate(subscriptionQos.expiryDate), publicationTtl(subscriptionQos.publicationTtl)
 {
 }
 
-StdSubscriptionQos::~StdSubscriptionQos()
+SubscriptionQos::~SubscriptionQos()
 {
 }
 
-int64_t StdSubscriptionQos::getPublicationTtl() const
+int64_t SubscriptionQos::getPublicationTtl() const
 {
     return publicationTtl;
 }
 
-void StdSubscriptionQos::setPublicationTtl(const int64_t& publicationTtl)
+void SubscriptionQos::setPublicationTtl(const int64_t& publicationTtl)
 {
     this->publicationTtl = publicationTtl;
     if (this->publicationTtl > MAX_PUBLICATION_TTL()) {
@@ -89,12 +89,12 @@ void StdSubscriptionQos::setPublicationTtl(const int64_t& publicationTtl)
     }
 }
 
-int64_t StdSubscriptionQos::getExpiryDate() const
+int64_t SubscriptionQos::getExpiryDate() const
 {
     return expiryDate;
 }
 
-void StdSubscriptionQos::setExpiryDate(const int64_t& expiryDate)
+void SubscriptionQos::setExpiryDate(const int64_t& expiryDate)
 {
     this->expiryDate = expiryDate;
     if (this->expiryDate < QDateTime::currentMSecsSinceEpoch()) {
@@ -102,28 +102,28 @@ void StdSubscriptionQos::setExpiryDate(const int64_t& expiryDate)
     }
 }
 
-void StdSubscriptionQos::clearExpiryDate()
+void SubscriptionQos::clearExpiryDate()
 {
     this->expiryDate = NO_EXPIRY_DATE();
 }
 
-void StdSubscriptionQos::setValidity(const int64_t& validity)
+void SubscriptionQos::setValidity(const int64_t& validity)
 {
     if (validity == -1) {
-        setExpiryDate(joynr::StdSubscriptionQos::NO_EXPIRY_DATE());
+        setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
     } else {
         setExpiryDate(QDateTime::currentMSecsSinceEpoch() + validity);
     }
 }
 
-StdSubscriptionQos& StdSubscriptionQos::operator=(const StdSubscriptionQos& subscriptionQos)
+SubscriptionQos& SubscriptionQos::operator=(const SubscriptionQos& subscriptionQos)
 {
     expiryDate = subscriptionQos.getExpiryDate();
     publicationTtl = subscriptionQos.getPublicationTtl();
     return *this;
 }
 
-bool StdSubscriptionQos::operator==(const StdSubscriptionQos& subscriptionQos) const
+bool SubscriptionQos::operator==(const SubscriptionQos& subscriptionQos) const
 {
     return getExpiryDate() == subscriptionQos.getExpiryDate() &&
            publicationTtl == subscriptionQos.getPublicationTtl();

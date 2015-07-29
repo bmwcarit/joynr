@@ -60,7 +60,7 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 //tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
 void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
-		const joynr::types::StdCommunicationMiddleware::Enum& connection
+		const joynr::types::CommunicationMiddleware::Enum& connection
 ) {
 	if (connector != NULL){
 		delete connector;
@@ -94,7 +94,7 @@ void «className»::handleArbitrationFinished(
 
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::StdSubscriptionQos& subscriptionQos,
+				const joynr::SubscriptionQos& subscriptionQos,
 				std::string& subscriptionId) {
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
@@ -111,7 +111,7 @@ void «className»::handleArbitrationFinished(
 
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::StdSubscriptionQos& subscriptionQos) {
+				const joynr::SubscriptionQos& subscriptionQos) {
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
@@ -145,11 +145,11 @@ void «className»::handleArbitrationFinished(
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::StdOnChangeSubscriptionQos& subscriptionQos) {
+					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::StdOnChangeSubscriptionQos& subscriptionQos) {
+					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
 	«ENDIF»
 		if (connector==NULL){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
@@ -174,12 +174,12 @@ void «className»::handleArbitrationFinished(
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
 	«ELSE»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-					const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
 	«ENDIF»
 		if (connector==NULL){

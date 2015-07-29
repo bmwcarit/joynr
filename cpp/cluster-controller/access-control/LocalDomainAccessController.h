@@ -24,7 +24,7 @@
 #include "joynr/infrastructure/QtMasterAccessControlEntry.h"
 #include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
 #include "joynr/infrastructure/QtMasterRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/StdOwnerRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/infrastructure/QtPermission.h"
 #include "joynr/infrastructure/QtTrustLevel.h"
 #include "joynr/infrastructure/QtRole.h"
@@ -72,8 +72,7 @@ public:
         }
 
         // Called with the result of a consumer permission request
-        virtual void consumerPermission(
-                infrastructure::DacTypes::StdPermission::Enum permission) = 0;
+        virtual void consumerPermission(infrastructure::DacTypes::Permission::Enum permission) = 0;
 
         // Called when an operation is needed to get the consumer permission
         virtual void operationNeeded() = 0;
@@ -117,7 +116,7 @@ public:
     virtual void getConsumerPermission(const std::string& userId,
                                        const std::string& domain,
                                        const std::string& interfaceName,
-                                       infrastructure::DacTypes::StdTrustLevel::Enum trustLevel,
+                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
                                        QSharedPointer<IGetConsumerPermissionCallback> callback);
 
     /**
@@ -138,7 +137,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             const std::string& operation,
-            infrastructure::DacTypes::StdTrustLevel::Enum trustLevel);
+            infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 
     /**
      * Returns a list of entries that apply to user uid,
@@ -148,7 +147,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of master ACEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterAccessControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getMasterAccessControlEntries(const std::string& uid);
 
     /**
@@ -159,7 +158,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of editable master ACEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterAccessControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getEditableMasterAccessControlEntries(const std::string& uid);
 
     /**
@@ -170,7 +169,7 @@ public:
      * \return true if update succeeded.
      */
     virtual bool updateMasterAccessControlEntry(
-            const infrastructure::DacTypes::StdMasterAccessControlEntry& updatedMasterAce);
+            const infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce);
 
     /**
      * Removes an existing entry (according to primary key).
@@ -194,7 +193,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of mediator ACEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterAccessControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getMediatorAccessControlEntries(const std::string& uid);
 
     /**
@@ -206,7 +205,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of editable mediator ACEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterAccessControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getEditableMediatorAccessControlEntries(const std::string& uid);
 
     /**
@@ -217,7 +216,7 @@ public:
      * \return true if update succeeded.
      */
     virtual bool updateMediatorAccessControlEntry(
-            const infrastructure::DacTypes::StdMasterAccessControlEntry& updatedMediatorAce);
+            const infrastructure::DacTypes::MasterAccessControlEntry& updatedMediatorAce);
 
     /**
      * Removes an existing entry (according to primary key).
@@ -241,7 +240,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of owner ACEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdOwnerAccessControlEntry>
+    virtual std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
     getOwnerAccessControlEntries(const std::string& uid);
 
     /**
@@ -253,7 +252,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of editable owner ACEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdOwnerAccessControlEntry>
+    virtual std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
     getEditableOwnerAccessControlEntries(const std::string& uid);
 
     /**
@@ -264,7 +263,7 @@ public:
      * \return true if update succeeded.
      */
     virtual bool updateOwnerAccessControlEntry(
-            const infrastructure::DacTypes::StdOwnerAccessControlEntry& updatedOwnerAce);
+            const infrastructure::DacTypes::OwnerAccessControlEntry& updatedOwnerAce);
 
     /**
      * Removes an existing entry (according to primary key).
@@ -288,11 +287,11 @@ public:
      * \param interfaceName The interface that is being accessed
      * \param trustLevel    The trust level of the device accessing the interface
      */
-    virtual infrastructure::DacTypes::StdPermission::Enum getProviderPermission(
+    virtual infrastructure::DacTypes::Permission::Enum getProviderPermission(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfacename,
-            infrastructure::DacTypes::StdTrustLevel::Enum trustLevel);
+            infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 
     /**
      * Returns a list of master registration control entries that apply to provider uid, i.e. the
@@ -303,7 +302,7 @@ public:
      * \param uid The provider userId.
      * \return A list of master RCEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterRegistrationControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getMasterRegistrationControlEntries(const std::string& uid);
 
     /**
@@ -314,7 +313,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of entries applying to domains the user uid has role Master.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterRegistrationControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getEditableMasterRegistrationControlEntries(const std::string& uid);
 
     /**
@@ -325,7 +324,7 @@ public:
      * \return true if update succeeded.
      */
     virtual bool updateMasterRegistrationControlEntry(
-            const infrastructure::DacTypes::StdMasterRegistrationControlEntry& updatedMasterRce);
+            const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce);
 
     /**
      * Removes an existing entry (according to primary key).
@@ -348,7 +347,7 @@ public:
      * \param uid The provider userId.
      * \return A list of mediator RCEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterRegistrationControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getMediatorRegistrationControlEntries(const std::string& uid);
 
     /**
@@ -359,7 +358,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of entries applying to domains the user uid has role Master.
      */
-    virtual std::vector<infrastructure::DacTypes::StdMasterRegistrationControlEntry>
+    virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getEditableMediatorRegistrationControlEntries(const std::string& uid);
 
     /**
@@ -370,7 +369,7 @@ public:
      * \return true if update succeeded.
      */
     virtual bool updateMediatorRegistrationControlEntry(
-            const infrastructure::DacTypes::StdMasterRegistrationControlEntry& updatedMediatorRce);
+            const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce);
 
     /**
      * Removes an existing entry (according to primary key).
@@ -393,7 +392,7 @@ public:
      * \param uid The provider userId.
      * \return A list of owner RCEs for specified uid.
      */
-    virtual std::vector<infrastructure::DacTypes::StdOwnerRegistrationControlEntry>
+    virtual std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
     getOwnerRegistrationControlEntries(const std::string& uid);
 
     /**
@@ -404,7 +403,7 @@ public:
      * \param uid The userId of the caller.
      * \return A list of entries applying to domains the user uid has role Owner.
      */
-    virtual std::vector<infrastructure::DacTypes::StdOwnerRegistrationControlEntry>
+    virtual std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
     getEditableOwnerRegistrationControlEntries(const std::string& uid);
 
     /**
@@ -415,7 +414,7 @@ public:
      * \return true if update succeeded.
      */
     virtual bool updateOwnerRegistrationControlEntry(
-            const infrastructure::DacTypes::StdOwnerRegistrationControlEntry& updatedOwnerRce);
+            const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce);
 
     /**
      * Removes an existing entry (according to primary key).
@@ -486,7 +485,7 @@ private:
         std::string userId;
         std::string domain;
         std::string interfaceName;
-        infrastructure::DacTypes::StdTrustLevel::Enum trustLevel;
+        infrastructure::DacTypes::TrustLevel::Enum trustLevel;
         QSharedPointer<IGetConsumerPermissionCallback> callbacks;
     };
 

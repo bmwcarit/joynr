@@ -27,15 +27,15 @@
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT StdSubscriptionQos
+class JOYNRCOMMON_EXPORT SubscriptionQos
 {
 
 public:
-    StdSubscriptionQos();
-    StdSubscriptionQos(const StdSubscriptionQos& subscriptionQos);
-    StdSubscriptionQos(const int64_t& validity);
+    SubscriptionQos();
+    SubscriptionQos(const SubscriptionQos& subscriptionQos);
+    SubscriptionQos(const int64_t& validity);
 
-    virtual ~StdSubscriptionQos();
+    virtual ~SubscriptionQos();
 
     /**
      * The provider will send notifications until the end date is reached. You will not receive any
@@ -45,7 +45,7 @@ public:
      * @return endDate_ms
      * 		The publication will automatically expire at that EndDate.
      *
-     * @see StdSubscriptionQos#setValidity_ms
+     * @see SubscriptionQos#setValidity_ms
      */
     int64_t getExpiryDate() const;
 
@@ -63,7 +63,7 @@ public:
      * @param endDate_ms
      * 		The publication will automatically expire at that date.
      *
-     * @see StdSubscriptionQos#setValidity_ms
+     * @see SubscriptionQos#setValidity_ms
      */
     virtual void setExpiryDate(const int64_t& expiryDate);
 
@@ -79,8 +79,8 @@ public:
      *until the EndDate of the
      *            Subscription.
      *
-     * @see StdSubscriptionQos#setAlertInterval_ms
-     * @see StdSubscriptionQos#setEndDate_ms
+     * @see SubscriptionQos#setAlertInterval_ms
+     * @see SubscriptionQos#setEndDate_ms
      */
     virtual int64_t getPublicationTtl() const;
 
@@ -94,7 +94,7 @@ public:
      * @param validity
      *            The publication will automatically expire in validty_ms milliseconds
      *
-     * @see StdSubscriptionQos#setEndDate_ms
+     * @see SubscriptionQos#setEndDate_ms
      */
     virtual void setValidity(const int64_t& validity);
 
@@ -110,12 +110,12 @@ public:
      *the EndDate of the
      *            Subscription.
      *
-     * @see StdSubscriptionQos#setAlertInterval_ms
+     * @see SubscriptionQos#setAlertInterval_ms
      */
     virtual void setPublicationTtl(const int64_t& publicationTtl_ms);
 
-    StdSubscriptionQos& operator=(const StdSubscriptionQos& subscriptionQos);
-    virtual bool operator==(const StdSubscriptionQos& subscriptionQos) const;
+    SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
+    virtual bool operator==(const SubscriptionQos& subscriptionQos) const;
 
     static const int64_t& DEFAULT_PUBLICATION_TTL();
     static const int64_t& MIN_PUBLICATION_TTL();

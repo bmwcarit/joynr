@@ -20,7 +20,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "joynr/StdBroadcastFilterParameters.h"
+#include "joynr/BroadcastFilterParameters.h"
 #include "joynr/QtBroadcastFilterParameters.h"
 
 using namespace joynr;
@@ -36,22 +36,22 @@ public:
 
 TEST_F(BroadcastFilterParametersTest, compareFilterParameters)
 {
-    StdBroadcastFilterParameters param1;
+    BroadcastFilterParameters param1;
     param1.setFilterParameter("firstEntry", "firstEntry");
     param1.setFilterParameter("secondentry", "sndEntry");
 
-    StdBroadcastFilterParameters param2;
+    BroadcastFilterParameters param2;
     param2.setFilterParameter("firstEntry", "firstEntry");
     param2.setFilterParameter("secondentry", "sndEntry2");
 
     EXPECT_FALSE(param1 == param2);
 
-    StdBroadcastFilterParameters param3;
+    BroadcastFilterParameters param3;
     param3.setFilterParameter("firstEntry", "firstEntry");
     param3.setFilterParameter("secondentry", "sndEntry");
     EXPECT_EQ(param3, param1);
 
-    StdBroadcastFilterParameters param4;
+    BroadcastFilterParameters param4;
     param4.setFilterParameter("secondentry", "sndEntry");
     param4.setFilterParameter("firstEntry", "firstEntry");
     EXPECT_EQ(param4, param1);
@@ -59,7 +59,7 @@ TEST_F(BroadcastFilterParametersTest, compareFilterParameters)
 
 TEST_F(BroadcastFilterParametersTest, correctConvertsionFromStdToQt)
 {
-    StdBroadcastFilterParameters stdParam;
+    BroadcastFilterParameters stdParam;
     stdParam.setFilterParameter("firstEntry", "firstEntry");
     stdParam.setFilterParameter("secondentry", "sndEntry");
 

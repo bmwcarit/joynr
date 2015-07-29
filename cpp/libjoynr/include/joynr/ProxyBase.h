@@ -61,7 +61,7 @@ protected:
      */
     virtual void handleArbitrationFinished(
             const std::string& participantId,
-            const joynr::types::StdCommunicationMiddleware::Enum& connection);
+            const joynr::types::CommunicationMiddleware::Enum& connection);
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
@@ -71,7 +71,7 @@ protected:
     bool cached;
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    joynr::types::StdCommunicationMiddleware::Enum* connection;
+    joynr::types::CommunicationMiddleware::Enum* connection;
     static joynr_logging::Logger* logger;
 };
 

@@ -26,8 +26,8 @@
 
 #include "joynr/JoynrExport.h"
 
-#include "joynr/types/StdCustomParameter.h"
-#include "joynr/types/StdDiscoveryScope.h"
+#include "joynr/types/CustomParameter.h"
+#include "joynr/types/DiscoveryScope.h"
 
 namespace joynr
 {
@@ -67,7 +67,7 @@ public:
 
     static int64_t& DO_NOT_USE_CACHE();
 
-    static joynr::types::StdDiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
+    static joynr::types::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
 
     static int64_t& DEFAULT_RETRYINTERVAL();
 
@@ -127,14 +127,14 @@ public:
      *additional parameters
      *         contains no mapping for the key
      */
-    types::StdCustomParameter getCustomParameter(std::string name) const;
+    types::CustomParameter getCustomParameter(std::string name) const;
 
     /**
      * get the map of custom parameters
      * @return
      *          The map of the current set custom parameters
      */
-    std::map<std::string, types::StdCustomParameter> getCustomParameters() const;
+    std::map<std::string, types::CustomParameter> getCustomParameters() const;
 
     /**
      * Provider entries in the global capabilities directory are cached locally. Discovery will
@@ -193,7 +193,7 @@ public:
      *
      * @return the current set discovery scope
      */
-    joynr::types::StdDiscoveryScope::Enum getDiscoveryScope() const;
+    joynr::types::DiscoveryScope::Enum getDiscoveryScope() const;
 
     /**
      * The scope determines where the discovery process will look for matching providers, if
@@ -205,7 +205,7 @@ public:
      * @param discoveryScope
      *                  discovery scope to be set
      */
-    void setDiscoveryScope(joynr::types::StdDiscoveryScope::Enum discoveryScope);
+    void setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope);
 
     /**
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
@@ -229,11 +229,11 @@ public:
     static const std::string KEYWORD_PARAMETER();
 
 private:
-    std::map<std::string, types::StdCustomParameter> customParameters;
+    std::map<std::string, types::CustomParameter> customParameters;
     ArbitrationStrategy arbitrationStrategy;
     int64_t discoveryTimeout;
     int64_t cacheMaxAge;
-    joynr::types::StdDiscoveryScope::Enum discoveryScope;
+    joynr::types::DiscoveryScope::Enum discoveryScope;
     bool providerMustSupportOnChange;
     int64_t retryInterval;
 };

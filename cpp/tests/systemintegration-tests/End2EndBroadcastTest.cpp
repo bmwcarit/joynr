@@ -33,7 +33,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/SettingsMerger.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/StdOnChangeSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
@@ -57,30 +57,30 @@ namespace joynr {
 
 class MyTestProvider : public tests::DefaulttestProvider {
 public:
-    virtual void locationChanged(const joynr::types::Localisation::StdGpsLocation& location) {
+    virtual void locationChanged(const joynr::types::Localisation::GpsLocation& location) {
         tests::testAbstractProvider::locationChanged(location);
     }
 
-    virtual void fireLocation(const joynr::types::Localisation::StdGpsLocation& location) {
+    virtual void fireLocation(const joynr::types::Localisation::GpsLocation& location) {
         tests::testAbstractProvider::fireLocation(location);
     }
 
-    virtual void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::StdTestEnum::Enum& testEnum) {
+    virtual void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::TestEnum::Enum& testEnum) {
         tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
     }
 
-    virtual void fireLocationUpdate(const joynr::types::Localisation::StdGpsLocation& location) {
+    virtual void fireLocationUpdate(const joynr::types::Localisation::GpsLocation& location) {
         tests::testAbstractProvider::fireLocationUpdate(location);
     }
 
     virtual void fireLocationUpdateWithSpeed(
-            const joynr::types::Localisation::StdGpsLocation& location,
+            const joynr::types::Localisation::GpsLocation& location,
             const double& currentSpeed
     ) {
         tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
     }
 
-    virtual void fireLocationUpdateSelective(const joynr::types::Localisation::StdGpsLocation& location) {
+    virtual void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) {
         tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
 };
@@ -105,10 +105,10 @@ public:
     unsigned long registerProviderWait;
     unsigned long subscribeToAttributeWait;
     unsigned long subscribeToBroadcastWait;
-    joynr::types::Localisation::StdGpsLocation gpsLocation;
-    joynr::types::Localisation::StdGpsLocation gpsLocation2;
-    joynr::types::Localisation::StdGpsLocation gpsLocation3;
-    joynr::types::Localisation::StdGpsLocation gpsLocation4;
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    joynr::types::Localisation::GpsLocation gpsLocation2;
+    joynr::types::Localisation::GpsLocation gpsLocation3;
+    joynr::types::Localisation::GpsLocation gpsLocation4;
 
     End2EndBroadcastTest() :
         qRegisterMetaTypeQos(),
@@ -128,12 +128,12 @@ public:
         registerProviderWait(1000),
         subscribeToAttributeWait(2000),
         subscribeToBroadcastWait(2000),
-        gpsLocation(types::Localisation::StdGpsLocation()),
-        gpsLocation2(types::Localisation::StdGpsLocation(
+        gpsLocation(types::Localisation::GpsLocation()),
+        gpsLocation2(types::Localisation::GpsLocation(
                          9.0,
                          51.0,
                          508.0,
-                         types::Localisation::StdGpsFixEnum::MODE2D,
+                         types::Localisation::GpsFixEnum::MODE2D,
                          0.0,
                          0.0,
                          0.0,
@@ -141,11 +141,11 @@ public:
                          444,
                          444,
                          2)),
-        gpsLocation3(types::Localisation::StdGpsLocation(
+        gpsLocation3(types::Localisation::GpsLocation(
                          9.0,
                          51.0,
                          508.0,
-                         types::Localisation::StdGpsFixEnum::MODE2D,
+                         types::Localisation::GpsFixEnum::MODE2D,
                          0.0,
                          0.0,
                          0.0,
@@ -153,11 +153,11 @@ public:
                          444,
                          444,
                          3)),
-        gpsLocation4(types::Localisation::StdGpsLocation(
+        gpsLocation4(types::Localisation::GpsLocation(
                          9.0,
                          51.0,
                          508.0,
-                         types::Localisation::StdGpsFixEnum::MODE2D,
+                         types::Localisation::GpsFixEnum::MODE2D,
                          0.0,
                          0.0,
                          0.0,
@@ -250,15 +250,15 @@ private:
 } // namespace joynr
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
-    tests::testTypes::StdTestEnum::Enum expectedTestEnum = tests::testTypes::StdTestEnum::TWO;
-    MockSubscriptionListenerOneType<tests::testTypes::StdTestEnum::Enum>* mockListener =
-            new MockSubscriptionListenerOneType<tests::testTypes::StdTestEnum::Enum>();
+    tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
+    MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>* mockListener =
+            new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>();
 
     // Use a semaphore to count and wait on calls to the mock listener
     ON_CALL(*mockListener, onReceive(Eq(expectedTestEnum)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<tests::testTypes::StdTestEnum::Enum>> subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -285,7 +285,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
             ->build();
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -317,11 +317,11 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener2, onReceive(_))
             .WillRepeatedly(ReleaseSemaphore(&altSemaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener2(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener2(
                     mockListener2);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -348,7 +348,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -408,7 +408,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3)))
             .Times(0);
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -435,7 +435,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -476,7 +476,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -503,7 +503,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -549,7 +549,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4), Eq(300)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation, float> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float> > subscriptionListener(
                     mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -576,7 +576,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -624,7 +624,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
@@ -654,7 +654,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -698,10 +698,10 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::StdGpsLocation&>())).
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>())).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
@@ -731,7 +731,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 
@@ -787,10 +787,10 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     EXPECT_CALL(*mockListenerBroadcast, onReceive(Eq(gpsLocation3))).
             WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerAttribute(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListenerAttribute(
                     mockListenerAttribute);
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::StdGpsLocation> > subscriptionListenerBroadcast(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
     std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
@@ -817,7 +817,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                ->build());
 
     int64_t minInterval_ms = 50;
-    StdOnChangeSubscriptionQos subscriptionQos(
+    OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
 

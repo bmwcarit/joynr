@@ -20,7 +20,7 @@
 #define STDONCHANGESUBSCRIPTIONQOS_H
 
 #include <stdint.h>
-#include "joynr/StdSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 
 /*
@@ -33,13 +33,13 @@
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT StdOnChangeSubscriptionQos : public StdSubscriptionQos
+class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
 {
 
 public:
-    StdOnChangeSubscriptionQos();
-    StdOnChangeSubscriptionQos(const StdOnChangeSubscriptionQos& other);
-    StdOnChangeSubscriptionQos(const int64_t& validity, const int64_t& minInterval);
+    OnChangeSubscriptionQos();
+    OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other);
+    OnChangeSubscriptionQos(const int64_t& validity, const int64_t& minInterval);
 
     /**
     * The provider will maintain at least a minimum interval idle time in milliseconds between
@@ -69,8 +69,8 @@ public:
      */
     virtual void setMinInterval(const int64_t& minInterval);
 
-    StdOnChangeSubscriptionQos& operator=(const StdOnChangeSubscriptionQos& other);
-    virtual bool operator==(const StdOnChangeSubscriptionQos& other) const;
+    OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
+    virtual bool operator==(const OnChangeSubscriptionQos& other) const;
 
     static const int64_t& DEFAULT_MIN_INTERVAL();
     static const int64_t& MIN_MIN_INTERVAL();

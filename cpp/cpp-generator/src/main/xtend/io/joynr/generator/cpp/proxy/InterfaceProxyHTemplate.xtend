@@ -81,7 +81,7 @@ public:
 
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos){
+					const joynr::SubscriptionQos& subscriptionQos){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos);
@@ -89,7 +89,7 @@ public:
 
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos,
+					const joynr::SubscriptionQos& subscriptionQos,
 					std::string& subscriptionId){
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
@@ -109,7 +109,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos){
+						const joynr::OnChangeSubscriptionQos& subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
 							subscriptionListener,
@@ -119,7 +119,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
@@ -130,7 +130,7 @@ public:
 		«ELSE»
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos){
+						const joynr::OnChangeSubscriptionQos& subscriptionQos){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,
 							subscriptionQos);
@@ -138,7 +138,7 @@ public:
 
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId){
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,

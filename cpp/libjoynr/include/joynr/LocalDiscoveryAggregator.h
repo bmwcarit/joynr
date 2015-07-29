@@ -65,18 +65,18 @@ public:
 
     // inherited from joynr::system::IDiscoverySync
     virtual void add(joynr::RequestStatus& joynrInternalStatus,
-                     const joynr::types::StdDiscoveryEntry& entry);
+                     const joynr::types::DiscoveryEntry& entry);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        std::vector<joynr::types::StdDiscoveryEntry>& result,
+                        std::vector<joynr::types::DiscoveryEntry>& result,
                         const std::string& domain,
                         const std::string& interfaceName,
-                        const joynr::types::StdDiscoveryQos& discoveryQos);
+                        const joynr::types::DiscoveryQos& discoveryQos);
 
     // inherited from joynr::system::IDiscoverySync
     virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        joynr::types::StdDiscoveryEntry& result,
+                        joynr::types::DiscoveryEntry& result,
                         const std::string& participantId);
 
     // inherited from joynr::system::IDiscoverySync
@@ -94,7 +94,7 @@ private:
      * @param discoveryEntry Discovery entry to check for local availability.
      */
     void checkForLocalAvailabilityAndAddInProcessConnection(
-            joynr::types::StdDiscoveryEntry& discoveryEntry);
+            joynr::types::DiscoveryEntry& discoveryEntry);
 
     // this pointer doesn't hold ownership in case the proxy builder is not set
     joynr::system::IDiscoverySync* discoveryProxy;

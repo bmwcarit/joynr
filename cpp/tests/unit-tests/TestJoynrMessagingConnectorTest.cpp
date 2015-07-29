@@ -23,7 +23,7 @@
 #include <string>
 #include "utils/MockObjects.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/StdOnChangeSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -189,7 +189,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::QtGpsLocation::createStd(gpsLocation)), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    joynr::StdOnChangeSubscriptionQos qos;
+    joynr::OnChangeSubscriptionQos qos;
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive

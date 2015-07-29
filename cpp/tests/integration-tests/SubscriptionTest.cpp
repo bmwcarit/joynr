@@ -67,7 +67,7 @@ public:
                 [] (const RequestStatus status){
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::QtGpsLocation>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::StdGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
@@ -102,7 +102,7 @@ protected:
     QSharedPointer<MockReplyCaller<types::QtGpsLocation> > mockReplyCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::QtGpsLocation> > mockSubscriptionListener;
 
-    types::Localisation::StdGpsLocation gpsLocation1;
+    types::Localisation::GpsLocation gpsLocation1;
 
     // create test data
     MessagingQos qos;
@@ -239,7 +239,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     QSemaphore semaphore(0);
     EXPECT_CALL(
             *mockRequestCaller,
-            getLocation(A<std::function<void(const types::Localisation::StdGpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),

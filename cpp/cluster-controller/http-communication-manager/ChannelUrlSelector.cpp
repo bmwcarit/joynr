@@ -105,14 +105,14 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     LOG_DEBUG(logger,
               "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
                       channelId);
-    std::shared_ptr<Future<types::StdChannelUrlInformation>> proxyFuture(
+    std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
             channelUrlDirectory->getUrlsForChannel(channelId.toStdString(), timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
         LOG_DEBUG(logger,
                   "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = " + channelId);
-        types::StdChannelUrlInformation urlInformation;
+        types::ChannelUrlInformation urlInformation;
         proxyFuture->getValues(urlInformation);
         if (urlInformation.getUrls().empty()) {
             LOG_DEBUG(logger, "obtainUrl: empty list of urls obtained from id = " + channelId);

@@ -38,12 +38,12 @@ class FilterParameterTemplate implements BroadcastTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
-#include "joynr/StdBroadcastFilterParameters.h"
+#include "joynr/BroadcastFilterParameters.h"
 #include <string>
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»
-class «getDllExportMacro()» «className» : public StdBroadcastFilterParameters {
+class «getDllExportMacro()» «className» : public BroadcastFilterParameters {
 public:
 
 	«IF (getFilterParameters(broadcast).isEmpty())»

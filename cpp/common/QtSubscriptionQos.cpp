@@ -142,14 +142,14 @@ bool QtSubscriptionQos::equals(const QObject& other) const
     return typeThis == typeOther && *this == *newOther;
 }
 
-QtSubscriptionQos* QtSubscriptionQos::createQt(const StdSubscriptionQos& from)
+QtSubscriptionQos* QtSubscriptionQos::createQt(const SubscriptionQos& from)
 {
     QtSubscriptionQos* to;
-    if (dynamic_cast<const StdOnChangeSubscriptionQos*>(&from) != NULL) {
-        to = createQt(dynamic_cast<const StdOnChangeSubscriptionQos&>(from));
-    } else if (dynamic_cast<const StdPeriodicSubscriptionQos*>(&from) != NULL) {
+    if (dynamic_cast<const OnChangeSubscriptionQos*>(&from) != NULL) {
+        to = createQt(dynamic_cast<const OnChangeSubscriptionQos&>(from));
+    } else if (dynamic_cast<const PeriodicSubscriptionQos*>(&from) != NULL) {
         to = new QtPeriodicSubscriptionQos();
-        createQtInternal(dynamic_cast<const StdPeriodicSubscriptionQos&>(from), *to);
+        createQtInternal(dynamic_cast<const PeriodicSubscriptionQos&>(from), *to);
     } else {
         to = new QtSubscriptionQos();
         createQtInternal(from, *to);
@@ -157,11 +157,11 @@ QtSubscriptionQos* QtSubscriptionQos::createQt(const StdSubscriptionQos& from)
     return to;
 }
 
-QtOnChangeSubscriptionQos* QtSubscriptionQos::createQt(const StdOnChangeSubscriptionQos& from)
+QtOnChangeSubscriptionQos* QtSubscriptionQos::createQt(const OnChangeSubscriptionQos& from)
 {
-    if (dynamic_cast<const StdOnChangeWithKeepAliveSubscriptionQos*>(&from) != NULL) {
+    if (dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos*>(&from) != NULL) {
         QtOnChangeWithKeepAliveSubscriptionQos* to = new QtOnChangeWithKeepAliveSubscriptionQos();
-        createQtInternal(dynamic_cast<const StdOnChangeWithKeepAliveSubscriptionQos&>(from), *to);
+        createQtInternal(dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos&>(from), *to);
         return to;
     } else {
         QtOnChangeSubscriptionQos* to = new QtOnChangeSubscriptionQos();
@@ -170,33 +170,33 @@ QtOnChangeSubscriptionQos* QtSubscriptionQos::createQt(const StdOnChangeSubscrip
     }
 }
 
-void QtSubscriptionQos::createQtInternal(const StdSubscriptionQos& from, QtSubscriptionQos& to)
+void QtSubscriptionQos::createQtInternal(const SubscriptionQos& from, QtSubscriptionQos& to)
 {
     to.setExpiryDate(TypeUtil::toQt(from.getExpiryDate()));
     to.setPublicationTtl(TypeUtil::toQt(from.getPublicationTtl()));
 }
 
-void QtSubscriptionQos::createQtInternal(const StdPeriodicSubscriptionQos& from,
+void QtSubscriptionQos::createQtInternal(const PeriodicSubscriptionQos& from,
                                          QtPeriodicSubscriptionQos& to)
 {
     QtSubscriptionQos::createQtInternal(
-            static_cast<const StdSubscriptionQos&>(from), static_cast<QtSubscriptionQos&>(to));
+            static_cast<const SubscriptionQos&>(from), static_cast<QtSubscriptionQos&>(to));
     to.setAlertAfterInterval(TypeUtil::toQt(from.getAlertAfterInterval()));
     to.setPeriod(TypeUtil::toQt(from.getPeriod()));
 }
 
-void QtSubscriptionQos::createQtInternal(const StdOnChangeSubscriptionQos& from,
+void QtSubscriptionQos::createQtInternal(const OnChangeSubscriptionQos& from,
                                          QtOnChangeSubscriptionQos& to)
 {
     QtSubscriptionQos::createQtInternal(
-            static_cast<const StdSubscriptionQos&>(from), static_cast<QtSubscriptionQos&>(to));
+            static_cast<const SubscriptionQos&>(from), static_cast<QtSubscriptionQos&>(to));
     to.setMinInterval(TypeUtil::toQt(from.getMinInterval()));
 }
 
-void QtSubscriptionQos::createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
+void QtSubscriptionQos::createQtInternal(const OnChangeWithKeepAliveSubscriptionQos& from,
                                          QtOnChangeWithKeepAliveSubscriptionQos& to)
 {
-    QtSubscriptionQos::createQtInternal(static_cast<const StdOnChangeSubscriptionQos&>(from),
+    QtSubscriptionQos::createQtInternal(static_cast<const OnChangeSubscriptionQos&>(from),
                                         static_cast<QtOnChangeSubscriptionQos&>(to));
     to.setAlertAfterInterval(TypeUtil::toQt(from.getAlertAfterInterval()));
     to.setMaxInterval(TypeUtil::toQt(from.getMaxInterval()));

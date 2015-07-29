@@ -97,22 +97,21 @@ public:
     virtual void route(const JoynrMessage& message);
 
     virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::RoutingTypes::StdChannelAddress& channelAddress,
+                            const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
                             std::function<void()> onSuccess);
     virtual void addNextHop(
             const std::string& participantId,
-            const joynr::system::RoutingTypes::StdCommonApiDbusAddress& commonApiDbusAddress,
+            const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
             std::function<void()> onSuccess);
     virtual void addNextHop(const std::string& participantId,
-                            const joynr::system::RoutingTypes::StdBrowserAddress& browserAddress,
+                            const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::RoutingTypes::WebSocketAddress& webSocketAddress,
                             std::function<void()> onSuccess);
     virtual void addNextHop(
             const std::string& participantId,
-            const joynr::system::RoutingTypes::StdWebSocketAddress& webSocketAddress,
-            std::function<void()> onSuccess);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::StdWebSocketClientAddress& webSocketClientAddress,
+            const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
             std::function<void()> onSuccess);
     virtual void removeNextHop(const std::string& participantId,
                                std::function<void()> onSuccess = nullptr);

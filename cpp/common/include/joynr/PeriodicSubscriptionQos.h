@@ -19,19 +19,19 @@
 #ifndef STDStdPeriodicSubscriptionQos_H
 #define STDStdPeriodicSubscriptionQos_H
 
-#include "joynr/StdSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT StdPeriodicSubscriptionQos : public StdSubscriptionQos
+class JOYNRCOMMON_EXPORT PeriodicSubscriptionQos : public SubscriptionQos
 {
 public:
-    StdPeriodicSubscriptionQos();
-    StdPeriodicSubscriptionQos(const StdPeriodicSubscriptionQos& other);
-    StdPeriodicSubscriptionQos(const int64_t& validity,
-                               const int64_t& period,
-                               const int64_t& alertAfterInterval);
+    PeriodicSubscriptionQos();
+    PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other);
+    PeriodicSubscriptionQos(const int64_t& validity,
+                            const int64_t& period,
+                            const int64_t& alertAfterInterval);
 
     /**
     * The provider will send notifications every maximum interval in milliseconds, even if the value
@@ -87,8 +87,8 @@ public:
      */
     virtual void clearAlertAfterInterval();
 
-    StdPeriodicSubscriptionQos& operator=(const StdPeriodicSubscriptionQos& other);
-    virtual bool operator==(const StdPeriodicSubscriptionQos& other) const;
+    PeriodicSubscriptionQos& operator=(const PeriodicSubscriptionQos& other);
+    virtual bool operator==(const PeriodicSubscriptionQos& other) const;
 
     static const int64_t& MIN_PERIOD();
     static const int64_t& MAX_PERIOD();

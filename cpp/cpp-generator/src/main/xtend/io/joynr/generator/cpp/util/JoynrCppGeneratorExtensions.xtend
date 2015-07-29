@@ -184,7 +184,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	def joynrNameStd(FType type){
-		return "Std" + type.joynrName
+		return type.joynrName
 	}
 
 	def getAllPrimitiveTypes(FInterface serviceInterface) {

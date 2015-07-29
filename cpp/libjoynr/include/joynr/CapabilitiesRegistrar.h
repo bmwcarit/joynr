@@ -73,10 +73,10 @@ public:
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
-        std::vector<joynr::types::StdCommunicationMiddleware::Enum> connections = {
-                joynr::types::StdCommunicationMiddleware::JOYNR};
+        std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
+                joynr::types::CommunicationMiddleware::JOYNR};
         joynr::RequestStatus status;
-        joynr::types::StdDiscoveryEntry entry(
+        joynr::types::DiscoveryEntry entry(
                 domain, interfaceName, participantId, provider->getProviderQos(), connections);
         discoveryProxy.add(status, entry);
         if (!status.successful()) {

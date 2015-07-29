@@ -92,7 +92,7 @@ public:
     static const qint64& NO_CACHE_FRESHNESS_REQ();
     static const qint64& DONT_USE_CACHE();
 
-    void add(const joynr::types::StdDiscoveryEntry& entry);
+    void add(const joynr::types::DiscoveryEntry& entry);
 
     /*
      * Remove capability from the cache, and for permanent removal from the backend, this method
@@ -102,7 +102,7 @@ public:
      */
     void remove(const std::string& domain,
                 const std::string& interfaceName,
-                const types::StdProviderQos& qos);
+                const types::ProviderQos& qos);
 
     virtual void remove(const std::string& participantId);
 
@@ -113,7 +113,7 @@ public:
     virtual void lookup(const std::string& domain,
                         const std::string& interfaceName,
                         QSharedPointer<ILocalCapabilitiesCallback> callback,
-                        const joynr::types::StdDiscoveryQos& discoveryQos);
+                        const joynr::types::DiscoveryQos& discoveryQos);
 
     /*
      * Returns a capability entry for a given participant ID or an empty list
@@ -143,19 +143,17 @@ public:
     virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(const joynr::types::StdDiscoveryEntry& discoveryEntry,
+    virtual void add(const joynr::types::DiscoveryEntry& discoveryEntry,
                      std::function<void()> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
             const std::string& domain,
             const std::string& interfaceName,
-            const joynr::types::StdDiscoveryQos& discoveryQos,
-            std::function<void(const std::vector<joynr::types::StdDiscoveryEntry>& result)>
-                    onSuccess);
+            const joynr::types::DiscoveryQos& discoveryQos,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const joynr::types::StdDiscoveryEntry& result)> onSuccess);
+    virtual void lookup(const std::string& participantId,
+                        std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void remove(const std::string& participantId, std::function<void()> onSuccess);
 
@@ -169,8 +167,8 @@ public:
         virtual ~IProviderRegistrationObserver()
         {
         }
-        virtual void onProviderAdd(const types::StdDiscoveryEntry& discoveryEntry) = 0;
-        virtual void onProviderRemove(const types::StdDiscoveryEntry& discoveryEntry) = 0;
+        virtual void onProviderAdd(const types::DiscoveryEntry& discoveryEntry) = 0;
+        virtual void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) = 0;
     };
 
     void addProviderRegistrationObserver(QSharedPointer<IProviderRegistrationObserver> observer);
@@ -179,10 +177,10 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
-    void capabilitiesReceived(const std::vector<types::StdCapabilityInformation>& results,
+    void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results,
                               std::vector<CapabilityEntry> cachedLocalCapabilies,
                               QSharedPointer<ILocalCapabilitiesCallback> callback,
-                              joynr::types::StdDiscoveryScope::Enum discoveryScope);
+                              joynr::types::DiscoveryScope::Enum discoveryScope);
 
     bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
                                        const joynr::types::QtDiscoveryQos& discoveryQos,
@@ -196,7 +194,7 @@ private:
                                 QSharedPointer<ILocalCapabilitiesCallback> callback);
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
-    void insertInCache(const joynr::types::StdDiscoveryEntry& entry,
+    void insertInCache(const joynr::types::DiscoveryEntry& entry,
                        bool isGlobal,
                        bool localCache,
                        bool globalCache);
@@ -208,14 +206,14 @@ private:
                                              bool localEntries);
 
     static void convertDiscoveryEntryIntoCapabilityEntry(
-            const joynr::types::StdDiscoveryEntry& discoveryEntry,
+            const joynr::types::DiscoveryEntry& discoveryEntry,
             CapabilityEntry& capabilityEntry);
     static void convertCapabilityEntryIntoDiscoveryEntry(
             const CapabilityEntry& capabilityEntry,
-            joynr::types::StdDiscoveryEntry& discoveryEntry);
+            joynr::types::DiscoveryEntry& discoveryEntry);
     static void convertCapabilityEntriesIntoDiscoveryEntries(
             const std::vector<CapabilityEntry>& capabilityEntries,
-            std::vector<joynr::types::StdDiscoveryEntry>& discoveryEntries);
+            std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
     static joynr_logging::Logger* logger;
     ICapabilitiesClient* capabilitiesClient;
@@ -227,12 +225,12 @@ private:
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2LocalCapabilities;
     TypedClientMultiCache<QString, CapabilityEntry> participantId2LocalCapability;
 
-    std::vector<types::StdCapabilityInformation> registeredGlobalCapabilities;
+    std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
     QList<QSharedPointer<IProviderRegistrationObserver>> observers;
 
-    void informObserversOnAdd(const types::StdDiscoveryEntry& discoveryEntry);
-    void informObserversOnRemove(const types::StdDiscoveryEntry& discoveryEntry);
+    void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
+    void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
 };
 
 // NOTE: This future is used to convert the synchronous call of the middleware

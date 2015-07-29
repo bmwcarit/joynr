@@ -100,7 +100,7 @@ private:
 
 TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
-    types::StdProviderQos providerQos;
+    types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 

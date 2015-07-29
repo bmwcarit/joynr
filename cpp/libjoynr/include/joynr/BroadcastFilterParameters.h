@@ -28,19 +28,19 @@ namespace joynr
 {
 
 /**
- * \class StdBroadcastFilterParameters
- * \brief The StdBroadcastFilterParameters class represents generic filter parameters
+ * \class BroadcastFilterParameters
+ * \brief The BroadcastFilterParameters class represents generic filter parameters
  * for selective broadcasts by using std types
  */
-class JOYNRCOMMON_EXPORT StdBroadcastFilterParameters
+class JOYNRCOMMON_EXPORT BroadcastFilterParameters
 {
 
 public:
-    StdBroadcastFilterParameters();
-    StdBroadcastFilterParameters(const StdBroadcastFilterParameters& filterParameters);
-    StdBroadcastFilterParameters& operator=(const StdBroadcastFilterParameters& filterParameters);
-    ~StdBroadcastFilterParameters();
-    bool operator==(const StdBroadcastFilterParameters& filterParameters) const;
+    BroadcastFilterParameters();
+    BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters);
+    BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters);
+    ~BroadcastFilterParameters();
+    bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(const std::string& parameter, const std::string& value);
     void setFilterParameters(const std::map<std::string, std::string>& value);

@@ -30,10 +30,10 @@ class InterfaceSubscriptionUtil {
 		«val returnType = attribute.typeName»
 		virtual std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
+					const joynr::SubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
 		virtual std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::StdSubscriptionQos& subscriptionQos,
+					const joynr::SubscriptionQos& subscriptionQos,
 					std::string& subscriptionId)«IF pure» = 0«ENDIF»;
 		virtual void unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId)«IF pure» = 0«ENDIF»;
 
@@ -44,19 +44,19 @@ class InterfaceSubscriptionUtil {
 			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
+						const joynr::OnChangeSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
 			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId)«IF pure» = 0«ENDIF»;
 		«ELSE»
 			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
+						const joynr::OnChangeSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
 			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
 						std::string& subscriptionId)«IF pure» = 0«ENDIF»;
 		«ENDIF»
 		virtual void unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId)«IF pure» = 0«ENDIF»;

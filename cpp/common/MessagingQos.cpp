@@ -55,7 +55,7 @@ std::string MessagingQos::toString() const
     return msgQosAsString.str();
 }
 
-// printing StdRadioStation with google-test and google-mock
+// printing RadioStation with google-test and google-mock
 void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os)
 {
     *os << "MessagingQos::" << messagingQos.toString();

@@ -62,7 +62,7 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(std::vector<types::StdCapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
@@ -72,8 +72,8 @@ public:
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual std::vector<types::StdCapabilityInformation> lookup(const std::string& domain,
-                                                                const std::string& interfaceName);
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
@@ -97,14 +97,14 @@ private:
                      MessagingQos qosSettings,
                      QSharedPointer<IReplyCaller> callBack);
 
-    std::vector<types::StdCapabilityInformation> createFakedCapInfoList(
+    std::vector<types::CapabilityInformation> createFakedCapInfoList(
             const std::string& domain,
             const std::string& interfaceName);
-    std::vector<types::StdCapabilityInformation> createFakedCapInfoListForChannelId(
+    std::vector<types::CapabilityInformation> createFakedCapInfoListForChannelId(
             const std::string& channelId);
-    std::vector<types::StdCapabilityInformation> createFakedCapInfoListForParticipantId(
+    std::vector<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
             const std::string& participantId);
-    std::vector<types::StdCapabilityInformation> createFakedCapInfoList();
+    std::vector<types::CapabilityInformation> createFakedCapInfoList();
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;

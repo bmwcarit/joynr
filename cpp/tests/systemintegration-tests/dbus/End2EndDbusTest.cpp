@@ -30,7 +30,7 @@
 #include "joynr/tests/testProxy.h"
 
 #include "joynr/RequestStatus.h"
-#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -100,7 +100,7 @@ public:
 
     void registerTestProvider() {
         // create provider
-        types::StdProviderQos providerQos;
+        types::ProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
@@ -230,7 +230,7 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     EXPECT_CALL(*mockListener, onReceive(A<const int&>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
     std::shared_ptr<ISubscriptionListener<int> > subscriptionListener(mockListener);
 
-    StdOnChangeWithKeepAliveSubscriptionQos subscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                 500000, // validity_ms
                 2000, // minInterval_ms
                 3000, // maxInterval_ms

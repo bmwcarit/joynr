@@ -71,7 +71,7 @@ void LocalChannelUrlDirectory::init()
 
 std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrls(
         const std::string& channelId,
-        types::StdChannelUrlInformation channelUrlInformation,
+        types::ChannelUrlInformation channelUrlInformation,
         std::function<void(const RequestStatus& status)> callbackFct)
 {
     LOG_INFO(logger, "registering Urls for id=" + QString::fromStdString(channelId));
@@ -87,12 +87,12 @@ std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannel
     return channelUrlDirectoryProxy->unregisterChannelUrls(channelId, callbackFct);
 }
 
-std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChannelUrlDirectory::
+std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
         getUrlsForChannel(
                 const std::string& channelId,
                 const qint64& timeout_ms,
                 std::function<void(const RequestStatus& status,
-                                   const types::StdChannelUrlInformation& channelUrls)> callbackFct)
+                                   const types::ChannelUrlInformation& channelUrls)> callbackFct)
 {
     QString channelIdQT = QString::fromStdString(channelId);
     LOG_TRACE(logger, "trying to getUrlsForChannel for id=" + channelIdQT);
@@ -101,8 +101,8 @@ std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChan
         LOG_TRACE(logger, "using cached Urls for id=" + channelIdQT);
         RequestStatus status;
         status.setCode(RequestStatusCode::OK);
-        std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
-                new joynr::Future<joynr::types::StdChannelUrlInformation>());
+        std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
+                new joynr::Future<joynr::types::ChannelUrlInformation>());
         future->onSuccess(
                 status, types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
         if (callbackFct) {
@@ -112,13 +112,13 @@ std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> LocalChan
         return future;
     }
     assert(!channelUrlDirectoryProxy.isNull());
-    std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(
+    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
             channelUrlDirectoryProxy->getUrlsForChannel(channelId, callbackFct));
     future->waitForFinished(timeout_ms);
 
     if (future->getStatus().successful()) {
         LOG_INFO(logger, "Received remote url information for channelId=" + channelIdQT);
-        joynr::types::StdChannelUrlInformation urls;
+        joynr::types::ChannelUrlInformation urls;
         future->getValues(urls);
         localCache.insert(channelIdQT, types::QtChannelUrlInformation::createQt(urls));
         LOG_INFO(logger, "Stored url information for channelId=" + channelIdQT);

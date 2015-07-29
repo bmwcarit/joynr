@@ -27,7 +27,7 @@
 #include <QMetaType>
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/StdBroadcastFilterParameters.h"
+#include "joynr/BroadcastFilterParameters.h"
 
 namespace joynr
 {
@@ -58,8 +58,8 @@ public:
     QMap<QString, QString> getFilterParameters() const;
     QString getFilterParameter(const QString& parameter) const;
 
-    static QtBroadcastFilterParameters createQt(const StdBroadcastFilterParameters& from);
-    static StdBroadcastFilterParameters createStd(const QtBroadcastFilterParameters& from);
+    static QtBroadcastFilterParameters createQt(const BroadcastFilterParameters& from);
+    static BroadcastFilterParameters createStd(const QtBroadcastFilterParameters& from);
 
 private:
     QMap<QString, QVariant> filterParameters;

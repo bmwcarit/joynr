@@ -16,35 +16,34 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/StdBroadcastFilterParameters.h"
+#include "joynr/BroadcastFilterParameters.h"
 
 namespace joynr
 {
 
-StdBroadcastFilterParameters::StdBroadcastFilterParameters()
+BroadcastFilterParameters::BroadcastFilterParameters()
         : filterParameters(std::map<std::string, std::string>())
 {
 }
 
-StdBroadcastFilterParameters::StdBroadcastFilterParameters(
-        const StdBroadcastFilterParameters& filterParameters)
+BroadcastFilterParameters::BroadcastFilterParameters(
+        const BroadcastFilterParameters& filterParameters)
         : filterParameters(filterParameters.filterParameters)
 {
 }
 
-StdBroadcastFilterParameters& StdBroadcastFilterParameters::operator=(
-        const StdBroadcastFilterParameters& filterParameters)
+BroadcastFilterParameters& BroadcastFilterParameters::operator=(
+        const BroadcastFilterParameters& filterParameters)
 {
     this->filterParameters = filterParameters.filterParameters;
     return *this;
 }
 
-StdBroadcastFilterParameters::~StdBroadcastFilterParameters()
+BroadcastFilterParameters::~BroadcastFilterParameters()
 {
 }
 
-bool StdBroadcastFilterParameters::operator==(
-        const StdBroadcastFilterParameters& filterParameters) const
+bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& filterParameters) const
 {
     return filterParameters.getFilterParameters().size() == this->filterParameters.size() &&
            std::equal(this->filterParameters.begin(),
@@ -52,13 +51,13 @@ bool StdBroadcastFilterParameters::operator==(
                       filterParameters.getFilterParameters().begin());
 }
 
-void StdBroadcastFilterParameters::setFilterParameter(const std::string& parameter,
-                                                      const std::string& value)
+void BroadcastFilterParameters::setFilterParameter(const std::string& parameter,
+                                                   const std::string& value)
 {
     filterParameters.insert(std::pair<std::string, std::string>(parameter, value));
 }
 
-std::map<std::string, std::string> StdBroadcastFilterParameters::getFilterParameters() const
+std::map<std::string, std::string> BroadcastFilterParameters::getFilterParameters() const
 {
     std::map<std::string, std::string> fiterParameters;
     for (std::map<std::string, std::string>::const_iterator iterator =
@@ -71,7 +70,7 @@ std::map<std::string, std::string> StdBroadcastFilterParameters::getFilterParame
     return fiterParameters;
 }
 
-std::string StdBroadcastFilterParameters::getFilterParameter(const std::string& parameter) const
+std::string BroadcastFilterParameters::getFilterParameter(const std::string& parameter) const
 {
     std::map<std::string, std::string>::const_iterator iterator = filterParameters.find(parameter);
     if (iterator != filterParameters.end()) {
@@ -81,8 +80,7 @@ std::string StdBroadcastFilterParameters::getFilterParameter(const std::string& 
     }
 }
 
-void StdBroadcastFilterParameters::setFilterParameters(
-        const std::map<std::string, std::string>& value)
+void BroadcastFilterParameters::setFilterParameters(const std::map<std::string, std::string>& value)
 {
     filterParameters.clear();
     for (std::map<std::string, std::string>::const_iterator iterator = value.begin();

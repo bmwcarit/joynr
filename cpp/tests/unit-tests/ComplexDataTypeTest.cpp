@@ -23,7 +23,7 @@
 #include <string>
 
 #include "joynr/types/QtTStructExtended.h"
-#include "joynr/types/TestTypes/StdTStructExtended.h"
+#include "joynr/types/TestTypes/TStructExtended.h"
 
 using namespace joynr::types;
 
@@ -48,6 +48,6 @@ joynr::joynr_logging::Logger* ComplexDataTypeTest::logger(
 TEST_F(ComplexDataTypeTest, createCStdomplexDataType)
 {
     joynr::types::QtTStructExtended fixture;
-    joynr::types::TestTypes::StdTStructExtended result = joynr::types::QtTStructExtended::createStd(fixture);
+    joynr::types::TestTypes::TStructExtended result = joynr::types::QtTStructExtended::createStd(fixture);
     EXPECT_EQ(fixture.getTDouble(), result.getTDouble());
 }

@@ -21,19 +21,19 @@
 #include "PrettyPrint.h"
 #include "joynr/joynrlogging.h"
 
-#include "joynr/tests/testTypes/StdTestEnum.h"
-#include "joynr/tests/testTypes/StdTestEnumExtended.h"
+#include "joynr/tests/testTypes/TestEnum.h"
+#include "joynr/tests/testTypes/TestEnumExtended.h"
 
 using namespace joynr::tests::testTypes;
 
 class StdEnumTypeTest : public testing::Test {
 public:
     StdEnumTypeTest() :
-            testEnumZero(StdTestEnum::ZERO),
-            testEnumZeroOther(StdTestEnum::ZERO),
-            testEnumOne(StdTestEnum::ONE),
-            testEnumOneOther(StdTestEnum::ONE),
-            testEnumTwo(StdTestEnum::TWO)
+            testEnumZero(TestEnum::ZERO),
+            testEnumZeroOther(TestEnum::ZERO),
+            testEnumOne(TestEnum::ONE),
+            testEnumOneOther(TestEnum::ONE),
+            testEnumTwo(TestEnum::TWO)
     {}
 
     virtual ~StdEnumTypeTest() {
@@ -42,11 +42,11 @@ public:
 protected:
     static joynr::joynr_logging::Logger* logger;
 
-    StdTestEnum::Enum testEnumZero;
-    StdTestEnum::Enum testEnumZeroOther;
-    StdTestEnum::Enum testEnumOne;
-    StdTestEnum::Enum testEnumOneOther;
-    StdTestEnum::Enum testEnumTwo;
+    TestEnum::Enum testEnumZero;
+    TestEnum::Enum testEnumZeroOther;
+    TestEnum::Enum testEnumOne;
+    TestEnum::Enum testEnumOneOther;
+    TestEnum::Enum testEnumTwo;
 };
 
 joynr::joynr_logging::Logger* StdEnumTypeTest::logger(
@@ -54,23 +54,23 @@ joynr::joynr_logging::Logger* StdEnumTypeTest::logger(
 );
 
 TEST_F(StdEnumTypeTest, createEnum) {
-    StdTestEnum::Enum testEnum(StdTestEnum::ONE);
-    EXPECT_EQ(testEnum, StdTestEnum::ONE);
-    EXPECT_TRUE(testEnum == StdTestEnum::ONE);
+    TestEnum::Enum testEnum(TestEnum::ONE);
+    EXPECT_EQ(testEnum, TestEnum::ONE);
+    EXPECT_TRUE(testEnum == TestEnum::ONE);
 }
 
 TEST_F(StdEnumTypeTest, assignEnum) {
-    StdTestEnum::Enum testEnum(StdTestEnum::ZERO);
+    TestEnum::Enum testEnum(TestEnum::ZERO);
     EXPECT_NE(testEnumOne, testEnum);
     testEnum = testEnumOne;
     EXPECT_EQ(testEnumOne, testEnum);
 }
 
 TEST_F(StdEnumTypeTest, assignEnumLiteral) {
-    StdTestEnum::Enum testEnum(StdTestEnum::ZERO);
-    EXPECT_NE(StdTestEnum::ONE, testEnum);
-    testEnum = StdTestEnum::ONE;
-    EXPECT_EQ(StdTestEnum::ONE, testEnum);
+    TestEnum::Enum testEnum(TestEnum::ZERO);
+    EXPECT_NE(TestEnum::ONE, testEnum);
+    testEnum = TestEnum::ONE;
+    EXPECT_EQ(TestEnum::ONE, testEnum);
 }
 
 TEST_F(StdEnumTypeTest, equalsOperator) {
@@ -101,22 +101,22 @@ TEST_F(StdEnumTypeTest, lessEqualOperator) {
 }
 
 TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual) {
-    EXPECT_EQ(StdTestEnum::ZERO, StdTestEnumExtended::ZERO);
-    StdTestEnumExtended::Enum exZero(StdTestEnumExtended::ZERO);
+    EXPECT_EQ(TestEnum::ZERO, TestEnumExtended::ZERO);
+    TestEnumExtended::Enum exZero(TestEnumExtended::ZERO);
     EXPECT_EQ(testEnumZero, exZero);
 // remember the current state of GCC diagnostics
 #pragma GCC diagnostic push
 // disable GCC enum-compare warning
 // This test is to see if in principle comparison of base enums with extended enums is possible.
 #pragma GCC diagnostic ignored "-Wenum-compare"
-    EXPECT_TRUE(StdTestEnum::ZERO == StdTestEnumExtended::ZERO);
+    EXPECT_TRUE(TestEnum::ZERO == TestEnumExtended::ZERO);
     EXPECT_TRUE(testEnumZero == exZero);
 // restore previous state of GCC diagnostics
 #pragma GCC diagnostic pop
 }
 
 TEST_F(StdEnumTypeTest, hash) {
-    std::hash<StdTestEnum::Enum> hashFunctionObj;
+    std::hash<TestEnum::Enum> hashFunctionObj;
     EXPECT_EQ(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumZeroOther));
     EXPECT_NE(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumOne));
     EXPECT_NE(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumTwo));

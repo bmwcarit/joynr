@@ -104,7 +104,7 @@ void LongPollingMessageReceiver::run()
       * register the channelUrl with the ChannelUrlDirectory (asynchronously)
       */
     assert(channelUrlDirectory != NULL);
-    types::StdChannelUrlInformation urlInformation;
+    types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = {channelUrl.toStdString()};
     urlInformation.setUrls(urls);
     LOG_INFO(logger,

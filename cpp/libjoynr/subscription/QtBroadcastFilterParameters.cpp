@@ -108,7 +108,7 @@ bool QtBroadcastFilterParameters::equals(const QObject& other) const
 }
 
 QtBroadcastFilterParameters QtBroadcastFilterParameters::createQt(
-        const StdBroadcastFilterParameters& from)
+        const BroadcastFilterParameters& from)
 {
     QtBroadcastFilterParameters to;
     std::map<std::string, std::string> filterParameters(from.getFilterParameters());
@@ -120,10 +120,10 @@ QtBroadcastFilterParameters QtBroadcastFilterParameters::createQt(
     return to;
 }
 
-StdBroadcastFilterParameters QtBroadcastFilterParameters::createStd(
+BroadcastFilterParameters QtBroadcastFilterParameters::createStd(
         const QtBroadcastFilterParameters& from)
 {
-    StdBroadcastFilterParameters to;
+    BroadcastFilterParameters to;
     for (auto e : from.getFilterParameters().toStdMap()) {
         to.setFilterParameter(TypeUtil::toStd(e.first), TypeUtil::toStd(e.second));
     }

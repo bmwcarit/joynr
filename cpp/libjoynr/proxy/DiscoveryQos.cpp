@@ -47,10 +47,10 @@ int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE()
     return DO_NOT_USE_CACHE();
 }
 
-joynr::types::StdDiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
+joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
 {
-    static joynr::types::StdDiscoveryScope::Enum default_scope =
-            joynr::types::StdDiscoveryScope::LOCAL_THEN_GLOBAL;
+    static joynr::types::DiscoveryScope::Enum default_scope =
+            joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL;
     return default_scope;
 }
 
@@ -107,16 +107,16 @@ DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const
 
 void DiscoveryQos::addCustomParameter(std::string name, std::string value)
 {
-    types::StdCustomParameter param(name, value);
+    types::CustomParameter param(name, value);
     customParameters[name] = param;
 }
 
-types::StdCustomParameter DiscoveryQos::getCustomParameter(std::string name) const
+types::CustomParameter DiscoveryQos::getCustomParameter(std::string name) const
 {
     return customParameters.at(name);
 }
 
-std::map<std::string, types::StdCustomParameter> DiscoveryQos::getCustomParameters() const
+std::map<std::string, types::CustomParameter> DiscoveryQos::getCustomParameters() const
 {
     return customParameters;
 }
@@ -147,12 +147,12 @@ const std::string DiscoveryQos::KEYWORD_PARAMETER()
     return keyword;
 }
 
-joynr::types::StdDiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
+joynr::types::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
 {
     return discoveryScope;
 }
 
-void DiscoveryQos::setDiscoveryScope(joynr::types::StdDiscoveryScope::Enum discoveryScope)
+void DiscoveryQos::setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope)
 {
     this->discoveryScope = discoveryScope;
 }

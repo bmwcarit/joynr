@@ -66,7 +66,7 @@ Default«interfaceName»Provider::Default«interfaceName»Provider() :
 			std::chrono::system_clock::now().time_since_epoch()
 	);
 	providerQos.setPriority(millisSinceEpoch.count());
-	providerQos.setScope(joynr::types::StdProviderScope::GLOBAL);
+	providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 	providerQos.setSupportsOnChangeSubscriptions(true);
 }
 

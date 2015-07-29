@@ -22,10 +22,10 @@
 #include <QObject>
 #include <QDate>
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/StdSubscriptionQos.h"
-#include "joynr/StdOnChangeSubscriptionQos.h"
-#include "joynr/StdOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/StdPeriodicSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
 namespace joynr
@@ -137,20 +137,20 @@ public:
 
     virtual bool equals(const QObject& other) const;
 
-    static QtSubscriptionQos* createQt(const StdSubscriptionQos& from);
-    static QtOnChangeSubscriptionQos* createQt(const StdOnChangeSubscriptionQos& from);
+    static QtSubscriptionQos* createQt(const SubscriptionQos& from);
+    static QtOnChangeSubscriptionQos* createQt(const OnChangeSubscriptionQos& from);
 
 protected:
     qint64 expiryDate;
     qint64 publicationTtl;
 
 private:
-    static void createQtInternal(const StdSubscriptionQos& from, QtSubscriptionQos& to);
-    static void createQtInternal(const StdOnChangeSubscriptionQos& from,
+    static void createQtInternal(const SubscriptionQos& from, QtSubscriptionQos& to);
+    static void createQtInternal(const OnChangeSubscriptionQos& from,
                                  QtOnChangeSubscriptionQos& to);
-    static void createQtInternal(const StdOnChangeWithKeepAliveSubscriptionQos& from,
+    static void createQtInternal(const OnChangeWithKeepAliveSubscriptionQos& from,
                                  QtOnChangeWithKeepAliveSubscriptionQos& to);
-    static void createQtInternal(const StdPeriodicSubscriptionQos& from,
+    static void createQtInternal(const PeriodicSubscriptionQos& from,
                                  QtPeriodicSubscriptionQos& to);
 };
 

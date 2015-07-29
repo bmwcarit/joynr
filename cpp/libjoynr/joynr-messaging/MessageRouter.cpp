@@ -89,10 +89,10 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           securityManager(securityManager),
           parentResolveMutex()
 {
-    providerQos.setCustomParameters(std::vector<joynr::types::StdCustomParameter>());
+    providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
     providerQos.setPriority(1);
-    providerQos.setScope(joynr::types::StdProviderScope::LOCAL);
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(false);
     init(maxThreads);
 }
@@ -116,10 +116,10 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           securityManager(NULL),
           parentResolveMutex()
 {
-    providerQos.setCustomParameters(std::vector<joynr::types::StdCustomParameter>());
+    providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
     providerQos.setPriority(1);
-    providerQos.setScope(joynr::types::StdProviderScope::LOCAL);
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(false);
     init(maxThreads);
 }
@@ -302,7 +302,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::RoutingTypes::StdChannelAddress& channelAddress,
+                               const system::RoutingTypes::ChannelAddress& channelAddress,
                                std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::QtChannelAddress> address(new joynr::system::QtChannelAddress(
@@ -325,7 +325,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const system::RoutingTypes::StdCommonApiDbusAddress& commonApiDbusAddress,
+        const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
         std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::QtCommonApiDbusAddress> address(
@@ -348,7 +348,7 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::RoutingTypes::StdBrowserAddress& browserAddress,
+                               const system::RoutingTypes::BrowserAddress& browserAddress,
                                std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::QtBrowserAddress> address(new joynr::system::QtBrowserAddress(
@@ -370,7 +370,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::RoutingTypes::StdWebSocketAddress& webSocketAddress,
+                               const system::RoutingTypes::WebSocketAddress& webSocketAddress,
                                std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::QtWebSocketAddress> address(new joynr::system::QtWebSocketAddress(
@@ -393,7 +393,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const system::RoutingTypes::StdWebSocketClientAddress& webSocketClientAddress,
+        const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
         std::function<void()> onSuccess)
 {
     QSharedPointer<joynr::system::QtWebSocketClientAddress> address(

@@ -22,12 +22,12 @@
 #include "joynr/joynrlogging.h"
 #include <string>
 
-#include "joynr/types/TestTypes/StdWord.h"
-#include "joynr/types/TestTypes/StdVowel.h"
-#include "joynr/types/TestTypes/StdTEverythingStruct.h"
-#include "joynr/types/TestTypes/StdTEverythingExtendedStruct.h"
-#include "joynr/types/TestTypes/StdTEverythingExtendedExtendedStruct.h"
-#include "joynr/types/TestTypes/StdTEnum.h"
+#include "joynr/types/TestTypes/Word.h"
+#include "joynr/types/TestTypes/Vowel.h"
+#include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
+#include "joynr/types/TestTypes/TEverythingExtendedExtendedStruct.h"
+#include "joynr/types/TestTypes/TEnum.h"
 
 using namespace joynr::types;
 
@@ -48,11 +48,11 @@ public:
             tBoolean(true),
             tByteBuffer({0x01, 0x02, 0x03, 0x04, 0x05}),
             tUInt8Array({0xFF, 0xFE, 0xFD, 0xFC}),
-            tEnum(TestTypes::StdTEnum::TLITERALA),
-            tEnumArray({TestTypes::StdTEnum::TLITERALA, TestTypes::StdTEnum::TLITERALB}),
+            tEnum(TestTypes::TEnum::TLITERALA),
+            tEnumArray({TestTypes::TEnum::TLITERALA, TestTypes::TEnum::TLITERALB}),
             tStringArray({"New York", "London", "Berlin", "Tokio"}),
-            word(TestTypes::StdWord()),
-            wordArray({TestTypes::StdWord()}),
+            word(TestTypes::Word()),
+            wordArray({TestTypes::Word()}),
             tEverything1(
                     tInt8,
                     tUInt8,
@@ -119,16 +119,16 @@ protected:
     bool tBoolean;
     std::vector<uint8_t> tByteBuffer;
     std::vector<uint8_t>  tUInt8Array;
-    TestTypes::StdTEnum::Enum tEnum;
-    std::vector<joynr::types::TestTypes::StdTEnum::Enum>  tEnumArray;
+    TestTypes::TEnum::Enum tEnum;
+    std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;
     std::vector<std::string>  tStringArray;
-    TestTypes::StdWord word;
-    std::vector<TestTypes::StdWord>  wordArray;
-    TestTypes::StdTEverythingStruct tEverything1;
+    TestTypes::Word word;
+    std::vector<TestTypes::Word>  wordArray;
+    TestTypes::TEverythingStruct tEverything1;
 
     bool tBooleanExtended;
     std::string tStringExtended;
-    TestTypes::StdTEverythingExtendedStruct tEverythingExtended1;
+    TestTypes::TEverythingExtendedStruct tEverythingExtended1;
 };
 
 joynr::joynr_logging::Logger* StdComplexDataTypeTest::logger(
@@ -160,7 +160,7 @@ TEST_F(StdComplexDataTypeTest, createComplexDataType) {
 }
 
 TEST_F(StdComplexDataTypeTest, assignComplexDataType) {
-    joynr::types::TestTypes::StdTEverythingStruct tEverything2 = tEverything1;
+    joynr::types::TestTypes::TEverythingStruct tEverything2 = tEverything1;
     EXPECT_EQ(tEverything2, tEverything1);
     EXPECT_EQ(tEverything2.getTBoolean(), tBoolean);
     EXPECT_EQ(tEverything2.getTByteBuffer(), tByteBuffer);
@@ -185,12 +185,12 @@ TEST_F(StdComplexDataTypeTest, assignComplexDataType) {
 }
 
 TEST_F(StdComplexDataTypeTest, copyConstructorComplexDataTypeCopiesValues) {
-    joynr::types::TestTypes::StdTEverythingStruct tEverything2(tEverything1);
+    joynr::types::TestTypes::TEverythingStruct tEverything2(tEverything1);
     EXPECT_EQ(tEverything2, tEverything1);
     tEverything1.setTBoolean(!tEverything1.getTBoolean());
     EXPECT_NE(tEverything2, tEverything1);
 
-    joynr::types::TestTypes::StdTEverythingStruct tEverything3(tEverything1);
+    joynr::types::TestTypes::TEverythingStruct tEverything3(tEverything1);
     EXPECT_EQ(tEverything3, tEverything1);
     tEverything1.setTStringArray({"one", "two", "three"});
     EXPECT_NE(tEverything3, tEverything1);
@@ -200,7 +200,7 @@ TEST_F(StdComplexDataTypeTest, copyConstructorComplexDataTypeCopiesValues) {
     // pointer to changingVector
     std::vector<std::string> changingVector = {"one"};
     tEverything1.setTStringArray(changingVector);
-    joynr::types::TestTypes::StdTEverythingStruct tEverything4(tEverything1);
+    joynr::types::TestTypes::TEverythingStruct tEverything4(tEverything1);
     EXPECT_EQ(tEverything4, tEverything1);
     changingVector.push_back("two");
     tEverything4.setTStringArray(changingVector);
@@ -210,7 +210,7 @@ TEST_F(StdComplexDataTypeTest, copyConstructorComplexDataTypeCopiesValues) {
 TEST_F(StdComplexDataTypeTest, equalsOperator) {
     EXPECT_EQ(tEverything1, tEverything1);
 
-    joynr::types::TestTypes::StdTEverythingStruct tEverything2(tEverything1);
+    joynr::types::TestTypes::TEverythingStruct tEverything2(tEverything1);
     EXPECT_EQ(tEverything2, tEverything1);
     EXPECT_EQ(tEverything2, tEverything1);
     EXPECT_EQ(tEverything2.getTBoolean(), tBoolean);
@@ -236,7 +236,7 @@ TEST_F(StdComplexDataTypeTest, equalsOperator) {
 }
 
 TEST_F(StdComplexDataTypeTest, notEqualsOperator) {
-    joynr::types::TestTypes::StdTEverythingStruct tEverything2;
+    joynr::types::TestTypes::TEverythingStruct tEverything2;
     EXPECT_NE(tEverything1, tEverything2);
 
     tEverything2 = tEverything1;
@@ -276,7 +276,7 @@ TEST_F(StdComplexDataTypeTest, createExtendedComplexDataType) {
 TEST_F(StdComplexDataTypeTest, equalsOperatorExtended) {
     EXPECT_EQ(tEverythingExtended1, tEverythingExtended1);
 
-    joynr::types::TestTypes::StdTEverythingExtendedStruct tEverythingExtended2(tEverythingExtended1);
+    joynr::types::TestTypes::TEverythingExtendedStruct tEverythingExtended2(tEverythingExtended1);
     EXPECT_EQ(tEverythingExtended2, tEverythingExtended1);
     EXPECT_EQ(tEverythingExtended2.getTBoolean(), tBoolean);
     EXPECT_EQ(tEverythingExtended2.getTByteBuffer(), tByteBuffer);
@@ -306,21 +306,21 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorExtended) {
 }
 
 TEST_F(StdComplexDataTypeTest, assignExtendedComplexDataType) {
-    TestTypes::StdTEverythingExtendedStruct tEverythingExtended2;
+    TestTypes::TEverythingExtendedStruct tEverythingExtended2;
     tEverythingExtended2 = tEverythingExtended1;
     EXPECT_EQ(tEverythingExtended1, tEverythingExtended2);
 }
 
 TEST_F(StdComplexDataTypeTest, copyExtendedComplexDataType) {
-    TestTypes::StdTEverythingExtendedStruct tEverythingExtended2(tEverythingExtended1);
-    TestTypes::StdTEverythingExtendedStruct tEverythingExtended3 = tEverythingExtended2;
+    TestTypes::TEverythingExtendedStruct tEverythingExtended2(tEverythingExtended1);
+    TestTypes::TEverythingExtendedStruct tEverythingExtended3 = tEverythingExtended2;
     EXPECT_EQ(tEverythingExtended1, tEverythingExtended2);
     EXPECT_EQ(tEverythingExtended2, tEverythingExtended3);
 }
 
 TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
     std::string tStringExtendedExtended("extendedextended");
-    TestTypes::StdTEverythingExtendedExtendedStruct tEverythingExtendedExtended(
+    TestTypes::TEverythingExtendedExtendedStruct tEverythingExtendedExtended(
             tInt8,
             tUInt8,
             tInt16,

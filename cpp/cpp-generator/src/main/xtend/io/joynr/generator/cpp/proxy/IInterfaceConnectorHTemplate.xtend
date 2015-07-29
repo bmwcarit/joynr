@@ -62,8 +62,8 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 namespace joynr {
 	template <class ... Ts> class ISubscriptionListener;
 	class ISubscriptionCallback;
-	class StdSubscriptionQos;
-	class StdOnChangeSubscriptionQos;
+	class SubscriptionQos;
+	class OnChangeSubscriptionQos;
 }
 
 «getNamespaceStarter(serviceInterface)»

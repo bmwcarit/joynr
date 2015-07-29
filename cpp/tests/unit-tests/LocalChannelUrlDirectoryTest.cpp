@@ -40,15 +40,15 @@ using ::testing::Invoke;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
+std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
         const std::string& channelId,
         std::function<void(
             RequestStatus& status,
-            types::StdChannelUrlInformation& urls)> callbackFct) {
-    types::StdChannelUrlInformation urlInformation;
+            types::ChannelUrlInformation& urls)> callbackFct) {
+    types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    std::shared_ptr<joynr::Future<joynr::types::StdChannelUrlInformation>> future(new joynr::Future<types::StdChannelUrlInformation>());
+    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
     future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
     RequestStatus status(RequestStatusCode::OK);
     callbackFct(status, urlInformation);
@@ -88,22 +88,22 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannel(
                     A<const std::string&>(),
-                    A<std::function<void(const RequestStatus& status, const types::StdChannelUrlInformation& urls)>>()))
+                    A<std::function<void(const RequestStatus& status, const types::ChannelUrlInformation& urls)>>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
-    std::shared_ptr<Future<types::StdChannelUrlInformation> > futureUrls(
+    std::shared_ptr<Future<types::ChannelUrlInformation> > futureUrls(
                 localDirectory.getUrlsForChannel(
                     "pseudoChannelID",
                     20000,
-                    [](const RequestStatus& status, const types::StdChannelUrlInformation& url) {
+                    [](const RequestStatus& status, const types::ChannelUrlInformation& url) {
                     }));
 
     EXPECT_EQ(true, futureUrls->getStatus().successful());
 
-    types::StdChannelUrlInformation channelInf;
+    types::ChannelUrlInformation channelInf;
     futureUrls->getValues(channelInf);
-    types::StdChannelUrlInformation urlInformation;
+    types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
 
@@ -123,7 +123,7 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
-    types::StdChannelUrlInformation urlInformation;
+    types::ChannelUrlInformation urlInformation;
     localDirectory.registerChannelUrls("myChannelId", urlInformation);
 }
 

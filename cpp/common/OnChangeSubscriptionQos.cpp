@@ -16,51 +16,51 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/StdOnChangeSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 
 using namespace joynr;
 
-const int64_t& StdOnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
+const int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
 {
     static int64_t defaultMinInterval = 1000;
     return defaultMinInterval;
 }
 
-const int64_t& StdOnChangeSubscriptionQos::MIN_MIN_INTERVAL()
+const int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
 {
     static int64_t minMinInterval = 50;
     return minMinInterval;
 }
 
-const int64_t& StdOnChangeSubscriptionQos::MAX_MIN_INTERVAL()
+const int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL()
 {
     static int64_t maxMinInterval = 2592000000UL;
     return maxMinInterval;
 }
 
-StdOnChangeSubscriptionQos::StdOnChangeSubscriptionQos()
-        : StdSubscriptionQos(), minInterval(MIN_MIN_INTERVAL())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos()
+        : SubscriptionQos(), minInterval(MIN_MIN_INTERVAL())
 {
 }
 
-StdOnChangeSubscriptionQos::StdOnChangeSubscriptionQos(const int64_t& validity,
-                                                       const int64_t& minInterval)
-        : StdSubscriptionQos(validity), minInterval(DEFAULT_MIN_INTERVAL())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const int64_t& validity,
+                                                 const int64_t& minInterval)
+        : SubscriptionQos(validity), minInterval(DEFAULT_MIN_INTERVAL())
 {
     setMinInterval(minInterval);
 }
 
-StdOnChangeSubscriptionQos::StdOnChangeSubscriptionQos(const StdOnChangeSubscriptionQos& other)
-        : StdSubscriptionQos(other), minInterval(other.getMinInterval())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other)
+        : SubscriptionQos(other), minInterval(other.getMinInterval())
 {
 }
 
-int64_t StdOnChangeSubscriptionQos::getMinInterval() const
+int64_t OnChangeSubscriptionQos::getMinInterval() const
 {
     return minInterval;
 }
 
-void StdOnChangeSubscriptionQos::setMinInterval(const int64_t& minInterval)
+void OnChangeSubscriptionQos::setMinInterval(const int64_t& minInterval)
 {
     this->minInterval = minInterval;
     if (this->minInterval < MIN_MIN_INTERVAL()) {
@@ -71,8 +71,7 @@ void StdOnChangeSubscriptionQos::setMinInterval(const int64_t& minInterval)
     }
 }
 
-StdOnChangeSubscriptionQos& StdOnChangeSubscriptionQos::operator=(
-        const StdOnChangeSubscriptionQos& other)
+OnChangeSubscriptionQos& OnChangeSubscriptionQos::operator=(const OnChangeSubscriptionQos& other)
 {
     expiryDate = other.getExpiryDate();
     publicationTtl = other.getPublicationTtl();
@@ -80,7 +79,7 @@ StdOnChangeSubscriptionQos& StdOnChangeSubscriptionQos::operator=(
     return *this;
 }
 
-bool StdOnChangeSubscriptionQos::operator==(const StdOnChangeSubscriptionQos& other) const
+bool OnChangeSubscriptionQos::operator==(const OnChangeSubscriptionQos& other) const
 {
     return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
            minInterval == other.getMinInterval();

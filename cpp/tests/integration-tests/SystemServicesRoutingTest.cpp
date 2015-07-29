@@ -137,7 +137,7 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
 
     RequestStatus status;
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
-    joynr::system::RoutingTypes::StdChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
     routingProxy->resolveNextHop(status, isResolvable, participantId);
@@ -161,7 +161,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHop)
 
     RequestStatus status;
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
-    joynr::system::RoutingTypes::StdChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
     routingProxy->resolveNextHop(status, isResolvable, participantId);

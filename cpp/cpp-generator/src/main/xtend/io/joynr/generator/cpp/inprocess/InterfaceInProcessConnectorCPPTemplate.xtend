@@ -199,7 +199,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 	«IF attribute.notifiable»
 		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::StdSubscriptionQos& subscriptionQos,
+				const joynr::SubscriptionQos& subscriptionQos,
 				std::string& subscriptionId)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
@@ -209,7 +209,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::StdSubscriptionQos& subscriptionQos)
+				const joynr::SubscriptionQos& subscriptionQos)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
@@ -217,7 +217,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-				const joynr::StdSubscriptionQos& subscriptionQos,
+				const joynr::SubscriptionQos& subscriptionQos,
 				joynr::SubscriptionRequest& subscriptionRequest)
 		{
 			«IF isEnum(attribute.type)»
@@ -360,11 +360,11 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::StdOnChangeSubscriptionQos& subscriptionQos
+				const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ELSE»
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::StdOnChangeSubscriptionQos& subscriptionQos
+				const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ENDIF»
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
@@ -384,12 +384,12 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId
 	«ELSE»
 		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId
 	«ENDIF»
 	) {
@@ -406,7 +406,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 
 	std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			const joynr::StdOnChangeSubscriptionQos& subscriptionQos,
+			const joynr::OnChangeSubscriptionQos& subscriptionQos,
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
