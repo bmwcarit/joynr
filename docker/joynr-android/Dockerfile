@@ -32,4 +32,7 @@ RUN echo y | android update sdk --no-ui -a --filter ${ANDROID_API_LEVELS}
 RUN echo y | android update sdk --no-ui -a --filter build-tools-${ANDROID_BUILD_TOOLS_VERSION}
 RUN echo y | android update sdk --no-ui -a --filter platform-tools
 
+COPY scripts/build/* /data/scripts/build/
+RUN chmod 777 -R /data/scripts/build/
+
 RUN date -R > /data/timestamp

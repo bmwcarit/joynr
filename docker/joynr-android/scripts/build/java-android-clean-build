@@ -1,0 +1,12 @@
+#/bin/bash
+
+cd /data/src
+
+# fail on first error
+set -e
+
+mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+-DskipTests=false \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true -Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true
