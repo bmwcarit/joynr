@@ -208,7 +208,7 @@ public:
     /**
      * @brief Callback which indicates the operation has finished and has failed.
      */
-    void onFailure(const RequestStatus& status)
+    void onError(const RequestStatus& status)
     {
         LOG_INFO(logger, "onFailure has been invoked");
         this->status = RequestStatus(status);
@@ -271,7 +271,7 @@ public:
         resultReceived.release(1);
     }
 
-    void onFailure(const RequestStatus& status)
+    void onError(const RequestStatus& status)
     {
         this->status = RequestStatus(status);
         resultReceived.release(1);

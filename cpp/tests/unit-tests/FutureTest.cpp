@@ -71,7 +71,7 @@ TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
 }
 
 TEST_F(FutureTest, getValueAndStatusAfterFailiureReceived) {
-    intFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
+    intFuture.onError(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
     ASSERT_EQ(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE, intFuture.getStatus().getCode());
     int actualValue;
 
@@ -90,7 +90,7 @@ TEST_F(FutureTest, getStatusForVoidAfterResultReceived) {
 }
 
 TEST_F(FutureTest, getStatusForVoidAfterFailureReceived) {
-    voidFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
+    voidFuture.onError(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
     ASSERT_EQ(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE, voidFuture.getStatus().getCode());
 }
 
