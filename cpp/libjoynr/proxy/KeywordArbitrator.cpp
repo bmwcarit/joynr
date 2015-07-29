@@ -68,7 +68,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger,
-                  QString("Looping over capabilitiesEntry: %")
+                  QString("Looping over capabilitiesEntry: %1")
                           .arg(QString::fromStdString(discoveryEntry.toString())));
 
         // Check that the provider supports onChange subscriptions if this was requested
@@ -83,7 +83,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             std::string name = parameter.getName();
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 std::string res = discoveryEntry.getParticipantId();
-                LOG_TRACE(logger, QString("setting res to %").arg(QString::fromStdString(res)));
+                LOG_TRACE(logger, QString("setting res to %1").arg(QString::fromStdString(res)));
                 joynr::types::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(

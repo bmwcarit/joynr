@@ -77,7 +77,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger,
-                  QString("Looping over capabilitiesEntry: %")
+                  QString("Looping over capabilitiesEntry: %1")
                           .arg(QString::fromStdString(discoveryEntry.toString())));
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
@@ -85,7 +85,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         }
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
-            LOG_TRACE(logger, QString("setting res to %").arg(QString::fromStdString(res)));
+            LOG_TRACE(logger, QString("setting res to %1").arg(QString::fromStdString(res)));
             preferredConnection =
                     selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
