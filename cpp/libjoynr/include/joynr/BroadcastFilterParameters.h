@@ -39,7 +39,7 @@ public:
     BroadcastFilterParameters();
     BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters);
     BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters);
-    ~BroadcastFilterParameters();
+    virtual ~BroadcastFilterParameters();
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(const std::string& parameter, const std::string& value);
