@@ -87,13 +87,13 @@ TEST_F(ReplyCallerTest, getTypeForVoid) {
 
 TEST_F(ReplyCallerTest, timeOut) {
     EXPECT_CALL(*intCallback, errorFct(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
     EXPECT_CALL(*voidCallback, errorFct(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
     voidFixture.timeOut();
 }
 

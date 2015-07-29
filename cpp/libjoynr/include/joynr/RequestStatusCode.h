@@ -21,7 +21,8 @@
 
 #include "joynr/JoynrExport.h"
 
-#include <QString>
+#include <cstdint>
+#include <string>
 
 #ifdef WIN32
 #ifdef ERROR
@@ -54,31 +55,31 @@ public:
 
     // error states
     static RequestStatusCode ERROR;
-    static RequestStatusCode ERROR_TIME_OUT_ARBITRATION;
-    static RequestStatusCode ERROR_TIME_OUT_WAITING_FOR_RESPONSE;
-    static RequestStatusCode ERROR_REPLY_CALLER_CANNOT_CONVERT_RETURN_VALUE;
+    static RequestStatusCode ERROR_TIMEOUT_DISCOVERY;
+    static RequestStatusCode ERROR_TIMEOUT_WAITING_FOR_RESPONSE;
+    static RequestStatusCode ERROR_CANNOT_PARSE_RETURN_VALUE;
 
     /**
      * @brief Returns the status code id.
      *
      * @return long
      */
-    long getId() const;
+    uint32_t getId() const;
 
     /**
      * @brief Convenience method to print the object to String.
      *
      * @return QString
      */
-    QString toString() const;
+    std::string toString() const;
 
     bool operator==(const RequestStatusCode& requestStatusCode) const;
     bool operator!=(const RequestStatusCode& requestStatusCode) const;
 
 private:
-    RequestStatusCode(long id, QString description);
-    long id;
-    QString description;
+    RequestStatusCode(long id, std::string description);
+    uint32_t id;
+    std::string description;
 };
 
 } // namespace joynr

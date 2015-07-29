@@ -87,7 +87,7 @@ public:
                               .arg(QString::fromStdString(participantId))
                               .arg(QString::fromStdString(domain))
                               .arg(QString::fromStdString(interfaceName))
-                              .arg(status.getCode().toString()));
+                              .arg(QString::fromStdString(status.getCode().toString())));
         }
 
         // add next hop to dispatcher
@@ -130,7 +130,7 @@ public:
                               .arg(QString::fromStdString(participantId))
                               .arg(QString::fromStdString(domain))
                               .arg(QString::fromStdString(interfaceName))
-                              .arg(status.getCode().toString()));
+                              .arg(QString::fromStdString(status.getCode().toString())));
         }
 
         QSharedPointer<joynr::Future<void>> future(new Future<void>());

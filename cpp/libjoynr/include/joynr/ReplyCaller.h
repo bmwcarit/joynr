@@ -62,7 +62,7 @@ public:
     {
         hasTimeOutOccurred = true;
 
-        errorFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
+        errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE));
     }
 
     int getTypeId() const
@@ -104,7 +104,7 @@ public:
     void timeOut()
     {
         hasTimeOutOccurred = true;
-        errorFct(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
+        errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE));
     }
 
     int getTypeId() const

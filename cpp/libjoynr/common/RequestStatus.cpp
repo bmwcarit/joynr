@@ -65,7 +65,8 @@ QString RequestStatus::toString() const
         desc.append(description.at(i));
     }
 
-    return "[RequestStatus code: " + code.toString() + "description: " + desc + "]";
+    return "[RequestStatus code: " + QString::fromStdString(code.toString()) + "description: " +
+           desc + "]";
 }
 
 } // namespace joynr

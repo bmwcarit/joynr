@@ -54,7 +54,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
                   QString("Unable to remove provider (participant ID: %1) "
                           "to discovery. Status code: %2.")
                           .arg(QString::fromStdString(participantId))
-                          .arg(status.getCode().toString()));
+                          .arg(QString::fromStdString(status.getCode().toString())));
     }
 
     QSharedPointer<joynr::Future<void>> future(new Future<void>());

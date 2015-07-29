@@ -134,7 +134,7 @@ public:
         if (code != RequestStatusCode::OK) {
             LOG_FATAL(logger,
                       "The request status code was not OK when calling getValue(), it was: " +
-                              code.toString());
+                              QString::fromStdString(code.toString()));
             assert(false);
         }
 

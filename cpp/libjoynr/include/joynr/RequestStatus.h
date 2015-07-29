@@ -23,6 +23,7 @@
 
 #include "joynr/RequestStatusCode.h"
 #include <QStringList>
+#include <QString>
 
 namespace joynr
 {

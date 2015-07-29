@@ -57,7 +57,7 @@ void QosArbitrator::attemptArbitration()
                           "from discovery. Status code: %3.")
                           .arg(QString::fromStdString(domain))
                           .arg(QString::fromStdString(interfaceName))
-                          .arg(status.getCode().toString()));
+                          .arg(QString::fromStdString(status.getCode().toString())));
     }
 }
 

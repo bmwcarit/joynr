@@ -75,7 +75,7 @@ void PrintTo(const QUrl& value, std::ostream* os)
 }
 
  void PrintTo(const RequestStatusCode& value, ::std::ostream* os) {
-     *os << value.toString().toStdString() << std::endl;
+     *os << value.toString() << std::endl;
  }
 
  void PrintTo(const RequestStatus& value, ::std::ostream* os) {

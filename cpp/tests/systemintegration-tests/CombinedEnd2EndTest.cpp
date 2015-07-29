@@ -353,7 +353,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->build());
         std::shared_ptr<Future<int> > testFuture(testProxy->addNumbers(1, 2, 3));
         testFuture->waitForFinished();
-        ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
+        ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
         //TODO CA: shared pointer for proxy builder?
         delete testProxyBuilder;
     }
@@ -749,7 +749,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     types::ChannelUrlInformation result;
     std::string channelId("test");
     channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
-    EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE);
+    EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
 }
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {

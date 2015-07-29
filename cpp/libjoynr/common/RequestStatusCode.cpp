@@ -18,6 +18,8 @@
  */
 #include "joynr/RequestStatusCode.h"
 
+#include <sstream>
+
 namespace joynr
 {
 
@@ -26,29 +28,27 @@ RequestStatusCode RequestStatusCode::NOT_STARTED = RequestStatusCode(1, "Not sta
 RequestStatusCode RequestStatusCode::IN_PROGRESS = RequestStatusCode(2, "In progress");
 
 RequestStatusCode RequestStatusCode::ERROR = RequestStatusCode(300, "Error");
-RequestStatusCode RequestStatusCode::ERROR_TIME_OUT_ARBITRATION =
-        RequestStatusCode(301, "Error timout waiting for arbitration");
-RequestStatusCode RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE =
-        RequestStatusCode(302, "Error timeout waiting for the json response");
-RequestStatusCode RequestStatusCode::ERROR_REPLY_CALLER_CANNOT_CONVERT_RETURN_VALUE =
-        RequestStatusCode(
-                303,
-                "Error in ReplyCaller when attempting to cast the return type to the desired type");
+RequestStatusCode RequestStatusCode::ERROR_TIMEOUT_DISCOVERY =
+        RequestStatusCode(301, "Error timout waiting for discovery");
+RequestStatusCode RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE =
+        RequestStatusCode(302, "Error timeout waiting for the response");
+RequestStatusCode RequestStatusCode::ERROR_CANNOT_PARSE_RETURN_VALUE = RequestStatusCode(
+        303,
+        "Error in ReplyCaller when attempting to cast the return type to the desired type");
 
-RequestStatusCode::RequestStatusCode(long id, QString description)
+RequestStatusCode::RequestStatusCode(long id, std::string description)
         : id(id), description(description)
 {
 }
 
-QString RequestStatusCode::toString() const
+std::string RequestStatusCode::toString() const
 {
-    QString result;
-    result.append("[RequestStatusCode id: " + QString::number(id));
-    result.append(" description: " + description + "]");
-    return result;
+    std::ostringstream typeAsString;
+    typeAsString << "[RequestStatusCode id: " << id << " description: " << description << "]";
+    return typeAsString.str();
 }
 
-long RequestStatusCode::getId() const
+uint32_t RequestStatusCode::getId() const
 {
     return id;
 }
