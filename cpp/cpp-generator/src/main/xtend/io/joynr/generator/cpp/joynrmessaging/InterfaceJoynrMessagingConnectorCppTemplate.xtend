@@ -112,8 +112,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«val returnTypeQT = qtTypeUtil.getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«IF attribute.readable»
-		void «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
-				joynr::RequestStatus& status,
+		joynr::RequestStatus «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
 				«returnTypeStd»& «attributeName»
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
@@ -136,11 +135,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					replyCallerCallbackFct,
 					replyCallerErrorFct));
 			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
-			status = future->waitForFinished();
+			joynr::RequestStatus status(future->waitForFinished());
 			if (status.successful()) {
 				future->getValues(«attributeName»);
-				// add result to caching
 			}
+			return status;
 		}
 
 		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
@@ -209,8 +208,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			return future;
 		}
 
-		void «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
-				joynr::RequestStatus& status,
+		joynr::RequestStatus «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
 				const «returnTypeStd»& «attributeName»
 		) {
 			joynr::Request internalRequestObject;
@@ -237,7 +235,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					replyCallerCallbackFct,
 					std::bind(&joynr::Future<void>::onError, future, std::placeholders::_1)));
 			operationRequest(replyCaller, internalRequestObject);
-			status = future->waitForFinished();
+			return future->waitForFinished();
 		}
 
 	«ENDIF»
@@ -318,14 +316,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 «FOR method: getMethods(serviceInterface)»
 	«var outputTypedConstParamListQT = prependCommaIfNotEmpty(qtTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method))»
 	«var outputTypedConstParamListStd = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method))»
-	«val outputTypedParamListStd = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method))»
+	«val outputTypedParamListStd = cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method)»
 	«val outputParametersStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
 	«val outputParametersQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
 	«var outputUntypedParamList = qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(method, DatatypeSystemTransformation::FROM_QT_TO_STANDARD)»
-	«val inputTypedParamListStd = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method))»
+	«val inputTypedParamListStd = cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»
 	«val methodName = method.joynrName»
-	void «interfaceName»JoynrMessagingConnector::«methodName»(
-			joynr::RequestStatus& status«outputTypedParamListStd»«inputTypedParamListStd»
+	joynr::RequestStatus «interfaceName»JoynrMessagingConnector::«methodName»(
+		«outputTypedParamListStd»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamListStd»
 	) {
 		«produceParameterSetters(method)»
 		QSharedPointer<joynr::Future<«outputParametersStd»> > future(
@@ -349,11 +347,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				replyCallerCallbackFct,
 				replyCallerErrorFct));
 		operationRequest(replyCaller, internalRequestObject);
-		status = future->waitForFinished();
-		«IF !method.outputParameters.empty»
+		«IF method.outputParameters.empty»
+			return future->waitForFinished();
+		«ELSE»
+			joynr::RequestStatus status = future->waitForFinished();
 			if (status.successful()) {
 				future->getValues(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
 			}
+			return status;
 		«ENDIF»
 	}
 

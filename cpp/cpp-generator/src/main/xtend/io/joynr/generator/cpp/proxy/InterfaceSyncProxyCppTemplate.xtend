@@ -71,24 +71,28 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 	«IF attribute.readable»
-		void «syncClassName»::«getAttribute»(joynr::RequestStatus& status, «attributeType»& result)
+		joynr::RequestStatus «syncClassName»::«getAttribute»(«attributeType»& result)
 		{
 			if (connector==NULL){
-				LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
+				«val errorMsg = "proxy cannot invoke " + getAttribute + " because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
 			}
 			else{
-				connector->«getAttribute»(status, result);
+				return connector->«getAttribute»(result);
 			}
 		}
 	«ENDIF»
 	«IF attribute.writable»
-		void «syncClassName»::«setAttribute»(joynr::RequestStatus& status, const «attributeType»& value)
+		joynr::RequestStatus «syncClassName»::«setAttribute»(const «attributeType»& value)
 		{
 			if (connector==NULL){
-				LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
+				«val errorMsg = "proxy cannot invoke " + setAttribute + " because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
 			}
 			else{
-				connector->«setAttribute»(status, value);
+				return connector->«setAttribute»(value);
 			}
 		}
 	«ENDIF»
@@ -96,21 +100,24 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 «ENDFOR»
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.name»
-	«var paramsSignature = prependCommaIfNotEmpty(method.commaSeperatedTypedConstInputParameterList)»
-	«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedOutputParameterList)»
-	«val outputUntypedParamList = prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»
-	«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedInputParameterList(method))»
+	«var inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
+	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
+	«var params = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
 
-	void «syncClassName»::«methodName»(joynr::RequestStatus& status«outputTypedParamList»«paramsSignature»)
+	joynr::RequestStatus «syncClassName»::«methodName»(
+		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
 	{
 		if (connector==NULL){
-			LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
+			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»
+			LOG_WARN(logger, "«errorMsg»");
+			return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
 		}
 		else{
-			connector->«methodName»(status«outputUntypedParamList»«params»);
+			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);
 		}
 	}
 

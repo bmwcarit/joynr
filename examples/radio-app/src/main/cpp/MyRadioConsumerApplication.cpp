@@ -195,9 +195,8 @@ int main(int argc, char* argv[])
                                          ->setDiscoveryQos(discoveryQos)
                                          ->build();
 
-    RequestStatus status;
     vehicle::RadioTypes::RadioStation currentStation;
-    proxy->getCurrentStation(status, currentStation);
+    RequestStatus status(proxy->getCurrentStation(currentStation));
     assert(status.successful());
     MyRadioHelper::prettyLog(
             logger,
@@ -288,14 +287,14 @@ int main(int argc, char* argv[])
     vehicle::RadioTypes::RadioStation favouriteStation(
             "99.3 The Fox Rocks", false, vehicle::RadioTypes::Country::CANADA);
     bool success;
-    proxy->addFavouriteStation(status, success, favouriteStation);
+    proxy->addFavouriteStation(success, favouriteStation);
     MyRadioHelper::prettyLog(logger,
                              QString("METHOD: added favourite station: %1")
                                      .arg(QString::fromStdString(favouriteStation.toString())));
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
-    proxy->shuffleStations(status);
+    proxy->shuffleStations();
     // Run until the user hits q
     int key;
 
@@ -304,10 +303,10 @@ int main(int argc, char* argv[])
         joynr::vehicle::RadioTypes::Country::Enum country;
         switch (key) {
         case 's':
-            proxy->shuffleStations(status);
+            proxy->shuffleStations();
             break;
         case 'm':
-            proxy->getLocationOfCurrentStation(status, country, location);
+            proxy->getLocationOfCurrentStation(country, location);
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: getLocationOfCurrentStation: country: %1, location: %2")

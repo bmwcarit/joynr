@@ -47,8 +47,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
-    joynr::RequestStatus status;
-    discoveryProxy.remove(status, participantId);
+    joynr::RequestStatus status(discoveryProxy.remove(participantId));
     if (!status.successful()) {
         LOG_ERROR(logger,
                   QString("Unable to remove provider (participant ID: %1) "

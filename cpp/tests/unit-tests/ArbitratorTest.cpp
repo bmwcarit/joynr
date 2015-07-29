@@ -194,7 +194,6 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
     EXPECT_CALL(
                 mockDiscovery,
                 lookup(
-                    A<joynr::RequestStatus&>(),
                     A<std::vector<joynr::types::DiscoveryEntry>&>(),
                     A<const std::string&>(),
                     A<const std::string&>(),
@@ -204,8 +203,8 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
             .Times(5)
             .WillRepeatedly(
                 testing::DoAll(
-                    testing::SetArgReferee<0>(status),
-                    testing::SetArgReferee<1>(result)
+                    testing::SetArgReferee<0>(result),
+                    testing::Return(status)
                 )
             );
 

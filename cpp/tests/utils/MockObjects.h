@@ -333,35 +333,31 @@ public:
 
 class MockDiscovery : public joynr::system::IDiscovery {
 public:
-    MOCK_METHOD2(
+    MOCK_METHOD1(
             add,
-            void(
-                joynr::RequestStatus& joynrInternalStatus,
+            joynr::RequestStatus(
                 const joynr::types::DiscoveryEntry& entry
             )
     );
-    MOCK_METHOD5(
+    MOCK_METHOD2(
             lookup,
-            void(
-                joynr::RequestStatus& joynrInternalStatus,
+            joynr::RequestStatus(
+                joynr::types::DiscoveryEntry& result,
+                const std::string& participantId
+            )
+    );
+    MOCK_METHOD4(
+            lookup,
+            joynr::RequestStatus(
                 std::vector<joynr::types::DiscoveryEntry> & result,
                 const std::string& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos
             )
     );
-    MOCK_METHOD3(
-            lookup,
-            void(
-                joynr::RequestStatus& joynrInternalStatus,
-                joynr::types::DiscoveryEntry& result,
-                const std::string& participantId
-            )
-    );
-    MOCK_METHOD2(
+    MOCK_METHOD1(
             remove,
-            void(
-                joynr::RequestStatus& joynrInternalStatus,
+            joynr::RequestStatus(
                 const std::string& participantId
             )
     );
@@ -472,7 +468,7 @@ public:
 
 class GlobalCapabilitiesMock {
 public:
-    MOCK_METHOD2(capabilitiesReceived, void(const joynr::RequestStatus& status, const std::vector<joynr::types::CapabilityInformation>& results));
+    MOCK_METHOD1(capabilitiesReceived, joynr::RequestStatus(const std::vector<joynr::types::CapabilityInformation>& results));
 };
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
@@ -485,24 +481,25 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     {
         qDebug() << "I am being destroyed_ MockProvider";
     };
-    /*void getLocation(RequestStatus& status, QtGpsLocation& result)
+    /*RequestStatus getLocation(QtGpsLocation& result)
     {
         result = QtGpsLocation(QtGpsFixEnum::MODE2D, 4,5,6,7);
+        return RequestStatus(RequestStatusCode::OK);
     }
     */
-    MOCK_METHOD2(getLocation, void(joynr::RequestStatus& status, joynr::types::Localisation::GpsLocation& result) );
-    MOCK_METHOD2(setLocation, void(joynr::RequestStatus& status, joynr::types::Localisation::GpsLocation gpsLocation));
-    //MOCK_METHOD2(calculateAvailableSatellites,void (RequestStatus& status, int32_t& result));
-    //MOCK_METHOD2(restartWithRetries, void (RequestStatus& status, int32_t gpsFix));
+    MOCK_METHOD1(getLocation, joynr::RequestStatus(joynr::types::Localisation::GpsLocation& result) );
+    MOCK_METHOD1(setLocation, joynr::RequestStatus(joynr::types::Localisation::GpsLocation gpsLocation));
+    //MOCK_METHOD2(calculateAvailableSatellites,joynr::RequestStatus(int32_t& result));
+    //MOCK_METHOD2(restartWithRetries, joynr::RequestStatus(int32_t gpsFix));
 
-    void  restartWithRetries(joynr::RequestStatus& status, int32_t gpsfix ) {
+    joynr::RequestStatus restartWithRetries(int32_t gpsfix ) {
 
-        status.setCode(joynr::RequestStatusCode::OK);
+        return joynr::RequestStatus(joynr::RequestStatusCode::OK);
     }
 
-    void  calculateAvailableSatellites(joynr::RequestStatus& status, int32_t& result) {
+    joynr::RequestStatus calculateAvailableSatellites(int32_t& result) {
         result = 42;
-        status.setCode(joynr::RequestStatusCode::OK);
+        return joynr::RequestStatus(joynr::RequestStatusCode::OK);
     }
 
 

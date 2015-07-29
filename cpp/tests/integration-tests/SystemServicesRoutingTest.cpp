@@ -118,10 +118,9 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     bool isResolvable = false;
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 }
@@ -135,18 +134,17 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 
-    routingProxy->addNextHop(status, participantId, address);
+    status = routingProxy->addNextHop(participantId, address);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    status = routingProxy->resolveNextHop(isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(isResolvable);
 }
@@ -159,24 +157,23 @@ TEST_F(SystemServicesRoutingTest, removeNextHop)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 
-    routingProxy->addNextHop(status, participantId, address);
+    status = routingProxy->addNextHop(participantId, address);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    status = routingProxy->resolveNextHop(isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(isResolvable);
 
-    routingProxy->removeNextHop(status, participantId);
+    status = routingProxy->removeNextHop(participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    status = routingProxy->resolveNextHop(isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 }

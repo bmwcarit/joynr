@@ -291,9 +291,8 @@ QtPermission::Enum LocalDomainAccessController::getConsumerPermission(
 std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMasterAccessControlEntries(
         const std::string& uid)
 {
-    RequestStatus rs;
     std::vector<MasterAccessControlEntry> resultMasterAces;
-    globalDomainAccessControllerProxy->getMasterAccessControlEntries(rs, resultMasterAces, uid);
+    globalDomainAccessControllerProxy->getMasterAccessControlEntries(resultMasterAces, uid);
 
     return resultMasterAces;
 }
@@ -301,10 +300,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMasterAcce
 std::vector<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMasterAccessControlEntries(const std::string& uid)
 {
-    RequestStatus rs;
     std::vector<MasterAccessControlEntry> resultMasterAces;
-    globalDomainAccessControllerProxy->getEditableMasterAccessControlEntries(
-            rs, resultMasterAces, uid);
+    globalDomainAccessControllerProxy->getEditableMasterAccessControlEntries(resultMasterAces, uid);
 
     return resultMasterAces;
 }
@@ -312,10 +309,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    RequestStatus rs;
     bool success;
-    globalDomainAccessControllerProxy->updateMasterAccessControlEntry(
-            rs, success, updatedMasterAce);
+    globalDomainAccessControllerProxy->updateMasterAccessControlEntry(success, updatedMasterAce);
 
     return success;
 }
@@ -325,10 +320,9 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
                                                                  const std::string& interfaceName,
                                                                  const std::string& operation)
 {
-    RequestStatus rs;
     bool success;
     globalDomainAccessControllerProxy->removeMasterAccessControlEntry(
-            rs, success, uid, domain, interfaceName, operation);
+            success, uid, domain, interfaceName, operation);
 
     return success;
 }
@@ -336,9 +330,8 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
 std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMediatorAccessControlEntries(
         const std::string& uid)
 {
-    RequestStatus rs;
     std::vector<MasterAccessControlEntry> resultMediatorAces;
-    globalDomainAccessControllerProxy->getMediatorAccessControlEntries(rs, resultMediatorAces, uid);
+    globalDomainAccessControllerProxy->getMediatorAccessControlEntries(resultMediatorAces, uid);
 
     return resultMediatorAces;
 }
@@ -346,10 +339,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMediatorAc
 std::vector<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMediatorAccessControlEntries(const std::string& uid)
 {
-    RequestStatus rs;
     std::vector<MasterAccessControlEntry> resultMediatorAces;
     globalDomainAccessControllerProxy->getEditableMediatorAccessControlEntries(
-            rs, resultMediatorAces, uid);
+            resultMediatorAces, uid);
 
     return resultMediatorAces;
 }
@@ -357,10 +349,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    RequestStatus rs;
     bool success;
     globalDomainAccessControllerProxy->updateMediatorAccessControlEntry(
-            rs, success, updatedMediatorAce);
+            success, updatedMediatorAce);
 
     return success;
 }
@@ -373,7 +364,7 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
     RequestStatus rs;
     bool success;
     globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(
-            rs, success, uid, domain, interfaceName, operation);
+            success, uid, domain, interfaceName, operation);
 
     return success;
 }
@@ -381,9 +372,8 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
 std::vector<OwnerAccessControlEntry> LocalDomainAccessController::getOwnerAccessControlEntries(
         const std::string& uid)
 {
-    RequestStatus rs;
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
-    globalDomainAccessControllerProxy->getOwnerAccessControlEntries(rs, resultOwnerAces, uid);
+    globalDomainAccessControllerProxy->getOwnerAccessControlEntries(resultOwnerAces, uid);
 
     return resultOwnerAces;
 }
@@ -391,10 +381,8 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::getOwnerAccess
 std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
         getEditableOwnerAccessControlEntries(const std::string& uid)
 {
-    RequestStatus rs;
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
-    globalDomainAccessControllerProxy->getEditableOwnerAccessControlEntries(
-            rs, resultOwnerAces, uid);
+    globalDomainAccessControllerProxy->getEditableOwnerAccessControlEntries(resultOwnerAces, uid);
 
     return resultOwnerAces;
 }
@@ -402,9 +390,8 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    RequestStatus rs;
     bool success;
-    globalDomainAccessControllerProxy->updateOwnerAccessControlEntry(rs, success, updatedOwnerAce);
+    globalDomainAccessControllerProxy->updateOwnerAccessControlEntry(success, updatedOwnerAce);
 
     return success;
 }
@@ -414,10 +401,9 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
                                                                 const std::string& interfaceName,
                                                                 const std::string& operation)
 {
-    RequestStatus rs;
     bool success;
     globalDomainAccessControllerProxy->removeOwnerAccessControlEntry(
-            rs, success, uid, domain, interfaceName, operation);
+            success, uid, domain, interfaceName, operation);
 
     return success;
 }

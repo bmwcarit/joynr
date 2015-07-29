@@ -146,8 +146,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
-    RequestStatus status;
-    testProxy->voidOperation(status);
+    RequestStatus status(testProxy->voidOperation());
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
     //TODO CA: shared pointer for proxy builder?
     delete testProxy;

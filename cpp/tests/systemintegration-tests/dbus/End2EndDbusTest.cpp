@@ -154,9 +154,8 @@ TEST_F(End2EndDbusTest, call_sync_method)
     connectProxy();
 
     // call method
-    RequestStatus status;
     std::string actualValue;
-    testProxy->sayHello(status, actualValue);
+    RequestStatus status(testProxy->sayHello(actualValue));
     ASSERT_TRUE(status.successful());
     ASSERT_EQ("Hello World", actualValue);
 }
@@ -186,12 +185,11 @@ TEST_F(End2EndDbusTest, get_set_attribute_sync)
     connectProxy();
 
     // synchonous
-    RequestStatus status;
-    testProxy->setTestAttribute(status, 15);
+    RequestStatus status(testProxy->setTestAttribute(15));
     ASSERT_TRUE(status.successful());
 
     int result = 0;
-    testProxy->getTestAttribute(status, result);
+    status = testProxy->getTestAttribute(result);
     ASSERT_TRUE(status.successful());
     ASSERT_EQ(15, result);
 }

@@ -75,10 +75,9 @@ public:
 
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
                 joynr::types::CommunicationMiddleware::JOYNR};
-        joynr::RequestStatus status;
         joynr::types::DiscoveryEntry entry(
                 domain, interfaceName, participantId, provider->getProviderQos(), connections);
-        discoveryProxy.add(status, entry);
+        joynr::RequestStatus status(discoveryProxy.add(entry));
         if (!status.successful()) {
             LOG_ERROR(logger,
                       QString("Unable to add provider (participant ID: %1, domain: %2, interface: "
@@ -120,8 +119,7 @@ public:
             currentDispatcher->removeRequestCaller(participantId);
         }
 
-        joynr::RequestStatus status;
-        discoveryProxy.remove(status, participantId);
+        joynr::RequestStatus status(discoveryProxy.remove(participantId));
         if (!status.successful()) {
             LOG_ERROR(logger,
                       QString("Unable to remove provider (participant ID: %1, domain: %2, "

@@ -48,9 +48,8 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
 
 void FixedParticipantArbitrator::attemptArbitration()
 {
-    joynr::RequestStatus status;
     joynr::types::DiscoveryEntry result;
-    discoveryProxy.lookup(status, result, participantId);
+    joynr::RequestStatus status(discoveryProxy.lookup(result, participantId));
     if (status.successful()) {
         joynr::types::CommunicationMiddleware::Enum preferredConnection(
                 selectPreferredCommunicationMiddleware(result.getConnections()));

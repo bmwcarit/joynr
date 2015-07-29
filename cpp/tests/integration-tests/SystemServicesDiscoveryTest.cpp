@@ -116,7 +116,6 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
     std::vector<joynr::types::DiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
@@ -126,7 +125,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
                 false                                      // provider must support on change subscriptions
     );
 
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    RequestStatus status(discoveryProxy->lookup(result, domain, interfaceName, discoveryQos));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(result.empty());
 }
@@ -171,14 +170,14 @@ TEST_F(SystemServicesDiscoveryTest, add)
     expectedResult.push_back(discoveryEntry);
 
 
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(result.empty());
 
-    discoveryProxy->add(status, discoveryEntry);
+    status = discoveryProxy->add(discoveryEntry);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_EQ(expectedResult, result);
 }
@@ -191,7 +190,6 @@ TEST_F(SystemServicesDiscoveryTest, remove)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
@@ -220,19 +218,19 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     );
     expectedResult.push_back(discoveryEntry);
 
-    discoveryProxy->add(status, discoveryEntry);
+    RequestStatus status(discoveryProxy->add(discoveryEntry));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
     std::vector<joynr::types::DiscoveryEntry> result;
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_EQ(expectedResult, result);
 
-    discoveryProxy->remove(status, participantId);
+    status = discoveryProxy->remove(participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
     result.clear();
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(result.empty());
 }

@@ -181,8 +181,7 @@ public:
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
 
-        RequestStatus status;
-        testFixture->setLocation(status, expectedGpsLocation);
+        testFixture->setLocation(expectedGpsLocation);
         delete testFixture;
     }
 
@@ -192,9 +191,8 @@ public:
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
-        RequestStatus status;
         types::Localisation::GpsLocation gpsLocation;
-        testFixture->getLocation(status, gpsLocation);
+        RequestStatus status(testFixture->getLocation(gpsLocation));
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
         delete testFixture;
@@ -227,9 +225,8 @@ public:
         qvariant.setValue(types::QtGpsLocation::createQt(expectedGpsLocation));
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
-        RequestStatus status;
         types::Localisation::GpsLocation gpsLocation;
-        testFixture->getLocation(status, gpsLocation);
+        RequestStatus status(testFixture->getLocation(gpsLocation));
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
         EXPECT_TRUE(status.successful());
         delete testFixture;
@@ -253,9 +250,8 @@ public:
         setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
-        RequestStatus requestStatus;
         int result;
-        testFixture->methodWithNoInputParameters(requestStatus, result);
+        RequestStatus requestStatus(testFixture->methodWithNoInputParameters(result));
         EXPECT_EQ(expectedInt, result);
         EXPECT_TRUE(requestStatus.successful());
         delete testFixture;

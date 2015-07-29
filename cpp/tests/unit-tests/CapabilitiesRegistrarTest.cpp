@@ -102,7 +102,6 @@ TEST_F(CapabilitiesRegistrarTest, add){
     EXPECT_CALL(
                 mockDiscovery,
                 add(
-                    A<joynr::RequestStatus&>(),
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
@@ -110,7 +109,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
-    ).WillOnce(SetArgReferee<0>(status));
+    ).WillOnce(Return(status));
 
     std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
     EXPECT_EQ(expectedParticipantId, participantId);
@@ -129,11 +128,10 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(mockDiscovery, remove(
-                    A<joynr::RequestStatus&>(),
                     expectedParticipantId
     ))
             .Times(1)
-            .WillOnce(SetArgReferee<0>(status))
+            .WillOnce(Return(status))
     ;
     std::string participantId = capabilitiesRegistrar->remove(domain, mockProvider);
     EXPECT_EQ(expectedParticipantId, participantId);
@@ -145,11 +143,10 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
     joynr::RequestStatus status;
     status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(mockDiscovery, remove(
-                    A<joynr::RequestStatus&>(),
                     expectedParticipantId
     ))
             .Times(1)
-            .WillOnce(SetArgReferee<0>(status))
+            .WillOnce(Return(status))
     ;
     capabilitiesRegistrar->remove(expectedParticipantId);
 }
@@ -176,7 +173,6 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     EXPECT_CALL(
                 mockDiscovery,
                 add(
-                    A<joynr::RequestStatus&>(),
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
@@ -184,7 +180,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
-    ).Times(1).WillOnce(SetArgReferee<0>(status))
+    ).Times(1).WillOnce(Return(status))
     ;
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
@@ -231,7 +227,6 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(
                 mockDiscovery,
                 add(
-                    A<joynr::RequestStatus&>(),
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
@@ -239,7 +234,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
-    ).Times(1).WillOnce(SetArgReferee<0>(status))
+    ).Times(1).WillOnce(Return(status))
     ;
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))

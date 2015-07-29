@@ -45,11 +45,10 @@ class InterfaceUtil {
 		/**
 		* @brief Synchronous getter for the «attributeName» attribute.
 		*
-		* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 		* @param result The result that will be returned to the caller.
+		* @returns the RequestStatus of the get«attributeName.toFirstUpper» call
 		*/
-		virtual void get«attributeName.toFirstUpper»(
-				joynr::RequestStatus& joynrInternalStatus,
+		virtual joynr::RequestStatus get«attributeName.toFirstUpper»(
 				«returnType»& result
 		)«IF pure»=0«ENDIF»;
 
@@ -83,11 +82,10 @@ class InterfaceUtil {
 		/**
 		* @brief Synchronous setter for the «attributeName» attribute.
 		*
-		* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 		* @param «returnType.toFirstLower» The value to set.
+		* @returns the RequestStatus of the set«attributeName.toFirstUpper» call
 		*/
-		virtual void set«attributeName.toFirstUpper»(
-				joynr::RequestStatus& joynrInternalStatus,
+		virtual joynr::RequestStatus set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
@@ -116,20 +114,23 @@ class InterfaceUtil {
 	def produceSyncMethods(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedOutputParameterList)»
-		«val inputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstInputParameterList)»
+		«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
+		«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 
 		/**
 		* @brief Synchronous operation «method.joynrName».
 		*
-		* @param joynrInternalStatus The joynrInternalStatus of the request which will be returned to the caller.
 		«FOR outputParam: method.outputParameters»
 		* @param «outputParam.typeName» «outputParam.joynrName» this is an output parameter
 		*        and will be set within function «method.joynrName»
 		«ENDFOR»
+		«FOR inputParam: method.inputParameters»
+		* @param «inputParam.typeName» «inputParam.joynrName»
+		«ENDFOR»
+		* @returns the internal status of the request which will be returned to the caller.
 		*/
-		virtual void «method.joynrName»(
-				joynr::RequestStatus& joynrInternalStatus«outputTypedParamList»«inputTypedParamList»
+		virtual joynr::RequestStatus «method.joynrName»(
+				«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''

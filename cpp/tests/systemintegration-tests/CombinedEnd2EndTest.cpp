@@ -218,9 +218,8 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         primesBelow6.push_back(2);
         primesBelow6.push_back(3);
         primesBelow6.push_back(5);
-        RequestStatus rs;
         std::vector<int> result;
-        testProxy->returnPrimeNumbers(rs, result, 6);
+        RequestStatus rs(testProxy->returnPrimeNumbers(result, 6));
         if (rs.successful()) {
             EXPECT_EQ(primesBelow6, result);
         } else {
@@ -269,8 +268,6 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
       */
         // Primes
         int testPrimeValue = 15;
-        RequestStatus status;
-        RequestStatus statusOfSet;
 
         std::function<void()> onSuccess = [] () {};
 
@@ -281,7 +278,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         testProvider->setFirstPrime(testPrimeValue, onSuccess);
 
         int primeResult(0);
-        testProxy->getFirstPrime(status, primeResult);
+        RequestStatus status(testProxy->getFirstPrime(primeResult));
         ASSERT_TRUE(status.successful());
         EXPECT_EQ(primeResult, 15);
 
@@ -294,7 +291,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         localStrList.push_back("four {");
         testProvider->setListOfStrings(localStrList, onSuccess);
 
-        testProxy->getListOfStrings(status, remoteStrList);
+        status = testProxy->getListOfStrings(remoteStrList);
         ASSERT_TRUE(status.successful());
         EXPECT_EQ(localStrList, remoteStrList);
 
@@ -303,12 +300,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
       *
       */
 
-        testProxy->setFirstPrime(statusOfSet, 19);
+        RequestStatus statusOfSet(testProxy->setFirstPrime(19));
         ASSERT_TRUE(statusOfSet.successful());
-        testProxy->getFirstPrime(status, primeResult);
+        status = testProxy->getFirstPrime(primeResult);
         ASSERT_TRUE(status.successful());
         EXPECT_EQ(primeResult, 19);
-
 
       /*
         *
@@ -321,7 +317,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(5);
         testProvider->setListOfInts(inputIntList, onSuccess);
         std::vector<int> outputIntLIst;
-        testProxy->getListOfInts(status, outputIntLIst);
+        status = testProxy->getListOfInts(outputIntLIst);
         ASSERT_TRUE(status.successful());
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 3);
@@ -330,8 +326,8 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(7);
         inputIntList.push_back(11);
         inputIntList.push_back(13);
-        testProxy->setListOfInts(statusOfSet, inputIntList);
-        testProxy->getListOfInts(status, outputIntLIst);
+        statusOfSet = testProxy->setListOfInts(inputIntList);
+        status = testProxy->getListOfInts(outputIntLIst);
         ASSERT_TRUE(status.successful());
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 11);
@@ -377,13 +373,12 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        RequestStatus status;
         std::string derivedStructResult;
         std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
-        testProxy->overloadedOperation(status, derivedStructResult, tests::QtDerivedStruct());
-        testProxy->overloadedOperation(status, anotherDerivedStructResult, tests::QtAnotherDerivedStruct());
+        testProxy->overloadedOperation(derivedStructResult, tests::QtDerivedStruct());
+        testProxy->overloadedOperation(anotherDerivedStructResult, tests::QtAnotherDerivedStruct());
         EXPECT_EQ(derivedStructResult, "QtDerivedStruct");
         EXPECT_EQ(anotherDerivedStructResult, "QtAnotherDerivedStruct");
     }
@@ -505,22 +500,17 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     QThreadSleep::msleep(5000);
 
     // Change the location once
-    RequestStatus requestStatus;
-    testProxy->setLocation(requestStatus,
-                          types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.tryAcquire(1, 20000));
 
     // Change the location 3 times
-    testProxy->setLocation(requestStatus,
-                          types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
     QThreadSleep::msleep(minInterval_ms + 50);
-    testProxy->setLocation(requestStatus,
-                          types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
     QThreadSleep::msleep(minInterval_ms + 50);
-    testProxy->setLocation(requestStatus,
-                          types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
+    testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(semaphore.tryAcquire(3, 20000));
@@ -745,10 +735,9 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
 
-    RequestStatus status;
     types::ChannelUrlInformation result;
     std::string channelId("test");
-    channelUrlDirectoryProxy->getUrlsForChannel(status,result,channelId);
+    RequestStatus status(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
     EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
 }
 
@@ -773,20 +762,17 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     QThreadSleep::msleep(2000);
 
     // Register new channel URLs
-    RequestStatus status1;
     std::string channelId = "bogus_1";
     types::ChannelUrlInformation channelUrlInformation;
     std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
     channelUrlInformation.setUrls(urls);
-    channelUrlDirectoryProxy->registerChannelUrls(
-                status1,
+    RequestStatus status1(channelUrlDirectoryProxy->registerChannelUrls(
                 channelId,
-                channelUrlInformation);
+                channelUrlInformation));
 
     EXPECT_TRUE(status1.successful()) << "Registering Url was not successful";
-    RequestStatus status2;
     types::ChannelUrlInformation result;
-    channelUrlDirectoryProxy->getUrlsForChannel(status2,result,channelId);
+    RequestStatus status2(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
     EXPECT_TRUE(status2.successful())<< "Requesting Url was not successful";
     EXPECT_EQ(channelUrlInformation,result) << "Returned Url did not match Expected Url";
 }
@@ -809,27 +795,23 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
 
-    RequestStatus status1;
     std::string channelId = "bogus_3";
     types::ChannelUrlInformation channelUrlInformation;
     std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
     channelUrlInformation.setUrls(urls);
-    channelUrlDirectoryProxy->registerChannelUrls(status1, channelId, channelUrlInformation);
+    RequestStatus status1(channelUrlDirectoryProxy->registerChannelUrls(channelId, channelUrlInformation));
 
     EXPECT_TRUE(status1.successful());
-    RequestStatus status2;
     types::ChannelUrlInformation result;
-    channelUrlDirectoryProxy->getUrlsForChannel(status2,result,channelId);
+    RequestStatus status2(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
     EXPECT_TRUE(status2.successful());
     EXPECT_EQ(channelUrlInformation,result);
 
-    RequestStatus status3;
-    channelUrlDirectoryProxy->unregisterChannelUrls(status3, channelId);
+    RequestStatus status3(channelUrlDirectoryProxy->unregisterChannelUrls(channelId));
     EXPECT_TRUE(status3.successful());
 
-    RequestStatus status4;
     types::ChannelUrlInformation result2;
-    channelUrlDirectoryProxy->getUrlsForChannel(status4,result2,channelId);
+    RequestStatus status4(channelUrlDirectoryProxy->getUrlsForChannel(result2, channelId));
     EXPECT_EQ(0,result2.getUrls().size());
     EXPECT_FALSE(status4.successful());
 }

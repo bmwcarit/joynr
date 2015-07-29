@@ -125,11 +125,15 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     // use a semaphore to wait for capabilities to be received
     QSemaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<const joynr::RequestStatus&>(), A<const std::vector<types::CapabilityInformation>&>()))
-           .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
+           .WillRepeatedly(
+                DoAll(
+                    ReleaseSemaphore(&semaphore),
+                    Return(RequestStatus(RequestStatusCode::OK))
+                ));
     std::function<void(const joynr::RequestStatus&, const std::vector<types::CapabilityInformation>&)> callbackFct =
             [&](const joynr::RequestStatus& status, const std::vector<types::CapabilityInformation>& capabilities) {
-                callback->capabilitiesReceived(status, capabilities);
+                callback->capabilitiesReceived(capabilities);
             };
 
     LOG_DEBUG(logger,"get capabilities");

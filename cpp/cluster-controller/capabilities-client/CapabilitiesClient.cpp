@@ -94,16 +94,14 @@ void CapabilitiesClient::remove(const std::string& participantId)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
-    RequestStatus status;
-    capabilitiesProxy->remove(status, participantId);
+    capabilitiesProxy->remove(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
-    RequestStatus status;
-    capabilitiesProxy->remove(status, participantIdList);
+    capabilitiesProxy->remove(participantIdList);
 }
 
 std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
@@ -113,9 +111,8 @@ std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
 
-    RequestStatus status;
     std::vector<types::CapabilityInformation> result;
-    capabilitiesProxy->lookup(status, result, domain, interfaceName);
+    capabilitiesProxy->lookup(result, domain, interfaceName);
     return result;
 }
 

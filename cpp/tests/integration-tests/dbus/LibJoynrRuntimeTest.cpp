@@ -184,9 +184,8 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
                 domain,
                 mockTestProvider
     );
-    RequestStatus status;
     bool resolved = false;
-    routingProxy->resolveNextHop(status, resolved, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(resolved, participantId));
     ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 }
@@ -199,14 +198,13 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
                 mockTestProvider
     );
 
-    RequestStatus status;
     bool resolved = false;
-    routingProxy->resolveNextHop(status, resolved, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(resolved, participantId));
     ASSERT_TRUE(status.successful());
     EXPECT_TRUE(resolved);
 
     runtime->unregisterProvider(participantId);
-    routingProxy->resolveNextHop(status, resolved, participantId);
+    status = routingProxy->resolveNextHop(resolved, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_FALSE(resolved);
 }
@@ -229,9 +227,8 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
                 mockTestProviderQos,
                 connections
     );
-    RequestStatus status;
     joynr::types::DiscoveryEntry discoveryEntry;
-    discoveryProxy->lookup(status, discoveryEntry, participantId);
+    RequestStatus status = discoveryProxy->lookup(discoveryEntry, participantId);
     ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);
 }
@@ -331,9 +328,8 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     ints.push_back(6);
     ints.push_back(12);
     int32_t expectedSum = 22;
-    RequestStatus status;
     int32_t sum = 0;
-    testProxy->sumInts(status, sum, ints);
+    RequestStatus status(testProxy->sumInts(sum, ints));
     ASSERT_TRUE(status.successful());
     EXPECT_EQ(expectedSum, sum);
 

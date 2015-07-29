@@ -46,9 +46,9 @@ QosArbitrator::QosArbitrator(const std::string& domain,
 
 void QosArbitrator::attemptArbitration()
 {
-    joynr::RequestStatus status;
     std::vector<joynr::types::DiscoveryEntry> result;
-    discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
+    joynr::RequestStatus status(
+            discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos));
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
     } else {
