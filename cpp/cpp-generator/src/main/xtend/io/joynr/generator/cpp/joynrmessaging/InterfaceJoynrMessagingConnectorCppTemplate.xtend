@@ -79,6 +79,8 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 #include "joynr/TypeUtil.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 
 «FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 «IF datatype instanceof FType»
@@ -117,7 +119,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> replyCallerCallbackFct =
+			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> onSuccess =
 					[future] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
@@ -126,14 +128,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status)> replyCallerErrorFct =
+			std::function<void(const joynr::RequestStatus& status)> onError =
 					[future] (const joynr::RequestStatus& status) {
 						future->onError(status);
 					};
 
 			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
-					replyCallerCallbackFct,
-					replyCallerErrorFct));
+					onSuccess,
+					onError));
 			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
 			joynr::RequestStatus status(future->waitForFinished());
 			if (status.successful()) {
@@ -143,30 +145,34 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		}
 
 		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
-				std::function<void(const joynr::RequestStatus& status, const «returnTypeStd»& «attributeName»)> callbackFct
+				std::function<void(const joynr::RequestStatus& status, const «returnTypeStd»& «attributeName»)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> replyCallerCallbackFct =
-					[future, callbackFct] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
+			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> onSuccessWrapper =
+					[future, onSuccess] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
 						} else {
 							future->onError(status);
 						}
-						if (callbackFct){
-							callbackFct(status, «qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+						if (onSuccess){
+							onSuccess(status, «qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status)> replyCallerErrorFct =
-					[future] (const joynr::RequestStatus& status) {
+			std::function<void(const joynr::RequestStatus& status)> onErrorWrapper =
+					[future, onError] (const joynr::RequestStatus& status) {
 						future->onError(status);
+						if (onError){
+							onError(status);
+						}
 					};
 
 			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
-					replyCallerCallbackFct,
-					replyCallerErrorFct));
+					onSuccessWrapper,
+					onErrorWrapper));
 			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
 
 			return future;
@@ -176,7 +182,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«IF attribute.writable»
 		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»Async(
 				«returnTypeStd» «attributeName»,
-				std::function<void(const joynr::RequestStatus& status)> callbackFct
+				std::function<void(const joynr::RequestStatus& status)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName(QString("set«attributeName.toFirstUpper»"));
@@ -189,21 +196,29 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 
-			std::function<void(const joynr::RequestStatus& status)> replyCallerCallbackFct =
-					[future, callbackFct] (const joynr::RequestStatus& status) {
+			std::function<void(const joynr::RequestStatus& status)> onSuccessWrapper =
+					[future, onSuccess] (const joynr::RequestStatus& status) {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess();
 						} else {
 							future->onError(status);
 						}
-						if (callbackFct){
-							callbackFct(status);
+						if (onSuccess) {
+							onSuccess(status);
 						}
 					};
 
+			std::function<void(const joynr::RequestStatus& status)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status) {
+					future->onError(status);
+					if (onError) {
+						onError(status);
+					}
+				};
+
 			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
-					replyCallerCallbackFct,
-					std::bind(&joynr::Future<void>::onError, future, std::placeholders::_1)));
+					onSuccessWrapper,
+					onErrorWrapper));
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -222,7 +237,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 			QSharedPointer<joynr::Future<void> > future( new joynr::Future<void>());
 
-			std::function<void(const joynr::RequestStatus& status)> replyCallerCallbackFct =
+			std::function<void(const joynr::RequestStatus& status)> onSuccess =
 					[future] (const joynr::RequestStatus& status) {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess();
@@ -232,7 +247,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					};
 
 			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
-					replyCallerCallbackFct,
+					onSuccess,
 					std::bind(&joynr::Future<void>::onError, future, std::placeholders::_1)));
 			operationRequest(replyCaller, internalRequestObject);
 			return future->waitForFinished();
@@ -329,7 +344,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		QSharedPointer<joynr::Future<«outputParametersStd»> > future(
 				new joynr::Future<«outputParametersStd»>());
 
-		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> replyCallerCallbackFct =
+		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> onSuccess =
 				[future] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
@@ -338,14 +353,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status)> replyCallerErrorFct =
+		std::function<void(const joynr::RequestStatus& status)> onError =
 			[future] (const joynr::RequestStatus& status) {
 				future->onError(status);
 			};
 
 		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
-				replyCallerCallbackFct,
-				replyCallerErrorFct));
+				onSuccess,
+				onError));
 		operationRequest(replyCaller, internalRequestObject);
 		«IF method.outputParameters.empty»
 			return future->waitForFinished();
@@ -360,34 +375,38 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
 			«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListStd»)> callbackFct)
+			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListStd»)> onSuccess,
+			std::function<void(const joynr::RequestStatus& status)> onError
+	)
 	{
 		«produceParameterSetters(method)»
 
 		std::shared_ptr<joynr::Future<«outputParametersStd»> > future(
 				new joynr::Future<«outputParametersStd»>());
 
-		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> replyCallerCallbackFct =
-				[future, callbackFct] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
+		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> onSuccessWrapper =
+				[future, onSuccess] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
 					} else {
 						future->onError(status);
 					}
-					if (callbackFct)
-					{
-						callbackFct(status«outputUntypedParamList.prependCommaIfNotEmpty»);
+					if (onSuccess) {
+						onSuccess(status«outputUntypedParamList.prependCommaIfNotEmpty»);
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status)> replyCallerErrorFct =
-				[future] (const joynr::RequestStatus& status) {
+		std::function<void(const joynr::RequestStatus& status)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status) {
 					future->onError(status);
+					if (onError) {
+						onError(status);
+					}
 				};
 
 		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
-				replyCallerCallbackFct,
-				replyCallerErrorFct));
+				onSuccessWrapper,
+				onErrorWrapper));
 		operationRequest(replyCaller, internalRequestObject);
 		return future;
 	}

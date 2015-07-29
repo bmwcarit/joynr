@@ -44,14 +44,17 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> localChannel
         const std::string& channelId,
         std::function<void(
             RequestStatus& status,
-            types::ChannelUrlInformation& urls)> callbackFct) {
+            types::ChannelUrlInformation& urls)> onSuccess,
+        std::function<void(RequestStatus& status)> onError) {
+    std::ignore = channelId;
+    std::ignore = onError;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
     std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
     future->onSuccess(urlInformation);
     RequestStatus status(RequestStatusCode::OK);
-    callbackFct(status, urlInformation);
+    onSuccess(status, urlInformation);
     return future;
 }
 
@@ -88,7 +91,8 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<std::function<void(const RequestStatus& status, const types::ChannelUrlInformation& urls)>>()))
+                    A<std::function<void(const RequestStatus& status, const types::ChannelUrlInformation& urls)>>(),
+                    A<std::function<void(const RequestStatus& status)>>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
@@ -116,6 +120,7 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrlsAsync(
                     A<const std::string&>(),
                     _,
+                    A<std::function<void(const RequestStatus& status)>>(),
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
             .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(
@@ -132,6 +137,7 @@ TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrlsAsync(
                     A<const std::string&>(),
+                    A<std::function<void(const RequestStatus& status)>>(),
                     A<std::function<void(const RequestStatus& status)>>()))
             .Times(1)
             .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(new joynr::Future<void>())));

@@ -68,7 +68,8 @@ class InterfaceUtil {
 		«printFutureReturnDefinition»
 		*/
 		virtual std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
-				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> callbackFct = nullptr
+				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
+				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''
@@ -106,7 +107,8 @@ class InterfaceUtil {
 		*/
 		virtual std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName.toFirstLower»,
-				std::function<void(const joynr::RequestStatus& status)> callbackFct = nullptr
+				std::function<void(const joynr::RequestStatus& status)> onSuccess = nullptr,
+				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''
@@ -150,7 +152,9 @@ class InterfaceUtil {
 
 		virtual std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
 				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
-				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct = nullptr)«IF pure»=0«ENDIF»;
+				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> onSuccess = nullptr,
+				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
+		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''
 }

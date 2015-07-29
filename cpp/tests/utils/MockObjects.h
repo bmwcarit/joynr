@@ -361,36 +361,40 @@ public:
                 const std::string& participantId
             )
     );
-    MOCK_METHOD2(
+    MOCK_METHOD3(
             addAsync,
             std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
-                std::function<void(const joynr::RequestStatus& status)> callbackFct
+                std::function<void(const joynr::RequestStatus& status)> onSuccess,
+                std::function<void(const joynr::RequestStatus& status)> onError
             )
     );
-    MOCK_METHOD2(
+    MOCK_METHOD3(
             lookupAsync,
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntry>>(
                 const std::string& participantId,
                 std::function<void(const joynr::RequestStatus& status, const joynr::types::DiscoveryEntry& result)>
-                        callbackFct
+                        onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             lookupAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
                 std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::DiscoveryEntry>& result)>
-                        callbackFct
+                        onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
-    MOCK_METHOD2(
+    MOCK_METHOD3(
             removeAsync,
             std::shared_ptr<joynr::Future<void>>(
                 const std::string& participantId,
-                std::function<void(const joynr::RequestStatus& status)> callbackFct
+                std::function<void(const joynr::RequestStatus& status)> onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
 };
@@ -712,33 +716,61 @@ public:
         ChannelUrlDirectoryAsyncProxy(QSharedPointer<joynr::system::QtAddress> (new joynr::system::QtAddress()), NULL, NULL, "domain", joynr::MessagingQos(), false){}
 
 
-    MOCK_METHOD2(getUrlsForChannelAsync,std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (const std::string& channelId, std::function<void(const joynr::RequestStatus& status, const joynr::types::ChannelUrlInformation& urls)> callbackFct));
+    MOCK_METHOD3(getUrlsForChannelAsync,
+                 std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (
+                     const std::string& channelId,
+                     std::function<void(const joynr::RequestStatus& status, const joynr::types::ChannelUrlInformation& urls)> onSuccess,
+                     std::function<void(const joynr::RequestStatus& status)> onError
+                 )
+    );
 
-    MOCK_METHOD3(registerChannelUrlsAsync, std::shared_ptr<joynr::Future<void> >(
-                                           const std::string& channelId,
-                                           const joynr::types::ChannelUrlInformation& channelUrlInformation,
-                                           std::function<void(const joynr::RequestStatus&)> callbackFct));
+    MOCK_METHOD4(registerChannelUrlsAsync,
+                 std::shared_ptr<joynr::Future<void> >(
+                     const std::string& channelId,
+                     const joynr::types::ChannelUrlInformation& channelUrlInformation,
+                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(const joynr::RequestStatus&)> onError
+                 )
+    );
 
-    MOCK_METHOD2(unregisterChannelUrlsAsync, std::shared_ptr<joynr::Future<void> >(const std::string& channelId, std::function<void(const joynr::RequestStatus&)> callbackFct));
+    MOCK_METHOD3(unregisterChannelUrlsAsync,
+                 std::shared_ptr<joynr::Future<void>>(
+                     const std::string& channelId,
+                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(const joynr::RequestStatus&)> onError
+                 )
+    );
 };
 
 
 class MockLocalChannelUrlDirectory : public joynr::ILocalChannelUrlDirectory {
 public:
-    MOCK_METHOD3(registerChannelUrlsAsync, std::shared_ptr<joynr::Future<void>>(
+    MOCK_METHOD4(registerChannelUrlsAsync,
+                 std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
                      joynr::types::ChannelUrlInformation channelUrlInformation,
-                     std::function<void(const joynr::RequestStatus&)> callbackFct));
+                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(const joynr::RequestStatus&)> onError
+                 )
+    );
 
-    MOCK_METHOD2(unregisterChannelUrlsAsync, std::shared_ptr<joynr::Future<void>>(
-                    const std::string& channelId,
-                    std::function<void(const joynr::RequestStatus&)> callbackFct));
+    MOCK_METHOD3(unregisterChannelUrlsAsync,
+                 std::shared_ptr<joynr::Future<void>>(
+                     const std::string& channelId,
+                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(const joynr::RequestStatus&)> onError
+                 )
+    );
 
-    MOCK_METHOD3(getUrlsForChannelAsync, std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
-                    const std::string& channelId,
-                    const qint64& timeout_ms,
-                    std::function<void(const joynr::RequestStatus&, const joynr::types::ChannelUrlInformation&)>
-                                         callbackFct));
+    MOCK_METHOD4(getUrlsForChannelAsync,
+                 std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
+                     const std::string& channelId,
+                     const qint64& timeout_ms,
+                     std::function<void(const joynr::RequestStatus&, const joynr::types::ChannelUrlInformation&)>
+                                         onSuccess,
+                     std::function<void(const joynr::RequestStatus&)> onError
+                 )
+    );
 };
 
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
@@ -799,50 +831,54 @@ public:
     {
     }
 
-    MOCK_METHOD2(
+    MOCK_METHOD3(
             getDomainRolesAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
-                    const std::string& uid,
-                    std::function<void(
-                        const joynr::RequestStatus& status,
-                        const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
-                    )> callbackFct
+                const std::string& uid,
+                std::function<void(
+                    const joynr::RequestStatus& status,
+                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
+                )> onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
 
-    MOCK_METHOD3(
+    MOCK_METHOD4(
             getMasterAccessControlEntriesAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
-                    const std::string& domain,
-                    const std::string& interfaceName,
-                    std::function<void(
-                        const joynr::RequestStatus& status,
-                        const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& masterAces
-                    )> callbackFct
+                const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(
+                    const joynr::RequestStatus& status,
+                    const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& masterAces
+                )> onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
 
-    MOCK_METHOD3(
+    MOCK_METHOD4(
             getMediatorAccessControlEntriesAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
-                    const std::string& domain,
-                    const std::string& interfaceName,
-                    std::function<void(
-                        const joynr::RequestStatus& status,
-                        const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAces
-                    )> callbackFct
+                const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(
+                    const joynr::RequestStatus& status,
+                    const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAces
+                )> onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
 
-    MOCK_METHOD3(
+    MOCK_METHOD4(
             getOwnerAccessControlEntriesAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>>>(
-                    const std::string& domain,
-                    const std::string& interfaceName,
-                    std::function<void(
-                        const joynr::RequestStatus& status,
-                        const std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAces
-                    )> callbackFct
+                const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(
+                    const joynr::RequestStatus& status,
+                    const std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAces
+                )> onSuccess,
+                std::function<void(const joynr::RequestStatus&)> onError
             )
     );
 

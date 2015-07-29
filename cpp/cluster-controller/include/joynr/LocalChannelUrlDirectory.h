@@ -52,22 +52,26 @@ public:
      *
      * @param channelId
      * @param channelUrlInformation
-     * @param callbackFct
+     * @param onSuccess
+     * @param onError
      */
     virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
-            std::function<void(const RequestStatus& status)> callbackFct = nullptr);
+            std::function<void(const RequestStatus& status)> onSuccess = nullptr,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
      *
      * @param channelId
-     * @param callbackFct
+     * @param onSuccess
+     * @param onError
      */
     virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
-            std::function<void(const RequestStatus& status)> callbackFct = nullptr);
+            std::function<void(const RequestStatus& status)> onSuccess = nullptr,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -76,14 +80,16 @@ public:
      *
      * @param channelId
      * @param timeout
-     * @param callbackFct
+     * @param onSuccess
+     * @param onError
      */
     virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
-    getUrlsForChannelAsync(
-            const std::string& channelId,
-            const qint64& timeout_ms,
-            std::function<void(const RequestStatus& status,
-                               const types::ChannelUrlInformation& channelUrls)> = nullptr);
+    getUrlsForChannelAsync(const std::string& channelId,
+                           const qint64& timeout_ms,
+                           std::function<void(const RequestStatus& status,
+                                              const types::ChannelUrlInformation& channelUrls)>
+                                   onSuccess = nullptr,
+                           std::function<void(const RequestStatus& status)> onError = nullptr);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);

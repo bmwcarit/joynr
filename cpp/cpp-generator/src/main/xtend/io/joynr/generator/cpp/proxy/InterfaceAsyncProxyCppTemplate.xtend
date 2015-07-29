@@ -41,9 +41,12 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
+#include "joynr/Future.h"
 #include "joynr/exceptions.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 #include <cassert>
 
 «getNamespaceStarter(fInterface)»
@@ -70,16 +73,23 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 */
 
 		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
-				std::function<void(const joynr::RequestStatus& status, const «attributeType»& «attributeName»)> callbackFct)
+				std::function<void(const joynr::RequestStatus& status, const «attributeType»& «attributeName»)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
+		)
 		{
 			if (connector==NULL){
-				LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-				//TODO error reaction for this case?
-				std::shared_ptr<joynr::Future<«attributeType»> > future;
+				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+				if (onError) {
+					onError(status);
+				}
+				std::shared_ptr<joynr::Future<«attributeType»>> future(new joynr::Future<«attributeType»>());
+				future->onError(status);
 				return future;
 			}
 			else{
-				return connector->«getAttribute»Async(callbackFct);
+				return connector->«getAttribute»Async(onSuccess);
 			}
 		}
 
@@ -92,16 +102,23 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 
 		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
 				«attributeType» «attributeName»,
-				std::function<void(const joynr::RequestStatus& status)> callbackFct)
+				std::function<void(const joynr::RequestStatus& status)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
+		)
 		{
 			if (connector==NULL){
-				LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-				//TODO error reaction for this case?
-				std::shared_ptr<joynr::Future<void> > future;
+				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+				if (onError) {
+					onError(status);
+				}
+				std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+				future->onError(status);
 				return future;
 			}
 			else{
-				return connector->«setAttribute»Async(«attributeName», callbackFct);
+				return connector->«setAttribute»Async(«attributeName», onSuccess);
 			}
 		}
 
@@ -117,16 +134,23 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	 */
 	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»Async(
 			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> callbackFct)
+			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> onSuccess,
+			std::function<void(const joynr::RequestStatus& status)> onError
+	)
 	{
 		if (connector==NULL){
-			LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
-			//TODO error reaction for this case?
-			std::shared_ptr<joynr::Future<«outputParameters»> > future;
+			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
+			LOG_WARN(logger, "«errorMsg»");
+			joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+			if (onError) {
+				onError(status);
+			}
+			std::shared_ptr<joynr::Future<«outputParameters»>> future(new joynr::Future<«outputParameters»>());
+			future->onError(status);
 			return future;
 		}
 		else{
-			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»callbackFct);
+			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess);
 		}
 	}
 

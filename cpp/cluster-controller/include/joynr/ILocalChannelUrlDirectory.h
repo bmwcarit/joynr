@@ -51,22 +51,26 @@ public:
      *
      * @param channelId
      * @param channelUrlInformation
-     * @param callbackFct
+     * @param onSuccess
+     * @param onError
      */
     virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
-            std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
+            std::function<void(const joynr::RequestStatus&)> onSuccess = nullptr,
+            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
      *
      * @param channelId
-     * @param callbackFct
+     * @param onSuccess
+     * @param onError
      */
     virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
-            std::function<void(const joynr::RequestStatus&)> callbackFct = nullptr) = 0;
+            std::function<void(const joynr::RequestStatus&)> onSuccess = nullptr,
+            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -74,14 +78,16 @@ public:
      *request).
      *
      * @param channelId
-     * @param callbackFct
+     * @param onSuccess
+     * @param onError
      */
     virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
     getUrlsForChannelAsync(
             const std::string& channelId,
             const qint64& timeout_ms,
             std::function<void(const joynr::RequestStatus&, const types::ChannelUrlInformation&)>
-                    callbackFct = nullptr) = 0;
+                    onSuccess = nullptr,
+            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
 };
 
 } // namespace joynr

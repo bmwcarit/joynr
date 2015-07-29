@@ -64,6 +64,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -124,8 +126,10 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 		}
 
 		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»Async(
-				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> callbackFct
+				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
+			std::ignore = onError; // not used yet
 			assert(!address.isNull());
 			QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(!caller.isNull());
@@ -134,16 +138,16 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccess =
-					[future, callbackFct] (const «returnType»& «attributeName») {
+			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
+					[future, onSuccess] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
-						if (callbackFct) {
-							callbackFct(joynr::RequestStatusCode::OK, «attributeName»);
+						if (onSuccess) {
+							onSuccess(joynr::RequestStatusCode::OK, «attributeName»);
 						}
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess);
+			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccessWrapper);
 			return future;
 		}
 
@@ -151,8 +155,10 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 	«IF attribute.writable»
 		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»Async(
 				«returnType» input,
-				std::function<void(const joynr::RequestStatus& status)> callbackFct
+				std::function<void(const joynr::RequestStatus& status)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
+			std::ignore = onError; // not used yet
 			assert(!address.isNull());
 			QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(!caller.isNull());
@@ -160,17 +166,17 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			assert(!«serviceInterface.interfaceCaller».isNull());
 
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
-			std::function<void()> onSuccess =
-					[future, callbackFct] () {
+			std::function<void()> onSuccessWrapper =
+					[future, onSuccess] () {
 						future->onSuccess();
-						if (callbackFct) {
-							callbackFct(joynr::RequestStatusCode::OK);
+						if (onSuccess) {
+							onSuccess(joynr::RequestStatusCode::OK);
 						}
 					};
 
 			//see header for more information
 			LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess);
+			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccessWrapper);
 			return future;
 		}
 
@@ -330,8 +336,10 @@ joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
 }
 
 std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»Async(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList.prependCommaIfNotEmpty»)> callbackFct)
+			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList.prependCommaIfNotEmpty»)> onSuccess,
+			std::function<void(const joynr::RequestStatus& status)> onError)
 {
+	std::ignore = onError; // not used yet
 	assert(!address.isNull());
 	QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(!caller.isNull());
@@ -340,15 +348,15 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	std::shared_ptr<joynr::Future<«outputParameters»> > future(
 			new joynr::Future<«outputParameters»>());
 
-	std::function<void(«outputTypedConstParamList»)> onSuccess =
-			[future, callbackFct] («outputTypedConstParamList») {
+	std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
+			[future, onSuccess] («outputTypedConstParamList») {
 				future->onSuccess(«outputUntypedParamList»);
-				if (callbackFct)
+				if (onSuccess)
 				{
-					callbackFct(joynr::RequestStatusCode::OK«prependCommaIfNotEmpty(outputUntypedParamList)»);
+					onSuccess(joynr::RequestStatusCode::OK«prependCommaIfNotEmpty(outputUntypedParamList)»);
 				}
 			};
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess);
+	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper);
 	return future;
 }
 
