@@ -51,6 +51,14 @@ public:
     RequestStatus(RequestStatusCode requestCode);
 
     /**
+     * @brief Creates a RequestStatus with the supplied status code and description.
+     *
+     * @param requestCode What the RequestStatus will be initialised to.
+     * @param description the initial description of the RequestStatus.
+     */
+    RequestStatus(RequestStatusCode requestCode, const std::string& description);
+
+    /**
      * @brief A convenience method that checks whether the request was successful.
      *
      * @return bool Was the request successful?

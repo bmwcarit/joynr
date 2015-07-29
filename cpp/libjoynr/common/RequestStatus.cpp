@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/RequestStatus.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -27,6 +28,12 @@ RequestStatus::RequestStatus() : code(RequestStatusCode::NOT_STARTED), descripti
 
 RequestStatus::RequestStatus(RequestStatusCode requestStatus) : code(requestStatus), description()
 {
+}
+
+RequestStatus::RequestStatus(RequestStatusCode requestStatus, const std::string& description)
+        : code(requestStatus), description()
+{
+    this->addDescription(TypeUtil::toQt(description));
 }
 
 bool RequestStatus::successful() const
