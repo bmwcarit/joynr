@@ -62,7 +62,7 @@ public:
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::QtGpsLocation>(
                 [this](const RequestStatus& status, const types::QtGpsLocation& location) {
-                    mockCallback->callbackFct(status, location);
+                    mockCallback->onSuccess(location);
                 },
                 [] (const RequestStatus status){
                 })),

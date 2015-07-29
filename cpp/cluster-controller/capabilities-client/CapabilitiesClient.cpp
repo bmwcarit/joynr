@@ -78,15 +78,12 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
         // TM switching from sync to async
         // capabilitiesProxy->add(rs, capabilitiesInformationList);
 
-        std::function<void(const RequestStatus& status)> callbackFct =
-                [](const RequestStatus& status) {
-            // check requestStatus?
-            if (!status.successful()) {
-                LOG_ERROR(logger,
-                          QString("Error occured during the execution of capabilitiesProxy->add"));
-            }
+        std::function<void(const RequestStatus& status)> onError = [](const RequestStatus& status) {
+            std::ignore = status;
+            LOG_ERROR(logger,
+                      QString("Error occured during the execution of capabilitiesProxy->add"));
         };
-        capabilitiesProxy->addAsync(capabilitiesInformationList, callbackFct);
+        capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
     }
 }
 
@@ -119,31 +116,31 @@ std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
 void CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName,
-        std::function<void(const RequestStatus& status,
-                           const std::vector<types::CapabilityInformation>& result)> callbackFct)
+        std::function<void(const std::vector<types::CapabilityInformation>& result)> onSuccess,
+        std::function<void(const joynr::RequestStatus& status)> onError)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
 
-    capabilitiesProxy->lookupAsync(domain, interfaceName, callbackFct);
+    capabilitiesProxy->lookupAsync(domain, interfaceName, onSuccess, onError);
 }
 
 void CapabilitiesClient::lookup(
         const std::string& participantId,
-        std::function<void(const RequestStatus& status,
-                           const std::vector<joynr::types::CapabilityInformation>& result)>
-                callbackFct)
+        std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                onSuccess,
+        std::function<void(const joynr::RequestStatus& status)> onError)
 {
     assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
                                          // the capabilitiesProxy has been set via the init method
     capabilitiesProxy->lookupAsync(
             participantId,
-            [callbackFct](const RequestStatus& status,
-                          const joynr::types::CapabilityInformation& capability) {
+            [onSuccess](const joynr::types::CapabilityInformation& capability) {
                 std::vector<joynr::types::CapabilityInformation> result;
                 result.push_back(capability);
-                callbackFct(status, result);
-            });
+                onSuccess(result);
+            },
+            onError);
 }
 
 void CapabilitiesClient::init(

@@ -58,7 +58,7 @@ public:
     virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
-            std::function<void(const RequestStatus& status)> onSuccess = nullptr,
+            std::function<void(void)> onSuccess = nullptr,
             std::function<void(const RequestStatus& status)> onError = nullptr);
 
     /**
@@ -70,7 +70,7 @@ public:
      */
     virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
-            std::function<void(const RequestStatus& status)> onSuccess = nullptr,
+            std::function<void(void)> onSuccess = nullptr,
             std::function<void(const RequestStatus& status)> onError = nullptr);
 
     /**
@@ -86,8 +86,7 @@ public:
     virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
     getUrlsForChannelAsync(const std::string& channelId,
                            const qint64& timeout_ms,
-                           std::function<void(const RequestStatus& status,
-                                              const types::ChannelUrlInformation& channelUrls)>
+                           std::function<void(const types::ChannelUrlInformation& channelUrls)>
                                    onSuccess = nullptr,
                            std::function<void(const RequestStatus& status)> onError = nullptr);
 

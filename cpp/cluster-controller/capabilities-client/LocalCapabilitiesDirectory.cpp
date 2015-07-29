@@ -340,16 +340,14 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     // if no reciever is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
-        auto callbackFct = [this, participantId, callback](
-                const RequestStatus& status,
+        auto onSuccess = [this, participantId, callback](
                 const std::vector<joynr::types::CapabilityInformation>& result) {
-            Q_UNUSED(status);
             this->capabilitiesReceived(result,
                                        getCachedLocalCapabilities(participantId),
                                        callback,
                                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         };
-        this->capabilitiesClient->lookup(participantId, callbackFct);
+        this->capabilitiesClient->lookup(participantId, onSuccess);
     }
 }
 
@@ -368,16 +366,14 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
     // if no reciever is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
-        auto callbackFct = [this, interfaceAddress, callback, discoveryQos](
-                RequestStatus status,
+        auto onSuccess = [this, interfaceAddress, callback, discoveryQos](
                 std::vector<joynr::types::CapabilityInformation> capabilities) {
-            Q_UNUSED(status);
             this->capabilitiesReceived(capabilities,
                                        getCachedLocalCapabilities(interfaceAddress),
                                        callback,
                                        discoveryQos.getDiscoveryScope());
         };
-        this->capabilitiesClient->lookup(domain, interfaceName, callbackFct);
+        this->capabilitiesClient->lookup(domain, interfaceName, onSuccess);
     }
 }
 

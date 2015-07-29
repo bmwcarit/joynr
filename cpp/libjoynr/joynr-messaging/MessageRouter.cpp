@@ -206,10 +206,9 @@ void MessageRouter::route(const JoynrMessage& message)
             QMutexLocker locker(&parentResolveMutex);
             if (!runningParentResolves->contains(destinationPartId)) {
                 runningParentResolves->insert(destinationPartId);
-                std::function<void(const joynr::RequestStatus&, const bool&)> callbackFct =
-                        [this, destinationPartId](
-                                const joynr::RequestStatus& status, const bool& resolved) {
-                    if (status.successful() && resolved) {
+                std::function<void(const bool&)> onSuccess =
+                        [this, destinationPartId](const bool& resolved) {
+                    if (resolved) {
                         LOG_INFO(this->logger,
                                  "Got destination address for participant " + destinationPartId);
                         // save next hop in the routing table
@@ -218,14 +217,15 @@ void MessageRouter::route(const JoynrMessage& message)
                         this->removeRunningParentResolvers(destinationPartId);
                         this->sendMessages(destinationPartId.toStdString(), this->parentAddress);
                     } else {
-                        LOG_ERROR(this->logger,
-                                  "Failed to resolve next hop for participant " +
-                                          destinationPartId + ": " + status.toString());
+                        LOG_ERROR(
+                                this->logger,
+                                "Failed to resolve next hop for participant " + destinationPartId);
                         // TODO error handling in case of failing submission (?)
                     }
                 };
 
-                parentRouter->resolveNextHopAsync(destinationPartId.toStdString(), callbackFct);
+                // TODO error handling in case of failing submission (?)
+                parentRouter->resolveNextHopAsync(destinationPartId.toStdString(), onSuccess);
             }
         } else {
             // no parent message router to resolve destination address
@@ -286,16 +286,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
 {
     addToRoutingTable(participantId, inprocessAddress);
 
-    std::function<void(const joynr::RequestStatus& status)> callbackFct =
-            [onSuccess](const joynr::RequestStatus& status) {
-        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-            onSuccess();
-        } else {
-            // TODO: error handling
-        }
-    };
-
-    addNextHopToParent(participantId, callbackFct);
+    addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, inprocessAddress);
 }
@@ -309,15 +300,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
             joynr::system::QtChannelAddress::createQt(channelAddress)));
     addToRoutingTable(participantId, address);
 
-    std::function<void(const joynr::RequestStatus& status)> callbackFct =
-            [onSuccess](const joynr::RequestStatus& status) {
-        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-            onSuccess();
-        } else {
-            // TODO: error handling
-        }
-    };
-    addNextHopToParent(participantId, callbackFct);
+    addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, address);
 }
@@ -333,15 +316,7 @@ void MessageRouter::addNextHop(
                     joynr::system::QtCommonApiDbusAddress::createQt(commonApiDbusAddress)));
     addToRoutingTable(participantId, address);
 
-    std::function<void(const joynr::RequestStatus& status)> callbackFct =
-            [onSuccess](const joynr::RequestStatus& status) {
-        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-            onSuccess();
-        } else {
-            // TODO: error handling
-        }
-    };
-    addNextHopToParent(participantId, callbackFct);
+    addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, address);
 }
@@ -355,15 +330,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
             joynr::system::QtBrowserAddress::createQt(browserAddress)));
     addToRoutingTable(participantId, address);
 
-    std::function<void(const joynr::RequestStatus& status)> callbackFct =
-            [onSuccess](const joynr::RequestStatus& status) {
-        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-            onSuccess();
-        } else {
-            // TODO: error handling
-        }
-    };
-    addNextHopToParent(participantId, callbackFct);
+    addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, address);
 }
@@ -377,15 +344,7 @@ void MessageRouter::addNextHop(const std::string& participantId,
             joynr::system::QtWebSocketAddress::createQt(webSocketAddress)));
     addToRoutingTable(participantId, address);
 
-    std::function<void(const joynr::RequestStatus& status)> callbackFct =
-            [onSuccess](const joynr::RequestStatus& status) {
-        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-            onSuccess();
-        } else {
-            // TODO: error handling
-        }
-    };
-    addNextHopToParent(participantId, callbackFct);
+    addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, address);
 }
@@ -401,22 +360,13 @@ void MessageRouter::addNextHop(
                     joynr::system::QtWebSocketClientAddress::createQt(webSocketClientAddress)));
     addToRoutingTable(participantId, address);
 
-    std::function<void(const joynr::RequestStatus& status)> callbackFct =
-            [onSuccess](const joynr::RequestStatus& status) {
-        if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-            onSuccess();
-        } else {
-            // TODO: error handling
-        }
-    };
-    addNextHopToParent(participantId, callbackFct);
+    addNextHopToParent(participantId, onSuccess);
 
     sendMessages(participantId, address);
 }
 
-void MessageRouter::addNextHopToParent(
-        std::string participantId,
-        std::function<void(const joynr::RequestStatus& status)> callbackFct)
+void MessageRouter::addNextHopToParent(std::string participantId,
+                                       std::function<void(void)> onSuccess)
 {
     // add to parent router
     if (isChildMessageRouter()) {
@@ -425,7 +375,7 @@ void MessageRouter::addNextHopToParent(
                                           joynr::system::QtChannelAddress::createStd(
                                                   *dynamic_cast<joynr::system::QtChannelAddress*>(
                                                           incomingAddress.data())),
-                                          callbackFct);
+                                          onSuccess);
         }
         if (incomingAddress->inherits("joynr::system::QtCommonApiDbusAddress")) {
             parentRouter->addNextHopAsync(
@@ -433,21 +383,21 @@ void MessageRouter::addNextHopToParent(
                     joynr::system::QtCommonApiDbusAddress::createStd(
                             *dynamic_cast<joynr::system::QtCommonApiDbusAddress*>(
                                     incomingAddress.data())),
-                    callbackFct);
+                    onSuccess);
         }
         if (incomingAddress->inherits("joynr::system::QtBrowserAddress")) {
             parentRouter->addNextHopAsync(participantId,
                                           joynr::system::QtBrowserAddress::createStd(
                                                   *dynamic_cast<joynr::system::QtBrowserAddress*>(
                                                           incomingAddress.data())),
-                                          callbackFct);
+                                          onSuccess);
         }
         if (incomingAddress->inherits("joynr::system::QtWebSocketAddress")) {
             parentRouter->addNextHopAsync(participantId,
                                           joynr::system::QtWebSocketAddress::createStd(
                                                   *dynamic_cast<joynr::system::QtWebSocketAddress*>(
                                                           incomingAddress.data())),
-                                          callbackFct);
+                                          onSuccess);
         }
         if (incomingAddress->inherits("joynr::system::QtWebSocketClientAddress")) {
             parentRouter->addNextHopAsync(
@@ -455,10 +405,10 @@ void MessageRouter::addNextHopToParent(
                     joynr::system::QtWebSocketClientAddress::createStd(
                             *dynamic_cast<joynr::system::QtWebSocketClientAddress*>(
                                     incomingAddress.data())),
-                    callbackFct);
+                    onSuccess);
         }
-    } else if (callbackFct) {
-        callbackFct(joynr::RequestStatus(RequestStatusCode::OK));
+    } else if (onSuccess) {
+        onSuccess();
     }
 }
 
@@ -479,15 +429,7 @@ void MessageRouter::removeNextHop(const std::string& participantId, std::functio
 
     // remove from parent router
     if (isChildMessageRouter()) {
-        std::function<void(const joynr::RequestStatus& status)> callbackFct =
-                [onSuccess](const joynr::RequestStatus& status) {
-            if (onSuccess && status.getCode() == joynr::RequestStatusCode::OK) {
-                onSuccess();
-            } else {
-                // TODO: error handling
-            }
-        };
-        parentRouter->removeNextHopAsync(participantId, callbackFct);
+        parentRouter->removeNextHopAsync(participantId, onSuccess);
     } else if (onSuccess) {
         onSuccess();
     }

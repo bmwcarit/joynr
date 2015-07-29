@@ -145,20 +145,23 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		}
 
 		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
-				std::function<void(const joynr::RequestStatus& status, const «returnTypeStd»& «attributeName»)> onSuccess,
+				std::function<void(const «returnTypeStd»& «attributeName»)> onSuccess,
 				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
 
 			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
+					[future, onSuccess, onError] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							if (onSuccess){
+								onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							}
 						} else {
 							future->onError(status);
-						}
-						if (onSuccess){
-							onSuccess(status, «qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							if (onError){
+								onError(status);
+							}
 						}
 					};
 
@@ -182,7 +185,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«IF attribute.writable»
 		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»Async(
 				«returnTypeStd» «attributeName»,
-				std::function<void(const joynr::RequestStatus& status)> onSuccess,
+				std::function<void(void)> onSuccess,
 				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			joynr::Request internalRequestObject;
@@ -197,14 +200,17 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 
 			std::function<void(const joynr::RequestStatus& status)> onSuccessWrapper =
-					[future, onSuccess] (const joynr::RequestStatus& status) {
+					[future, onSuccess, onError] (const joynr::RequestStatus& status) {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess();
+							if (onSuccess) {
+								onSuccess();
+							}
 						} else {
 							future->onError(status);
-						}
-						if (onSuccess) {
-							onSuccess(status);
+							if (onError){
+								onError(status);
+							}
 						}
 					};
 
@@ -330,7 +336,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 	«var outputTypedConstParamListQT = prependCommaIfNotEmpty(qtTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method))»
-	«var outputTypedConstParamListStd = prependCommaIfNotEmpty(cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method))»
+	«var outputTypedConstParamListStd = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
 	«val outputTypedParamListStd = cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method)»
 	«val outputParametersStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
 	«val outputParametersQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
@@ -375,7 +381,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
 			«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListStd»)> onSuccess,
+			std::function<void(«outputTypedConstParamListStd»)> onSuccess,
 			std::function<void(const joynr::RequestStatus& status)> onError
 	)
 	{
@@ -385,14 +391,17 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				new joynr::Future<«outputParametersStd»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> onSuccessWrapper =
-				[future, onSuccess] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
+				[future, onSuccess, onError] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
+						if (onSuccess) {
+							onSuccess(«outputUntypedParamList»);
+						}
 					} else {
 						future->onError(status);
-					}
-					if (onSuccess) {
-						onSuccess(status«outputUntypedParamList.prependCommaIfNotEmpty»);
+						if (onError){
+							onError(status);
+						}
 					}
 				};
 

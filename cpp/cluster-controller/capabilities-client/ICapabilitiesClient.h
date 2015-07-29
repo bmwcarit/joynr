@@ -44,13 +44,13 @@ public:
                                                              const std::string& interfaceName) = 0;
     virtual void lookup(const std::string& domain,
                         const std::string& interfaceName,
-                        std::function<void(const joynr::RequestStatus& status,
-                                           const std::vector<joynr::types::CapabilityInformation>&
-                                                   capabilities)> callbackFct) = 0;
+                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> onSuccess,
+                        std::function<void(const RequestStatus& status)> onError = nullptr) = 0;
     virtual void lookup(const std::string& participantId,
-                        std::function<void(const joynr::RequestStatus& status,
-                                           const std::vector<joynr::types::CapabilityInformation>&
-                                                   capabilities)> callbackFct) = 0;
+                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> onSuccess,
+                        std::function<void(const RequestStatus& status)> onError = nullptr) = 0;
     virtual std::string getLocalChannelId() = 0;
 };
 

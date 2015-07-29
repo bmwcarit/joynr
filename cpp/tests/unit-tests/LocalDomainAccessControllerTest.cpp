@@ -270,25 +270,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
+                    InvokeArgument<1>(std::vector<DomainRoleEntry>()),
                     Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
+                    InvokeArgument<2>(masterAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<MasterAccessControlEntry>()),
+                    InvokeArgument<2>(std::vector<MasterAccessControlEntry>()),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
+                    InvokeArgument<2>(ownerAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
             ));
 
@@ -344,25 +344,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
+                    InvokeArgument<1>(std::vector<DomainRoleEntry>()),
                     Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac),
+                    InvokeArgument<2>(masterAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(getMediatorAceCommunicationError, std::vector<MasterAccessControlEntry>()),
+                    InvokeArgument<3>(getMediatorAceCommunicationError),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
+                    InvokeArgument<2>(ownerAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
             ));
 
@@ -398,33 +398,31 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
-    std::function<void(const joynr::RequestStatus& status,
-                       const std::vector<MasterAccessControlEntry>&
-                               masterAces)> getMasterAcesCallbackFct;
+    std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)> getMasterAcesOnSuccessFct;
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<1>(RequestStatus(RequestStatusCode::OK), std::vector<DomainRoleEntry>()),
+                    InvokeArgument<1>(std::vector<DomainRoleEntry>()),
                     Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    SaveArg<2>(&getMasterAcesCallbackFct),
+                    SaveArg<2>(&getMasterAcesOnSuccessFct),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), std::vector<MasterAccessControlEntry>()),
+                    InvokeArgument<2>(std::vector<MasterAccessControlEntry>()),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<2>(RequestStatus(RequestStatusCode::OK), ownerAcesFromGlobalDac),
+                    InvokeArgument<2>(ownerAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
             ));
 
@@ -462,7 +460,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     EXPECT_FALSE(getConsumerPermissionCallback2->expectCallback(0));
 
     // Provide the missing response to the LocalDomainAccessController
-    getMasterAcesCallbackFct(RequestStatus(RequestStatusCode::OK), masterAcesFromGlobalDac);
+    getMasterAcesOnSuccessFct(masterAcesFromGlobalDac);
 
     EXPECT_TRUE(getConsumerPermissionCallback1->isPermissionAvailable());
     EXPECT_TRUE(getConsumerPermissionCallback2->isPermissionAvailable());

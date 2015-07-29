@@ -73,7 +73,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 */
 
 		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
-				std::function<void(const joynr::RequestStatus& status, const «attributeType»& «attributeName»)> onSuccess,
+				std::function<void(const «attributeType»& «attributeName»)> onSuccess,
 				std::function<void(const joynr::RequestStatus& status)> onError
 		)
 		{
@@ -102,7 +102,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 
 		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
 				«attributeType» «attributeName»,
-				std::function<void(const joynr::RequestStatus& status)> onSuccess,
+				std::function<void(void)> onSuccess,
 				std::function<void(const joynr::RequestStatus& status)> onError
 		)
 		{
@@ -127,14 +127,14 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.joynrName»
 	«var outputParameters = method.commaSeparatedOutputParameterTypes»
-	«var outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
+	«var outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
 	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»Async(
 			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> onSuccess,
+			std::function<void(«outputTypedParamList»)> onSuccess,
 			std::function<void(const joynr::RequestStatus& status)> onError
 	)
 	{

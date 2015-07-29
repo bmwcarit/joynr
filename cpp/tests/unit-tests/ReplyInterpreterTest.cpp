@@ -61,13 +61,13 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     // Create a mock callback
     QSharedPointer<MockCallback<joynr::types::QtGpsLocation>> callback(new MockCallback<joynr::types::QtGpsLocation>());
     int myAltitude = 13;
-    EXPECT_CALL(*callback, callbackFct(_, Property(&types::QtGpsLocation::getAltitude, myAltitude)))
+    EXPECT_CALL(*callback, onSuccess(Property(&types::QtGpsLocation::getAltitude, myAltitude)))
                 .Times(1);
 
     // Create a reply caller
     QSharedPointer<IReplyCaller> icaller(new ReplyCaller<types::QtGpsLocation>(
             [callback](const RequestStatus& status, const types::QtGpsLocation& location) {
-                callback->callbackFct(status, location);
+                callback->onSuccess(location);
             },
             [](const RequestStatus& status){
             }));

@@ -586,104 +586,104 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     // Initialise domain roles from global data
     // TODO: confirm that this is needed
-    std::function<void(
-            const RequestStatus& status, const std::vector<DomainRoleEntry>& domainRoleEntries)>
-            domainRoleCallbackFct =
-                    [this, initialiser](const RequestStatus& status,
-                                        const std::vector<DomainRoleEntry>& domainRoleEntries) {
-        if (status.successful()) {
-            // Add the results
-            foreach (const DomainRoleEntry& dre, domainRoleEntries) {
-                localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(dre));
-            }
-            initialiser->update();
-        } else {
-            QString description = status.getDescription().join("\n");
-            LOG_ERROR(logger,
-                      QString("Aborting ACL initialisation due to communication error:\n%1")
-                              .arg(description));
-
-            // Abort the initialisation
-            initialiser->abort();
+    std::function<void(const std::vector<DomainRoleEntry>& domainRoleEntries)> domainRoleOnSuccess =
+            [this, initialiser](const std::vector<DomainRoleEntry>& domainRoleEntries) {
+        // Add the results
+        foreach (const DomainRoleEntry& dre, domainRoleEntries) {
+            localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(dre));
         }
+        initialiser->update();
     };
-    globalDomainAccessControllerProxy->getDomainRolesAsync(userId, domainRoleCallbackFct);
 
-    std::function<void(
-            const RequestStatus& status, const std::vector<MasterAccessControlEntry>& masterAces)>
-            masterAceCallbackFct =
-                    [this, initialiser](const RequestStatus& status,
-                                        const std::vector<MasterAccessControlEntry>& masterAces) {
-        if (status.successful()) {
-            // Add the results
-            foreach (const MasterAccessControlEntry& masterAce, masterAces) {
-                localDomainAccessStore->updateMasterAccessControlEntry(
-                        QtMasterAccessControlEntry::createQt(masterAce));
-            }
-            initialiser->update();
-        } else {
-            QString description = status.getDescription().join("\n");
-            LOG_ERROR(logger,
-                      QString("Aborting ACL initialisation due to communication error:\n%1")
-                              .arg(description));
+    std::function<void(const RequestStatus& status)> domainRoleOnError =
+            [this, initialiser](const RequestStatus& status) {
+        QString description = status.getDescription().join("\n");
+        LOG_ERROR(logger,
+                  QString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(description));
 
-            // Abort the initialisation
-            initialiser->abort();
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
+    globalDomainAccessControllerProxy->getDomainRolesAsync(
+            userId, domainRoleOnSuccess, domainRoleOnError);
+
+    std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
+            masterAceOnSuccess =
+                    [this, initialiser](const std::vector<MasterAccessControlEntry>& masterAces) {
+        // Add the results
+        foreach (const MasterAccessControlEntry& masterAce, masterAces) {
+            localDomainAccessStore->updateMasterAccessControlEntry(
+                    QtMasterAccessControlEntry::createQt(masterAce));
         }
+        initialiser->update();
     };
+
+    std::function<void(const RequestStatus& status)> masterAceOnError =
+            [this, initialiser](const RequestStatus& status) {
+        QString description = status.getDescription().join("\n");
+        LOG_ERROR(logger,
+                  QString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(description));
+
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
     globalDomainAccessControllerProxy->getMasterAccessControlEntriesAsync(
-            domain, interfaceName, masterAceCallbackFct);
+            domain, interfaceName, masterAceOnSuccess, masterAceOnError);
 
     // Initialise mediator access control entries from global data
-    std::function<void(
-            const RequestStatus& status, const std::vector<MasterAccessControlEntry>& mediatorAces)>
-            mediatorAceCallbackFct =
-                    [this, initialiser](const RequestStatus& status,
-                                        const std::vector<MasterAccessControlEntry>& mediatorAces) {
-        if (status.successful()) {
-            // Add the results
-            foreach (const MasterAccessControlEntry& mediatorAce, mediatorAces) {
-                localDomainAccessStore->updateMediatorAccessControlEntry(
-                        QtMasterAccessControlEntry::createQt(mediatorAce));
-            }
-            initialiser->update();
-        } else {
-            QString description = status.getDescription().join("\n");
-            LOG_ERROR(logger,
-                      QString("Aborting ACL initialisation due to communication error:\n%1")
-                              .arg(description));
-
-            // Abort the initialisation
-            initialiser->abort();
+    std::function<void(const std::vector<MasterAccessControlEntry>& mediatorAces)>
+            mediatorAceOnSuccess =
+                    [this, initialiser](const std::vector<MasterAccessControlEntry>& mediatorAces) {
+        // Add the results
+        foreach (const MasterAccessControlEntry& mediatorAce, mediatorAces) {
+            localDomainAccessStore->updateMediatorAccessControlEntry(
+                    QtMasterAccessControlEntry::createQt(mediatorAce));
         }
+        initialiser->update();
     };
+
+    std::function<void(const RequestStatus& status)> mediatorAceOnError =
+            [this, initialiser](const RequestStatus& status) {
+        QString description = status.getDescription().join("\n");
+        LOG_ERROR(logger,
+                  QString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(description));
+
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
     globalDomainAccessControllerProxy->getMediatorAccessControlEntriesAsync(
-            domain, interfaceName, mediatorAceCallbackFct);
+            domain, interfaceName, mediatorAceOnSuccess, mediatorAceOnError);
 
     // Initialise owner access control entries from global data
-    std::function<void(const RequestStatus& status,
-                       const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceCallbackFct =
-            [this, initialiser](const RequestStatus& status,
-                                const std::vector<OwnerAccessControlEntry>& ownerAces) {
-        if (status.successful()) {
-            // Add the results
-            foreach (const OwnerAccessControlEntry& ownerAce, ownerAces) {
-                localDomainAccessStore->updateOwnerAccessControlEntry(
-                        QtOwnerAccessControlEntry::createQt(ownerAce));
-            }
-            initialiser->update();
-        } else {
-            QString description = status.getDescription().join("\n");
-            LOG_ERROR(logger,
-                      QString("Aborting ACL initialisation due to communication error:\n%1")
-                              .arg(description));
-
-            // Abort the initialisation
-            initialiser->abort();
+    std::function<void(const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceOnSuccess =
+            [this, initialiser](const std::vector<OwnerAccessControlEntry>& ownerAces) {
+        // Add the results
+        foreach (const OwnerAccessControlEntry& ownerAce, ownerAces) {
+            localDomainAccessStore->updateOwnerAccessControlEntry(
+                    QtOwnerAccessControlEntry::createQt(ownerAce));
         }
+        initialiser->update();
     };
+
+    std::function<void(const RequestStatus& status)> ownerAceOnError =
+            [this, initialiser](const RequestStatus& status) {
+        QString description = status.getDescription().join("\n");
+        LOG_ERROR(logger,
+                  QString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(description));
+
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
     globalDomainAccessControllerProxy->getOwnerAccessControlEntriesAsync(
-            domain, interfaceName, ownerAceCallbackFct);
+            domain, interfaceName, ownerAceOnSuccess, ownerAceOnError);
 }
 
 // Called when the data for the given domain/interface has been obtained from the GDAC

@@ -72,7 +72,7 @@ void LocalChannelUrlDirectory::init()
 std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync(
         const std::string& channelId,
         types::ChannelUrlInformation channelUrlInformation,
-        std::function<void(const RequestStatus& status)> onSuccess,
+        std::function<void(void)> onSuccess,
         std::function<void(const RequestStatus& status)> onError)
 {
     LOG_INFO(logger, "registering Urls for id=" + QString::fromStdString(channelId));
@@ -82,7 +82,7 @@ std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUr
 
 std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
         const std::string& channelId,
-        std::function<void(const RequestStatus& status)> onSuccess,
+        std::function<void(void)> onSuccess,
         std::function<void(const RequestStatus& status)> onError)
 {
     LOG_TRACE(logger, "unregistering ALL Urls for id=" + QString::fromStdString(channelId));
@@ -93,8 +93,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
         getUrlsForChannelAsync(
                 const std::string& channelId,
                 const qint64& timeout_ms,
-                std::function<void(const RequestStatus& status,
-                                   const types::ChannelUrlInformation& channelUrls)> onSuccess,
+                std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess,
                 std::function<void(const RequestStatus& status)> onError)
 {
     QString channelIdQT = QString::fromStdString(channelId);
@@ -108,8 +107,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
                 new joynr::Future<joynr::types::ChannelUrlInformation>());
         future->onSuccess(types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
         if (onSuccess) {
-            onSuccess(status,
-                      types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
+            onSuccess(types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
         }
         return future;
     }

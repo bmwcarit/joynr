@@ -95,15 +95,15 @@ public:
     virtual void lookup(
             const std::string& domain,
             const std::string& interfaceName,
-            std::function<void(const RequestStatus& status,
-                               const std::vector<joynr::types::CapabilityInformation>& result)>
-                    callbackFct);
+            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                    onSuccess,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     virtual void lookup(
             const std::string& participantId,
-            std::function<void(const RequestStatus& status,
-                               const std::vector<joynr::types::CapabilityInformation>& result)>
-                    callbackFct);
+            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                    onSuccess,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     virtual ~CapabilitiesClient();
 

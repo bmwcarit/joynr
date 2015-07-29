@@ -919,12 +919,12 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
                                                    ->build());
 
     // Setup a callbackFct
-    std::function<void(const joynr::RequestStatus& status)> callbackFct = [] (const joynr::RequestStatus& status){
+    std::function<void(const joynr::RequestStatus& status)> onError = [] (const joynr::RequestStatus& status){
        ASSERT_TRUE(status.successful());
     };
 
     // Asynchonously call the void operation
-    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(callbackFct));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(nullptr, onError));
 
     // Wait for the operation to finish and check for a successful callback
     future->waitForFinished();
@@ -965,13 +965,13 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     runtime1->stopMessaging();
     QThreadSleep::msleep(5000);
 
-    // Setup a callbackFct
-    std::function<void(const joynr::RequestStatus&)> callbackFct = [] (const joynr::RequestStatus& status) {
+    // Setup an onError callback function
+    std::function<void(const joynr::RequestStatus&)> onError = [] (const joynr::RequestStatus& status) {
         ASSERT_FALSE(status.successful());
     };
 
     // Asynchonously call the void operation
-    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(callbackFct));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(nullptr, onError));
 
     // Wait for the operation to finish and check for a failure callback
     future->waitForFinished();

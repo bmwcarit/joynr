@@ -131,13 +131,13 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
                     ReleaseSemaphore(&semaphore),
                     Return(RequestStatus(RequestStatusCode::OK))
                 ));
-    std::function<void(const joynr::RequestStatus&, const std::vector<types::CapabilityInformation>&)> callbackFct =
-            [&](const joynr::RequestStatus& status, const std::vector<types::CapabilityInformation>& capabilities) {
+    std::function<void(const std::vector<types::CapabilityInformation>&)> onSuccess =
+            [&](const std::vector<types::CapabilityInformation>& capabilities) {
                 callback->capabilitiesReceived(capabilities);
             };
 
     LOG_DEBUG(logger,"get capabilities");
-    capabilitiesClient->lookup(capDomain, capInterface, callbackFct);
+    capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
     semaphore.tryAcquire(1,10000);
     LOG_DEBUG(logger,"finished get capabilities");
 

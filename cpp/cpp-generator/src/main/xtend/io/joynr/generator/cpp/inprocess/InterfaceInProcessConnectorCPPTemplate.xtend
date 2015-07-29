@@ -126,7 +126,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 		}
 
 		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»Async(
-				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccess,
+				std::function<void(const «returnType»& «attributeName»)> onSuccess,
 				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			std::ignore = onError; // not used yet
@@ -142,7 +142,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					[future, onSuccess] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 						if (onSuccess) {
-							onSuccess(joynr::RequestStatusCode::OK, «attributeName»);
+							onSuccess(«attributeName»);
 						}
 					};
 
@@ -155,7 +155,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 	«IF attribute.writable»
 		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»Async(
 				«returnType» input,
-				std::function<void(const joynr::RequestStatus& status)> onSuccess,
+				std::function<void(void)> onSuccess,
 				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			std::ignore = onError; // not used yet
@@ -170,7 +170,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					[future, onSuccess] () {
 						future->onSuccess();
 						if (onSuccess) {
-							onSuccess(joynr::RequestStatusCode::OK);
+							onSuccess();
 						}
 					};
 
@@ -336,7 +336,7 @@ joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
 }
 
 std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»Async(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(const joynr::RequestStatus& status«outputTypedConstParamList.prependCommaIfNotEmpty»)> onSuccess,
+			std::function<void(«outputTypedConstParamList»)> onSuccess,
 			std::function<void(const joynr::RequestStatus& status)> onError)
 {
 	std::ignore = onError; // not used yet
@@ -353,7 +353,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 				future->onSuccess(«outputUntypedParamList»);
 				if (onSuccess)
 				{
-					onSuccess(joynr::RequestStatusCode::OK«prependCommaIfNotEmpty(outputUntypedParamList)»);
+					onSuccess(«outputUntypedParamList»);
 				}
 			};
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper);

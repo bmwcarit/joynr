@@ -53,7 +53,7 @@ public:
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::QtGpsLocation>(
                 [this] (const joynr::RequestStatus& status, const joynr::types::QtGpsLocation& location) {
-                    mockCallback->callbackFct(status, types::QtGpsLocation::createStd(location));
+                    mockCallback->onSuccess(types::QtGpsLocation::createStd(location));
                 },
                 [] (const joynr::RequestStatus& status) {
                 })),
@@ -175,7 +175,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     qRegisterMetaType<Reply>("Reply");
     joynr::MetaTypeRegistrar::instance().registerReplyMetaType<types::QtGpsLocation>();
     // Expect the mock callback's onSuccess method to be called with the reply (a gps location)
-    EXPECT_CALL(*mockCallback, callbackFct(_, Eq(gpsLocation1)));
+    EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1)));
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply

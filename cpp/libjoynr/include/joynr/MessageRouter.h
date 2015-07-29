@@ -153,9 +153,8 @@ private:
     mutable QMutex parentResolveMutex;
 
     void init(int maxThreads);
-    void addNextHopToParent(
-            std::string participantId,
-            std::function<void(const joynr::RequestStatus& status)> callbackFct = nullptr);
+    void addNextHopToParent(std::string participantId,
+                            std::function<void(void)> callbackFct = nullptr);
 
     void sendMessage(const JoynrMessage& message,
                      QSharedPointer<joynr::system::QtAddress> destAddress);

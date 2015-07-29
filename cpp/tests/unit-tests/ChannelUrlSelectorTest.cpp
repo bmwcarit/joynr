@@ -87,9 +87,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<const qint64&>(),
-                    A<std::function<void(
-                        const RequestStatus& status,
-                        const types::ChannelUrlInformation& urls)>>(),
+                    A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(
                         const RequestStatus& status)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
@@ -131,9 +129,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<const qint64&>(),
-                    A<std::function<void(
-                        const RequestStatus& status,
-                        const types::ChannelUrlInformation& urls)>>(),
+                    A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(
                         const RequestStatus& status)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
@@ -189,9 +185,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
                     A<const qint64&>(),
-                    A<std::function<void(
-                        const RequestStatus& status,
-                        const types::ChannelUrlInformation& urls)>>(),
+                    A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(
                         const RequestStatus& status)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));

@@ -30,10 +30,16 @@ class InterfaceUtil {
 	* to wait for completion, to get the result or the request status object.
 '''
 
-	def printCallbackFctParamDefinition()
+	def printOnSuccessFctParamDefinition()
 '''
-	* @param callbackFct A callback function to be called once the asynchronous computation has
-	* finished. It must expect a request status object as well as the method out parameters.
+	* @param onSuccess A callback function to be called once the asynchronous computation has
+	* finished successfully. It must expect the method out parameters.
+'''
+
+	def printOnErrorFctParamDefinition()
+'''
+	* @param onError A callback function to be called once the asynchronous computation has
+	* failed. It must expect the request status object.
 '''
 
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
@@ -64,11 +70,12 @@ class InterfaceUtil {
 		/**
 		* @brief Asynchronous getter for the «attributeName» attribute.
 		*
-		«printCallbackFctParamDefinition»
+		«printOnSuccessFctParamDefinition»
+		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		virtual std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
-				std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
+				std::function<void(const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
 				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
@@ -102,12 +109,13 @@ class InterfaceUtil {
 		* @brief Asynchronous setter for the «attributeName» attribute.
 		*
 		* @param «returnType.toFirstLower» The value to set.
-		«printCallbackFctParamDefinition»
+		«printOnSuccessFctParamDefinition»
+		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		virtual std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName.toFirstLower»,
-				std::function<void(const joynr::RequestStatus& status)> onSuccess = nullptr,
+				std::function<void(void)> onSuccess = nullptr,
 				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
@@ -141,18 +149,19 @@ class InterfaceUtil {
 '''
 	«FOR method: getMethods(serviceInterface)»
 		«var outputParameters = method.commaSeparatedOutputParameterTypes»
-		«val outputTypedParamList = prependCommaIfNotEmpty(method.commaSeperatedTypedConstOutputParameterList)»
+		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 
 		/**
 		* @brief Asynchronous operation «method.joynrName».
 		*
-		«printCallbackFctParamDefinition»
+		«printOnSuccessFctParamDefinition»
+		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 
 		virtual std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
 				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
-				std::function<void(const joynr::RequestStatus& status«outputTypedParamList»)> onSuccess = nullptr,
+				std::function<void(«outputTypedParamList»)> onSuccess = nullptr,
 				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»

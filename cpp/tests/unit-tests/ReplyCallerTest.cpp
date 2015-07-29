@@ -39,11 +39,11 @@ class ReplyCallerTest : public ::testing::Test {
 public:
     ReplyCallerTest()
         : intCallback(new MockCallback<int>()),
-          intFixture(std::bind(&MockCallback<int>::callbackFct, intCallback, std::placeholders::_1, std::placeholders::_2),
-                     std::bind(&MockCallback<int>::errorFct, intCallback, std::placeholders::_1)),
+          intFixture(std::bind(&MockCallback<int>::onSuccess, intCallback, std::placeholders::_2),
+                     std::bind(&MockCallback<int>::onError, intCallback, std::placeholders::_1)),
           voidCallback(new MockCallback<void>()),
-          voidFixture(std::bind(&MockCallback<void>::callbackFct, voidCallback, std::placeholders::_1),
-                      std::bind(&MockCallback<void>::errorFct, voidCallback, std::placeholders::_1)) {}
+          voidFixture(std::bind(&MockCallback<void>::onSuccess, voidCallback),
+                      std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1)) {}
 
     QSharedPointer<MockCallback<int>> intCallback;
     ReplyCaller<int> intFixture;
@@ -61,7 +61,7 @@ TEST_F(ReplyCallerTest, getTypeQInt64) {
     QSharedPointer<MockCallback<qint64>> callback(new MockCallback<qint64>());
     ReplyCaller<qint64> qint64ReplyCaller(
                 [callback](const RequestStatus& status, const qint64& value) {
-                    callback->callbackFct(status, value);
+                    callback->onSuccess(value);
                 },
                 [](const RequestStatus& status){
                 });
@@ -72,7 +72,7 @@ TEST_F(ReplyCallerTest, getTypeQInt8) {
     QSharedPointer<MockCallback<qint8>> callback(new MockCallback<qint8>());
     ReplyCaller<qint8> qint8ReplyCaller(
                 [callback](const RequestStatus& status, const qint8& value) {
-                    callback->callbackFct(status, value);
+                    callback->onSuccess(value);
                 },
                 [](const RequestStatus& status){
                 });
@@ -86,27 +86,24 @@ TEST_F(ReplyCallerTest, getTypeForVoid) {
 
 
 TEST_F(ReplyCallerTest, timeOut) {
-    EXPECT_CALL(*intCallback, errorFct(
+    EXPECT_CALL(*intCallback, onError(
                     Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
-    EXPECT_CALL(*voidCallback, errorFct(
+    EXPECT_CALL(*voidCallback, onError(
                     Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
     voidFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, resultReceived) {
-    EXPECT_CALL(*intCallback, callbackFct(
-                    Property(&RequestStatus::getCode, RequestStatusCode::OK),
-                    7));
+    EXPECT_CALL(*intCallback, onSuccess(7));
     intFixture.returnValue(7);
 }
 
 TEST_F(ReplyCallerTest, resultReceivedForVoid) {
-    EXPECT_CALL(*voidCallback, callbackFct(
-                    Property(&RequestStatus::getCode, RequestStatusCode::OK)));
+    EXPECT_CALL(*voidCallback, onSuccess());
     voidFixture.returnValue();
 }
 

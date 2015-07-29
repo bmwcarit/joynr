@@ -120,13 +120,15 @@ public:
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
     MOCK_METHOD2(lookup, std::vector<joynr::types::CapabilityInformation>(const std::string& domain, const std::string& interfaceName));
-    MOCK_METHOD3(lookup, void(
+    MOCK_METHOD4(lookup, void(
                      const std::string& domain,
                      const std::string& interfaceName,
-                     std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct));
-    MOCK_METHOD2(lookup, void(
+                     std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> onSuccess,
+                     std::function<void(const joynr::RequestStatus& status)> onError));
+    MOCK_METHOD3(lookup, void(
                      const std::string& participantId,
-                     std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct));
+                     std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct,
+                     std::function<void(const joynr::RequestStatus& status)> onError));
     MOCK_METHOD0(getLocalChannelId, std::string());
 
 };
@@ -365,7 +367,7 @@ public:
             addAsync,
             std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
-                std::function<void(const joynr::RequestStatus& status)> onSuccess,
+                std::function<void(void)> onSuccess,
                 std::function<void(const joynr::RequestStatus& status)> onError
             )
     );
@@ -373,7 +375,7 @@ public:
             lookupAsync,
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntry>>(
                 const std::string& participantId,
-                std::function<void(const joynr::RequestStatus& status, const joynr::types::DiscoveryEntry& result)>
+                std::function<void(const joynr::types::DiscoveryEntry& result)>
                         onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
             )
@@ -384,7 +386,7 @@ public:
                 const std::string& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
-                std::function<void(const joynr::RequestStatus& status, const std::vector<joynr::types::DiscoveryEntry>& result)>
+                std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
             )
@@ -393,7 +395,7 @@ public:
             removeAsync,
             std::shared_ptr<joynr::Future<void>>(
                 const std::string& participantId,
-                std::function<void(const joynr::RequestStatus& status)> onSuccess,
+                std::function<void(void)> onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
             )
     );
@@ -451,16 +453,16 @@ public:
 template <typename ... Ts>
 class MockCallback{
 public:
-    MOCK_METHOD2_T(callbackFct, void(const joynr::RequestStatus& status, const Ts&... result));
-    MOCK_METHOD1_T(errorFct, void(const joynr::RequestStatus& status));
+    MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
+    MOCK_METHOD1_T(onError, void(const joynr::RequestStatus& status));
 };
 
 template<>
 class MockCallback<void> {
 
 public:
-    MOCK_METHOD1(callbackFct, void(const joynr::RequestStatus& status));
-    MOCK_METHOD1(errorFct, void(const joynr::RequestStatus& status));
+    MOCK_METHOD0(onSuccess, void(void));
+    MOCK_METHOD1(onError, void(const joynr::RequestStatus& status));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
@@ -719,7 +721,7 @@ public:
     MOCK_METHOD3(getUrlsForChannelAsync,
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (
                      const std::string& channelId,
-                     std::function<void(const joynr::RequestStatus& status, const joynr::types::ChannelUrlInformation& urls)> onSuccess,
+                     std::function<void(const joynr::types::ChannelUrlInformation& urls)> onSuccess,
                      std::function<void(const joynr::RequestStatus& status)> onError
                  )
     );
@@ -728,7 +730,7 @@ public:
                  std::shared_ptr<joynr::Future<void> >(
                      const std::string& channelId,
                      const joynr::types::ChannelUrlInformation& channelUrlInformation,
-                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(void)> onSuccess,
                      std::function<void(const joynr::RequestStatus&)> onError
                  )
     );
@@ -736,7 +738,7 @@ public:
     MOCK_METHOD3(unregisterChannelUrlsAsync,
                  std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
-                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(void)> onSuccess,
                      std::function<void(const joynr::RequestStatus&)> onError
                  )
     );
@@ -749,7 +751,7 @@ public:
                  std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
                      joynr::types::ChannelUrlInformation channelUrlInformation,
-                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(void)> onSuccess,
                      std::function<void(const joynr::RequestStatus&)> onError
                  )
     );
@@ -757,7 +759,7 @@ public:
     MOCK_METHOD3(unregisterChannelUrlsAsync,
                  std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
-                     std::function<void(const joynr::RequestStatus&)> onSuccess,
+                     std::function<void(void)> onSuccess,
                      std::function<void(const joynr::RequestStatus&)> onError
                  )
     );
@@ -766,8 +768,7 @@ public:
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
                      const std::string& channelId,
                      const qint64& timeout_ms,
-                     std::function<void(const joynr::RequestStatus&, const joynr::types::ChannelUrlInformation&)>
-                                         onSuccess,
+                     std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
                      std::function<void(const joynr::RequestStatus&)> onError
                  )
     );
@@ -836,7 +837,6 @@ public:
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
                 const std::string& uid,
                 std::function<void(
-                    const joynr::RequestStatus& status,
                     const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
                 )> onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
@@ -849,7 +849,6 @@ public:
                 const std::string& domain,
                 const std::string& interfaceName,
                 std::function<void(
-                    const joynr::RequestStatus& status,
                     const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& masterAces
                 )> onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
@@ -862,7 +861,6 @@ public:
                 const std::string& domain,
                 const std::string& interfaceName,
                 std::function<void(
-                    const joynr::RequestStatus& status,
                     const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAces
                 )> onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
@@ -875,7 +873,6 @@ public:
                 const std::string& domain,
                 const std::string& interfaceName,
                 std::function<void(
-                    const joynr::RequestStatus& status,
                     const std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAces
                 )> onSuccess,
                 std::function<void(const joynr::RequestStatus&)> onError
