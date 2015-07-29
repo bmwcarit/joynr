@@ -69,7 +69,7 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 {
 	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 		«IF datatype instanceof FType»
-			qRegisterMetaType<«qtTypeUtil.getTypeName(datatype)»>("«qtTypeUtil.getTypeName(datatype)»");
+			«qtTypeUtil.registerMetatypeStatement(qtTypeUtil.getTypeName(datatype))»
 		«ENDIF»
 	«ENDFOR»
 }

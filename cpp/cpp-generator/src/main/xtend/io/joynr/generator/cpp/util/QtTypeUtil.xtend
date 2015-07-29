@@ -226,11 +226,11 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeNameForList(FType datatype) {
-		"QList<" + datatype.typeName + "> ";
+		"QList<" + datatype.typeName + ">";
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		"QList<" + datatype.typeName + "> ";
+		"QList<" + datatype.typeName + ">";
 	}
 
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {
@@ -258,5 +258,13 @@ class QtTypeUtil extends CppTypeUtil {
 	def getTypeNameOfContainingClass (FType datatype) {
 		val packagepath = buildPackagePath(datatype, "::");
 		return  packagepath + datatype.joynrNameQt
+	}
+
+	def registerMetatypeStatement(String qtTypeName) {
+		return registerMetatypeStatement(qtTypeName, "::")
+	}
+
+	def registerMetatypeStatement(String qtTypeName, String separator) {
+		return '''qRegisterMetaType<«qtTypeName.replace('::', separator)»>("«qtTypeName.replace('::', separator)»");'''
 	}
 }

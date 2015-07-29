@@ -58,15 +58,15 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 «getNamespaceStarter(type)»
 
 void «typeName»::registerMetatypes() {
-	qRegisterMetaType<«type.typeName»>("«type.typeName»");
+	«registerMetatypeStatement(type.typeName)»
 	«FOR complexMember: getComplexMembers(type)»
-		qRegisterMetaType<«complexMember.typeName»>("«complexMember.typeName»");
-		qRegisterMetaType<«complexMember.typeName.replace('::','__')»>("«complexMember.typeName.replace('::','__')»");
+		«registerMetatypeStatement(complexMember.typeName)»
+		«registerMetatypeStatement(complexMember.typeName, '__')»
 	«ENDFOR»
 	«FOR enumMember: getEnumMembers(type)»
 		{
-			qRegisterMetaType<«getEnumContainer(enumMember.type.derived)»>();
-			int id = qRegisterMetaType<«enumMember.typeName»>();
+			«registerMetatypeStatement(getEnumContainer(enumMember.type.derived))»
+			int id = «registerMetatypeStatement(enumMember.typeName)»
 			QJson::Serializer::registerEnum(id, «getEnumContainer(enumMember.type.derived)»::staticMetaObject.enumerator(0));
 		}
 	«ENDFOR»

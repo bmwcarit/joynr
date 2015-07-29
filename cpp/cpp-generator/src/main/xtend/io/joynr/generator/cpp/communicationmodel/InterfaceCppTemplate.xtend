@@ -69,13 +69,13 @@ I«interfaceName»Base::I«interfaceName»Base()
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
 		{
-			qRegisterMetaType<«getEnumContainer(datatype)»>();
-			int id = qRegisterMetaType<«datatype.typeName»>();
+			«registerMetatypeStatement(getEnumContainer(datatype))»
+			int id = «registerMetatypeStatement(datatype.typeName)»
 			registrar.registerEnumMetaType<«getEnumContainer(datatype)»>();
 			QJson::Serializer::registerEnum(id, «getEnumContainer(datatype)»::staticMetaObject.enumerator(0));
 		}
 		«ELSE»
-			qRegisterMetaType<«datatype.typeName»>("«datatype.typeName»");
+			«registerMetatypeStatement(datatype.typeName)»
 			registrar.registerMetaType<«datatype.typeName»>();
 		«ENDIF»
 	«ENDFOR»
