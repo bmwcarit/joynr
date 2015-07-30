@@ -87,6 +87,7 @@ void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
     currentStationChanged(stationsList.at(currentStationIndex));
+    currentStation = stationsList.at(currentStationIndex);
     MyRadioHelper::prettyLog(logger,
                              QString("shuffleStations: %1 -> %2")
                                      .arg(QString::fromStdString(oldStation.toString()))
