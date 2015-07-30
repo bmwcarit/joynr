@@ -73,9 +73,7 @@ public abstract class SubscriptionQos implements JoynrType {
      */
     public SubscriptionQos(long expiryDate, long publicationTtl) {
         setExpiryDate(expiryDate);
-        publicationTtl = publicationTtl < MIN_PUBLICATION_TTL ? MIN_PUBLICATION_TTL : publicationTtl;
-        publicationTtl = publicationTtl > MAX_PUBLICATION_TTL ? MAX_PUBLICATION_TTL : publicationTtl;
-        this.publicationTtl = publicationTtl;
+        setPublicationTtl(publicationTtl);
     }
 
     /**
@@ -129,6 +127,16 @@ public abstract class SubscriptionQos implements JoynrType {
      * 
      */
     public void setPublicationTtl(final long publicationTtl_ms) {
+        if (publicationTtl_ms < MIN_PUBLICATION_TTL) {
+            this.publicationTtl = MIN_PUBLICATION_TTL;
+            logger.warn("publicationTtl_ms < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}", MIN_PUBLICATION_TTL);
+            return;
+        }
+        if (publicationTtl_ms > MAX_PUBLICATION_TTL) {
+            this.publicationTtl = MAX_PUBLICATION_TTL;
+            logger.warn("publicationTtl_ms > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}", MAX_PUBLICATION_TTL);
+            return;
+        }
         this.publicationTtl = publicationTtl_ms;
     }
 
