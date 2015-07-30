@@ -125,7 +125,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
     } else {
         LOG_INFO(logger,
                  "FAILED to receive remote url information for channelId=" + channelIdQT +
-                         " . Status: " + future->getStatus().toString());
+                         " . Status: " + QString::fromStdString(future->getStatus().toString()));
     }
     return future;
 }

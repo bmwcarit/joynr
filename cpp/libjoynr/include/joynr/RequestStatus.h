@@ -21,9 +21,10 @@
 
 #include "joynr/JoynrExport.h"
 
+#include <string>
+#include <list>
+
 #include "joynr/RequestStatusCode.h"
-#include <QStringList>
-#include <QString>
 
 namespace joynr
 {
@@ -82,28 +83,28 @@ public:
     /**
      * @brief Returns a detailed description of the request.
      *
-     * @return QStringList A list of descriptions detailing the progress of a request.
+     * @return std::list<std::string> A list of descriptions detailing the progress of a request.
      */
-    QStringList getDescription() const;
+    std::list<std::string> getDescription() const;
 
     /**
      * @brief Adds a sentence describing a state of the request to the list of descriptions.
      *
      * @param description The detail to add to the description list.
      */
-    void addDescription(const QString& description);
+    void addDescription(const std::string& description);
 
     /**
-     * @brief A convenience method to prints this object to string.
+     * @brief A convenience method to print this object to string.
      *
-     * @return QString The String representation of this object, to be used in error
+     * @return std::string The String representation of this object, to be used in error
      *messages/logging etc.
      */
-    QString toString() const;
+    std::string toString() const;
 
 private:
     RequestStatusCode code;
-    QStringList description;
+    std::list<std::string> description;
 };
 
 } // namespace joynr

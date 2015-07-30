@@ -597,10 +597,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const RequestStatus& status)> domainRoleOnError =
             [this, initialiser](const RequestStatus& status) {
-        QString description = status.getDescription().join("\n");
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(description));
+                          .arg(QString::fromStdString(status.toString())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -622,10 +621,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const RequestStatus& status)> masterAceOnError =
             [this, initialiser](const RequestStatus& status) {
-        QString description = status.getDescription().join("\n");
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(description));
+                          .arg(QString::fromStdString(status.toString())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -648,10 +646,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const RequestStatus& status)> mediatorAceOnError =
             [this, initialiser](const RequestStatus& status) {
-        QString description = status.getDescription().join("\n");
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(description));
+                          .arg(QString::fromStdString(status.toString())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -673,10 +670,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const RequestStatus& status)> ownerAceOnError =
             [this, initialiser](const RequestStatus& status) {
-        QString description = status.getDescription().join("\n");
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(description));
+                          .arg(QString::fromStdString(status.toString())));
 
         // Abort the initialisation
         initialiser->abort();
