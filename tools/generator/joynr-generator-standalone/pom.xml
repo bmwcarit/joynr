@@ -16,7 +16,8 @@
   limitations under the License.
   #L%
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr.tools.generator</groupId>
 	<artifactId>joynr-generator-standalone</artifactId>
@@ -43,26 +44,90 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.1</version>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
 				<executions>
+					<!-- unpack all non-runnable files into info -->
 					<execution>
-						<phase>package</phase>
+						<id>unpack-dependency-info</id>
+						<phase>process-resources</phase>
 						<goals>
-							<goal>shade</goal>
+							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>io.joynr.generator.ExecutorCL</mainClass>
-								</transformer>
-							</transformers>
+							<excludes>**/*.class,**/*.xtend,**/MANIFEST.MF,**/*.xmi,**/*.properties,
+							**/maven/,**/*.gif,**/*.jar,**/*.xtext,**/*.mwe2,**/*.tokens</excludes>
+							<useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
+							<includeScope>compile</includeScope>
+							<outputDirectory>${project.build.directory}/info</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<!-- unpack runnable files into classes -->
+					<execution>
+						<id>unpack-dependency-classes</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includes>**/*.class,**/*.xtend,**/*.tokens,**/*xmi,**/log4j.properties</includes>
+							<includeScope>compile</includeScope>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-	 	</plugins>
+			<!-- use ant to copy the info directory without copying over empty directories -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<copy todir="${project.build.directory}/classes/info"
+									includeEmptyDirs="false">
+									<fileset dir="${project.build.directory}/info" includes="**/*" />
+								</copy>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- zip it all together, removing some further directories that the excludes
+				from the other plugins didnt seem to be able to remove -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<skipIfEmpty>true</skipIfEmpty>
+					<excludes>
+						<exclude>target/**/*</exclude>
+						<exclude>target</exclude>
+						<exclude>testdata/**/*</exclude>
+						<exclude>testdata</exclude>
+					</excludes>
+					<archive>
+						<manifest>
+							<mainClass>io.joynr.generator.ExecutorCL</mainClass>
+						</manifest>
+						<manifestEntries>
+							<mode>development</mode>
+							<url>${project.url}</url>
+							<key>value</key>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 	<dependencies>
