@@ -19,6 +19,8 @@ package io.joynr.examples.android_example;
  * #L%
  */
 
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -27,14 +29,19 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -44,7 +51,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
 
     private MyGpsProvider provider = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
@@ -128,9 +135,12 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // the following line is required in case of java<->javascript use case,
         // as long as javascript is not using channelurldirectory and
         // globalcapabilitiesdirectory
-        Module[] modules = new Module[]{}; // new DefaultUrlDirectoryModule()};
-        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, modules).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
-                                                                                                                                        appConfig));
+
+        provisionAccessControl(joynrConfig, localDomain);
+
+        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
+                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
+                                                                                                                                                                     appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();
@@ -151,8 +161,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
                     provider.notifyLocationUpdate();
                     break;
                 default:
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
-                            + " w\tto fire weak signal event\n" + " n\tto fire station discovered event\n");
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " l\tto update location\n");
                     break;
                 }
             }
@@ -182,4 +191,25 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         }
         System.exit(0);
     }
+
+    private static void provisionAccessControl(Properties properties, String domain) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
+                                                                                            domain,
+                                                                                            MyGpsProvider.INTERFACE_NAME,
+                                                                                            TrustLevel.LOW,
+                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            TrustLevel.LOW,
+                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            "*",
+                                                                                            Permission.YES,
+                                                                                            Arrays.asList(Permission.YES));
+
+        MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
+        String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
+        properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+                               provisionedAccessControlEntriesAsJson);
+    }
+
 }
